@@ -2,9 +2,16 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libs/Logging.jar"/>
-	<classpathentry kind="lib" path="libs/Config.jar"/>
-	<classpathentry kind="lib" path="libs/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="libs/net.xqhs.XML.jar"/>
+	<classpathentry kind="lib" path="lib/Config.jar" sourcepath="lib/Config.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Config.jar!/doc-Config/pages/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/Logging.jar" sourcepath="lib/Logging.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Logging.jar!/doc-Logging/pages/javadoc"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/net.xqhs.XML.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
