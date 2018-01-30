@@ -1,13 +1,13 @@
 /*******************************************************************************
- * Copyright (C) 2015 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy Nga, Amal El Fallah Seghrouchni, Cedric Herpson.
+ * Copyright (C) 2018 Andrei Olaru.
  * 
- * This file is part of tATAmI-PC.
+ * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
  * 
- * tATAmI-PC is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
  * 
- * tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
  * 
- * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package flash.util;
 
@@ -49,7 +49,7 @@ public class ParameterSet extends Config implements Serializable
 	/**
 	 * A map simulating a set of entries String &rarr; Object.
 	 */
-	protected final Map<String, List<Object>>	parameterSet		= new HashMap<String, List<Object>>();
+	protected final Map<String, List<Object>>	parameterSet		= new HashMap<>();
 																	
 	/**
 	 * Adds a new parameter entry.
@@ -80,7 +80,7 @@ public class ParameterSet extends Config implements Serializable
 	{
 		locked();
 		if(!parameterSet.containsKey(name))
-			parameterSet.put(name, new ArrayList<Object>());
+			parameterSet.put(name, new ArrayList<>());
 		parameterSet.get(name).add(value);
 		return this;
 	}
@@ -125,7 +125,7 @@ public class ParameterSet extends Config implements Serializable
 	 */
 	public List<String> getValues(String name)
 	{
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<>();
 		for(Object value : getObjects(name))
 			if(value instanceof String)
 				ret.add((String) value);
@@ -158,7 +158,7 @@ public class ParameterSet extends Config implements Serializable
 	public List<Object> getObjects(String name)
 	{
 		if(!parameterSet.containsKey(name))
-			return new ArrayList<Object>();
+			return new ArrayList<>();
 		return parameterSet.get(name);
 	}
 	
