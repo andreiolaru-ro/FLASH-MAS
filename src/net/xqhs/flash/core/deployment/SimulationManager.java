@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package flash.deployment;
+package net.xqhs.flash.core.deployment;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,17 +23,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.io.AgentActiveIO.InputListener;
+import net.xqhs.flash.core.agent.messaging.MessagingComponent;
+import net.xqhs.flash.core.agent.visualization.AgentGui;
+import net.xqhs.flash.core.agent.visualization.AgentGuiConfig;
+import net.xqhs.flash.core.agent.visualization.AgentGui.AgentGuiBackgroundTask;
+import net.xqhs.flash.core.agent.visualization.AgentGui.ResultNotificationListener;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.UnitComponentExt;
 import net.xqhs.windowLayout.WindowLayout;
-import tatami.core.agent.AgentComponent.AgentComponentName;
-import tatami.core.agent.AgentEvent.AgentEventType;
-import tatami.core.agent.io.AgentActiveIO.InputListener;
-import tatami.core.agent.messaging.MessagingComponent;
-import tatami.core.agent.visualization.AgentGui;
-import tatami.core.agent.visualization.AgentGui.AgentGuiBackgroundTask;
-import tatami.core.agent.visualization.AgentGui.ResultNotificationListener;
-import tatami.core.agent.visualization.AgentGuiConfig;
 import tatami.core.util.platformUtils.PlatformUtils;
 import tatami.simulation.PlatformLoader.PlatformLink;
 

@@ -18,4 +18,4 @@
  * @author andreiolaru
  *
  */
-package flash.core;
+package net.xqhs.flash.core;

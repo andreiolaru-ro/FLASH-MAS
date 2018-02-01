@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package flash.util;
+package net.xqhs.flash.core.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,19 +28,6 @@ import net.xqhs.util.logging.logging.LogWrapper.LoggerType;
  */
 public class PlatformUtils
 {
-	/**
-	 * The name of nodes containing parameters.
-	 */
-	private static final String	PARAMETER_NODE_NAME	= "parameter";
-	/**
-	 * The name of the attribute of a parameter node holding the name of the parameter.
-	 */
-	private static final String	PARAMETER_NAME		= "name";
-	/**
-	 * The name of the attribute of a parameter node holding the value of the parameter.
-	 */
-	private static final String	PARAMETER_VALUE		= "value";
-	
 	/**
 	 * This enumeration contains all supported platforms.
 	 * 
@@ -90,8 +77,7 @@ public class PlatformUtils
 		switch(getPlatform())
 		{
 		case PC:
-//			return LoggerType.CONSOLE;
-			return LoggerType.LOG4J;
+			return LoggerType.CONSOLE;
 		case ANDROID:
 			return LoggerType.JAVA;
 		}

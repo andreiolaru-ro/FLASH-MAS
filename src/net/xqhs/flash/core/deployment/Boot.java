@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package flash.deployment;
+package net.xqhs.flash.core.deployment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,10 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import flash.util.PlatformUtils;
-import net.xqhs.util.logging.LoggerSimple.Level;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.util.XML.XMLTree.XMLNode;
+import net.xqhs.util.config.Config.ConfigLockedException;
 import net.xqhs.util.logging.UnitComponentExt;
-import net.xqhs.util.logging.logging.Logging;
 
 /**
  * The Boot singleton class manages the startup of the multi-agent system. It manages settings, it loads the scenario,
@@ -50,45 +51,39 @@ public class Boot
 	 */
 	public void boot(String args[])
 	{
-		log.trace("Booting Flash.");
+		log.trace("Booting Flash-MAS.");
 		
-//		// load settings & scenario
-//		BootSettingsManager settings = new BootSettingsManager();
-//		XMLTree scenarioTree;
-//		try
-//		{
-//			scenarioTree = settings.load(args, true);
-//			if(scenarioTree == null)
-//				return;
-//		} catch(ConfigLockedException e)
-//		{
-//			log.error("settings were locked (shouldn't ever happen): " + PlatformUtils.printException(e));
-//			return;
-//		}
+		// load settings & scenario
+		BootSettingsManager settings = new BootSettingsManager();
+		TreeParameterSet deployment;
+		try
+		{
+			deployment = settings.load(args, true, null);
+		} catch(ConfigLockedException e)
+		{
+			log.error("settings were locked (shouldn't ever happen): " + PlatformUtils.printException(e));
+			return;
+		}
 //		
 //		// create window layout
 //		WindowLayout.staticLayout = new GridWindowLayout(settings.getLayout());
 //		
-//		// build agent creation data
-//		
-//		// the name of the default platform
-//		String defaultPlatform = PlatformLoader.DEFAULT_PLATFORM.toString();
-//		// the name of the default agent loader
-//		String defaultAgentLoader = AgentLoader.DEFAULT_LOADER.toString();
-//		// platform name -> platform loader
-//		Map<String, PlatformLoader> platforms = new HashMap<String, PlatformLoader>();
-//		// agent loader name -> agent loader
-//		Map<String, AgentLoader> agentLoaders = new HashMap<String, AgentLoader>();
-//		// package names where agent code (adf & java) may be located
-//		List<String> agentPackages = new ArrayList<String>();
-//		// container name -> do create (true for local containers, false for remote)
-//		Map<String, Boolean> allContainers = new HashMap<String, Boolean>();
-//		// platform name -> names of containers to be present in the platform
-//		Map<String, Set<String>> platformContainers = new HashMap<String, Set<String>>();
-//		// platform name -> container name -> agent name -> agent manager
-//		// for the agent to be started in the container, on the platform
-//		Set<AgentCreationData> allAgents = new HashSet<AgentCreationData>();
-//		
+		// build agent creation data
+		
+		// the name of the default platform
+		String defaultPlatform = PlatformLoader.DEFAULT_PLATFORM.toString();
+		// the name of the default agent loader
+		String defaultAgentLoader = AgentLoader.DEFAULT_LOADER.toString();
+		// platform name -> platform loader
+		Map<String, PlatformLoader> platforms = new HashMap<>();
+		// agent loader name -> agent loader
+		Map<String, AgentLoader> agentLoaders = new HashMap<>();
+		// package names where agent code (adf, java & co) may be located
+		List<String> agentPackages = new ArrayList<>();
+		// platform name -> agent name -> agent manager
+		// for the agent to be started in the container, on the platform
+		Set<AgentCreationData> allAgents = new HashSet<>();
+		
 //		// add agent packages specified in the scenario
 //		Iterator<XMLNode> packagePathsIt = scenarioTree.getRoot().getNodeIterator(
 //				AgentParameterName.AGENT_PACKAGE.toString());
@@ -504,15 +499,5 @@ public class Boot
 //		return platformsOK;
 //	}
 	
-	/**
-	 * Main method. It calls {@link Boot#boot(String[])} with the arguments received by the program.
-	 * 
-	 * @param args
-	 *            - the arguments received by the program.
-	 */
-	public static void main(String[] args)
-	{
-		Logging.getMasterLogging().setLogLevel(Level.ALL);
-		new Boot().boot(args);
-	}
+
 }

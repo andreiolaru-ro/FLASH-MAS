@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package flash.util;
+package net.xqhs.flash.core.util;
 
 import java.util.HashSet;
 import java.util.Set;

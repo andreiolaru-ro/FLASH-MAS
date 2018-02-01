@@ -13,9 +13,9 @@
  * 
  */
 /**
- * The package contains the Flash-MAS packages.
+ * The package contains classes needed for easily deploying Flash agents. 
  * 
  * @author andreiolaru
  *
  */
-package flash;
+package net.xqhs.flash.core.deployment;
