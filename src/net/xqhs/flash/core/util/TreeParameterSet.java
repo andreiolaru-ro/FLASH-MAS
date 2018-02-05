@@ -235,12 +235,19 @@ public class TreeParameterSet extends ParameterSet
 	protected String toString(String indent)
 	{
 		String ret = "";
+		boolean justtree = false;
 		for(String key : parameterSet.keySet())
 			if(simpleKeys.contains(key))
-				ret += "\n" + indent + String.format("%-" + (padLen + 4) + "s", "[" + key + "]:") + parameterSet.get(key);
+			{
+				ret += (justtree ? "" : "\n") + indent + String.format("%-" + (padLen + 4) + "s", "[" + key + "]:") + parameterSet.get(key);
+				justtree = false;
+			}
 			else
 				for(String name : treeKeys.get(key))
-					ret += "\n" + indent + "[" + key + ":" + name + "]:" + getTree(key, name).toString();
+				{
+					ret += (justtree ? "" : "\n") + indent + "[" + key + ":" + name + "]:" + getTree(key, name).toString(indent + "    ");
+					justtree = true;
+				}
 		if(ret.length() > 0)
 			ret += "\n";
 		return ret;

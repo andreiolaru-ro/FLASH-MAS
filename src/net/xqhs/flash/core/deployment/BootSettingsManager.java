@@ -110,6 +110,8 @@ public class BootSettingsManager extends TreeParameterSet
 	 * Default values.
 	 */
 	public static final Map<String, String>	DEFAULTS			= new HashMap<>();
+
+	public static final String OTHER_NAME = "other";
 	
 	static
 	{
@@ -173,7 +175,7 @@ public class BootSettingsManager extends TreeParameterSet
 			
 		XMLTree XMLtree = XMLParser.validateParse(get(SettingName.SCHEMA.getName()),
 				get(SettingName.DEPLOYMENT.getName()));
-		readXML(XMLtree.getRoot(), this);
+		readXML(XMLtree.getRoot(), this, log);
 		log.trace("after XML tree parse:", this);
 		
 		// 3. parse CLI args
@@ -183,7 +185,7 @@ public class BootSettingsManager extends TreeParameterSet
 		return this;
 	}
 	
-	protected static void readXML(XMLNode node, TreeParameterSet tree)
+	protected static void readXML(XMLNode node, TreeParameterSet tree, UnitComponentExt log)
 	{
 		for(XMLAttribute a : node.getAttributes())
 			tree.add(a.getName(), a.getValue());
@@ -195,7 +197,18 @@ public class BootSettingsManager extends TreeParameterSet
 				// here missing the case of a node with no children but with attributes
 				tree.add(n.getName(), (String) n.getValue());
 			else
-				;
+			{
+				TreeParameterSet subTree = new TreeParameterSet();
+				readXML(n, subTree, log);
+				String name = subTree.getValue(PARAMETER_NAME);
+				if(name != null)
+					tree.addTree(n.getName(), name, subTree);
+				else
+				{
+					log.lw("Node [] does not contain a name.", n.getName());
+					tree.addTree(OTHER_NAME, n.getName(), subTree);
+				}
+			}
 				
 		}
 	}
