@@ -13,7 +13,7 @@ package net.xqhs.flash.core.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class ParameterSet extends Config implements Serializable
 	/**
 	 * A map simulating a set of entries String &rarr; Object.
 	 */
-	protected final Map<String, List<Object>>	parameterSet		= new HashMap<>();
+	protected final Map<String, List<Object>>	parameterSet		= new LinkedHashMap<>();
 																	
 	/**
 	 * Adds a new parameter entry.

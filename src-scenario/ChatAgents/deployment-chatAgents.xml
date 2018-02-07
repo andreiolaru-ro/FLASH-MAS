@@ -1,64 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Copyright (C) 2013 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy Nga, Amal El Fallah Seghrouchni, Cedric Herpson.
-  
-  This file is part of tATAmI-PC.
-  
-  tATAmI-PC is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
-  
-  tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
-  
-  You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
--->
-<scen:scenario xmlns:scen="http://flash.xqhs.net/deployment-schema"
+<!-- Copyright (C) 2013 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy 
+	Nga, Amal El Fallah Seghrouchni, Cedric Herpson. This file is part of tATAmI-PC. 
+	tATAmI-PC is free software: you can redistribute it and/or modify it under 
+	the terms of the GNU Lesser General Public License as published by the Free 
+	Software Foundation, either version 3 of the License, or any later version. 
+	tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT 
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+	FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
+	details. You should have received a copy of the GNU Lesser General Public 
+	License along with tATAmI-PC. If not, see <http://www.gnu.org/licenses/>. -->
+<scenario xmlns="http://flash.xqhs.net/deployment-schema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
 
-	<scen:config mainHost="server client" mainPort="9002"
-		localHost="127.0.0.1" localPort="9002" />
-	
-    <scen:platform>
-		<scen:parameter name="name" value="websocket" />
-	</scen:platform>
-	   
-	<scen:agentPackage>ChatAgents</scen:agentPackage>
+	<config here="127.0.0.1:9002">
+		<parameter name="node" value="Central" />
+	</config>
 
-	<scen:initial>
-		<scen:container name="container-A">
-		    <scen:agent>
-				<scen:component name="parametric" />
-				<scen:component name="visualizable">
-					<scen:parameter name="GUI" value="ChatAgentGui" />
-			    </scen:component>
-				<scen:component name="messaging" />
-				<scen:component name="cognitive" />
-				<scen:component name="s_claim">
-					<scen:parameter name="class" value="ChatAgent" />
-					<scen:parameter name="java-code" value="ChatFunctions" />
-					<scen:parameter name="otherAgent" value="agentB" />
-				</scen:component>
+	<support name="websocket" />
 
-				<scen:parameter name="loader" value="composite" /> 
-				<scen:parameter name="name" value="agentA" />
-			</scen:agent>
-		</scen:container>
-		<scen:container name="AliceContainer"><!--  create="false" -->
-		    <scen:agent>
-				<scen:component name="parametric" />
-				<scen:component name="visualizable">
-					<scen:parameter name="GUI" value="ChatAgentGui" />
-			    </scen:component>
-				<scen:component name="messaging" />
-				<scen:component name="cognitive" />
-				<scen:component name="s_claim">
-					<scen:parameter name="class" value="ChatAgent" />
-					<scen:parameter name="java-code" value="ChatFunctions" />
-					<scen:parameter name="otherAgent" value="agentA" />
-				</scen:component>
+	<package>ChatAgents</package>
 
-				<scen:parameter name="loader" value="composite" /> 
-				<scen:parameter name="name" value="agentB" />
-		    </scen:agent>
-		</scen:container>
-	</scen:initial>
-</scen:scenario>
+	<agent name="AgentA">
+		<component name="parametric" />
+		<component name="visualizable">
+			<parameter name="GUI" value="ChatAgentGui" />
+		</component>
+		<component name="messaging" />
+		<component name="cognitive" />
+		<component name="s_claim">
+			<parameter name="class" value="ChatAgent" />
+			<parameter name="java-code" value="ChatFunctions" />
+			<parameter name="otherAgent" value="agentB" />
+		</component>
+
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentA" />
+	</agent>
+	<agent>
+		<component name="parametric" />
+		<component name="visualizable">
+			<parameter name="GUI" value="ChatAgentGui" />
+		</component>
+		<component name="messaging" />
+		<component name="cognitive" />
+		<component name="s_claim">
+			<parameter name="class" value="ChatAgent" />
+			<parameter name="java-code" value="ChatFunctions" />
+			<parameter name="otherAgent" value="agentA" />
+		</component>
+
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentB" />
+	</agent>
+</scenario>

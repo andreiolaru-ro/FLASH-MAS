@@ -1,29 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
-  Copyright (C) 2013 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy Nga, Amal El Fallah Seghrouchni, Cedric Herpson.
-  
-  This file is part of tATAmI-PC.
-  
-  tATAmI-PC is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
-  
-  tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
-  
-  You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
--->
+<!-- Copyright (C) 2013 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy 
+	Nga, Amal El Fallah Seghrouchni, Cedric Herpson. This file is part of tATAmI-PC. 
+	tATAmI-PC is free software: you can redistribute it and/or modify it under 
+	the terms of the GNU Lesser General Public License as published by the Free 
+	Software Foundation, either version 3 of the License, or any later version. 
+	tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT 
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+	FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
+	details. You should have received a copy of the GNU Lesser General Public 
+	License along with tATAmI-PC. If not, see <http://www.gnu.org/licenses/>. -->
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://flash.xqhs.net/deployment-schema"
 	xmlns:tns="http://flash.xqhs.net/deployment-schema" elementFormDefault="qualified">
 	<element name="scenario">
 		<complexType>
 			<sequence>
 				<element name="config" maxOccurs="1" minOccurs="0">
-					<complexType>
-						<attribute name="mainHost" type="string" use="optional" />
-						<attribute name="mainPort" type="positiveInteger" use="optional" />
-						<attribute name="localHost" type="string" use="optional" />
-						<attribute name="localPort" type="positiveInteger" use="optional" />
-					</complexType>
-				</element>
-				<element name="platform" maxOccurs="unbounded" minOccurs="0">
 					<complexType>
 						<sequence>
 							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
@@ -33,6 +24,21 @@
 								</complexType>
 							</element>
 						</sequence>
+						<attribute name="center" type="string" use="optional" />
+						<attribute name="here" type="string" use="optional" />
+					</complexType>
+				</element>
+				<element name="support" maxOccurs="unbounded" minOccurs="0">
+					<complexType>
+						<sequence>
+							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="name" type="string" use="required" />
+									<attribute name="value" type="string" use="required" />
+								</complexType>
+							</element>
+						</sequence>
+						<attribute name="name" type="string" use="required" />
 					</complexType>
 				</element>
 				<element name="loader" maxOccurs="unbounded" minOccurs="0">
@@ -47,49 +53,33 @@
 						</sequence>
 					</complexType>
 				</element>
-				<element name="agentPackage" type="string" minOccurs="0"
+				<element name="package" type="string" minOccurs="0"
 					maxOccurs="unbounded" />
-				<element name="initial" maxOccurs="1" minOccurs="0">
+				<element name="agent" maxOccurs="unbounded" minOccurs="0">
 					<complexType>
 						<sequence>
-							<element name="container" minOccurs="1" maxOccurs="unbounded">
+							<element name="component" minOccurs="0" maxOccurs="unbounded">
 								<complexType>
 									<sequence>
-										<element name="agent" maxOccurs="unbounded" minOccurs="0">
+										<element name="parameter" minOccurs="0" maxOccurs="unbounded">
 											<complexType>
-												<sequence>
-													<element name="component" minOccurs="0" maxOccurs="unbounded">
-														<complexType>
-															<sequence>
-																<element name="parameter" minOccurs="0"
-																	maxOccurs="unbounded">
-																	<complexType>
-																		<attribute name="name" type="string" use="required" />
-																		<attribute name="value" type="string" use="required" />
-																	</complexType>
-																</element>
-															</sequence>
-															<attribute name="name" type="string" use="required" />
-															<attribute name="classpath" type="string" use="optional" />
-														</complexType>
-													</element>
-													<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-														<complexType>
-															<attribute name="name" type="string" use="required" />
-															<attribute name="value" type="string" use="required" />
-														</complexType>
-													</element>
-												</sequence>
+												<attribute name="name" type="string" use="required" />
+												<attribute name="value" type="string" use="required" />
 											</complexType>
 										</element>
 									</sequence>
 									<attribute name="name" type="string" use="required" />
-									<attribute name="create" type="boolean" use="optional"
-										default="true" />
-									<attribute name="platform" type="string" use="optional" />
+									<attribute name="classpath" type="string" use="optional" />
+								</complexType>
+							</element>
+							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="name" type="string" use="required" />
+									<attribute name="value" type="string" use="required" />
 								</complexType>
 							</element>
 						</sequence>
+						<attribute name="name" type="string" use="optional" />
 					</complexType>
 				</element>
 				<element name="timeline" maxOccurs="1" minOccurs="0">
@@ -123,5 +113,4 @@
 			</sequence>
 		</complexType>
 	</element>
-
 </schema>

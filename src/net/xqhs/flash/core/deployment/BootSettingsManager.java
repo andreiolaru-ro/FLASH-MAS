@@ -11,8 +11,16 @@
  ******************************************************************************/
 package net.xqhs.flash.core.deployment;
 
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.TreeParameterSet;
@@ -23,13 +31,13 @@ import net.xqhs.util.XML.XMLTree.XMLNode.XMLAttribute;
 import net.xqhs.util.logging.UnitComponentExt;
 
 /**
- * This class manages settings for simulations. It handles loading these settings from various sources --
- * {@link BootDefaultSettings}, arguments given to the <code>main()</code> method in {@link Boot}, or settings specified
- * in the deployment file.
+ * This class manages settings for simulations. It handles loading these settings from various sources -- default
+ * values, arguments given to the <code>main()</code> method in {@link Boot}, or settings specified in the deployment
+ * file.
  * <p>
  * The precedence of values for settings is the following (latter values override former values):
  * <ul>
- * <li>values given in {@link BootDefaultSettings};
+ * <li>values given in DEFAULTS member;
  * <li>values given in the deployment file.
  * <li>values given as arguments to method <code>main()</code> in {@link Boot} (command-line arguments);
  * </ul>
@@ -45,17 +53,20 @@ public class BootSettingsManager extends TreeParameterSet
 		
 		DEPLOYMENT,
 		
+		LOADER,
+		
 		PACKAGE,
 		
 		SUPPORT,
 		
-		AGENT,
+		AGENT(SUPPORT, true),
 		
 		COMPONENT(AGENT),
 		
 		;
 		
-		SettingName parent = null;
+		SettingName	parent				= null;
+		boolean		optional_hierarchy	= false;
 		
 		private SettingName()
 		{
@@ -66,9 +77,25 @@ public class BootSettingsManager extends TreeParameterSet
 			parent = _parent;
 		}
 		
+		private SettingName(SettingName _parent, boolean parent_optional)
+		{
+			this(_parent);
+			optional_hierarchy = parent_optional;
+		}
+		
 		public String getName()
 		{
 			return this.name().toLowerCase();
+		}
+		
+		public String getParent()
+		{
+			return parent != null ? parent.getName() : null;
+		}
+		
+		public boolean isParentOptional()
+		{
+			return optional_hierarchy;
 		}
 		
 		public String getPath()
@@ -76,6 +103,14 @@ public class BootSettingsManager extends TreeParameterSet
 			if(parent == null)
 				return getName();
 			return parent.getPath() + PATH_SEP + getName();
+		}
+		
+		public static SettingName byName(String name)
+		{
+			for(SettingName s : SettingName.values())
+				if(s.getName().equals(name))
+					return s;
+			return null;
 		}
 	}
 	
@@ -110,8 +145,8 @@ public class BootSettingsManager extends TreeParameterSet
 	 * Default values.
 	 */
 	public static final Map<String, String>	DEFAULTS			= new HashMap<>();
-
-	public static final String OTHER_NAME = "other";
+	
+	public static final String				OTHER_NAME			= "other";
 	
 	static
 	{
@@ -156,11 +191,16 @@ public class BootSettingsManager extends TreeParameterSet
 		// 1. get default settings
 		for(String setting : DEFAULTS.keySet())
 			this.add(setting, DEFAULTS.get(setting));
-		log.trace("initial tree:", this);
+		log.lf("initial tree:", this);
 		
 		// 2. parse deployment file
-		if(programArguments.length > 0 && !programArguments[0].startsWith(CLI_TYPE_PREFIX))
+		boolean scenarioFirst = false;
+		if(programArguments.length > 0 && !programArguments[0].startsWith(CLI_TYPE_PREFIX)
+				&& !programArguments[0].contains(":"))
+		{
 			set(SettingName.DEPLOYMENT.getName(), programArguments[0]);
+			scenarioFirst = true;
+		}
 		else
 			for(int i = 0; i < programArguments.length; i++)
 				if(isCategory(programArguments[i])
@@ -176,9 +216,15 @@ public class BootSettingsManager extends TreeParameterSet
 		XMLTree XMLtree = XMLParser.validateParse(get(SettingName.SCHEMA.getName()),
 				get(SettingName.DEPLOYMENT.getName()));
 		readXML(XMLtree.getRoot(), this, log);
-		log.trace("after XML tree parse:", this);
+		log.lf("after XML tree parse:", this);
+		log.lf(">>>>>>>>");
 		
 		// 3. parse CLI args
+		List<String> arg_list = new LinkedList<>(Arrays.asList(programArguments));
+		if(scenarioFirst)
+			arg_list.remove(0);
+		readCLIArgs(arg_list.iterator(), this, log);
+		log.lf("after CLI tree parse:", this);
 		
 		log.doExit();
 		lock();
@@ -187,8 +233,17 @@ public class BootSettingsManager extends TreeParameterSet
 	
 	protected static void readXML(XMLNode node, TreeParameterSet tree, UnitComponentExt log)
 	{
+		// String l = "Node " + node.getName() + " with attributes ";
+		// for(XMLAttribute a : node.getAttributes())
+		// l += a.getName() + ",";
+		// l += " and children ";
+		// for(XMLNode n : node.getNodes())
+		// l += n.getName() + ",";
+		// log.lf(l);
+		
 		for(XMLAttribute a : node.getAttributes())
 			tree.add(a.getName(), a.getValue());
+		Set<String> named = new LinkedHashSet<>();
 		for(XMLNode n : node.getNodes())
 		{
 			if(n.getName().equals(PARAMETER_NODE_NAME))
@@ -200,16 +255,126 @@ public class BootSettingsManager extends TreeParameterSet
 			{
 				TreeParameterSet subTree = new TreeParameterSet();
 				readXML(n, subTree, log);
-				String name = subTree.getValue(PARAMETER_NAME);
-				if(name != null)
-					tree.addTree(n.getName(), name, subTree);
-				else
-				{
-					log.lw("Node [] does not contain a name.", n.getName());
-					tree.addTree(OTHER_NAME, n.getName(), subTree);
-				}
+				if(subTree.getValue(PARAMETER_NAME) != null)
+					named.add(n.getName());
+				// log.lw("Node [] does not contain a name.", n.getName());
+				tree.addTree(n.getName(), subTree);
 			}
+		}
+		for(String name : named)
+		{
+			List<TreeParameterSet> trees = tree.getTrees(name);
+			TreeParameterSet newtree = new TreeParameterSet();
+			tree.clear(name);
+			tree.addTree(name, newtree);
+			for(TreeParameterSet t : trees)
+			{
+				name = t.getValue(PARAMETER_NAME);
+				newtree.addTree(name != null ? name : OTHER_NAME, t);
+			}
+		}
+	}
+	
+	protected static void readCLIArgs(Iterator<String> args, TreeParameterSet tree, UnitComponentExt log)
+	{
+		@SuppressWarnings("serial")
+		class CPair extends AbstractMap.SimpleEntry<String, TreeParameterSet>
+		{
+			public CPair(String arg0, TreeParameterSet arg1)
+			{
+				super(arg0, arg1);
+			}
+		}
+		Stack<CPair> context = new Stack<>(); // categories context
+		CPair currentElement = new CPair(null, tree);
+		context.push(currentElement);
+		
+		while(args.hasNext())
+		{
+			String a = args.next();
+			if(isCategory(a))
+			{
+				String catName = getCategory(a);
+				SettingName category = SettingName.byName(getCategory(a));
+				if(!args.hasNext())
+				{
+					log.lw("Empty unknown category [] in CLI arguments.", catName);
+					return;
+				}
+				TreeParameterSet c; // this category's tree, either existing or new.
 				
+				if(catName.equals(context.peek().getKey()))
+				{ // new element of same category
+					c = context.peek().getValue();
+				}
+				else if(category == null || category.getParent() == null)
+				{ // category unknown or root category -> go to toplevel
+					context.clear(); // reset context
+					context.push(new CPair(null, tree));
+					// put category
+					if(tree.isSimple(catName))
+					{
+						log.le("Name [] should not be used as a category; it is a simple name.", catName);
+						continue;
+					}
+					c = tree.getTree(catName);
+					if(c == null)
+					{ // category does not already exist
+						c = new TreeParameterSet();
+						tree.addTree(catName, c);
+					}
+					context.push(new CPair(catName, c));
+				}
+				else
+				{ // subordinate category of some (other) context
+					// move up context
+					while(!context.isEmpty() && !category.getParent().equals(context.peek().getKey()))
+						context.pop();
+					if(context.isEmpty())
+					{
+						String msg = "Category [] has parent [] but no instance of parent could be found;";
+						if(!category.isParentOptional())
+						{
+							log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(), a);
+							return;
+						}
+						log.lw(msg + " adding to top level.", catName, category.getParent());
+						context.push(new CPair(null, tree));
+					}
+					
+					if(context.peek().getValue().isSimple(catName))
+					{
+						log.le("Name [] should not be used as a category; it is a simple name.", catName);
+						continue;
+					}
+					c = context.peek().getValue().getTree(catName);
+					if(c == null)
+					{ // category does not already exist
+						c = new TreeParameterSet();
+						context.peek().getValue().addTree(catName, c);
+					}
+					context.push(new CPair(catName, c));
+				}
+				
+				String name = args.next();
+				TreeParameterSet t = new TreeParameterSet();
+				context.peek().getValue().addTree(name, t);
+				currentElement = new CPair(name, t);
+				t.add(PARAMETER_NAME, name);
+			}
+			else
+			{
+				String parameter, value = null;
+				if(a.contains(":"))
+				{ // parameter name & value
+					String[] es = a.split(":", 2);
+					parameter = es[0];
+					value = es[1];
+				}
+				else
+					parameter = a;
+				currentElement.getValue().add(parameter, value);
+			}
 		}
 	}
 	
