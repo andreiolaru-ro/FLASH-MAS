@@ -261,7 +261,8 @@ public class TreeParameterSet extends ParameterSet
 					first = false;
 				}
 			}
-		if(ret.length() > 0)
+		// if(ret.length() > 0)
+		if(!ret.endsWith("\n"))
 			ret += "\n";
 		return ret;
 	}
