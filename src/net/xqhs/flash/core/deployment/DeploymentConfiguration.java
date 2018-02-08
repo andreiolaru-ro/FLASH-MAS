@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.deployment;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,76 +27,141 @@ import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.XML.XMLTree.XMLNode.XMLAttribute;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.UnitComponentExt;
 
 /**
- * This class manages settings for simulations. It handles loading these settings from various sources -- default
- * values, arguments given to the <code>main()</code> method in {@link Boot}, or settings specified in the deployment
- * file.
+ * This class manages deployment configurations. It handles loading the elements of the configuration from various
+ * sources -- default values, arguments given to the program, or settings specified in the deployment file.
  * <p>
  * The precedence of values for settings is the following (latter values override former values):
  * <ul>
  * <li>values given in DEFAULTS member;
  * <li>values given in the deployment file.
- * <li>values given as arguments to method <code>main()</code> in {@link Boot} (command-line arguments);
+ * <li>values given as command-line arguments;
  * </ul>
- * Each setting may come from values only in some of the above state sources. The specific cases are mentioned in the
- * documentation of each setting.
+ * 
+ * The configuration is created as a tree of categories and elements. All elements belong in a category; all categories
+ * belong in elements or at the root level. Elements may contain key-value pairs.
  * 
  * @author Andrei Olaru
  */
-public class BootSettingsManager extends TreeParameterSet
+public class DeploymentConfiguration extends TreeParameterSet
 {
-	public enum SettingName {
+	/**
+	 * Types of categories in the configuration. Categories are defined by their name, and my have an optional or
+	 * mandatory hierarchy requirement (a parent category).
+	 * 
+	 * @author andreiolaru
+	 */
+	public enum CategoryName {
+		/**
+		 * The XML schema file against which to validate to deployment file. Values beyond the first value are ignored.
+		 */
 		SCHEMA,
 		
+		/**
+		 * The XML deployment file. Values beyond the first value are ignored.
+		 */
 		DEPLOYMENT,
 		
-		LOADER,
-		
+		/**
+		 * Java packages that contain classes needed in the deployment.
+		 */
 		PACKAGE,
 		
+		/**
+		 * Classes that are able to load various categories of elements in the configuration.
+		 */
+		LOADER,
+		
+		/**
+		 * Support infrastructures used in the deployment.
+		 */
 		SUPPORT,
 		
+		/**
+		 * Agents to create in the deployment, potentially inside particular support infrastructures.
+		 */
 		AGENT(SUPPORT, true),
 		
-		COMPONENT(AGENT),
+		/**
+		 * Features to be deployed in agents.
+		 */
+		FEATURE(AGENT),
 		
 		;
 		
-		SettingName	parent				= null;
-		boolean		optional_hierarchy	= false;
+		/**
+		 * The parent of the category.
+		 */
+		CategoryName	parent				= null;
+		/**
+		 * <code>false</code> if the category must necessarily appear inside its parent category; <code>true</code> if
+		 * the category may also appear at top level.
+		 */
+		boolean			optional_hierarchy	= false;
 		
-		private SettingName()
+		/**
+		 * Constructor for a top-level category.
+		 */
+		private CategoryName()
 		{
 		}
 		
-		private SettingName(SettingName _parent)
+		/**
+		 * Constructor for a category with a parent (hierarchy is mandatory).
+		 * 
+		 * @param _parent
+		 *            - the parent category.
+		 */
+		private CategoryName(CategoryName _parent)
 		{
 			parent = _parent;
 		}
 		
-		private SettingName(SettingName _parent, boolean parent_optional)
+		/**
+		 * Constructor for a category that has a potentially optional parent.
+		 * 
+		 * @param _parent
+		 *            - the parent.
+		 * @param parent_optional
+		 *            - <code>true</code> if hierarchy is optional.
+		 */
+		private CategoryName(CategoryName _parent, boolean parent_optional)
 		{
 			this(_parent);
 			optional_hierarchy = parent_optional;
 		}
 		
+		/**
+		 * @return the name of the category, in lower case.
+		 */
 		public String getName()
 		{
 			return this.name().toLowerCase();
 		}
 		
+		/**
+		 * @return the name of the parent category, if any was defined; <code>null</code> otherwise.
+		 */
 		public String getParent()
 		{
 			return parent != null ? parent.getName() : null;
 		}
 		
+		/**
+		 * @return <code>true</code> if hierarchy is optional.
+		 */
 		public boolean isParentOptional()
 		{
 			return optional_hierarchy;
 		}
 		
+		/**
+		 * @return the hierarchical path of the category, with ancestors separated by
+		 *         {@value DeploymentConfiguration#PATH_SEP}.
+		 */
 		public String getPath()
 		{
 			if(parent == null)
@@ -105,9 +169,16 @@ public class BootSettingsManager extends TreeParameterSet
 			return parent.getPath() + PATH_SEP + getName();
 		}
 		
-		public static SettingName byName(String name)
+		/**
+		 * Find the {@link CategoryName} identified by the given name.
+		 * 
+		 * @param name
+		 *            - the name.
+		 * @return the category.
+		 */
+		public static CategoryName byName(String name)
 		{
-			for(SettingName s : SettingName.values())
+			for(CategoryName s : CategoryName.values())
 				if(s.getName().equals(name))
 					return s;
 			return null;
@@ -117,50 +188,60 @@ public class BootSettingsManager extends TreeParameterSet
 	/**
 	 * The class UID.
 	 */
-	private static final long				serialVersionUID	= 5157567185843194635L;
+	private static final long				serialVersionUID			= 5157567185843194635L;
 	
-	public static final String				PATH_SEP			= "/";
+	/**
+	 * Separator of category hierarchy path elements.
+	 */
+	public static final String				PATH_SEP					= "/";
 	
-	public static final String				CLI_TYPE_PREFIX		= "-";
+	/**
+	 * Prefix of category names used in CLI.
+	 */
+	public static final String				CLI_CATEGORY_PREFIX			= "-";
 	
 	/**
 	 * The name of nodes containing parameters.
 	 */
-	public static final String				PARAMETER_NODE_NAME	= "parameter";
+	public static final String				PARAMETER_NODE_NAME			= "parameter";
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
-	public static final String				PARAMETER_NAME		= "name";
+	public static final String				PARAMETER_NAME				= "name";
 	/**
 	 * The name of the attribute of a parameter node holding the value of the parameter.
 	 */
-	public static final String				PARAMETER_VALUE		= "value";
+	public static final String				PARAMETER_VALUE				= "value";
 	
 	/**
-	 * The default directory for scenarios.
+	 * The default directory for deployment files.
 	 */
-	public static final String				SCENARIO_DIRECTORY	= "src-scenario/";
+	public static final String				DEPLOYMENT_FILE_DIRECTORY	= "src-deployment/";
 	
 	/**
 	 * Default values.
 	 */
-	public static final Map<String, String>	DEFAULTS			= new HashMap<>();
+	public static final Map<String, String>	DEFAULTS					= new HashMap<>();
 	
-	public static final String				OTHER_NAME			= "other";
+	/**
+	 * In XML parsing, name under which to put unnamed entities.
+	 */
+	public static final String				OTHER_NAME					= "other";
 	
 	static
 	{
-		DEFAULTS.put(SettingName.SCHEMA.getName(), "src-schema/deployment-schema.xsd");
-		DEFAULTS.put(SettingName.DEPLOYMENT.getName(), SCENARIO_DIRECTORY + "ChatAgents/deployment-chatAgents.xml");
+		DEFAULTS.put(CategoryName.SCHEMA.getName(), "src-schema/deployment-schema.xsd");
+		DEFAULTS.put(CategoryName.DEPLOYMENT.getName(),
+				DEPLOYMENT_FILE_DIRECTORY + "ChatAgents/deployment-chatAgents.xml");
 		// + "scenario/examples/sclaim_tatami2/simpleScenarioE/scenarioE-tATAmI2-plus.xml";
 	}
 	
 	/**
 	 * The method loads all available values from the specified sources.
 	 * <p>
-	 * The only given source is the arguments the program has received, as the name of the scneario file will be decided
-	 * by this method. If it is instructed through the parameter, the deployment file is parsed, producing an additional
-	 * source of setting values.
+	 * The only given source is the arguments the program has received, as the name of the deployment file will be
+	 * decided by this method. If it is instructed through the parameter, the deployment file is parsed, producing an
+	 * additional source of configuration values.
 	 * <p>
 	 * The <code>load()</code> method can be called only once. It is why all sources must be given in a single call to
 	 * <code>load()</code>.
@@ -170,18 +251,19 @@ public class BootSettingsManager extends TreeParameterSet
 	 * 
 	 * @param programArguments
 	 *            - the arguments passed to the application, exactly as they were passed.
-	 * @param parsedeploymentFile
+	 * @param parseDeploymentFile
 	 *            - if <code>true</code>, the deployment file will be parsed to obtain the setting values placed in the
-	 *            deployment; also, the {@link XMLTree} instance resulting from the parsing will be returned.
+	 *            deployment; also, the {@link XMLTree} instance resulting from the parsing will be placed as content in
+	 *            the last parameter.
 	 * @param loadedXML
 	 *            - if the deployment file is parsed, the resulting {@link XMLTree} instance will be stored in this
 	 *            ContentHolder instance.
 	 * @return the instance itself, which is also the {@link TreeParameterSet} that contains all settings.
 	 * 
 	 * @throws ConfigLockedException
-	 *             - if load is called more than once.
+	 *             - if load() is called more than once.
 	 */
-	public TreeParameterSet load(String programArguments[], boolean parsedeploymentFile,
+	public TreeParameterSet load(String programArguments[], boolean parseDeploymentFile,
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
 	{
 		locked();
@@ -195,17 +277,17 @@ public class BootSettingsManager extends TreeParameterSet
 		
 		// 2. parse deployment file
 		boolean scenarioFirst = false;
-		if(programArguments.length > 0 && !programArguments[0].startsWith(CLI_TYPE_PREFIX)
+		if(programArguments.length > 0 && !programArguments[0].startsWith(CLI_CATEGORY_PREFIX)
 				&& !programArguments[0].contains(":"))
 		{
-			set(SettingName.DEPLOYMENT.getName(), programArguments[0]);
+			set(CategoryName.DEPLOYMENT.getName(), programArguments[0]);
 			scenarioFirst = true;
 		}
 		else
 			for(int i = 0; i < programArguments.length; i++)
 				if(isCategory(programArguments[i])
-						&& (getCategory(programArguments[i]).equals(SettingName.DEPLOYMENT.getName())
-								|| getCategory(programArguments[i]).equals(SettingName.SCHEMA.getName())))
+						&& (getCategory(programArguments[i]).equals(CategoryName.DEPLOYMENT.getName())
+								|| getCategory(programArguments[i]).equals(CategoryName.SCHEMA.getName())))
 				{
 					if(i + 1 >= programArguments.length || isCategory(programArguments[i + 1]))
 						throw new IllegalArgumentException(
@@ -213,8 +295,9 @@ public class BootSettingsManager extends TreeParameterSet
 					set(getCategory(programArguments[i]), programArguments[i + 1]);
 				}
 			
-		XMLTree XMLtree = XMLParser.validateParse(get(SettingName.SCHEMA.getName()),
-				get(SettingName.DEPLOYMENT.getName()));
+		XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
+				get(CategoryName.DEPLOYMENT.getName()));
+		loadedXML.set(XMLtree);
 		readXML(XMLtree.getRoot(), this, log);
 		log.lf("after XML tree parse:", this);
 		log.lf(">>>>>>>>");
@@ -226,11 +309,24 @@ public class BootSettingsManager extends TreeParameterSet
 		readCLIArgs(arg_list.iterator(), this, log);
 		log.lf("after CLI tree parse:", this);
 		
+		// 4. add names and contexts; fuse element with optional hierarchy.
+		// TODO
+		
 		log.doExit();
 		lock();
 		return this;
 	}
 	
+	/**
+	 * Reads data from the XML tree read from the deployment file into the given configuration tree.
+	 * 
+	 * @param node
+	 *            - the XML node to read.
+	 * @param tree
+	 *            - the configuration tree.
+	 * @param log
+	 *            - the {@link Logger} to use.
+	 */
 	protected static void readXML(XMLNode node, TreeParameterSet tree, UnitComponentExt log)
 	{
 		// String l = "Node " + node.getName() + " with attributes ";
@@ -269,25 +365,40 @@ public class BootSettingsManager extends TreeParameterSet
 			tree.addTree(name, newtree);
 			for(TreeParameterSet t : trees)
 			{
-				name = t.getValue(PARAMETER_NAME);
-				newtree.addTree(name != null ? name : OTHER_NAME, t);
+				String elName = t.getValue(PARAMETER_NAME);
+				newtree.addTree(elName != null ? elName : OTHER_NAME, t);
 			}
 		}
 	}
 	
+	/**
+	 * Reads data from program arguments into the given configuration tree.
+	 * 
+	 * @param args
+	 *            - an {@link Iterator} through the arguments.
+	 * @param tree
+	 *            - the configuration tree.
+	 * @param log
+	 *            - the {@link Logger} to use.
+	 */
 	protected static void readCLIArgs(Iterator<String> args, TreeParameterSet tree, UnitComponentExt log)
 	{
-		@SuppressWarnings("serial")
-		class CPair extends AbstractMap.SimpleEntry<String, TreeParameterSet>
+		class CTriple
 		{
-			public CPair(String arg0, TreeParameterSet arg1)
+			String				cat;
+			TreeParameterSet	tc;
+			TreeParameterSet	te;
+			
+			public CTriple(String category, TreeParameterSet catTree, TreeParameterSet elTree)
 			{
-				super(arg0, arg1);
+				cat = category;
+				tc = catTree;
+				te = elTree;
 			}
 		}
-		Stack<CPair> context = new Stack<>(); // categories context
-		CPair currentElement = new CPair(null, tree);
-		context.push(currentElement);
+		Stack<CTriple> context = new Stack<>(); // categories & elements context
+		CTriple treeRoot = new CTriple(null, tree, null);
+		context.push(treeRoot);
 		
 		while(args.hasNext())
 		{
@@ -295,72 +406,78 @@ public class BootSettingsManager extends TreeParameterSet
 			if(isCategory(a))
 			{
 				String catName = getCategory(a);
-				SettingName category = SettingName.byName(getCategory(a));
+				CategoryName category = CategoryName.byName(getCategory(a));
 				if(!args.hasNext())
 				{
 					log.lw("Empty unknown category [] in CLI arguments.", catName);
 					return;
 				}
-				TreeParameterSet c; // this category's tree, either existing or new.
 				
-				if(catName.equals(context.peek().getKey()))
-				{ // new element of same category
-					c = context.peek().getValue();
-				}
-				else if(category == null || category.getParent() == null)
+				if(category == null || category.getParent() == null)
 				{ // category unknown or root category -> go to toplevel
 					context.clear(); // reset context
-					context.push(new CPair(null, tree));
+					context.push(treeRoot);
 					// put category
 					if(tree.isSimple(catName))
 					{
 						log.le("Name [] should not be used as a category; it is a simple name.", catName);
 						continue;
 					}
-					c = tree.getTree(catName);
+					TreeParameterSet c = tree.getTree(catName);
 					if(c == null)
 					{ // category does not already exist
 						c = new TreeParameterSet();
 						tree.addTree(catName, c);
 					}
-					context.push(new CPair(catName, c));
+					context.push(new CTriple(catName, c, null));
 				}
 				else
 				{ // subordinate category of some (other) context
 					// move up context
-					while(!context.isEmpty() && !category.getParent().equals(context.peek().getKey()))
+					while(!context.isEmpty())
+					{
+						if(category.getName().equals(context.peek().cat))
+							// will insert new element here
+							break;
+						else if(category.getParent().equals(context.peek().cat))
+						{ // found the correct parent for the category
+							TreeParameterSet elementTree = context.peek().te;
+							assert (elementTree != null);
+							if(elementTree.isSimple(catName))
+							{
+								log.le("Name [] should not be used as a category; it is a simple name.", catName);
+								continue;
+							}
+							TreeParameterSet c = elementTree.getTree(catName);
+							if(c == null)
+							{ // category does not already exist
+								c = new TreeParameterSet();
+								elementTree.addTree(catName, c);
+							}
+							context.push(new CTriple(catName, c, null));
+							break;
+						}
+						// no match yet
 						context.pop();
+					}
 					if(context.isEmpty())
 					{
 						String msg = "Category [] has parent [] but no instance of parent could be found;";
 						if(!category.isParentOptional())
 						{
-							log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(), a);
+							log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(),
+									a);
 							return;
 						}
 						log.lw(msg + " adding to top level.", catName, category.getParent());
-						context.push(new CPair(null, tree));
+						context.push(treeRoot);
 					}
-					
-					if(context.peek().getValue().isSimple(catName))
-					{
-						log.le("Name [] should not be used as a category; it is a simple name.", catName);
-						continue;
-					}
-					c = context.peek().getValue().getTree(catName);
-					if(c == null)
-					{ // category does not already exist
-						c = new TreeParameterSet();
-						context.peek().getValue().addTree(catName, c);
-					}
-					context.push(new CPair(catName, c));
 				}
-				
+				// the category has been added, now its time to add the new element
 				String name = args.next();
 				TreeParameterSet t = new TreeParameterSet();
-				context.peek().getValue().addTree(name, t);
-				currentElement = new CPair(name, t);
-				t.add(PARAMETER_NAME, name);
+				context.peek().tc.addTree(name, t);
+				context.peek().te = t;
 			}
 			else
 			{
@@ -373,16 +490,31 @@ public class BootSettingsManager extends TreeParameterSet
 				}
 				else
 					parameter = a;
-				currentElement.getValue().add(parameter, value);
+				context.peek().te.add(parameter, value);
 			}
 		}
 	}
 	
+	/**
+	 * Checks if the given command line argument designates a category (begins with {@value #CLI_CATEGORY_PREFIX}).
+	 * 
+	 * @param arg
+	 *            - the argument.
+	 * @return <code>true</code> if it designates a category.
+	 */
 	protected static boolean isCategory(String arg)
 	{
-		return arg.startsWith(CLI_TYPE_PREFIX);
+		return arg.startsWith(CLI_CATEGORY_PREFIX);
 	}
 	
+	/**
+	 * Returns the actual category name designated by a command line argument (removes preceding
+	 * {@value #CLI_CATEGORY_PREFIX})
+	 * 
+	 * @param arg
+	 *            - the argument.
+	 * @return the category name.
+	 */
 	protected static String getCategory(String arg)
 	{
 		return isCategory(arg) ? arg.substring(1) : null;
