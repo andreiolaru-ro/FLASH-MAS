@@ -594,13 +594,13 @@ public abstract class AgentComponent implements Serializable
 	}
 	
 	/**
-	 * Relay for calls to the method {@link CompositeAgent#getAgentName()}.
+	 * Relay for calls to the method {@link CompositeAgent#getName()}.
 	 * 
 	 * @return the name of the agent, or <code>null</code> if the component has no parent.
 	 */
 	protected String getAgentName()
 	{
-		return (parentAgent != null) ? parentAgent.getAgentName() : null;
+		return (parentAgent != null) ? parentAgent.getName() : null;
 	}
 	
 	/**

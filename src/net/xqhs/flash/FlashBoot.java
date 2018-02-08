@@ -19,7 +19,7 @@ public class FlashBoot
 	public static void main(String[] args)
 	{
 		Logging.getMasterLogging().setLogLevel(Level.ALL);
-		new Boot().boot("-support local -support local arg:val -support last host:here -agent bane something:something -component a".split(" "));
+		new Boot().boot("-support local -support local arg:val -support last host:here -agent bane something:something -component a -component b par:val -component c -agent bruce -component a".split(" "));
 //		new Boot().boot("-support local host:here -agent bane something:something -component a".split(" "));
 	}
 	

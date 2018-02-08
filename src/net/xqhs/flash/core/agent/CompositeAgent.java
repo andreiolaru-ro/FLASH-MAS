@@ -632,7 +632,7 @@ public class CompositeAgent implements Serializable, AgentManager
 	@Override
 	public String toString()
 	{
-		return getAgentName();
+		return getName();
 	}
 	
 	/**
@@ -650,8 +650,8 @@ public class CompositeAgent implements Serializable, AgentManager
 		{
 			if(localLog.getUnitName() == null)
 			{
-				if(getAgentName() != null)
-					localLog.setUnitName(getAgentName() + "#");
+				if(getName() != null)
+					localLog.setUnitName(getName() + "#");
 				else
 					localLog.setUnitName(super.toString().replace(getClass().getName(), "CompAg") + "#");
 			}

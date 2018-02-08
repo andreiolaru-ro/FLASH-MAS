@@ -87,7 +87,7 @@ public class CompositeAgentLoader implements AgentLoader
 	@Override
 	public boolean preload(AgentCreationData agentCreationData, PlatformLoader platformLoader, Logger log)
 	{
-		String logPre = agentCreationData.getAgentName() + ":";
+		String logPre = agentCreationData.getName() + ":";
 		Iterator<XMLNode> componentIt = agentCreationData.getNode().getNodeIterator(COMPONENT_NODE_NAME);
 		while(componentIt.hasNext())
 		{
@@ -137,11 +137,11 @@ public class CompositeAgentLoader implements AgentLoader
 			try
 			{
 				component = (AgentComponent) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
-				log.trace("component [] created for agent []. pre-loading...", componentClass, agentCreationData.getAgentName());
+				log.trace("component [] created for agent []. pre-loading...", componentClass, agentCreationData.getName());
 			} catch(Exception e)
 			{
 				log.error("Component [] failed to load; it will not be available for agent []:", componentClass,
-						agentCreationData.getAgentName(), PlatformUtils.printException(e));
+						agentCreationData.getName(), PlatformUtils.printException(e));
 				continue;
 			}
 			
@@ -160,11 +160,11 @@ public class CompositeAgentLoader implements AgentLoader
 			if(component.preload(componentData, componentNode, agentCreationData.getPackages(), log))
 			{
 				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, component);
-				log.trace("component [] pre-loaded for agent []", componentClass, agentCreationData.getAgentName());
+				log.trace("component [] pre-loaded for agent []", componentClass, agentCreationData.getName());
 			}
 			else
 				log.error("Component [] failed pre-loading step; it will not be available for agent [].",
-						componentClass, agentCreationData.getAgentName());
+						componentClass, agentCreationData.getName());
 		}
 		
 		return true;

@@ -54,7 +54,7 @@ public class Boot
 		log.trace("Booting Flash-MAS.");
 		
 		// load settings & scenario
-		BootSettingsManager settings = new BootSettingsManager();
+		DeploymentConfiguration settings = new DeploymentConfiguration();
 		TreeParameterSet deployment;
 		try
 		{

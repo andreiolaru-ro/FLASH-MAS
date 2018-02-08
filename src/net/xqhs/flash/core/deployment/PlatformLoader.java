@@ -172,7 +172,7 @@ public interface PlatformLoader
 	 *            - general application settings specified in the scenario file, program argumetns, etc.
 	 * @return the instance itself.
 	 */
-	public PlatformLoader setConfig(XMLNode configuration, BootSettingsManager settings);
+	public PlatformLoader setConfig(XMLNode configuration, DeploymentConfiguration settings);
 	
 	/**
 	 * Starts the agent platform.

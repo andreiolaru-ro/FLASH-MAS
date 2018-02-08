@@ -13,7 +13,7 @@ package net.xqhs.flash.core.support;
 
 import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
 import net.xqhs.flash.core.deployment.AgentManager;
-import net.xqhs.flash.core.deployment.BootSettingsManager;
+import net.xqhs.flash.core.deployment.DeploymentConfiguration;
 import net.xqhs.flash.core.deployment.PlatformLoader;
 import net.xqhs.flash.core.deployment.PlatformLoader.PlatformLink;
 import net.xqhs.flash.core.deployment.PlatformLoader.StandardPlatformType;
@@ -36,7 +36,7 @@ public class DefaultPlatform implements PlatformLoader
 	}
 	
 	@Override
-	public PlatformLoader setConfig(XMLNode configuration, BootSettingsManager settings)
+	public PlatformLoader setConfig(XMLNode configuration, DeploymentConfiguration settings)
 	{
 		// do nothing.
 		return this;

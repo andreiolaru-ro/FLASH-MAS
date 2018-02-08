@@ -552,7 +552,7 @@ public class SimulationManager implements AgentManager
 			theTime.cancel();
 		for(SimulationLinkAgent simAgent : simulationAgents.values())
 			if(!simAgent.stop())
-				log.error("Stopping agent [] failed.", simAgent.getAgentName());
+				log.error("Stopping agent [] failed.", simAgent.getName());
 		for(String platformName : platforms.keySet())
 			if(!platforms.get(platformName).stop())
 				log.error("Stopping platform [] failed.", platformName);
@@ -611,7 +611,7 @@ public class SimulationManager implements AgentManager
 	 * As this class implements {@link AgentManager} only for convenience (abusing), it does not have an agent name.
 	 */
 	@Override
-	public String getAgentName()
+	public String getName()
 	{
 		return null;
 	}

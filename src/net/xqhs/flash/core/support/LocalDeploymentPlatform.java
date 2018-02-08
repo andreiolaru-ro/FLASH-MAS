@@ -103,7 +103,7 @@ public class LocalDeploymentPlatform extends DefaultPlatform implements Platform
 			{
 				// nothing
 			}
-			((LocalDeploymentPlatform) getPlatformLink()).registry.put(getAgentName(), this);
+			((LocalDeploymentPlatform) getPlatformLink()).registry.put(getName(), this);
 		}
 		
 		@Override

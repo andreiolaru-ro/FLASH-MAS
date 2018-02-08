@@ -22,7 +22,7 @@ import net.xqhs.util.XML.XMLTree.XMLNode;
  * provided to) {@link SimulationManager} to create an agent.
  * <p>
  * The data specified in the deployment is available in the {@link TreeParameterSet} instance, as it is loaded by the
- * {@link BootSettingsManager}. Some data (agentName and platform) is covered by the enclosed {@link TreeParameterSet}
+ * {@link DeploymentConfiguration}. Some data (agentName and platform) is covered by the enclosed {@link TreeParameterSet}
  * instance, but it is also added separately so as to guarantee its availability.
  * 
  * @author Andrei Olaru
