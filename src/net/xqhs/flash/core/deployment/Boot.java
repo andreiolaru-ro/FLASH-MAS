@@ -14,14 +14,12 @@ package net.xqhs.flash.core.deployment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
-import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.config.Config.ConfigLockedException;
 import net.xqhs.util.logging.UnitComponentExt;
 
@@ -68,7 +66,12 @@ public class Boot
 //		// create window layout
 //		WindowLayout.staticLayout = new GridWindowLayout(settings.getLayout());
 //		
-		// build agent creation data
+		// 
+		
+		
+		
+		
+		
 		
 		// the name of the default platform
 		String defaultPlatform = PlatformLoader.DEFAULT_PLATFORM.toString();

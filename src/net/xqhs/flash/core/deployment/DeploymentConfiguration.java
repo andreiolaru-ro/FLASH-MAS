@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.deployment;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import net.xqhs.flash.core.util.ContentHolder;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
@@ -231,9 +233,13 @@ public class DeploymentConfiguration extends TreeParameterSet
 	static
 	{
 		DEFAULTS.put(CategoryName.SCHEMA.getName(), "src-schema/deployment-schema.xsd");
-		DEFAULTS.put(CategoryName.DEPLOYMENT.getName(),
-				DEPLOYMENT_FILE_DIRECTORY + "ChatAgents/deployment-chatAgents.xml");
-		// + "scenario/examples/sclaim_tatami2/simpleScenarioE/scenarioE-tATAmI2-plus.xml";
+		DEFAULTS.put(CategoryName.DEPLOYMENT.getName(), DEPLOYMENT_FILE_DIRECTORY +
+				
+//				"ChatAgents/deployment-chatAgents.xml"
+				"ComplexDeployment/deployment-complexDeployment.xml"
+		// "scenario/examples/sclaim_tatami2/simpleScenarioE/scenarioE-tATAmI2-plus.xml"
+				
+				);
 	}
 	
 	/**
@@ -256,7 +262,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 	 *            deployment; also, the {@link XMLTree} instance resulting from the parsing will be placed as content in
 	 *            the last parameter.
 	 * @param loadedXML
-	 *            - if the deployment file is parsed, the resulting {@link XMLTree} instance will be stored in this
+	 *            - if the deployment file is parsed and this argument is not <code>null</code>, the resulting {@link XMLTree} instance will be stored in this
 	 *            ContentHolder instance.
 	 * @return the instance itself, which is also the {@link TreeParameterSet} that contains all settings.
 	 * 
@@ -295,13 +301,19 @@ public class DeploymentConfiguration extends TreeParameterSet
 					set(getCategory(programArguments[i]), programArguments[i + 1]);
 				}
 			
-		XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
-				get(CategoryName.DEPLOYMENT.getName()));
-		loadedXML.set(XMLtree);
-		readXML(XMLtree.getRoot(), this, log);
-		log.lf("after XML tree parse:", this);
-		log.lf(">>>>>>>>");
-		
+			XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
+					get(CategoryName.DEPLOYMENT.getName()));
+			if(loadedXML != null)
+				loadedXML.set(XMLtree);
+			if(XMLtree == null)
+				log.le("Deployment file load failed.");
+			else
+			{
+			readXML(XMLtree.getRoot(), this, log);
+			log.lf("after XML tree parse:", this);
+			log.lf(">>>>>>>>");
+			}
+			
 		// 3. parse CLI args
 		List<String> arg_list = new LinkedList<>(Arrays.asList(programArguments));
 		if(scenarioFirst)
@@ -309,7 +321,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 		readCLIArgs(arg_list.iterator(), this, log);
 		log.lf("after CLI tree parse:", this);
 		
-		// 4. add names and contexts; fuse element with optional hierarchy.
+		// 4. auto-fill names and contexts; fuse element with optional hierarchy.
 		// TODO
 		
 		log.doExit();
