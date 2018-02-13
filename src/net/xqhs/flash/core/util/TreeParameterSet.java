@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,6 +88,16 @@ public class TreeParameterSet extends ParameterSet
 					+ " is already present, as a hierarchical key. It cannot be assigned to simple (String) values");
 		addKey(name, true);
 		return (TreeParameterSet) super.add(name, value);
+	}
+	
+	@Override
+	public TreeParameterSet addAll(String name, List<String> values)
+	{
+		if(treeKeys.contains(name))
+			throw new IllegalArgumentException("Key " + name
+					+ " is already present, as a hierarchical key. It cannot be assigned to simple (String) values");
+		addKey(name, true);
+		return (TreeParameterSet) super.addAll(name, values);
 	}
 	
 	/**
@@ -176,6 +187,32 @@ public class TreeParameterSet extends ParameterSet
 	}
 	
 	/**
+	 * @return the list of simple keys.
+	 */
+	public List<String> getSimpleKeys()
+	{
+		return new LinkedList<>(simpleKeys);
+	}
+	
+	/**
+	 * @return the list of hierarchical keys.
+	 */
+	public List<String> getHierarchicalKeys()
+	{
+		return new LinkedList<>(treeKeys);
+	}
+	
+	/**
+	 * Alias for {@link #getHierarchicalKeys()}.
+	 * 
+	 * @return the list of hierarchical keys.
+	 */
+	public List<String> getTreeKeys()
+	{
+		return getHierarchicalKeys();
+	}
+	
+	/**
 	 * Retrieves all simple (String) values associated with the given name (key).
 	 * 
 	 * @throws IllegalArgumentException
@@ -187,6 +224,32 @@ public class TreeParameterSet extends ParameterSet
 		if(treeKeys.contains(name))
 			throw new IllegalArgumentException("Key " + name + " is not a simple key.");
 		return super.getValues(name);
+	}
+	
+	/**
+	 * Get the value at the end of a path in a tree. The last key must be a simple key. All other keys must be
+	 * hierarchical keys.
+	 * <p>
+	 * The method fails fast: if one of the keys (except for the last one) is not a hierarchical key, the method returns
+	 * <code>null</code>.
+	 * 
+	 * @param keys
+	 *            - the path, consisting of keys.
+	 * @return the value associated with the leaf at the end of the path.
+	 */
+	public String getDeepValue(String... keys)
+	{
+		switch(keys.length)
+		{
+		case 0:
+			return null;
+		case 1:
+			return getValue(keys[0]);
+		default:
+			if(!isHierarchical(keys[0]))
+				return null;
+			return getTree(keys[0]).getDeepValue(Arrays.copyOfRange(keys, 1, keys.length));
+		}
 	}
 	
 	/**

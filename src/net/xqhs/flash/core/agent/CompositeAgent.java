@@ -20,35 +20,31 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
-import net.xqhs.flash.core.agent.parametric.AgentParameterName;
-import net.xqhs.flash.core.agent.parametric.ParametricComponent;
-import net.xqhs.util.logging.UnitComponent;
+import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
-import tatami.core.util.platformUtils.PlatformUtils;
-import tatami.simulation.AgentManager;
-import tatami.simulation.PlatformLoader.PlatformLink;
+import net.xqhs.util.logging.UnitComponent;
 
 /**
  * This class reunites the components of an agent in order for components to be able to call each other and for events
  * to be distributed to all components.
  * <p>
- * Various agent components -- instances of {@link AgentComponent} -- can be added. 'Standard' components have names
- * that are instances of {@link AgentComponentName}. 'Other' (non-standard) components can have any name (TODO). At most
+ * Various agent components -- instances of {@link AgentFeature} -- can be added. 'Standard' components have names
+ * that are instances of {@link AgentFeatureType}. 'Other' (non-standard) components can have any name (TODO). At most
  * one component with a name is allowed (i.e. at most one component per functionality).
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
  * an event to all components, which handle it by means of registered handles (each component registers a handle for an
- * event with itself). See {@link AgentComponent}.
+ * event with itself). See {@link AgentFeature}.
  * <p>
  * A composite agent instance is its own {@link AgentManager}.
  * 
  * @author Andrei Olaru
  * 		
  */
-public class CompositeAgent implements Serializable, AgentManager
+public class CompositeAgent implements Serializable, Agent
 {
 	/**
 	 * Values indicating the current state of the agent, especially with respect to processing events.
@@ -133,11 +129,11 @@ public class CompositeAgent implements Serializable, AgentManager
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(AgentComponent component : componentOrder)
+						for(AgentFeature component : componentOrder)
 							component.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<AgentComponent> it = componentOrder.listIterator(componentOrder.size()); it
+						for(ListIterator<AgentFeature> it = componentOrder.listIterator(componentOrder.size()); it
 								.hasPrevious();)
 							it.previous().signalAgentEvent(event);
 						break;
@@ -175,7 +171,7 @@ public class CompositeAgent implements Serializable, AgentManager
 	/**
 	 * The {@link Map} that links component names (functionalities) to standard component instances.
 	 */
-	protected Map<AgentComponentName, AgentComponent>	components					= new HashMap<AgentComponentName, AgentComponent>();
+	protected Map<AgentFeatureType, AgentFeature>	components					= new HashMap<AgentFeatureType, AgentFeature>();
 																					
 	/**
 	 * A {@link List} that holds the order in which components were added, so as to signal agent events to components in
@@ -183,7 +179,7 @@ public class CompositeAgent implements Serializable, AgentManager
 	 * <p>
 	 * It is important that this list is managed together with <code>components</code>.
 	 */
-	protected ArrayList<AgentComponent>					componentOrder				= new ArrayList<AgentComponent>();
+	protected ArrayList<AgentFeature>					componentOrder				= new ArrayList<AgentFeature>();
 																					
 	// TODO: add support for non-standard components.
 	// /**
@@ -296,7 +292,7 @@ public class CompositeAgent implements Serializable, AgentManager
 	}
 	
 	/**
-	 * The method should be called by an agent component (relayed through {@link AgentComponent}) to disseminate a an
+	 * The method should be called by an agent component (relayed through {@link AgentFeature}) to disseminate a an
 	 * {@link AgentEvent} to the other components.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
@@ -493,10 +489,10 @@ public class CompositeAgent implements Serializable, AgentManager
 	 * instance per name (functionality) will be allowed.
 	 * 
 	 * @param component
-	 *            - the {@link AgentComponent} instance to add.
+	 *            - the {@link AgentFeature} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other components.
 	 */
-	public CompositeAgent addComponent(AgentComponent component)
+	public CompositeAgent addComponent(AgentFeature component)
 	{
 		if(!canAddComponents())
 			throw new IllegalStateException("Cannot add components in state [" + agentState + "].");
@@ -518,14 +514,14 @@ public class CompositeAgent implements Serializable, AgentManager
 	 * parameter.
 	 * 
 	 * @param name
-	 *            - the name of the component to remove (as instance of {@link AgentComponentName}.
+	 *            - the name of the component to remove (as instance of {@link AgentFeatureType}.
 	 * @return a reference to the just-removed component instance.
 	 */
-	public AgentComponent removeComponent(AgentComponentName name)
+	public AgentFeature removeComponent(AgentFeatureType name)
 	{
 		if(!hasComponent(name))
 			throw new InvalidParameterException("Component [" + name + "] does not exist");
-		AgentComponent component = getComponent(name);
+		AgentFeature component = getComponent(name);
 		componentOrder.remove(component);
 		components.remove(component);
 		return component;
@@ -535,10 +531,10 @@ public class CompositeAgent implements Serializable, AgentManager
 	 * Returns <code>true</code> if the agent contains said component.
 	 * 
 	 * @param name
-	 *            - the name of the component to search (as instance of {@link AgentComponentName}.
+	 *            - the name of the component to search (as instance of {@link AgentFeatureType}.
 	 * @return <code>true</code> if the component exists, false otherwise.
 	 */
-	protected boolean hasComponent(AgentComponentName name)
+	protected boolean hasComponent(AgentFeatureType name)
 	{
 		return components.containsKey(name);
 	}
@@ -549,10 +545,10 @@ public class CompositeAgent implements Serializable, AgentManager
 	 * It is <i>strongly recommended</i> that the reference is not kept, as the component may be removed without notice.
 	 * 
 	 * @param name
-	 *            - the name of the component to retrieve (as instance of {@link AgentComponentName} .
-	 * @return the {@link AgentComponent} instance, if any. <code>null</code> otherwise.
+	 *            - the name of the component to retrieve (as instance of {@link AgentFeatureType} .
+	 * @return the {@link AgentFeature} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentComponent getComponent(AgentComponentName name)
+	protected AgentFeature getComponent(AgentFeatureType name)
 	{
 		return components.get(name);
 	}
@@ -576,8 +572,8 @@ public class CompositeAgent implements Serializable, AgentManager
 	public String getAgentName()
 	{ // TODO name should be cached
 		String agentName = null;
-		if(hasComponent(AgentComponentName.PARAMETRIC_COMPONENT))
-			agentName = ((ParametricComponent) getComponent(AgentComponentName.PARAMETRIC_COMPONENT))
+		if(hasComponent(AgentFeatureType.PARAMETRIC_COMPONENT))
+			agentName = ((ParametricComponent) getComponent(AgentFeatureType.PARAMETRIC_COMPONENT))
 					.parVal(AgentParameterName.AGENT_NAME);
 		return agentName;
 	}

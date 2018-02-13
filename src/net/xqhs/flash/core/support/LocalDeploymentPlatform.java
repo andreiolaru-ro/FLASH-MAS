@@ -19,11 +19,11 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
+import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
 import net.xqhs.flash.core.agent.messaging.NameBasedMessagingComponent;
 import net.xqhs.flash.core.deployment.AgentManager;
-import net.xqhs.flash.core.deployment.PlatformLoader.StandardPlatformType;
+import net.xqhs.flash.core.support.Support.StandardSupportType;
 import tatami.simulation.PlatformLoader.PlatformLink;
 
 /**
@@ -221,16 +221,16 @@ public class LocalDeploymentPlatform extends DefaultPlatform implements Platform
 	}
 	
 	@Override
-	public String getRecommendedComponentClass(AgentComponentName componentName)
+	public String getRecommendedFeatureImplementation(AgentFeatureType componentName)
 	{
-		if(componentName == AgentComponentName.MESSAGING_COMPONENT)
+		if(componentName == AgentFeatureType.MESSAGING_COMPONENT)
 			return SimpleLocalMessaging.class.getName();
-		return super.getRecommendedComponentClass(componentName);
+		return super.getRecommendedFeatureImplementation(componentName);
 	}
 	
 	@Override
 	public String getName()
 	{
-		return StandardPlatformType.LOCAL.toString();
+		return StandardSupportType.LOCAL.toString();
 	}
 }

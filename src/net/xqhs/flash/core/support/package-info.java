@@ -1,8 +1,5 @@
 /**
- * 
- */
-/**
- * Classes dealing with support items, such as communication and mobility.
+ * Core classes dealing with support items, such as communication and mobility. Basic support implementations.
  * 
  * @author andreiolaru
  *

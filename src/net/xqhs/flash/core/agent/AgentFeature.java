@@ -33,14 +33,14 @@ import tatami.core.util.ParameterSet;
 
 /**
  * This class serves as base for agent components. A component is characterized by its functionality, denominated by
- * means of its name -- an instance of {@link AgentComponentName}.
+ * means of its name -- an instance of {@link AgentFeatureType}.
  * <p>
  * A component can belong to at most one {@link CompositeAgent}, which is its parent. When created, the component has no
  * parent; a parent will be set afterwards and the component notified.
  * <p>
  * In the lifecycle of a component, it will be constructed and pre-loaded, before receiving an AGENT_START event.
  * <p>
- * The class {@link AgentComponent} itself contains various methods that may be of use for any specific component. These
+ * The class {@link AgentFeature} itself contains various methods that may be of use for any specific component. These
  * methods are <code>protected</code>, as they should be accessible only from the inside of the component, not from the
  * outside. These methods are enumerated below:
  * <ul>
@@ -83,7 +83,7 @@ import tatami.core.util.ParameterSet;
  * 
  * @author Andrei Olaru
  */
-public abstract class AgentComponent implements Serializable
+public abstract class AgentFeature implements Serializable
 {
 	/**
 	 * The class UID.
@@ -113,7 +113,7 @@ public abstract class AgentComponent implements Serializable
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static enum AgentComponentName {
+	public static enum AgentFeatureType {
 		/**
 		 * The name of a component extending {@link ParametricComponent}.
 		 */
@@ -123,12 +123,12 @@ public abstract class AgentComponent implements Serializable
 		 * The name of a component extending {@link VisualizableComponent}.
 		 */
 		VISUALIZABLE_COMPONENT(
-				AgentComponentName.AGENT_COMPONENT_PACKAGE_ROOT + ".visualization.VisualizableComponent"),
+				AgentFeatureType.AGENT_COMPONENT_PACKAGE_ROOT + ".visualization.VisualizableComponent"),
 				
 		/**
 		 * The name of a component extending {@link CognitiveComponent}.
 		 */
-		COGNITIVE_COMPONENT(AgentComponentName.AGENT_COMPONENT_PACKAGE_ROOT + ".kb.ContextComponent"),
+		COGNITIVE_COMPONENT(AgentFeatureType.AGENT_COMPONENT_PACKAGE_ROOT + ".kb.ContextComponent"),
 		
 		/**
 		 * The name of a component extending {@link MessagingComponent}.
@@ -158,7 +158,7 @@ public abstract class AgentComponent implements Serializable
 		/**
 		 * The name of a component extending {@link ClaimComponent}.
 		 */
-		S_CLAIM_COMPONENT(AgentComponentName.AGENT_COMPONENT_PACKAGE_ROOT + ".claim.ClaimComponent"),
+		S_CLAIM_COMPONENT(AgentFeatureType.AGENT_COMPONENT_PACKAGE_ROOT + ".claim.ClaimComponent"),
 		
 		/**
 		 * The name of a component extending {@link AmILabComponent}.
@@ -197,7 +197,7 @@ public abstract class AgentComponent implements Serializable
 		 * @param classname
 		 *            - the fully qualified class name.
 		 */
-		private AgentComponentName(String classname)
+		private AgentFeatureType(String classname)
 		{
 			// FIXME: check that package and class exist
 			componentClass = classname;
@@ -208,7 +208,7 @@ public abstract class AgentComponent implements Serializable
 		 * Inferres the class of the component implementation based on the name of the component and constants in this
 		 * class.
 		 */
-		private AgentComponentName()
+		private AgentFeatureType()
 		{
 			// FIXME: check that package and class exist
 			// lower case entry name, without "_COMPONENT" suffix.
@@ -239,19 +239,19 @@ public abstract class AgentComponent implements Serializable
 		}
 		
 		/**
-		 * Returns the {@link AgentComponentName} instance that corresponds to the specified name.
+		 * Returns the {@link AgentFeatureType} instance that corresponds to the specified name.
 		 * <p>
 		 * E.g. for the name "parametric" the return value will be the instance named PARAMETRIC_COMPONENT.
 		 * 
 		 * @param componentName
 		 *            - the name of the component, as appearing in the scenario file.
-		 * @return the corresponding {@link AgentComponentName} instance.
+		 * @return the corresponding {@link AgentFeatureType} instance.
 		 */
-		public static AgentComponentName toComponentName(String componentName)
+		public static AgentFeatureType toComponentName(String componentName)
 		{
 			try
 			{
-				return AgentComponentName
+				return AgentFeatureType
 						.valueOf(componentName.toUpperCase() + "_" + AGENT_COMPONENT_CLASS_SUFFIX.toUpperCase());
 			} catch(Exception e)
 			{
@@ -261,9 +261,9 @@ public abstract class AgentComponent implements Serializable
 	}
 	
 	/**
-	 * The name of the component, as instance of {@link AgentComponentName}.
+	 * The name of the component, as instance of {@link AgentFeatureType}.
 	 */
-	private AgentComponentName						componentName;
+	private AgentFeatureType						componentName;
 	/**
 	 * Creation data for the component, loaded in {@link #preload(ComponentCreationData, XMLNode, Logger)}. The field is
 	 * initialized with an empty structure, so that it is guaranteed that it will never be <code>null</code> after
@@ -283,17 +283,17 @@ public abstract class AgentComponent implements Serializable
 	 * The constructor assigns the name to the component.
 	 * <p>
 	 * IMPORTANT: extending classes should only perform in the constructor initializations that do not depend on the
-	 * parent agent or on other components, as when the component is created, the {@link AgentComponent#parentAgent}
+	 * parent agent or on other components, as when the component is created, the {@link AgentFeature#parentAgent}
 	 * member is <code>null</code>. The assignment of a parent (as any parent change) is notified to extending classes
-	 * by calling the method {@link AgentComponent#parentChangeNotifier(CompositeAgent)}.
+	 * by calling the method {@link AgentFeature#parentChangeNotifier(CompositeAgent)}.
 	 * <p>
 	 * Event registration is not dependent on the parent, so it can be performed in the constructor or in the
 	 * {@link #componentInitializer()} method.
 	 * 
 	 * @param name
-	 *            - the name of the component, as instance of {@link AgentComponentName}.
+	 *            - the name of the component, as instance of {@link AgentFeatureType}.
 	 */
-	protected AgentComponent(AgentComponentName name)
+	protected AgentFeature(AgentFeatureType name)
 	{
 		componentName = name;
 		
@@ -355,7 +355,7 @@ public abstract class AgentComponent implements Serializable
 	 * <p>
 	 * Extending classes should always call super.componentInitializer() first.
 	 * <p>
-	 * IMPORTANT: The note in {@link #AgentComponent(AgentComponentName)} also applies to this method.
+	 * IMPORTANT: The note in {@link #AgentComponent(AgentFeatureType)} also applies to this method.
 	 * <p>
 	 * VERY IMPORTANT: initializations done in this method are done before all initializations in extending
 	 * constructors.
@@ -376,12 +376,12 @@ public abstract class AgentComponent implements Serializable
 	 * <p>
 	 * The method loads the parameters into {@link #componentData} and locks them.
 	 * <p>
-	 * IMPORTANT: The note in {@link #AgentComponent(AgentComponentName)} also applies to this method.
+	 * IMPORTANT: The note in {@link #AgentComponent(AgentFeatureType)} also applies to this method.
 	 * <p>
 	 * ALSO IMPORTANT: always call <code>super.preload()</code> first.
 	 * <p>
 	 * This method is normally <code>protected</code>, so it can only be called from the component itself, or from the
-	 * tatami.core.agent package (through {@link AgentComponent#preload}). For testing purposes, one may override
+	 * tatami.core.agent package (through {@link AgentFeature#preload}). For testing purposes, one may override
 	 * {@link #componentInitializer()} to call {@link #preload}.
 	 * 
 	 * @param parameters
@@ -567,9 +567,9 @@ public abstract class AgentComponent implements Serializable
 	}
 	
 	/**
-	 * @return the name of the component (instance of {@link AgentComponentName}).
+	 * @return the name of the component (instance of {@link AgentFeatureType}).
 	 */
-	protected AgentComponentName getComponentName()
+	protected AgentFeatureType getComponentName()
 	{
 		return componentName;
 	}
@@ -614,13 +614,13 @@ public abstract class AgentComponent implements Serializable
 	}
 	
 	/**
-	 * Relay for calls to the method {@link CompositeAgent#getComponent(AgentComponentName)}.
+	 * Relay for calls to the method {@link CompositeAgent#getComponent(AgentFeatureType)}.
 	 * 
 	 * @param name
 	 *            - the name of the component.
-	 * @return the {@link AgentComponent} instance, if any. <code>null</code> otherwise.
+	 * @return the {@link AgentFeature} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentComponent getAgentComponent(AgentComponentName name)
+	protected AgentFeature getAgentComponent(AgentFeatureType name)
 	{
 		return (parentAgent != null) ? parentAgent.getComponent(name) : null;
 	}
@@ -673,7 +673,7 @@ public abstract class AgentComponent implements Serializable
 	{
 		try
 		{
-			return ((VisualizableComponent) getAgentComponent(AgentComponentName.VISUALIZABLE_COMPONENT)).getLog();
+			return ((VisualizableComponent) getAgentComponent(AgentFeatureType.VISUALIZABLE_COMPONENT)).getLog();
 		} catch(NullPointerException e)
 		{
 			return DumbLogger.get();
@@ -699,11 +699,11 @@ public abstract class AgentComponent implements Serializable
 	{
 		// TODO: if the messaging component disappears, register with the agent; if the messaging component appears,
 		// register with that.
-		if((parentAgent != null) && (parentAgent.hasComponent(AgentComponentName.MESSAGING_COMPONENT)))
+		if((parentAgent != null) && (parentAgent.hasComponent(AgentFeatureType.MESSAGING_COMPONENT)))
 		{
 			// the implementation somewhat non-intuitively uses the fact that the method in MessagingComponent that is
 			// used has the same name.
-			AgentComponent msgr = parentAgent.getComponent(AgentComponentName.MESSAGING_COMPONENT);
+			AgentFeature msgr = parentAgent.getComponent(AgentFeatureType.MESSAGING_COMPONENT);
 			return msgr.registerMessageReceiver(receiver, prefixElements);
 		}
 		registerHandler(AgentEventType.AGENT_MESSAGE, receiver);
@@ -726,7 +726,7 @@ public abstract class AgentComponent implements Serializable
 	{
 		try
 		{
-			return ((MessagingComponent) parentAgent.getComponent(AgentComponentName.MESSAGING_COMPONENT))
+			return ((MessagingComponent) parentAgent.getComponent(AgentFeatureType.MESSAGING_COMPONENT))
 					.makeLocalPath(pathElements);
 		} catch(NullPointerException e)
 		{
@@ -754,7 +754,7 @@ public abstract class AgentComponent implements Serializable
 	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
 			String... targetPathElements)
 	{
-		MessagingComponent msgr = (MessagingComponent) parentAgent.getComponent(AgentComponentName.MESSAGING_COMPONENT);
+		MessagingComponent msgr = (MessagingComponent) parentAgent.getComponent(AgentFeatureType.MESSAGING_COMPONENT);
 		if(msgr != null)
 			return msgr.sendMessage(msgr.makePath(targetAgent, targetPathElements), sourceEndpoint, content);
 		return false;
@@ -777,7 +777,7 @@ public abstract class AgentComponent implements Serializable
 	 */
 	protected boolean sendMessageToEndpoint(String content, String sourceEndpoint, String targetEndpoint)
 	{
-		MessagingComponent msgr = (MessagingComponent) parentAgent.getComponent(AgentComponentName.MESSAGING_COMPONENT);
+		MessagingComponent msgr = (MessagingComponent) parentAgent.getComponent(AgentFeatureType.MESSAGING_COMPONENT);
 		if(msgr != null)
 			return msgr.sendMessage(targetEndpoint, sourceEndpoint, content);
 		return false;

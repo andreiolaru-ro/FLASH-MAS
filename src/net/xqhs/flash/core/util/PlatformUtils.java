@@ -13,11 +13,10 @@ package net.xqhs.flash.core.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Vector;
 
+import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.logging.LogWrapper.LoggerType;
 
 /**
@@ -60,94 +59,26 @@ public class PlatformUtils
 	}
 	
 	/**
-	 * FIXME: should be split into WS registration and WS invocation.
-	 * 
-	 * @return <code>true</code> if the current platform supports web service registration and invocation.
-	 */
-	public static boolean platformSupportsWebServices()
-	{
-		return false;
-	}
-	
-	/**
 	 * @return the type of log (on of {@link LoggerType}) appropriate for the current platform.
 	 */
 	public static LoggerType platformLogType()
 	{
+		return LoggerType.CONSOLE;
+	}
+	
+	/**
+	 * @return a {@link ClassFactory} instance to create new instances.
+	 */
+	public static ClassFactory getClassFactory()
+	{
 		switch(getPlatform())
 		{
 		case PC:
-			return LoggerType.CONSOLE;
-		case ANDROID:
-			return LoggerType.JAVA;
+			return new PCClassFactory();
+		default:
+			break;
 		}
 		return null;
-	}
-	
-
-	/**
-	 * Checks if the specified class exists.
-	 * 
-	 * @param className
-	 *            - the fully qualified name of the class.
-	 * @return <code>true</code> if the class exists, <code>false</code> otherwise.
-	 */
-	public static boolean classExists(String className)
-	{
-		try
-		{
-			Class.forName(className);
-			return true;
-		} catch(ClassNotFoundException e)
-		{
-			return false;
-		}
-	}
-	
-
-	
-	/**
-	 * Creates a new instance of a class that is not known at compile-time.
-	 * 
-	 * @param loadingClass
-	 *            - an instance created with the class loader to use to create the new instance. Can be
-	 *            <code>new Object()</code>.
-	 * @param className
-	 *            - the name of the class to instantiate.
-	 * @param constructorArguments
-	 *            - an object array specifying the arguments to pass to the constructor of the new instance. The types
-	 *            of the objects in this array will be used to identify the constructor of the new instance.
-	 * @return the newly created instance. If the creation fails, an exception will be surely thrown.
-	 * @throws SecurityException
-	 *             -
-	 * @throws NoSuchMethodException
-	 *             -
-	 * @throws ClassNotFoundException
-	 *             -
-	 * @throws IllegalArgumentException
-	 *             -
-	 * @throws InstantiationException
-	 *             -
-	 * @throws IllegalAccessException
-	 *             -
-	 * @throws InvocationTargetException
-	 *             -
-	 */
-	public static Object loadClassInstance(Object loadingClass, String className, Object... constructorArguments)
-			throws SecurityException, NoSuchMethodException, ClassNotFoundException, IllegalArgumentException,
-			InstantiationException, IllegalAccessException, InvocationTargetException
-	{
-		ClassLoader cl = null;
-		cl = new ClassLoader(loadingClass.getClass().getClassLoader()) {
-			// nothing to extend
-		};
-		Class<?>[] argumentTypes = new Class<?>[constructorArguments.length];
-		int i = 0;
-		for(Object obj : constructorArguments)
-			argumentTypes[i++] = obj.getClass();
-		Constructor<?> constructor = cl.loadClass(className).getConstructor(argumentTypes);
-		Object ret = constructor.newInstance(constructorArguments);
-		return ret;
 	}
 	
 	/**
@@ -192,22 +123,6 @@ public class PlatformUtils
 		e.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}
-	
-//	/**
-//	 * Method to simplify the access to a parameter of an agent. Having the {@link XMLNode} instance associated with the
-//	 * agent, the method retrieves the value associated with the first occurrence of the desired parameter name.
-//	 * 
-//	 * @param XMLnode
-//	 *            - the node containing the configuration information for the agent.
-//	 * @param parameterName
-//	 *            - the name of the searched parameter.
-//	 * @return the value associated with the searched name.
-//	 */
-//	public static String getParameterValue(XMLNode XMLnode, String parameterName)
-//	{
-//		return XMLnode.getAttributeOfFirstNodeWithValue(PARAMETER_NODE_NAME, PARAMETER_NAME, parameterName,
-//				PARAMETER_VALUE);
-//	}
 	
 	/**
 	 * Performs system exit, depending on platform.

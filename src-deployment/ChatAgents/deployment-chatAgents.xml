@@ -17,11 +17,14 @@
 		<parameter name="node" value="Central" />
 	</config>
 
-	<support name="websocket" />
+	<support kind="websocket" />
 
 	<package>ChatAgents</package>
 
 	<agent name="AgentA">
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentA" />
+		
 		<component name="parametric" />
 		<component name="visualizable">
 			<parameter name="GUI" value="ChatAgentGui" />
@@ -33,11 +36,11 @@
 			<parameter name="java-code" value="ChatFunctions" />
 			<parameter name="otherAgent" value="agentB" />
 		</component>
-
-		<parameter name="loader" value="composite" />
-		<parameter name="name" value="agentA" />
 	</agent>
 	<agent>
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentB" />
+		
 		<component name="parametric" />
 		<component name="visualizable">
 			<parameter name="GUI" value="ChatAgentGui" />
@@ -49,8 +52,5 @@
 			<parameter name="java-code" value="ChatFunctions" />
 			<parameter name="otherAgent" value="agentA" />
 		</component>
-
-		<parameter name="loader" value="composite" />
-		<parameter name="name" value="agentB" />
 	</agent>
 </scenario>

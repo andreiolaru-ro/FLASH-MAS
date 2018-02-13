@@ -45,12 +45,12 @@ public class ParameterSet extends Config implements Serializable
 	 * The class UID.
 	 */
 	private static final long					serialVersionUID	= -8204648145896154271L;
-																	
+	
 	/**
 	 * A map simulating a set of entries String &rarr; Object.
 	 */
 	protected final Map<String, List<Object>>	parameterSet		= new LinkedHashMap<>();
-																	
+	
 	/**
 	 * Adds a new parameter entry.
 	 * 
@@ -63,6 +63,22 @@ public class ParameterSet extends Config implements Serializable
 	public ParameterSet add(String name, String value)
 	{
 		return addObject(name, value);
+	}
+	
+	/**
+	 * Adds multiple entries for the same parameter.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entries.
+	 * @param values
+	 *            - the values to be associated with the name.
+	 * @return the instance itself, for chained calls.
+	 */
+	public ParameterSet addAll(String name, List<String> values)
+	{
+		for(String v : values)
+			add(name, v);
+		return this;
 	}
 	
 	/**

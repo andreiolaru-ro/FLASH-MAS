@@ -23,44 +23,44 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
+import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.Thing;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.io.AgentActiveIO.InputListener;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
 import net.xqhs.flash.core.agent.visualization.AgentGui;
-import net.xqhs.flash.core.agent.visualization.AgentGuiConfig;
 import net.xqhs.flash.core.agent.visualization.AgentGui.AgentGuiBackgroundTask;
 import net.xqhs.flash.core.agent.visualization.AgentGui.ResultNotificationListener;
+import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.support.Support.PlatformLink;
+import net.xqhs.flash.core.agent.visualization.AgentGuiConfig;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.UnitComponentExt;
 import net.xqhs.windowLayout.WindowLayout;
-import tatami.core.util.platformUtils.PlatformUtils;
-import tatami.simulation.PlatformLoader.PlatformLink;
 
 /**
- * Singleton class managing the simulation, visualization and agent control on a machine or on a set of machines
+ * Singleton class managing the deployment, visualization and agent control on a machine or on a set of machines
  * (possibly all).
  * <p>
- * After the initializations in {@link Boot}, it handles the actual starting and management of agents, as well as
- * creating the events in the scenario timeline.
+ * After the initializations in {@link NodeLoader}, it handles the actual starting and management of agents and other
+ * {@link Thing}s, as well as creating the events in the deployment timeline.
  * <p>
- * It receives updates from all agents regarding logging messages and parent and location changes.
+ * It receives updates from all agents regarding logging messages and other state changes.
  * <p>
- * The link with agents uses the agent's VisualizationComponent (or equivalent for non-CompositeAgent instances) and
+ * The link with agents uses the agent's MonitoringComponent (or equivalent for non-CompositeAgent instances) and
  * corresponding Vocabulary.
  * <p>
- * It normally offers a GUI or some other kind of UI for the said operations, that can exist outside of the actual agent
- * platform(s).
+ * It normally offers a GUI or some other kind of UI for the said operations.
  * <p>
- * Although not an agent of any platform, the {@link SimulationManager} can be viewed as an agent; for convenience, it
- * implements {@link AgentManager} and it features a GUI based on {@link AgentGui}.
+ * The {@link Node} is the root {@link Thing}.
  * <p>
- * This implementation presumes that {@link java.util.Timer} and related classes {@link TimerTask} are available on the
+ * This implementation presumes that {@link java.util.Timer} and related class {@link TimerTask} are available on the
  * execution platform.
  * 
  * @author Andrei Olaru
  */
-public class SimulationManager implements AgentManager
+public class Node implements Thing<Node>
 {
 	/**
 	 * Components of the simulation manager GUI.
@@ -142,9 +142,9 @@ public class SimulationManager implements AgentManager
 	AgentGui							gui								= null;
 	
 	/**
-	 * Name and {@link PlatformLoader} for all platforms to be started.
+	 * Name and {@link Support} for all platforms to be started.
 	 */
-	Map<String, PlatformLoader>			platforms;
+	Map<String, Support>			platforms;
 	/**
 	 * Name and locality indication (container is created locally or remotely) for all containers.
 	 */
@@ -183,7 +183,7 @@ public class SimulationManager implements AgentManager
 	 * and their names (agents are managed by {@link AgentManager} wrappers and the timeline.
 	 * 
 	 * @param allPlatforms
-	 *            - the {@link Map} of platform names and {@link PlatformLoader} instances that are currently started.
+	 *            - the {@link Map} of platform names and {@link Support} instances that are currently started.
 	 * @param allContainers
 	 *            - the map of container names and information whether the container is created locally or remotely.
 	 * @param allAgents
@@ -191,11 +191,11 @@ public class SimulationManager implements AgentManager
 	 * @param timeline
 	 *            - the timeline of events, as {@link XMLNode} parsed from the scenario file.
 	 */
-	public SimulationManager(Map<String, PlatformLoader> allPlatforms, Map<String, Boolean> allContainers,
+	public Node(Map<String, Support> allPlatforms, Map<String, Boolean> allContainers,
 			Set<AgentCreationData> allAgents, XMLNode timeline)
 	{
-		log = (UnitComponentExt) new UnitComponentExt().setUnitName("simulation").setLoggerType(
-				PlatformUtils.platformLogType());
+		log = (UnitComponentExt) new UnitComponentExt().setUnitName("simulation")
+				.setLoggerType(PlatformUtils.platformLogType());
 		platforms = allPlatforms;
 		containers = allContainers;
 		agents = allAgents;
@@ -263,8 +263,8 @@ public class SimulationManager implements AgentManager
 				gui.doOutput(SimulationComponent.TIME.toString(),
 						new Vector<Object>(Arrays.asList(new Object[] { display })));
 				
-				int nextEvent = (events.isEmpty() ? 0 : Integer.parseInt(events.get(0).getAttributeValue(
-						EVENT_TIME_ATTRIBUTE)));
+				int nextEvent = (events.isEmpty() ? 0
+						: Integer.parseInt(events.get(0).getAttributeValue(EVENT_TIME_ATTRIBUTE)));
 				while(!events.isEmpty() && (nextEvent <= time * 100))
 				{ // there is an event to do
 					XMLNode event = events.remove(0);
@@ -275,8 +275,8 @@ public class SimulationManager implements AgentManager
 						log.info("task: " + task.getName());
 					}
 					
-					nextEvent = (events.isEmpty() ? 0 : Integer.parseInt(events.get(0).getAttributeValue(
-							EVENT_TIME_ATTRIBUTE)));
+					nextEvent = (events.isEmpty() ? 0
+							: Integer.parseInt(events.get(0).getAttributeValue(EVENT_TIME_ATTRIBUTE)));
 				}
 				if(!events.isEmpty())
 					log.info("next event at " + nextEvent);
@@ -412,15 +412,15 @@ public class SimulationManager implements AgentManager
 	 */
 	protected boolean startSimulationAgents()
 	{
-		for(PlatformLoader platform : platforms.values())
+		for(Support platform : platforms.values())
 		{
 			String platformName = platform.getName();
 			MessagingComponent msg = null;
 			try
 			{
-				String msgrClass = platform.getRecommendedComponentClass(AgentComponentName.MESSAGING_COMPONENT);
+				String msgrClass = platform.getRecommendedFeatureImplementation(AgentFeatureType.MESSAGING_COMPONENT);
 				if(msgrClass == null)
-					msgrClass = AgentComponentName.MESSAGING_COMPONENT.getClassName();
+					msgrClass = AgentFeatureType.MESSAGING_COMPONENT.getClassName();
 				msg = (MessagingComponent) PlatformUtils.loadClassInstance(this, msgrClass, new Object[0]);
 			} catch(Exception e)
 			{
@@ -467,7 +467,7 @@ public class SimulationManager implements AgentManager
 				log.error("Platform [" + agentData.getPlatform() + "] for agent [" + agentName + "] not found.");
 				continue;
 			}
-			PlatformLoader platform = platforms.get(agentData.getPlatform());
+			Support platform = platforms.get(agentData.getPlatform());
 			String containerName = agentData.getDestinationContainer();
 			boolean localContainer = !agentData.isRemote();
 			if(localContainer)

@@ -13,97 +13,81 @@ package net.xqhs.flash.core.agent;
 
 import java.util.Iterator;
 
-import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
-import net.xqhs.flash.core.agent.AgentComponent.ComponentCreationData;
+import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.agent.AgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.agent.parametric.AgentParameters;
 import net.xqhs.flash.core.agent.parametric.ParametricComponent;
+import net.xqhs.flash.core.deployment.AgentCreationData;
+import net.xqhs.flash.core.deployment.AgentLoader;
+import net.xqhs.flash.core.deployment.DeploymentConfiguration;
+import net.xqhs.flash.core.deployment.AgentLoader.StandardAgentLoaderType;
+import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.deployment.Loader;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
-import tatami.core.util.platformUtils.PlatformUtils;
-import tatami.simulation.AgentCreationData;
-import tatami.simulation.AgentLoader;
 import tatami.simulation.AgentManager;
-import tatami.simulation.PlatformLoader;
 
 /**
- * Agent loader for agents based on {@link CompositeAgent}.
+ * Agent loader for agents extending {@link CompositeAgent}.
  * 
  * @author Andrei Olaru
  */
-public class CompositeAgentLoader implements AgentLoader
+public class CompositeAgentLoader implements Loader<Agent>
 {
 	/**
 	 * Name of XML nodes in the scenario representing components.
 	 */
-	private static final String	COMPONENT_NODE_NAME			= "component";
+	private static final String	FEATURE_NODE_NAME		= "feature";
 	/**
 	 * The name of the attribute representing the name of the component in the component node.
 	 */
-	private static final String	COMPONENT_NAME_ATTRIBUTE	= "name";
+	private static final String	FEATURE_NAME_ATTRIBUTE	= "name";
 	/**
 	 * The name of the attribute representing the class of the component in the component node. The class may not be
-	 * specified, it the component is standard and its class is specified by the corresponding
-	 * {@link AgentComponentName} entry.
+	 * specified, it the component is standard and its class is specified by the corresponding {@link AgentFeatureType}
+	 * entry.
 	 */
-	private static final String	COMPONENT_CLASS_ATTRIBUTE	= "classpath";
+	private static final String	FEATURE_CLASS_ATTRIBUTE	= "classpath";
 	/**
 	 * The name of nodes containing component parameters.
 	 */
-	private static final String	PARAMETER_NODE_NAME			= "parameter";
+	private static final String	PARAMETER_NODE_NAME		= "parameter";
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
-	private static final String	PARAMETER_NAME				= "name";
+	private static final String	PARAMETER_NAME			= DeploymentConfiguration.PARAMETER_NAME;
 	/**
 	 * The name of the attribute of a parameter node holding the value of the parameter.
 	 */
-	private static final String	PARAMETER_VALUE				= "value";
-	/**
-	 * The name of the parameter in the {@link AgentParameters} list that corresponds to a component entry.
-	 */
-	private static final String	COMPONENT_PARAMETER_NAME	= "agent_component";
+	private static final String	PARAMETER_VALUE			= DeploymentConfiguration.PARAMETER_VALUE;
 	
-	/**
-	 * The constructor does not do any initializations.
-	 */
-	public CompositeAgentLoader()
+	public CompositeAgentLoader(TreeParameterSet config)
 	{
-		// nothing to do.
+		// nothing to do for the moment.
 	}
 	
 	@Override
-	public String getName()
-	{
-		return StandardAgentLoaderType.COMPOSITE.toString();
-	}
-	
-	@Override
-	public AgentLoader setConfig(XMLNode configuration)
-	{
-		// no configuration to load
-		return this;
-	}
-	
-	@Override
-	public boolean preload(AgentCreationData agentCreationData, PlatformLoader platformLoader, Logger log)
+	public boolean preload(AgentCreationData agentCreationData, Support platformLoader, Logger log)
 	{
 		String logPre = agentCreationData.getName() + ":";
-		Iterator<XMLNode> componentIt = agentCreationData.getNode().getNodeIterator(COMPONENT_NODE_NAME);
+		Iterator<XMLNode> componentIt = agentCreationData.getNode().getNodeIterator(FEATURE_NODE_NAME);
 		while(componentIt.hasNext())
 		{
 			XMLNode componentNode = componentIt.next();
-			String componentName = componentNode.getAttributeValue(COMPONENT_NAME_ATTRIBUTE);
+			String componentName = componentNode.getAttributeValue(FEATURE_NAME_ATTRIBUTE);
 			
 			// get component class
-			String componentClass = componentNode.getAttributeValue(COMPONENT_CLASS_ATTRIBUTE);
+			String componentClass = componentNode.getAttributeValue(FEATURE_CLASS_ATTRIBUTE);
 			if(componentClass == null)
 			{
-				AgentComponentName component = AgentComponentName.toComponentName(componentName);
+				AgentFeatureType component = AgentFeatureType.toComponentName(componentName);
 				if(component != null)
 				{
 					if(platformLoader != null)
 					{
-						String recommendedClass = platformLoader.getRecommendedComponentClass(component);
+						String recommendedClass = platformLoader.getRecommendedFeatureImplementation(component);
 						if(recommendedClass != null)
 							componentClass = recommendedClass;
 					}
@@ -133,11 +117,12 @@ public class CompositeAgentLoader implements AgentLoader
 				continue;
 			}
 			
-			AgentComponent component = null;
+			AgentFeature component = null;
 			try
 			{
-				component = (AgentComponent) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
-				log.trace("component [] created for agent []. pre-loading...", componentClass, agentCreationData.getName());
+				component = (AgentFeature) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
+				log.trace("component [] created for agent []. pre-loading...", componentClass,
+						agentCreationData.getName());
 			} catch(Exception e)
 			{
 				log.error("Component [] failed to load; it will not be available for agent []:", componentClass,
@@ -153,9 +138,9 @@ public class CompositeAgentLoader implements AgentLoader
 				XMLNode param = paramsIt.next();
 				componentData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
 			}
-			if(AgentComponentName.PARAMETRIC_COMPONENT.componentName().equals(componentName))
-				componentData
-						.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME, agentCreationData.getParameters());
+			if(AgentFeatureType.PARAMETRIC_COMPONENT.componentName().equals(componentName))
+				componentData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
+						agentCreationData.getParameters());
 			
 			if(component.preload(componentData, componentNode, agentCreationData.getPackages(), log))
 			{
@@ -175,7 +160,7 @@ public class CompositeAgentLoader implements AgentLoader
 	{
 		CompositeAgent agent = new CompositeAgent();
 		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addComponent((AgentComponent) componentObj);
+			agent.addComponent((AgentFeature) componentObj);
 		return agent;
 	}
 }

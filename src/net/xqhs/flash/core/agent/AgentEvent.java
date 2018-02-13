@@ -127,7 +127,7 @@ public class AgentEvent extends ParameterSet
 	
 	/**
 	 * The interface should be implemented by a class that can handle agent events for an agent component. Each
-	 * {@link AgentComponent} instance is able to register, for each event, an event handler.
+	 * {@link AgentFeature} instance is able to register, for each event, an event handler.
 	 * <p>
 	 * The class also contains enumerations relevant to event handling: event types ( {@link AgentEventType}) and types
 	 * of sequences for events ({@link AgentSequenceType}).
@@ -139,7 +139,7 @@ public class AgentEvent extends ParameterSet
 		/**
 		 * The method is invoked whenever the event is posted to the {@link CompositeAgent} the component is part of.
 		 * <p>
-		 * The handlers in various components will be invoked (through the method in {@link AgentComponent}) in the
+		 * The handlers in various components will be invoked (through the method in {@link AgentFeature}) in the
 		 * order specified by the {@link AgentSequenceType} associated with the event.
 		 * 
 		 * @param event

@@ -1,5 +1,6 @@
 package net.xqhs.flash.core.deployment;
 
+import net.xqhs.flash.core.Thing;
 import net.xqhs.flash.core.util.TreeParameterSet;
 
 /**

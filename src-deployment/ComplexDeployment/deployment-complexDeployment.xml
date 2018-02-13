@@ -16,9 +16,29 @@
 
 	<support kind="websocket" />
 	<support kind="local" />
-	<support kind="local" id="auxilliary"/>
-	
-	<loader for="agent:java" classpath="net.xqhs.flash.deployment.JavaAgentLoader" />
-	<loader for="agent:composite" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
+	<support kind="local" id="auxilliary" />
+	<support kind="custom">
+		<parameter name="classpath" value="custom" />
+	</support>
+
+	<package>ComplexDeployment</package>
+	<package>otherPackage</package>
+	<package>somePackage</package>
+	<!--package>net.xqhs.flash.core.agent.</package -->
+
+	<loader for="agent:java" />
+	<loader for="agent" kind="composite" />
+	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
+
+	<agent name="AgentA">
+		<in-context-of>local</in-context-of>
+		<component name="messaging" />
+		<component name="directory" />
+	</agent>
+
+	<agent>
+	</agent>
+
+
 
 </scenario>

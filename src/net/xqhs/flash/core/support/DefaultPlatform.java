@@ -11,12 +11,11 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
-import net.xqhs.flash.core.agent.AgentComponent.AgentComponentName;
+import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.deployment.AgentManager;
 import net.xqhs.flash.core.deployment.DeploymentConfiguration;
-import net.xqhs.flash.core.deployment.PlatformLoader;
-import net.xqhs.flash.core.deployment.PlatformLoader.PlatformLink;
-import net.xqhs.flash.core.deployment.PlatformLoader.StandardPlatformType;
+import net.xqhs.flash.core.support.Support.PlatformLink;
+import net.xqhs.flash.core.support.Support.StandardSupportType;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 
 /**
@@ -26,17 +25,17 @@ import net.xqhs.util.XML.XMLTree.XMLNode;
  * 
  * @author Andrei Olaru
  */
-public class DefaultPlatform implements PlatformLoader
+public class DefaultPlatform implements Support
 {
 	
 	@Override
 	public String getName()
 	{
-		return StandardPlatformType.DEFAULT.toString();
+		return StandardSupportType.DEFAULT.toString();
 	}
 	
 	@Override
-	public PlatformLoader setConfig(XMLNode configuration, DeploymentConfiguration settings)
+	public Support setConfig(XMLNode configuration, DeploymentConfiguration settings)
 	{
 		// do nothing.
 		return this;
@@ -78,7 +77,7 @@ public class DefaultPlatform implements PlatformLoader
 	 * The loader recommends no particular implementation for any component.
 	 */
 	@Override
-	public String getRecommendedComponentClass(AgentComponentName componentName)
+	public String getRecommendedFeatureImplementation(AgentFeatureType componentName)
 	{
 		return null;
 	}

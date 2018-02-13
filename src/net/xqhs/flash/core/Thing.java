@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.deployment;
+package net.xqhs.flash.core;
 
 /**
  * An element in the deployment, be it a support infrastructure, an agent, a feature, etc. It needs to have some sort of

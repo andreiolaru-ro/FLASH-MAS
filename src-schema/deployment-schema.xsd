@@ -42,6 +42,8 @@
 						<attribute name="id" type="string" use="optional" />
 					</complexType>
 				</element>
+				<element name="package" type="string" minOccurs="0"
+					maxOccurs="unbounded" />
 				<element name="loader" maxOccurs="unbounded" minOccurs="0">
 					<complexType>
 						<sequence>
@@ -53,14 +55,20 @@
 							</element>
 						</sequence>
 						<attribute name="for" type="string" use="required" />
-						<attribute name="classpath" type="string" use="required" />
+						<attribute name="kind" type="string" use="optional" />
+						<attribute name="classpath" type="string" use="optional" />
 					</complexType>
 				</element>
-				<element name="package" type="string" minOccurs="0"
-					maxOccurs="unbounded" />
 				<element name="agent" maxOccurs="unbounded" minOccurs="0">
 					<complexType>
 						<sequence>
+							<element name="in-context-of" type="string" minOccurs="0" maxOccurs="unbounded" />
+							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="name" type="string" use="required" />
+									<attribute name="value" type="string" use="required" />
+								</complexType>
+							</element>
 							<element name="component" minOccurs="0" maxOccurs="unbounded">
 								<complexType>
 									<sequence>
@@ -73,12 +81,6 @@
 									</sequence>
 									<attribute name="name" type="string" use="required" />
 									<attribute name="classpath" type="string" use="optional" />
-								</complexType>
-							</element>
-							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<attribute name="name" type="string" use="required" />
-									<attribute name="value" type="string" use="required" />
 								</complexType>
 							</element>
 						</sequence>

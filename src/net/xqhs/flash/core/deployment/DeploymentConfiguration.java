@@ -11,19 +11,13 @@
  ******************************************************************************/
 package net.xqhs.flash.core.deployment;
 
-import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import net.xqhs.flash.core.util.ContentHolder;
-import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
@@ -68,6 +62,11 @@ public class DeploymentConfiguration extends TreeParameterSet
 		DEPLOYMENT,
 		
 		/**
+		 * General configuration settings, used by support infrastructures.
+		 */
+		CONFIG,
+		
+		/**
 		 * Java packages that contain classes needed in the deployment.
 		 */
 		PACKAGE,
@@ -75,12 +74,12 @@ public class DeploymentConfiguration extends TreeParameterSet
 		/**
 		 * Classes that are able to load various categories of elements in the configuration.
 		 */
-		LOADER,
+		LOADER("for", "kind", false),
 		
 		/**
 		 * Support infrastructures used in the deployment.
 		 */
-		SUPPORT,
+		SUPPORT("kind", "id", false),
 		
 		/**
 		 * Agents to create in the deployment, potentially inside particular support infrastructures.
@@ -103,6 +102,22 @@ public class DeploymentConfiguration extends TreeParameterSet
 		 * the category may also appear at top level.
 		 */
 		boolean			optional_hierarchy	= false;
+		
+		/**
+		 * Element attribute giving the first part of the name of the element.
+		 */
+		String			nameAttribute1;
+		
+		/**
+		 * Element attribute giving the second part of the name of the element.
+		 */
+		String			nameAttribute2;
+		
+		/**
+		 * <code>true</code> if the first part of the name can be missing; <code>false</code> if the first part is
+		 * mandatory.
+		 */
+		boolean			optional_attribute1	= false;
 		
 		/**
 		 * Constructor for a top-level category.
@@ -137,6 +152,25 @@ public class DeploymentConfiguration extends TreeParameterSet
 		}
 		
 		/**
+		 * Constructor for a category in which the name of elements if formed from one or two of the element attributes.
+		 * 
+		 * @param part1
+		 *            - the attribute that gives the first part of the name.
+		 * @param part2
+		 *            - the attribute that gives the first part of the name.
+		 * @param part1_optional
+		 *            - <code>true</code> if the element can lack the first part of the name.
+		 */
+		private CategoryName(String part1, String part2, boolean part1_optional)
+		{
+			if(part1 == null || part2 == null)
+				throw new IllegalArgumentException("The element name parts cannot be null");
+			nameAttribute1 = part1;
+			nameAttribute2 = part2;
+			optional_attribute1 = part1_optional;
+		}
+		
+		/**
 		 * @return the name of the category, in lower case.
 		 */
 		public String getName()
@@ -158,6 +192,31 @@ public class DeploymentConfiguration extends TreeParameterSet
 		public boolean isParentOptional()
 		{
 			return optional_hierarchy;
+		}
+		
+		/**
+		 * @return <code>true</code> if the elements in the category have names that get assembled from values of two
+		 *         attributes.
+		 */
+		public boolean hasNameWithParts()
+		{
+			return nameAttribute1 != null && nameAttribute2 != null;
+		}
+		
+		/**
+		 * @return the names of the two attributes whose values form the element name.
+		 */
+		public String[] nameAttributes()
+		{
+			return new String[] { nameAttribute1, nameAttribute2 };
+		}
+		
+		/**
+		 * @return <code>true</code> if the first part of the name is optional.
+		 */
+		public boolean isNameAttribute1Optional()
+		{
+			return optional_attribute1;
 		}
 		
 		/**
@@ -196,11 +255,22 @@ public class DeploymentConfiguration extends TreeParameterSet
 	 * Separator of category hierarchy path elements.
 	 */
 	public static final String				PATH_SEP					= "/";
-	
 	/**
 	 * Prefix of category names used in CLI.
 	 */
 	public static final String				CLI_CATEGORY_PREFIX			= "-";
+	/**
+	 * Separator of parts of a name and of parameter and value.
+	 */
+	public static final String				NAME_SEPARATOR				= ":";
+	/**
+	 * Root package for FLASH classes.
+	 */
+	public static final String				ROOT_PACKAGE				= "net.xqhs.flash";
+	/**
+	 * Package for core FLASH functionality
+	 */
+	public static final String				CORE_PACKAGE				= "core";
 	
 	/**
 	 * The name of nodes containing parameters.
@@ -226,7 +296,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 	public static final Map<String, String>	DEFAULTS					= new HashMap<>();
 	
 	/**
-	 * In XML parsing, name under which to put unnamed entities.
+	 * Name under which to put unnamed entities, or entities without a previously known name.
 	 */
 	public static final String				OTHER_NAME					= "other";
 	
@@ -234,12 +304,12 @@ public class DeploymentConfiguration extends TreeParameterSet
 	{
 		DEFAULTS.put(CategoryName.SCHEMA.getName(), "src-schema/deployment-schema.xsd");
 		DEFAULTS.put(CategoryName.DEPLOYMENT.getName(), DEPLOYMENT_FILE_DIRECTORY +
-				
-//				"ChatAgents/deployment-chatAgents.xml"
+		
+		// "ChatAgents/deployment-chatAgents.xml"
 				"ComplexDeployment/deployment-complexDeployment.xml"
 		// "scenario/examples/sclaim_tatami2/simpleScenarioE/scenarioE-tATAmI2-plus.xml"
-				
-				);
+		
+		);
 	}
 	
 	/**
@@ -262,14 +332,14 @@ public class DeploymentConfiguration extends TreeParameterSet
 	 *            deployment; also, the {@link XMLTree} instance resulting from the parsing will be placed as content in
 	 *            the last parameter.
 	 * @param loadedXML
-	 *            - if the deployment file is parsed and this argument is not <code>null</code>, the resulting {@link XMLTree} instance will be stored in this
-	 *            ContentHolder instance.
+	 *            - if the deployment file is parsed and this argument is not <code>null</code>, the resulting
+	 *            {@link XMLTree} instance will be stored in this ContentHolder instance.
 	 * @return the instance itself, which is also the {@link TreeParameterSet} that contains all settings.
 	 * 
 	 * @throws ConfigLockedException
 	 *             - if load() is called more than once.
 	 */
-	public TreeParameterSet load(String programArguments[], boolean parseDeploymentFile,
+	public TreeParameterSet loadConfiguration(List<String> programArguments, boolean parseDeploymentFile,
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
 	{
 		locked();
@@ -281,44 +351,51 @@ public class DeploymentConfiguration extends TreeParameterSet
 			this.add(setting, DEFAULTS.get(setting));
 		log.lf("initial tree:", this);
 		
+		log.lf("program arguments:", programArguments);
+		
 		// 2. parse deployment file
 		boolean scenarioFirst = false;
-		if(programArguments.length > 0 && !programArguments[0].startsWith(CLI_CATEGORY_PREFIX)
-				&& !programArguments[0].contains(":"))
+		if(programArguments.size() > 0 && programArguments.get(0).length() > 0
+				&& !programArguments.get(0).startsWith(CLI_CATEGORY_PREFIX) && !programArguments.get(0).contains(":"))
 		{
-			set(CategoryName.DEPLOYMENT.getName(), programArguments[0]);
+			set(CategoryName.DEPLOYMENT.getName(), programArguments.get(0));
 			scenarioFirst = true;
 		}
 		else
-			for(int i = 0; i < programArguments.length; i++)
-				if(isCategory(programArguments[i])
-						&& (getCategory(programArguments[i]).equals(CategoryName.DEPLOYMENT.getName())
-								|| getCategory(programArguments[i]).equals(CategoryName.SCHEMA.getName())))
-				{
-					if(i + 1 >= programArguments.length || isCategory(programArguments[i + 1]))
-						throw new IllegalArgumentException(
-								"Program argument after " + programArguments[i] + " should be a correct value.");
-					set(getCategory(programArguments[i]), programArguments[i + 1]);
-				}
-			
-			XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
-					get(CategoryName.DEPLOYMENT.getName()));
-			if(loadedXML != null)
-				loadedXML.set(XMLtree);
-			if(XMLtree == null)
-				log.le("Deployment file load failed.");
-			else
+			for(Iterator<String> it = programArguments.iterator(); it.hasNext();)
 			{
+				String arg = it.next();
+				if(isCategory(arg) && (getCategory(arg).equals(CategoryName.DEPLOYMENT.getName())
+						|| getCategory(arg).equals(CategoryName.SCHEMA.getName())))
+				{
+					String val = null;
+					if(it.hasNext() || isCategory(val = it.next()))
+						throw new IllegalArgumentException(
+								"Program argument after " + arg + " should be a correct value.");
+					set(getCategory(arg), val);
+				}
+			}
+		log.lf("loading scenario [] with schema [].", get(CategoryName.DEPLOYMENT.getName()),
+				get(CategoryName.SCHEMA.getName()));
+		
+		XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
+				get(CategoryName.DEPLOYMENT.getName()));
+		if(loadedXML != null)
+			loadedXML.set(XMLtree);
+		if(XMLtree == null)
+			log.le("Deployment file load failed.");
+		else
+		{
 			readXML(XMLtree.getRoot(), this, log);
 			log.lf("after XML tree parse:", this);
 			log.lf(">>>>>>>>");
-			}
-			
+		}
+		
 		// 3. parse CLI args
-		List<String> arg_list = new LinkedList<>(Arrays.asList(programArguments));
+		Iterator<String> it = programArguments.iterator();
 		if(scenarioFirst)
-			arg_list.remove(0);
-		readCLIArgs(arg_list.iterator(), this, log);
+			it.next();
+		readCLIArgs(it, this, log);
 		log.lf("after CLI tree parse:", this);
 		
 		// 4. auto-fill names and contexts; fuse element with optional hierarchy.
@@ -351,36 +428,59 @@ public class DeploymentConfiguration extends TreeParameterSet
 		
 		for(XMLAttribute a : node.getAttributes())
 			tree.add(a.getName(), a.getValue());
-		Set<String> named = new LinkedHashSet<>();
+		// Set<String> named = new LinkedHashSet<>();
 		for(XMLNode n : node.getNodes())
 		{
 			if(n.getName().equals(PARAMETER_NODE_NAME))
 				tree.add(n.getAttributeValue(PARAMETER_NAME), n.getAttributeValue(PARAMETER_VALUE));
-			else if(n.getNodes().isEmpty() && n.getAttributes().isEmpty())
+			else if(n.getNodes().isEmpty() && n.getAttributes().isEmpty() && !tree.isHierarchical(n.getName()))
 				// here missing the case of a node with no children but with attributes
 				tree.add(n.getName(), (String) n.getValue());
 			else
 			{
 				TreeParameterSet subTree = new TreeParameterSet();
 				readXML(n, subTree, log);
-				if(subTree.getValue(PARAMETER_NAME) != null)
-					named.add(n.getName());
+				CategoryName cat = CategoryName.byName(n.getName());
+				String name = null;
+				if(cat != null && cat.hasNameWithParts())
+				{ // node is a registered category and its elements have two-parts names
+					String[] partNames = cat.nameAttributes();
+					String part1 = subTree.getValue(partNames[0]);
+					String part2 = subTree.getValue(partNames[1]);
+					if(part1 == null && !cat.isNameAttribute1Optional())
+					{
+						log.le("Child of [] does not contain necessary name part attribute [].", node.getName(),
+								partNames[0]);
+						continue;
+					}
+					name = (part1 != null ? part1 : "") + (part2 != null ? NAME_SEPARATOR + part2 : "");
+				}
+				else if(subTree.getValue(PARAMETER_NAME) != null)
+					// node n is a node with a name
+					name = subTree.getValue(PARAMETER_NAME);
 				// log.lw("Node [] does not contain a name.", n.getName());
-				tree.addTree(n.getName(), subTree);
+				if(name == null)
+					tree.addTree(n.getName(), subTree);
+				else
+				{
+					if(!tree.isHierarchical(n.getName()))
+						tree.addTree(n.getName(), new TreeParameterSet());
+					tree.getTree(n.getName()).addTree(name, subTree);
+				}
 			}
 		}
-		for(String name : named)
-		{
-			List<TreeParameterSet> trees = tree.getTrees(name);
-			TreeParameterSet newtree = new TreeParameterSet();
-			tree.clear(name);
-			tree.addTree(name, newtree);
-			for(TreeParameterSet t : trees)
-			{
-				String elName = t.getValue(PARAMETER_NAME);
-				newtree.addTree(elName != null ? elName : OTHER_NAME, t);
-			}
-		}
+		// for(String name : named)
+		// { // all elements that have a name
+		// List<TreeParameterSet> trees = tree.getTrees(name);
+		// TreeParameterSet newtree = new TreeParameterSet();
+		// tree.clear(name);
+		// tree.addTree(name, newtree);
+		// for(TreeParameterSet t : trees)
+		// {
+		// String elName = t.getValue(PARAMETER_NAME);
+		// newtree.addTree(elName != null ? elName : OTHER_NAME, t);
+		// }
+		// }
 	}
 	
 	/**
@@ -493,10 +593,15 @@ public class DeploymentConfiguration extends TreeParameterSet
 			}
 			else
 			{
+				if(context.peek().te == null)
+				{
+					log.le("incorrect context for argument []", a);
+					continue;
+				}
 				String parameter, value = null;
-				if(a.contains(":"))
+				if(a.contains(NAME_SEPARATOR))
 				{ // parameter name & value
-					String[] es = a.split(":", 2);
+					String[] es = a.split(NAME_SEPARATOR, 2);
 					parameter = es[0];
 					value = es[1];
 				}
