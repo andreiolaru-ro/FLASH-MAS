@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.deployment;
+package net.xqhs.flash.core.node;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
-import net.xqhs.flash.core.Thing;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.io.AgentActiveIO.InputListener;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
@@ -44,7 +44,7 @@ import net.xqhs.windowLayout.WindowLayout;
  * (possibly all).
  * <p>
  * After the initializations in {@link NodeLoader}, it handles the actual starting and management of agents and other
- * {@link Thing}s, as well as creating the events in the deployment timeline.
+ * {@link Entity}s, as well as creating the events in the deployment timeline.
  * <p>
  * It receives updates from all agents regarding logging messages and other state changes.
  * <p>
@@ -53,14 +53,14 @@ import net.xqhs.windowLayout.WindowLayout;
  * <p>
  * It normally offers a GUI or some other kind of UI for the said operations.
  * <p>
- * The {@link Node} is the root {@link Thing}.
+ * The {@link Node} is the root {@link Entity}.
  * <p>
  * This implementation presumes that {@link java.util.Timer} and related class {@link TimerTask} are available on the
  * execution platform.
  * 
  * @author Andrei Olaru
  */
-public class Node implements Thing<Node>
+public class Node implements Entity<Node>
 {
 	/**
 	 * Components of the simulation manager GUI.

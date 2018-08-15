@@ -11,9 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
-import net.xqhs.flash.core.deployment.AgentManager;
-import net.xqhs.flash.core.deployment.DeploymentConfiguration;
+import net.xqhs.flash.core.node.AgentManager;
 import net.xqhs.flash.core.support.Support.PlatformLink;
 import net.xqhs.flash.core.support.Support.StandardSupportType;
 import net.xqhs.util.XML.XMLTree.XMLNode;

@@ -12,7 +12,7 @@
 package ChatAgents;
 
 import net.xqhs.flash.FlashBoot;
-import net.xqhs.flash.core.deployment.BootDefaultSettings;
+import net.xqhs.flash.core.node.BootDefaultSettings;
 
 /**
  * Simple class running the scenario present in the same folder with it.

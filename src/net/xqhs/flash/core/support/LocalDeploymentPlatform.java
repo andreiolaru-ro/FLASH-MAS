@@ -22,7 +22,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
 import net.xqhs.flash.core.agent.messaging.NameBasedMessagingComponent;
-import net.xqhs.flash.core.deployment.AgentManager;
+import net.xqhs.flash.core.node.AgentManager;
 import net.xqhs.flash.core.support.Support.StandardSupportType;
 import tatami.simulation.PlatformLoader.PlatformLink;
 

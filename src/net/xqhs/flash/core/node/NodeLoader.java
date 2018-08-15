@@ -9,16 +9,17 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.deployment;
+package net.xqhs.flash.core.node;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.DeploymentConfiguration.CategoryName;
 import net.xqhs.flash.core.agent.CompositeAgentLoader;
-import net.xqhs.flash.core.deployment.DeploymentConfiguration.CategoryName;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -56,7 +57,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	}
 	
 	protected static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String root_package,
-			String upper_name, String lower_name, String thing, List<String> checkedPaths)
+			String upper_name, String lower_name, String entity, List<String> checkedPaths)
 	{
 		String D = ".";
 		checkedPaths.clear();
@@ -73,11 +74,11 @@ public class NodeLoader extends Unit implements Loader<Node>
 		else
 		{
 			List<String> clsNames = new LinkedList<>();
-			clsNames.add(capitalize(upper_name) + capitalize(thing));
+			clsNames.add(capitalize(upper_name) + capitalize(entity));
 			if(lower_name != null)
 			{
-				clsNames.add(capitalize(lower_name) + capitalize(thing));
-				clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(thing));
+				clsNames.add(capitalize(lower_name) + capitalize(entity));
+				clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 			}
 			String[] roots = new String[] { root_package, root_package + D + DeploymentConfiguration.CORE_PACKAGE };
 			for(String cls : clsNames)
@@ -140,41 +141,41 @@ public class NodeLoader extends Unit implements Loader<Node>
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
 		
-		// thing -> kind -> loaders
+		// entity -> kind -> loaders
 		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
 		TreeParameterSet loader_configs = deployment.getTree(CategoryName.LOADER.getName());
 		if(!loader_configs.getSimpleKeys().isEmpty())
 			lw("Simple keys from loader tree ignored: ", loader_configs.getSimpleKeys());
 		for(String name : loader_configs.getHierarchicalKeys())
 		{
-			String thing = null, kind = null;
+			String entity = null, kind = null;
 			if(name.contains(NAMESEP))
 			{
-				thing = name.split(NAMESEP)[0];
+				entity = name.split(NAMESEP)[0];
 				kind = name.split(NAMESEP, 2)[1];
 			}
 			else
-				thing = name;
-			if(thing == null || thing.length() == 0)
+				entity = name;
+			if(entity == null || entity.length() == 0)
 				le("Loader name parsing failed for []", name);
 			
 			String cp = loader_configs.getDeepValue(name, "classpath");
-			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, thing, kind, CategoryName.LOADER.getName(),
+			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.getName(),
 					checkedPaths);
 			if(cp == null)
 				le("Class [] for loader [] can not be loaded; tried packages and paths ",
 						loader_configs.getDeepValue(name, "classpath"), name, checkedPaths);
 			else
 			{
-				if(!loaders.containsKey(thing))
-					loaders.put(thing, new HashMap<String, List<Loader<?>>>());
-				if(!loaders.get(thing).containsKey(kind))
-					loaders.get(thing).put(kind, new LinkedList<Loader<?>>());
+				if(!loaders.containsKey(entity))
+					loaders.put(entity, new HashMap<String, List<Loader<?>>>());
+				if(!loaders.get(entity).containsKey(kind))
+					loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 				try
 				{
-					loaders.get(thing).get(kind)
+					loaders.get(entity).get(kind)
 							.add((Loader<?>) classFactory.loadClassInstance(cp, loader_configs.getTree(name), false));
-					li("Loader for [] of kind [] successfully loaded from [].", thing, kind, cp);
+					li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 				} catch(Exception e)
 				{
 					le("Loader loading failed for []: ", name, PlatformUtils.printException(e));

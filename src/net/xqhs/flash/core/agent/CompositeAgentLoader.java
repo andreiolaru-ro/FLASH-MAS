@@ -13,16 +13,16 @@ package net.xqhs.flash.core.agent;
 
 import java.util.Iterator;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.agent.AgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.agent.parametric.AgentParameters;
 import net.xqhs.flash.core.agent.parametric.ParametricComponent;
-import net.xqhs.flash.core.deployment.AgentCreationData;
-import net.xqhs.flash.core.deployment.AgentLoader;
-import net.xqhs.flash.core.deployment.DeploymentConfiguration;
-import net.xqhs.flash.core.deployment.AgentLoader.StandardAgentLoaderType;
+import net.xqhs.flash.core.node.AgentCreationData;
+import net.xqhs.flash.core.node.AgentLoader;
+import net.xqhs.flash.core.node.AgentLoader.StandardAgentLoaderType;
 import net.xqhs.flash.core.support.Support;
-import net.xqhs.flash.core.deployment.Loader;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLTree.XMLNode;

@@ -12,7 +12,7 @@ Concept Names
 Services / features
 ===================
 
-	* each component uses one service
+	* each feature uses one service
 	* one support may offer multiple services
 	* support may recommend feature implementations
 
@@ -41,10 +41,10 @@ all elements belong in a category; all categories belong in elements or at the r
 	category-description	 ::= -category element element_description
 	element_description	 ::= (par:val)* category-description*
 	element					 ::= 		// basically anything, but interpreted as:
-								type:name			[depending on category, can mean loader:id or type:id category:type]
+								part1:part2		[depending on category, can mean loader:id or type:id category:type]
 								type:				[an unnamed element with the specified type/loader]
 								name				[depending on category, a named element of the default type or an unnamed element with this type]
-														[the exact variant is decided in Boot, not in the CLI parser]
+														[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
 														
 **TODO:**
 	* fuse trees from XML and CLI in the case of elements with optional parents

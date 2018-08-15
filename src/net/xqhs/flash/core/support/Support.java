@@ -13,9 +13,9 @@ package net.xqhs.flash.core.support;
 
 import java.util.Set;
 
-import net.xqhs.flash.core.Thing;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
-import net.xqhs.flash.core.deployment.Node;
+import net.xqhs.flash.core.node.Node;
 
 /**
  * This interface should be implemented by any persistent entity that exists on a {@link Node} and offers to agents
@@ -23,7 +23,7 @@ import net.xqhs.flash.core.deployment.Node;
  * 
  * @author Andrei Olaru
  */
-public interface Support extends Thing<Node>
+public interface Support extends Entity<Node>
 {
 	/**
 	 * @return the names of services that the instance supports.

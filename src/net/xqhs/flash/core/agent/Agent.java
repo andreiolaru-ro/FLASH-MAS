@@ -1,6 +1,6 @@
 package net.xqhs.flash.core.agent;
 
-import net.xqhs.flash.core.Thing;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.support.Support;
 
 /**
@@ -8,7 +8,7 @@ import net.xqhs.flash.core.support.Support;
  * 
  * @author andreiolaru
  */
-public interface Agent extends Thing<Support>
+public interface Agent extends Entity<Support>
 {
 	// nothing to add, really.
 }

@@ -18,4 +18,4 @@
  * @author andreiolaru
  *
  */
-package net.xqhs.flash.core.deployment;
+package net.xqhs.flash.core.node;

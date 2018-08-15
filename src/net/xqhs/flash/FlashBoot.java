@@ -1,7 +1,7 @@
 package net.xqhs.flash;
 import java.util.Arrays;
 
-import net.xqhs.flash.core.deployment.NodeLoader;
+import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.logging.Logging;
