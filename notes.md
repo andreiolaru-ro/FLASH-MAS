@@ -38,7 +38,7 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 
 *TODO*
-  * check why the anonymous agent with in-context-of=websocket doesn't appear in the websocket tree in node (but appears in the root other websocket trees)
+
 
 Future
   * introduce entities with required name / required kind
