@@ -21,6 +21,11 @@ import net.xqhs.util.logging.logging.LogWrapper.LoggerType;
 
 /**
  * Platform-related functionality. All functions should be static.
+ * <p>
+ * This class contains functions that may perform differently depending on the current platofrm / OS (e.g. Android, PC,
+ * etc).
+ * <p>
+ * Known platforms are enumerated in {@link Platform}.
  * 
  * @author Andrei Olaru
  * 
@@ -33,15 +38,15 @@ public class PlatformUtils
 	 * @author Andrei Olaru
 	 */
 	public static enum Platform {
-		/**
-		 * The current machine runs an OS that contains a standard Java VM.
-		 */
-		PC,
-		
-		/**
-		 * The current machine runs an OS that uses the Dalvik VM.
-		 */
-		ANDROID,
+	/**
+	 * The current machine runs an OS that contains a standard Java VM.
+	 */
+	PC,
+	
+	/**
+	 * The current machine runs an OS that uses the Dalvik VM.
+	 */
+	ANDROID,
 	}
 	
 	/**

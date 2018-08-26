@@ -11,15 +11,15 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
-import net.xqhs.flash.core.DeploymentConfiguration.CategoryName;
-import net.xqhs.flash.core.agent.CompositeAgentLoader;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -27,16 +27,19 @@ import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.Unit;
 
 /**
- * The Boot singleton class manages the startup of the multi-agent system. It manages settings, it loads the scenario,
- * loads the agent definitions (agents are actually created later).
+ * The {@link NodeLoader} class manages the loading of one node in the system (normally, there is one node per machine,
+ * therefore this manages booting FLASH-MAS on the current machine). It manages settings, it loads the scenario, loads
+ * the agent definitions (agents are actually created later).
  * <p>
- * After performing all initializations, it creates a {@link Node} instance that manages the actual simulation.
+ * After performing all initializations, it creates a {@link Node} instance that manages the actual deployment
+ * execution.
  * 
  * @author Andrei Olaru
  */
 public class NodeLoader extends Unit implements Loader<Node>
 {
 	{
+		// sets logging parameters: the name of the log and the type (which is given by the current platform)
 		setUnitName("boot").setLoggerType(PlatformUtils.platformLogType());
 	}
 	
@@ -51,48 +54,94 @@ public class NodeLoader extends Unit implements Loader<Node>
 		return load(configuration.getValues(configuration.getSimpleKeys().get(0)));
 	}
 	
+	/**
+	 * Makes the first letter of the given string upper-case.
+	 * 
+	 * @param s
+	 *            - the string.
+	 * @return the string with the first letter converted to upper-case.
+	 */
 	static String capitalize(String s)
 	{
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
 	}
 	
+	/**
+	 * Attempts to find a specific class given some known information about it. It searches the class in the following
+	 * sequence:
+	 * <ul>
+	 * <li>verify directly the given classpath (<code>given_cp</code>)
+	 * <li>verify if the given classpath can be found in any of the packages
+	 * <li>verify combinations of:
+	 * <ul>
+	 * <li>the <code>root_package</code>, the {@link DeploymentConfiguration#CORE_PACKAGE} in the
+	 * <code>root_package</code> or any of the packages
+	 * <li>with
+	 * <li>combinations of package paths formed of the <code>upper_name</code> and the <code>lower_name</code>
+	 * <li>with
+	 * <li>the given classpath or class names created by joining <code>upper_name</code> and <code>entity</code>;
+	 * <code>lower_name</code> and <code>entity</code>; or <code>lower_name</code>, <code>upper_name</code>, and
+	 * <code>entity</code>.
+	 * </ul>
+	 * </ul>
+	 * <p>
+	 * TODO: example
+	 * 
+	 * @param factory
+	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 * @param packages
+	 *            - a list of java packages in which to search.
+	 * @param given_cp
+	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
+	 *            class. This classpath will also be searched in the list of packages.
+	 * @param root_package
+	 *            - the root package in which to search.
+	 * @param upper_name
+	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
+	 * @param lower_name
+	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 * @param entity
+	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 * @param checkedPaths
+	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
+	 *            class have been searched).
+	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
+	 */
 	protected static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String root_package,
 			String upper_name, String lower_name, String entity, List<String> checkedPaths)
 	{
 		String D = ".";
 		checkedPaths.clear();
-		if(factory.canLoadClass(given_cp))
+		if(given_cp != null && factory.canLoadClass(given_cp))
 			return given_cp;
-		for(String p : packages)
-			if(factory.canLoadClass(p + D + given_cp))
-				return p + D + given_cp;
+		if(packages != null)
+			for(String p : packages)
+				if(factory.canLoadClass(p + D + given_cp))
+					return p + D + given_cp;
+		List<String> clsNames = new LinkedList<>();
 		if(given_cp != null)
+			clsNames.add(given_cp);
+		clsNames.add(capitalize(upper_name) + capitalize(entity));
+		if(lower_name != null)
 		{
-			checkedPaths.add(root_package + D + given_cp);
-			checkedPaths.add(root_package + D + upper_name + D + lower_name + D + given_cp);
+			clsNames.add(capitalize(lower_name) + capitalize(entity));
+			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 		}
-		else
-		{
-			List<String> clsNames = new LinkedList<>();
-			clsNames.add(capitalize(upper_name) + capitalize(entity));
-			if(lower_name != null)
+		List<String> roots = new ArrayList<>();
+		roots.add(root_package);
+		roots.add(root_package + D + DeploymentConfiguration.CORE_PACKAGE);
+		roots.addAll(packages);
+		for(String cls : clsNames)
+			for(String r : roots)
 			{
-				clsNames.add(capitalize(lower_name) + capitalize(entity));
-				clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
-			}
-			String[] roots = new String[] { root_package, root_package + D + DeploymentConfiguration.CORE_PACKAGE };
-			for(String cls : clsNames)
-				for(String r : roots)
+				checkedPaths.add(r + D + upper_name + D + cls);
+				if(lower_name != null)
 				{
-					checkedPaths.add(r + D + upper_name + D + cls);
-					if(lower_name != null)
-					{
-						checkedPaths.add(r + D + upper_name + D + lower_name + D + cls);
-						checkedPaths.add(r + D + lower_name + D + upper_name + D + cls);
-						checkedPaths.add(r + D + lower_name + D + cls);
-					}
+					checkedPaths.add(r + D + upper_name + D + lower_name + D + cls);
+					checkedPaths.add(r + D + lower_name + D + upper_name + D + cls);
+					checkedPaths.add(r + D + lower_name + D + cls);
 				}
-		}
+			}
 		for(String p : checkedPaths)
 			if(factory.canLoadClass(p))
 				return p;
@@ -110,83 +159,82 @@ public class NodeLoader extends Unit implements Loader<Node>
 	protected Node load(List<String> args)
 	{
 		lf("Booting Flash-MAS.");
+		// initials
+		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
+		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
+		ClassFactory classFactory = PlatformUtils.getClassFactory();
+		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
 		
-		// load settings & scenario
-		DeploymentConfiguration settings = new DeploymentConfiguration();
-		TreeParameterSet deployment;
+		// ============================================================================== load settings & scenario
+		TreeParameterSet deploymentConfiguration = null;
 		try
 		{
-			deployment = settings.loadConfiguration(args, true, null);
+			deploymentConfiguration = new DeploymentConfiguration().loadConfiguration(args, true, null);
 		} catch(ConfigLockedException e)
 		{
 			le("settings were locked (shouldn't ever happen): " + PlatformUtils.printException(e));
 			return null;
 		}
-		//
-		// // create window layout
-		// WindowLayout.staticLayout = new GridWindowLayout(settings.getLayout());
-		//
-		// get general configuration info
-		TreeParameterSet config = deployment.getTree(CategoryName.CONFIG.getName());
+		
+		// ============================================================================== get general configuration
+		TreeParameterSet config = deploymentConfiguration.getTree(CategoryName.CONFIG.getName());
 		if(config == null)
 			config = new TreeParameterSet();
-		// get packages
-		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
-		List<String> packages = deployment.getValues(CategoryName.PACKAGE.getName());
 		
-		// get instance factory.
-		ClassFactory classFactory = PlatformUtils.getClassFactory();
+		// ============================================================================== get package list
+		List<String> packages = deploymentConfiguration.getValues(CategoryName.PACKAGE.getName());
 		
-		// get loaders
-		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
-		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
-		
-		// entity -> kind -> loaders
+		// ============================================================================== get loaders
+		// loaders are stored as entity -> kind -> loaders
 		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
-		TreeParameterSet loader_configs = deployment.getTree(CategoryName.LOADER.getName());
-		if(!loader_configs.getSimpleKeys().isEmpty())
-			lw("Simple keys from loader tree ignored: ", loader_configs.getSimpleKeys());
-		for(String name : loader_configs.getHierarchicalKeys())
+		TreeParameterSet loader_configs = deploymentConfiguration.getTree(CategoryName.LOADER.getName());
+		if(loader_configs != null)
 		{
-			String entity = null, kind = null;
-			if(name.contains(NAMESEP))
+			if(!loader_configs.getSimpleKeys().isEmpty()) // just a warning
+				lw("Simple keys from loader tree ignored: ", loader_configs.getSimpleKeys());
+			for(String name : loader_configs.getHierarchicalKeys())
 			{
-				entity = name.split(NAMESEP)[0];
-				kind = name.split(NAMESEP, 2)[1];
-			}
-			else
-				entity = name;
-			if(entity == null || entity.length() == 0)
-				le("Loader name parsing failed for []", name);
-			
-			String cp = loader_configs.getDeepValue(name, "classpath");
-			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.getName(),
-					checkedPaths);
-			if(cp == null)
-				le("Class [] for loader [] can not be loaded; tried packages and paths ",
-						loader_configs.getDeepValue(name, "classpath"), name, checkedPaths);
-			else
-			{
-				if(!loaders.containsKey(entity))
-					loaders.put(entity, new HashMap<String, List<Loader<?>>>());
-				if(!loaders.get(entity).containsKey(kind))
-					loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
-				try
+				String entity = null, kind = null;
+				if(name.contains(NAMESEP))
 				{
-					loaders.get(entity).get(kind)
-							.add((Loader<?>) classFactory.loadClassInstance(cp, loader_configs.getTree(name), false));
-					li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
-				} catch(Exception e)
-				{
-					le("Loader loading failed for []: ", name, PlatformUtils.printException(e));
+					entity = name.split(NAMESEP)[0];
+					kind = name.split(NAMESEP, 2)[1];
+				}
+				else
+					entity = name;
+				if(entity == null || entity.length() == 0)
+					le("Loader name parsing failed for []", name);
+				
+				// find the implementation
+				String cp = loader_configs.getDeepValue(name, "classpath");
+				cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.getName(),
+						checkedPaths);
+				if(cp == null)
+					le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
+				else
+				{ // attach instance to loader map
+					try
+					{
+						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, loader_configs.getTree(name),
+								false);
+						if(!loaders.containsKey(entity))
+							loaders.put(entity, new HashMap<String, List<Loader<?>>>());
+						if(!loaders.get(entity).containsKey(kind))
+							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
+						loaders.get(entity).get(kind).add(loader);
+						li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
+					} catch(Exception e)
+					{
+						le("Loader loading failed for []: ", name, PlatformUtils.printException(e));
+					}
 				}
 			}
 		}
-		// default loaders
+		
+		// ============================================================================== default loaders
 		
 		// default loader for agents
 		String AGENT = CategoryName.AGENT.getName();
-		String DEFAULT_AGENT_LOADER = CompositeAgentLoader.class.getName();
 		
 		if(!loaders.containsKey(AGENT))
 			loaders.put(AGENT, new HashMap<String, List<Loader<?>>>());
@@ -195,20 +243,20 @@ public class NodeLoader extends Unit implements Loader<Node>
 			loaders.get(AGENT).put(null, new LinkedList<Loader<?>>());
 			try
 			{
-				loaders.get(AGENT).get(null)
-						.add((Loader<?>) classFactory.loadClassInstance(DEFAULT_AGENT_LOADER, null, false));
+				loaders.get(AGENT).get(null).add((Loader<?>) classFactory
+						.loadClassInstance(DeploymentConfiguration.DEFAULT_AGENT_LOADER, null, false));
 			} catch(Exception e)
 			{
 				le("Default [] loader loading failed: ", AGENT, PlatformUtils.printException(e));
 			}
 		}
 		
-		// get support infrastructures
-		// kind -> id -> instance
+		// ============================================================================== get support infrastructures
+		// support infrastructures are stored as kind -> id -> instance
 		Map<String, Map<String, Support>> support = new HashMap<>();
 		String SUPPORT = CategoryName.SUPPORT.getName();
-		TreeParameterSet support_configs = deployment.getTree(SUPPORT);
-		if(!support_configs.getSimpleKeys().isEmpty())
+		TreeParameterSet support_configs = deploymentConfiguration.getTree(SUPPORT);
+		if(!support_configs.getSimpleKeys().isEmpty()) // just a warning
 			lw("Simple keys from support tree ignored: ", support_configs.getSimpleKeys());
 		for(String name : support_configs.getHierarchicalKeys())
 		{
@@ -224,16 +272,18 @@ public class NodeLoader extends Unit implements Loader<Node>
 				le("Loader name parsing failed for []", name);
 			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, null, SUPPORT, checkedPaths);
 			if(cp == null)
-				le("Class [] for support [] can not be loaded; tried packages and paths ",
-						loader_configs.getDeepValue(name, "classpath"), name, checkedPaths);
+				le("Class for support [] can not be found; tried paths ",
+						support_configs.getDeepValue(name, "classpath"), name, checkedPaths);
 			else
 			{
-				if(!support.containsKey(kind))
-					support.put(kind, new HashMap<String, Support>());
-				// TODO create id
 				try
 				{
-					support.get(kind).put(id, (Support) classFactory.loadClassInstance(cp, support_configs.getTree(name), false));
+					Support supportInstance = (Support) classFactory.loadClassInstance(cp,
+							support_configs.getTree(name), false);
+					if(!support.containsKey(kind))
+						support.put(kind, new HashMap<String, Support>());
+					// TODO create id
+					support.get(kind).put(id, supportInstance);
 					li("Support for [] with id [] successfully loaded from [].", kind, id, cp);
 				} catch(Exception e)
 				{

@@ -11,12 +11,14 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import net.xqhs.flash.core.agent.CompositeAgentLoader;
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLParser;
@@ -36,269 +38,87 @@ import net.xqhs.util.logging.UnitComponentExt;
  * <li>values given in the deployment file.
  * <li>values given as command-line arguments;
  * </ul>
- * 
- * The configuration is created as a tree of categories and elements. All elements belong in a category; all categories
- * belong in elements or at the root level. Elements may contain key-value pairs.
+ * <p>
+ * The configuration is created as an "entity list" which is a tree (this class itself extends
+ * {@link TreeParameterSet}), in which the first level are entity types, and other each type entities are listed by name
+ * (if any).
  * 
  * @author Andrei Olaru
  */
 public class DeploymentConfiguration extends TreeParameterSet
 {
 	/**
-	 * Types of categories in the configuration. Categories are defined by their name, and my have an optional or
-	 * mandatory hierarchy requirement (a parent category).
-	 * 
-	 * @author andreiolaru
-	 */
-	public enum CategoryName {
-		/**
-		 * The XML schema file against which to validate to deployment file. Values beyond the first value are ignored.
-		 */
-		SCHEMA,
-		
-		/**
-		 * The XML deployment file. Values beyond the first value are ignored.
-		 */
-		DEPLOYMENT,
-		
-		/**
-		 * General configuration settings, used by support infrastructures.
-		 */
-		CONFIG,
-		
-		/**
-		 * Java packages that contain classes needed in the deployment.
-		 */
-		PACKAGE,
-		
-		/**
-		 * Classes that are able to load various categories of elements in the configuration.
-		 */
-		LOADER("for", "kind", false),
-		
-		/**
-		 * Support infrastructures used in the deployment.
-		 */
-		SUPPORT("kind", "id", false),
-		
-		/**
-		 * Agents to create in the deployment, potentially inside particular support infrastructures.
-		 */
-		AGENT(SUPPORT, true),
-		
-		/**
-		 * Features to be deployed in agents.
-		 */
-		FEATURE(AGENT),
-		
-		;
-		
-		/**
-		 * The parent of the category.
-		 */
-		CategoryName	parent				= null;
-		/**
-		 * <code>false</code> if the category must necessarily appear inside its parent category; <code>true</code> if
-		 * the category may also appear at top level.
-		 */
-		boolean			optional_hierarchy	= false;
-		
-		/**
-		 * Element attribute giving the first part of the name of the element.
-		 */
-		String			nameAttribute1;
-		
-		/**
-		 * Element attribute giving the second part of the name of the element.
-		 */
-		String			nameAttribute2;
-		
-		/**
-		 * <code>true</code> if the first part of the name can be missing; <code>false</code> if the first part is
-		 * mandatory.
-		 */
-		boolean			optional_attribute1	= false;
-		
-		/**
-		 * Constructor for a top-level category.
-		 */
-		private CategoryName()
-		{
-		}
-		
-		/**
-		 * Constructor for a category with a parent (hierarchy is mandatory).
-		 * 
-		 * @param _parent
-		 *            - the parent category.
-		 */
-		private CategoryName(CategoryName _parent)
-		{
-			parent = _parent;
-		}
-		
-		/**
-		 * Constructor for a category that has a potentially optional parent.
-		 * 
-		 * @param _parent
-		 *            - the parent.
-		 * @param parent_optional
-		 *            - <code>true</code> if hierarchy is optional.
-		 */
-		private CategoryName(CategoryName _parent, boolean parent_optional)
-		{
-			this(_parent);
-			optional_hierarchy = parent_optional;
-		}
-		
-		/**
-		 * Constructor for a category in which the name of elements if formed from one or two of the element attributes.
-		 * 
-		 * @param part1
-		 *            - the attribute that gives the first part of the name.
-		 * @param part2
-		 *            - the attribute that gives the first part of the name.
-		 * @param part1_optional
-		 *            - <code>true</code> if the element can lack the first part of the name.
-		 */
-		private CategoryName(String part1, String part2, boolean part1_optional)
-		{
-			if(part1 == null || part2 == null)
-				throw new IllegalArgumentException("The element name parts cannot be null");
-			nameAttribute1 = part1;
-			nameAttribute2 = part2;
-			optional_attribute1 = part1_optional;
-		}
-		
-		/**
-		 * @return the name of the category, in lower case.
-		 */
-		public String getName()
-		{
-			return this.name().toLowerCase();
-		}
-		
-		/**
-		 * @return the name of the parent category, if any was defined; <code>null</code> otherwise.
-		 */
-		public String getParent()
-		{
-			return parent != null ? parent.getName() : null;
-		}
-		
-		/**
-		 * @return <code>true</code> if hierarchy is optional.
-		 */
-		public boolean isParentOptional()
-		{
-			return optional_hierarchy;
-		}
-		
-		/**
-		 * @return <code>true</code> if the elements in the category have names that get assembled from values of two
-		 *         attributes.
-		 */
-		public boolean hasNameWithParts()
-		{
-			return nameAttribute1 != null && nameAttribute2 != null;
-		}
-		
-		/**
-		 * @return the names of the two attributes whose values form the element name.
-		 */
-		public String[] nameAttributes()
-		{
-			return new String[] { nameAttribute1, nameAttribute2 };
-		}
-		
-		/**
-		 * @return <code>true</code> if the first part of the name is optional.
-		 */
-		public boolean isNameAttribute1Optional()
-		{
-			return optional_attribute1;
-		}
-		
-		/**
-		 * @return the hierarchical path of the category, with ancestors separated by
-		 *         {@value DeploymentConfiguration#PATH_SEP}.
-		 */
-		public String getPath()
-		{
-			if(parent == null)
-				return getName();
-			return parent.getPath() + PATH_SEP + getName();
-		}
-		
-		/**
-		 * Find the {@link CategoryName} identified by the given name.
-		 * 
-		 * @param name
-		 *            - the name.
-		 * @return the category.
-		 */
-		public static CategoryName byName(String name)
-		{
-			for(CategoryName s : CategoryName.values())
-				if(s.getName().equals(name))
-					return s;
-			return null;
-		}
-	}
-	
-	/**
 	 * The class UID.
 	 */
-	private static final long				serialVersionUID			= 5157567185843194635L;
+	private static final long				serialVersionUID				= 5157567185843194635L;
 	
-	/**
-	 * Separator of category hierarchy path elements.
-	 */
-	public static final String				PATH_SEP					= "/";
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String				CLI_CATEGORY_PREFIX			= "-";
+	public static final String				CLI_CATEGORY_PREFIX				= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String				NAME_SEPARATOR				= ":";
-	/**
-	 * Root package for FLASH classes.
-	 */
-	public static final String				ROOT_PACKAGE				= "net.xqhs.flash";
-	/**
-	 * Package for core FLASH functionality
-	 */
-	public static final String				CORE_PACKAGE				= "core";
-	
+	public static final String				NAME_SEPARATOR					= ":";
 	/**
 	 * The name of nodes containing parameters.
 	 */
-	public static final String				PARAMETER_NODE_NAME			= "parameter";
+	public static final String				PARAMETER_ELEMENT_NAME			= "parameter";
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
-	public static final String				PARAMETER_NAME				= "name";
+	public static final String				PARAMETER_NAME					= "name";
 	/**
 	 * The name of the attribute of a parameter node holding the value of the parameter.
 	 */
-	public static final String				PARAMETER_VALUE				= "value";
+	public static final String				PARAMETER_VALUE					= "value";
+	/**
+	 * The name of the attribute which contains the name.
+	 */
+	public static final String				NAME_ATTRIBUTE_NAME				= "name";
+	/**
+	 * The name of the element(s) which contain entity context.
+	 */
+	public static final String				CONTEXT_ELEMENT_NAME			= "in-context-of";
+	/**
+	 * Name of XML nodes for entities other than those in {@link CategoryName}.
+	 */
+	public static final String				GENERAL_ENTITY_NAME				= "entity";
+	/**
+	 * The name of the XML attribute specifying the type of the entity.
+	 */
+	public static final String				GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
+	/**
+	 * The (possibly implicit) root category which can be auto-generated.
+	 */
+	public static final CategoryName		ROOT_CATEGORY					= CategoryName.NODE;
+	/**
+	 * The {@value #ROOT_CATEGORY} that was auto-generated, if any.
+	 */
+	protected TreeParameterSet				autoGeneratedRoot				= null;
 	
+	/**
+	 * Root package for FLASH classes.
+	 */
+	public static final String				ROOT_PACKAGE					= "net.xqhs.flash";
+	/**
+	 * Package for core FLASH functionality
+	 */
+	public static final String				CORE_PACKAGE					= "core";
 	/**
 	 * The default directory for deployment files.
 	 */
-	public static final String				DEPLOYMENT_FILE_DIRECTORY	= "src-deployment/";
+	public static final String				DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
 	
 	/**
 	 * Default values.
 	 */
-	public static final Map<String, String>	DEFAULTS					= new HashMap<>();
+	public static final Map<String, String>	DEFAULTS						= new HashMap<>();
 	
 	/**
-	 * Name under which to put unnamed entities, or entities without a previously known name.
+	 * The default loader for agents.
 	 */
-	public static final String				OTHER_NAME					= "other";
+	public static final String				DEFAULT_AGENT_LOADER			= CompositeAgentLoader.class.getName();
 	
 	static
 	{
@@ -343,17 +163,16 @@ public class DeploymentConfiguration extends TreeParameterSet
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
 	{
 		locked();
-		
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt().setUnitName("settings load");
 		
-		// 1. get default settings
+		// ====================================== get default settings
 		for(String setting : DEFAULTS.keySet())
 			this.add(setting, DEFAULTS.get(setting));
 		log.lf("initial tree:", this);
 		
 		log.lf("program arguments:", programArguments);
 		
-		// 2. parse deployment file
+		// ====================================== get deployment file and schema
 		boolean scenarioFirst = false;
 		if(programArguments.size() > 0 && programArguments.get(0).length() > 0
 				&& !programArguments.get(0).startsWith(CLI_CATEGORY_PREFIX) && !programArguments.get(0).contains(":"))
@@ -378,6 +197,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 		log.lf("loading scenario [] with schema [].", get(CategoryName.DEPLOYMENT.getName()),
 				get(CategoryName.SCHEMA.getName()));
 		
+		// ====================================== load deployment file
 		XMLTree XMLtree = XMLParser.validateParse(get(CategoryName.SCHEMA.getName()),
 				get(CategoryName.DEPLOYMENT.getName()));
 		if(loadedXML != null)
@@ -386,12 +206,12 @@ public class DeploymentConfiguration extends TreeParameterSet
 			log.le("Deployment file load failed.");
 		else
 		{
-			readXML(XMLtree.getRoot(), this, log);
+			readXML(XMLtree.getRoot(), this, this, log);
 			log.lf("after XML tree parse:", this);
 			log.lf(">>>>>>>>");
 		}
 		
-		// 3. parse CLI args
+		// ====================================== parse CLI args
 		Iterator<String> it = programArguments.iterator();
 		if(scenarioFirst)
 			it.next();
@@ -407,16 +227,25 @@ public class DeploymentConfiguration extends TreeParameterSet
 	}
 	
 	/**
-	 * Reads data from the XML tree read from the deployment file into the given configuration tree.
+	 * Recursive method (recursing on XML nodes) which reads data from an XML (sub-)tree from the deployment file into
+	 * the given configuration tree. It also:
+	 * <ul>
+	 * <li>assigns names to entities, potentially auto-generated, based on the rules in {@link CategoryName};
+	 * <li>assigns contexts in the tree structure based on the value of the {@value #CONTEXT_ELEMENT_NAME} attributes;
+	 * <li>creates {@value #CONTEXT_ELEMENT_NAME} parameters based on tree structure;
+	 * <li>adds entities to the entity list, using the actual subtrees in the configuration tree;
+	 * </ul>
 	 * 
 	 * @param node
 	 *            - the XML node to read.
-	 * @param tree
-	 *            - the configuration tree.
+	 * @param _nodeTree
+	 *            - the configuration sub-tree corresponding to the current node.
+	 * @param rootTree
+	 *            - the global configuration tree / entity list.
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
-	protected static void readXML(XMLNode node, TreeParameterSet tree, UnitComponentExt log)
+	protected void readXML(XMLNode node, TreeParameterSet _nodeTree, TreeParameterSet rootTree, UnitComponentExt log)
 	{
 		// String l = "Node " + node.getName() + " with attributes ";
 		// for(XMLAttribute a : node.getAttributes())
@@ -426,28 +255,53 @@ public class DeploymentConfiguration extends TreeParameterSet
 		// l += n.getName() + ",";
 		// log.lf(l);
 		
-		for(XMLAttribute a : node.getAttributes())
-			tree.add(a.getName(), a.getValue());
-		// Set<String> named = new LinkedHashSet<>();
-		for(XMLNode n : node.getNodes())
+		TreeParameterSet nodeTree = _nodeTree;
+		if(nodeTree != rootTree)
+			// now inside an XML node that has already been integrated.
+			for(XMLAttribute a : node.getAttributes())
+				nodeTree.add(a.getName(), a.getValue());
+			
+		// check subordinate XML nodes and integrate them.
+		for(XMLNode child : node.getNodes())
 		{
-			if(n.getName().equals(PARAMETER_NODE_NAME))
-				tree.add(n.getAttributeValue(PARAMETER_NAME), n.getAttributeValue(PARAMETER_VALUE));
-			else if(n.getNodes().isEmpty() && n.getAttributes().isEmpty() && !tree.isHierarchical(n.getName()))
+			if(child.getName().equals(PARAMETER_ELEMENT_NAME))
+				// parameter nodes, add their values to the current tree
+				nodeTree.add(child.getAttributeValue(PARAMETER_NAME), child.getAttributeValue(PARAMETER_VALUE));
+			else if(child.getNodes().isEmpty() && child.getAttributes().isEmpty()
+					&& !nodeTree.isHierarchical(child.getName()))
+				// text node, that will also be treated as parameter - value
 				// here missing the case of a node with no children but with attributes
-				tree.add(n.getName(), (String) n.getValue());
+				nodeTree.add(child.getName(), (String) child.getValue());
 			else
 			{
-				TreeParameterSet subTree = new TreeParameterSet();
-				readXML(n, subTree, log);
-				CategoryName cat = CategoryName.byName(n.getName());
-				String name = null;
-				if(cat != null && cat.hasNameWithParts())
-				{ // node is a registered category and its elements have two-parts names
-					String[] partNames = cat.nameAttributes();
-					String part1 = subTree.getValue(partNames[0]);
-					String part2 = subTree.getValue(partNames[1]);
-					if(part1 == null && !cat.isNameAttribute1Optional())
+				// node must be integrated as a different entity
+				
+				// get information on the child's category
+				String catName = child.getName();
+				if(catName.equals(GENERAL_ENTITY_NAME))
+					catName = child.getAttributeValue(GENERAL_ENTITY_TYPE_ATTRIBUTE);
+				CategoryName category = CategoryName.byName(catName);
+				if(nodeTree == rootTree)
+					if(category == null || category.getAncestorsList().contains(ROOT_CATEGORY.getName()))
+					{ // must create an implicit local node
+						TreeParameterSet t = new TreeParameterSet();
+						rootTree.addTree(ROOT_CATEGORY.getName(), t);
+						nodeTree = new TreeParameterSet();
+						t.addTree(null, nodeTree);
+						autoGeneratedRoot = nodeTree;
+					}
+				if(ROOT_CATEGORY.equals(category) && nodeTree == autoGeneratedRoot)
+					// if in the auto-generated root but should create another root
+					nodeTree = rootTree;
+				
+				// get the child's name or create it according to the child's category / entity.
+				String name = getXMLValue(child, NAME_ATTRIBUTE_NAME);
+				if(name == null && category != null && category.hasNameWithParts())
+				{ // node has a registered category and its elements have two-parts names
+					String[] partNames = category.nameParts();
+					String part1 = getXMLValue(child, partNames[0]);
+					String part2 = getXMLValue(child, partNames[1]);
+					if(part1 == null && !category.isNameFirstPartOptional())
 					{
 						log.le("Child of [] does not contain necessary name part attribute [].", node.getName(),
 								partNames[0]);
@@ -455,145 +309,165 @@ public class DeploymentConfiguration extends TreeParameterSet
 					}
 					name = (part1 != null ? part1 : "") + (part2 != null ? NAME_SEPARATOR + part2 : "");
 				}
-				else if(subTree.getValue(PARAMETER_NAME) != null)
-					// node n is a node with a name
-					name = subTree.getValue(PARAMETER_NAME);
-				// log.lw("Node [] does not contain a name.", n.getName());
-				if(name == null)
-					tree.addTree(n.getName(), subTree);
-				else
+				if(name != null && name.trim().length() == 0)
+					name = null;
+				TreeParameterSet childTree = nodeTree.getTree(catName, true).getTree(name, true);
+				if(!childTree.isSimple(NAME_ATTRIBUTE_NAME) && name != null && name.trim().length() > 0)
+					// add name parameter
+					childTree.add(NAME_ATTRIBUTE_NAME, name);
+					
+				// get context or create it
+				// TODO: later: add all containing contexts to the <in-context-of> tree (also watch for cyclic refs
+				// here)
+				// currently, only contexts set by CategoryName will be searched for name
+				String context = getXMLValue(child, CONTEXT_ELEMENT_NAME);
+				if(context != null && category != null && category.getParent() != null
+						&& !node.getName().equals(category.getParent()))
 				{
-					if(!tree.isHierarchical(n.getName()))
-						tree.addTree(n.getName(), new TreeParameterSet());
-					tree.getTree(n.getName()).addTree(name, subTree);
+					TreeParameterSet contextTree = rootTree.getTree(category.getParent(), true).getTree(context, true);
+					if(!contextTree.isHierarchical(name))
+						contextTree.addTree(name, childTree);
 				}
+				
+				// add to entity list
+				if(nodeTree != rootTree && !rootTree.getTree(catName, true).isHierarchical(name))
+					rootTree.getTree(catName).addTree(name, childTree);
+				
+				// read any other properties of the entity
+				readXML(child, childTree, rootTree, log);
 			}
 		}
-		// for(String name : named)
-		// { // all elements that have a name
-		// List<TreeParameterSet> trees = tree.getTrees(name);
-		// TreeParameterSet newtree = new TreeParameterSet();
-		// tree.clear(name);
-		// tree.addTree(name, newtree);
-		// for(TreeParameterSet t : trees)
-		// {
-		// String elName = t.getValue(PARAMETER_NAME);
-		// newtree.addTree(elName != null ? elName : OTHER_NAME, t);
-		// }
-		// }
 	}
 	
 	/**
-	 * Reads data from program arguments into the given configuration tree.
+	 * Reads data from program arguments into the given configuration tree. The parser attempts to place the parameters
+	 * in the correct categories / elements in the already existing tree (read from the XML) or introduce new elements
+	 * at the correct places. The CLI arguments are parsed in order as follows:
+	 * <ul>
+	 * <li>if the argument is a category / entity ("-categ"), its correct place in the tree is found, either by
+	 * advancing in the tree or going upwards in the tree until in the correct context.
+	 * <li>the category name must be immediately followed by the element name (may be new or existing).
+	 * <li>what follows until the next category name are arguments of the form "parameter:value" or just "parameter".
+	 * </ul>
+	 * <p>
+	 * For integrating entities that are not already in the XML, a stack is used to keep track of the current position
+	 * in the tree. The "current position" in the tree is decided by the existing tree (for existing elements and
+	 * entities), by the hierarchy described in {@link CategoryName}, for known entities, and otherwise each new entity
+	 * is considered as subordinate to the previous entity and for known entities the stack is popped until getting to
+	 * the level where the entity appeared previously.
 	 * 
 	 * @param args
 	 *            - an {@link Iterator} through the arguments.
-	 * @param tree
-	 *            - the configuration tree.
+	 * @param rootTree
+	 *            - the configuration tree. The given tree is expected to already contain the data from the XML
+	 *            deployment file.
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
-	protected static void readCLIArgs(Iterator<String> args, TreeParameterSet tree, UnitComponentExt log)
+	protected static void readCLIArgs(Iterator<String> args, TreeParameterSet rootTree, UnitComponentExt log)
 	{
-		class CTriple
+		class CTriple // represents the current node in the tree
 		{
-			String				cat;
-			TreeParameterSet	tc;
-			TreeParameterSet	te;
+			String				category;	// the name of the category
+			TreeParameterSet	catTree;	// the subtree of the category, will contain elements in this categories
+			TreeParameterSet	elemTree;	// the subtree of the element, will contain parameters or subordinate
+											// categories
 			
-			public CTriple(String category, TreeParameterSet catTree, TreeParameterSet elTree)
+			public CTriple(String cat, TreeParameterSet categoryTree, TreeParameterSet elTree)
 			{
-				cat = category;
-				tc = catTree;
-				te = elTree;
+				category = cat;
+				catTree = categoryTree;
+				elemTree = elTree;
+			}
+			
+			public String toString()
+			{
+				return "{" + category + "/" + (catTree != null ? catTree.toString(1, true) : "-") + "/"
+						+ (elemTree != null ? elemTree.toString(1, true) : "-") + "}";
 			}
 		}
-		Stack<CTriple> context = new Stack<>(); // categories & elements context
-		CTriple treeRoot = new CTriple(null, tree, null);
-		context.push(treeRoot);
+		Deque<CTriple> context = new LinkedList<>(); // categories & elements context
+		final CTriple rootLevel = new CTriple(null, null, rootTree);
+		context.push(rootLevel);
 		
 		while(args.hasNext())
 		{
+			// log.lf(context.toString());
 			String a = args.next();
+			if(a.trim().length() == 0)
+				continue;
 			if(isCategory(a))
 			{
+				// get category
 				String catName = getCategory(a);
 				CategoryName category = CategoryName.byName(getCategory(a));
 				if(!args.hasNext())
-				{
+				{ // must check this before creating any trees
 					log.lw("Empty unknown category [] in CLI arguments.", catName);
 					return;
 				}
+				String name = args.next();
 				
-				if(category == null || category.getParent() == null)
-				{ // category unknown or root category -> go to toplevel
-					context.clear(); // reset context
-					context.push(treeRoot);
-					// put category
-					if(tree.isSimple(catName))
+				// create / find the context
+				// search upwards in the current context
+				// save the current context, in case no appropriate context found upwards
+				Deque<CTriple> savedContext = new LinkedList<>(context);
+				while(!context.isEmpty())
+				{
+					if(context.peek().elemTree.isHierarchical(catName))
+					{ // found a level with the same category; will insert new element here
+						context.push(new CTriple(catName, context.peek().elemTree.getTree(catName), null));
+						break;
+					}
+					else if(category != null && category.getParent().equals(context.peek().category))
+					{ // category is known and found the correct parent for the category
+						TreeParameterSet c = context.peek().elemTree.getTree(catName, true);
+						context.push(new CTriple(catName, c, null));
+						break;
+					}
+					// no match yet
+					context.pop();
+				}
+				if(context.isEmpty())
+				{
+					String msg = "Category [] has parent [] and no instance of parent could be found;";
+					if(category != null && !category.isParentOptional())
 					{
-						log.le("Name [] should not be used as a category; it is a simple name.", catName);
-						continue;
+						log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(), a);
+						return;
 					}
-					TreeParameterSet c = tree.getTree(catName);
-					if(c == null)
-					{ // category does not already exist
-						c = new TreeParameterSet();
-						tree.addTree(catName, c);
+					if(category == null)
+					{ // category not known
+						log.lw(msg + " adding in current context.", catName, "unknown");
+						context = new LinkedList<>(savedContext);
 					}
+					else
+					{
+						log.lw(msg + " adding to top level.", catName, category.getParent());
+						context.push(rootLevel);
+						
+						if(category.getAncestorsList().contains(ROOT_CATEGORY.getName()))
+						{ // must create an implicit instance of the root category
+							TreeParameterSet implicitCat = rootTree.getTree(ROOT_CATEGORY.getName());
+							TreeParameterSet implicitElem = implicitCat.getTree(null);
+							context.push(new CTriple(ROOT_CATEGORY.getName(), implicitCat, implicitElem));
+						}
+					}
+					
+					TreeParameterSet c = context.peek().elemTree.getTree(catName, true);
 					context.push(new CTriple(catName, c, null));
 				}
-				else
-				{ // subordinate category of some (other) context
-					// move up context
-					while(!context.isEmpty())
-					{
-						if(category.getName().equals(context.peek().cat))
-							// will insert new element here
-							break;
-						else if(category.getParent().equals(context.peek().cat))
-						{ // found the correct parent for the category
-							TreeParameterSet elementTree = context.peek().te;
-							assert (elementTree != null);
-							if(elementTree.isSimple(catName))
-							{
-								log.le("Name [] should not be used as a category; it is a simple name.", catName);
-								continue;
-							}
-							TreeParameterSet c = elementTree.getTree(catName);
-							if(c == null)
-							{ // category does not already exist
-								c = new TreeParameterSet();
-								elementTree.addTree(catName, c);
-							}
-							context.push(new CTriple(catName, c, null));
-							break;
-						}
-						// no match yet
-						context.pop();
-					}
-					if(context.isEmpty())
-					{
-						String msg = "Category [] has parent [] but no instance of parent could be found;";
-						if(!category.isParentOptional())
-						{
-							log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(),
-									a);
-							return;
-						}
-						log.lw(msg + " adding to top level.", catName, category.getParent());
-						context.push(treeRoot);
-					}
-				}
-				// the category has been added, now its time to add the new element
-				String name = args.next();
-				TreeParameterSet t = new TreeParameterSet();
-				context.peek().tc.addTree(name, t);
-				context.peek().te = t;
+				
+				// the category has been added, now its time to enter or create the element
+				context.peek().elemTree = context.peek().catTree.getTree(name, true);
+				
+				// add to entity list
+				if(context.size() > 1)
+					rootTree.getTree(catName, true).addTree(name, context.peek().elemTree);
 			}
 			else
 			{
-				if(context.peek().te == null)
+				if(context.peek().elemTree == null)
 				{
 					log.le("incorrect context for argument []", a);
 					continue;
@@ -607,7 +481,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 				}
 				else
 					parameter = a;
-				context.peek().te.add(parameter, value);
+				context.peek().elemTree.add(parameter, value);
 			}
 		}
 	}
@@ -635,6 +509,38 @@ public class DeploymentConfiguration extends TreeParameterSet
 	protected static String getCategory(String arg)
 	{
 		return isCategory(arg) ? arg.substring(1) : null;
+	}
+	
+	/**
+	 * Method to simplify the access to a parameter/attribute of an parametric XML node.
+	 * <p>
+	 * Having the {@link XMLNode} instance associated with the parametric node, the method retrieves the first value
+	 * found among the following:
+	 * <ul>
+	 * <li>the value of the attribute with the searched name, if any, or otherwise
+	 * <li>the value associated with the first occurrence of the desired parameter name, if any, or otherwise
+	 * <li>the value in the first node with the searched name, if any.
+	 * </ul>
+	 * 
+	 * @param node
+	 *            - the node containing the configuration information for the agent.
+	 * @param searchName
+	 *            - the name of the searched attribute / parameter / node.
+	 * @return the value associated with the searched name, or <code>null</code> if nothing found.
+	 */
+	public static String getXMLValue(XMLNode node, String searchName)
+	{
+		if(node.getAttributeValue(searchName) != null)
+			// from an attribute
+			return node.getAttributeValue(searchName);
+		if(node.getAttributeOfFirstNodeWithValue(PARAMETER_ELEMENT_NAME, PARAMETER_NAME, searchName,
+				PARAMETER_VALUE) != null)
+			// from a parameter (e.g. <parameter name="search" value="the name">)
+			return node.getAttributeOfFirstNodeWithValue(PARAMETER_ELEMENT_NAME, PARAMETER_NAME, searchName,
+					PARAMETER_VALUE);
+		if(node.getNode(searchName, 0) != null)
+			return node.getNode(searchName, 0).getValue().toString();
+		return null;
 	}
 	
 }

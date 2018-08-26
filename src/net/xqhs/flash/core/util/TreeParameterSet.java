@@ -21,10 +21,10 @@ import java.util.Set;
  * The class acts as a tree of key-value pairs that allows multiple values for the same key.
  * 
  * The class builds on the same principles as {@link ParameterSet} but acts rather like a hierarchical ParameterSet. It
- * and has two types of keys.
+ * has two types of keys.
  * <ul>
- * <li>Some keys are "simple", in that they act exactly like keys with String values in a ParameterSet. There is a name
- * and one or more String values associated with the name.
+ * <li>Some keys are "simple", in that they act exactly like keys with String values in a {@link ParameterSet}. There is
+ * a name and one or more String values associated with the name.
  * <li>Other keys are "hierarchical" (or tree-keys). Each tree key has a name and an associated {@link TreeParameterSet}
  * value.
  * </ul>
@@ -235,7 +235,7 @@ public class TreeParameterSet extends ParameterSet
 	 * 
 	 * @param keys
 	 *            - the path, consisting of keys.
-	 * @return the value associated with the leaf at the end of the path.
+	 * @return the value associated with the leaf at the end of the path, if any is found; <code>null</code> otherwise.
 	 */
 	public String getDeepValue(String... keys)
 	{
@@ -281,16 +281,46 @@ public class TreeParameterSet extends ParameterSet
 	 */
 	public TreeParameterSet getTree(String name)
 	{
+		return getTree(name, false);
+	}
+	
+	/**
+	 * Retrieves the first tree associated with the given name.
+	 * <p>
+	 * Optionally, if no such tree exists, creates one, adds it as a value for the given name and returns it.
+	 * 
+	 * @param name
+	 *            - the name (key).
+	 * @param create
+	 *            - if <code>true</code> and no tree is associated with the name, a new tree is added for the given name
+	 *            and returned. If <code>false</code>, the method is the same as {@link #getTree(String)}.
+	 * @return the first associated tree.
+	 */
+	public TreeParameterSet getTree(String name, boolean create)
+	{
 		List<TreeParameterSet> trees = getTrees(name);
 		if(trees.isEmpty())
+		{
+			if(create)
+			{
+				TreeParameterSet newTree = new TreeParameterSet();
+				addTree(name, newTree);
+				return newTree;
+			}
 			return null;
+		}
 		return trees.get(0);
+	}
+	
+	public String toString(int depth, boolean shorter)
+	{
+		return toString(shorter ? "" : "   ", shorter ? "" : "      ", depth, shorter);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return toString("   ");
+		return toString("   ", "      ", -1, false);
 	}
 	
 	/**
@@ -301,32 +331,39 @@ public class TreeParameterSet extends ParameterSet
 	 *            - the current indent.
 	 * @return the String rendition of this tree, indented.
 	 */
-	protected String toString(String indent)
+	protected String toString(String indent, String baseIndent, int depth, boolean shorter)
 	{
-		String ret = "";
+		if(depth == 0)
+			return shorter ? "," : "";
+		String ret = shorter && indent.length() < baseIndent.length() ? ">" : "";
 		boolean justtree = false;
 		for(String name : parameterSet.keySet())
 			if(simpleKeys.contains(name))
 			{
-				ret += (justtree ? "" : "\n") + indent + String.format("%-" + (padLen + 4) + "s", "[" + name + "]:")
+				if(shorter)
+					continue;
+				ret += (justtree || shorter ? "" : "\n") + indent
+						+ String.format("%-" + (padLen + 4) + "s", "[" + name + "]:")
 						+ parameterSet.get(name);
 				justtree = false;
 			}
 			else
 			{
-				ret += (justtree ? "" : "\n") + indent + "[" + name + "]>";
+				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name
+						+ (shorter ? "" : "]>");
 				justtree = true;
 				boolean first = true;
 				for(Object o : parameterSet.get(name))
 				{
-					ret += (first ? "" : (indent + "    " + "]>"))
-							+ ((TreeParameterSet) o).toString(indent + "    " + "    ");
+					ret += (first ? "" : (indent + baseIndent + (shorter ? "" : "]>")))
+							+ ((TreeParameterSet) o).toString(indent + baseIndent, baseIndent, depth - 1, shorter);
 					first = false;
 				}
 			}
 		// if(ret.length() > 0)
-		if(!ret.endsWith("\n"))
-			ret += "\n";
+		String sep = shorter ? "," : "\n";
+		if(!ret.endsWith(sep))
+			ret += sep;
 		return ret;
 	}
 }

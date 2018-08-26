@@ -1,19 +1,20 @@
 /*******************************************************************************
- * Copyright (C) 2015 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy Nga, Amal El Fallah Seghrouchni, Cedric Herpson.
+ * Copyright (C) 2018 Andrei Olaru.
  * 
- * This file is part of tATAmI-PC.
+ * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
  * 
- * tATAmI-PC is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
  * 
- * tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
  * 
- * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.node.Node;
 
@@ -26,7 +27,8 @@ import net.xqhs.flash.core.node.Node;
 public interface Support extends Entity<Node>
 {
 	/**
-	 * @return the names of services that the instance supports.
+	 * @return the names of services that the instance supports. FIXME: services should be better described or be part
+	 *         of some class.
 	 */
 	public Set<String> getSupportedServices();
 	
@@ -44,4 +46,16 @@ public interface Support extends Entity<Node>
 	 *         recommendation is made.
 	 */
 	public String getRecommendedFeatureImplementation(AgentFeatureType featureType);
+	
+	/**
+	 * Enrolls the given agent in the support infrastructure, making the supported services available to the agent.
+	 * <p>
+	 * It is expected that the implementation of this method will call {@link Entity#addContext(Entity)} to inform the
+	 * agent of its inclusion in this entity.
+	 * 
+	 * @param agent
+	 *            - the agent to be registered.
+	 * @return <code>true</code> if the registration has been successful, <code>false</code> otherwise.
+	 */
+	public boolean registerAgent(Agent agent);
 }

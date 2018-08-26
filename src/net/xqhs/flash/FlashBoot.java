@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (C) 2018 Andrei Olaru.
+ * 
+ * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+ * 
+ * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ * 
+ * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.xqhs.flash;
 import java.util.Arrays;
 
@@ -23,9 +34,13 @@ public class FlashBoot
 	{
 		Logging.getMasterLogging().setLogLevel(Level.ALL);
 		String test_args;
-		test_args = "";
-//		test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
-//		test_args = "-support local host:here -agent bane something:something -component a";
+		// test_args = "";
+		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
+		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
+		test_args = "-agent AgentA some:property -feature mobility where:anywhere "; // "-support local:auxilliary
+																						// host:here -agent bane
+																						// something:something
+																						// -component a";
 //		test_args = "-support local -support local arg:val -support last host:here -agent bane something:something -feature a -feature b par:val -feature c -agent bruce -feature a";
 		String[] use_args = test_args.split(" ");
 		

@@ -1,119 +1,141 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Copyright (C) 2013 Andrei Olaru, Marius-Tudor Benea, Nguyen Thi Thuy 
-	Nga, Amal El Fallah Seghrouchni, Cedric Herpson. This file is part of tATAmI-PC. 
-	tATAmI-PC is free software: you can redistribute it and/or modify it under 
-	the terms of the GNU Lesser General Public License as published by the Free 
-	Software Foundation, either version 3 of the License, or any later version. 
-	tATAmI-PC is distributed in the hope that it will be useful, but WITHOUT 
-	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-	FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
-	details. You should have received a copy of the GNU Lesser General Public 
-	License along with tATAmI-PC. If not, see <http://www.gnu.org/licenses/>. -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://flash.xqhs.net/deployment-schema"
+<!-- Copyright (C) 2018 Andrei Olaru. This file is part of Flash-MAS. The CONTRIBUTORS.md file lists 
+	people who have been previously involved with this project. Flash-MAS is free software: you can redistribute 
+	it and/or modify it under the terms of the GNU General Public License as published by the Free Software 
+	Foundation, either version 3 of the License, or any later version. Flash-MAS is distributed in the hope 
+	that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should 
+	have received a copy of the GNU General Public License along with Flash-MAS. If not, see <http://www.gnu.org/licenses/>. -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://flash.xqhs.net/deployment-schema"
 	xmlns:tns="http://flash.xqhs.net/deployment-schema" elementFormDefault="qualified">
-	<element name="scenario">
-		<complexType>
-			<sequence>
-				<element name="config" maxOccurs="1" minOccurs="0">
-					<complexType>
-						<sequence>
-							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<attribute name="name" type="string" use="required" />
-									<attribute name="value" type="string" use="required" />
-								</complexType>
-							</element>
-						</sequence>
-						<attribute name="center" type="string" use="optional" />
-						<attribute name="here" type="string" use="optional" />
-					</complexType>
-				</element>
-				<element name="support" maxOccurs="unbounded" minOccurs="0">
-					<complexType>
-						<sequence>
-							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<attribute name="name" type="string" use="required" />
-									<attribute name="value" type="string" use="required" />
-								</complexType>
-							</element>
-						</sequence>
-						<attribute name="kind" type="string" use="required" />
-						<attribute name="id" type="string" use="optional" />
-					</complexType>
-				</element>
-				<element name="package" type="string" minOccurs="0"
-					maxOccurs="unbounded" />
-				<element name="loader" maxOccurs="unbounded" minOccurs="0">
-					<complexType>
-						<sequence>
-							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<attribute name="name" type="string" use="required" />
-									<attribute name="value" type="string" use="required" />
-								</complexType>
-							</element>
-						</sequence>
-						<attribute name="for" type="string" use="required" />
-						<attribute name="kind" type="string" use="optional" />
-						<attribute name="classpath" type="string" use="optional" />
-					</complexType>
-				</element>
-				<element name="agent" maxOccurs="unbounded" minOccurs="0">
-					<complexType>
-						<sequence>
-							<element name="in-context-of" type="string" minOccurs="0" maxOccurs="unbounded" />
-							<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<attribute name="name" type="string" use="required" />
-									<attribute name="value" type="string" use="required" />
-								</complexType>
-							</element>
-							<element name="component" minOccurs="0" maxOccurs="unbounded">
-								<complexType>
-									<sequence>
-										<element name="parameter" minOccurs="0" maxOccurs="unbounded">
-											<complexType>
-												<attribute name="name" type="string" use="required" />
-												<attribute name="value" type="string" use="required" />
-											</complexType>
-										</element>
-									</sequence>
-									<attribute name="name" type="string" use="required" />
+
+
+	<complexType name="parametric">
+		<sequence>
+			<element name="parameter" minOccurs="0" maxOccurs="unbounded">
+				<complexType>
+					<attribute name="name" type="string" use="required" />
+					<attribute name="value" type="string" use="optional" />
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+
+	<complexType name="entitybase">
+		<complexContent>
+			<extension base="tns:parametric">
+				<sequence>
+					<element name="in-context-of" type="string" minOccurs="0" maxOccurs="unbounded" />
+					<element name="entity" type="tns:entity" minOccurs="0" maxOccurs="unbounded" />
+				</sequence>
+				<attribute name="name" type="string" use="optional" />
+				<attribute name="kind" type="string" use="optional" />
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="entity">
+		<complexContent>
+			<extension base="tns:entitybase">
+				<attribute name="type" type="string" use="required" />
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="agent">
+		<complexContent>
+			<extension base="tns:entitybase">
+				<sequence>
+					<element name="feature" minOccurs="0" maxOccurs="unbounded">
+						<complexType>
+							<complexContent>
+								<extension base="tns:entitybase">
 									<attribute name="classpath" type="string" use="optional" />
-								</complexType>
-							</element>
-						</sequence>
-						<attribute name="name" type="string" use="optional" />
-					</complexType>
-				</element>
-				<element name="timeline" maxOccurs="1" minOccurs="0">
-					<complexType>
-						<sequence>
-							<element name="event" minOccurs="1" maxOccurs="unbounded">
-								<complexType>
-									<sequence>
-										<element name="message" maxOccurs="unbounded"
-											minOccurs="0">
-											<complexType>
-												<sequence>
-													<element name="to" type="string" minOccurs="1"
-														maxOccurs="unbounded" />
-													<element name="content" type="string" minOccurs="0"
-														maxOccurs="1" />
-												</sequence>
-											</complexType>
-										</element>
-									</sequence>
-									<attribute name="time" type="positiveInteger" use="required" />
-								</complexType>
-							</element>
-						</sequence>
-						<attribute name="duration" type="positiveInteger" use="optional">
-						</attribute>
-					</complexType>
-				</element>
-			</sequence>
+								</extension>
+							</complexContent>
+						</complexType>
+					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+
+
+	<complexType name="support">
+		<complexContent>
+			<extension base="tns:entitybase">
+				<sequence>
+					<element name="agent" type="tns:agent" minOccurs="0" maxOccurs="unbounded" />
+				</sequence>
+				<attribute name="id" type="string" use="optional" />
+				<attribute name="classpath" type="string" use="optional" />
+			</extension>
+		</complexContent>
+	</complexType>
+
+	<complexType name="node">
+		<complexContent>
+			<extension base="tns:entitybase">
+				<sequence>
+					<element name="config" type="tns:parametric" maxOccurs="1" minOccurs="0" />
+					<element name="support" type="tns:support" minOccurs="0" maxOccurs="unbounded" />
+					<element name="package" type="string" minOccurs="0" maxOccurs="unbounded" />
+					<element name="loader" minOccurs="0" maxOccurs="unbounded">
+						<complexType>
+							<complexContent>
+								<extension base="tns:parametric">
+									<attribute name="for" type="string" use="required" />
+									<attribute name="kind" type="string" use="optional" />
+									<attribute name="classpath" type="string" use="optional" />
+								</extension>
+							</complexContent>
+						</complexType>
+					</element>
+					<element name="agent" type="tns:agent" minOccurs="0" maxOccurs="unbounded" />
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+
+
+	<element name="deployment">
+		<complexType>
+			<complexContent>
+				<extension base="tns:node">
+					<sequence>
+
+
+						<element name="node" type="tns:node" minOccurs="0" maxOccurs="unbounded" />
+
+
+						<element name="timeline" maxOccurs="1" minOccurs="0">
+							<complexType>
+								<sequence>
+									<element name="event" minOccurs="1" maxOccurs="unbounded">
+										<complexType>
+											<sequence>
+												<element name="message" maxOccurs="unbounded" minOccurs="0">
+													<complexType>
+														<sequence>
+															<element name="to" type="string" minOccurs="1" maxOccurs="unbounded" />
+															<element name="content" type="string" minOccurs="0" maxOccurs="1" />
+														</sequence>
+													</complexType>
+												</element>
+											</sequence>
+											<attribute name="time" type="positiveInteger" use="required" />
+										</complexType>
+									</element>
+								</sequence>
+								<attribute name="duration" type="positiveInteger" use="optional">
+								</attribute>
+							</complexType>
+						</element>
+					</sequence>
+				</extension>
+			</complexContent>
 		</complexType>
 	</element>
 </schema>

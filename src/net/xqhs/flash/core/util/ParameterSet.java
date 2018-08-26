@@ -24,7 +24,7 @@ import net.xqhs.util.config.Config;
  * query is supported.
  * <p>
  * For convenience and readability, String values are special and are added and retrieved using separate methods than
- * for Object values.
+ * for Object values (we call Object values those values which are of any other type than String).
  * <p>
  * It is implemented as a map with String keys and with values that are a {@link List} of Objects. Using a map improves
  * finding entries. Using a list instead of a set ensures that entries with the same key stay in the same order as
