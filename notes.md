@@ -38,9 +38,8 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 
 *TODO*
-  * support "last" doesn't show up in the last test_args version.
   * check duplicate names
-  * implement identifiables / do not add no-identifiables to the entity list
+  * implement identifiables / do not add non-identifiables to the entity list
 
 Future
   * introduce entities with required name / required kind

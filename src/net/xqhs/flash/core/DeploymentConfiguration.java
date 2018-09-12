@@ -374,8 +374,6 @@ public class DeploymentConfiguration extends TreeParameterSet
 			}
 		}
 		Deque<CTriple> context = new LinkedList<>(); // categories & elements context
-		final CTriple rootLevel = new CTriple(null, null, rootTree);
-		context.push(rootLevel);
 		
 		while(args.hasNext())
 		{
@@ -402,7 +400,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 				while(!context.isEmpty())
 				{
 					if(context.peek().elemTree.isHierarchical(catName))
-					{ // found a level with the same category; will insert new element here
+					{ // found a level that contains the same category; will insert new element here
 						context.push(new CTriple(catName, context.peek().elemTree.getTree(catName), null));
 						break;
 					}
@@ -418,11 +416,6 @@ public class DeploymentConfiguration extends TreeParameterSet
 				if(context.isEmpty())
 				{
 					String msg = "Category [] has parent [] and no instance of parent could be found;";
-					if(category != null && !category.isParentOptional())
-					{
-						log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(), a);
-						return;
-					}
 					if(category == null)
 					{ // category not known
 						log.lw(msg + " adding in current context.", catName, "unknown");
@@ -430,17 +423,23 @@ public class DeploymentConfiguration extends TreeParameterSet
 					}
 					else
 					{
-						log.lw(msg + " adding to top level.", catName, category.getParent());
-						context.push(rootLevel);
-						
 						if(category.getAncestorsList().contains(ROOT_CATEGORY.getName()))
 						{ // must create an implicit instance of the root category
 							TreeParameterSet implicitCat = rootTree.getTree(ROOT_CATEGORY.getName());
 							TreeParameterSet implicitElem = implicitCat.getTree(null);
 							context.push(new CTriple(ROOT_CATEGORY.getName(), implicitCat, implicitElem));
+							log.lw(msg + " adding to implicit [] level.", catName, category.getParent(),
+									ROOT_CATEGORY.getName());
 						}
+						if(!category.isParentOptional() && !context.peek().category.equals(category.getParent()))
+						{
+							log.le(msg + " ignoring other arguments beginning with [].", catName, category.getParent(),
+									a);
+							return;
+						}
+						if(context.isEmpty())
+							log.lw(msg + " adding to top level.", catName, category.getParent());
 					}
-					
 					TreeParameterSet c = context.peek().elemTree.getTree(catName, true);
 					context.push(new CTriple(catName, c, null));
 				}
