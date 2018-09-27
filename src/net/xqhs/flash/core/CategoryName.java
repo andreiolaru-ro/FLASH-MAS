@@ -23,8 +23,12 @@ import java.util.List;
  * <p>
  * The second part of the name may be optional (this is default).
  * <p>
- * The parent of a category may be optional (this is default) or mandatory (the category <i>must</i> find itself within
- * the parent category.
+ * Some categories may have parents, and the parent of a category may be optional (this is default) or mandatory (the
+ * category <i>must</i> find itself within the parent category).
+ * <p>
+ * Names of entities may sometimes identify those entities uniquely in the system (e.g. for agents, nodes, etc).
+ * Entities which are in categories considered identifiable are not always required to have a name, but will be
+ * identifiable only if they have one.
  * 
  * @author andreiolaru
  */
@@ -34,7 +38,7 @@ public enum CategoryName {
 	 * The node to which the configuration that follows belongs. An implicit NODE category is generated if no node entry
 	 * is specified.
 	 */
-	NODE,
+	NODE(new CatPar().isIdentifiable()),
 	
 	/**
 	 * The XML schema file against which to validate to deployment file (simple key, only first value is relevant).The
@@ -45,17 +49,17 @@ public enum CategoryName {
 	/**
 	 * The XML deployment file (simple key, only first value is relevant).
 	 */
-	DEPLOYMENT(NODE),
+	DEPLOYMENT(new CatPar().hasParent(NODE)),
 	
 	/**
 	 * General configuration settings, used by support infrastructures (hierarchical key).
 	 */
-	CONFIG(NODE),
+	CONFIG(new CatPar().hasParent(NODE)),
 	
 	/**
 	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
 	 */
-	PACKAGE(NODE),
+	PACKAGE(new CatPar().hasParent(NODE)),
 	
 	/**
 	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
@@ -63,7 +67,7 @@ public enum CategoryName {
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the name
 	 * of the loaded entity, a two-part name is the entity and the kind.
 	 */
-	LOADER("for", "kind", Is.OPTIONAL, NODE, Is.OPTIONAL),
+	LOADER(new CatPar().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE, Is.OPTIONAL)),
 	
 	/**
 	 * Support infrastructures used in the deployment (hierarchical key).
@@ -71,17 +75,17 @@ public enum CategoryName {
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the kind
 	 * of the support infrastructure, a two-part name is the kind and an identifier.
 	 */
-	SUPPORT("kind", "id", Is.OPTIONAL, NODE, Is.MANDATORY),
+	SUPPORT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(NODE, Is.MANDATORY)),
 	
 	/**
 	 * Agents to create in the deployment, potentially inside particular support infrastructures (hierarchical key).
 	 */
-	AGENT(SUPPORT, Is.OPTIONAL),
+	AGENT(new CatPar().isIdentifiable().hasParent(SUPPORT, Is.OPTIONAL)),
 	
 	/**
 	 * Features to be deployed in agents (hierarchical key).
 	 */
-	FEATURE(AGENT, Is.MANDATORY),
+	FEATURE(new CatPar().hasParent(AGENT, Is.MANDATORY)),
 	
 	;
 	
@@ -110,99 +114,153 @@ public enum CategoryName {
 	}
 	
 	/**
-	 * The parent of the category.
+	 * Values in this enumeration indicate whether entities in a category are uniquely identifiable by their name, if
+	 * any.
 	 */
-	CategoryName	parent				= null;
-	/**
-	 * <code>false</code> if the category must necessarily appear inside its parent category; <code>true</code> if the
-	 * category may also appear at top level.
-	 */
-	Is				optional_hierarchy	= Is.OPTIONAL;
+	enum NameIs {
+		/**
+		 * Value indicates that the name (if any) uniquely identifies the entity.
+		 */
+		IDENTIFIABLE,
+		/**
+		 * Value indicates that two entities with the same name may exist.
+		 */
+		NOT_IDENTIFIABLE,;
+		
+		/**
+		 * @return <code>true</code> if value is {@link NameIs#IDENTIFIABLE}, <code>false</code> if
+		 *         {@link NameIs#NOT_IDENTIFIABLE}.
+		 */
+		boolean isIdentifable()
+		{
+			return this == IDENTIFIABLE;
+		}
+	}
 	
 	/**
-	 * Element attribute giving the first part of the name of the element.
+	 * Builder for category name parameters.
 	 */
-	String			nameAttribute1;
+	private static class CatPar
+	{
+		/**
+		 * Indicates whether the entity can be uniquely identified by its name, if any.
+		 */
+		NameIs			identifiable		= NameIs.NOT_IDENTIFIABLE;
+		
+		/**
+		 * Element attribute giving the first part of the name of the element.
+		 */
+		String			nameAttribute1;
+		
+		/**
+		 * Element attribute giving the second part of the name of the element.
+		 */
+		String			nameAttribute2;
+		
+		/**
+		 * Indicates whether the first part of the name is optional.
+		 */
+		Is				optional_attribute1	= Is.OPTIONAL;
+		
+		/**
+		 * The parent of the category.
+		 */
+		CategoryName	parent				= null;
+		/**
+		 * Indicates whether the category must necessarily appear inside its parent category.
+		 */
+		Is				optional_hierarchy	= Is.OPTIONAL;
+		
+		/**
+		 * Default constructor, does nothing.
+		 */
+		public CatPar()
+		{
+			// nothing to do
+		}
+		
+		/**
+		 * Indicates a category in which entities are identifiable by name, if any.
+		 * 
+		 * @return the CatPar instance.
+		 */
+		CatPar isIdentifiable()
+		{
+			identifiable = NameIs.IDENTIFIABLE;
+			return this;
+		}
+		
+		/**
+		 * Indicates a category with a parent (hierarchy is mandatory).
+		 * 
+		 * @param _parent
+		 *            - the parent category.
+		 * @return the CatPar instance.
+		 */
+		CatPar hasParent(CategoryName _parent)
+		{
+			return hasParent(_parent, Is.MANDATORY);
+		}
+		
+		/**
+		 * Indicates a category that has a potentially optional parent.
+		 * 
+		 * @param _parent
+		 *            - the parent.
+		 * @param parent_optional
+		 *            - <code>true</code> if hierarchy is optional.
+		 * @return the CatPar instance.
+		 */
+		CatPar hasParent(CategoryName _parent, Is parent_optional)
+		{
+			parent = _parent;
+			optional_hierarchy = parent_optional;
+			return this;
+		}
+		
+		/**
+		 * Indicates a category in which the name of elements if formed from one or two of the element attributes.
+		 * 
+		 * @param part1
+		 *            - the attribute that gives the first part of the name.
+		 * @param part2
+		 *            - the attribute that gives the first part of the name.
+		 * @param part1_optional
+		 *            - <code>true</code> if the element can lack the first part of the name.
+		 * @return the CatPar instance.
+		 */
+		CatPar hasPartName(String part1, String part2, Is part1_optional)
+		{
+			nameAttribute1 = part1;
+			nameAttribute2 = part2;
+			optional_attribute1 = part1_optional;
+			return this;
+		}
+	}
 	
 	/**
-	 * Element attribute giving the second part of the name of the element.
+	 * The parameters of the category.
 	 */
-	String			nameAttribute2;
+	CatPar parameters;
 	
-	/**
-	 * <code>true</code> if the first part of the name can be missing; <code>false</code> if the first part is
-	 * mandatory.
-	 */
-	Is				optional_attribute1	= Is.OPTIONAL;
-	
+
 	/**
 	 * Constructor for a top-level category.
 	 */
 	private CategoryName()
 	{
+		this(new CatPar());
 	}
 	
 	/**
-	 * Constructor for a category with a parent (hierarchy is mandatory).
+	 * Constructor using parameters build through {@link CatPar}.
 	 * 
-	 * @param _parent
-	 *            - the parent category.
+	 * @param _parameters
+	 *            - the {@link CatPar} instance.
 	 */
-	private CategoryName(CategoryName _parent)
+	private CategoryName(CatPar _parameters)
 	{
-		this(_parent, Is.OPTIONAL);
-	}
-	
-	/**
-	 * Constructor for a category that has a potentially optional parent.
-	 * 
-	 * @param _parent
-	 *            - the parent.
-	 * @param parent_optional
-	 *            - <code>true</code> if hierarchy is optional.
-	 */
-	private CategoryName(CategoryName _parent, Is parent_optional)
-	{
-		this(null, null, Is.OPTIONAL, _parent, parent_optional);
-		
-	}
-	
-	/**
-	 * Constructor for a category in which the name of elements if formed from one or two of the element attributes.
-	 * 
-	 * @param part1
-	 *            - the attribute that gives the first part of the name.
-	 * @param part2
-	 *            - the attribute that gives the first part of the name.
-	 * @param part1_optional
-	 *            - <code>true</code> if the element can lack the first part of the name.
-	 */
-	private CategoryName(String part1, String part2, Is part1_optional)
-	{
-		this(part1, part2, part1_optional, null, Is.OPTIONAL);
-	}
-	
-	/**
-	 * Constructor for a category.
-	 * 
-	 * @param part1
-	 *            - the attribute that gives the first part of the name.
-	 * @param part2
-	 *            - the attribute that gives the first part of the name.
-	 * @param part1_optional
-	 *            - <code>true</code> if the element can lack the first part of the name.
-	 * @param _parent
-	 *            - the parent.
-	 * @param parent_optional
-	 *            - <code>true</code> if hierarchy is optional.
-	 */
-	private CategoryName(String part1, String part2, Is part1_optional, CategoryName _parent, Is parent_optional)
-	{
-		nameAttribute1 = part1;
-		nameAttribute2 = part2;
-		optional_attribute1 = part1_optional;
-		parent = _parent;
-		optional_hierarchy = parent_optional;
+		parameters = _parameters;
 	}
 	
 	/**
@@ -214,11 +272,20 @@ public enum CategoryName {
 	}
 	
 	/**
+	 * @return <code>true</code> if the elements in the category are uniquely identifiable by their name, if any;
+	 *         <code>false</code> otherwise.
+	 */
+	public boolean isIdentifiable()
+	{
+		return parameters.identifiable.isIdentifable();
+	}
+	
+	/**
 	 * @return the name of the parent category, if any was defined; <code>null</code> otherwise.
 	 */
 	public String getParent()
 	{
-		return parent != null ? parent.getName() : null;
+		return parameters.parent != null ? parameters.parent.getName() : null;
 	}
 	
 	/**
@@ -226,7 +293,7 @@ public enum CategoryName {
 	 */
 	public boolean isParentOptional()
 	{
-		return optional_hierarchy.isOptional();
+		return parameters.optional_hierarchy.isOptional();
 	}
 	
 	/**
@@ -235,7 +302,7 @@ public enum CategoryName {
 	 */
 	public boolean hasNameWithParts()
 	{
-		return nameAttribute1 != null && nameAttribute2 != null;
+		return parameters.nameAttribute1 != null && parameters.nameAttribute2 != null;
 	}
 	
 	/**
@@ -243,7 +310,7 @@ public enum CategoryName {
 	 */
 	public String[] nameParts()
 	{
-		return new String[] { nameAttribute1, nameAttribute2 };
+		return new String[] { parameters.nameAttribute1, parameters.nameAttribute2 };
 	}
 	
 	/**
@@ -251,7 +318,7 @@ public enum CategoryName {
 	 */
 	public boolean isNameFirstPartOptional()
 	{
-		return optional_attribute1.isOptional();
+		return parameters.optional_attribute1.isOptional();
 	}
 	
 	/**
@@ -259,9 +326,10 @@ public enum CategoryName {
 	 */
 	List<String> getAncestorsList()
 	{
-		List<String> path = (parent == null) ? new LinkedList<String>() : parent.getAncestorsList();
-		if(parent != null)
-			path.add(0, parent.getName());
+		List<String> path = (parameters.parent == null) ? new LinkedList<>()
+				: parameters.parent.getAncestorsList();
+		if(parameters.parent != null)
+			path.add(0, parameters.parent.getName());
 		return path;
 	}
 	
@@ -272,7 +340,7 @@ public enum CategoryName {
 	{
 		return getAncestorsList().toArray(new String[0]);
 	}
-
+	
 	/**
 	 * Find the {@link CategoryName} identified by the given name.
 	 * 

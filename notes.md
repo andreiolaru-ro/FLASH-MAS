@@ -5,19 +5,19 @@
 Concept Names
 =============
 
-	* simulation -> deployment
-	* visualization -> monitoring / control
-	* component -> feature
-	* platform -> support
+  * simulation -> deployment
+  * visualization -> monitoring / control
+  * component -> feature
+  * platform -> support
 
 
 
 Services / features
 ===================
 
-	* each feature uses one service
-	* one support may offer multiple services
-	* support may recommend feature implementations
+  * each feature uses one service
+  * one support may offer multiple services
+  * support may recommend feature implementations
 
 
 
@@ -38,6 +38,7 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 
 *TODO*
+  * does name optionality in CategName refer to the *first* part?
   * check duplicate names
   * implement identifiables / do not add non-identifiables to the entity list
 
@@ -54,8 +55,8 @@ all name:val pairs belong in an element
 all elements belong in a category; all categories belong in elements or at the root level
 
 the root level is the local node, which may not be specifically identified. Lacking a specific "-node name" element introduction, a name for it will be automatically generated
-	* this way, remote nodes may be specified as well.
-	* the first node is the local node.
+  * this way, remote nodes may be specified as well.
+  * the first node is the local node.
 
 	CLI arguments			 ::= scenario-file? category-description*
 	category-description	 ::= -category element element_description
@@ -94,24 +95,24 @@ Loading / Boot
 ==============
 
 Deployment configuration contains:
-* node information
-	* Schema & deployment XML (simple keys, first value counts)
-	* general configuration settings (e.g. network configs) for this node (tree key)
-	* package list (simple key, all values are relevant)
-	* loaders (specified for entities and kinds)
-	* support infrastructures
-		* agents
-			* features
-	* other entities
+  * node information
+    * Schema & deployment XML (simple keys, first value counts)
+    * general configuration settings (e.g. network configs) for this node (tree key)
+    * package list (simple key, all values are relevant)
+    * loaders (specified for entities and kinds)
+    * support infrastructures
+      * agents
+      * features
+    * other entities
 
 Loaders
-	* we have various loaders, that can load various entities, potentially specified by kinds.
-	* loaders for an entity, applicable to its kind, will be tried in order.
-		* for now, loaders for the same entity and the same kind cannot be chosen among and will be tried in order until one succeeds.
-		* Workaround: loader should check in the entity's configuration if any loader id is specified and compare this to an internal id.
-		* since loaders are tried in order, for a specific kind the first will be 'default'
-			* if no adequate kind found, ''null'' kind will be tried
-		* the default loader specified in the NodeLoader (CompositeAgentLoader, FeatureLoader) will only be used if no loader for that type of entity is otherwise specified.
+  * we have various loaders, that can load various entities, potentially specified by kinds.
+  * loaders for an entity, applicable to its kind, will be tried in order.
+    * for now, loaders for the same entity and the same kind cannot be chosen among and will be tried in order until one succeeds.
+      * Workaround: loader should check in the entity's configuration if any loader id is specified and compare this to an internal id.
+      * since loaders are tried in order, for a specific kind the first will be 'default'
+        * if no adequate kind found, ''null'' kind will be tried
+      * the default loader specified in the NodeLoader (CompositeAgentLoader, FeatureLoader) will only be used if no loader for that type of entity is otherwise specified.
 
 The same policy goes for Support Infrastructures (first is default, if none specified then we use the default in NodeLoader (LocalSupport).
 
@@ -121,11 +122,11 @@ The Node is always loaded by the NodeLoader.
 
 Future
 ------
-	* maybe: multiple default location for classes. E.g. for agent loaders possible classpath can be:
-		* the given classpath
-		* the given classpath, in the flash package
-		* flash package + kind + for + KindForLoader
-		* flash package + core + agent 
+  * maybe: multiple default location for classes. E.g. for agent loaders possible classpath can be:
+    * the given classpath
+    * the given classpath, in the flash package
+    * flash package + kind + for + KindForLoader
+    * flash package + core + agent 
 
 
 
