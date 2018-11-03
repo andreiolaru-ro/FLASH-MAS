@@ -218,9 +218,6 @@ public class DeploymentConfiguration extends TreeParameterSet
 		readCLIArgs(it, this, log);
 		log.lf("after CLI tree parse:", this);
 		
-		// 4. auto-fill names and contexts; fuse element with optional hierarchy.
-		// TODO
-		
 		log.doExit();
 		lock();
 		return this;
@@ -299,7 +296,7 @@ public class DeploymentConfiguration extends TreeParameterSet
 					String[] partNames = category.nameParts();
 					String part1 = getXMLValue(child, partNames[0]);
 					String part2 = getXMLValue(child, partNames[1]);
-					if(part1 == null && !category.isNameFirstPartOptional())
+					if(part1 == null && !category.isNameSecondPartOptional())
 					{
 						log.le("Child of [] does not contain necessary name part attribute [].", node.getName(),
 								partNames[0]);
@@ -316,7 +313,8 @@ public class DeploymentConfiguration extends TreeParameterSet
 					childTree.add(NAME_ATTRIBUTE_NAME, name);
 				
 				// add to entity list
-				if(nodeTree != rootTree && !rootTree.getTree(catName, true).isHierarchical(name))
+				if(category != null && category.isIdentifiable() && nodeTree != rootTree
+						&& !rootTree.getTree(catName, true).isHierarchical(name))
 					rootTree.getTree(catName).addTree(name, childTree);
 				
 				// read any other properties of the entity
@@ -449,7 +447,9 @@ public class DeploymentConfiguration extends TreeParameterSet
 				
 				// add to entity list
 				if(context.size() > 1)
-					if(!rootTree.getTree(catName, true).isHierarchical(name))
+					if(category != null && category.isIdentifiable()
+							&& !rootTree.getTree(catName, true).isHierarchical(name))
+						// if not already in entity list
 						rootTree.getTree(catName).addTree(name, context.peek().elemTree);
 			}
 			else

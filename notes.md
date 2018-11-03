@@ -37,12 +37,10 @@ Each SettingsName contains information on how to assemble elements from the XML 
 There is a root category, namely NODE. If no node is specified, when the first entity that needs a NODE ancestor appears, an 'implicit', nameless node will be created for all entities at the root level in the XML, which are not nodes.
 
 
-*TODO*
-  * does name optionality in CategName refer to the *first* part?
+**TODO**
   * check duplicate names
-  * implement identifiables / do not add non-identifiables to the entity list
 
-Future
+**Future**
   * introduce entities with required name / required kind
 
 
@@ -68,7 +66,7 @@ the root level is the local node, which may not be specifically identified. Lack
 														[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
 
 													
-**TODO:**
+**Future:**
   * introduce tree control: "<categ" goes back to categ and << goes to root (above nodes) //>
   * between a category and its mandatory parent there may also be other categories (use case: agent arrays as entities that can be managed as a whole)
   * fuse trees from XML and CLI in the case of elements with optional parents

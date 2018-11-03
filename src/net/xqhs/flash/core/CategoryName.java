@@ -158,9 +158,9 @@ public enum CategoryName {
 		String			nameAttribute2;
 		
 		/**
-		 * Indicates whether the first part of the name is optional.
+		 * Indicates whether the second part of the name is optional.
 		 */
-		Is				optional_attribute1	= Is.OPTIONAL;
+		Is				optional_attribute2	= Is.OPTIONAL;
 		
 		/**
 		 * The parent of the category.
@@ -224,16 +224,16 @@ public enum CategoryName {
 		 * @param part1
 		 *            - the attribute that gives the first part of the name.
 		 * @param part2
-		 *            - the attribute that gives the first part of the name.
-		 * @param part1_optional
-		 *            - <code>true</code> if the element can lack the first part of the name.
+		 *            - the attribute that gives the second part of the name.
+		 * @param part2_optional
+		 *            - <code>true</code> if the element can lack the second part of the name.
 		 * @return the CatPar instance.
 		 */
-		CatPar hasPartName(String part1, String part2, Is part1_optional)
+		CatPar hasPartName(String part1, String part2, Is part2_optional)
 		{
 			nameAttribute1 = part1;
 			nameAttribute2 = part2;
-			optional_attribute1 = part1_optional;
+			optional_attribute2 = part2_optional;
 			return this;
 		}
 	}
@@ -314,11 +314,11 @@ public enum CategoryName {
 	}
 	
 	/**
-	 * @return <code>true</code> if the first part of the name is optional.
+	 * @return <code>true</code> if the second part of the name is optional.
 	 */
-	public boolean isNameFirstPartOptional()
+	public boolean isNameSecondPartOptional()
 	{
-		return parameters.optional_attribute1.isOptional();
+		return parameters.optional_attribute2.isOptional();
 	}
 	
 	/**
@@ -326,7 +326,7 @@ public enum CategoryName {
 	 */
 	List<String> getAncestorsList()
 	{
-		List<String> path = (parameters.parent == null) ? new LinkedList<>()
+		List<String> path = (parameters.parent == null) ? new LinkedList<String>()
 				: parameters.parent.getAncestorsList();
 		if(parameters.parent != null)
 			path.add(0, parameters.parent.getName());
