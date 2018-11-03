@@ -312,6 +312,17 @@ public class TreeParameterSet extends ParameterSet
 		return trees.get(0);
 	}
 	
+	/**
+	 * Custom string output, with specific depth and potentially a shorter format.
+	 * 
+	 * @param depth
+	 *            - maximum depth to explore. Negative values mean there is no depth limit. Exploration stops when this
+	 *            arguments is 0.
+	 * @param shorter
+	 *            - if <code>true</code>, a shorter output format will be used with no newlines, less brackets, and less
+	 *            details.
+	 * @return the String rendition of this tree.
+	 */
 	public String toString(int depth, boolean shorter)
 	{
 		return toString(shorter ? "" : "   ", shorter ? "" : "      ", depth, shorter);
@@ -329,6 +340,14 @@ public class TreeParameterSet extends ParameterSet
 	 * 
 	 * @param indent
 	 *            - the current indent.
+	 * @param baseIndent
+	 *            - the indent increment.
+	 * @param depth
+	 *            - maximum depth to explore. Negative values mean there is no depth limit. Exploration stops when this
+	 *            arguments is 0.
+	 * @param shorter
+	 *            - if <code>true</code>, a shorter output format will be used with no newlines, less brackets, and less
+	 *            details.
 	 * @return the String rendition of this tree, indented.
 	 */
 	protected String toString(String indent, String baseIndent, int depth, boolean shorter)
@@ -343,14 +362,12 @@ public class TreeParameterSet extends ParameterSet
 				if(shorter)
 					continue;
 				ret += (justtree || shorter ? "" : "\n") + indent
-						+ String.format("%-" + (padLen + 4) + "s", "[" + name + "]:")
-						+ parameterSet.get(name);
+						+ String.format("%-" + (padLen + 4) + "s", "[" + name + "]:") + parameterSet.get(name);
 				justtree = false;
 			}
 			else
 			{
-				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name
-						+ (shorter ? "" : "]>");
+				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name + (shorter ? "" : "]>");
 				justtree = true;
 				boolean first = true;
 				for(Object o : parameterSet.get(name))
