@@ -23,17 +23,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentFeatureType;
+import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.io.AgentActiveIO.InputListener;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
 import net.xqhs.flash.core.agent.visualization.AgentGui;
 import net.xqhs.flash.core.agent.visualization.AgentGui.AgentGuiBackgroundTask;
 import net.xqhs.flash.core.agent.visualization.AgentGui.ResultNotificationListener;
+import net.xqhs.flash.core.agent.visualization.AgentGuiConfig;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.support.Support.PlatformLink;
-import net.xqhs.flash.core.agent.visualization.AgentGuiConfig;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.UnitComponentExt;
@@ -418,9 +418,9 @@ public class Node implements Entity<Node>
 			MessagingComponent msg = null;
 			try
 			{
-				String msgrClass = platform.getRecommendedFeatureImplementation(AgentFeatureType.MESSAGING_COMPONENT);
+				String msgrClass = platform.getRecommendedFeatureImplementation(StandardAgentFeature.MESSAGING_COMPONENT);
 				if(msgrClass == null)
-					msgrClass = AgentFeatureType.MESSAGING_COMPONENT.getClassName();
+					msgrClass = StandardAgentFeature.MESSAGING_COMPONENT.getClassName();
 				msg = (MessagingComponent) PlatformUtils.loadClassInstance(this, msgrClass, new Object[0]);
 			} catch(Exception e)
 			{

@@ -18,7 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import net.xqhs.flash.core.agent.CompositeAgentLoader;
+import net.xqhs.flash.core.agent.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLParser;

@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.support;
+package net.xqhs.flash.local;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -18,20 +18,21 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.agent.AgentFeatureType;
+import net.xqhs.flash.core.agent.composite.AgentEvent;
 import net.xqhs.flash.core.agent.messaging.MessagingComponent;
 import net.xqhs.flash.core.agent.messaging.NameBasedMessagingComponent;
 import net.xqhs.flash.core.node.AgentManager;
+import net.xqhs.flash.core.support.DefaultSupportImplementation;
 import net.xqhs.flash.core.support.Support.StandardSupportType;
-import tatami.simulation.PlatformLoader.PlatformLink;
 
 /**
- * Simple platform that allows agents to send messages locally (inside the same JVM) based simply on agent name.
+ * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
+ * name.
  * 
  * @author Andrei Olaru
  */
-public class LocalSupport extends DefaultSupportImplementation implements PlatformLink
+public class LocalSupport extends DefaultSupportImplementation
 {
 	/**
 	 * Simple implementation of {@link MessagingComponent}, that uses agents' names as their addresses.
@@ -48,9 +49,9 @@ public class LocalSupport extends DefaultSupportImplementation implements Platfo
 		@Override
 		public boolean sendMessage(String target, String source, String content)
 		{
-			if(!(getPlatformLink() instanceof LocalSupport))
+			if(!(getSupportImplementation() instanceof LocalSupport))
 				throw new IllegalStateException("Platform Link is not of expected type");
-			LocalSupport p = ((LocalSupport) getPlatformLink());
+			LocalSupport p = ((LocalSupport) getSupportImplementation());
 			String[] targetElements = target.split(ADDRESS_SEPARATOR, 2);
 			SimpleLocalMessaging targetComponent = p.registry.get(targetElements[0]);
 			if(targetComponent != null)
@@ -94,7 +95,7 @@ public class LocalSupport extends DefaultSupportImplementation implements Platfo
 		protected void atAgentStart(AgentEvent event)
 		{
 			super.atAgentStart(event);
-			if(!(getPlatformLink() instanceof LocalSupport))
+			if(!(getSupportImplementation() instanceof LocalSupport))
 				throw new IllegalStateException("Platform Link is not of expected type");
 			try
 			{
@@ -103,7 +104,7 @@ public class LocalSupport extends DefaultSupportImplementation implements Platfo
 			{
 				// nothing
 			}
-			((LocalSupport) getPlatformLink()).registry.put(getName(), this);
+			((LocalSupport) getSupportImplementation()).registry.put(getName(), this);
 		}
 		
 		@Override
@@ -217,13 +218,13 @@ public class LocalSupport extends DefaultSupportImplementation implements Platfo
 	@Override
 	public boolean loadAgent(String containerName, AgentManager agentManager)
 	{
-		return agentManager.setPlatformLink(this) && super.loadAgent(containerName, agentManager);
+		return agentManager.addContext(this) && super.loadAgent(containerName, agentManager);
 	}
 	
 	@Override
-	public String getRecommendedFeatureImplementation(AgentFeatureType componentName)
+	public String getRecommendedFeatureImplementation(StandardAgentFeature componentName)
 	{
-		if(componentName == AgentFeatureType.MESSAGING_COMPONENT)
+		if(componentName == StandardAgentFeature.MESSAGING_COMPONENT)
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedFeatureImplementation(componentName);
 	}

@@ -39,6 +39,14 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 **TODO**
   * check duplicate names
+  * is feature preload necessary for anything?
+    * in tATAmI no preload returns false (except for Parametric)
+  * protect agents from intrusive / malicious features?
+  
+  * multiple components per type
+    * rename ParameterSet to MultiMap or ListMap, TreeParameterSet to MultiTreeMap
+  
+  * establish if preloading an agent is optional and, if it is, make the call from load
 
 **Future**
   * introduce entities with required name / required kind

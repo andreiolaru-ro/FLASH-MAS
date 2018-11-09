@@ -67,7 +67,7 @@ public enum CategoryName {
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the name
 	 * of the loaded entity, a two-part name is the entity and the kind.
 	 */
-	LOADER(new CatPar().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE, Is.OPTIONAL)),
+	LOADER(new CatPar().isIdentifiable().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE, Is.OPTIONAL)),
 	
 	/**
 	 * Support infrastructures used in the deployment (hierarchical key).

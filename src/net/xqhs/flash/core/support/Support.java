@@ -15,7 +15,7 @@ import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.agent.AgentFeatureType;
 import net.xqhs.flash.core.node.Node;
 
 /**
@@ -45,7 +45,7 @@ public interface Support extends Entity<Node>
 	 * @return the name of the class containing the recommended implementation, or <code>null</code> if no
 	 *         recommendation is made.
 	 */
-	public String getRecommendedFeatureImplementation(AgentFeatureType featureType);
+	public String getRecommendedFeatureImplementation(StandardAgentFeature featureType);
 	
 	/**
 	 * Enrolls the given agent in the support infrastructure, making the supported services available to the agent.

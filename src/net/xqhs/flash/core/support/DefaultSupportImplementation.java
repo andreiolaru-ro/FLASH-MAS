@@ -11,10 +11,11 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.agent.AgentFeatureType;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.util.logging.Unit;
 
@@ -80,7 +81,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	 * The loader recommends no particular implementation for any component.
 	 */
 	@Override
-	public String getRecommendedFeatureImplementation(AgentFeatureType componentName)
+	public String getRecommendedFeatureImplementation(StandardAgentFeature componentName)
 	{
 		return null;
 	}
@@ -100,7 +101,6 @@ public class DefaultSupportImplementation extends Unit implements Support
 	@Override
 	public Set<String> getSupportedServices()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new HashSet<>();
 	}
 }

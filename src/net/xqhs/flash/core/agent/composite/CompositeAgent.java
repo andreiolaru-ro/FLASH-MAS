@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent;
+package net.xqhs.flash.core.agent.composite;
 
 import java.io.Serializable;
 import java.security.InvalidParameterException;
@@ -20,29 +20,28 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
-import net.xqhs.flash.core.agent.AgentFeature.AgentFeatureType;
+import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.composite.AgentEvent.AgentSequenceType;
+import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
- * This class reunites the components of an agent in order for components to be able to call each other and for events
- * to be distributed to all components.
+ * This class reunites the features of an agent in order for features to be able to call each other and for events to be
+ * distributed to all features.
  * <p>
- * Various agent components -- instances of {@link AgentFeature} -- can be added. 'Standard' components have names
- * that are instances of {@link AgentFeatureType}. 'Other' (non-standard) components can have any name (TODO). At most
- * one component with a name is allowed (i.e. at most one component per functionality).
+ * Various agent features -- instances of {@link AgentFeature} -- can be added. Features are identified by means of
+ * their designation. At most one feature with the same designation is allowed (i.e. at most one feature per
+ * functionality).
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
- * an event to all components, which handle it by means of registered handles (each component registers a handle for an
+ * an event to all features, which handle it by means of registered handles (each feature registers a handle for an
  * event with itself). See {@link AgentFeature}.
- * <p>
- * A composite agent instance is its own {@link AgentManager}.
  * 
  * @author Andrei Olaru
- * 		
+ * 
  */
 public class CompositeAgent implements Serializable, Agent
 {
@@ -51,11 +50,11 @@ public class CompositeAgent implements Serializable, Agent
 	 * <p>
 	 * The normal transition between states is the following: <br/>
 	 * <ul>
-	 * <li>{@link #STOPPED} [here components are normally added] + {@link AgentEventType#AGENT_START} &rarr;
-	 * {@link #STARTING} [starting thread; starting components] &rarr; {@link #RUNNING}.
-	 * <li>while in {@link #RUNNING}, components can be added or removed.
+	 * <li>{@link #STOPPED} [here features are normally added] + {@link AgentEventType#AGENT_START} &rarr;
+	 * {@link #STARTING} [starting thread; starting features] &rarr; {@link #RUNNING}.
+	 * <li>while in {@link #RUNNING}, features can be added or removed.
 	 * <li>{@link #RUNNING} + {@link AgentEventType#AGENT_STOP} &rarr; {@link #STOPPING} [no more events accepted; stop
-	 * components; stop thread] &rarr; {@link #STOPPED}.
+	 * features; stop thread] &rarr; {@link #STOPPED}.
 	 * <li>when the {@link #TRANSIENT} state is involved, the transitions are as follows: {@link #RUNNING} +
 	 * {@link AgentEventType#AGENT_STOP} w/ parameter {@link CompositeAgent#TRANSIENT_EVENT_PARAMETER} &rarr;
 	 * {@link #STOPPING} &rarr {@link #TRANSIENT} [unable to modify agent] + {@link AgentEventType#AGENT_START} w/
@@ -67,32 +66,32 @@ public class CompositeAgent implements Serializable, Agent
 	enum AgentState {
 		/**
 		 * State indicating that the agent is currently behaving normally and agent events are processed in good order.
-		 * All components are running.
+		 * All features are running.
 		 */
 		RUNNING,
 		
 		/**
 		 * State indicating that the agent is stopped and is unable to process events. The agent's thread is stopped.
-		 * All components are stopped.
+		 * All features are stopped.
 		 */
 		STOPPED,
 		
 		/**
 		 * This state is a version of the {@link #STOPPED} state, with the exception that it does not allow any changes
-		 * the general state of the agent (e.g. component list). The state should be used to "freeze" the agent, such as
-		 * for it to be serialized.. Normally, in this state components should not allow any changes either.
+		 * the general state of the agent (e.g. feature list). The state should be used to "freeze" the agent, such as
+		 * for it to be serialized.. Normally, in this state features should not allow any changes either.
 		 */
 		TRANSIENT,
 		
 		/**
 		 * State indicating that the agent is in the process of starting, but is not currently accepting events. The
-		 * thread may or may not have been started. The components are in the process of starting.
+		 * thread may or may not have been started. The features are in the process of starting.
 		 */
 		STARTING,
 		
 		/**
 		 * State indicating that the agent is currently stopping. It is not accepting events any more. The thread may or
-		 * may not be running. The components are in the process of stopping.
+		 * may not be running. The features are in the process of stopping.
 		 */
 		STOPPING,
 	}
@@ -129,14 +128,17 @@ public class CompositeAgent implements Serializable, Agent
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(AgentFeature component : componentOrder)
-							component.signalAgentEvent(event);
+						for(AgentFeature feature : featureOrder)
+							feature.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<AgentFeature> it = componentOrder.listIterator(componentOrder.size()); it
+						for(ListIterator<AgentFeature> it = featureOrder.listIterator(featureOrder.size()); it
 								.hasPrevious();)
 							it.previous().signalAgentEvent(event);
 						break;
+					default:
+						throw new IllegalStateException(
+								"Unsupported sequence type: " + event.getType().getSequenceType().toString());
 					}
 					
 					threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
@@ -148,78 +150,78 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The class UID
 	 */
-	private static final long							serialVersionUID			= -2693230015986527097L;
-																					
-	/**
-	 * Time (in milliseconds) to wait for the agent thread to exit.
-	 */
-	@Deprecated
-	protected static final long							EXIT_TIMEOUT				= 500;
-																					
+	private static final long								serialVersionUID			= -2693230015986527097L;
+	
 	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to take the agent out of / into the <code>TRANSIENT</code>
 	 * state.
 	 */
-	public static final String							TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
-																					
-	/**
-	 * This can be used by platform-specific components to contact the platform.
-	 */
-	protected Object									platformLink				= null;
-																					
-	/**
-	 * The {@link Map} that links component names (functionalities) to standard component instances.
-	 */
-	protected Map<AgentFeatureType, AgentFeature>	components					= new HashMap<AgentFeatureType, AgentFeature>();
-																					
-	/**
-	 * A {@link List} that holds the order in which components were added, so as to signal agent events to components in
-	 * the correct order (as specified by {@link AgentSequenceType}).
-	 * <p>
-	 * It is important that this list is managed together with <code>components</code>.
-	 */
-	protected ArrayList<AgentFeature>					componentOrder				= new ArrayList<AgentFeature>();
-																					
-	// TODO: add support for non-standard components.
-	// /**
-	// * The {@link Map} that holds the non-standard components (names are {@link String}).
-	// */
-	// protected Map<String, AgentComponent> otherComponents = new HashMap<String,
-	// AgentComponent>();
+	public static final String								TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
 	
 	/**
-	 * A synchronized queue of agent events, as posted by the components.
+	 * This can be used by support implementation-specific features to contact the support implementation.
 	 */
-	protected LinkedBlockingQueue<AgentEvent>			eventQueue					= null;
-																					
+	protected Object										supportLink					= null;
+	
 	/**
-	 * The thread managing the agent's lifecycle (managing events).
+	 * The {@link Map} that links feature designations (functionalities) to feature instances.
 	 */
-	protected Thread									agentThread					= null;
-																					
+	protected Map<AgentFeatureDesignation, AgentFeature>	features					= new HashMap<>();
+	/**
+	 * A {@link List} that holds the order in which features were added, so as to signal agent events to features in the
+	 * correct order (as specified by {@link AgentSequenceType}).
+	 * <p>
+	 * It is important that this list is managed together with {@link #features}.
+	 */
+	protected ArrayList<AgentFeature>						featureOrder				= new ArrayList<>();
+	
+	/**
+	 * A synchronized queue of agent events, as posted by the features.
+	 */
+	protected LinkedBlockingQueue<AgentEvent>				eventQueue					= null;
+	/**
+	 * The thread managing the agent's life-cycle (managing events).
+	 */
+	protected Thread										agentThread					= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
 	 */
-	protected AgentState								agentState					= AgentState.STOPPED;
-																					
+	protected AgentState									agentState					= AgentState.STOPPED;
+	
 	/**
-	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agnt's state. While
-	 * the agent will attempt to use the name set in the parametric component, this may not succeed if such a component
-	 * does not exist, or if the name has not been set. This log should only be used by means of the
-	 * {@link #log(String, Object...)} method.
+	 * The agent name, if given.
 	 */
-	protected UnitComponent								localLog					= (UnitComponent) new UnitComponent()
+	protected String										agentName					= null;
+	/**
+	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agent's state. While
+	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
+	 * the {@link #log(String, Object...)} method.
+	 */
+	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
-			
 	/**
 	 * This switch activates the use of the {@link #localLog}.
 	 */
-	protected boolean									USE_LOCAL_LOG				= true;
-																					
+	protected boolean										USE_LOCAL_LOG				= true;
+	
 	/**
-	 * Starts the lifecycle of the agent. All components will receive an {@link AgentEventType#AGENT_START} event.
+	 * Constructor for {@link CompositeAgent} instances.
+	 * <p>
+	 * Although the name may be null, it is strongly recommended that the agent is given a (unique) name, even one that
+	 * is automatically generated.
+	 * 
+	 * @param name
+	 *            - the name of the agent.
+	 */
+	public CompositeAgent(String name)
+	{
+		agentName = name;
+	}
+	
+	/**
+	 * Starts the life-cycle of the agent. All features will receive an {@link AgentEventType#AGENT_START} event.
 	 * 
 	 * @return true if the event has been successfully posted. See <code>postAgentEvent()</code>.
 	 */
@@ -230,7 +232,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Instructs the agent to unload all components and exit. All components will receive an
+	 * Instructs the agent to unload all features and exit. All features will receive an
 	 * {@link AgentEventType#AGENT_STOP} event.
 	 * <p>
 	 * No events will be successfully received after this event has been posted.
@@ -250,6 +252,12 @@ public class CompositeAgent implements Serializable, Agent
 	{
 		return exit();
 	}
+	
+	/**
+	 * Time (in milliseconds) to wait for the agent thread to exit.
+	 */
+	@Deprecated
+	protected static final long EXIT_TIMEOUT = 500;
 	
 	/**
 	 * This method contains some legacy code for forcing the agent thread to stop. Testing currently shows that posting
@@ -273,7 +281,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Instructs the agent to switch state between <code>STOPPED</code> and <code>TRANSIENT</code>.
 	 * 
 	 * @return <code>true</code> if the agent is now in the <code>TRANSIENT</code> state, <code>false</code> otherwise.
-	 * 		
+	 * 
 	 * @throws RuntimeException
 	 *             if the agent was in any other state than the two.
 	 */
@@ -283,17 +291,17 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	@Override
-	public boolean setPlatformLink(PlatformLink link)
+	public boolean addContext(Support link)
 	{
-		if(!canAddComponents() || isRunning())
+		if(!canAddFeatures() || isRunning())
 			return false;
-		platformLink = link;
+		supportLink = link;
 		return true;
 	}
 	
 	/**
-	 * The method should be called by an agent component (relayed through {@link AgentFeature}) to disseminate a an
-	 * {@link AgentEvent} to the other components.
+	 * The method should be called by an agent feature (relayed through {@link AgentFeature}) to disseminate a an
+	 * {@link AgentEvent} to the other features.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
 	 * case of abnormal termination, the event will be processed eventually. Otherwise, it returns <code>false</code>,
@@ -310,7 +318,7 @@ public class CompositeAgent implements Serializable, Agent
 		
 		if(!canPostEvent(event))
 			return false;
-			
+		
 		AgentState futureState = FSMEventIn(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
 		
 		try
@@ -345,7 +353,8 @@ public class CompositeAgent implements Serializable, Agent
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 * 
 	 * @param event
-	 * @return
+	 *            - the event one desires to post.
+	 * @return <code>true</code> if the event could be posted at this moment; <code>false</code> otherwise.
 	 */
 	protected boolean canPostEvent(AgentEvent event)
 	{
@@ -387,7 +396,7 @@ public class CompositeAgent implements Serializable, Agent
 			
 			if(eventQueue != null)
 				log("event queue already present");
-			eventQueue = new LinkedBlockingQueue<AgentEvent>();
+			eventQueue = new LinkedBlockingQueue<>();
 			agentThread = new Thread(new AgentThread());
 			agentThread.start();
 			break;
@@ -404,7 +413,7 @@ public class CompositeAgent implements Serializable, Agent
 	
 	/**
 	 * Change the state of the agent (if it is the case) and perform other actions, <i>after</i> an event has been
-	 * processed by all components.
+	 * processed by all features.
 	 * <p>
 	 * If the event was {@link AgentEventType#AGENT_START}, the state will be {@link AgentState#RUNNING}.
 	 * <p>
@@ -422,7 +431,7 @@ public class CompositeAgent implements Serializable, Agent
 	{
 		switch(eventType)
 		{
-		case AGENT_START: // the agent has completed starting and all components are up.
+		case AGENT_START: // the agent has completed starting and all features are up.
 			synchronized(eventQueue)
 			{
 				agentState = AgentState.RUNNING;
@@ -458,7 +467,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * 
 	 * @return <code>true</code> if the agent is now (after the change) in the {@link AgentState#TRANSIENT} state.
 	 *         <code>false</code> if it is now in {@link AgentState#STOPPED}.
-	 * 		
+	 * 
 	 * @throws RuntimeException
 	 *             if the agent is in any other state than the two above.
 	 */
@@ -482,85 +491,82 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Adds a component to the agent that has been configured beforehand. The agent will register with the component, as
+	 * Adds a feature to the agent, which has been configured beforehand. The agent will register with the feature, as
 	 * parent.
 	 * <p>
-	 * The component will be identified by the agent by means of its <code>getComponentName</code> method. Only one
-	 * instance per name (functionality) will be allowed.
+	 * The feature will be identified by the agent by means of its {@link AgentFeature#getFeatureDesignation()} method.
+	 * Only one instance per designation (functionality) will be allowed.
 	 * 
-	 * @param component
+	 * @param feature
 	 *            - the {@link AgentFeature} instance to add.
-	 * @return the agent instance itself. This can be used to continue adding other components.
+	 * @return the agent instance itself. This can be used to continue adding other features.
 	 */
-	public CompositeAgent addComponent(AgentFeature component)
+	protected CompositeAgent addFeature(AgentFeature feature)
 	{
-		if(!canAddComponents())
-			throw new IllegalStateException("Cannot add components in state [" + agentState + "].");
-		if(component == null)
-			throw new InvalidParameterException("Component is null");
-		if(hasComponent(component.getComponentName()))
+		if(!canAddFeatures())
+			throw new IllegalStateException("Cannot add features in state [" + agentState + "].");
+		if(feature == null)
+			throw new InvalidParameterException("Feature is null");
+		if(hasFeature(feature.getFeatureDesignation()))
 			throw new InvalidParameterException(
-					"Cannot add multiple components for name [" + component.getComponentName() + "]");
-		components.put(component.getComponentName(), component);
-		componentOrder.add(component);
-		component.setParent(this);
+					"Cannot add multiple features for designation [" + feature.getFeatureDesignation() + "]");
+		features.put(feature.getFeatureDesignation(), feature);
+		featureOrder.add(feature);
+		feature.setAgent(this);
 		return this;
 	}
 	
 	/**
-	 * Removes an existing component of the agent.
-	 * <p>
-	 * The method will call the method <code>getComponentName()</code> of the component with a <code>null</code>
-	 * parameter.
+	 * Removes an existing feature of the agent.
 	 * 
-	 * @param name
-	 *            - the name of the component to remove (as instance of {@link AgentFeatureType}.
-	 * @return a reference to the just-removed component instance.
+	 * @param designation
+	 *            - the designation of the feature to remove.
+	 * @return a reference to the just-removed feature instance.
 	 */
-	public AgentFeature removeComponent(AgentFeatureType name)
+	protected AgentFeature removeFeature(AgentFeatureDesignation designation)
 	{
-		if(!hasComponent(name))
-			throw new InvalidParameterException("Component [" + name + "] does not exist");
-		AgentFeature component = getComponent(name);
-		componentOrder.remove(component);
-		components.remove(component);
-		return component;
+		if(!hasFeature(designation))
+			throw new InvalidParameterException("Feature [" + designation + "] does not exist");
+		AgentFeature feature = getFeature(designation);
+		featureOrder.remove(feature);
+		features.remove(designation);
+		return feature;
 	}
 	
 	/**
-	 * Returns <code>true</code> if the agent contains said component.
+	 * Returns <code>true</code> if the agent contains said feature.
 	 * 
-	 * @param name
-	 *            - the name of the component to search (as instance of {@link AgentFeatureType}.
-	 * @return <code>true</code> if the component exists, false otherwise.
+	 * @param designation
+	 *            - the designation of the feature to search.
+	 * @return <code>true</code> if the feature exists, <code>false</code> otherwise.
 	 */
-	protected boolean hasComponent(AgentFeatureType name)
+	protected boolean hasFeature(AgentFeatureDesignation designation)
 	{
-		return components.containsKey(name);
+		return features.containsKey(designation);
 	}
 	
 	/**
-	 * Retrieves a component of the agent, by name.
+	 * Retrieves a feature of the agent, by designation.
 	 * <p>
-	 * It is <i>strongly recommended</i> that the reference is not kept, as the component may be removed without notice.
+	 * It is <i>strongly recommended</i> that the reference is not kept, as the feature may be removed without notice.
 	 * 
-	 * @param name
-	 *            - the name of the component to retrieve (as instance of {@link AgentFeatureType} .
+	 * @param designation
+	 *            - the designation of the feature to retrieve.
 	 * @return the {@link AgentFeature} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentFeature getComponent(AgentFeatureType name)
+	protected AgentFeature getFeature(AgentFeatureDesignation designation)
 	{
-		return components.get(name);
+		return features.get(designation);
 	}
 	
 	/**
-	 * Retrieves the platform link.
+	 * Retrieves the link to the support implementation.
 	 * 
-	 * @return the platform link.
+	 * @return the support implementation.
 	 */
-	protected Object getPlatformLink()
+	protected Object getSupportImplementation()
 	{
-		return platformLink;
+		return supportLink;
 	}
 	
 	/**
@@ -569,17 +575,13 @@ public class CompositeAgent implements Serializable, Agent
 	 * @return the name of the agent.
 	 */
 	@Override
-	public String getAgentName()
-	{ // TODO name should be cached
-		String agentName = null;
-		if(hasComponent(AgentFeatureType.PARAMETRIC_COMPONENT))
-			agentName = ((ParametricComponent) getComponent(AgentFeatureType.PARAMETRIC_COMPONENT))
-					.parVal(AgentParameterName.AGENT_NAME);
+	public String getName()
+	{
 		return agentName;
 	}
 	
 	/**
-	 * Checks if the agent is currently in <code>RUNNING</code> state. In case components are added during this state,
+	 * Checks if the agent is currently in <code>RUNNING</code> state. In case features are added during this state,
 	 * they must consider that the agent is already running and no additional {@link AgentEventType#AGENT_START} events
 	 * will be issued.
 	 * 
@@ -612,12 +614,12 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Checks if the state of the agent allows adding components. Components should not be added in intermediary states
-	 * in which the agent is starting or stopping.
+	 * Checks if the state of the agent allows adding features. Features should not be added in intermediary states in
+	 * which the agent is starting or stopping.
 	 * 
-	 * @return <code>true</code> if in the current state components can be added.
+	 * @return <code>true</code> if in the current state features can be added.
 	 */
-	public boolean canAddComponents()
+	public boolean canAddFeatures()
 	{
 		return (agentState == AgentState.STOPPED) || (agentState == AgentState.RUNNING);
 	}

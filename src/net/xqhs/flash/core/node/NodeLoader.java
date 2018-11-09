@@ -51,6 +51,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	@Override
 	public Node load(TreeParameterSet configuration)
 	{
+		// just get the arguments, they are in the first simple key
 		return load(configuration.getValues(configuration.getSimpleKeys().get(0)));
 	}
 	
@@ -170,6 +171,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		try
 		{
 			deploymentConfiguration = new DeploymentConfiguration().loadConfiguration(args, true, null);
+			lf("Configuration loaded");
 		} catch(ConfigLockedException e)
 		{
 			le("settings were locked (shouldn't ever happen): " + PlatformUtils.printException(e));
@@ -230,6 +232,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 				}
 			}
 		}
+		else
+			li("No loaders configured.");
 		
 		// ============================================================================== default loaders
 		
@@ -245,6 +249,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 			{
 				loaders.get(AGENT).get(null).add((Loader<?>) classFactory
 						.loadClassInstance(DeploymentConfiguration.DEFAULT_AGENT_LOADER, null, false));
+				lf("Configured and loaded default agent loader.");
 			} catch(Exception e)
 			{
 				le("Default [] loader loading failed: ", AGENT, PlatformUtils.printException(e));
@@ -272,8 +277,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				le("Loader name parsing failed for []", name);
 			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, null, SUPPORT, checkedPaths);
 			if(cp == null)
-				le("Class for support [] can not be found; tried paths ",
-						support_configs.getDeepValue(name, "classpath"), name, checkedPaths);
+				le("Class for support []/[] can not be found; tried paths ", name, kind, checkedPaths);
 			else
 			{
 				try

@@ -9,9 +9,9 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent;
+package net.xqhs.flash.core.agent.composite;
 
-import tatami.core.util.ParameterSet;
+import net.xqhs.flash.core.util.ParameterSet;
 
 /**
  * The class stores an agent event, characterized by its type and, optionally, a set of parameters that have names.

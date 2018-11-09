@@ -87,6 +87,6 @@ public class ChatAgentGui extends PCDefaultAgentGui
 	@Override
 	protected Component getComponent(String name)
 	{
-		return super.getComponent(name);
+		return super.getFeature(name);
 	}
 }
