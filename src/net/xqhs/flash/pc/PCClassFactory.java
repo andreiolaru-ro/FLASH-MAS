@@ -60,7 +60,7 @@ public class PCClassFactory implements ClassFactory
 			for(Object obj : constructorArguments)
 				argumentTypes[i++] = obj.getClass();
 			Constructor<?> constructor = cl.loadClass(className).getConstructor(argumentTypes);
-			ret = constructor.newInstance(constructorArguments);
+			ret = constructor.newInstance(constructorArguments.toArray());
 		}
 		else
 		{
