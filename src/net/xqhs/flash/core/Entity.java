@@ -17,13 +17,13 @@ package net.xqhs.flash.core;
  * <p>
  * It is characterized by a name or other form of identification in the system.
  * <p>
- * Entities can be placed one in the context of one another, but one entity can have only one type of context that directly
- * contains it (albeit it may run in the context of multiple entities of the same type).
+ * Entities can be placed one in the context of one another, but one entity can have only one type of context that
+ * directly contains it (albeit it may run in the context of multiple entities of the same type).
  * <p>
  * Normally, before being started, {@link Entity} instances are created by loaders.
  * 
  * @param <P>
- *            - the type of the entity that can contain this entity.
+ *            - the type of the entity that can contain (be the context of) this entity.
  * 
  * @author andreiolaru
  */

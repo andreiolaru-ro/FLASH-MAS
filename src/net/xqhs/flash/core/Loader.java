@@ -12,6 +12,7 @@
 package net.xqhs.flash.core;
 
 import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.util.logging.Logger;
 
 /**
  * A loader instance has the capability of creating new {@link Entity} instances.
@@ -26,6 +27,18 @@ import net.xqhs.flash.core.util.TreeParameterSet;
  */
 public interface Loader<T extends Entity<?>>
 {
+	/**
+	 * Configures an instance of the loader based on deployment data.
+	 * 
+	 * @param configuration
+	 *            - the deployment data.
+	 * @param log
+	 *            - a {@link Logger} instance to use for logging messages, during the loader's activity.
+	 * @return <code>true</code> if the configuration process was successful and the {@link Loader} instance is ready to
+	 *         load entities; <code>false</code> if this instance cannot be expected to work normally.
+	 */
+	public boolean configure(TreeParameterSet configuration, Logger log);
+	
 	/**
 	 * Performs checks and completes the configuration.
 	 * <p>

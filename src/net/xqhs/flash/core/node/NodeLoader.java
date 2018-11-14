@@ -24,6 +24,7 @@ import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -37,10 +38,24 @@ import net.xqhs.util.logging.Unit;
  * @author Andrei Olaru
  */
 public class NodeLoader extends Unit implements Loader<Node>
-{
+{// TODO: make Unit able to export a Logger.
 	{
 		// sets logging parameters: the name of the log and the type (which is given by the current platform)
 		setUnitName("boot").setLoggerType(PlatformUtils.platformLogType());
+	}
+	
+	@Override
+	public boolean configure(TreeParameterSet configuration, Logger log)
+	{
+		// TODO Auto-generated method stub
+		return true;
+	}
+	
+	@Override
+	public boolean preload(TreeParameterSet configuration)
+	{
+		// TODO Auto-generated method stub
+		return true;
 	}
 	
 	/**
@@ -217,13 +232,13 @@ public class NodeLoader extends Unit implements Loader<Node>
 				{ // attach instance to loader map
 					try
 					{
-						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, loader_configs.getTree(name),
-								false);
+						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
 						if(!loaders.containsKey(entity))
 							loaders.put(entity, new HashMap<String, List<Loader<?>>>());
 						if(!loaders.get(entity).containsKey(kind))
 							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 						loaders.get(entity).get(kind).add(loader);
+						loader.configure(loader_configs.getTree(name), getLogger());
 						li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 					} catch(Exception e)
 					{
@@ -247,8 +262,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 			loaders.get(AGENT).put(null, new LinkedList<Loader<?>>());
 			try
 			{
-				loaders.get(AGENT).get(null).add((Loader<?>) classFactory
-						.loadClassInstance(DeploymentConfiguration.DEFAULT_AGENT_LOADER, null, false));
+				Loader<?> loader = (Loader<?>) classFactory
+						.loadClassInstance(DeploymentConfiguration.DEFAULT_AGENT_LOADER, null, true);
+				loader.configure(null, getLogger());
+				loaders.get(AGENT).get(null).add(loader);
 				lf("Configured and loaded default agent loader.");
 			} catch(Exception e)
 			{
@@ -298,63 +315,6 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		// get agents
 		
-		// // the name of the default platform
-		// String defaultPlatform = Support.DEFAULT_PLATFORM.toString();
-		// // the name of the default agent loader
-		// String defaultAgentLoader = AgentLoader.DEFAULT_LOADER.toString();
-		// // platform name -> platform loader
-		// Map<String, Support> platforms = new HashMap<>();
-		// // agent loader name -> agent loader
-		// Map<String, AgentLoader> agentLoaders = new HashMap<>();
-		// // package names where agent code (adf, java & co) may be located
-		// List<String> agentPackages = new ArrayList<>();
-		// // platform name -> agent name -> agent manager
-		// // for the agent to be started in the container, on the platform
-		// Set<AgentCreationData> allAgents = new HashSet<>();
-		
-		// // add agent packages specified in the scenario
-		// Iterator<XMLNode> packagePathsIt = scenarioTree.getRoot().getNodeIterator(
-		// AgentParameterName.AGENT_PACKAGE.toString());
-		// while(packagePathsIt.hasNext())
-		// agentPackages.add((String) packagePathsIt.next().getValue());
-		//
-		// // iterate over platform entries in the scenario
-		// defaultPlatform = loadPlatforms(
-		// scenarioTree.getRoot().getNodeIterator(AgentParameterName.AGENT_PLATFORM.toString()), settings,
-		// platforms, defaultPlatform);
-		//
-		// // iterate over agent loader entries in the scenario
-		// defaultAgentLoader = loadAgentLoaders(
-		// scenarioTree.getRoot().getNodeIterator(AgentParameterName.AGENT_LOADER.toString()), agentLoaders,
-		// defaultAgentLoader);
-		//
-		// if(scenarioTree.getRoot().getNodeIterator("initial").hasNext())
-		// // iterate containers and find agents
-		// loadContainerAgents(scenarioTree.getRoot().getNodeIterator("initial").next().getNodeIterator("container"),
-		// defaultPlatform, platforms, defaultAgentLoader, agentLoaders, agentPackages, allContainers,
-		// platformContainers, allAgents);
-		//
-		// // agents prepared, time to start platforms and the containers.
-		// if(startPlatforms(platforms, platformContainers) > 0)
-		// {
-		// // load timeline (if any)
-		// XMLNode timeline = null;
-		// if(scenarioTree.getRoot().getNodeIterator(SimulationManager.TIMELINE_NODE.toString()).hasNext())
-		// timeline = scenarioTree.getRoot().getNodeIterator(SimulationManager.TIMELINE_NODE.toString()).next();
-		//
-		// // start simulation
-		// if(!new SimulationManager(platforms, allContainers, allAgents, timeline).start())
-		// {
-		// le("Simulation start failed.");
-		// for(PlatformLoader platform : platforms.values())
-		// if(!platform.stop())
-		// le("Stopping platform [" + platform.getName() + "] failed");
-		// if(WindowLayout.staticLayout != null)
-		// WindowLayout.staticLayout.doexit();
-		// }
-		// }
-		// else
-		// le("No agent platforms loaded. Simulation will not start.");
 		doExit();
 		
 		return null;

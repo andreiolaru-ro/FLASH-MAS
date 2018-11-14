@@ -58,17 +58,11 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 */
 	private static final String	PARAMETER_VALUE			= DeploymentConfiguration.PARAMETER_VALUE;
 	
-	/**
-	 * The constructor receives the configuration loaded at boot.
-	 * 
-	 * @param config
-	 *            - the configuration.
-	 * @param log
-	 *            - the {@link Logger} in which to output any potential problems.
-	 */
-	public CompositeAgentLoader(TreeParameterSet config, Logger log)
+	@Override
+	public boolean configure(TreeParameterSet config, Logger log)
 	{
 		// nothing to do for the moment.
+		return true;
 	}
 	
 	/**

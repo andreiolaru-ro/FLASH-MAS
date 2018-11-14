@@ -15,8 +15,9 @@ import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentFeatureType;
+import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.util.TreeParameterSet;
 
 /**
  * This interface should be implemented by any persistent entity that exists on a {@link Node} and offers to agents
@@ -26,6 +27,17 @@ import net.xqhs.flash.core.node.Node;
  */
 public interface Support extends Entity<Node>
 {
+	/**
+	 * Configures the {@link Support} instance with the given configuration. Implementations should ensure that some
+	 * configurations are only performed once.
+	 * 
+	 * @param configuration
+	 *            - the configuration.
+	 * @return <code>true</code> if the configuration process succeeded: <code>false</code> if the instance is not
+	 *         expected to perform normally.
+	 */
+	public boolean configure(TreeParameterSet configuration);
+	
 	/**
 	 * @return the names of services that the instance supports. FIXME: services should be better described or be part
 	 *         of some class.

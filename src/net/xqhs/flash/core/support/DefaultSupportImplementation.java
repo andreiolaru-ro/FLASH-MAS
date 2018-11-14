@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentFeatureType;
+import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.util.logging.Unit;
 
