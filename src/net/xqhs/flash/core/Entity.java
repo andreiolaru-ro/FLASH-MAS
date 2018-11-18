@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import net.xqhs.flash.core.util.TreeParameterSet;
+
 /**
  * An element in the deployment, be it a support infrastructure, an agent, a feature, etc. It needs to have some sort of
  * persistent presence in the system, and therefore it has a life-cycle that can be started, stopped, and checked upon.
@@ -20,7 +22,11 @@ package net.xqhs.flash.core;
  * Entities can be placed one in the context of one another, but one entity can have only one type of context that
  * directly contains it (albeit it may run in the context of multiple entities of the same type).
  * <p>
- * Normally, before being started, {@link Entity} instances are created by loaders.
+ * Normally, before being started, {@link Entity} instances are created by {@link Loader} instances.
+ * <p>
+ * It is recommended that an entity receives its configuration via a {@link TreeParameterSet}. This can be done via a
+ * constructor which takes a {@link TreeParameterSet} as argument, or using a default constructor and a method that
+ * takes a {@link TreeParameterSet} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
  * 
  * @param <P>
  *            - the type of the entity that can contain (be the context of) this entity.
@@ -63,11 +69,20 @@ public interface Entity<P extends Entity<?>>
 	public String getName();
 	
 	/**
-	 * Creates a link from a subordinate entity to a entity containing it in some way.
+	 * Creates a link from a subordinate entity to an entity containing it in some way.
 	 * 
 	 * @param context
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
 	public boolean addContext(P context);
+	
+	/**
+	 * Removes the link from a subordinate entity to an entity containing it in some way.
+	 * 
+	 * @param context
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
+	public boolean removeContext(P context);
 }
