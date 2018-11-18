@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import net.xqhs.flash.core.agent.composite.CompositeAgentLoader;
+import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLParser;
@@ -116,9 +117,9 @@ public class DeploymentConfiguration extends TreeParameterSet
 	public static final Map<String, String>	DEFAULTS						= new HashMap<>();
 	
 	/**
-	 * The default loader for agents.
+	 * Categories (entities) that should be loaded by {@link NodeLoader}
 	 */
-	public static final String				DEFAULT_AGENT_LOADER			= CompositeAgentLoader.class.getName();
+	public static final List<CategoryName>	AUTO_LOADS						= new LinkedList<>();
 	
 	static
 	{
@@ -130,6 +131,8 @@ public class DeploymentConfiguration extends TreeParameterSet
 		// "scenario/examples/sclaim_tatami2/simpleScenarioE/scenarioE-tATAmI2-plus.xml"
 		
 		);
+		
+		AUTO_LOADS.addAll(Arrays.asList(CategoryName.SUPPORT, CategoryName.AGENT));
 	}
 	
 	/**

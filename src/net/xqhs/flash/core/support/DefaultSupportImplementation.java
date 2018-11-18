@@ -17,6 +17,7 @@ import java.util.Set;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -31,19 +32,32 @@ import net.xqhs.util.logging.Unit;
 public class DefaultSupportImplementation extends Unit implements Support
 {
 	/**
+	 * The default name for instances of this implementation.
+	 */
+	protected static final String	DEFAULT_NAME	= "Default Support ";
+	
+	/**
 	 * Indicates whether the implementation is currently running.
 	 */
 	protected boolean	isRunning		= false;
 	
 	/**
-	 * The name for instances of this implementation.
+	 * The name of this instance.
 	 */
-	protected String	DEFAULT_NAME	= "Default Support";
+	protected String				name			= DEFAULT_NAME;
+	
+	@Override
+	public boolean configure(TreeParameterSet configuration)
+	{
+		if(configuration.isSimple("name"))
+			name = configuration.get("name");
+		return true;
+	}
 	
 	@Override
 	public String getName()
 	{
-		return DEFAULT_NAME + " " + this.toString();
+		return name;
 	}
 	
 	@Override
@@ -51,7 +65,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	{
 		// does nothing, only changes state.
 		isRunning = true;
-		lf(DEFAULT_NAME + " started");
+		lf("[] started", name);
 		return true;
 	}
 	
@@ -60,7 +74,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	{
 		// does nothing, only changes state.
 		isRunning = false;
-		lf(DEFAULT_NAME + " stopped");
+		lf("[] stopped", name);
 		return true;
 	}
 	
@@ -75,6 +89,12 @@ public class DefaultSupportImplementation extends Unit implements Support
 	{
 		// context has no effect on the default implementation
 		return true;
+	}
+	
+	@Override
+	public boolean removeContext(Node context)
+	{
+		throw new UnsupportedOperationException("Cannot remove context from a node");
 	}
 	
 	/**
@@ -94,7 +114,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	public boolean registerAgent(Agent agent)
 	{
 		agent.addContext(this);
-		lf(DEFAULT_NAME + " registered agent", agent);
+		lf("[] registered agent", name, agent);
 		return true;
 	}
 	
