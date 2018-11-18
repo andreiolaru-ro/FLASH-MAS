@@ -9,8 +9,11 @@ Concept Names
   * visualization -> monitoring / control
   * component -> feature
   * platform -> support
+  
+  * ParameterSet -> ListMap
+  * TreeParameterSet -> TreesMap
 
-
+  * Support pilons (or pilons, fo short?)
 
 Services / features
 ===================
@@ -50,6 +53,7 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 **Future**
   * introduce entities with required name / required kind
+  * should en empty no-attributes agent tag be admissible? In what scenario?
 
 
 
@@ -111,16 +115,25 @@ Deployment configuration contains:
       * features
     * other entities
 
+Entities
+--------
+  * Entities extend Entity
+  * Entity constructors should receive a ParamSet as argument or should implement ConfigurableEntity, which works more like a config 
+  * Entities should be loadable through SimpleLoader (which supports both methods above), and only for special cases (where a factory is needed) should specialized loaders be used
+
+
 Loaders
-  * we have various loaders, that can load various entities, potentially specified by kinds.
+-------
+  * the default loader is SimpleLoader
+  * we can have various loaders, that can load various entities, potentially specified by kinds.
   * loaders for an entity, applicable to its kind, will be tried in order.
     * for now, loaders for the same entity and the same kind cannot be chosen among and will be tried in order until one succeeds.
       * Workaround: loader should check in the entity's configuration if any loader id is specified and compare this to an internal id.
       * since loaders are tried in order, for a specific kind the first will be 'default'
         * if no adequate kind found, ''null'' kind will be tried
-      * the default loader specified in the NodeLoader (CompositeAgentLoader, FeatureLoader) will only be used if no loader for that type of entity is otherwise specified.
+      * the default loader (SimpleLoader) will only be used if no loader for that type of entity is otherwise specified.
 
-The same policy goes for Support Infrastructures (first is default, if none specified then we use the default in NodeLoader (LocalSupport).
+The same policy goes for Support Infrastructures (first is default, if none specified then we use the default in NodeLoader (LocalSupport)).
 
 The Node is always loaded by the NodeLoader.
 
@@ -133,17 +146,23 @@ Future
     * the given classpath, in the flash package
     * flash package + kind + for + KindForLoader
     * flash package + core + agent 
-
+  * multiple support implementations
+    * multiple features with the same designation
+  * interfaces for common features (e.g. messaging, kb, etc)
 
 
 General
 =======
-
+  * make configurables more builder-like (configure return the instance?)
   * TreeObjectSet<T> would be nice -- simple keys can only be assigned to T values
     * TreeParameterSet would extend TreeObjectSet<String> 
   * implement something like addFirst / addTreeFirst ?
 
 
+Other ideas
+===========
+
+lumps, lumpy agent, LUMPS as acronym
 
 
 

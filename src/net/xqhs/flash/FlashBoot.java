@@ -36,10 +36,12 @@ public class FlashBoot
 		String test_args;
 		// test_args = "";
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
+		test_args = "src-deployment/simpleDeployment/simpleDeployment.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
 		// test_args = "-agent AgentA some:property -feature mobility where:anywhere -support local:auxilliary host:here
 		// -agent bane something:something -othercomponent a";
-		test_args = "-support local -support local arg:val -support last host:here -agent bane something:something -feature a -feature b par:val -feature c -agent bruce -feature a";
+		// test_args = "-support local -support local arg:val -support last host:here -agent bane something:something
+		// -feature a -feature b par:val -feature c -agent bruce -feature a";
 		String[] use_args = test_args.split(" ");
 		
 		

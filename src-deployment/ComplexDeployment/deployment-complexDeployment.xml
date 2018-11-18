@@ -35,7 +35,7 @@
 	<!--package>net.xqhs.flash.core.agent.</package -->
 
 	<loader for="agent:java" />
-	<loader for="agent" kind="composite" />
+	<!-- <loader for="agent" kind="composite" />  -->
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
 
 	<agent name="AgentA">
