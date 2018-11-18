@@ -19,8 +19,8 @@ import java.util.Map;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Loader;
-import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
@@ -128,15 +128,21 @@ public class NodeLoader extends Unit implements Loader<Node>
 	{
 		String D = ".";
 		checkedPaths.clear();
+		checkedPaths.add(given_cp);
 		if(given_cp != null && factory.canLoadClass(given_cp))
 			return given_cp;
 		if(packages != null)
 			for(String p : packages)
+			{
+				checkedPaths.add(p + D + given_cp);
 				if(factory.canLoadClass(p + D + given_cp))
 					return p + D + given_cp;
+			}
 		List<String> clsNames = new LinkedList<>();
 		if(given_cp != null)
 			clsNames.add(given_cp);
+		if(upper_name == null)
+			return null;
 		clsNames.add(capitalize(upper_name) + capitalize(entity));
 		if(lower_name != null)
 		{
@@ -194,9 +200,9 @@ public class NodeLoader extends Unit implements Loader<Node>
 		}
 		
 		// ============================================================================== get general configuration
-		TreeParameterSet config = deploymentConfiguration.getTree(CategoryName.CONFIG.getName());
-		if(config == null)
-			config = new TreeParameterSet();
+		TreeParameterSet theConfig = deploymentConfiguration.getTree(CategoryName.CONFIG.getName());
+		if(theConfig == null)
+			theConfig = new TreeParameterSet();
 		
 		// ============================================================================== get package list
 		List<String> packages = deploymentConfiguration.getValues(CategoryName.PACKAGE.getName());
@@ -223,7 +229,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					le("Loader name parsing failed for []", name);
 				
 				// find the implementation
-				String cp = loader_configs.getDeepValue(name, "classpath");
+				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
 				cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.getName(),
 						checkedPaths);
 				if(cp == null)
@@ -250,66 +256,97 @@ public class NodeLoader extends Unit implements Loader<Node>
 		else
 			li("No loaders configured.");
 		
-		// ============================================================================== default loaders
-		
-		// default loader for agents
-		String AGENT = CategoryName.AGENT.getName();
-		
-		if(!loaders.containsKey(AGENT))
-			loaders.put(AGENT, new HashMap<String, List<Loader<?>>>());
-		if(!loaders.get(AGENT).containsKey(null))
+		Loader<?> defaultLoader = new SimpleLoader();
+		defaultLoader.configure(null, getLogger());
+		if(loaders.containsKey(null))
 		{
-			loaders.get(AGENT).put(null, new LinkedList<Loader<?>>());
-			try
-			{
-				Loader<?> loader = (Loader<?>) classFactory
-						.loadClassInstance(DeploymentConfiguration.DEFAULT_AGENT_LOADER, null, true);
-				loader.configure(null, getLogger());
-				loaders.get(AGENT).get(null).add(loader);
-				lf("Configured and loaded default agent loader.");
-			} catch(Exception e)
-			{
-				le("Default [] loader loading failed: ", AGENT, PlatformUtils.printException(e));
-			}
+			if(loaders.get(null).containsKey(null) && !loaders.get(null).get(null).isEmpty())
+				defaultLoader = loaders.get(null).get(null).get(0);
+			else if(!loaders.get(null).isEmpty())
+				defaultLoader = loaders.get(null).values().iterator().next().get(0);
 		}
 		
-		// ============================================================================== get support infrastructures
-		// support infrastructures are stored as kind -> id -> instance
-		Map<String, Map<String, Support>> support = new HashMap<>();
-		String SUPPORT = CategoryName.SUPPORT.getName();
-		TreeParameterSet support_configs = deploymentConfiguration.getTree(SUPPORT);
-		if(!support_configs.getSimpleKeys().isEmpty()) // just a warning
-			lw("Simple keys from support tree ignored: ", support_configs.getSimpleKeys());
-		for(String name : support_configs.getHierarchicalKeys())
+		// ============================================================================== load entities
+		for(CategoryName cat : DeploymentConfiguration.AUTO_LOADS)
 		{
-			String kind = null, id = null, cp = support_configs.getDeepValue(name, "classpath");
-			if(name.contains(NAMESEP))
+			String catName = cat.getName();
+			if(deploymentConfiguration.getTree(catName) == null)
+				continue;
+			TreeParameterSet configs = deploymentConfiguration.getTree(catName);
+			if(!configs.getSimpleKeys().isEmpty()) // just a warning
+				lw("Simple keys from [] tree ignored: ", cat, configs.getSimpleKeys());
+			for(String name : configs.getHierarchicalKeys())
 			{
-				kind = name.split(NAMESEP)[0];
-				id = name.split(NAMESEP, 2)[1];
-			}
-			else
-				kind = name;
-			if(kind == null || kind.length() == 0)
-				le("Loader name parsing failed for []", name);
-			cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, null, SUPPORT, checkedPaths);
-			if(cp == null)
-				le("Class for support []/[] can not be found; tried paths ", name, kind, checkedPaths);
-			else
-			{
-				try
+				// try to parse the name / obtain a kind (in order to find an appropriate loader)
+				TreeParameterSet config = configs.getTree(name);
+				String kind = null, id = null, cp = config.get(SimpleLoader.CLASSPATH_KEY);
+				if(name != null && name.contains(NAMESEP))
 				{
-					Support supportInstance = (Support) classFactory.loadClassInstance(cp,
-							support_configs.getTree(name), false);
-					if(!support.containsKey(kind))
-						support.put(kind, new HashMap<String, Support>());
-					// TODO create id
-					support.get(kind).put(id, supportInstance);
-					li("Support for [] with id [] successfully loaded from [].", kind, id, cp);
-				} catch(Exception e)
-				{
-					le("Support loading failed for []: ", name, PlatformUtils.printException(e));
+					kind = name.split(NAMESEP)[0];
+					id = name.split(NAMESEP, 2)[1];
 				}
+				else
+					kind = name;
+				if(kind == null || kind.length() == 0)
+					kind = config.get(cat.nameParts()[0]);
+				if(id == null || id.length() == 0)
+					id = config.get(cat.nameParts()[1]);
+				
+				// find a loader
+				List<Loader<?>> loaderList = null;
+				String log_catLoad = null, log_kindLoad = null;
+				int log_nLoader = 0;
+				if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty())
+				{ // if the category in loader list
+					log_catLoad = catName;
+					if(loaders.get(catName).containsKey(kind))
+					{ // get loaders for this kind
+						loaderList = loaders.get(catName).get(kind);
+						log_catLoad = kind;
+					}
+					else
+					{ // if no loaders for this kind
+						if(loaders.get(catName).containsKey(null))
+						{// get the null kind
+							loaderList = loaders.get(catName).get(null);
+							log_kindLoad = "null";
+						}
+						else
+						{ // get loaders for the first kind
+							loaderList = loaders.get(catName).values().iterator().next();
+							log_kindLoad = "first(" + loaders.get(catName).keySet().iterator().next() + ")";
+						}
+					}
+				}
+				Entity<?> entity = null;
+				if(loaderList != null && !loaderList.isEmpty())
+					for(Loader<?> loader : loaderList)
+					{ // try loading
+						lf("Trying to load [][] using []th loader for [][]", catName, kind, new Integer(log_nLoader),
+								log_catLoad, log_kindLoad);
+						if(loader.preload(config))
+							entity = loader.load(config);
+						if(entity != null)
+							break;
+						log_nLoader += 1;
+					}
+				if(entity == null)
+				{
+					lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
+							defaultLoader.getClass().getName(), cp);
+					// attempt to obtain classpath information
+					cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, cat.getName(), checkedPaths);
+					if(cp == null)
+						le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
+					else
+						configs.getTree(name).set(SimpleLoader.CLASSPATH_KEY, cp);
+					if(defaultLoader.preload(config))
+						entity = defaultLoader.load(config);
+				}
+				if(entity != null)
+					li("Entity [] of type [] loaded.", name, catName);
+				else
+					le("Could not load entity [] of type [].", name, catName);
 			}
 		}
 		
