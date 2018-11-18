@@ -32,6 +32,7 @@
 				</sequence>
 				<attribute name="name" type="string" use="optional" />
 				<attribute name="kind" type="string" use="optional" />
+				<attribute name="classpath" type="string" use="optional" />
 			</extension>
 		</complexContent>
 	</complexType>
@@ -51,9 +52,7 @@
 					<element name="feature" minOccurs="0" maxOccurs="unbounded">
 						<complexType>
 							<complexContent>
-								<extension base="tns:entitybase">
-									<attribute name="classpath" type="string" use="optional" />
-								</extension>
+								<extension base="tns:entitybase" />
 							</complexContent>
 						</complexType>
 					</element>
@@ -70,7 +69,6 @@
 					<element name="agent" type="tns:agent" minOccurs="0" maxOccurs="unbounded" />
 				</sequence>
 				<attribute name="id" type="string" use="optional" />
-				<attribute name="classpath" type="string" use="optional" />
 			</extension>
 		</complexContent>
 	</complexType>
