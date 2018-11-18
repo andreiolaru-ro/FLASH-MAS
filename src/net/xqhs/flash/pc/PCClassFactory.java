@@ -12,6 +12,7 @@
 package net.xqhs.flash.pc;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,7 +43,8 @@ public class PCClassFactory implements ClassFactory
 	
 	@Override
 	public Object loadClassInstance(String className, TreeParameterSet creationData, boolean splitArguments)
-			throws Exception
+			throws ClassNotFoundException, InstantiationException, NoSuchMethodException, IllegalAccessException,
+			InvocationTargetException
 	{
 		ClassLoader cl = null;
 		cl = new ClassLoader(PCClassFactory.class.getClassLoader()) {

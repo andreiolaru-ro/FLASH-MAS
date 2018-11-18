@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Interface for platform-specific class-loading classes.
  * 
@@ -28,11 +30,15 @@ public interface ClassFactory
 	 *            individually to the constructor. If <code>splitArguments</code> is <code>true</code> and
 	 *            <code>creationData</code> is <code>null</code>, the constructor will be called with no arguments.
 	 * @return a new instance for the class.
-	 * @throws Exception
-	 *             - when something goes wrong with the class loading.
+	 * @throws ClassNotFoundException if the class was not found.
+	 * @throws InstantiationException if the class could not be instantiated.
+	 * @throws NoSuchMethodException if an adequate constructor was not found.
+	 * @throws IllegalAccessException if the constructor is not accessible.
+	 * @throws InvocationTargetException if the constructor could not be invoked.
 	 */
 	public Object loadClassInstance(String classPath, TreeParameterSet creationData, boolean splitArguments)
-			throws Exception;
+			throws ClassNotFoundException, InstantiationException, NoSuchMethodException, IllegalAccessException,
+			InvocationTargetException;
 	
 	/**
 	 * @param classPath
