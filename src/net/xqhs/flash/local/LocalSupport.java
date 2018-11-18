@@ -18,12 +18,12 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentFeatureType;
 import net.xqhs.flash.core.agent.composite.AgentEvent;
-import net.xqhs.flash.core.agent.messaging.MessagingComponent;
-import net.xqhs.flash.core.agent.messaging.NameBasedMessagingComponent;
+import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.AgentManager;
 import net.xqhs.flash.core.support.DefaultSupportImplementation;
+import net.xqhs.flash.core.support.MessagingComponent;
+import net.xqhs.flash.core.support.NameBasedMessagingComponent;
 import net.xqhs.flash.core.support.Support.StandardSupportType;
 
 /**

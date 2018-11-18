@@ -16,7 +16,7 @@ import java.util.Iterator;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.composite.AgentFeature.ComponentCreationData;
+import net.xqhs.flash.core.agent.composite.CompositeAgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.agent.parametric.ParametricComponent;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -127,10 +127,10 @@ public class CompositeAgentLoader implements Loader<Agent>
 				continue;
 			}
 			
-			AgentFeature component = null;
+			CompositeAgentFeature component = null;
 			try
 			{
-				component = (AgentFeature) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
+				component = (CompositeAgentFeature) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
 				log.trace("component [] created for agent []. pre-loading...", componentClass,
 						agentCreationData.getName());
 			} catch(Exception e)
@@ -178,7 +178,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	{
 		CompositeAgent agent = new CompositeAgent();
 		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addFeature((AgentFeature) componentObj);
+			agent.addFeature((CompositeAgentFeature) componentObj);
 		return agent;
 	}
 }

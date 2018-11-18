@@ -32,13 +32,13 @@ import net.xqhs.util.logging.UnitComponent;
  * This class reunites the features of an agent in order for features to be able to call each other and for events to be
  * distributed to all features.
  * <p>
- * Various agent features -- instances of {@link AgentFeature} -- can be added. Features are identified by means of
+ * Various agent features -- instances of {@link CompositeAgentFeature} -- can be added. Features are identified by means of
  * their designation. At most one feature with the same designation is allowed (i.e. at most one feature per
  * functionality).
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
  * an event to all features, which handle it by means of registered handles (each feature registers a handle for an
- * event with itself). See {@link AgentFeature}.
+ * event with itself). See {@link CompositeAgentFeature}.
  * 
  * @author Andrei Olaru
  * 
@@ -128,11 +128,11 @@ public class CompositeAgent implements Serializable, Agent
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(AgentFeature feature : featureOrder)
+						for(CompositeAgentFeature feature : featureOrder)
 							feature.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<AgentFeature> it = featureOrder.listIterator(featureOrder.size()); it
+						for(ListIterator<CompositeAgentFeature> it = featureOrder.listIterator(featureOrder.size()); it
 								.hasPrevious();)
 							it.previous().signalAgentEvent(event);
 						break;
@@ -167,14 +167,14 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The {@link Map} that links feature designations (functionalities) to feature instances.
 	 */
-	protected Map<AgentFeatureDesignation, AgentFeature>	features					= new HashMap<>();
+	protected Map<AgentFeatureDesignation, CompositeAgentFeature>	features					= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which features were added, so as to signal agent events to features in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #features}.
 	 */
-	protected ArrayList<AgentFeature>						featureOrder				= new ArrayList<>();
+	protected ArrayList<CompositeAgentFeature>						featureOrder				= new ArrayList<>();
 	
 	/**
 	 * A synchronized queue of agent events, as posted by the features.
@@ -290,6 +290,9 @@ public class CompositeAgent implements Serializable, Agent
 		return FSMToggleTransient();
 	}
 	
+	/**
+	 * Context can be added to an agent only when it is not running.
+	 */
 	@Override
 	public boolean addContext(Support link)
 	{
@@ -300,8 +303,20 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * The method should be called by an agent feature (relayed through {@link AgentFeature}) to disseminate a an
-	 * {@link AgentEvent} to the other features.
+	 * Context can be removed from an agent only when it is not running.
+	 */
+	@Override
+	public boolean removeContext(Support link)
+	{
+		if(!canAddFeatures() || isRunning())
+			return false;
+		supportLink = null;
+		return true;
+	}
+	
+	/**
+	 * The method should be called by an agent feature (relayed through {@link CompositeAgentFeature}) to disseminate a
+	 * an {@link AgentEvent} to the other features.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
 	 * case of abnormal termination, the event will be processed eventually. Otherwise, it returns <code>false</code>,
@@ -494,14 +509,14 @@ public class CompositeAgent implements Serializable, Agent
 	 * Adds a feature to the agent, which has been configured beforehand. The agent will register with the feature, as
 	 * parent.
 	 * <p>
-	 * The feature will be identified by the agent by means of its {@link AgentFeature#getFeatureDesignation()} method.
+	 * The feature will be identified by the agent by means of its {@link CompositeAgentFeature#getFeatureDesignation()} method.
 	 * Only one instance per designation (functionality) will be allowed.
 	 * 
 	 * @param feature
-	 *            - the {@link AgentFeature} instance to add.
+	 *            - the {@link CompositeAgentFeature} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other features.
 	 */
-	protected CompositeAgent addFeature(AgentFeature feature)
+	protected CompositeAgent addFeature(CompositeAgentFeature feature)
 	{
 		if(!canAddFeatures())
 			throw new IllegalStateException("Cannot add features in state [" + agentState + "].");
@@ -512,7 +527,7 @@ public class CompositeAgent implements Serializable, Agent
 					"Cannot add multiple features for designation [" + feature.getFeatureDesignation() + "]");
 		features.put(feature.getFeatureDesignation(), feature);
 		featureOrder.add(feature);
-		feature.setAgent(this);
+		feature.addContext(this);
 		return this;
 	}
 	
@@ -523,11 +538,11 @@ public class CompositeAgent implements Serializable, Agent
 	 *            - the designation of the feature to remove.
 	 * @return a reference to the just-removed feature instance.
 	 */
-	protected AgentFeature removeFeature(AgentFeatureDesignation designation)
+	protected CompositeAgentFeature removeFeature(AgentFeatureDesignation designation)
 	{
 		if(!hasFeature(designation))
 			throw new InvalidParameterException("Feature [" + designation + "] does not exist");
-		AgentFeature feature = getFeature(designation);
+		CompositeAgentFeature feature = getFeature(designation);
 		featureOrder.remove(feature);
 		features.remove(designation);
 		return feature;
@@ -552,9 +567,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * 
 	 * @param designation
 	 *            - the designation of the feature to retrieve.
-	 * @return the {@link AgentFeature} instance, if any. <code>null</code> otherwise.
+	 * @return the {@link CompositeAgentFeature} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentFeature getFeature(AgentFeatureDesignation designation)
+	protected CompositeAgentFeature getFeature(AgentFeatureDesignation designation)
 	{
 		return features.get(designation);
 	}
@@ -611,6 +626,26 @@ public class CompositeAgent implements Serializable, Agent
 	public boolean isTransient()
 	{
 		return agentState == AgentState.TRANSIENT;
+	}
+	
+	/**
+	 * Checks whether the agent is in the <code>STARTING</code> state.
+	 * 
+	 * @return <code>true</code> if the agent is currently <code>STARTING</code>; <code>false</code> otherwise.
+	 */
+	protected boolean isStarting()
+	{
+		return agentState == AgentState.STARTING;
+	}
+	
+	/**
+	 * Checks whether the agent is in the <code>STOPPING</code> state.
+	 * 
+	 * @return <code>true</code> if the agent is currently <code>STOPPING</code>; <code>false</code> otherwise.
+	 */
+	protected boolean isStopping()
+	{
+		return agentState == AgentState.STOPPING;
 	}
 	
 	/**

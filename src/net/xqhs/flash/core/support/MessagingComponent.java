@@ -16,13 +16,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.xqhs.flash.core.agent.composite.AgentEvent;
+import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.composite.CompositeAgent;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Debug.DebugItem;
 import tatami.core.agent.AgentComponent;
-import tatami.core.agent.AgentEvent;
-import tatami.core.agent.AgentEvent.AgentEventHandler;
-import tatami.core.agent.AgentEvent.AgentEventType;
-import tatami.core.agent.CompositeAgent;
-import tatami.core.util.platformUtils.PlatformUtils;
 
 /**
  * The messaging component should handle all communication between the agent and other agents. Note that the existence

@@ -1,31 +1,29 @@
 package net.xqhs.flash.core.feature;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.agent.composite.AgentEvent;
 import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.agent.composite.AgentFeature;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.agent.composite.CompositeAgent;
-import net.xqhs.flash.core.agent.composite.MessagingFeature;
+import net.xqhs.flash.core.agent.composite.CompositeAgentFeature;
 import net.xqhs.flash.core.agent.composite.VisualizableFeature;
 import net.xqhs.flash.core.support.MessagingComponent;
-import net.xqhs.flash.core.util.ParameterSet;
-import net.xqhs.util.XML.XMLTree.XMLNode;
+import net.xqhs.flash.core.support.MessagingFeature;
+import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 
 /**
- * This class extends on {@link AgentFeature} by adding some functionality which may be useful to many agent feature
- * implementations. These methods are <code>protected</code>, as they should be accessible only from the inside of the
- * feature, not from the outside. These methods are enumerated below:
+ * This class extends on {@link CompositeAgentFeature} by adding some functionality which may be useful to many agent
+ * feature implementations. These methods are <code>protected</code>, as they should be accessible only from the inside
+ * of the feature, not from the outside. These methods are enumerated below:
  * <ul>
  * <li>Methods that are called when events happen. These methods should be overridden by extending classes in order to
- * intercept initialization (constructor, <code>featureInitializer()</code>, <code>preload()</code>), parent change (
+ * intercept initialization (constructor, <code>featureInitializer()</code>, {@link #configure}), parent change (
  * <code>parentChangeNotifier()</code>), and other events. The class contains methods that, <i>by default</i>, are
  * registered as event handlers for some agent events (agent start/stop, simulation start/pause, before/after move).
  * Other handlers may be registered instead by the implementation, so these methods ( <code>at*()</code>) are not
@@ -63,7 +61,7 @@ import net.xqhs.util.logging.Logger;
  * 
  * @author andreiolaru
  */
-public abstract class AgentFeatureEx extends AgentFeature
+public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 {
 	
 	/**
@@ -79,20 +77,20 @@ public abstract class AgentFeatureEx extends AgentFeature
 	/**
 	 * The constructor assigns the designation to the feature.
 	 * <p>
-	 * IMPORTANT: see {@link AgentFeature#AgentFeature(AgentFeatureDesignation)}.
+	 * IMPORTANT: see {@link CompositeAgentFeature#AgentFeature(AgentFeatureDesignation)}.
 	 * 
 	 * @param designation
 	 *            - the designation of the feature, as instance of {@link StandardAgentFeature}.
 	 */
-	public AgentFeatureEx(AgentFeatureDesignation designation)
+	public CompositeAgentFeatureEx(AgentFeatureDesignation designation)
 	{
 		super(designation);
 	}
 	
 	@Override
-	protected boolean preload(ParameterSet parameters, XMLNode scenarioNode, List<String> agentPackages, Logger log)
+	public boolean configure(TreeParameterSet parameters)
 	{
-		if(!super.preload(parameters, scenarioNode, agentPackages, log))
+		if(!super.configure(parameters))
 			return false;
 		
 		// register usual events
@@ -278,9 +276,9 @@ public abstract class AgentFeatureEx extends AgentFeature
 	 * 
 	 * @param designation
 	 *            - the designation of the feature.
-	 * @return the {@link AgentFeature} instance, if any. <code>null</code> otherwise.
+	 * @return the {@link CompositeAgentFeature} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentFeature getAgentFeature(AgentFeatureDesignation designation)
+	protected CompositeAgentFeature getAgentFeature(AgentFeatureDesignation designation)
 	{
 		return (getAgent() != null) ? getAgent().getFeature(designation) : null;
 	}
@@ -351,7 +349,7 @@ public abstract class AgentFeatureEx extends AgentFeature
 		{
 			// the implementation somewhat non-intuitively uses the fact that the method in MessagingFeature that is
 			// used has the same name.
-			AgentFeature msgr = getAgent().getFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation());
+			CompositeAgentFeature msgr = getAgent().getFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation());
 			return msgr.registerMessageReceiver(receiver, prefixElements);
 		}
 		registerHandler(AgentEventType.AGENT_MESSAGE, receiver);
