@@ -254,30 +254,6 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Time (in milliseconds) to wait for the agent thread to exit.
-	 */
-	@Deprecated
-	protected static final long EXIT_TIMEOUT = 500;
-	
-	/**
-	 * This method contains some legacy code for forcing the agent thread to stop. Testing currently shows that posting
-	 * a stop event should be sufficient, so this method should only be used in case of malfunction that cannot be
-	 * solved otherwise at the time.
-	 */
-	@Deprecated
-	public void killAgent()
-	{
-		exit();
-		try
-		{
-			agentThread.join(EXIT_TIMEOUT);
-		} catch(InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	/**
 	 * Instructs the agent to switch state between <code>STOPPED</code> and <code>TRANSIENT</code>.
 	 * 
 	 * @return <code>true</code> if the agent is now in the <code>TRANSIENT</code> state, <code>false</code> otherwise.
