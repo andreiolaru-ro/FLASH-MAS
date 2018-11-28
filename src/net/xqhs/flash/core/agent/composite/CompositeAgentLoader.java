@@ -16,9 +16,11 @@ import java.util.Iterator;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.composite.CompositeAgentFeature.ComponentCreationData;
+import net.xqhs.flash.core.agent.AgentFeature;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
+import net.xqhs.flash.core.agent.composite.CompositeAgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.agent.parametric.ParametricComponent;
+import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.XML.XMLTree.XMLNode;
@@ -26,11 +28,20 @@ import net.xqhs.util.logging.Logger;
 
 /**
  * Agent loader for agents extending {@link CompositeAgent}.
+ * <p>
+ * The choice of using a specialized loader as opposed to using the default loader and doing all the loading inside the
+ * composite agent was made so as to decouple dynamic class loading, as well as calls to
+ * {@link ClassFactory#loadClassInstance(String, TreeParameterSet, boolean)} from the actual implementation of
+ * {@link CompositeAgent}.
  * 
  * @author Andrei Olaru
  */
 public class CompositeAgentLoader implements Loader<Agent>
 {
+	/**
+	 * The name of the parameter in the agent configuration containing the agent name.
+	 */
+	private static final String	AGENT_NAME_PARAMETER	= "name";
 	/**
 	 * Name of XML nodes in the scenario representing components.
 	 */
@@ -38,13 +49,13 @@ public class CompositeAgentLoader implements Loader<Agent>
 	/**
 	 * The name of the attribute representing the name of the component in the component node.
 	 */
-	private static final String	FEATURE_NAME_ATTRIBUTE	= "name";
+	private static final String	FEATURE_NAME_PARAMETER	= "name";
 	/**
 	 * The name of the attribute representing the class of the component in the component node. The class may not be
-	 * specified, it the component is standard and its class is specified by the corresponding {@link StandardAgentFeature}
-	 * entry.
+	 * specified, it the component is standard and its class is specified by the corresponding
+	 * {@link StandardAgentFeature} entry.
 	 */
-	private static final String	FEATURE_CLASS_ATTRIBUTE	= "classpath";
+	private static final String	FEATURE_CLASS_PARAMETER	= "classpath";
 	/**
 	 * The name of nodes containing component parameters.
 	 */
@@ -58,18 +69,23 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 */
 	private static final String	PARAMETER_VALUE			= DeploymentConfiguration.PARAMETER_VALUE;
 	
+	/**
+	 * Logger to use during the loading process.
+	 */
+	Logger						log;
+	
 	@Override
-	public boolean configure(TreeParameterSet config, Logger log)
+	public boolean configure(TreeParameterSet config, Logger _log)
 	{
-		// nothing to do for the moment.
+		log = _log;
 		return true;
 	}
 	
 	/**
 	 * The method checks potential problems that could appear in the creation of an agent, as specified by the
-	 * information in the argument. Potential problems relate, for example, to inexistent classes.
+	 * information in the argument. Potential problems relate, for example, to inexistent classes for features.
 	 * <p>
-	 * The method also adds information to the agent creation data, in order to speed up the loading process.
+	 * The method creates the necessary {@link AgentFeature} instances and pre-loads them.
 	 * <p>
 	 * If the agent will surely not be able to load, <code>false</code> will be returned. For any non-fatal issues, the
 	 * method should return <code>true</code> and output warnings in the log.
@@ -81,48 +97,43 @@ public class CompositeAgentLoader implements Loader<Agent>
 	@Override
 	public boolean preload(TreeParameterSet agentCreationData)
 	{
-		String logPre = agentCreationData.getName() + ":";
-		Iterator<XMLNode> componentIt = agentCreationData.getNode().getNodeIterator(FEATURE_NODE_NAME);
-		while(componentIt.hasNext())
+		String logPre = (agentCreationData.isSimple(AGENT_NAME_PARAMETER) ? agentCreationData.get(AGENT_NAME_PARAMETER)
+				: "<agent>") + ":";
+		for(TreeParameterSet featureConfig : agentCreationData.getTrees(FEATURE_NODE_NAME))
 		{
-			XMLNode componentNode = componentIt.next();
-			String componentName = componentNode.getAttributeValue(FEATURE_NAME_ATTRIBUTE);
+			String featureName = featureConfig.get(FEATURE_NAME_PARAMETER);
 			
-			// get component class
-			String componentClass = componentNode.getAttributeValue(FEATURE_CLASS_ATTRIBUTE);
-			if(componentClass == null)
+			// get feature class
+			String featureClass = featureConfig.get(FEATURE_CLASS_PARAMETER);
+			if(featureClass == null)
 			{
-				StandardAgentFeature component = StandardAgentFeature.toStandardAgentFeature(componentName);
-				if(component != null)
+				if(featureName == null)
 				{
-					if(platformLoader != null)
-					{
-						String recommendedClass = platformLoader.getRecommendedFeatureImplementation(component);
-						if(recommendedClass != null)
-							componentClass = recommendedClass;
-					}
-					if(componentClass == null)
-						componentClass = component.getClassName();
-				}
-				else
-				{
-					log.error(logPre + "Component [" + componentName
-							+ "] unknown and component class not specified. Component will not be available.");
+					log.error(logPre + "Feature has neither name nor class specified. Feature will not be available.");
 					continue;
 				}
+				AgentFeatureDesignation featureDesignation = AgentFeatureDesignation.autoFeature(featureName);
+					if(platformLoader != null)
+					{
+						String recommendedClass = platformLoader.getRecommendedFeatureImplementation(featureDesignation);
+						if(recommendedClass != null)
+							featureClass = recommendedClass;
+					}
+					if(featureClass == null)
+						featureClass = featureDesignation.getClassName();
 			}
-			if(componentClass == null)
+			if(featureClass == null)
 			{
-				log.error(logPre + "Component class not specified for component [" + componentName
+				log.error(logPre + "Component class not specified for component [" + featureName
 						+ "]. Component will not be available.");
 				continue;
 			}
 			
-			if(PlatformUtils.classExists(componentClass))
-				log.trace(logPre + "component [" + componentName + "] can be loaded");
+			if(PlatformUtils.classExists(featureClass))
+				log.trace(logPre + "component [" + featureName + "] can be loaded");
 			else
 			{
-				log.error(logPre + "Component class [" + componentName + " | " + componentClass
+				log.error(logPre + "Component class [" + featureName + " | " + featureClass
 						+ "] not found; it will not be loaded.");
 				continue;
 			}
@@ -130,12 +141,13 @@ public class CompositeAgentLoader implements Loader<Agent>
 			CompositeAgentFeature component = null;
 			try
 			{
-				component = (CompositeAgentFeature) PlatformUtils.loadClassInstance(this, componentClass, new Object[0]);
-				log.trace("component [] created for agent []. pre-loading...", componentClass,
+				component = (CompositeAgentFeature) PlatformUtils.loadClassInstance(this, featureClass,
+						new Object[0]);
+				log.trace("component [] created for agent []. pre-loading...", featureClass,
 						agentCreationData.getName());
 			} catch(Exception e)
 			{
-				log.error("Component [] failed to load; it will not be available for agent []:", componentClass,
+				log.error("Component [] failed to load; it will not be available for agent []:", featureClass,
 						agentCreationData.getName(), PlatformUtils.printException(e));
 				continue;
 			}
@@ -148,18 +160,18 @@ public class CompositeAgentLoader implements Loader<Agent>
 				XMLNode param = paramsIt.next();
 				componentData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
 			}
-			if(StandardAgentFeature.PARAMETRIC_COMPONENT.featureName().equals(componentName))
+			if(StandardAgentFeature.PARAMETRIC_COMPONENT.featureName().equals(featureName))
 				componentData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
 						agentCreationData.getParameters());
 			
 			if(component.preload(componentData, componentNode, agentCreationData.getPackages(), log))
 			{
 				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, component);
-				log.trace("component [] pre-loaded for agent []", componentClass, agentCreationData.getName());
+				log.trace("component [] pre-loaded for agent []", featureClass, agentCreationData.getName());
 			}
 			else
 				log.error("Component [] failed pre-loading step; it will not be available for agent [].",
-						componentClass, agentCreationData.getName());
+						featureClass, agentCreationData.getName());
 		}
 		
 		return true;

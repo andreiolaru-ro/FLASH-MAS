@@ -36,7 +36,8 @@ public class FlashBoot
 		String test_args;
 		// test_args = "";
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
-		test_args = "src-deployment/simpleDeployment/simpleDeployment.xml";
+		// test_args = "src-deployment/simpleDeployment/simpleDeployment.xml";
+		test_args = "src-deployment/examples/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
 		// test_args = "-agent AgentA some:property -feature mobility where:anywhere -support local:auxilliary host:here
 		// -agent bane something:something -othercomponent a";

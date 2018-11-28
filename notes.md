@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License along with Fla
 
 **Current target:**
   * deploy a composite agent
+    * what do about having support implementations when pre-loading features
+      * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
 
 
 
@@ -154,6 +156,9 @@ The same policy goes for Support Infrastructures (first is default, if none spec
 The Node is always loaded by the NodeLoader.
 
 
+TODO
+----
+  * add nodes to auto-loaded entities
 
 Future
 ------
