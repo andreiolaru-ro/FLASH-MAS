@@ -156,6 +156,11 @@ public class NodeLoader extends Unit implements Loader<Node>
 		for(CategoryName cat : DeploymentConfiguration.AUTO_LOADS)
 		{
 			String catName = cat.getName();
+			if(deploymentConfiguration.isSimple(catName))
+			{
+				le("Agent deployment data cannot be empty");
+				continue;
+			}
 			if(deploymentConfiguration.getTree(catName) == null)
 				continue;
 			TreeParameterSet configs = deploymentConfiguration.getTree(catName);
