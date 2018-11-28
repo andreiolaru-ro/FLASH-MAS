@@ -133,6 +133,22 @@ public class AgentFeatureDesignation implements Serializable
 				return null;
 			}
 		}
+		
+		/**
+		 * Combines the functionality of {@link #toStandardAgentFeature} and {@link #toAgentFeatureDesignation} to
+		 * return an {@link AgentFeatureDesignation} based on a feature name. If no appropriate standard feature is
+		 * found, <code>null</code> is returned.
+		 * 
+		 * @param featureName
+		 *            - the name of the feature, as appearing in the deployment file.
+		 * @return the {@link AgentFeatureDesignation} corresponding to this standard feature with the name;
+		 *         <code>null</code> if none found.
+		 */
+		public static AgentFeatureDesignation toStandardAgentFeatureDesignation(String featureName)
+		{
+			StandardAgentFeature std = toStandardAgentFeature(featureName);
+			return std != null ? std.toAgentFeatureDesignation() : null;
+		}
 	}
 	
 	/**
@@ -186,11 +202,27 @@ public class AgentFeatureDesignation implements Serializable
 	 * 
 	 * @param standardFeature
 	 *            - the standard feature.
-	 * @return - the designation.
+	 * @return the designation.
 	 */
 	public static AgentFeatureDesignation standardFeature(StandardAgentFeature standardFeature)
 	{
 		return new AgentFeatureDesignation(standardFeature, null);
+	}
+	
+	/**
+	 * Creates a designation that is either a standard designation, if one such designation is found, or a custom
+	 * designation, otherwise.
+	 * 
+	 * @param featureName
+	 *            - the name of the desired feature.
+	 * @return the designation.
+	 */
+	public static AgentFeatureDesignation autoFeature(String featureName)
+	{
+		StandardAgentFeature std = StandardAgentFeature.toStandardAgentFeature(featureName);
+		if(std != null)
+			return standardFeature(std);
+		return customFeature(featureName);
 	}
 	
 	@Override
