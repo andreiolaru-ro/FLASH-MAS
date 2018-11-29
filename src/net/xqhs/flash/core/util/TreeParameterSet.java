@@ -121,6 +121,26 @@ public class TreeParameterSet extends ParameterSet
 		return (TreeParameterSet) super.addObject(name, tree);
 	}
 	
+	/**
+	 * Add multiple trees for the same key. Trees are added using {@link #addTree(String, TreeParameterSet)};
+	 * 
+	 * @param name
+	 *            - the key.
+	 * @param trees
+	 *            - the {@link TreeParameterSet} instances to assign to the key.
+	 * @return this instance itself, for chained calls.
+	 */
+	public TreeParameterSet addTrees(String name, List<TreeParameterSet> trees)
+	{
+		if(simpleKeys.contains(name))
+			throw new IllegalArgumentException(
+					"Key " + name + " is already present, as a simple key. It cannot be assigned to tree values");
+		treeKeys.add(name);
+		for(TreeParameterSet t : trees)
+			addTree(name, t);
+		return this;
+	}
+	
 	@Override
 	public TreeParameterSet addObject(String name, Object value)
 	{

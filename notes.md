@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License along with Fla
 "Easy to beginners, powerful to experts"
 
 **Current target:**
-  * manage portables
+  * manage portables for CLI entries
   * deploy multiple nodes
   * deploy a composite agent
     * what do about having support implementations when pre-loading features

@@ -40,7 +40,7 @@ public class FlashBoot
 		// test_args = "src-deployment/simpleDeployment/simpleDeployment.xml";
 		// test_args = "src-deployment/examples/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
-		test_args = "src-deployment/complexDeployment/complexDeployment.xml -agent AgentA some:property -feature mobility where:anywhere  host:here -agent bane something:something -othercomponent a";
+		test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -feature mobility where:anywhere  host:here -agent bane something:something -othercomponent a";
 		// test_args = "-support local -support local arg:val -support last host:here -agent bane something:something
 		// -feature a -feature b par:val -feature c -agent bruce -feature a";
 		String[] use_args = test_args.split(" ");

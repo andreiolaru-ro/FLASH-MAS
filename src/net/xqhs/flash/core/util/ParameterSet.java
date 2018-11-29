@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.xqhs.util.config.Config;
 
@@ -99,6 +100,16 @@ public class ParameterSet extends Config implements Serializable
 			parameterSet.put(name, new ArrayList<>());
 		parameterSet.get(name).add(value);
 		return this;
+	}
+	
+	/**
+	 * Retrieves all keys in the collection.
+	 * 
+	 * @return the key set.
+	 */
+	public Set<String> getKeys()
+	{
+		return parameterSet.keySet();
 	}
 	
 	/**
