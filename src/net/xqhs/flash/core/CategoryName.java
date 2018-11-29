@@ -26,6 +26,13 @@ import java.util.List;
  * Some categories may have parents, and the parent of a category may be optional (this is default) or mandatory (the
  * category <i>must</i> find itself within the parent category).
  * <p>
+ * Some categories may be unique to their context, meaning a new occurrence of the category erases / overwrites any
+ * previous occurrences in the same context.
+ * <p>
+ * Some categories may be portable from the root deployment to the nodes, if defined at root level. If the category is
+ * unique, it will not overwrite node-specific instance(s); if it is not, it will be added to the node-specific
+ * instance(s).
+ * <p>
  * Names of entities may sometimes identify those entities uniquely in the system (e.g. for agents, nodes, etc).
  * Entities which are in categories considered identifiable are not always required to have a name, but will be
  * identifiable only if they have one.
@@ -52,6 +59,12 @@ public enum CategoryName {
 	DEPLOYMENT(new CatPar().hasParent(NODE)),
 	
 	/**
+	 * The entities to load and their order (entity names, lower-case, separated by
+	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
+	 */
+	LOAD_ORDER(new CatPar().isUnique().isPortable().hasParent(NODE, Is.OPTIONAL)),
+	
+	/**
 	 * General configuration settings, used by support infrastructures (hierarchical key).
 	 */
 	CONFIG(new CatPar().hasParent(NODE)),
@@ -59,7 +72,7 @@ public enum CategoryName {
 	/**
 	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
 	 */
-	PACKAGE(new CatPar().hasParent(NODE)),
+	PACKAGE(new CatPar().hasParent(NODE).isPortable()),
 	
 	/**
 	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
@@ -67,7 +80,8 @@ public enum CategoryName {
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the name
 	 * of the loaded entity, a two-part name is the entity and the kind.
 	 */
-	LOADER(new CatPar().isIdentifiable().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE, Is.OPTIONAL)),
+	LOADER(new CatPar().isIdentifiable().isPortable().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE,
+			Is.OPTIONAL)),
 	
 	/**
 	 * Support infrastructures used in the deployment (hierarchical key).
@@ -148,6 +162,17 @@ public enum CategoryName {
 		NameIs			identifiable		= NameIs.NOT_IDENTIFIABLE;
 		
 		/**
+		 * Indicates whether at most one instance of this category is allowed.
+		 */
+		boolean			isUnique			= false;
+		
+		/**
+		 * indicates a category which will be automatically ported from the deployment to the node (see
+		 * {@link CategoryName}).
+		 */
+		boolean			isPortable			= false;
+		
+		/**
 		 * Element attribute giving the first part of the name of the element.
 		 */
 		String			nameAttribute1;
@@ -187,6 +212,29 @@ public enum CategoryName {
 		CatPar isIdentifiable()
 		{
 			identifiable = NameIs.IDENTIFIABLE;
+			return this;
+		}
+		
+		/**
+		 * Indicates a category which can appear at most once in its context.
+		 * 
+		 * @return the CatPar instance.
+		 */
+		CatPar isUnique()
+		{
+			isUnique = true;
+			return this;
+		}
+		
+		/**
+		 * Indicates a category that will be ported from the root deployment context to every node (see
+		 * {@link CategoryName}).
+		 * 
+		 * @return the CatPar instance.
+		 */
+		CatPar isPortable()
+		{
+			isPortable = true;
 			return this;
 		}
 		
@@ -281,6 +329,22 @@ public enum CategoryName {
 	}
 	
 	/**
+	 * @return <code>true</code> if at most one instance of this category should exist in its context.
+	 */
+	public boolean isUnique()
+	{
+		return parameters.isUnique;
+	}
+	
+	/**
+	 * @return <code>true</code> if the category should be copied from the root context to the nodes.
+	 */
+	public boolean isPortable()
+	{
+		return parameters.isPortable;
+	}
+	
+	/**
 	 * @return the name of the parent category, if any was defined; <code>null</code> otherwise.
 	 */
 	public String getParent()
@@ -326,7 +390,7 @@ public enum CategoryName {
 	 */
 	List<String> getAncestorsList()
 	{
-		List<String> path = (parameters.parent == null) ? new LinkedList<String>()
+		List<String> path = (parameters.parent == null) ? new LinkedList<>()
 				: parameters.parent.getAncestorsList();
 		if(parameters.parent != null)
 			path.add(0, parameters.parent.getName());
