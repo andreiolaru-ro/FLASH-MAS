@@ -153,6 +153,8 @@ public class TreeParameterSet extends ParameterSet
 	/**
 	 * Removes all values associated with a key but does not remove the key from the set, so it stays in the same
 	 * position as it was added.
+	 * <p>
+	 * If the key did not previously exist, it is not created.
 	 * 
 	 * @param name
 	 *            - the key to clear.
@@ -160,7 +162,8 @@ public class TreeParameterSet extends ParameterSet
 	 */
 	public TreeParameterSet clear(String name)
 	{
-		parameterSet.get(name).clear();
+		if(parameterSet.containsKey(name))
+			parameterSet.get(name).clear();
 		return this;
 	}
 	
