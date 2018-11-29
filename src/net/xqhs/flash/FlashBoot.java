@@ -10,6 +10,7 @@
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash;
+
 import java.util.Arrays;
 
 import net.xqhs.flash.core.node.NodeLoader;
@@ -37,17 +38,15 @@ public class FlashBoot
 		// test_args = "";
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
 		// test_args = "src-deployment/simpleDeployment/simpleDeployment.xml";
-		test_args = "src-deployment/examples/composite/basicScenario.xml";
+		// test_args = "src-deployment/examples/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
-		// test_args = "-agent AgentA some:property -feature mobility where:anywhere -support local:auxilliary host:here
-		// -agent bane something:something -othercomponent a";
+		test_args = "src-deployment/complexDeployment/complexDeployment.xml -agent AgentA some:property -feature mobility where:anywhere  host:here -agent bane something:something -othercomponent a";
 		// test_args = "-support local -support local arg:val -support last host:here -agent bane something:something
 		// -feature a -feature b par:val -feature c -agent bruce -feature a";
 		String[] use_args = test_args.split(" ");
 		
-		
 		new NodeLoader().load(new TreeParameterSet().addAll("args", Arrays.asList(use_args)));
-//		new Boot().boot(.split(" "));
+		// new Boot().boot(.split(" "));
 	}
 	
 }

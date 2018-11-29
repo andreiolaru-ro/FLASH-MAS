@@ -153,9 +153,12 @@ public class NodeLoader extends Unit implements Loader<Node>
 		}
 		
 		// ============================================================================== load entities
-		for(CategoryName cat : DeploymentConfiguration.AUTO_LOADS)
+		String[] toLoad = deploymentConfiguration.get(CategoryName.LOAD_ORDER.getName())
+				.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR);
+		li("Loading: ", (Object[]) toLoad);
+		for(String catName : toLoad)
 		{
-			String catName = cat.getName();
+			CategoryName cat = CategoryName.byName(catName);
 			if(deploymentConfiguration.isSimple(catName))
 			{
 				le("Agent deployment data cannot be empty");

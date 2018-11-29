@@ -14,6 +14,8 @@ You should have received a copy of the GNU General Public License along with Fla
 "Easy to beginners, powerful to experts"
 
 **Current target:**
+  * manage portables
+  * deploy multiple nodes
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
@@ -126,6 +128,7 @@ Deployment configuration contains:
   * node information
     * Schema & deployment XML (simple keys, first value counts)
     * general configuration settings (e.g. network configs) for this node (tree key)
+    * the load order -- what entitis to load and order in which to load entities
     * package list (simple key, all values are relevant)
     * loaders (specified for entities and kinds)
     * support infrastructures
@@ -133,11 +136,14 @@ Deployment configuration contains:
       * features
     * other entities
 
+  * categories that are simple values will be overwritten, not added to (e.g. for load_order).
+
 Entities
 --------
   * Entities extend Entity
   * Entity constructors should receive a ParamSet as argument or should implement ConfigurableEntity, which works more like a config 
   * Entities should be loadable through SimpleLoader (which supports both methods above), and only for special cases (where a factory is needed) should specialized loaders be used
+  
 
 
 Loaders
@@ -158,7 +164,8 @@ The Node is always loaded by the NodeLoader.
 
 TODO
 ----
-  * add nodes to auto-loaded entities
+  * add nodes to auto-loaded entities / manage the loading of multiple nodes
+  * add a setting for categories if they should only have one instance or not (such as for text-value categories which are currently overwritten by default)
 
 Future
 ------

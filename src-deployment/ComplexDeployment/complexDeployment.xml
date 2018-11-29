@@ -17,26 +17,23 @@
 		</entity>
 	</entity>
 
-
-	<support kind="websocket" />
-	<support kind="local" />
-	<support kind="local" id="auxilliary">
-		<agent name="LocalAuxilliaryAgent">
-			<parameter name="somesetting" />
-		</agent>
-	</support>
-	<support kind="custom">
-		<parameter name="classpath" value="custom" />
-	</support>
-
+	<load_order>support</load_order>
+	
 	<package>ComplexDeployment</package>
 	<package>otherPackage</package>
 	<package>somePackage</package>
 	<!--package>net.xqhs.flash.core.agent.</package -->
 
+
 	<loader for="agent:java" />
 	<!-- <loader for="agent" kind="composite" />  -->
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
+
+	<support kind="websocket" />
+	
+	<support kind="custom">
+		<parameter name="classpath" value="custom" />
+	</support>
 
 	<agent name="AgentA">
 		<in-context-of>local</in-context-of>

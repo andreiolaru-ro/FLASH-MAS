@@ -78,7 +78,7 @@
 			<extension base="tns:entitybase">
 				<sequence>
 					<element name="config" type="tns:parametric" maxOccurs="1" minOccurs="0" />
-					<element name="support" type="tns:support" minOccurs="0" maxOccurs="unbounded" />
+					<element name="load_order" type="string" maxOccurs="1" minOccurs="0"/>
 					<element name="package" type="string" minOccurs="0" maxOccurs="unbounded" />
 					<element name="loader" minOccurs="0" maxOccurs="unbounded">
 						<complexType>
@@ -91,6 +91,7 @@
 							</complexContent>
 						</complexType>
 					</element>
+					<element name="support" type="tns:support" minOccurs="0" maxOccurs="unbounded" />
 					<element name="agent" type="tns:agent" minOccurs="0" maxOccurs="unbounded" />
 				</sequence>
 			</extension>
