@@ -47,7 +47,7 @@ Services / features
 Configuration
 =============
 
-Assembling parts to form a name whould be done *only* for entities for which this union can stand for its identifier.
+Assembling parts to form a name would be done *only* for entities for which this union can stand for its identifier.
 
 Unnamed entities are allowed, but cannot be referenced (such as for <in-context-of>).
 
@@ -62,14 +62,17 @@ There is a root category, namely NODE. If no node is specified, when the first e
 
 **TODO**
   * check duplicate names
-  * is feature preload necessary for anything?
-    * in tATAmI no preload returns false (except for Parametric)
+  * TODO TODO TODO solve XML / CLI loading
+  	* solve code duplication in readXML/CLI arguments
+  	* more tests with auto root category generation (both when in XML and when in CLI), plus portables, plsu not directly root-category-parented categories.
+  * is feature pre-load necessary for anything?
+    * in tATAmI no pre-load returns false (except for Parametric)
   * protect agents from intrusive / malicious features?
   
   * multiple components per type
     * rename ParameterSet to MultiMap or ListMap, TreeParameterSet to MultiTreeMap
   
-  * establish if preloading an agent is optional and, if it is, make the call from load
+  * establish if pre-loading an agent is optional and, if it is, make the call from load
 
 **Future**
   * introduce entities with required name / required kind
