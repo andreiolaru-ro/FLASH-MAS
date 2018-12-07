@@ -263,6 +263,19 @@ public class CompositeAgentFeature extends Unit implements AgentFeature, Configu
 		return true;
 	}
 	
+	@Override
+	public boolean addGeneralContext(Entity<?> context)
+	{
+		try
+		{
+			return addContext((Agent) context);
+		} catch(ClassCastException e)
+		{
+			le("Added context is of incorrect type");
+			return false;
+		}
+	}
+	
 	/**
 	 * Sets the parent of the feature to <code>null</code>, effectively eliminating the feature from the agent.
 	 * <p>

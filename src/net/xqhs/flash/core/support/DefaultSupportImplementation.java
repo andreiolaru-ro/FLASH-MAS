@@ -14,6 +14,7 @@ package net.xqhs.flash.core.support;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
@@ -86,6 +87,13 @@ public class DefaultSupportImplementation extends Unit implements Support
 	
 	@Override
 	public boolean addContext(Node context)
+	{
+		// context has no effect on the default implementation
+		return true;
+	}
+	
+	@Override
+	public boolean addGeneralContext(Entity<?> context)
 	{
 		// context has no effect on the default implementation
 		return true;

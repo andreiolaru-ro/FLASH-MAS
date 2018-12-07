@@ -20,6 +20,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.composite.AgentEvent.AgentSequenceType;
@@ -276,6 +277,19 @@ public class CompositeAgent implements Serializable, Agent
 			return false;
 		supportLink = link;
 		return true;
+	}
+	
+	@Override
+	public boolean addGeneralContext(Entity<?> context)
+	{
+		try
+		{
+			return addContext((Support) context);
+		} catch(ClassCastException e)
+		{
+			log("Added context is of incorrect type");
+			return false;
+		}
 	}
 	
 	/**

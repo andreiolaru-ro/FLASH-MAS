@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import java.util.List;
+
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.Logger;
@@ -49,8 +51,8 @@ public interface Loader<T extends Entity<?>>
 	 * This method <i>may</i> be implemented by implementing classes in order to
 	 * <ul>
 	 * <li>Check that an {@link Entity} of type <code>T</code> and with the given configuration can indeed be loaded; it
-	 * this method returns <code>true</code>, then calling {@link #load(TreeParameterSet)} with the same configuration
-	 * is expected to complete successfully.
+	 * this method returns <code>true</code>, then calling {@link #load} with the same configuration is expected to
+	 * complete successfully.
 	 * <li>Add new elements to the given configuration so as to improve the subsequent performance of a call to
 	 * {@link #load} with the same configuration.
 	 * </ul>
@@ -71,9 +73,11 @@ public interface Loader<T extends Entity<?>>
 	 * 
 	 * @param configuration
 	 *            - the configuration data for the entity.
+	 * @param context
+	 *            - the entities that form the context of the loaded entity.
 	 * @return the entity, if loading has been successful.
 	 */
-	public T load(TreeParameterSet configuration);
+	public T load(TreeParameterSet configuration, List<Entity<?>> context);
 	
 	/**
 	 * Simple implementation for {@link Loader}, which attempts to load the entity class by instantiating it:
@@ -141,7 +145,7 @@ public interface Loader<T extends Entity<?>>
 		 * </ul>
 		 */
 		@Override
-		public Entity<?> load(TreeParameterSet configuration)
+		public Entity<?> load(TreeParameterSet configuration, List<Entity<?>> context)
 		{
 			if(preload(configuration))
 			{
@@ -168,6 +172,8 @@ public interface Loader<T extends Entity<?>>
 							else
 								log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
 										classpath);
+							for(Entity<?> c : context)
+								loaded.addGeneralContext(c);
 							return loaded;
 						} catch(Exception e1)
 						{

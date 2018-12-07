@@ -14,6 +14,7 @@ package simpleDeployment;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.util.logging.Unit;
@@ -68,6 +69,19 @@ public class EchoAgent extends Unit implements Agent
 		supports.add(context);
 		li("Support [] added; current contexts:", context, supports);
 		return true;
+	}
+	
+	@Override
+	public boolean addGeneralContext(Entity<?> context)
+	{
+		try
+		{
+			return addContext((Support) context);
+		} catch(ClassCastException e)
+		{
+			le("Added context is of incorrect type");
+			return false;
+		}
 	}
 	
 	@Override

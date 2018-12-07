@@ -63,6 +63,7 @@ There is a root category, namely NODE. If no node is specified, when the first e
 **TODO**
   * check duplicate names
   * TODO TODO TODO solve XML / CLI loading
+  	* auto-root category could be solved by making portables from deployment (as root category) to node?
   	* solve code duplication in readXML/CLI arguments
   	* more tests with auto root category generation (both when in XML and when in CLI), plus portables, plsu not directly root-category-parented categories.
   * is feature pre-load necessary for anything?
@@ -146,7 +147,8 @@ Entities
   * Entities extend Entity
   * Entity constructors should receive a ParamSet as argument or should implement ConfigurableEntity, which works more like a config 
   * Entities should be loadable through SimpleLoader (which supports both methods above), and only for special cases (where a factory is needed) should specialized loaders be used
-  
+  	* chose to use a loader for CompositeAgents so we can test features (existence / pre-loading) beforehand
+  * Entity context can only be the one specified in the class/interface; any necessary links to higher context should be managed in each specific case (as in the link between agent features and pylons)
 
 
 Loaders

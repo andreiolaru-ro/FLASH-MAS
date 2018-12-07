@@ -78,6 +78,30 @@ public interface Entity<P extends Entity<?>>
 	public boolean addContext(P context);
 	
 	/**
+	 * Creates a link from a subordinate entity to an entity containing it in some way.
+	 * <p>
+	 * This method exists only for technical reasons (inability to write the signature for {@link Loader#load} in order
+	 * to account for the entity's 'parent' type). Moreover, a class that dynamically loads the entity's class would
+	 * have difficulty calling the {@link #addContext(Entity)} method appropriately.
+	 * <p>
+	 * This method <b>should only be used</b>:
+	 * <ul>
+	 * <li>when the caller cannot now the exact type of the entity's parent; <b>and</b>
+	 * <li>passing as argument an entity of the appropriate type.
+	 * </ul>
+	 * It is the responsibility of the called object to verify the correctness of the argument.
+	 * <p>
+	 * The recommended implementation for this method is one that calls {@link #addContext(Entity)} after casting the
+	 * argument to the appropriate type, optionally catching {@link ClassCastException} and returning <code>false</code>
+	 * if such an exception occurs.
+	 * 
+	 * @param context
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
+	public boolean addGeneralContext(Entity<?> context);
+	
+	/**
 	 * Removes the link from a subordinate entity to an entity containing it in some way.
 	 * 
 	 * @param context
