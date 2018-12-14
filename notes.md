@@ -14,11 +14,12 @@ You should have received a copy of the GNU General Public License along with Fla
 "Easy to beginners, powerful to experts"
 
 **Current target:**
-  * manage portables for CLI entries
-  * deploy multiple nodes
+  * [how to] deploy multiple nodes / remote nodes
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
+  * rename TreeParameterSet and ParameterSet
+  * manage portables for CLI entries
 
 
 
@@ -60,7 +61,8 @@ Each SettingsName contains information on how to assemble elements from the XML 
 There is a root category, namely NODE. If no node is specified, when the first entity that needs a NODE ancestor appears, an 'implicit', nameless node will be created for all entities at the root level in the XML, which are not nodes.
 
 
-**TODO**
+TODO
+----
   * check duplicate names
   * TODO TODO TODO solve XML / CLI loading
   	* auto-root category could be solved by making portables from deployment (as root category) to node?

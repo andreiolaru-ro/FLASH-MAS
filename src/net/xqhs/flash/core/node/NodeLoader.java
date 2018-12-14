@@ -45,33 +45,16 @@ public class NodeLoader extends Unit implements Loader<Node>
 	}
 	
 	/**
-	 * @param configuration
-	 *            - program arguments, passed as a {@link TreeParameterSet} containing one simple key (the name does not
-	 *            matter) that is associated with all the arguments.
-	 */
-	@Override
-	public Node load(TreeParameterSet configuration)
-	{
-		// just get the arguments, they are in the first simple key
-		return load(configuration.getValues(configuration.getSimpleKeys().get(0)));
-	}
-	
-	/**
-	 * The method handling main functionality of {@link NodeLoader}.
+	 * Loads a deployment starting from command line arguments.
 	 * <p>
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
-	 * @return the {@link Node} to manage to deployed system.
+	 * @return the {@link Node} to manage to deployed system, which is the first node loaded.
 	 */
-	protected Node load(List<String> args)
+	public Node loadDeployment(List<String> args)
 	{
 		lf("Booting Flash-MAS.");
-		// initials
-		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
-		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
-		ClassFactory classFactory = PlatformUtils.getClassFactory();
-		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
 		
 		// ============================================================================== load settings & scenario
 		TreeParameterSet deploymentConfiguration = null;
@@ -85,10 +68,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 			return null;
 		}
 		
-		// ============================================================================== get general configuration
-		TreeParameterSet theConfig = deploymentConfiguration.getTree(CategoryName.CONFIG.getName());
-		if(theConfig == null)
-			theConfig = new TreeParameterSet();
+		for(TreeParameterSet nodeConfig : deploymentConfiguration.getTree(CategoryName.NODE.getName()))
 		
 		// ============================================================================== get package list
 		List<String> packages = deploymentConfiguration.getValues(CategoryName.PACKAGE.getName());
@@ -251,6 +231,23 @@ public class NodeLoader extends Unit implements Loader<Node>
 		return null;
 	}
 
+	/**
+	 * Loads one {@link Node} instance, based on the provided configuration.
+	 * 
+	 * @param configuration
+	 *            - the configuration.
+	 */
+	@Override
+	public Node load(TreeParameterSet configuration)
+	{
+		// initials
+		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
+		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
+		ClassFactory classFactory = PlatformUtils.getClassFactory();
+		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
+		
+	}
+	
 	/**
 	 * Makes the first letter of the given string upper-case.
 	 * 
