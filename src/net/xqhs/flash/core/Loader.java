@@ -74,7 +74,7 @@ public interface Loader<T extends Entity<?>>
 	 * @param configuration
 	 *            - the configuration data for the entity.
 	 * @param context
-	 *            - the entities that form the context of the loaded entity.
+	 *            - the entities that form the context of the loaded entity. The list may be <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(TreeParameterSet configuration, List<Entity<?>> context);

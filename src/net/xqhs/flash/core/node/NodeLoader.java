@@ -50,9 +50,9 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
-	 * @return the {@link Node} to manage to deployed system, which is the first node loaded.
+	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
-	public Node loadDeployment(List<String> args)
+	public List<Node> loadDeployment(List<String> args)
 	{
 		lf("Booting Flash-MAS.");
 		
@@ -68,15 +68,55 @@ public class NodeLoader extends Unit implements Loader<Node>
 			return null;
 		}
 		
-		for(TreeParameterSet nodeConfig : deploymentConfiguration.getTree(CategoryName.NODE.getName()))
+		List<Node> nodes = new LinkedList<>();
+		
+		TreeParameterSet nodesTrees = deploymentConfiguration.getTree(CategoryName.NODE.getName());
+		for(String nodeName : nodesTrees.getTreeKeys())
+		{
+			int index = 0;
+			for(TreeParameterSet nodeConfig : nodesTrees.getTrees(nodeName))
+			{
+				lf("Loading node ", (nodeName != null ? nodeName : "<noname>")
+						+ (nodesTrees.getTrees(nodeName).size() > 1 ? "#" + index : ""));
+				Node node = load(nodeConfig, null);
+				if(node != null)
+					nodes.add(node);
+				index += 1;
+			}
+		}
+		
+		doExit();
+		return nodes;
+	}
+	
+	/**
+	 * Loads one {@link Node} instance, based on the provided configuration.
+	 * 
+	 * @param nodeConfiguration
+	 *            - the configuration.
+	 * @param context
+	 *            - this argument is not used; nodes don't support context.
+	 * @return the {@link Node} the was loaded.
+	 */
+	@Override
+	public Node load(TreeParameterSet nodeConfiguration, List<Entity<?>> context)
+	{
+		if(context != null || context.size() > 0)
+			lw("nodes don't support context");
+		
+		// initials
+		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
+		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
+		ClassFactory classFactory = PlatformUtils.getClassFactory();
+		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
 		
 		// ============================================================================== get package list
-		List<String> packages = deploymentConfiguration.getValues(CategoryName.PACKAGE.getName());
+		List<String> packages = nodeConfiguration.getValues(CategoryName.PACKAGE.getName());
 		
 		// ============================================================================== get loaders
 		// loaders are stored as entity -> kind -> loaders
 		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
-		TreeParameterSet loader_configs = deploymentConfiguration.getTree(CategoryName.LOADER.getName());
+		TreeParameterSet loader_configs = nodeConfiguration.getTree(CategoryName.LOADER.getName());
 		if(loader_configs != null)
 		{
 			if(!loader_configs.getSimpleKeys().isEmpty()) // just a warning
@@ -133,20 +173,20 @@ public class NodeLoader extends Unit implements Loader<Node>
 		}
 		
 		// ============================================================================== load entities
-		String[] toLoad = deploymentConfiguration.get(CategoryName.LOAD_ORDER.getName())
+		String[] toLoad = nodeConfiguration.get(CategoryName.LOAD_ORDER.getName())
 				.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR);
 		li("Loading: ", (Object[]) toLoad);
 		for(String catName : toLoad)
 		{
 			CategoryName cat = CategoryName.byName(catName);
-			if(deploymentConfiguration.isSimple(catName))
+			if(nodeConfiguration.isSimple(catName))
 			{
 				le("Agent deployment data cannot be empty");
 				continue;
 			}
-			if(deploymentConfiguration.getTree(catName) == null)
+			if(nodeConfiguration.getTree(catName) == null)
 				continue;
-			TreeParameterSet configs = deploymentConfiguration.getTree(catName);
+			TreeParameterSet configs = nodeConfiguration.getTree(catName);
 			if(!configs.getSimpleKeys().isEmpty()) // just a warning
 				lw("Simple keys from [] tree ignored: ", cat, configs.getSimpleKeys());
 			for(String name : configs.getHierarchicalKeys())
@@ -224,28 +264,6 @@ public class NodeLoader extends Unit implements Loader<Node>
 			}
 		}
 		
-		// get agents
-		
-		doExit();
-		
-		return null;
-	}
-
-	/**
-	 * Loads one {@link Node} instance, based on the provided configuration.
-	 * 
-	 * @param configuration
-	 *            - the configuration.
-	 */
-	@Override
-	public Node load(TreeParameterSet configuration)
-	{
-		// initials
-		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
-		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
-		ClassFactory classFactory = PlatformUtils.getClassFactory();
-		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
-		
 	}
 	
 	/**
@@ -259,7 +277,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	{
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
 	}
-
+	
 	/**
 	 * Attempts to find a specific class given some known information about it. It searches the class in the following
 	 * sequence:

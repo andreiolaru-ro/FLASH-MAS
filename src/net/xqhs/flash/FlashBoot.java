@@ -14,7 +14,6 @@ package net.xqhs.flash;
 import java.util.Arrays;
 
 import net.xqhs.flash.core.node.NodeLoader;
-import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.logging.Logging;
 
@@ -26,7 +25,7 @@ import net.xqhs.util.logging.logging.Logging;
 public class FlashBoot
 {
 	/**
-	 * Main method. It calls {@link NodeLoader#load(TreeParameterSet)} with the arguments received by the program.
+	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
@@ -46,7 +45,7 @@ public class FlashBoot
 		// -feature a -feature b par:val -feature c -agent bruce -feature a";
 		String[] use_args = test_args.split(" ");
 		
-		new NodeLoader().load(new TreeParameterSet().addAll("args", Arrays.asList(use_args)));
+		new NodeLoader().loadDeployment(Arrays.asList(use_args));
 		// new Boot().boot(.split(" "));
 	}
 	
