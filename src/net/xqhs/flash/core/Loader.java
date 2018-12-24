@@ -69,15 +69,24 @@ public interface Loader<T extends Entity<?>>
 	public boolean preload(TreeParameterSet configuration);
 	
 	/**
-	 * Loads a new instance of entity <b>T</b>.
+	 * Loads a new instance of entity <b>T</b> and provides it with the given context.
 	 * 
 	 * @param configuration
 	 *            - the configuration data for the entity.
 	 * @param context
-	 *            - the entities that form the context of the loaded entity. The list may be <code>null</code>.
+	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(TreeParameterSet configuration, List<Entity<?>> context);
+	
+	/**
+	 * Loads a new instance of entity <b>T</b>, without providing it with any context.
+	 * 
+	 * @param configuration
+	 *            - the configuration data for the entity.
+	 * @return the entity, if loading has been successful.
+	 */
+	public T load(TreeParameterSet configuration);
 	
 	/**
 	 * Simple implementation for {@link Loader}, which attempts to load the entity class by instantiating it:
@@ -172,8 +181,9 @@ public interface Loader<T extends Entity<?>>
 							else
 								log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
 										classpath);
-							for(Entity<?> c : context)
-								loaded.addGeneralContext(c);
+							if(context != null)
+								for(Entity<?> c : context)
+									loaded.addGeneralContext(c);
 							return loaded;
 						} catch(Exception e1)
 						{
@@ -188,6 +198,12 @@ public interface Loader<T extends Entity<?>>
 				}
 			}
 			return null;
+		}
+		
+		@Override
+		public Entity<?> load(TreeParameterSet configuration)
+		{
+			return load(configuration, null);
 		}
 	}
 }

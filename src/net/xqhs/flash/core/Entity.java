@@ -54,15 +54,15 @@ public interface Entity<P extends Entity<?>>
 	public boolean stop();
 	
 	/**
-	 * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after it
-	 * has fully started and until it is {@link #stop}ed.
+	 * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after
+	 * it has fully {@link #start}ed and until it is {@link #stop}ed.
 	 * 
 	 * @return <code>true</code> if the entity is currently running.
 	 */
 	public boolean isRunning();
 	
 	/**
-	 * Retrieves the name (or other identification) of the entity.
+	 * Retrieves the name (or other identification) of the entity, if any.
 	 * 
 	 * @return the name.
 	 */
@@ -80,15 +80,13 @@ public interface Entity<P extends Entity<?>>
 	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
 	 * <p>
-	 * This method exists only for technical reasons (inability to write the signature for {@link Loader#load} in order
-	 * to account for the entity's 'parent' type). Moreover, a class that dynamically loads the entity's class would
-	 * have difficulty calling the {@link #addContext(Entity)} method appropriately.
-	 * <p>
-	 * This method <b>should only be used</b>:
+	 * This method should only be used (as opposed to {@link #addContext} in the following cases:
 	 * <ul>
-	 * <li>when the caller cannot now the exact type of the entity's parent; <b>and</b>
-	 * <li>passing as argument an entity of the appropriate type.
+	 * <li>when a context other than the direct parent of the entity is added; or
+	 * <li>when the caller cannot know the exact type of the entity's parent; <b>and</b>
+	 * <li>passing as argument an entity of the appropriate type is not possible.
 	 * </ul>
+	 * <p>
 	 * It is the responsibility of the called object to verify the correctness of the argument.
 	 * <p>
 	 * The recommended implementation for this method is one that calls {@link #addContext(Entity)} after casting the

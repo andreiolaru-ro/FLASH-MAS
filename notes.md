@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License along with Fla
 
 **Current target:**
   * [how to] deploy multiple nodes / remote nodes
+  * ***>>>** Add only one context or add all context (using addGeneralContext) ?
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
@@ -28,7 +29,7 @@ Concept Names
 
   * simulation -> deployment
   * visualization -> monitoring / control
-  * component -> feature
+  * component -> feature -> shard
   * platform -> support
   
   * ParameterSet -> ListMap
@@ -134,7 +135,7 @@ Deployment configuration contains:
   * node information
     * Schema & deployment XML (simple keys, first value counts)
     * general configuration settings (e.g. network configs) for this node (tree key)
-    * the load order -- what entitis to load and order in which to load entities
+    * the load order -- what entities to load and order in which to load entities
     * package list (simple key, all values are relevant)
     * loaders (specified for entities and kinds)
     * support infrastructures

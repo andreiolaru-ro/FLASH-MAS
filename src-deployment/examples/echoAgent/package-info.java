@@ -7,4 +7,4 @@
  * @author andreiolaru
  *
  */
-package simpleDeployment;
+package examples.echoAgent;

@@ -101,10 +101,25 @@ public class NodeLoader extends Unit implements Loader<Node>
 	@Override
 	public Node load(TreeParameterSet nodeConfiguration, List<Entity<?>> context)
 	{
-		if(context != null || context.size() > 0)
+		if(context != null && context.size() > 0)
 			lw("nodes don't support context");
+		return load(nodeConfiguration);
+	}
+	
+	/**
+	 * Loads one {@link Node} instance, based on the provided configuration.
+	 * 
+	 * @param nodeConfiguration
+	 *            - the configuration.
+	 * @return the {@link Node} the was loaded.
+	 */
+	@Override
+	public Node load(TreeParameterSet nodeConfiguration)
+	{
+		// node instance creation
+		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
 		
-		// initials
+		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
@@ -206,7 +221,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				if(id == null || id.length() == 0)
 					id = config.get(cat.nameParts()[1]);
 				
-				// find a loader
+				// find a loader for the enitity
 				List<Loader<?>> loaderList = null;
 				String log_catLoad = null, log_kindLoad = null;
 				int log_nLoader = 0;
@@ -232,6 +247,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 						}
 					}
 				}
+				// try to load the entity with a loader
 				Entity<?> entity = null;
 				if(loaderList != null && !loaderList.isEmpty())
 					for(Loader<?> loader : loaderList)
@@ -244,6 +260,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							break;
 						log_nLoader += 1;
 					}
+				// if not, try to load the entity with the default loader
 				if(entity == null)
 				{
 					lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
@@ -263,7 +280,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					le("Could not load entity [] of type [].", name, catName);
 			}
 		}
-		
+		return node;
 	}
 	
 	/**
