@@ -14,8 +14,6 @@ You should have received a copy of the GNU General Public License along with Fla
 "Easy to beginners, powerful to experts"
 
 **Current target:**
-  * [how to] deploy multiple nodes / remote nodes
-  * ***>>>** Add only one context or add all context (using addGeneralContext) ?
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
@@ -151,7 +149,9 @@ Entities
   * Entity constructors should receive a ParamSet as argument or should implement ConfigurableEntity, which works more like a config 
   * Entities should be loadable through SimpleLoader (which supports both methods above), and only for special cases (where a factory is needed) should specialized loaders be used
   	* chose to use a loader for CompositeAgents so we can test features (existence / pre-loading) beforehand
-  * Entity context can only be the one specified in the class/interface; any necessary links to higher context should be managed in each specific case (as in the link between agent features and pylons)
+  * Entity context
+    * is all entities containing it, although the one specified in the class/interface is still special.
+    * Future: be able to specify the visibility depth of each entity as context for nested entities
 
 
 Loaders
@@ -174,6 +174,8 @@ TODO
 ----
   * add nodes to auto-loaded entities / manage the loading of multiple nodes
   * add a setting for categories if they should only have one instance or not (such as for text-value categories which are currently overwritten by default)
+  * sort out the concept of TreeParameterSet
+  * create an alias for CategoryName.getName of only one character (e.g. s() )
 
 Future
 ------

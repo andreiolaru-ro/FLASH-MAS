@@ -68,6 +68,10 @@ public class DeploymentConfiguration extends TreeParameterSet
 	 */
 	public static final String				PARAMETER_ELEMENT_NAME			= "parameter";
 	/**
+	 * The name of the attribute which contains the kind.
+	 */
+	public static final String				KIND_ATTRIBUTE_NAME				= "kind";
+	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
 	public static final String				PARAMETER_NAME					= "name";

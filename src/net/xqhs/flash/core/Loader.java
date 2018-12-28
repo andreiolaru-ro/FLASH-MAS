@@ -188,12 +188,12 @@ public interface Loader<T extends Entity<?>>
 						} catch(Exception e1)
 						{
 							if(log != null)
-								log.le("Failed to load class [] via default constructor:", classpath,
+								log.le("Failed to load class [] via default constructor: ", classpath,
 										PlatformUtils.printException(e));
 						}
 					}
 					if(log != null)
-						log.le("Failed to load class [] via constructor with configuration:",
+						log.le("Failed to load class [] via constructor with configuration: ",
 								configuration.get(CLASSPATH_KEY), PlatformUtils.printException(e));
 				}
 			}

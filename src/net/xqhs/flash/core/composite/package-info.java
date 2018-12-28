@@ -13,9 +13,9 @@
  * 
  */
 /**
- * The package contains classes related to the implementation of{@link net.xqhs.flash.core.agent.composite.CompositeAgent}.
+ * The package contains classes related to the implementation of{@link net.xqhs.flash.core.composite.CompositeAgent}.
  * 
  * @author andreiolaru
  *
  */
-package net.xqhs.flash.core.agent.composite;
+package net.xqhs.flash.core.composite;

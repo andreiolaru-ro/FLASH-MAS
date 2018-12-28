@@ -12,11 +12,11 @@
 package examples.composite;
 
 import net.xqhs.flash.core.agent.AgentFeature;
-import net.xqhs.flash.core.agent.composite.AgentEvent;
-import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventHandler;
-import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation;
-import net.xqhs.flash.core.agent.composite.CompositeAgent;
+import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.composite.AgentFeatureDesignation;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.feature.CompositeAgentFeatureEx;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.LoggerSimple.Level;

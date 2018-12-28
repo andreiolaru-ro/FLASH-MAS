@@ -12,7 +12,7 @@
 package net.xqhs.flash.core.agent;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation;
+import net.xqhs.flash.core.composite.AgentFeatureDesignation;
 
 /**
  * A feature (also called a component) is characterized by its functionality, identified by means of its designation --

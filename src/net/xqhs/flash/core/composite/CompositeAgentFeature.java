@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent.composite;
+package net.xqhs.flash.core.composite;
 
 import java.io.Serializable;
 
@@ -17,8 +17,8 @@ import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentFeature;
-import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
-import net.xqhs.flash.core.agent.composite.CompositeAgent.AgentState;
+import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
+import net.xqhs.flash.core.composite.CompositeAgent.AgentState;
 import net.xqhs.flash.core.util.ParameterSet;
 import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.Unit;

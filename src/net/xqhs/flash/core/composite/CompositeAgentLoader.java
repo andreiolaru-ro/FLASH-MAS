@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent.composite;
+package net.xqhs.flash.core.composite;
 
 import java.util.Iterator;
 
@@ -17,9 +17,9 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentFeature;
-import net.xqhs.flash.core.agent.composite.AgentFeatureDesignation.StandardAgentFeature;
-import net.xqhs.flash.core.agent.composite.CompositeAgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.agent.parametric.ParametricComponent;
+import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
+import net.xqhs.flash.core.composite.CompositeAgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.TreeParameterSet;
@@ -55,11 +55,11 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * specified, it the component is standard and its class is specified by the corresponding
 	 * {@link StandardAgentFeature} entry.
 	 */
-	private static final String	FEATURE_CLASS_PARAMETER	= "classpath";
+	private static final String	FEATURE_CLASS_PARAMETER	= SimpleLoader.CLASSPATH_KEY;
 	/**
 	 * The name of nodes containing component parameters.
 	 */
-	private static final String	PARAMETER_NODE_NAME		= "parameter";
+	private static final String	PARAMETER_NODE_NAME		= DeploymentConfiguration.PARAMETER_ELEMENT_NAME;
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */

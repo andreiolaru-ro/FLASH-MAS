@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent.composite;
+package net.xqhs.flash.core.composite;
 
 import java.io.Serializable;
 import java.security.InvalidParameterException;
@@ -20,12 +20,14 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.composite.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.agent.composite.AgentEvent.AgentSequenceType;
+import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.composite.AgentEvent.AgentSequenceType;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.util.TreeParameterSet;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
@@ -213,12 +215,12 @@ public class CompositeAgent implements Serializable, Agent
 	 * Although the name may be null, it is strongly recommended that the agent is given a (unique) name, even one that
 	 * is automatically generated.
 	 * 
-	 * @param name
-	 *            - the name of the agent.
+	 * @param configuration
+	 *            - the configuration, from which the name of the agent will be taken..
 	 */
-	public CompositeAgent(String name)
+	public CompositeAgent(TreeParameterSet configuration)
 	{
-		agentName = name;
+		agentName = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 	}
 	
 	/**

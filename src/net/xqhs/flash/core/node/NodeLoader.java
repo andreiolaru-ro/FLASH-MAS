@@ -159,12 +159,16 @@ public class NodeLoader extends Unit implements Loader<Node>
 				{ // attach instance to loader map
 					try
 					{
+						// instantiate loader
 						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
+						// add to map
 						if(!loaders.containsKey(entity))
 							loaders.put(entity, new HashMap<String, List<Loader<?>>>());
 						if(!loaders.get(entity).containsKey(kind))
 							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 						loaders.get(entity).get(kind).add(loader);
+						// configure
+						loader_configs.getTree(name).addAll(CategoryName.PACKAGE.getName(), packages);
 						loader.configure(loader_configs.getTree(name), getLogger());
 						li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 					} catch(Exception e)
@@ -210,16 +214,28 @@ public class NodeLoader extends Unit implements Loader<Node>
 				TreeParameterSet config = configs.getTree(name);
 				String kind = null, id = null, cp = config.get(SimpleLoader.CLASSPATH_KEY);
 				if(name != null && name.contains(NAMESEP))
-				{
+				{ // if name is splittable, split it into kind and id
 					kind = name.split(NAMESEP)[0];
 					id = name.split(NAMESEP, 2)[1];
 				}
-				else
-					kind = name;
 				if(kind == null || kind.length() == 0)
-					kind = config.get(cat.nameParts()[0]);
+				{
+					if(config.isSimple(DeploymentConfiguration.KIND_ATTRIBUTE_NAME))
+						kind = config.get(DeploymentConfiguration.KIND_ATTRIBUTE_NAME);
+					else if(cat.hasNameWithParts())
+						kind = config.get(cat.nameParts()[0]);
+					if(kind == null)
+						kind = name; // was in the implementation not sure is a good idea
+				}
 				if(id == null || id.length() == 0)
-					id = config.get(cat.nameParts()[1]);
+				{
+					if(config.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
+						id = config.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+					else if(cat.hasNameWithParts())
+						id = config.get(cat.nameParts()[1]);
+					if(id == null)
+						id = name;
+				}
 				
 				// find a loader for the enitity
 				List<Loader<?>> loaderList = null;
@@ -263,14 +279,16 @@ public class NodeLoader extends Unit implements Loader<Node>
 				// if not, try to load the entity with the default loader
 				if(entity == null)
 				{
-					lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
-							defaultLoader.getClass().getName(), cp);
 					// attempt to obtain classpath information
 					cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, cat.getName(), checkedPaths);
 					if(cp == null)
 						le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
 					else
+					{
+						lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
+								defaultLoader.getClass().getName(), cp);
 						configs.getTree(name).set(SimpleLoader.CLASSPATH_KEY, cp);
+					}
 					if(defaultLoader.preload(config))
 						entity = defaultLoader.load(config);
 				}
