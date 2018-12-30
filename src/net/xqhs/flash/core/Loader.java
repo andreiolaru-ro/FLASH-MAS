@@ -14,14 +14,14 @@ package net.xqhs.flash.core;
 import java.util.List;
 
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Logger;
 
 /**
  * A loader instance has the capability of creating new {@link Entity} instances.
  * <p>
  * Entities are created based on a configuration that is loaded at boot time and is represented as a
- * {@link TreeParameterSet}.
+ * {@link MultiTreeMap}.
  * <p>
  * For many types of entities the loader may not be necessary. If instantiating the class if sufficient,
  * {@link SimpleLoader} may be used.
@@ -43,7 +43,7 @@ public interface Loader<T extends Entity<?>>
 	 * @return <code>true</code> if the configuration process was successful and the {@link Loader} instance is ready to
 	 *         load entities; <code>false</code> if this instance cannot be expected to work normally.
 	 */
-	public boolean configure(TreeParameterSet configuration, Logger log);
+	public boolean configure(MultiTreeMap configuration, Logger log);
 	
 	/**
 	 * Performs checks and completes the configuration.
@@ -66,7 +66,7 @@ public interface Loader<T extends Entity<?>>
 	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
 	 *         if the entity cannot load with the given configuration.
 	 */
-	public boolean preload(TreeParameterSet configuration);
+	public boolean preload(MultiTreeMap configuration);
 	
 	/**
 	 * Loads a new instance of entity <b>T</b> and provides it with the given context.
@@ -77,7 +77,7 @@ public interface Loader<T extends Entity<?>>
 	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
-	public T load(TreeParameterSet configuration, List<Entity<?>> context);
+	public T load(MultiTreeMap configuration, List<Entity<?>> context);
 	
 	/**
 	 * Loads a new instance of entity <b>T</b>, without providing it with any context.
@@ -86,12 +86,12 @@ public interface Loader<T extends Entity<?>>
 	 *            - the configuration data for the entity.
 	 * @return the entity, if loading has been successful.
 	 */
-	public T load(TreeParameterSet configuration);
+	public T load(MultiTreeMap configuration);
 	
 	/**
 	 * Simple implementation for {@link Loader}, which attempts to load the entity class by instantiating it:
 	 * <ul>
-	 * <li>using a constructor that receives a {@link TreeParameterSet} as argument, or
+	 * <li>using a constructor that receives a {@link MultiTreeMap} as argument, or
 	 * <li>using the default constructor, and if the instance implements {@link ConfigurableEntity}, subsequently
 	 * calling {@link ConfigurableEntity#configure}.
 	 * </ul>
@@ -114,7 +114,7 @@ public interface Loader<T extends Entity<?>>
 		protected Logger			log				= null;
 		
 		@Override
-		public boolean configure(TreeParameterSet configuration, Logger _log)
+		public boolean configure(MultiTreeMap configuration, Logger _log)
 		{
 			log = _log;
 			return true;
@@ -124,7 +124,7 @@ public interface Loader<T extends Entity<?>>
 		 * The preload method tests if the classpath is set and exists.
 		 */
 		@Override
-		public boolean preload(TreeParameterSet configuration)
+		public boolean preload(MultiTreeMap configuration)
 		{
 			if(!configuration.isSimple(CLASSPATH_KEY))
 			{
@@ -147,14 +147,14 @@ public interface Loader<T extends Entity<?>>
 		 * <p>
 		 * The instantiation is tried in order:
 		 * <ul>
-		 * <li>using a constructor that receives a {@link TreeParameterSet} as argument, passing the given
+		 * <li>using a constructor that receives a {@link MultiTreeMap} as argument, passing the given
 		 * configuration;
 		 * <li>using the default constructor, and if the instance implements {@link ConfigurableEntity}, the
 		 * {@link ConfigurableEntity#configure} method will be called with the given configuration.
 		 * </ul>
 		 */
 		@Override
-		public Entity<?> load(TreeParameterSet configuration, List<Entity<?>> context)
+		public Entity<?> load(MultiTreeMap configuration, List<Entity<?>> context)
 		{
 			if(preload(configuration))
 			{
@@ -201,7 +201,7 @@ public interface Loader<T extends Entity<?>>
 		}
 		
 		@Override
-		public Entity<?> load(TreeParameterSet configuration)
+		public Entity<?> load(MultiTreeMap configuration)
 		{
 			return load(configuration, null);
 		}

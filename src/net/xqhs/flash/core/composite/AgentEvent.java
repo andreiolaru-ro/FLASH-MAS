@@ -11,16 +11,16 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
-import net.xqhs.flash.core.util.ParameterSet;
+import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
  * The class stores an agent event, characterized by its type and, optionally, a set of parameters that have names.
  * <p>
- * The class is baked by a {@link ParameterSet}.
+ * The class is baked by a {@link MultiValueMap}.
  * 
  * @author andreiolaru
  */
-public class AgentEvent extends ParameterSet
+public class AgentEvent extends MultiValueMap
 {
 	/**
 	 * The serial UID.

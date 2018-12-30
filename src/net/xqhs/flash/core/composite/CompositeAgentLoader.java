@@ -22,7 +22,7 @@ import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeatur
 import net.xqhs.flash.core.composite.CompositeAgentFeature.ComponentCreationData;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
 
@@ -31,7 +31,7 @@ import net.xqhs.util.logging.Logger;
  * <p>
  * The choice of using a specialized loader as opposed to using the default loader and doing all the loading inside the
  * composite agent was made so as to decouple dynamic class loading, as well as calls to
- * {@link ClassFactory#loadClassInstance(String, TreeParameterSet, boolean)} from the actual implementation of
+ * {@link ClassFactory#loadClassInstance(String, MultiTreeMap, boolean)} from the actual implementation of
  * {@link CompositeAgent}.
  * 
  * @author Andrei Olaru
@@ -75,7 +75,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	Logger						log;
 	
 	@Override
-	public boolean configure(TreeParameterSet config, Logger _log)
+	public boolean configure(MultiTreeMap config, Logger _log)
 	{
 		log = _log;
 		return true;
@@ -91,15 +91,15 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * method should return <code>true</code> and output warnings in the log.
 	 * 
 	 * @param agentCreationData
-	 *            - the {@link TreeParameterSet}, as loaded from the deployment file.
+	 *            - the {@link MultiTreeMap}, as loaded from the deployment file.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean preload(TreeParameterSet agentCreationData)
+	public boolean preload(MultiTreeMap agentCreationData)
 	{
 		String logPre = (agentCreationData.isSimple(AGENT_NAME_PARAMETER) ? agentCreationData.get(AGENT_NAME_PARAMETER)
 				: "<agent>") + ":";
-		for(TreeParameterSet featureConfig : agentCreationData.getTrees(FEATURE_NODE_NAME))
+		for(MultiTreeMap featureConfig : agentCreationData.getTrees(FEATURE_NODE_NAME))
 		{
 			String featureName = featureConfig.get(FEATURE_NAME_PARAMETER);
 			
@@ -182,11 +182,11 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * used to manage the life-cycle of the loaded agent.
 	 * 
 	 * @param agentCreationData
-	 *            - the {@link TreeParameterSet}, as loaded at deployment.
+	 *            - the {@link MultiTreeMap}, as loaded at deployment.
 	 * @return an {@link Agent} instance for the loaded agent.
 	 */
 	@Override
-	public Agent load(TreeParameterSet agentCreationData)
+	public Agent load(MultiTreeMap agentCreationData)
 	{
 		CompositeAgent agent = new CompositeAgent();
 		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))

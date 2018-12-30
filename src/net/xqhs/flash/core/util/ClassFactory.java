@@ -36,7 +36,7 @@ public interface ClassFactory
 	 * @throws IllegalAccessException if the constructor is not accessible.
 	 * @throws InvocationTargetException if the constructor could not be invoked.
 	 */
-	public Object loadClassInstance(String classPath, TreeParameterSet creationData, boolean splitArguments)
+	public Object loadClassInstance(String classPath, MultiTreeMap creationData, boolean splitArguments)
 			throws ClassNotFoundException, InstantiationException, NoSuchMethodException, IllegalAccessException,
 			InvocationTargetException;
 	
@@ -44,7 +44,7 @@ public interface ClassFactory
 	 * @param classPath
 	 *            - classpath for the class to load.
 	 * @return <code>true</code> if the class can be loaded using
-	 *         {@link #loadClassInstance(String, TreeParameterSet, boolean)}.
+	 *         {@link #loadClassInstance(String, MultiTreeMap, boolean)}.
 	 */
 	public boolean canLoadClass(String classPath);
 }

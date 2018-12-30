@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.xqhs.flash.core.util.ClassFactory;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * Class instantiation for the PC platform.
@@ -42,7 +42,7 @@ public class PCClassFactory implements ClassFactory
 	}
 	
 	@Override
-	public Object loadClassInstance(String className, TreeParameterSet creationData, boolean splitArguments)
+	public Object loadClassInstance(String className, MultiTreeMap creationData, boolean splitArguments)
 			throws ClassNotFoundException, InstantiationException, NoSuchMethodException, IllegalAccessException,
 			InvocationTargetException
 	{
@@ -55,7 +55,7 @@ public class PCClassFactory implements ClassFactory
 		{
 			List<String> constructorArguments = new LinkedList<>();
 			if(creationData != null)
-				for(String key : creationData.getSimpleKeys())
+				for(String key : creationData.getSimpleNames())
 					constructorArguments.add(creationData.getValue(key));
 			Class<?>[] argumentTypes = new Class<?>[constructorArguments.size()];
 			int i = 0;
@@ -66,7 +66,7 @@ public class PCClassFactory implements ClassFactory
 		}
 		else
 		{
-			ret = cl.loadClass(className).getConstructor(new Class[] { TreeParameterSet.class })
+			ret = cl.loadClass(className).getConstructor(new Class[] { MultiTreeMap.class })
 					.newInstance(creationData);
 		}
 		return ret;

@@ -18,7 +18,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -48,7 +48,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	protected String				name			= DEFAULT_NAME;
 	
 	@Override
-	public boolean configure(TreeParameterSet configuration)
+	public boolean configure(MultiTreeMap configuration)
 	{
 		if(configuration.isSimple("name"))
 			name = configuration.get("name");

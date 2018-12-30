@@ -23,7 +23,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
@@ -57,7 +57,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		lf("Booting Flash-MAS.");
 		
 		// ============================================================================== load settings & scenario
-		TreeParameterSet deploymentConfiguration = null;
+		MultiTreeMap deploymentConfiguration = null;
 		try
 		{
 			deploymentConfiguration = new DeploymentConfiguration().loadConfiguration(args, true, null);
@@ -70,11 +70,11 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		List<Node> nodes = new LinkedList<>();
 		
-		TreeParameterSet nodesTrees = deploymentConfiguration.getTree(CategoryName.NODE.getName());
+		MultiTreeMap nodesTrees = deploymentConfiguration.getTree(CategoryName.NODE.getName());
 		for(String nodeName : nodesTrees.getTreeKeys())
 		{
 			int index = 0;
-			for(TreeParameterSet nodeConfig : nodesTrees.getTrees(nodeName))
+			for(MultiTreeMap nodeConfig : nodesTrees.getTrees(nodeName))
 			{
 				lf("Loading node ", (nodeName != null ? nodeName : "<noname>")
 						+ (nodesTrees.getTrees(nodeName).size() > 1 ? "#" + index : ""));
@@ -99,7 +99,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
-	public Node load(TreeParameterSet nodeConfiguration, List<Entity<?>> context)
+	public Node load(MultiTreeMap nodeConfiguration, List<Entity<?>> context)
 	{
 		if(context != null && context.size() > 0)
 			lw("nodes don't support context");
@@ -114,7 +114,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
-	public Node load(TreeParameterSet nodeConfiguration)
+	public Node load(MultiTreeMap nodeConfiguration)
 	{
 		// node instance creation
 		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
@@ -131,12 +131,12 @@ public class NodeLoader extends Unit implements Loader<Node>
 		// ============================================================================== get loaders
 		// loaders are stored as entity -> kind -> loaders
 		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
-		TreeParameterSet loader_configs = nodeConfiguration.getTree(CategoryName.LOADER.getName());
+		MultiTreeMap loader_configs = nodeConfiguration.getTree(CategoryName.LOADER.getName());
 		if(loader_configs != null)
 		{
-			if(!loader_configs.getSimpleKeys().isEmpty()) // just a warning
-				lw("Simple keys from loader tree ignored: ", loader_configs.getSimpleKeys());
-			for(String name : loader_configs.getHierarchicalKeys())
+			if(!loader_configs.getSimpleNames().isEmpty()) // just a warning
+				lw("Simple keys from loader tree ignored: ", loader_configs.getSimpleNames());
+			for(String name : loader_configs.getHierarchicalNames())
 			{
 				String entity = null, kind = null;
 				if(name.contains(NAMESEP))
@@ -205,13 +205,13 @@ public class NodeLoader extends Unit implements Loader<Node>
 			}
 			if(nodeConfiguration.getTree(catName) == null)
 				continue;
-			TreeParameterSet configs = nodeConfiguration.getTree(catName);
-			if(!configs.getSimpleKeys().isEmpty()) // just a warning
-				lw("Simple keys from [] tree ignored: ", cat, configs.getSimpleKeys());
-			for(String name : configs.getHierarchicalKeys())
+			MultiTreeMap configs = nodeConfiguration.getTree(catName);
+			if(!configs.getSimpleNames().isEmpty()) // just a warning
+				lw("Simple keys from [] tree ignored: ", cat, configs.getSimpleNames());
+			for(String name : configs.getHierarchicalNames())
 			{
 				// try to parse the name / obtain a kind (in order to find an appropriate loader)
-				TreeParameterSet config = configs.getTree(name);
+				MultiTreeMap config = configs.getTree(name);
 				String kind = null, id = null, cp = config.get(SimpleLoader.CLASSPATH_KEY);
 				if(name != null && name.contains(NAMESEP))
 				{ // if name is splittable, split it into kind and id
@@ -405,7 +405,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Functionality not used.
 	 */
 	@Override
-	public boolean configure(TreeParameterSet configuration, Logger log)
+	public boolean configure(MultiTreeMap configuration, Logger log)
 	{
 		return true;
 	}
@@ -414,7 +414,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Functionality not used.
 	 */
 	@Override
-	public boolean preload(TreeParameterSet configuration)
+	public boolean preload(MultiTreeMap configuration)
 	{
 		return true;
 	}

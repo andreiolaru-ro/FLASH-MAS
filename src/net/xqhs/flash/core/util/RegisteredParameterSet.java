@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Extends {@link ParameterSet} to have two types of keys for parameters. One type is designated by instances of the type
+ * Extends {@link MultiValueMap} to have two types of keys for parameters. One type is designated by instances of the type
  * <b>T</b> -- 'registered' parameters. The other type is designated by normal {@link String} keys -- 'unregistered'
  * parameters.
  * <p>
@@ -33,7 +33,7 @@ import java.util.Set;
  * @param <T>
  *            the type to use for keys of registered parameters.
  */
-public class RegisteredParameterSet<T> extends ParameterSet
+public class RegisteredParameterSet<T> extends MultiValueMap
 {
 	/**
 	 * The class UID.
@@ -54,7 +54,7 @@ public class RegisteredParameterSet<T> extends ParameterSet
 	 *            - the value of the entry.
 	 * @return the instance itself, for chained calls.
 	 */
-	public ParameterSet add(T name, String value)
+	public MultiValueMap add(T name, String value)
 	{
 		return addObject(name, value);
 	}
@@ -63,7 +63,7 @@ public class RegisteredParameterSet<T> extends ParameterSet
 	 * Adds a new 'unregistered' parameter.
 	 */
 	@Override
-	public ParameterSet add(String name, String value)
+	public MultiValueMap add(String name, String value)
 	{
 		return addObject(name, value);
 	}
@@ -78,7 +78,7 @@ public class RegisteredParameterSet<T> extends ParameterSet
 	 *            - the value of the entry.
 	 * @return the instance itself, for chained calls.
 	 */
-	public ParameterSet addObject(T name, Object value)
+	public MultiValueMap addObject(T name, Object value)
 	{
 		if(registeredKeys == null)
 			registeredKeys = new HashSet<>();
@@ -90,7 +90,7 @@ public class RegisteredParameterSet<T> extends ParameterSet
 	 * Adds a new 'unregistered' parameter, with a value of any type.
 	 */
 	@Override
-	public ParameterSet addObject(String name, Object value)
+	public MultiValueMap addObject(String name, Object value)
 	{
 		return super.addObject(name, value);
 	}
@@ -98,14 +98,14 @@ public class RegisteredParameterSet<T> extends ParameterSet
 	/**
 	 * Method to retrieve those parameters which are 'unregistered', i.e. have not been added by using an instance of T.
 	 * 
-	 * @return a new {@link ParameterSet} that contains parameters associated with unregistered keys.
+	 * @return a new {@link MultiValueMap} that contains parameters associated with unregistered keys.
 	 */
-	public ParameterSet getUnregisteredParameters()
+	public MultiValueMap getUnregisteredParameters()
 	{
-		ParameterSet ret = new ParameterSet();
-		for(String key: parameterSet.keySet())
+		MultiValueMap ret = new MultiValueMap();
+		for(String key: backingMap.keySet())
 			if((registeredKeys == null) || !registeredKeys.contains(key))
-				ret.parameterSet.put(key, getObjects(key));
+				ret.backingMap.put(key, getObjects(key));
 		return ret;
 	}
 }

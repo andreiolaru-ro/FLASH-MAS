@@ -17,7 +17,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * This interface should be implemented by any persistent entity that exists on a {@link Node} and offers to agents
@@ -36,7 +36,7 @@ public interface Support extends Entity<Node>
 	 * @return <code>true</code> if the configuration process succeeded: <code>false</code> if the instance is not
 	 *         expected to perform normally.
 	 */
-	public boolean configure(TreeParameterSet configuration);
+	public boolean configure(MultiTreeMap configuration);
 	
 	/**
 	 * @return the names of services that the instance supports. FIXME: services should be better described or be part

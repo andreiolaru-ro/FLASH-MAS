@@ -27,7 +27,7 @@ import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.AgentEvent.AgentSequenceType;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
@@ -218,7 +218,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * @param configuration
 	 *            - the configuration, from which the name of the agent will be taken..
 	 */
-	public CompositeAgent(TreeParameterSet configuration)
+	public CompositeAgent(MultiTreeMap configuration)
 	{
 		agentName = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 	}

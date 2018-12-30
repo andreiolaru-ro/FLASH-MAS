@@ -11,7 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * An element in the deployment, be it a support infrastructure, an agent, a feature, etc. It needs to have some sort of
@@ -24,9 +24,9 @@ import net.xqhs.flash.core.util.TreeParameterSet;
  * <p>
  * Normally, before being started, {@link Entity} instances are created by {@link Loader} instances.
  * <p>
- * It is recommended that an entity receives its configuration via a {@link TreeParameterSet}. This can be done via a
- * constructor which takes a {@link TreeParameterSet} as argument, or using a default constructor and a method that
- * takes a {@link TreeParameterSet} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
+ * It is recommended that an entity receives its configuration via a {@link MultiTreeMap}. This can be done via a
+ * constructor which takes a {@link MultiTreeMap} as argument, or using a default constructor and a method that
+ * takes a {@link MultiTreeMap} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
  * 
  * @param <P>
  *            - the type of the entity that can contain (be the context of) this entity.

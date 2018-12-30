@@ -19,8 +19,8 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentFeature;
 import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.composite.CompositeAgent.AgentState;
-import net.xqhs.flash.core.util.ParameterSet;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -62,7 +62,7 @@ public class CompositeAgentFeature extends Unit implements AgentFeature, Configu
 	 * Creation data for the feature. The field is initialized with an empty structure, so that it is guaranteed that it
 	 * will never be <code>null</code> after construction.
 	 */
-	private TreeParameterSet		featureConfiguration;
+	private MultiTreeMap		featureConfiguration;
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
@@ -91,7 +91,7 @@ public class CompositeAgentFeature extends Unit implements AgentFeature, Configu
 		featureDesignation = designation;
 		
 		// dummy feature data, in case no other is configured
-		featureConfiguration = new TreeParameterSet();
+		featureConfiguration = new MultiTreeMap();
 		featureConfiguration.ensureLocked();
 		
 		featureInitializer();
@@ -134,12 +134,12 @@ public class CompositeAgentFeature extends Unit implements AgentFeature, Configu
 	 * <p>
 	 * 
 	 * @param configuration
-	 *            - parameters for creating the feature. The parameters will be locked (see {@link ParameterSet#lock()}
+	 *            - parameters for creating the feature. The parameters will be locked (see {@link MultiValueMap#lock()}
 	 *            from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean configure(TreeParameterSet configuration)
+	public boolean configure(MultiTreeMap configuration)
 	{
 		if(configuration != null)
 		{
@@ -210,7 +210,7 @@ public class CompositeAgentFeature extends Unit implements AgentFeature, Configu
 	/**
 	 * @return the feature initialization data. It cannot be modified, and it is guaranteed to not be <code>null</code>.
 	 */
-	protected ParameterSet getFeatureData()
+	protected MultiValueMap getFeatureData()
 	{
 		return featureConfiguration;
 	}

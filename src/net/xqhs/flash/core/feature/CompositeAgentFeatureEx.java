@@ -24,7 +24,7 @@ import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.support.MessagingComponent;
 import net.xqhs.flash.core.support.MessagingFeature;
-import net.xqhs.flash.core.util.TreeParameterSet;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 
@@ -99,7 +99,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	}
 	
 	@Override
-	public boolean configure(TreeParameterSet parameters)
+	public boolean configure(MultiTreeMap parameters)
 	{
 		if(!super.configure(parameters))
 			return false;
