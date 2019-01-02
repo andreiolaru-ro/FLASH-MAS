@@ -22,11 +22,11 @@ import java.util.Set;
 import net.xqhs.util.config.Config;
 
 /**
- * The class acts as a collection of key-value pairs that allows multiple values for the same key. Only addition and
- * query is supported.
+ * The class acts as a collection of key-value pairs that allows multiple values for the same key (also called name).
  * <p>
  * For convenience and readability, {@link String} values are special and are added and retrieved using separate methods
- * than for {@link Object} values (we call Object values those values which are of any other type than String).
+ * than for {@link Object} values (we call Object values those values which are of any other type than String). A name
+ * can have both String and Object values associated, but some methods may fail if values are not accessed correctly.
  * <p>
  * It is implemented as a map with {@link String} keys and with values that are a {@link List} of Objects. Using a map
  * improves finding entries. Using a list instead of a set ensures that entries with the same key stay in the same order
@@ -56,7 +56,7 @@ public class MultiValueMap extends Config implements Serializable
 	/**
 	 * A map simulating a set of entries String &rarr; Object.
 	 */
-	protected final Map<String, List<Object>>	backingMap		= new LinkedHashMap<>();
+	protected final Map<String, List<Object>>	backingMap			= new LinkedHashMap<>();
 	
 	/**
 	 * Adds a new parameter entry.
@@ -134,6 +134,8 @@ public class MultiValueMap extends Config implements Serializable
 	 * @param name
 	 *            - the name of the searched entry.
 	 * @return the value of an entry with the given name, or <code>null</code> if the name is not found.
+	 * @throws IllegalStateException
+	 *             if the value is not a String.
 	 */
 	public String get(String name)
 	{
@@ -150,7 +152,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * 
 	 * @param name
 	 *            - the name of the searched entry.
-	 * @return the value of an entry with the given name.
+	 * @return the value of the entry with the given name.
 	 */
 	public String getValue(String name)
 	{
@@ -288,7 +290,8 @@ public class MultiValueMap extends Config implements Serializable
 		if(!backingMap.containsKey(name))
 			throw new IllegalArgumentException("Key [" + name + "] does not exist in the map.");
 		if(!backingMap.get(name).contains(value))
-			throw new IllegalArgumentException("Value [" + value.toString() + "] is not associate with the name [" + name + "].");
+			throw new IllegalArgumentException(
+					"Value [" + value.toString() + "] is not associate with the name [" + name + "].");
 		if(backingMap.get(name).size() == 1)
 			removeKey(name);
 		else
