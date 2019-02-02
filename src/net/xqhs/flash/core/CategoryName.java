@@ -24,14 +24,17 @@ import java.util.List;
  * The second part of the name may be optional (this is default).
  * <p>
  * Some categories may have parents, and the parent of a category may be optional (this is default) or mandatory (the
- * category <i>must</i> find itself within the parent category).
+ * category <i>must</i> find itself within the parent category). Optional parents are useful when reading text input,
+ * such that entities are placed inside their parents, if they exist.
  * <p>
  * Some categories may be unique to their context, meaning a new occurrence of the category erases / overwrites any
  * previous occurrences in the same context.
  * <p>
- * Some categories may be portable from the root deployment to the nodes, if defined at root level. If the category is
- * unique, it will not overwrite node-specific instance(s); if it is not, it will be added to the node-specific
- * instance(s).
+ * Entities in parent categories are visible (passed as context) to their direct children (direct children in the
+ * category hierarchy given here or in the actual hierarchy in the deployment). However, some categories may have their
+ * entities visible deeper than their direct children, if specified. The scope is given as the last (deepest) category
+ * to which they are visible. This scope applies to contained entities and to sibling entities of different type. If the
+ * scope is {@link #DEPLOYMENT}, then the entities are visible to all contained and sibling entities.
  * <p>
  * Names of entities may sometimes identify those entities uniquely in the system (e.g. for agents, nodes, etc).
  * Entities which are in categories considered identifiable are not always required to have a name, but will be
@@ -40,6 +43,10 @@ import java.util.List;
  * @author andreiolaru
  */
 public enum CategoryName {
+	/**
+	 * The entire deployment, which may contain multiple nodes.
+	 */
+	DEPLOYMENT(new CatPar().isUnique()),
 	
 	/**
 	 * The node to which the configuration that follows belongs. An implicit NODE category is generated if no node entry
@@ -48,48 +55,13 @@ public enum CategoryName {
 	NODE(new CatPar().isIdentifiable()),
 	
 	/**
-	 * The XML schema file against which to validate to deployment file (simple key, only first value is relevant).The
-	 * schema element can only be taken from the XML and cannot be given at the command line.
-	 */
-	SCHEMA,
-	
-	/**
-	 * The XML deployment file (simple key, only first value is relevant).
-	 */
-	DEPLOYMENT(new CatPar().hasParent(NODE)),
-	
-	/**
-	 * The entities to load and their order (entity names, lower-case, separated by
-	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
-	 */
-	LOAD_ORDER(new CatPar().isUnique().isPortable().hasParent(NODE, Is.OPTIONAL)),
-	
-	/**
-	 * General configuration settings, used by support infrastructures (hierarchical key).
-	 */
-	CONFIG(new CatPar().hasParent(NODE)),
-	
-	/**
-	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
-	 */
-	PACKAGE(new CatPar().hasParent(NODE).isPortable()),
-	
-	/**
-	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
-	 * <p>
-	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the name
-	 * of the loaded entity, a two-part name is the entity and the kind.
-	 */
-	LOADER(new CatPar().isIdentifiable().isPortable().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE,
-			Is.OPTIONAL)),
-	
-	/**
 	 * Support infrastructures used in the deployment (hierarchical key).
 	 * <p>
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the kind
 	 * of the support infrastructure, a two-part name is the kind and an identifier.
 	 */
-	SUPPORT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(NODE, Is.MANDATORY)),
+	SUPPORT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(NODE, Is.MANDATORY)
+			.isVisibleTo(NODE)),
 	
 	/**
 	 * Agents to create in the deployment, potentially inside particular support infrastructures (hierarchical key).
@@ -100,6 +72,40 @@ public enum CategoryName {
 	 * Features to be deployed in agents (hierarchical key).
 	 */
 	FEATURE(new CatPar().hasParent(AGENT, Is.MANDATORY)),
+	
+	/**
+	 * General configuration settings, used by support infrastructures (hierarchical key).
+	 */
+	CONFIG(new CatPar().hasParent(NODE).isVisibleTo(SUPPORT)),
+	
+	/**
+	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
+	 */
+	PACKAGE(new CatPar().hasParent(NODE).isVisibleTo(AGENT)),
+	/**
+	 * The entities to load and their order (entity names, lower-case, separated by
+	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
+	 */
+	LOAD_ORDER(new CatPar().isUnique().isVisibleTo(NODE).hasParent(NODE, Is.OPTIONAL)),
+	/**
+	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
+	 * <p>
+	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the name
+	 * of the loaded entity, a two-part name is the entity and the kind.
+	 */
+	LOADER(new CatPar().isIdentifiable().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE, Is.OPTIONAL)
+			.isVisibleTo(NODE)),
+	
+	/**
+	 * The XML schema file against which to validate to deployment file (simple key, only first value is relevant).The
+	 * schema element can only be taken from the XML and cannot be given at the command line.
+	 */
+	SCHEMA(new CatPar().isUnique()),
+	
+	/**
+	 * The XML deployment file (simple key, only first value is relevant).
+	 */
+	DEPLOYMENT_FILE(new CatPar().isUnique().isVisibleTo(NODE)),
 	
 	;
 	
@@ -167,12 +173,6 @@ public enum CategoryName {
 		boolean			isUnique			= false;
 		
 		/**
-		 * indicates a category which will be automatically ported from the deployment to the node (see
-		 * {@link CategoryName}).
-		 */
-		boolean			isPortable			= false;
-		
-		/**
 		 * Element attribute giving the first part of the name of the element.
 		 */
 		String			nameAttribute1;
@@ -195,6 +195,13 @@ public enum CategoryName {
 		 * Indicates whether the category must necessarily appear inside its parent category.
 		 */
 		Is				optional_hierarchy	= Is.OPTIONAL;
+		
+		/**
+		 * Indicates that the entity is visible to subordinate entities, as far as the given category. A special value
+		 * is {@link CategoryName#DEPLOYMENT}, with the meaning that the entity is visible to all subordinate and
+		 * sibling entities.
+		 */
+		CategoryName	visibleTo			= null;
 		
 		/**
 		 * Default constructor, does nothing.
@@ -227,14 +234,16 @@ public enum CategoryName {
 		}
 		
 		/**
-		 * Indicates a category that will be ported from the root deployment context to every node (see
-		 * {@link CategoryName}).
+		 * Indicates a category that will be visible in the given scope.
+		 * 
+		 * @param scope
+		 *            the name of the deepest category this should be visible to (see {@link CategoryName}).
 		 * 
 		 * @return the CatPar instance.
 		 */
-		CatPar isPortable()
+		CatPar isVisibleTo(CategoryName scope)
 		{
-			isPortable = true;
+			visibleTo = scope;
 			return this;
 		}
 		
@@ -291,7 +300,6 @@ public enum CategoryName {
 	 */
 	CatPar parameters;
 	
-
 	/**
 	 * Constructor for a top-level category.
 	 */
@@ -320,6 +328,16 @@ public enum CategoryName {
 	}
 	
 	/**
+	 * This method is an alias of {@link #getName()}.
+	 * 
+	 * @return the name of the category.
+	 */
+	public String s()
+	{
+		return getName();
+	}
+	
+	/**
 	 * @return <code>true</code> if the elements in the category are uniquely identifiable by their name, if any;
 	 *         <code>false</code> otherwise.
 	 */
@@ -334,14 +352,6 @@ public enum CategoryName {
 	public boolean isUnique()
 	{
 		return parameters.isUnique;
-	}
-	
-	/**
-	 * @return <code>true</code> if the category should be copied from the root context to the nodes.
-	 */
-	public boolean isPortable()
-	{
-		return parameters.isPortable;
 	}
 	
 	/**
@@ -390,8 +400,7 @@ public enum CategoryName {
 	 */
 	List<String> getAncestorsList()
 	{
-		List<String> path = (parameters.parent == null) ? new LinkedList<>()
-				: parameters.parent.getAncestorsList();
+		List<String> path = (parameters.parent == null) ? new LinkedList<>() : parameters.parent.getAncestorsList();
 		if(parameters.parent != null)
 			path.add(0, parameters.parent.getName());
 		return path;
@@ -405,6 +414,15 @@ public enum CategoryName {
 		return getAncestorsList().toArray(new String[0]);
 	}
 	
+	/**
+	 * @return the deepest category to which this category is visible. If equal to {@link #DEPLOYMENT}, entities in this
+	 *         category should be visible to all contained entities.
+	 */
+	public CategoryName visibilityScope()
+	{
+		return parameters.visibleTo;
+	}
+
 	/**
 	 * Find the {@link CategoryName} identified by the given name.
 	 * 

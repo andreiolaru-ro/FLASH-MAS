@@ -11,13 +11,13 @@
  ******************************************************************************/
 package examples.composite;
 
-import net.xqhs.flash.core.agent.AgentFeature;
 import net.xqhs.flash.core.composite.AgentEvent;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation;
 import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.composite.CompositeAgentShard;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.feature.CompositeAgentFeatureEx;
+import net.xqhs.flash.core.shard.AgentFeature;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
@@ -27,7 +27,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestFeature extends CompositeAgentFeatureEx
+public class MonitoringTestFeature extends CompositeAgentShard
 {
 	/**
 	 * The UID.
@@ -43,7 +43,7 @@ public class MonitoringTestFeature extends CompositeAgentFeatureEx
 	 */
 	public MonitoringTestFeature()
 	{
-		super(AgentFeatureDesignation.customFeature("TESTING"));
+		super(AgentShardDesignation.customFeature("TESTING"));
 	}
 	
 	@Override
@@ -59,9 +59,9 @@ public class MonitoringTestFeature extends CompositeAgentFeatureEx
 	}
 	
 	@Override
-	protected void featureInitializer()
+	protected void shardInitializer()
 	{
-		super.featureInitializer();
+		super.shardInitializer();
 		
 		AgentEventHandler allEventHandler = new AgentEventHandler() {
 			@Override

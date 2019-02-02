@@ -25,9 +25,12 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.AgentEvent.AgentSequenceType;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardLink;
 import net.xqhs.flash.core.support.Support;
-import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
@@ -35,18 +38,18 @@ import net.xqhs.util.logging.UnitComponent;
  * This class reunites the features of an agent in order for features to be able to call each other and for events to be
  * distributed to all features.
  * <p>
- * Various agent features -- instances of {@link CompositeAgentFeature} -- can be added. Features are identified by means of
+ * Various agent features -- instances of {@link AgentShardCore} -- can be added. Features are identified by means of
  * their designation. At most one feature with the same designation is allowed (i.e. at most one feature per
  * functionality).
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
  * an event to all features, which handle it by means of registered handles (each feature registers a handle for an
- * event with itself). See {@link CompositeAgentFeature}.
+ * event with itself). See {@link AgentShardCore}.
  * 
  * @author Andrei Olaru
  * 
  */
-public class CompositeAgent implements Serializable, Agent
+public class CompositeAgent extends ShardLink implements Serializable, Agent
 {
 	/**
 	 * Values indicating the current state of the agent, especially with respect to processing events.
@@ -131,13 +134,13 @@ public class CompositeAgent implements Serializable, Agent
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(CompositeAgentFeature feature : featureOrder)
-							feature.signalAgentEvent(event);
+						for(AgentShardCore feature : featureOrder)
+							signalEventToShard(feature, event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<CompositeAgentFeature> it = featureOrder.listIterator(featureOrder.size()); it
+						for(ListIterator<AgentShardCore> it = featureOrder.listIterator(featureOrder.size()); it
 								.hasPrevious();)
-							it.previous().signalAgentEvent(event);
+							signalEventToShard(it.previous(), event);
 						break;
 					default:
 						throw new IllegalStateException(
@@ -170,14 +173,14 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The {@link Map} that links feature designations (functionalities) to feature instances.
 	 */
-	protected Map<AgentFeatureDesignation, CompositeAgentFeature>	features					= new HashMap<>();
+	protected Map<AgentShardDesignation, AgentShardCore>	features					= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which features were added, so as to signal agent events to features in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #features}.
 	 */
-	protected ArrayList<CompositeAgentFeature>						featureOrder				= new ArrayList<>();
+	protected ArrayList<AgentShardCore>						featureOrder				= new ArrayList<>();
 	
 	/**
 	 * A synchronized queue of agent events, as posted by the features.
@@ -307,7 +310,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * The method should be called by an agent feature (relayed through {@link CompositeAgentFeature}) to disseminate a
+	 * The method should be called by an agent feature (relayed through {@link AgentShardCore}) to disseminate a
 	 * an {@link AgentEvent} to the other features.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
@@ -501,23 +504,23 @@ public class CompositeAgent implements Serializable, Agent
 	 * Adds a feature to the agent, which has been configured beforehand. The agent will register with the feature, as
 	 * parent.
 	 * <p>
-	 * The feature will be identified by the agent by means of its {@link CompositeAgentFeature#getFeatureDesignation()} method.
+	 * The feature will be identified by the agent by means of its {@link AgentShardCore#getShardDesignation()} method.
 	 * Only one instance per designation (functionality) will be allowed.
 	 * 
 	 * @param feature
-	 *            - the {@link CompositeAgentFeature} instance to add.
+	 *            - the {@link AgentShardCore} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other features.
 	 */
-	protected CompositeAgent addFeature(CompositeAgentFeature feature)
+	protected CompositeAgent addFeature(AgentShardCore feature)
 	{
 		if(!canAddFeatures())
 			throw new IllegalStateException("Cannot add features in state [" + agentState + "].");
 		if(feature == null)
 			throw new InvalidParameterException("Feature is null");
-		if(hasFeature(feature.getFeatureDesignation()))
+		if(hasFeature(feature.getShardDesignation()))
 			throw new InvalidParameterException(
-					"Cannot add multiple features for designation [" + feature.getFeatureDesignation() + "]");
-		features.put(feature.getFeatureDesignation(), feature);
+					"Cannot add multiple features for designation [" + feature.getShardDesignation() + "]");
+		features.put(feature.getShardDesignation(), feature);
 		featureOrder.add(feature);
 		feature.addContext(this);
 		return this;
@@ -530,11 +533,11 @@ public class CompositeAgent implements Serializable, Agent
 	 *            - the designation of the feature to remove.
 	 * @return a reference to the just-removed feature instance.
 	 */
-	protected CompositeAgentFeature removeFeature(AgentFeatureDesignation designation)
+	protected AgentShardCore removeFeature(AgentShardDesignation designation)
 	{
 		if(!hasFeature(designation))
 			throw new InvalidParameterException("Feature [" + designation + "] does not exist");
-		CompositeAgentFeature feature = getFeature(designation);
+		AgentShardCore feature = getFeature(designation);
 		featureOrder.remove(feature);
 		features.remove(designation);
 		return feature;
@@ -547,7 +550,7 @@ public class CompositeAgent implements Serializable, Agent
 	 *            - the designation of the feature to search.
 	 * @return <code>true</code> if the feature exists, <code>false</code> otherwise.
 	 */
-	protected boolean hasFeature(AgentFeatureDesignation designation)
+	protected boolean hasFeature(AgentShardDesignation designation)
 	{
 		return features.containsKey(designation);
 	}
@@ -559,9 +562,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * 
 	 * @param designation
 	 *            - the designation of the feature to retrieve.
-	 * @return the {@link CompositeAgentFeature} instance, if any. <code>null</code> otherwise.
+	 * @return the {@link AgentShardCore} instance, if any. <code>null</code> otherwise.
 	 */
-	protected CompositeAgentFeature getFeature(AgentFeatureDesignation designation)
+	protected AgentShardCore getFeature(AgentShardDesignation designation)
 	{
 		return features.get(designation);
 	}
@@ -574,6 +577,12 @@ public class CompositeAgent implements Serializable, Agent
 	protected Object getSupportImplementation()
 	{
 		return supportLink;
+	}
+	
+	@Override
+	protected void signalEventToShard(AgentShardCore shard, AgentEvent event)
+	{
+		super.signalEventToShard(shard, event);
 	}
 	
 	/**

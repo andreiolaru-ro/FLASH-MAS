@@ -19,8 +19,8 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.composite.AgentEvent;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.AgentManager;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.DefaultSupportImplementation;
 import net.xqhs.flash.core.support.MessagingComponent;
 import net.xqhs.flash.core.support.NameBasedMessagingComponent;
@@ -222,9 +222,9 @@ public class LocalSupport extends DefaultSupportImplementation
 	}
 	
 	@Override
-	public String getRecommendedFeatureImplementation(StandardAgentFeature componentName)
+	public String getRecommendedFeatureImplementation(StandardAgentShard componentName)
 	{
-		if(componentName == StandardAgentFeature.MESSAGING_COMPONENT)
+		if(componentName == StandardAgentShard.MESSAGING_COMPONENT)
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedFeatureImplementation(componentName);
 	}

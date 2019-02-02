@@ -9,13 +9,21 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
+package net.xqhs.flash.core.shard;
+
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.Agent;
+
 /**
- * 
- */
-/**
- * The package contains interfaces and abstract classes for core agent features.
+ * A shard (also called a component) is characterized by its functionality, identified by means of its designation -- an
+ * instance of {@link AgentShardDesignation}.
  * 
  * @author andreiolaru
- *
  */
-package net.xqhs.flash.core.feature;
+public interface AgentShard extends Entity<Agent>
+{
+	/**
+	 * @return the designation of the shard (instance of {@link AgentShardDesignation}).
+	 */
+	AgentShardDesignation getShardDesignation();
+}

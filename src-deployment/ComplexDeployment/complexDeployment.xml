@@ -37,8 +37,8 @@
 
 	<agent name="AgentA">
 		<in-context-of>local</in-context-of>
-		<feature name="messaging" />
-		<feature name="directory" />
+		<shard name="messaging" />
+		<shard name="directory" />
 	</agent>
 
 	<agent>

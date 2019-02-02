@@ -16,8 +16,8 @@ import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
@@ -109,7 +109,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	 * The loader recommends no particular implementation for any component.
 	 */
 	@Override
-	public String getRecommendedFeatureImplementation(StandardAgentFeature componentName)
+	public String getRecommendedFeatureImplementation(StandardAgentShard componentName)
 	{
 		return null;
 	}

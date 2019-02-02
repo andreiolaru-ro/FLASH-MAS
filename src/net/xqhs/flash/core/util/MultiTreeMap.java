@@ -217,6 +217,22 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * Same as {@link #addSingleTree(String, MultiTreeMap)}, but instead of returning the original tree, it returns the
+	 * newly added tree.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entry.
+	 * @param tree
+	 *            - the {@link MultiTreeMap} instance to associate with the name.
+	 * @return the second argument.
+	 */
+	public MultiTreeMap addSingleTreeGet(String name, MultiTreeMap tree)
+	{
+		addItem(name, tree, false, true);
+		return tree;
+	}
+	
+	/**
 	 * Associates an additional tree to a hierarchical name (or the first of several trees).
 	 * <p>
 	 * When this method inserts a new name, use this if the name is expected to be associated with several trees.
@@ -232,6 +248,22 @@ public class MultiTreeMap extends MultiValueMap
 	public MultiTreeMap addOneTree(String name, MultiTreeMap tree)
 	{
 		return addItem(name, tree, false, false);
+	}
+	
+	/**
+	 * Same as {@link #addOneTree(String, MultiTreeMap)}, but instead of returning the original tree, it returns the
+	 * newly added tree.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entry.
+	 * @param tree
+	 *            - the {@link MultiTreeMap} instance to associate with the name.
+	 * @return the second argument.
+	 */
+	public MultiTreeMap addOneTreeGet(String name, MultiTreeMap tree)
+	{
+		addItem(name, tree, false, false);
+		return tree;
 	}
 	
 	/**
@@ -302,7 +334,7 @@ public class MultiTreeMap extends MultiValueMap
 	public MultiTreeMap clear(String name)
 	{
 		if(singletonKeys.contains(name))
-			throw new IllegalArgumentException("Singleton names cannot be cleared.");
+			throw new IllegalArgumentException("Singleton name [" + name + "] cannot be cleared.");
 		if(backingMap.containsKey(name))
 			backingMap.get(name).clear();
 		return this;
@@ -706,7 +738,8 @@ public class MultiTreeMap extends MultiValueMap
 			}
 			else
 			{
-				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name + (shorter ? "" : "]>");
+				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name
+						+ (shorter ? "" : ("]" + (isSingleton(name) ? "" : ">")));
 				justtree = true;
 				boolean first = true;
 				for(Object o : backingMap.get(name))

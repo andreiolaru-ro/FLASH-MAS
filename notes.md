@@ -51,13 +51,15 @@ Assembling parts to form a name would be done *only* for entities for which this
 
 Unnamed entities are allowed, but cannot be referenced (such as for <in-context-of>).
 
+There is a root category, namely DEPLOYMENT. If no NODE is specified, a default one will be created for entities that need to be inside a node (e.g. entities, agents, etc). This implicit node will be the first node among the nodes with no name. If a node with no name has already been introduced, it will be the same one.
+
+The local node is the first node not specifically designated as remote.
 
 XML
 ---
 
 Each SettingsName contains information on how to assemble elements from the XML into a name, if necessary. E.g. support kind and id can be assembled into kind:id.
 
-There is a root category, namely NODE. If no node is specified, when the first entity that needs a NODE ancestor appears, an 'implicit', nameless node will be created for all entities at the root level in the XML, which are not nodes.
 
 
 TODO
@@ -172,10 +174,7 @@ The Node is always loaded by the NodeLoader.
 
 TODO
 ----
-  * add nodes to auto-loaded entities / manage the loading of multiple nodes
-  * add a setting for categories if they should only have one instance or not (such as for text-value categories which are currently overwritten by default)
-  * sort out the concept of TreeParameterSet
-  * create an alias for CategoryName.getName of only one character (e.g. s() )
+   * create an alias for CategoryName.getName of only one character (e.g. s() )
 
 Future
 ------
@@ -187,6 +186,14 @@ Future
   * multiple support implementations
     * multiple features with the same designation
   * interfaces for common features (e.g. messaging, kb, etc)
+
+
+Workings
+========
+
+Changed
+-------
+  * Shards can be started and stoppped regardless of agent state.
 
 
 General

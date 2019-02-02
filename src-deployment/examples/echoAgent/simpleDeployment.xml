@@ -11,6 +11,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
 
-	<agent classpath="simpleDeployment.EchoAgent"></agent>
+	<agent classpath="examples.echoAgent.EchoAgent" />
 
 </deployment>

@@ -49,7 +49,7 @@
 		<complexContent>
 			<extension base="tns:entitybase">
 				<sequence>
-					<element name="feature" minOccurs="0" maxOccurs="unbounded">
+					<element name="shard" minOccurs="0" maxOccurs="unbounded">
 						<complexType>
 							<complexContent>
 								<extension base="tns:entitybase" />

@@ -12,17 +12,19 @@
 package net.xqhs.flash.core.composite;
 
 import java.util.Iterator;
+import java.util.List;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentFeature;
-import net.xqhs.flash.core.agent.parametric.ParametricComponent;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
-import net.xqhs.flash.core.composite.CompositeAgentFeature.ComponentCreationData;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.ClassFactory;
-import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
 
@@ -31,48 +33,31 @@ import net.xqhs.util.logging.Logger;
  * <p>
  * The choice of using a specialized loader as opposed to using the default loader and doing all the loading inside the
  * composite agent was made so as to decouple dynamic class loading, as well as calls to
- * {@link ClassFactory#loadClassInstance(String, MultiTreeMap, boolean)} from the actual implementation of
- * {@link CompositeAgent}.
+ * {@link ClassFactory#loadClassInstance} from the actual implementation of {@link CompositeAgent}.
  * 
  * @author Andrei Olaru
  */
 public class CompositeAgentLoader implements Loader<Agent>
 {
 	/**
-	 * The name of the parameter in the agent configuration containing the agent name.
+	 * The name of attrbutes containing entity names.
 	 */
-	private static final String	AGENT_NAME_PARAMETER	= "name";
+	protected static final String	NAME_ATTRIBUTE_NAME		= DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 	/**
 	 * Name of XML nodes in the scenario representing components.
 	 */
-	private static final String	FEATURE_NODE_NAME		= "feature";
-	/**
-	 * The name of the attribute representing the name of the component in the component node.
-	 */
-	private static final String	FEATURE_NAME_PARAMETER	= "name";
+	private static final String		SHARD_NODE_NAME			= "shard";
 	/**
 	 * The name of the attribute representing the class of the component in the component node. The class may not be
 	 * specified, it the component is standard and its class is specified by the corresponding
-	 * {@link StandardAgentFeature} entry.
+	 * {@link StandardAgentShard} entry.
 	 */
-	private static final String	FEATURE_CLASS_PARAMETER	= SimpleLoader.CLASSPATH_KEY;
-	/**
-	 * The name of nodes containing component parameters.
-	 */
-	private static final String	PARAMETER_NODE_NAME		= DeploymentConfiguration.PARAMETER_ELEMENT_NAME;
-	/**
-	 * The name of the attribute of a parameter node holding the name of the parameter.
-	 */
-	private static final String	PARAMETER_NAME			= DeploymentConfiguration.PARAMETER_NAME;
-	/**
-	 * The name of the attribute of a parameter node holding the value of the parameter.
-	 */
-	private static final String	PARAMETER_VALUE			= DeploymentConfiguration.PARAMETER_VALUE;
+	private static final String		SHARD_CLASS_PARAMETER	= SimpleLoader.CLASSPATH_KEY;
 	
 	/**
 	 * Logger to use during the loading process.
 	 */
-	Logger						log;
+	Logger							log;
 	
 	@Override
 	public boolean configure(MultiTreeMap config, Logger _log)
@@ -81,11 +66,17 @@ public class CompositeAgentLoader implements Loader<Agent>
 		return true;
 	}
 	
+	@Override
+	public boolean preload(MultiTreeMap configuration)
+	{
+		return preload(configuration, null);
+	}
+	
 	/**
 	 * The method checks potential problems that could appear in the creation of an agent, as specified by the
 	 * information in the argument. Potential problems relate, for example, to inexistent classes for features.
 	 * <p>
-	 * The method creates the necessary {@link AgentFeature} instances and pre-loads them.
+	 * The method creates the necessary {@link AgentShard} instances and pre-loads them.
 	 * <p>
 	 * If the agent will surely not be able to load, <code>false</code> will be returned. For any non-fatal issues, the
 	 * method should return <code>true</code> and output warnings in the log.
@@ -95,59 +86,57 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean preload(MultiTreeMap agentCreationData)
+	public boolean preload(MultiTreeMap agentCreationData, List<Entity<?>> context)
 	{
-		String logPre = (agentCreationData.isSimple(AGENT_NAME_PARAMETER) ? agentCreationData.get(AGENT_NAME_PARAMETER)
+		String logPre = (agentCreationData.isSimple(NAME_ATTRIBUTE_NAME) ? agentCreationData.get(NAME_ATTRIBUTE_NAME)
 				: "<agent>") + ":";
-		for(MultiTreeMap featureConfig : agentCreationData.getTrees(FEATURE_NODE_NAME))
+		for(MultiTreeMap shardConfig : agentCreationData.getTrees(SHARD_NODE_NAME))
 		{
-			String featureName = featureConfig.get(FEATURE_NAME_PARAMETER);
+			String shardName = shardConfig.get(NAME_ATTRIBUTE_NAME);
 			
 			// get feature class
-			String featureClass = featureConfig.get(FEATURE_CLASS_PARAMETER);
-			if(featureClass == null)
+			String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+			if(shardClass == null)
 			{
-				if(featureName == null)
+				if(shardName == null)
 				{
-					log.error(logPre + "Feature has neither name nor class specified. Feature will not be available.");
+					log.error(logPre + "Shard has neither name nor class specified. Shard will not be available.");
 					continue;
 				}
-				AgentFeatureDesignation featureDesignation = AgentFeatureDesignation.autoFeature(featureName);
-					if(platformLoader != null)
-					{
-						String recommendedClass = platformLoader.getRecommendedFeatureImplementation(featureDesignation);
-						if(recommendedClass != null)
-							featureClass = recommendedClass;
-					}
-					if(featureClass == null)
-						featureClass = featureDesignation.getClassName();
+				AgentShardDesignation shardDesignation = AgentShardDesignation.autoFeature(shardName);
+				if(platformLoader != null)
+				{
+					String recommendedClass = platformLoader.getRecommendedFeatureImplementation(shardDesignation);
+					if(recommendedClass != null)
+						shardClass = recommendedClass;
+				}
+				if(shardClass == null)
+					shardClass = shardDesignation.getClassName();
 			}
-			if(featureClass == null)
+			if(shardClass == null)
 			{
-				log.error(logPre + "Component class not specified for component [" + featureName
+				log.error(logPre + "Component class not specified for component [" + shardName
 						+ "]. Component will not be available.");
 				continue;
 			}
 			
-			if(PlatformUtils.classExists(featureClass))
-				log.trace(logPre + "component [" + featureName + "] can be loaded");
+			if(PlatformUtils.classExists(shardClass))
+				log.trace(logPre + "component [" + shardName + "] can be loaded");
 			else
 			{
-				log.error(logPre + "Component class [" + featureName + " | " + featureClass
+				log.error(logPre + "Component class [" + shardName + " | " + shardClass
 						+ "] not found; it will not be loaded.");
 				continue;
 			}
 			
-			CompositeAgentFeature component = null;
+			AgentShardCore component = null;
 			try
 			{
-				component = (CompositeAgentFeature) PlatformUtils.loadClassInstance(this, featureClass,
-						new Object[0]);
-				log.trace("component [] created for agent []. pre-loading...", featureClass,
-						agentCreationData.getName());
+				component = (AgentShardCore) PlatformUtils.loadClassInstance(this, shardClass, new Object[0]);
+				log.trace("component [] created for agent []. pre-loading...", shardClass, agentCreationData.getName());
 			} catch(Exception e)
 			{
-				log.error("Component [] failed to load; it will not be available for agent []:", featureClass,
+				log.error("Component [] failed to load; it will not be available for agent []:", shardClass,
 						agentCreationData.getName(), PlatformUtils.printException(e));
 				continue;
 			}
@@ -160,18 +149,18 @@ public class CompositeAgentLoader implements Loader<Agent>
 				XMLNode param = paramsIt.next();
 				componentData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
 			}
-			if(StandardAgentFeature.PARAMETRIC_COMPONENT.featureName().equals(featureName))
+			if(StandardAgentShard.PARAMETRIC_COMPONENT.featureName().equals(shardName))
 				componentData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
 						agentCreationData.getParameters());
 			
 			if(component.preload(componentData, componentNode, agentCreationData.getPackages(), log))
 			{
 				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, component);
-				log.trace("component [] pre-loaded for agent []", featureClass, agentCreationData.getName());
+				log.trace("component [] pre-loaded for agent []", shardClass, agentCreationData.getName());
 			}
 			else
-				log.error("Component [] failed pre-loading step; it will not be available for agent [].",
-						featureClass, agentCreationData.getName());
+				log.error("Component [] failed pre-loading step; it will not be available for agent [].", shardClass,
+						agentCreationData.getName());
 		}
 		
 		return true;
@@ -190,7 +179,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	{
 		CompositeAgent agent = new CompositeAgent();
 		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addFeature((CompositeAgentFeature) componentObj);
+			agent.addFeature((AgentShardCore) componentObj);
 		return agent;
 	}
 }

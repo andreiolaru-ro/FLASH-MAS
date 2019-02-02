@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.composite;
+package net.xqhs.flash.core.shard;
 
 import java.io.Serializable;
 
@@ -20,7 +20,7 @@ import net.xqhs.flash.core.support.MessagingComponent;
  * 
  * @author Andrei Olaru
  */
-public class AgentFeatureDesignation implements Serializable
+public class AgentShardDesignation implements Serializable
 {
 	/**
 	 * The serial UID.
@@ -36,7 +36,7 @@ public class AgentFeatureDesignation implements Serializable
 	 * 
 	 * @author andreiolaru
 	 */
-	public enum StandardAgentFeature {
+	public enum StandardAgentShard {
 		
 		/**
 		 * The designation of a feature extending {@link MessagingComponent}.
@@ -70,7 +70,7 @@ public class AgentFeatureDesignation implements Serializable
 		 * @param classname
 		 *            - the fully qualified class name.
 		 */
-		private StandardAgentFeature(String classname)
+		private StandardAgentShard(String classname)
 		{
 			// FIXME: check that package and class exist
 			featureClass = classname;
@@ -80,7 +80,7 @@ public class AgentFeatureDesignation implements Serializable
 		/**
 		 * Infers the class of the feature implementation based on the name of the feature and constants in this class.
 		 */
-		private StandardAgentFeature()
+		private StandardAgentShard()
 		{
 			// FIXME: check that package and class exist
 			String featurePackage = AGENT_FEATURE_PACKAGE_ROOT + "." + featureName;
@@ -109,25 +109,25 @@ public class AgentFeatureDesignation implements Serializable
 		}
 		
 		/**
-		 * @return the {@link AgentFeatureDesignation} corresponding to this standard feature.
+		 * @return the {@link AgentShardDesignation} corresponding to this standard feature.
 		 */
-		public AgentFeatureDesignation toAgentFeatureDesignation()
+		public AgentShardDesignation toAgentFeatureDesignation()
 		{
-			return AgentFeatureDesignation.standardFeature(this);
+			return AgentShardDesignation.standardFeature(this);
 		}
 
 		/**
-		 * Returns the {@link StandardAgentFeature} instance that corresponds to the specified name.
+		 * Returns the {@link StandardAgentShard} instance that corresponds to the specified name.
 		 * 
 		 * @param featureName
 		 *            - the name of the feature, as appearing in the deployment file.
-		 * @return the corresponding {@link StandardAgentFeature} instance.
+		 * @return the corresponding {@link StandardAgentShard} instance.
 		 */
-		public static StandardAgentFeature toStandardAgentFeature(String featureName)
+		public static StandardAgentShard toStandardAgentFeature(String featureName)
 		{
 			try
 			{
-				return StandardAgentFeature.valueOf(featureName.toUpperCase());
+				return StandardAgentShard.valueOf(featureName.toUpperCase());
 			} catch(Exception e)
 			{
 				return null;
@@ -136,17 +136,17 @@ public class AgentFeatureDesignation implements Serializable
 		
 		/**
 		 * Combines the functionality of {@link #toStandardAgentFeature} and {@link #toAgentFeatureDesignation} to
-		 * return an {@link AgentFeatureDesignation} based on a feature name. If no appropriate standard feature is
+		 * return an {@link AgentShardDesignation} based on a feature name. If no appropriate standard feature is
 		 * found, <code>null</code> is returned.
 		 * 
 		 * @param featureName
 		 *            - the name of the feature, as appearing in the deployment file.
-		 * @return the {@link AgentFeatureDesignation} corresponding to this standard feature with the name;
+		 * @return the {@link AgentShardDesignation} corresponding to this standard feature with the name;
 		 *         <code>null</code> if none found.
 		 */
-		public static AgentFeatureDesignation toStandardAgentFeatureDesignation(String featureName)
+		public static AgentShardDesignation toStandardAgentFeatureDesignation(String featureName)
 		{
-			StandardAgentFeature std = toStandardAgentFeature(featureName);
+			StandardAgentShard std = toStandardAgentFeature(featureName);
 			return std != null ? std.toAgentFeatureDesignation() : null;
 		}
 	}
@@ -154,7 +154,7 @@ public class AgentFeatureDesignation implements Serializable
 	/**
 	 * This field is used if the designation designates a standard feature.
 	 */
-	protected StandardAgentFeature	standardFeature;
+	protected StandardAgentShard	standardFeature;
 	
 	/**
 	 * This field is used if the designation designates a custom feature.
@@ -169,7 +169,7 @@ public class AgentFeatureDesignation implements Serializable
 	 * @param customName
 	 *            - the custom feature name.
 	 */
-	private AgentFeatureDesignation(StandardAgentFeature standardsName, String customName)
+	private AgentShardDesignation(StandardAgentShard standardsName, String customName)
 	{
 		if(standardsName != null && customName != null)
 			throw new IllegalArgumentException("Both arguments cannot be non-null.");
@@ -182,31 +182,31 @@ public class AgentFeatureDesignation implements Serializable
 	/**
 	 * Creates a custom feature designation with the specified name.
 	 * <p>
-	 * The name must not be the same as an existing {@link StandardAgentFeature}.
+	 * The name must not be the same as an existing {@link StandardAgentShard}.
 	 * 
 	 * @param featureName
 	 *            - the custom name.
 	 * @return the designation.
 	 */
-	public static AgentFeatureDesignation customFeature(String featureName)
+	public static AgentShardDesignation customFeature(String featureName)
 	{
-		if(StandardAgentFeature.toStandardAgentFeature(featureName) != null)
+		if(StandardAgentShard.toStandardAgentFeature(featureName) != null)
 			throw new IllegalArgumentException("There already is a standard feature with the name " + featureName);
-		return new AgentFeatureDesignation(null, featureName);
+		return new AgentShardDesignation(null, featureName);
 	}
 	
 	/**
 	 * Creates a standard designation instance.
 	 * <p>
-	 * An easier way to do this is to call {@link StandardAgentFeature#toAgentFeatureDesignation()}.
+	 * An easier way to do this is to call {@link StandardAgentShard#toAgentFeatureDesignation()}.
 	 * 
 	 * @param standardFeature
 	 *            - the standard feature.
 	 * @return the designation.
 	 */
-	public static AgentFeatureDesignation standardFeature(StandardAgentFeature standardFeature)
+	public static AgentShardDesignation standardFeature(StandardAgentShard standardFeature)
 	{
-		return new AgentFeatureDesignation(standardFeature, null);
+		return new AgentShardDesignation(standardFeature, null);
 	}
 	
 	/**
@@ -217,9 +217,9 @@ public class AgentFeatureDesignation implements Serializable
 	 *            - the name of the desired feature.
 	 * @return the designation.
 	 */
-	public static AgentFeatureDesignation autoFeature(String featureName)
+	public static AgentShardDesignation autoFeature(String featureName)
 	{
-		StandardAgentFeature std = StandardAgentFeature.toStandardAgentFeature(featureName);
+		StandardAgentShard std = StandardAgentShard.toStandardAgentFeature(featureName);
 		if(std != null)
 			return standardFeature(std);
 		return customFeature(featureName);
@@ -228,11 +228,11 @@ public class AgentFeatureDesignation implements Serializable
 	@Override
 	public boolean equals(Object obj)
 	{
-		if(!(obj instanceof AgentFeatureDesignation))
+		if(!(obj instanceof AgentShardDesignation))
 			return false;
 		if(customFeature != null)
-			return customFeature.equals(((AgentFeatureDesignation) obj).customFeature);
-		return standardFeature.equals(((AgentFeatureDesignation) obj).standardFeature);
+			return customFeature.equals(((AgentShardDesignation) obj).customFeature);
+		return standardFeature.equals(((AgentShardDesignation) obj).standardFeature);
 	}
 	
 	@Override

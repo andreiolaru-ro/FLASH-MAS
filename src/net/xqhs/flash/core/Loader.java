@@ -13,8 +13,8 @@ package net.xqhs.flash.core;
 
 import java.util.List;
 
-import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
 
 /**
@@ -46,6 +46,20 @@ public interface Loader<T extends Entity<?>>
 	public boolean configure(MultiTreeMap configuration, Logger log);
 	
 	/**
+	 * Same as {@link #preload(MultiTreeMap)}, but performs the checks in the given context.
+	 * 
+	 * @param configuration
+	 *            - the configuration data for the entity.
+	 * @param context
+	 *            - the entities that form the context of the entity to be loaded. The argument may be <code>null</code>
+	 *            or empty.
+	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
+	 *         if the entity cannot load with the given configuration.
+	 * @see #preload(MultiTreeMap)
+	 */
+	public boolean preload(MultiTreeMap configuration, List<Entity<?>> context);
+	
+	/**
 	 * Performs checks and completes the configuration.
 	 * <p>
 	 * This method <i>may</i> be implemented by implementing classes in order to
@@ -74,7 +88,8 @@ public interface Loader<T extends Entity<?>>
 	 * @param configuration
 	 *            - the configuration data for the entity.
 	 * @param context
-	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code>.
+	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code> or
+	 *            empty.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(MultiTreeMap configuration, List<Entity<?>> context);
@@ -118,6 +133,15 @@ public interface Loader<T extends Entity<?>>
 		{
 			log = _log;
 			return true;
+		}
+		
+		/**
+		 * Context is not considered in any way.
+		 */
+		@Override
+		public boolean preload(MultiTreeMap configuration, List<Entity<?>> context)
+		{
+			return preload(configuration);
 		}
 		
 		/**

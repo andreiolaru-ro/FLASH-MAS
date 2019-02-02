@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
@@ -127,7 +128,7 @@ public class AgentEvent extends MultiValueMap
 	
 	/**
 	 * The interface should be implemented by a class that can handle agent events for an agent component. Each
-	 * {@link CompositeAgentFeature} instance is able to register, for each event, an event handler.
+	 * {@link AgentShardCore} instance is able to register, for each event, an event handler.
 	 * <p>
 	 * The class also contains enumerations relevant to event handling: event types ( {@link AgentEventType}) and types
 	 * of sequences for events ({@link AgentSequenceType}).
@@ -139,7 +140,7 @@ public class AgentEvent extends MultiValueMap
 		/**
 		 * The method is invoked whenever the event is posted to the {@link CompositeAgent} the component is part of.
 		 * <p>
-		 * The handlers in various components will be invoked (through the method in {@link CompositeAgentFeature}) in the
+		 * The handlers in various components will be invoked (through the method in {@link AgentShardCore}) in the
 		 * order specified by the {@link AgentSequenceType} associated with the event.
 		 * 
 		 * @param event

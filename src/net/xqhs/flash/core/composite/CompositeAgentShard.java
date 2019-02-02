@@ -9,19 +9,17 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.feature;
+package net.xqhs.flash.core.composite;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.xqhs.flash.core.composite.AgentEvent;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation;
-import net.xqhs.flash.core.composite.CompositeAgent;
-import net.xqhs.flash.core.composite.CompositeAgentFeature;
-import net.xqhs.flash.core.composite.VisualizableFeature;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.composite.VisualizableFeature;
 import net.xqhs.flash.core.support.MessagingComponent;
 import net.xqhs.flash.core.support.MessagingFeature;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -29,7 +27,7 @@ import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 
 /**
- * This class extends on {@link CompositeAgentFeature} by adding some functionality which may be useful to many agent
+ * This class extends on {@link AgentShardCore} by adding some functionality which may be useful to many agent
  * feature implementations. These methods are <code>protected</code>, as they should be accessible only from the inside
  * of the feature, not from the outside. These methods are enumerated below:
  * <ul>
@@ -72,7 +70,7 @@ import net.xqhs.util.logging.Logger;
  * 
  * @author andreiolaru
  */
-public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
+public abstract class CompositeAgentShard extends AgentShardCore
 {
 	
 	/**
@@ -88,12 +86,12 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	/**
 	 * The constructor assigns the designation to the feature.
 	 * <p>
-	 * IMPORTANT: see {@link CompositeAgentFeature#AgentFeature(AgentFeatureDesignation)}.
+	 * IMPORTANT: see {@link AgentShardCore#AgentFeature(AgentShardDesignation)}.
 	 * 
 	 * @param designation
-	 *            - the designation of the feature, as instance of {@link StandardAgentFeature}.
+	 *            - the designation of the feature, as instance of {@link StandardAgentShard}.
 	 */
-	public CompositeAgentFeatureEx(AgentFeatureDesignation designation)
+	public CompositeAgentShard(AgentShardDesignation designation)
 	{
 		super(designation);
 	}
@@ -256,7 +254,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	 *            - the event which occurred.
 	 */
 	@Override
-	void signalAgentEvent(AgentEvent event)
+	protected void signalAgentEvent(AgentEvent event)
 	{
 		if(eventHandlers.containsKey(event.getType()))
 			eventHandlers.get(event.getType()).handleEvent(event);
@@ -283,13 +281,13 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	}
 	
 	/**
-	 * Relay for calls to the method {@link CompositeAgent#getFeature(StandardAgentFeature)}.
+	 * Relay for calls to the method {@link CompositeAgent#getFeature(StandardAgentShard)}.
 	 * 
 	 * @param designation
 	 *            - the designation of the feature.
-	 * @return the {@link CompositeAgentFeature} instance, if any. <code>null</code> otherwise.
+	 * @return the {@link AgentShardCore} instance, if any. <code>null</code> otherwise.
 	 */
-	protected CompositeAgentFeature getAgentFeature(AgentFeatureDesignation designation)
+	protected AgentShardCore getAgentFeature(AgentShardDesignation designation)
 	{
 		return (getAgent() != null) ? getAgent().getFeature(designation) : null;
 	}
@@ -330,7 +328,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	{
 		try
 		{
-			return ((VisualizableFeature) getAgentFeature(StandardAgentFeature.VISUALIZABLE)).getLog();
+			return ((VisualizableFeature) getAgentFeature(StandardAgentShard.VISUALIZABLE)).getLog();
 		} catch(NullPointerException e)
 		{
 			return DumbLogger.get();
@@ -356,11 +354,11 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	{
 		// TODO: if the messaging feature disappears, register with the agent; if the messaging feature appears,
 		// register with that.
-		if((getAgent() != null) && (getAgent().hasFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation())))
+		if((getAgent() != null) && (getAgent().hasFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation())))
 		{
 			// the implementation somewhat non-intuitively uses the fact that the method in MessagingFeature that is
 			// used has the same name.
-			CompositeAgentFeature msgr = getAgent().getFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation());
+			AgentShardCore msgr = getAgent().getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation());
 			return msgr.registerMessageReceiver(receiver, prefixElements);
 		}
 		registerHandler(AgentEventType.AGENT_MESSAGE, receiver);
@@ -384,7 +382,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 		try
 		{
 			return ((MessagingFeature) getAgent()
-					.getFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation()))
+					.getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation()))
 							.makeLocalPath(pathElements);
 		} catch(NullPointerException e)
 		{
@@ -413,7 +411,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 			String... targetPathElements)
 	{
 		MessagingFeature msgr = (MessagingComponent) getAgent()
-				.getFeature(StandardAgentFeature.MESSAGING.toAgentFeatureDesignation());
+				.getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation());
 		if(msgr != null)
 			return msgr.sendMessage(msgr.makePath(targetAgent, targetPathElements), sourceEndpoint, content);
 		return false;
@@ -436,7 +434,7 @@ public abstract class CompositeAgentFeatureEx extends CompositeAgentFeature
 	 */
 	protected boolean sendMessageToEndpoint(String content, String sourceEndpoint, String targetEndpoint)
 	{
-		MessagingFeature msgr = (MessagingFeature) getAgent().getFeature(StandardAgentFeature.MESSAGING);
+		MessagingFeature msgr = (MessagingFeature) getAgent().getFeature(StandardAgentShard.MESSAGING);
 		if(msgr != null)
 			return msgr.sendMessage(targetEndpoint, sourceEndpoint, content);
 		return false;

@@ -9,21 +9,13 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.agent;
-
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.composite.AgentFeatureDesignation;
-
 /**
- * A feature (also called a component) is characterized by its functionality, identified by means of its designation --
- * an instance of {@link AgentFeatureDesignation}.
+ * 
+ */
+/**
+ * The package contains interfaces and abstract classes for core agent features.
  * 
  * @author andreiolaru
+ *
  */
-public interface AgentFeature extends Entity<Agent>
-{
-	/**
-	 * @return the designation of the feature (instance of {@link AgentFeatureDesignation}).
-	 */
-	AgentFeatureDesignation getFeatureDesignation();
-}
+package net.xqhs.flash.core.shard;

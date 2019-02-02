@@ -9,21 +9,19 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.composite;
-
-import net.xqhs.flash.core.composite.AgentFeatureDesignation.StandardAgentFeature;
+package net.xqhs.flash.core.shard;
 
 enum UnimplementedFeatures {
 	/**
 	 * The designation of a component extending {@link VisualizableComponent}.
 	 */
 	VISUALIZABLE(
-			StandardAgentFeature.AGENT_FEATURE_PACKAGE_ROOT + ".visualization.VisualizableComponent"),
+			StandardAgentShard.AGENT_FEATURE_PACKAGE_ROOT + ".visualization.VisualizableComponent"),
 	
 	/**
 	 * The designation of a component extending {@link CognitiveComponent}.
 	 */
-	COGNITIVE(StandardAgentFeature.AGENT_FEATURE_PACKAGE_ROOT + ".kb.ContextComponent"),
+	COGNITIVE(StandardAgentShard.AGENT_FEATURE_PACKAGE_ROOT + ".kb.ContextComponent"),
 	
 	/**
 	 * The designation of a component extending {@link MovementComponent}.
@@ -48,7 +46,7 @@ enum UnimplementedFeatures {
 	/**
 	 * The designation of a component extending {@link ClaimComponent}.
 	 */
-	S_CLAIM(StandardAgentFeature.AGENT_FEATURE_PACKAGE_ROOT + ".claim.ClaimComponent"),
+	S_CLAIM(StandardAgentShard.AGENT_FEATURE_PACKAGE_ROOT + ".claim.ClaimComponent"),
 	
 	/**
 	 * TEMPORARY type for testing. TODO: remove this type.

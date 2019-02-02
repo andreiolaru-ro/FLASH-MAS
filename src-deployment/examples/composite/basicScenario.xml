@@ -13,11 +13,11 @@
 	<loader for="agent:composite"/>
 	
 	<agent name="AgentA" kind="composite">
-		<feature name="testing" classpath="examples.composite.MonitoringTestFeature" />
+		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
 	</agent>
 	<agent>
 		<parameter name="name" value="AgentB" />
 		<parameter name="kind" value="composite" />
-		<feature name="testing" classpath="examples.composite.MonitoringTestFeature" />
+		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
 	</agent>
 </deployment>
