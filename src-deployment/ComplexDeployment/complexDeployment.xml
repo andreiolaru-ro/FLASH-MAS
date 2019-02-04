@@ -18,7 +18,7 @@
 	</entity>
 
 	<load_order>support</load_order>
-	
+
 	<package>ComplexDeployment</package>
 	<package>otherPackage</package>
 	<package>somePackage</package>
@@ -26,11 +26,11 @@
 
 
 	<loader for="agent:java" />
-	<!-- <loader for="agent" kind="composite" />  -->
+	<!-- <loader for="agent" kind="composite" /> -->
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
 
 	<support kind="websocket" />
-	
+
 	<support kind="custom">
 		<parameter name="classpath" value="custom" />
 	</support>
@@ -47,6 +47,7 @@
 	<node name="node2">
 		<parameter name="remote" />
 		<parameter name="IP" value="111" />
+		<load_order>agent</load_order>
 		<agent name="node2master" />
 	</node>
 

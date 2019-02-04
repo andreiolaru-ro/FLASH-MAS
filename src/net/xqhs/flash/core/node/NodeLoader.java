@@ -70,7 +70,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		List<Node> nodes = new LinkedList<>();
 		
-		MultiTreeMap nodesTrees = deploymentConfiguration.getSingleTree(CategoryName.NODE.getName());
+		MultiTreeMap nodesTrees = deploymentConfiguration.getSingleTree(CategoryName.NODE.s());
 		for(String nodeName : nodesTrees.getTreeKeys())
 		{
 			int index = 0;
@@ -126,12 +126,12 @@ public class NodeLoader extends Unit implements Loader<Node>
 		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
 		
 		// ============================================================================== get package list
-		List<String> packages = nodeConfiguration.getValues(CategoryName.PACKAGE.getName());
+		List<String> packages = nodeConfiguration.getValues(CategoryName.PACKAGE.s());
 		
 		// ============================================================================== get loaders
 		// loaders are stored as entity -> kind -> loaders
 		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
-		MultiTreeMap loader_configs = nodeConfiguration.getSingleTree(CategoryName.LOADER.getName());
+		MultiTreeMap loader_configs = nodeConfiguration.getSingleTree(CategoryName.LOADER.s());
 		if(loader_configs != null)
 		{
 			if(!loader_configs.getSimpleNames().isEmpty()) // just a warning
@@ -152,7 +152,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				
 				// find the implementation
 				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
-				cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.getName(),
+				cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.s(),
 						checkedPaths);
 				if(cp == null)
 					le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
@@ -169,7 +169,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 						loaders.get(entity).get(kind).add(loader);
 						// configure // TODO manage with portables
-						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.getName(), packages);
+						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.s(), packages);
 						loader.configure(loader_configs.getFirstTree(name), getLogger());
 						li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 					} catch(Exception e)
@@ -193,127 +193,132 @@ public class NodeLoader extends Unit implements Loader<Node>
 		}
 		
 		// ============================================================================== load entities
-		String[] toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.getName())
-				.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR);
-		li("Loading: ", (Object[]) toLoad);
-		for(String catName : toLoad)
+		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
+		if(toLoad == null || toLoad.trim().length() == 0)
+			li("Nothing to load");
+		else
 		{
-			CategoryName cat = CategoryName.byName(catName);
-			if(!nodeConfiguration.containsKey(catName))
+			li("Loading: ", toLoad);
+			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR))
 			{
-				li("No [] entities defined.", catName);
-				continue;
-			}
-			if(nodeConfiguration.isSimple(catName))
-			{
-				le("Deployment data cannot be empty for [].", catName);
-				continue;
-			}
-			if(!nodeConfiguration.isSingleton(catName))
-			{
-				le("Category node for [] must be a singleton value.", catName);
-				continue;
-			}
-			if(!nodeConfiguration.containsKey(catName) || nodeConfiguration.getSingleTree(catName) == null)
-				continue;
-			MultiTreeMap catTree = nodeConfiguration.getSingleTree(catName);
-			if(!catTree.getSimpleNames().isEmpty()) // just a warning
-				lw("Simple keys from [] tree ignored: ", cat, catTree.getSimpleNames());
-			for(String name : catTree.getHierarchicalNames())
-			{
-				List<MultiTreeMap> entities = new LinkedList<>();
-				if(catTree.isSingleton(catName))
-					entities.add(catTree.getSingleTree(name));
-				else
-					entities = catTree.getTrees(name);
-				for(MultiTreeMap entityConfig : entities)
+				CategoryName cat = CategoryName.byName(catName);
+				if(!nodeConfiguration.containsKey(catName))
 				{
-					// try to parse the name / obtain a kind (in order to find an appropriate loader)
-					String kind = null, id = null, cp = entityConfig.get(SimpleLoader.CLASSPATH_KEY);
-					if(name != null && name.contains(NAMESEP))
-					{ // if name is splittable, split it into kind and id
-						kind = name.split(NAMESEP)[0];
-						id = name.split(NAMESEP, 2)[1];
-					}
-					if(kind == null || kind.length() == 0)
+					li("No [] entities defined.", catName);
+					continue;
+				}
+				if(nodeConfiguration.isSimple(catName))
+				{
+					le("Deployment data cannot be empty for [].", catName);
+					continue;
+				}
+				if(!nodeConfiguration.isSingleton(catName))
+				{
+					le("Category node for [] must be a singleton value.", catName);
+					continue;
+				}
+				if(!nodeConfiguration.containsKey(catName) || nodeConfiguration.getSingleTree(catName) == null)
+					continue;
+				MultiTreeMap catTree = nodeConfiguration.getSingleTree(catName);
+				if(!catTree.getSimpleNames().isEmpty()) // just a warning
+					lw("Simple keys from [] tree ignored: ", cat, catTree.getSimpleNames());
+				for(String name : catTree.getHierarchicalNames())
+				{
+					List<MultiTreeMap> entities = new LinkedList<>();
+					if(catTree.isSingleton(catName))
+						entities.add(catTree.getSingleTree(name));
+					else
+						entities = catTree.getTrees(name);
+					for(MultiTreeMap entityConfig : entities)
 					{
-						if(entityConfig.isSimple(DeploymentConfiguration.KIND_ATTRIBUTE_NAME))
-							kind = entityConfig.get(DeploymentConfiguration.KIND_ATTRIBUTE_NAME);
-						else if(cat.hasNameWithParts())
-							kind = entityConfig.get(cat.nameParts()[0]);
-						if(kind == null)
-							kind = name; // was in the implementation not sure is a good idea
-					}
-					if(id == null || id.length() == 0)
-					{
-						if(entityConfig.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
-							id = entityConfig.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-						else if(cat.hasNameWithParts())
-							id = entityConfig.get(cat.nameParts()[1]);
-						if(id == null)
-							id = name;
-					}
-					
-					// find a loader for the enitity
-					List<Loader<?>> loaderList = null;
-					String log_catLoad = null, log_kindLoad = null;
-					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty())
-					{ // if the category in loader list
-						log_catLoad = catName;
-						if(loaders.get(catName).containsKey(kind))
-						{ // get loaders for this kind
-							loaderList = loaders.get(catName).get(kind);
-							log_catLoad = kind;
+						// try to parse the name / obtain a kind (in order to find an appropriate loader)
+						String kind = null, id = null, cp = entityConfig.get(SimpleLoader.CLASSPATH_KEY);
+						if(name != null && name.contains(NAMESEP))
+						{ // if name is splittable, split it into kind and id
+							kind = name.split(NAMESEP)[0];
+							id = name.split(NAMESEP, 2)[1];
 						}
-						else
-						{ // if no loaders for this kind
-							if(loaders.get(catName).containsKey(null))
-							{// get the null kind
-								loaderList = loaders.get(catName).get(null);
-								log_kindLoad = "null";
+						if(kind == null || kind.length() == 0)
+						{
+							if(entityConfig.isSimple(DeploymentConfiguration.KIND_ATTRIBUTE_NAME))
+								kind = entityConfig.get(DeploymentConfiguration.KIND_ATTRIBUTE_NAME);
+							else if(cat.hasNameWithParts())
+								kind = entityConfig.get(cat.nameParts()[0]);
+							if(kind == null)
+								kind = name; // was in the implementation not sure is a good idea
+						}
+						if(id == null || id.length() == 0)
+						{
+							if(entityConfig.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
+								id = entityConfig.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+							else if(cat.hasNameWithParts())
+								id = entityConfig.get(cat.nameParts()[1]);
+							if(id == null)
+								id = name;
+						}
+						
+						// find a loader for the enitity
+						List<Loader<?>> loaderList = null;
+						String log_catLoad = null, log_kindLoad = null;
+						int log_nLoader = 0;
+						if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty())
+						{ // if the category in loader list
+							log_catLoad = catName;
+							if(loaders.get(catName).containsKey(kind))
+							{ // get loaders for this kind
+								loaderList = loaders.get(catName).get(kind);
+								log_catLoad = kind;
 							}
 							else
-							{ // get loaders for the first kind
-								loaderList = loaders.get(catName).values().iterator().next();
-								log_kindLoad = "first(" + loaders.get(catName).keySet().iterator().next() + ")";
+							{ // if no loaders for this kind
+								if(loaders.get(catName).containsKey(null))
+								{// get the null kind
+									loaderList = loaders.get(catName).get(null);
+									log_kindLoad = "null";
+								}
+								else
+								{ // get loaders for the first kind
+									loaderList = loaders.get(catName).values().iterator().next();
+									log_kindLoad = "first(" + loaders.get(catName).keySet().iterator().next() + ")";
+								}
 							}
 						}
-					}
-					// try to load the entity with a loader
-					Entity<?> entity = null;
-					if(loaderList != null && !loaderList.isEmpty())
-						for(Loader<?> loader : loaderList)
-						{ // try loading
-							lf("Trying to load [][] using []th loader for [][]", catName, kind,
-									new Integer(log_nLoader), log_catLoad, log_kindLoad);
-							if(loader.preload(entityConfig))
-								entity = loader.load(entityConfig);
-							if(entity != null)
-								break;
-							log_nLoader += 1;
-						}
-					// if not, try to load the entity with the default loader
-					if(entity == null)
-					{
-						// attempt to obtain classpath information
-						cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, cat.getName(), checkedPaths);
-						if(cp == null)
-							le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
-						else
+						// try to load the entity with a loader
+						Entity<?> entity = null;
+						if(loaderList != null && !loaderList.isEmpty())
+							for(Loader<?> loader : loaderList)
+							{ // try loading
+								lf("Trying to load [][] using []th loader for [][]", catName, kind,
+										new Integer(log_nLoader), log_catLoad, log_kindLoad);
+								if(loader.preload(entityConfig))
+									entity = loader.load(entityConfig);
+								if(entity != null)
+									break;
+								log_nLoader += 1;
+							}
+						// if not, try to load the entity with the default loader
+						if(entity == null)
 						{
-							lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
-									defaultLoader.getClass().getName(), cp);
-							// add the CP -- will be first if no other is provided // TODO
-							entityConfig.addOneValue(SimpleLoader.CLASSPATH_KEY, cp);
+							// attempt to obtain classpath information
+							cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, cat.s(), checkedPaths);
+							if(cp == null)
+								le("Class for [] []/[] can not be found; tried paths ", catName, name, kind,
+										checkedPaths);
+							else
+							{
+								lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
+										defaultLoader.getClass().getName(), cp);
+								// add the CP -- will be first if no other is provided // TODO
+								entityConfig.addOneValue(SimpleLoader.CLASSPATH_KEY, cp);
+							}
+							if(defaultLoader.preload(entityConfig))
+								entity = defaultLoader.load(entityConfig);
 						}
-						if(defaultLoader.preload(entityConfig))
-							entity = defaultLoader.load(entityConfig);
+						if(entity != null)
+							li("Entity [] of type [] loaded.", name, catName);
+						else
+							le("Could not load entity [] of type [].", name, catName);
 					}
-					if(entity != null)
-						li("Entity [] of type [] loaded.", name, catName);
-					else
-						le("Could not load entity [] of type [].", name, catName);
 				}
 			}
 		}

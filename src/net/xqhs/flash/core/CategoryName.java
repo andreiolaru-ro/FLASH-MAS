@@ -81,12 +81,12 @@ public enum CategoryName {
 	/**
 	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
 	 */
-	PACKAGE(new CatPar().hasParent(NODE).isVisibleTo(AGENT)),
+	PACKAGE(new CatPar().isValue().hasParent(NODE).isVisibleTo(AGENT)),
 	/**
 	 * The entities to load and their order (entity names, lower-case, separated by
 	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
 	 */
-	LOAD_ORDER(new CatPar().isUnique().isVisibleTo(NODE).hasParent(NODE, Is.OPTIONAL)),
+	LOAD_ORDER(new CatPar().isValue().isUnique().isVisibleTo(NODE).hasParent(NODE, Is.OPTIONAL)),
 	/**
 	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
 	 * <p>
@@ -100,12 +100,12 @@ public enum CategoryName {
 	 * The XML schema file against which to validate to deployment file (simple key, only first value is relevant).The
 	 * schema element can only be taken from the XML and cannot be given at the command line.
 	 */
-	SCHEMA(new CatPar().isUnique()),
+	SCHEMA(new CatPar().isValue().isUnique()),
 	
 	/**
 	 * The XML deployment file (simple key, only first value is relevant).
 	 */
-	DEPLOYMENT_FILE(new CatPar().isUnique().isVisibleTo(NODE)),
+	DEPLOYMENT_FILE(new CatPar().isValue().isUnique().isVisibleTo(NODE)),
 	
 	;
 	
@@ -163,6 +163,11 @@ public enum CategoryName {
 	private static class CatPar
 	{
 		/**
+		 * Indicates whether an entry in the deployment configuration is not an entity, but only a value.
+		 */
+		boolean			isValue				= false;
+		
+		/**
 		 * Indicates whether the entity can be uniquely identified by its name, if any.
 		 */
 		NameIs			identifiable		= NameIs.NOT_IDENTIFIABLE;
@@ -209,6 +214,17 @@ public enum CategoryName {
 		public CatPar()
 		{
 			// nothing to do
+		}
+		
+		/**
+		 * Indicates the category is not an entity.
+		 * 
+		 * @return the CatPar instance.
+		 */
+		CatPar isValue()
+		{
+			isValue = true;
+			return this;
 		}
 		
 		/**
@@ -338,6 +354,14 @@ public enum CategoryName {
 	}
 	
 	/**
+	 * @return <code>true</code> if category is a value; <code>false</code> if category is an entity.
+	 */
+	public boolean isValue()
+	{
+		return parameters.isValue;
+	}
+	
+	/**
 	 * @return <code>true</code> if the elements in the category are uniquely identifiable by their name, if any;
 	 *         <code>false</code> otherwise.
 	 */
@@ -422,7 +446,7 @@ public enum CategoryName {
 	{
 		return parameters.visibleTo;
 	}
-
+	
 	/**
 	 * Find the {@link CategoryName} identified by the given name.
 	 * 

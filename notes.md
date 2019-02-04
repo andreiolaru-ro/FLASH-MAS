@@ -19,7 +19,8 @@ You should have received a copy of the GNU General Public License along with Fla
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
   * rename TreeParameterSet and ParameterSet
   * manage portables for CLI entries
-
+		
+  * implement getAppropriateTree / addAppropriateTree methods
 
 
 Concept Names
@@ -55,33 +56,21 @@ There is a root category, namely DEPLOYMENT. If no NODE is specified, a default 
 
 The local node is the first node not specifically designated as remote.
 
+Context (partially TODO)
+  * context visibility for entity A:
+    * an entity is visible to its direct child **DONE**
+    * if entity B has entity A as parent, then it is visible to entity B (due to declaration order, cannot declare an entity as visible to another entity which has it as parent
+    * an entity A, marked as visible to an entity B
+      * is visible to any descendant entity B
+      * if there is an (registered) entity C, ancestor of entity B, and descendant of entity A (in the category hierarchy)
+        * A is visible to C and to any entity that is an (actual) ancestor of C
+        * if there is no B descendant to entity A, A is visible to the deepest registered entity C, as defined above
+ 
+
 XML
 ---
 
 Each SettingsName contains information on how to assemble elements from the XML into a name, if necessary. E.g. support kind and id can be assembled into kind:id.
-
-
-
-TODO
-----
-  * check duplicate names
-  * TODO TODO TODO solve XML / CLI loading
-  	* auto-root category could be solved by making portables from deployment (as root category) to node?
-  	* solve code duplication in readXML/CLI arguments
-  	* more tests with auto root category generation (both when in XML and when in CLI), plus portables, plsu not directly root-category-parented categories.
-  * is feature pre-load necessary for anything?
-    * in tATAmI no pre-load returns false (except for Parametric)
-  * protect agents from intrusive / malicious features?
-  
-  * multiple components per type
-    * rename ParameterSet to MultiMap or ListMap, TreeParameterSet to MultiTreeMap
-  
-  * establish if pre-loading an agent is optional and, if it is, make the call from load
-
-**Future**
-  * introduce entities with required name / required kind
-  * should en empty no-attributes agent tag be admissible? In what scenario?
-
 
 
 CLI
@@ -103,9 +92,29 @@ the root level is the local node, which may not be specifically identified. Lack
 								type:				[an unnamed element with the specified type/loader]
 								name				[depending on category, a named element of the default type or an unnamed element with this type]
 														[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
-
 													
-**Future:**
+
+Fusion
+------
+
+Cases where one of the sources contains only a partially specified name are managed by the specific loader or entity that uses that configuration.
+
+TODO
+----
+  * check duplicate names for identifiable entities
+  * protect agents from intrusive / malicious shards?
+  * multiple shards per type
+   
+
+
+Future
+------
+  * introduce entities with required name / required kind
+  * should an empty no-attributes agent tag be admissible? In what scenario?
+  
+  * -i for interactive console which allows adding (and removing) support / agents / other entities
+  * -select to select the local node configuration in the deployment file (e.g. have the same deployment file for multiple nodes and just select different local nodes)
+  
   * introduce tree control: "<categ" goes back to categ and << goes to root (above nodes) //>
   * between a category and its mandatory parent there may also be other categories (use case: agent arrays as entities that can be managed as a whole)
   * fuse trees from XML and CLI in the case of elements with optional parents
@@ -113,18 +122,6 @@ the root level is the local node, which may not be specifically identified. Lack
   * implement special categories such as
     * -all-of:always category par:val+ (copy/fuse the subordinate tree to all children of category)
     * -all-of:missing category par:val+ (insert the values in the subordinate tree in all children of category, but only if no such parameter is already defined).
-
-
-Fusion
-------
-
-Cases where one of the sources contains only a partially specified name are managed by the specific loader or entity that uses that configuration.
-
-
-Future
-------
-  * -i for interactive console which allows adding (and removing) support / agents / other entities
-  * -select to select the local node configuration in the deployment file (e.g. have the same deployment file for multiple nodes and just select different local nodes)
 
 
 
@@ -144,6 +141,7 @@ Deployment configuration contains:
     * other entities
 
   * categories that are simple values will be overwritten, not added to (e.g. for load_order).
+  
 
 Entities
 --------

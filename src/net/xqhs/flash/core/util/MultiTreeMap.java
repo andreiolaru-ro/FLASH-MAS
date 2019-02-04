@@ -464,6 +464,8 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - <code>true</code> if the name should be viewed as a singleton name.
 	 * @return <code>true</code> if the key exists and its status corresponds to the given arguments; <code>false</code>
 	 *         if the key does not exist.
+	 * @throws IllegalArgumentException
+	 *             if the name exists but does not correspond to the specified access.
 	 */
 	protected boolean checkKeyAccess(String name, boolean asSimple, boolean asSingleton)
 	{
@@ -515,7 +517,8 @@ public class MultiTreeMap extends MultiValueMap
 	public String getSingleValue(String name)
 	{
 		checkKeyAccess(name, true, true);
-		return backingMap.get(name).size() == 1 ? (String) backingMap.get(name).get(0) : null;
+		return (backingMap.containsKey(name) && backingMap.get(name).size() == 1) ? (String) backingMap.get(name).get(0)
+				: null;
 	}
 	
 	/**
@@ -733,7 +736,8 @@ public class MultiTreeMap extends MultiValueMap
 				if(shorter)
 					continue;
 				ret += (justtree || shorter ? "" : "\n") + indent
-						+ String.format("%-" + (padLen + 4) + "s", "[" + name + "]:") + backingMap.get(name);
+						+ String.format("%-" + (padLen + 4) + "s", "[" + name + ("]" + (isSingleton(name) ? ":" : ">")))
+						+ backingMap.get(name);
 				justtree = false;
 			}
 			else

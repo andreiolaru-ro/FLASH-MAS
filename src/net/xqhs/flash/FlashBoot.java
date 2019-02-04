@@ -38,7 +38,7 @@ public class FlashBoot
 		// test_args = "src-deployment/examples/echoAgent/simpleDeployment.xml";
 		// test_args = "src-deployment/examples/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
-		test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -shard mobility where:anywhere host:here -agent bane something:something -othercomponent a -node node2 new:val";
+		test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -shard mobility where:anywhere host:here -agent bane something:something -othercomponent a -support custom par:val -node node2 new:val";
 		// test_args = "-support local -support local arg:val -support last host:here -agent bane something:something
 		// -feature a -feature b par:val -feature c -agent bruce -feature a";
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
