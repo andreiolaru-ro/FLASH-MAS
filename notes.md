@@ -56,7 +56,8 @@ There is a root category, namely DEPLOYMENT. If no NODE is specified, a default 
 
 The local node is the first node not specifically designated as remote.
 
-Context (partially TODO)
+Context
+-------
   * context visibility for entity A:
     * an entity is visible to its direct child **DONE**
     * if entity B has entity A as parent, then it is visible to entity B (due to declaration order, cannot declare an entity as visible to another entity which has it as parent
@@ -65,7 +66,7 @@ Context (partially TODO)
       * if there is an (registered) entity C, ancestor of entity B, and descendant of entity A (in the category hierarchy)
         * A is visible to C and to any entity that is an (actual) ancestor of C
         * if there is no B descendant to entity A, A is visible to the deepest registered entity C, as defined above
- 
+  * TODO: further test correct addition of context
 
 XML
 ---
@@ -102,6 +103,8 @@ Cases where one of the sources contains only a partially specified name are mana
 TODO
 ----
   * check duplicate names for identifiable entities
+  * implement visibleTo property in the deployment input, write visibility data into individual nodes
+  * implement identifiable property in the deployment input?
   * protect agents from intrusive / malicious shards?
   * multiple shards per type
    

@@ -388,7 +388,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		integrateName(nodeTree, category, catTree, rootTree, log);
 		
 		// add context of the entity
-		addContext(context, nodeTree);
+		addContext(context, nodeTree, catName, log);
 		
 		for(XMLNode child : childEntities)
 		{
@@ -508,7 +508,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 				}
 				context.push(new CtxtTriple(catName, subCatTree, node));
 				if(newNode)
-					addContext(context, node);
+					addContext(context, node, catName, log);
 			}
 			else
 			{
@@ -621,8 +621,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	}
 	
 	/**
-	 * When an entity in the given category is added at the root level, checks if it is necessary to add an implicit
-	 * entity in {@link #ROOT_CATEGORY} and adds it to the parent node and to the current context.
+	 * Common XML/CLI functionality: When an entity in the given category is added at the root level, checks if it is
+	 * necessary to add an implicit entity in {@link #ROOT_CATEGORY} and adds it to the parent node and to the current
+	 * context.
 	 * <p>
 	 * It will not be added to the entity list as it does not have a name.
 	 * <p>
@@ -689,12 +690,31 @@ public class DeploymentConfiguration extends MultiTreeMap
 	}
 	
 	/**
-	 * Common XML/CLI functionality: integrate the name of an entity (and also the node of the entity) into its tree (as
-	 * a singleton value), according to settings in {@link CategoryName}. Also add the node to the entity list.
+	 * Common XML/CLI functionality: this method does the following:
+	 * <ul>
+	 * <li>if there is no existing name of the entity, attempts to generate a name based on other attributes of the
+	 * entity (see name parts in CategoryName) and integrates the generated name in the entity's tree.
+	 * <li>integrates the tree describing the entity into the tree of its category, under the given or generated name
+	 * (or under the <code>null</code> name, if no name could be created. It is added as a singleton value or not
+	 * depending on the value returned by {@link CategoryName#isUnique()}.
+	 * <li>if the category is identifiable, adds the entity to the global <i>entity list</i>; if the entity has no name,
+	 * a generated id is used.
+	 * <li>the entity is added to the global <i>name list</i>; if the entity has no name, the generated id is used.\
+	 * </ul>
+	 * 
+	 * @param node
+	 *            - the tree describing the entity.
+	 * @param category
+	 *            - the category of the entity.
+	 * @param catTree
+	 *            - the tree describing the category of the entity.
+	 * @param rootTree
+	 *            - the tree describing the entire deployment.
+	 * @param log
+	 *            - the {@link Logger} to use.
 	 * 
 	 * @return the name of the entity that
 	 */
-	@SuppressWarnings("javadoc")
 	protected static String integrateName(MultiTreeMap node, CategoryName category, MultiTreeMap catTree,
 			MultiTreeMap rootTree, Logger log)
 	{
@@ -747,30 +767,62 @@ public class DeploymentConfiguration extends MultiTreeMap
 		return name;
 	}
 	
-	protected static void addContext(Deque<CtxtTriple> exteriorContext, MultiTreeMap nodeTree)
+	/**
+	 * Looks into the entire context of an entity and adds the identifiers of the visible context elements to the
+	 * {@value #CONTEXT_ELEMENT_NAME} entry in the tree.
+	 * 
+	 * @param exteriorContext
+	 *            - the context of the entity, with the deepest (closest) context first, starting with the entity
+	 *            itself.
+	 * @param nodeTree
+	 *            - the tree describing the entity.
+	 * @param categoryName
+	 *            - the category of the entity.
+	 * @param log
+	 *            - the {@link Logger} to use.
+	 */
+	protected static void addContext(Deque<CtxtTriple> exteriorContext, MultiTreeMap nodeTree, String categoryName,
+			Logger log)
 	{
 		if(exteriorContext.isEmpty())
 			return;
 		int idx = -1;
+		List<String> contextSuffix = new ArrayList<>(); // deepest-first visited categories
 		for(CtxtTriple cElement : exteriorContext)
 		{
 			idx++;
-			if(idx == 0)
+			switch(idx)
+			{
+			case 0:
 				// first context element is the entity itself
 				continue;
-			if(idx == 1)
+			case 1:
 				// add the immediate context anyway
 				addContext(cElement, nodeTree);
-			// TODO
-			// if context is visible (for idx >= 2)
-			// add
-			
+				break;
+			default:
+				CategoryName contextCat = CategoryName.byName(cElement.category);
+				CategoryName category = CategoryName.byName(categoryName);
+				boolean visible = (contextCat != null && contextCat.visibilityScope() == CategoryName.DEPLOYMENT)
+						|| (category != null && cElement.category != null
+								&& cElement.category.equals(category.getParent()))
+						|| (contextCat != null && contextCat.visibilityScope() != null
+								&& !contextSuffix.contains(contextCat.visibilityScope().s()));
+				if(visible)
+				{
+					log.lf("Added context []:[] to entity []:[]", cElement.category,
+							cElement.elemTree.getFirstValue(NAME_ATTRIBUTE_NAME), categoryName,
+							nodeTree.getFirstValue(NAME_ATTRIBUTE_NAME));
+					addContext(cElement, nodeTree);
+				}
+			}
+			contextSuffix.add(cElement.category);
 		}
 		
 	}
 	
 	/**
-	 * Adds the context element as context to the node.
+	 * Adds the context element as context to the node, in the {@value #CONTEXT_ELEMENT_NAME} tree entry.
 	 * 
 	 * @param contextElement
 	 *            - the context.
