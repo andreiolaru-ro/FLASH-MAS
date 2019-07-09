@@ -69,9 +69,9 @@ public enum CategoryName {
 	AGENT(new CatPar().isIdentifiable().hasParent(SUPPORT, Is.OPTIONAL)),
 	
 	/**
-	 * Features to be deployed in agents (hierarchical key).
+	 * Shards to be deployed in agents (hierarchical key).
 	 */
-	FEATURE(new CatPar().hasParent(AGENT, Is.MANDATORY)),
+	SHARD(new CatPar().hasParent(AGENT, Is.MANDATORY)),
 	
 	/**
 	 * General configuration settings, used by support infrastructures (hierarchical key).

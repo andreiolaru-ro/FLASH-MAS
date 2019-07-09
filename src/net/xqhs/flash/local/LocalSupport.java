@@ -222,11 +222,11 @@ public class LocalSupport extends DefaultSupportImplementation
 	}
 	
 	@Override
-	public String getRecommendedFeatureImplementation(StandardAgentShard componentName)
+	public String getRecommendedShardImplementation(StandardAgentShard componentName)
 	{
 		if(componentName == StandardAgentShard.MESSAGING_COMPONENT)
 			return SimpleLocalMessaging.class.getName();
-		return super.getRecommendedFeatureImplementation(componentName);
+		return super.getRecommendedShardImplementation(componentName);
 	}
 	
 	@Override

@@ -95,8 +95,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * The name of the XML attribute specifying the type of the entity.
 	 */
 	public static final String				GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
+	
 	/**
-	 * The (possibly implicit) root category which can be auto-generated.
+	 * The (possibly implicit) root category, which can be auto-generated.
 	 */
 	public static final CategoryName		ROOT_CATEGORY					= CategoryName.NODE;
 	/**
@@ -130,20 +131,21 @@ public class DeploymentConfiguration extends MultiTreeMap
 	public static final Map<String, String>	DEFAULTS						= new HashMap<>();
 	
 	/**
-	 * A node in the context tree.
+	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
+	 * tree while parsing CLI arguments.
 	 */
 	static class CtxtTriple
 	{
 		/**
-		 * The name of the category.
+		 * The name of the current category.
 		 */
 		String			category;
 		/**
-		 * The subtree of the category, will contain elements in this category.
+		 * The subtree of the current category, will contain elements in this category.
 		 */
 		MultiTreeMap	catTree;
 		/**
-		 * The subtree of the element, will contain parameters or subordinate categories.
+		 * The subtree of the current element, will contain parameters or subordinate categories.
 		 */
 		MultiTreeMap	elemTree;
 		
@@ -172,6 +174,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 		}
 	}
 	
+	/**
+	 * The default configuration.
+	 */
 	static
 	{
 		DEFAULTS.put(CategoryName.SCHEMA.s(), "src-schema/deployment-schema.xsd");

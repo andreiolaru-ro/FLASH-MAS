@@ -106,7 +106,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 				AgentShardDesignation shardDesignation = AgentShardDesignation.autoFeature(shardName);
 				if(platformLoader != null)
 				{
-					String recommendedClass = platformLoader.getRecommendedFeatureImplementation(shardDesignation);
+					String recommendedClass = platformLoader.getRecommendedShardImplementation(shardDesignation);
 					if(recommendedClass != null)
 						shardClass = recommendedClass;
 				}

@@ -45,19 +45,19 @@ public interface Support extends Entity<Node>
 	public Set<String> getSupportedServices();
 	
 	/**
-	 * Retrieves the name of the class for an agent feature implementation that is recommended by this support
-	 * infrastructure, for the specified feature type, if any. If no such recommendation exists, <code>null</code> will
-	 * be returned.
+	 * Retrieves the name of the class for an agent shard implementation that is recommended by this support
+	 * infrastructure, for the specified shard type, if any. If no such recommendation exists, <code>null</code> will be
+	 * returned.
 	 * <p>
-	 * This is especially appropriate for features that depend strongly on the platform, such as messaging and mobility.
+	 * This is especially appropriate for shards that depend strongly on the platform, such as messaging and mobility.
 	 * Using this method, agents can be easily implemented by adding the recommended components of the platform.
 	 * 
-	 * @param featureType
-	 *            - the type/name of the feature to be recommended.
+	 * @param shardType
+	 *            - the type/name of the shard to be recommended.
 	 * @return the name of the class containing the recommended implementation, or <code>null</code> if no
 	 *         recommendation is made.
 	 */
-	public String getRecommendedFeatureImplementation(StandardAgentShard featureType);
+	public String getRecommendedShardImplementation(StandardAgentShard shardType);
 	
 	/**
 	 * Enrolls the given agent in the support infrastructure, making the supported services available to the agent.

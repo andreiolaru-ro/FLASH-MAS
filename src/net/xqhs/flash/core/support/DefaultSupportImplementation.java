@@ -109,7 +109,7 @@ public class DefaultSupportImplementation extends Unit implements Support
 	 * The loader recommends no particular implementation for any component.
 	 */
 	@Override
-	public String getRecommendedFeatureImplementation(StandardAgentShard componentName)
+	public String getRecommendedShardImplementation(StandardAgentShard componentName)
 	{
 		return null;
 	}
