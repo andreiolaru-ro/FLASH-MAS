@@ -431,7 +431,7 @@ public enum CategoryName {
 	}
 	
 	/**
-	 * @return the hierarchical path of the category, from the current category to the farthest ancestor.
+	 * @return the hierarchical path of the category, from the parent to the farthest ancestor.
 	 */
 	public String[] getAncestors()
 	{
