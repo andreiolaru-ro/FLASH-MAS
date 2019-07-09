@@ -11,13 +11,16 @@ You should have received a copy of the GNU General Public License along with Fla
 --------------------------------------------- -->
 
 
-"Easy to beginners, powerful to experts"
+"Easy for beginners, powerful to experts"
 
 **Current target:**
+  * sort out deployment configuration in terms of how portability and visibility are implemented
+    * are portability and visibility different?
+    * who adds contexts and when (after all configuration is loaded or both after XML load and CLI parse?) ?
+    * how are contexts correctly fused, especially when porting items?
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
-  * rename TreeParameterSet and ParameterSet
   * manage portables for CLI entries
 		
   * implement getAppropriateTree / addAppropriateTree methods
@@ -26,22 +29,23 @@ You should have received a copy of the GNU General Public License along with Fla
 Concept Names
 =============
 
+  * (tATAmI-2 name -> FLASH-MAS name)
   * simulation -> deployment
   * visualization -> monitoring / control
   * component -> feature -> shard
-  * platform -> support
+  * platform -> support infrastructure + pylon
   
-  * ParameterSet -> ListMap
-  * TreeParameterSet -> TreesMap
+  * ParameterSet -> MultiValueMap
+  * TreeParameterSet -> MultiTreeMap
 
-  * Support pilons (or pilons, fo short?)
+  * Support pylons (or pylons, for short)
 
 Services / features
 ===================
 
-  * each feature uses one service
-  * one support may offer multiple services
-  * support may recommend feature implementations
+  * each shard uses one service (pylon)
+  * one support infrastructure (hence also one pylon) may offer multiple services
+  * pylons may recommend shard implementations
 
 
 
@@ -52,20 +56,25 @@ Assembling parts to form a name would be done *only* for entities for which this
 
 Unnamed entities are allowed, but cannot be referenced (such as for <in-context-of>).
 
-There is a root category, namely DEPLOYMENT. If no NODE is specified, a default one will be created for entities that need to be inside a node (e.g. entities, agents, etc). This implicit node will be the first node among the nodes with no name. If a node with no name has already been introduced, it will be the same one.
+There is a root category, namely DEPLOYMENT. If no NODE is specified, a default one will be created for entities that need to be inside a node (e.g. agents, etc). This implicit node will be the first node among the nodes with no name. If a node with no name has already been introduced, it will be the same one.
 
 The local node is the first node not specifically designated as remote.
 
 Context
 -------
-  * context visibility for entity A:
-    * an entity is visible to its direct child **DONE**
-    * if entity B has entity A as parent, then it is visible to entity B (due to declaration order, cannot declare an entity as visible to another entity which has it as parent
+
+**Visibility**
+  * If an entity A is *visible* to an entity B it means that the entity B runs 'in the context of' entity A and entity A is present in the <in-context-of> entry of entity B.
+  * context *visibility* for entity A:
+    * an entity is visible to its direct child
     * an entity A, marked as visible to an entity B
       * is visible to any descendant entity B
-      * if there is an (registered) entity C, ancestor of entity B, and descendant of entity A (in the category hierarchy)
-        * A is visible to C and to any entity that is an (actual) ancestor of C
-        * if there is no B descendant to entity A, A is visible to the deepest registered entity C, as defined above
+      
+      *Future*
+      * if categories A, B and C are in the category hierarchy, and their order is A -> C -> B, then A is visible to C
+ 
+  * 
+  
   * TODO: further test correct addition of context
 
 XML
@@ -173,10 +182,6 @@ The same policy goes for Support Infrastructures (first is default, if none spec
 The Node is always loaded by the NodeLoader.
 
 
-TODO
-----
-   * create an alias for CategoryName.getName of only one character (e.g. s() )
-
 Future
 ------
   * maybe: multiple default location for classes. E.g. for agent loaders possible classpath can be:
@@ -203,16 +208,6 @@ General
   * TreeObjectSet<T> would be nice -- simple keys can only be assigned to T values
     * TreeParameterSet would extend TreeObjectSet<String> 
   * implement something like addFirst / addTreeFirst ?
-
-
-Other ideas
-===========
-
-lumps, lumpy agent, LUMPS as acronym
-
-
-
-
 
 
 
