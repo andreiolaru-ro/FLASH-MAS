@@ -60,22 +60,42 @@ There is a root category, namely DEPLOYMENT. If no NODE is specified, a default 
 
 The local node is the first node not specifically designated as remote.
 
+**Future**
+  * translate the CategoryName enum into a set of rules (could be a MultiTreeMap?) that is further adjustable in the configuration.
+
 Context
 -------
 
 **Visibility**
-  * If an entity A is *visible* to an entity B it means that the entity B runs 'in the context of' entity A and entity A is present in the <in-context-of> entry of entity B.
-  * context *visibility* for entity A:
-    * an entity is visible to its direct child
-    * an entity A, marked as visible to an entity B
-      * is visible to any descendant entity B
-      
-      *Future*
-      * if categories A, B and C are in the category hierarchy, and their order is A -> C -> B, then A is visible to C
+  * Can't implement in visibility in the enum because lower level entities are not yet defined;
+  * Therefore, visibility can be implemented
+    * in the deployment, through an attribute (TODO)
+    * ad-hoc by the implementation of each loader / each entity that loads other entities
  
-  * 
+**Porting**
+  * an entity B can be ported from an entity A to an entity C (which is also its declared parent in hierarchy)
+  * the entity B must have been declared (in the deployment) as a descendant of entity A
+  * a portable entity will be copied to all elements from the element where it has been declared down to its parent entity
+  * instances will be created only for the copy inside the parent (entity C)
   
-  * TODO: further test correct addition of context
+**Parents**
+  * parents specify where an entity can be declared (inside which other entity)
+  * for an entity (of type) A with parent P:
+    * the parent can be optional
+      * the optional indication for parents is used to structure the entities in two ways:
+        * determine whether an entity is in the correct context even if some entity types are missing from the context (TODO: add example)
+        * establish some hierarchy of entities that helps navigation when parsing CLI arguments
+      * if the parent can be auto-added, and a sibling instance P exists, entity A will be added automatically to instance P (the one with the highest priority)
+    * the parent can be mandatory
+      * if the parent is mandatory, entity A must be declared inside an entity of type P
+      * if the parent can be auto-generated (is a property of the parent), the deployment configuration will attempt to generate a parent P (this may lead to further generation of auto-generated parents)
+      * if the parent must be auto-added, it is; if a sibling instance does not exist, it is an error and entity A is not added to the deployment
+    
+**TODO: test cases**
+  * no deployment file (or file not found)
+  * no schema file
+  * invalid deployment file
+
 
 XML
 ---
@@ -111,9 +131,9 @@ Cases where one of the sources contains only a partially specified name are mana
 
 TODO
 ----
-  * check duplicate names for identifiable entities
-  * implement visibleTo property in the deployment input, write visibility data into individual nodes
-  * implement identifiable property in the deployment input?
+  * check duplicate names for identifiable entities / check identifiables
+  * check if in the end unique entities are unique
+  * implement all properties also as attributes in the configuration
   * protect agents from intrusive / malicious shards?
   * multiple shards per type
    
