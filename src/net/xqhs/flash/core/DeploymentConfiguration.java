@@ -285,28 +285,32 @@ public class DeploymentConfiguration extends MultiTreeMap
 		
 		// ====================================== port portables
 		
-		// MultiTreeMap allNodes = this.getSingleTree(CategoryName.NODE.getName());
-		// for(String catName : this.getKeys())
-		// {
-		// if(CategoryName.byName(catName) == null || !CategoryName.byName(catName).isPortable())
-		// continue;
-		// CategoryName cat = CategoryName.byName(catName);
-		// for(String name : allNodes.getHierarchicalNames())
-		// for(MultiTreeMap node : allNodes.getTrees(name))
-		// if(!node.getKeys().contains(catName) || !cat.isUnique())
-		// { // if node has no entry for the category or if the category is not unique
-		// if(this.isSimple(catName))
-		// if(this.isSingleton(catName))
-		// node.addSingleValue(catName, this.getSingleValue(catName));
-		// else
-		// node.addAll(catName, this.getValues(catName));
-		// else if(this.isSingleton(catName))
-		// node.addSingleTree(catName, this.getSingleTree(catName));
-		// else
-		// node.addTrees(catName, this.getTrees(catName));
-		// }
-		// }
-		// log.lf("final config:", this);
+		MultiTreeMap allNodes = this.getSingleTree(CategoryName.NODE.s());
+		for(String catName : this.getKeys())
+		{
+			if(CategoryName.byName(catName) == null || CategoryName.byName(catName).visibilityScope() == null
+					|| !CategoryName.byName(catName).visibilityScope().getAncestorsList()
+							.contains(CategoryName.NODE.s()))
+				// cannot compute visibility or category not visible to a descendant of node
+				continue;
+			CategoryName cat = CategoryName.byName(catName);
+			for(String name : allNodes.getHierarchicalNames())
+				// for all nodes
+				for(MultiTreeMap node : allNodes.getTrees(name))
+					if(!node.getKeys().contains(catName) || !cat.isUnique())
+					{ // if node has no entry for the category or if the category is not unique
+						if(this.isSimple(catName))
+							if(this.isSingleton(catName))
+								node.addSingleValue(catName, this.getSingleValue(catName));
+							else
+								node.addAll(catName, this.getValues(catName));
+						else if(this.isSingleton(catName))
+							node.addSingleTree(catName, this.getSingleTree(catName));
+						else
+							node.addTrees(catName, this.getTrees(catName));
+					}
+		}
+		log.lf("final config:", this);
 		
 		log.doExit();
 		lock();

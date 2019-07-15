@@ -71,6 +71,9 @@ public class NodeLoader extends Unit implements Loader<Node>
 		List<Node> nodes = new LinkedList<>();
 		
 		MultiTreeMap nodesTrees = deploymentConfiguration.getSingleTree(CategoryName.NODE.s());
+		if(nodesTrees == null)
+			// in case of no configuration, create an empty node
+			nodesTrees = new MultiTreeMap().addOneTree(null, new MultiTreeMap());
 		for(String nodeName : nodesTrees.getTreeKeys())
 		{
 			int index = 0;
