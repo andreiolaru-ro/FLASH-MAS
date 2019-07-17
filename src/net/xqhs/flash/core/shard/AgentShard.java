@@ -13,6 +13,7 @@ package net.xqhs.flash.core.shard;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.composite.AgentEvent;
 
 /**
  * A shard (also called a component) is characterized by its functionality, identified by means of its designation -- an
@@ -26,4 +27,6 @@ public interface AgentShard extends Entity<Agent>
 	 * @return the designation of the shard (instance of {@link AgentShardDesignation}).
 	 */
 	AgentShardDesignation getShardDesignation();
+	
+	void signalAgentEvent(AgentEvent event);
 }

@@ -26,6 +26,9 @@ You should have received a copy of the GNU General Public License along with Fla
   * implement getAppropriateTree / addAppropriateTree methods
 
 
+**General TODOs**
+  * use exceptions more than return values
+
 Concept Names
 =============
 
@@ -164,6 +167,10 @@ Entities
   * Entity context
     * is all entities containing it, although the one specified in the class/interface is still special.
     * Future: be able to specify the visibility depth of each entity as context for nested entities
+
+  * access
+  	* anyone with a reference to an entity is able to control it (start / stop / add/remove context)
+  	* an entity can expose itself to another entity as a context; the instance given as context may (and generally should, to avoid casting to a more powerful interface) be different than the actual entity, and it should relay calls to the actual entity.
 
 
 Loaders
