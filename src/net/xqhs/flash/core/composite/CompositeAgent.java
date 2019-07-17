@@ -27,7 +27,7 @@ import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.AgentEvent.AgentSequenceType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardLink;
+import net.xqhs.flash.core.shard.ShardContext;
 import net.xqhs.flash.core.support.Support;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -49,8 +49,24 @@ import net.xqhs.util.logging.UnitComponent;
  * @author Andrei Olaru
  * 
  */
-public class CompositeAgent extends ShardLink implements Serializable, Agent
+public class CompositeAgent implements Serializable, Agent
 {
+	static class CompositeAgentAsContext implements ShardContext
+	{
+		CompositeAgent agent = null;
+		
+		protected CompositeAgentAsContext(CompositeAgent agent)
+		{
+			this.agent = agent;
+		}
+		
+		@Override
+		public void postAgentEvent(AgentEvent event)
+		{
+			agent.postAgentEvent(event);
+		}
+	}
+	
 	/**
 	 * Values indicating the current state of the agent, especially with respect to processing events.
 	 * <p>
@@ -135,12 +151,12 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 					case CONSTRUCTIVE:
 					case UNORDERED:
 						for(AgentShardCore feature : featureOrder)
-							signalEventToShard(feature, event);
+							feature.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
 						for(ListIterator<AgentShardCore> it = featureOrder.listIterator(featureOrder.size()); it
 								.hasPrevious();)
-							signalEventToShard(it.previous(), event);
+							it.previous().signalAgentEvent(event);
 						break;
 					default:
 						throw new IllegalStateException(
@@ -169,6 +185,9 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 	 * This can be used by support implementation-specific features to contact the support implementation.
 	 */
 	protected Object										supportLink					= null;
+	
+	protected Context<Agent>								asContext					= new CompositeAgentAsContext(
+			this);
 	
 	/**
 	 * The {@link Map} that links feature designations (functionalities) to feature instances.
@@ -276,7 +295,7 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 	 * Context can be added to an agent only when it is not running.
 	 */
 	@Override
-	public boolean addContext(Support link)
+	public boolean addContext(Context<Support> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;
@@ -285,23 +304,17 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 	}
 	
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
+	public boolean addGeneralContext(Context<Entity<?>> context)
 	{
-		try
-		{
-			return addContext((Support) context);
-		} catch(ClassCastException e)
-		{
-			log("Added context is of incorrect type");
-			return false;
-		}
+		log("No general context supported.");
+		return false;
 	}
 	
 	/**
 	 * Context can be removed from an agent only when it is not running.
 	 */
 	@Override
-	public boolean removeContext(Support link)
+	public boolean removeContext(Context<Support> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;
@@ -309,9 +322,16 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Context<Agent> asContext()
+	{
+		return asContext;
+	}
+	
 	/**
-	 * The method should be called by an agent feature (relayed through {@link AgentShardCore}) to disseminate a
-	 * an {@link AgentEvent} to the other features.
+	 * The method should be called by an agent feature (relayed through {@link AgentShardCore}) to disseminate a an
+	 * {@link AgentEvent} to the other features.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
 	 * case of abnormal termination, the event will be processed eventually. Otherwise, it returns <code>false</code>,
@@ -522,7 +542,7 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 					"Cannot add multiple features for designation [" + feature.getShardDesignation() + "]");
 		features.put(feature.getShardDesignation(), feature);
 		featureOrder.add(feature);
-		feature.addContext(this);
+		feature.addContext(this.asContext());
 		return this;
 	}
 	
@@ -577,12 +597,6 @@ public class CompositeAgent extends ShardLink implements Serializable, Agent
 	protected Object getSupportImplementation()
 	{
 		return supportLink;
-	}
-	
-	@Override
-	protected void signalEventToShard(AgentShardCore shard, AgentEvent event)
-	{
-		super.signalEventToShard(shard, event);
 	}
 	
 	/**

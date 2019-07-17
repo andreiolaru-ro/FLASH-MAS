@@ -75,7 +75,7 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean addContext(P context);
+	public boolean addContext(Context<P> context);
 	
 	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
@@ -97,7 +97,7 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean addGeneralContext(Entity<?> context);
+	public boolean addGeneralContext(Context<Entity<?>> context);
 	
 	/**
 	 * Removes the link from a subordinate entity to an entity containing it in some way.
@@ -106,5 +106,12 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean removeContext(P context);
+	public boolean removeContext(Context<P> context);
+	
+	public <C extends Entity<P>> Context<C> asContext();
+	
+	interface Context<C extends Entity<?>>
+	{
+		// TODO> is it ok to be void?
+	}
 }
