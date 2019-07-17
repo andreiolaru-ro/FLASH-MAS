@@ -17,12 +17,14 @@ import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.core.composite.AgentEvent;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Debug.DebugItem;
-import tatami.core.agent.AgentComponent;
 
 /**
  * The messaging component should handle all communication between the agent and other agents. Note that the existence
@@ -74,7 +76,7 @@ import tatami.core.agent.AgentComponent;
  * 
  * @author Andrei Olaru
  */
-public abstract class MessagingComponent extends AgentComponent
+public abstract class MessagingComponent extends AgentShardCore
 {
 	/**
 	 * Debugging settings for messaging components.
@@ -149,7 +151,7 @@ public abstract class MessagingComponent extends AgentComponent
 	 */
 	public MessagingComponent()
 	{
-		super(AgentComponentName.MESSAGING_COMPONENT);
+		AgentShardDesignation.standardFeature(StandardAgentShard.MESSAGING);
 		
 		registerHandler(AgentEventType.AGENT_MESSAGE, new AgentEventHandler() {
 			@Override
