@@ -18,7 +18,7 @@ import net.xqhs.flash.core.util.MultiValueMap;
 /**
  * The class models an agent event, characterized by its type and, optionally, a set of parameters that have names.
  * <p>
- * The class is backed by a {@link MultiValueMap}.
+ * The class extends {@link MultiValueMap}, so the same methods can be used to manage parameters.
  * <p>
  * There are several predefined types of agent events, as seen in {@link AgentEventType}.
  * 
@@ -60,6 +60,7 @@ public class AgentEvent extends MultiValueMap
 		
 		/**
 		 * Event occurs when the agent has received a message, an input, or another type of (generally external) event.
+		 * The other parameters of the agent event are the actual parameters of the wave.
 		 */
 		AGENT_WAVE(AgentSequenceType.UNORDERED),
 		
