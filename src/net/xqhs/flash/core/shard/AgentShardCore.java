@@ -16,7 +16,7 @@ import java.io.Serializable;
 import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.MultiTreeMap;

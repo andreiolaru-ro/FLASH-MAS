@@ -13,7 +13,7 @@ package net.xqhs.flash.core.shard;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
 
 /**
  * A shard (also called a component) is characterized by its functionality, identified by means of its designation -- an

@@ -16,10 +16,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.CompositeAgent;
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Debug.DebugItem;
 import tatami.core.agent.AgentComponent;
