@@ -18,7 +18,7 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.node.AgentManager;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.DefaultSupportImplementation;

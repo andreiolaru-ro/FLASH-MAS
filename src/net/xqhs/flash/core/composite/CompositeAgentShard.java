@@ -14,11 +14,12 @@ package net.xqhs.flash.core.composite;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.VisualizableFeature;
 import net.xqhs.flash.core.support.MessagingComponent;
 import net.xqhs.flash.core.support.MessagingFeature;

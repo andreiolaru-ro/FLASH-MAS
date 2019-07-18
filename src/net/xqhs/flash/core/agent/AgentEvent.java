@@ -9,15 +9,18 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.composite;
+package net.xqhs.flash.core.agent;
 
+import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
- * The class stores an agent event, characterized by its type and, optionally, a set of parameters that have names.
+ * The class models an agent event, characterized by its type and, optionally, a set of parameters that have names.
  * <p>
- * The class is baked by a {@link MultiValueMap}.
+ * The class is backed by a {@link MultiValueMap}.
+ * <p>
+ * There are several predefined types of agent events, as seen in {@link AgentEventType}.
  * 
  * @author andreiolaru
  */
@@ -27,7 +30,7 @@ public class AgentEvent extends MultiValueMap
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = 379942317804425591L;
-
+	
 	/**
 	 * The enumeration specified the full set of agent-internal events that can occur.
 	 * 
@@ -56,15 +59,9 @@ public class AgentEvent extends MultiValueMap
 		AFTER_MOVE(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
-		 * Event occurs when the agent has received a message. Events of this type will only get posted when no
-		 * messaging component exists; otherwise, message routing will be handled by the messaging component.
+		 * Event occurs when the agent has received a message, an input, or another type of (generally external) event.
 		 */
-		AGENT_MESSAGE(AgentSequenceType.UNORDERED),
-		
-		/**
-		 * Event occurs when an active input (see AgentGui) is activated by the user and the agent must react to it.
-		 */
-		GUI_INPUT(AgentSequenceType.UNORDERED),
+		AGENT_WAVE(AgentSequenceType.UNORDERED),
 		
 		/**
 		 * Event occurs when the start of the simulation is requested by the user.
@@ -81,7 +78,7 @@ public class AgentEvent extends MultiValueMap
 		/**
 		 * The sequence type that is characteristic to the event.
 		 */
-		protected AgentSequenceType	sequenceType;
+		protected AgentSequenceType sequenceType;
 		
 		/**
 		 * The constructor assigns a sequence type to the event type.
