@@ -95,9 +95,9 @@ public class PingBackTestComponent extends AgentComponent
 			public void handleEvent(AgentEvent event)
 			{
 				getAgentLog().info("Message received: ", event);
-				String[] content = event.get(MessagingComponent.CONTENT_PARAMETER).split(" ");
+				String[] content = event.get(MessagingShard.CONTENT_PARAMETER).split(" ");
 				String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
-				String sender = event.get(MessagingComponent.SOURCE_PARAMETER);
+				String sender = event.get(MessagingShard.SOURCE_PARAMETER);
 				sendMessage(replyContent, getComponentEndpoint(COMPONENT_ADDRESS), sender);
 			}
 		}, COMPONENT_ADDRESS);

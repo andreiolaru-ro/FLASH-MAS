@@ -13,7 +13,7 @@ package net.xqhs.flash.core.shard;
 
 import java.io.Serializable;
 
-import net.xqhs.flash.core.support.MessagingComponent;
+import net.xqhs.flash.core.support.MessagingShard;
 
 /**
  * Implementation for feature designations. A feature may either have a standard designation, or a custom designation.

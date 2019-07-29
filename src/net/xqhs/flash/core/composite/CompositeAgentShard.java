@@ -14,14 +14,14 @@ package net.xqhs.flash.core.composite;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.xqhs.flash.core.shard.AgentShardCore;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.VisualizableFeature;
-import net.xqhs.flash.core.support.MessagingComponent;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.MessagingFeature;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.DumbLogger;
@@ -255,7 +255,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 *            - the event which occurred.
 	 */
 	@Override
-	protected void signalAgentEvent(AgentEvent event)
+	public void signalAgentEvent(AgentEvent event)
 	{
 		if(eventHandlers.containsKey(event.getType()))
 			eventHandlers.get(event.getType()).handleEvent(event);
@@ -411,7 +411,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
 			String... targetPathElements)
 	{
-		MessagingFeature msgr = (MessagingComponent) getAgent()
+		MessagingFeature msgr = (MessagingShard) getAgent()
 				.getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation());
 		if(msgr != null)
 			return msgr.sendMessage(msgr.makePath(targetAgent, targetPathElements), sourceEndpoint, content);

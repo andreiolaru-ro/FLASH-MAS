@@ -15,9 +15,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
@@ -30,7 +29,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class DefaultSupportImplementation extends Unit implements Support
+public class DefaultPylonImplementation extends Unit implements Pylon
 {
 	/**
 	 * The default name for instances of this implementation.
@@ -86,22 +85,19 @@ public class DefaultSupportImplementation extends Unit implements Support
 	}
 	
 	@Override
-	public boolean addContext(Node context)
-	{
-		// context has no effect on the default implementation
+	public boolean addContext(Context<Node> context) {
+		// TODO Auto-generated method stub
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
-	{
-		// context has no effect on the default implementation
-		return true;
+	public boolean addGeneralContext(Context<Entity<?>> context) {
+		// TODO Auto-generated method stub
+		return false;
 	}
-	
+
 	@Override
-	public boolean removeContext(Node context)
-	{
+	public boolean removeContext(Context<Node> context) {
 		throw new UnsupportedOperationException("Cannot remove context from a node");
 	}
 	
@@ -109,26 +105,42 @@ public class DefaultSupportImplementation extends Unit implements Support
 	 * The loader recommends no particular implementation for any component.
 	 */
 	@Override
-	public String getRecommendedShardImplementation(StandardAgentShard componentName)
+	public String getRecommendedShardImplementation(AgentShardDesignation componentName)
 	{
 		return null;
-	}
-	
-	/**
-	 * The default implementation informs the agent that it has been added to the context of this support
-	 * infrastructure.
-	 */
-	@Override
-	public boolean registerAgent(Agent agent)
-	{
-		agent.addContext(this);
-		lf("[] registered agent", name, agent);
-		return true;
 	}
 	
 	@Override
 	public Set<String> getSupportedServices()
 	{
 		return new HashSet<>();
+	}
+
+	@Override
+	public <C extends Entity<Node>> Context<C> asContext() {
+		return null;
+	}
+
+	/**
+	 * The implementation considers agent addresses are the same with their names.
+	 */
+	public String getAgentAddress(String agentName) {
+		return agentName;
+	}
+
+	/**
+	 * The implementation considers agent addresses are the same with their names.
+	 */
+	public String getAgentNameFromAddress(String agentAddress) {
+		return agentAddress;
+	}
+
+	/**
+	 * This implementation presumes that the address / name of the agent does not
+	 * contain any occurrence of {@link MessagingShard#ADDRESS_SEPARATOR} (currently
+	 * {@value MessagingShard#ADDRESS_SEPARATOR}).
+	 */
+	public String extractAgentAddress(String endpoint) {
+		return endpoint.substring(0, endpoint.indexOf(MessagingShard.ADDRESS_SEPARATOR));
 	}
 }

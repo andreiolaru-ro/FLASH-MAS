@@ -11,20 +11,19 @@
  ******************************************************************************/
 package net.xqhs.flash.local;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.node.AgentManager;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
-import net.xqhs.flash.core.support.DefaultSupportImplementation;
-import net.xqhs.flash.core.support.MessagingComponent;
-import net.xqhs.flash.core.support.NameBasedMessagingComponent;
-import net.xqhs.flash.core.support.Support.StandardSupportType;
+import net.xqhs.flash.core.shard.ShardContext;
+import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.MessagingShard;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -32,81 +31,74 @@ import net.xqhs.flash.core.support.Support.StandardSupportType;
  * 
  * @author Andrei Olaru
  */
-public class LocalSupport extends DefaultSupportImplementation
+public class LocalSupport extends DefaultPylonImplementation
 {
+	public static final String LOCAL_SUPPORT_NAME = "Local pylon";
+
+	protected HashMap<String, MessageReceiver> messageReceivers = new HashMap<String, MessageReceiver>();
+
+	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
+
+		@Override
+		public boolean send(String source, String destination, String content) {
+			String agentName = getAgentNameFromAddress(getAgentAddress(destination));
+			if (!messageReceivers.containsKey(agentName))
+				return false;
+			messageReceivers.get(agentName).receive(source, destination, content);
+			return true;
+		}
+
+		@Override
+		public boolean register(String agentName, MessageReceiver receiver) {
+			messageReceivers.put(agentName, receiver);
+			return true;
+		}
+	};
+
 	/**
-	 * Simple implementation of {@link MessagingComponent}, that uses agents' names as their addresses.
+	 * Simple implementation of {@link MessagingShard}, that uses agents' names as their addresses.
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static class SimpleLocalMessaging extends NameBasedMessagingComponent
+	public static class SimpleLocalMessaging extends MessagingShard
 	{
 		/**
 		 * The serial UID.
 		 */
 		private static final long serialVersionUID = 1L;
+		private MessagingPylonProxy pylon;
+		private ShardContext agent;
+		public MessageReceiver inbox;
 		
-		@Override
-		public boolean sendMessage(String target, String source, String content)
-		{
-			if(!(getSupportImplementation() instanceof LocalSupport))
-				throw new IllegalStateException("Platform Link is not of expected type");
-			LocalSupport p = ((LocalSupport) getSupportImplementation());
-			String[] targetElements = target.split(ADDRESS_SEPARATOR, 2);
-			SimpleLocalMessaging targetComponent = p.registry.get(targetElements[0]);
-			if(targetComponent != null)
-			{
-				if(p.useThread)
-				{
-					LinkedBlockingQueue<Entry<SimpleLocalMessaging, Vector<String>>> q = p.messageQueue;
-					try
-					{
-						synchronized(q)
-						{
-							Vector<String> v = new Vector<String>(3);
-							v.add(source);
-							v.add(target);
-							v.add(content);
-							q.put(new AbstractMap.SimpleEntry<LocalSupport.SimpleLocalMessaging, Vector<String>>(
-									targetComponent, v));
-							q.notify();
-						}
-					} catch(InterruptedException e)
-					{
-						e.printStackTrace();
-						return false;
-					}
+		public SimpleLocalMessaging(ShardContext agent) {
+			super();
+			this.agent = agent;
+			inbox = new MessageReceiver() {
+				@Override
+				public boolean receive(String source, String destination, String content) {
+					receiveMessage(source, destination, content);
+					return true;
 				}
-				else
-					targetComponent.receiveMessage(source, target, content);
-			}
-			else
-				try
-				{
-					getAgentLog().error("No messaging component registered for name [].", targetElements[0]);
-				} catch(NullPointerException e)
-				{
-					// nothing
-				}
+			};
+		}
+
+		public boolean register() {
+			if (!(agent.getPylon() instanceof MessagingPylonProxy))
+				throw new IllegalStateException("Pylon Context is not of expected type.");
+			pylon = (MessagingPylonProxy) agent.getPylon();
+			pylon.register(agent.getAgentName(), inbox);
 			return true;
 		}
-		
+
 		@Override
-		protected void atAgentStart(AgentEvent event)
+		public boolean sendMessage(String source, String destination, String content)
 		{
-			super.atAgentStart(event);
-			if(!(getSupportImplementation() instanceof LocalSupport))
+			if (!(getAgent().getPylon() instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Platform Link is not of expected type");
-			try
-			{
-				getAgentLog().dbg(MessagingDebug.DEBUG_MESSAGING, "Registered with platform.");
-			} catch(NullPointerException e)
-			{
-				// nothing
-			}
-			((LocalSupport) getSupportImplementation()).registry.put(getName(), this);
+			pylon.send(source, destination, content);
+			return true;
 		}
-		
+
 		@Override
 		protected void receiveMessage(String source, String destination, String content)
 		{
@@ -149,7 +141,7 @@ public class LocalSupport extends DefaultSupportImplementation
 	}
 	
 	/**
-	 * The registry of agents that can receive messages, specifying the {@link MessagingComponent} receiving the
+	 * The registry of agents that can receive messages, specifying the {@link MessagingShard} receiving the
 	 * message.
 	 *
 	 */
@@ -216,15 +208,8 @@ public class LocalSupport extends DefaultSupportImplementation
 	}
 	
 	@Override
-	public boolean loadAgent(String containerName, AgentManager agentManager)
-	{
-		return agentManager.addContext(this) && super.loadAgent(containerName, agentManager);
-	}
-	
-	@Override
-	public String getRecommendedShardImplementation(StandardAgentShard componentName)
-	{
-		if(componentName == StandardAgentShard.MESSAGING_COMPONENT)
+	public String getRecommendedShardImplementation(AgentShardDesignation componentName) {
+		if (componentName == AgentShardDesignation.standardFeature(StandardAgentShard.MESSAGING))
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(componentName);
 	}
@@ -232,6 +217,6 @@ public class LocalSupport extends DefaultSupportImplementation
 	@Override
 	public String getName()
 	{
-		return StandardSupportType.LOCAL.toString();
+		return LOCAL_SUPPORT_NAME;
 	}
 }
