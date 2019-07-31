@@ -215,7 +215,8 @@ public class DeploymentConfiguration extends MultiTreeMap
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt().setUnitName("settings load");
 		
-		MultiTreeMap deployment = this.addSingleTreeGet(CategoryName.DEPLOYMENT.s(), new MultiTreeMap());
+		MultiTreeMap deploymentCat = this.addSingleTreeGet(CategoryName.DEPLOYMENT.s(), new MultiTreeMap());
+		MultiTreeMap deployment = deploymentCat.addSingleTreeGet(null, new MultiTreeMap());
 		
 		// ====================================== get default settings
 		for(String setting : DEFAULTS.keySet())
@@ -261,7 +262,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		if(XMLtree != null)
 		{
 			context = new LinkedList<>();
-			readXML(XMLtree.getRoot(), deployment, context, this, log);
+			readXML(XMLtree.getRoot(), deploymentCat, context, this, log);
 			log.lf("after XML tree parse:", this);
 			log.lf(">>>>>>>>");
 		}
@@ -272,42 +273,75 @@ public class DeploymentConfiguration extends MultiTreeMap
 		Iterator<String> it = programArguments.iterator();
 		if(scenarioFirst) // already processed
 			it.next();
-		readCLIArgs(it, new CtxtTriple(CategoryName.DEPLOYMENT.s(), deployment, deployment.getSingleTree(null, true)),
-				this, log);
+		readCLIArgs(it, new CtxtTriple(CategoryName.DEPLOYMENT.s(), deploymentCat, deployment), this, log);
 		log.lf("after CLI tree parse:", this);
 		
 		// ====================================== port portables
 		
-		MultiTreeMap allNodes = this.getSingleTree(CategoryName.NODE.s());
-		for(String catName : this.getKeys())
-		{
-			if(CategoryName.byName(catName) == null || CategoryName.byName(catName).visibilityScope() == null
-					|| !CategoryName.byName(catName).visibilityScope().getAncestorsList()
-							.contains(CategoryName.NODE.s()))
-				// cannot compute visibility or category not visible to a descendant of node
-				continue;
-			CategoryName cat = CategoryName.byName(catName);
-			for(String name : allNodes.getHierarchicalNames())
-				// for all nodes
-				for(MultiTreeMap node : allNodes.getTrees(name))
-					if(!node.getKeys().contains(catName) || !cat.isUnique())
-					{ // if node has no entry for the category or if the category is not unique
-						if(this.isSimple(catName))
-							if(this.isSingleton(catName))
-								node.addSingleValue(catName, this.getSingleValue(catName));
-							else
-								node.addAll(catName, this.getValues(catName));
-						else if(this.isSingleton(catName))
-							node.addSingleTree(catName, this.getSingleTree(catName));
-						else
-							node.addTrees(catName, this.getTrees(catName));
-					}
-		}
+		List<String> categoryContext = new LinkedList<>();
+		categoryContext.add(CategoryName.DEPLOYMENT.s());
+		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), log);
+		
 		log.lf("final config:", this);
 		
 		log.doExit();
 		lock();
 		return this;
+	}
+	
+	/**
+	 * For the moment, only categories declared in {@link CategoryName} can be ported.
+	 * 
+	 * @param elemTree
+	 * @param categoryContext
+	 * @param portableEntities
+	 *            -- configurations for entities that should be ported to their correct parents. The list contains
+	 *            entries which are <i>category names</i>, each category names containing trees with the configuration
+	 *            of various entities.
+	 */
+	protected static void postProcess(MultiTreeMap elemTree, String category, MultiTreeMap portableEntities, Logger log)
+	{
+		List<String> toRemove = new LinkedList<>();
+		MultiTreeMap portHere = new MultiTreeMap();
+		for(String portedCatName : portableEntities.getKeys())
+			if(category.equals(CategoryName.byName(portedCatName).getParent()))
+			{ // port the ported entities to all elements in this category
+				portHere.transferNameFrom(portableEntities, portedCatName);
+				toRemove.add(portedCatName);
+			}
+		for(String rem : toRemove)
+			portableEntities.removeKey(rem);
+		
+		toRemove.clear();
+		for(String childCatName : elemTree.getKeys())
+			if(CategoryName.byName(childCatName) != null)
+			{
+				CategoryName cat = CategoryName.byName(childCatName);
+				if(cat != null && cat.portableFrom() != null && category.equals(cat.portableFrom().s()))
+				{// port this from here; this will not be instanced here
+					portableEntities.transferNameFrom(elemTree, childCatName);
+					toRemove.add(childCatName);
+				}
+			}
+		for(String rem : toRemove)
+			elemTree.removeKey(rem);
+		
+		if(!portHere.getKeys().isEmpty())
+			for(String portedCatName : portHere.getKeys())
+				elemTree.transferNameFrom(portHere, portedCatName);
+			
+		for(String childCatName : elemTree.getKeys())
+			if(elemTree.isHierarchical(childCatName))
+				for(String subElemName : elemTree.getSingleTree(childCatName).getHierarchicalNames())
+				{// for each element in the child category
+					List<MultiTreeMap> childElemTrees = new LinkedList<>();
+					if(elemTree.getSingleTree(childCatName).isSingleton(subElemName))
+						childElemTrees.add(elemTree.getSingleTree(childCatName).getSingleTree(subElemName));
+					else
+						childElemTrees.addAll(elemTree.getSingleTree(childCatName).getTrees(subElemName));
+					for(MultiTreeMap childElemTree : childElemTrees)
+						postProcess(childElemTree, childCatName, portableEntities, log);
+				}
 	}
 	
 	/**
@@ -389,15 +423,12 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// is here in order to be after checking subordinate parameter nodes (for name or name parts)
 		integrateName(nodeTree, category, catTree, rootTree, log);
 		
-		// add context of the entity
-		addContext(context, nodeTree, catName, log);
-		
 		for(XMLNode child : childEntities)
 		{
 			// node must be integrated as a different entity
 			String childCatName = getXMLNodeCategory(child);
 			// create implicit root entity, if necessary
-			manageImplicitRoot(CategoryName.byName(childCatName), rootTree, context);
+			// manageImplicitRoot(CategoryName.byName(childCatName), rootTree, context);
 			MultiTreeMap childCatTree = integrateChildCat(context.getFirst().elemTree, context.getFirst().category,
 					childCatName, log);
 			if(childCatTree == null)
@@ -491,8 +522,6 @@ public class DeploymentConfiguration extends MultiTreeMap
 						context.add(baseContext);
 					}
 				}
-				// create implicit root entity, if necessary
-				manageImplicitRoot(category, rootTree, context);
 				
 				// integrate in current context.
 				CtxtTriple cCtxt = context.peek();
@@ -511,8 +540,6 @@ public class DeploymentConfiguration extends MultiTreeMap
 					newNode = true;
 				}
 				context.push(new CtxtTriple(catName, subCatTree, node));
-				if(newNode)
-					addContext(context, node, catName, log);
 			}
 			else
 			{
@@ -597,100 +624,16 @@ public class DeploymentConfiguration extends MultiTreeMap
 			Logger log)
 	{
 		CategoryName subCat = CategoryName.byName(subCatName);
-		if(subCat != null && !subCat.isParentOptional() && !parentCat.equals(subCat.getParent())
-				&& !(ROOT_CATEGORY.s().equals(subCat.getParent()) && subCat.visibilityScope() != null))
-		{ // incorrect placement
-			log.le("Incorrect placement for [] entity in context of [] entity.", subCatName, parentCat);
-			return null;
-		}
 		if(parentNodeTree.containsKey(subCatName))
 		{
 			if(parentNodeTree.isHierarchical(subCatName))
-			{
-				if(subCat != null && subCat.isUnique()
-						&& !parentNodeTree.getSingleTree(subCatName).getTreeKeys().isEmpty())
-				// already other children present
-				{
-					log.le(null, "Cannot add additional children to unique category ", subCatName);
-					return null;
-				}
 				return parentNodeTree.getSingleTree(subCatName);
-			}
 			log.le(null, "Child node category [] is already present as a simple key. Will not process this node.",
 					subCat);
 			return null;
 		}
 		// category not already present
 		return parentNodeTree.addSingleTreeGet(subCatName, new MultiTreeMap());
-	}
-	
-	/**
-	 * Common XML/CLI functionality: When an entity in the given category is added at the root level, checks if it is
-	 * necessary to add an implicit entity in {@link #ROOT_CATEGORY} and adds it to the parent node and to the current
-	 * context.
-	 * <p>
-	 * It will not be added to the entity list as it does not have a name.
-	 * <p>
-	 * Conversely, if the entity should be added <i>outside</i> the root level (at deployment level), context is
-	 * modified accordingly (the root entity is removed from the context).
-	 * 
-	 * TODO: is there really a need for the return value anymore?
-	 * 
-	 * @return if a {@link #ROOT_CATEGORY} entity has been added, a new context entry corresponding to that entity;
-	 *         <code>null</code> otherwise.
-	 */
-	@SuppressWarnings("javadoc")
-	protected static CtxtTriple manageImplicitRoot(CategoryName category, MultiTreeMap rootTree,
-			Deque<CtxtTriple> context)
-	{
-		CtxtTriple ctxt = context.getFirst();
-		if(ROOT_CATEGORY.s().equals(ctxt.category)
-				&& ctxt.elemTree == (ROOT_CATEGORY.isUnique() ? ctxt.catTree.getSingleTree(null)
-						: ctxt.catTree.getFirstTree(null))
-				&& category != null
-				&& (category == ROOT_CATEGORY || !category.getAncestorsList().contains(ROOT_CATEGORY.s())
-						|| (ROOT_CATEGORY.s().equals(category.getParent()) && category.visibilityScope() != null)))
-		{
-			context.pop();
-			return null;
-			// FIXME: doesn't work
-		}
-		
-		if(context.size() != 1)
-			// not at deployment level
-			return null;
-			
-		// if the category is not known
-		// or the category is a descendant of the root category
-		// but is not a direct child of the root category which has a visibility scope (in this case it can be ported to
-		// its actual parent)
-		// must create / get implicit node
-		if(category != null && (category == ROOT_CATEGORY || !category.getAncestorsList().contains(ROOT_CATEGORY.s())
-				|| (ROOT_CATEGORY.s().equals(category.getParent()) && category.visibilityScope() != null)))
-			return null;
-			
-		// search root entity, or create it
-		// FIXME: some code duplication with #integrateName
-		MultiTreeMap parentElem = context.getFirst().elemTree;
-		MultiTreeMap rootCat = parentElem.getSingleTree(ROOT_CATEGORY.s(), true);
-		boolean existing = rootCat.containsHierarchicalName(null);
-		MultiTreeMap rootEntity = ROOT_CATEGORY.isUnique() ? rootCat.getSingleTree(null, true)
-				: rootCat.getFirstTree(null, true);
-		
-		if(!existing)
-		{
-			if(ROOT_CATEGORY.isUnique())
-				rootTree.getSingleTree(ROOT_CATEGORY.s(), true).addSingleTree(null, rootEntity);
-			else
-				rootTree.getSingleTree(ROOT_CATEGORY.s(), true).addOneTree(null, rootEntity);
-			
-			String id = "#" + rootEntity.hashCode();
-			rootTree.getSingleTree(NAME_LIST_ENTRY, true).addSingleTree(id, rootEntity);
-			rootEntity.addSingleValue(NAME_LIST_ENTRY, id);
-		}
-		
-		context.push(new CtxtTriple(ROOT_CATEGORY.s(), rootCat, rootEntity));
-		return context.getFirst();
 	}
 	
 	/**
@@ -769,82 +712,6 @@ public class DeploymentConfiguration extends MultiTreeMap
 		}
 		
 		return name;
-	}
-	
-	/**
-	 * Looks into the entire context of an entity and adds the identifiers of the visible context elements to the
-	 * {@value #CONTEXT_ELEMENT_NAME} entry in the tree.
-	 * 
-	 * @param exteriorContext
-	 *            - the context of the entity, with the deepest (closest) context first, starting with the entity
-	 *            itself.
-	 * @param nodeTree
-	 *            - the tree describing the entity.
-	 * @param categoryName
-	 *            - the category of the entity.
-	 * @param log
-	 *            - the {@link Logger} to use.
-	 */
-	protected static void addContext(Deque<CtxtTriple> exteriorContext, MultiTreeMap nodeTree, String categoryName,
-			Logger log)
-	{
-		if(exteriorContext.isEmpty())
-			return;
-		int idx = -1;
-		List<String> contextSuffix = new ArrayList<>(); // deepest-first visited categories
-		for(CtxtTriple cElement : exteriorContext)
-		{
-			idx++;
-			switch(idx)
-			{
-			case 0:
-				// first context element is the entity itself
-				continue;
-			case 1:
-				// add the immediate context anyway
-				addContext(cElement, nodeTree);
-				break;
-			default:
-				CategoryName contextCat = CategoryName.byName(cElement.category);
-				CategoryName category = CategoryName.byName(categoryName);
-				boolean visible = (contextCat != null && contextCat.visibilityScope() == CategoryName.DEPLOYMENT)
-						|| (category != null && cElement.category != null
-								&& cElement.category.equals(category.getParent()))
-						|| (contextCat != null && contextCat.visibilityScope() != null
-								&& !contextSuffix.contains(contextCat.visibilityScope().s()));
-				if(visible)
-				{
-					log.lf("Added context []:[] to entity []:[]", cElement.category,
-							cElement.elemTree.getFirstValue(NAME_ATTRIBUTE_NAME), categoryName,
-							nodeTree.getFirstValue(NAME_ATTRIBUTE_NAME));
-					addContext(cElement, nodeTree);
-				}
-			}
-			contextSuffix.add(cElement.category);
-		}
-		
-	}
-	
-	/**
-	 * Adds the context element as context to the node, in the {@value #CONTEXT_ELEMENT_NAME} tree entry.
-	 * 
-	 * @param contextElement
-	 *            - the context.
-	 * @param nodeTree
-	 *            - the node.
-	 */
-	protected static void addContext(CtxtTriple contextElement, MultiTreeMap nodeTree)
-	{
-		if(CategoryName.DEPLOYMENT.s().equals(contextElement.category))
-			return;
-		CategoryName cat = CategoryName.byName(contextElement.category);
-		String ref;
-		if(cat != null && cat.isIdentifiable() && contextElement.elemTree.isSimple(NAME_ATTRIBUTE_NAME)
-				&& !("" + null).equals(contextElement.elemTree.getFirstValue(NAME_ATTRIBUTE_NAME)))
-			ref = contextElement.elemTree.getFirstValue(NAME_ATTRIBUTE_NAME);
-		else
-			ref = contextElement.elemTree.getSingleValue(NAME_LIST_ENTRY);
-		nodeTree.addOneValue(CONTEXT_ELEMENT_NAME, ref);
 	}
 	
 	@SuppressWarnings("javadoc")
