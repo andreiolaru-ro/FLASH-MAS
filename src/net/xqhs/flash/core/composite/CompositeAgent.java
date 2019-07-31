@@ -29,7 +29,7 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContext;
-import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
@@ -65,6 +65,17 @@ public class CompositeAgent implements Serializable, Agent
 		public void postAgentEvent(AgentEvent event)
 		{
 			agent.postAgentEvent(event);
+		}
+
+		@Override
+		public List<Context<Pylon>> getPylons() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getAgentName() {
+			return agent.getName();
 		}
 	}
 	
@@ -296,7 +307,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be added to an agent only when it is not running.
 	 */
 	@Override
-	public boolean addContext(Context<Support> link)
+	public boolean addContext(Context<Pylon> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;
@@ -315,7 +326,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be removed from an agent only when it is not running.
 	 */
 	@Override
-	public boolean removeContext(Context<Support> link)
+	public boolean removeContext(Context<Pylon> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;

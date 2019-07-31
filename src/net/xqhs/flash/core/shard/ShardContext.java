@@ -1,5 +1,7 @@
 package net.xqhs.flash.core.shard;
 
+import java.util.List;
+
 import net.xqhs.flash.core.Entity.Context;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -9,7 +11,7 @@ public interface ShardContext extends Context<Agent>
 {
 	void postAgentEvent(AgentEvent event);
 
-	Context<Pylon> getPylon();
+	List<Context<Pylon>> getPylons();
 
 	String getAgentName();
 }

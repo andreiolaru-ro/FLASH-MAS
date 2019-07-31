@@ -19,11 +19,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
-import net.xqhs.flash.core.shard.ShardContext;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.Pylon;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -67,12 +67,10 @@ public class LocalSupport extends DefaultPylonImplementation
 		 */
 		private static final long serialVersionUID = 1L;
 		private MessagingPylonProxy pylon;
-		private ShardContext agent;
 		public MessageReceiver inbox;
 		
-		public SimpleLocalMessaging(ShardContext agent) {
+		public SimpleLocalMessaging() {
 			super();
-			this.agent = agent;
 			inbox = new MessageReceiver() {
 				@Override
 				public boolean receive(String source, String destination, String content) {
@@ -83,17 +81,17 @@ public class LocalSupport extends DefaultPylonImplementation
 		}
 
 		public boolean register() {
-			if (!(agent.getPylon() instanceof MessagingPylonProxy))
+			if (!(getAgent().getPylons().get(0) instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
-			pylon = (MessagingPylonProxy) agent.getPylon();
-			pylon.register(agent.getAgentName(), inbox);
+			pylon = (MessagingPylonProxy) getAgent().getPylons().get(0);
+			pylon.register(getAgent().getAgentName(), inbox);
 			return true;
 		}
 
 		@Override
 		public boolean sendMessage(String source, String destination, String content)
 		{
-			if (!(getAgent().getPylon() instanceof MessagingPylonProxy))
+			if (!(getAgent().getPylons().get(0) instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Platform Link is not of expected type");
 			pylon.send(source, destination, content);
 			return true;
@@ -218,5 +216,10 @@ public class LocalSupport extends DefaultPylonImplementation
 	public String getName()
 	{
 		return LOCAL_SUPPORT_NAME;
+	}
+
+	@Override
+	public Context<Pylon> asContext() {
+		return messagingProxy;
 	}
 }

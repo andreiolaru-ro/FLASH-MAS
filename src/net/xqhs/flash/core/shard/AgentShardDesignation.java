@@ -13,8 +13,6 @@ package net.xqhs.flash.core.shard;
 
 import java.io.Serializable;
 
-import net.xqhs.flash.core.support.MessagingShard;
-
 /**
  * Implementation for feature designations. A feature may either have a standard designation, or a custom designation.
  * 
@@ -82,10 +80,11 @@ public class AgentShardDesignation implements Serializable
 		 */
 		private StandardAgentShard()
 		{
+			this(null);
 			// FIXME: check that package and class exist
-			String featurePackage = AGENT_FEATURE_PACKAGE_ROOT + "." + featureName;
-			featureClass = featurePackage + "." + featureName.substring(0, 1).toUpperCase() + featureName.substring(1)
-					+ AGENT_FEATURE_CLASS_SUFFIX;
+//			String featurePackage = AGENT_FEATURE_PACKAGE_ROOT + "." + featureName;
+//			featureClass = featurePackage + "." + featureName.substring(0, 1).toUpperCase() + featureName.substring(1)
+//					+ AGENT_FEATURE_CLASS_SUFFIX;
 		}
 		
 		/**

@@ -193,7 +193,7 @@ public abstract class MessagingShard extends AgentShardCore {
 		 * to [] with content [].", source, destination, content);
 		 */
 
-		signalAgentEvent(event);
+		getAgent().postAgentEvent(event);
 	}
 
 	/**
