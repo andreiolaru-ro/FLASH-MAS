@@ -1,42 +1,54 @@
-<!-- ---------------------------------------------
-Copyright (C) 2018 Andrei Olaru.
-
-This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
-
-Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
-
-Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
---------------------------------------------- -->
 
 
-"Easy for beginners, powerful to experts"
 
-**Current target:**
+
+* "Easy for beginners, powerful to experts" *
+
+
+Current targets
+===============
+
+### Configuration  
   * sort out deployment configuration in terms of how portability and visibility are implemented
-    * are portability and visibility different?
     * who adds contexts and when (after all configuration is loaded or both after XML load and CLI parse?) ?
     * how are contexts correctly fused, especially when porting items?
+  * manage portables for CLI entries
+  
+### Deployment / loading
   * deploy a composite agent
     * what do about having support implementations when pre-loading features
       * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
-  * manage portables for CLI entries
-		
+
+### Utilities
   * implement getAppropriateTree / addAppropriateTree methods
 
 
+<<<<<<< web_socket_deployment
 **General TODOs**
   * use exceptions more than return values
 
 Concept Names
 =============
+=======
+>>>>>>> 57ccfae Additions (in progress) to the notes.
 
+Basic Concepts and Philosophy
+=============================
+
+
+
+
+
+
+### Concept Names translation from tATAmI to FLASH-MAS
   * (tATAmI-2 name -> FLASH-MAS name)
-  * simulation -> deployment
+  * simulation (in terms of classes in the code) -> deployment
+  * simulation (in terms of the process of running an experiment) -> simulation
   * visualization -> monitoring / control
   * component -> feature -> shard
   * platform -> support infrastructure + pylon
+    * the support infrastructure is the system-spanning virtual entity
+    * the pylon is this entity's concrete presence on a node
   
   * ParameterSet -> MultiValueMap
   * TreeParameterSet -> MultiTreeMap
@@ -76,7 +88,15 @@ Context
       *Future*
       * if categories A, B and C are in the category hierarchy, and their order is A -> C -> B, then A is visible to C
  
+<<<<<<< web_socket_deployment
   * 
+=======
+**Porting**
+  * an entity B can be ported from an entity A to an entity C (which is also its declared parent in hierarchy)
+  * the entity B must have been declared (in the deployment) as a descendant of entity A
+  * the configuration of a portable entity will be copied to all elements from the element where it has been declared down to its parent entity
+  * actual entity instances will be created only for the copy inside the parent (entity C)
+>>>>>>> 57ccfae Additions (in progress) to the notes.
   
   * TODO: further test correct addition of context
 
