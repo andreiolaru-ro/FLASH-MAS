@@ -658,6 +658,33 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * Adds to this tree the contents associated with the specified name in the <code>from</code> tree, with exactly the
+	 * same type of key (singleton / hierarchical).
+	 * <p>
+	 * WARNING: nothing is copied; associated with the name there will be exactly the same instances as in the other
+	 * {@link MultiTreeMap}.
+	 * 
+	 * @param from
+	 *            - the source {@link MultiTreeMap}
+	 * @param name
+	 *            - the name (key) to transfer
+	 * @return the instance itself
+	 */
+	public MultiTreeMap transferNameFrom(MultiTreeMap from, String name)
+	{
+		if(from.isHierarchical(name))
+			if(from.isSingleton(name))
+				addSingleTree(name, from.getSingleTree(name));
+			else
+				addTrees(name, from.getTrees(name));
+		else if(from.isSingleton(name))
+			addSingleValue(name, from.getSingleValue(name));
+		else
+			addAll(name, from.getValues(name));
+		return this;
+	}
+	
+	/**
 	 * Get the value at the end of a path in a tree. The last name must be a simple name. All other names must be
 	 * hierarchical names. For multiple values, only the first value is checked.
 	 * <p>
