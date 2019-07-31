@@ -40,8 +40,8 @@ class TestAgent implements Agent {
 		}
 
 		@Override
-		public List<Context<Pylon>> getPylons() {
-			ArrayList<Context<Pylon>> list = new ArrayList<Context<Pylon>>();
+		public List<EntityProxy<Pylon>> getPylons() {
+			ArrayList<EntityProxy<Pylon>> list = new ArrayList<EntityProxy<Pylon>>();
 			list.add(pylon);
 			return list;
 		}
@@ -81,25 +81,25 @@ class TestAgent implements Agent {
 	}
 
 	@Override
-	public boolean addContext(Context<Pylon> context) {
+	public boolean addContext(EntityProxy<Pylon> context) {
 		pylon = (MessagingPylonProxy) context;
 		return true;
 	}
 
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context) {
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context) {
 		return true;
 	}
 
 	@Override
-	public boolean removeContext(Context<Pylon> context) {
+	public boolean removeContext(EntityProxy<Pylon> context) {
 		pylon = null;
 		return true;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Context<Agent> asContext() {
+	public EntityProxy<Agent> asContext() {
 		return proxy;
 	}
 

@@ -17,10 +17,27 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * An element in the deployment, be it a support infrastructure, an agent, a shard, etc. It needs to have some sort of
  * persistent presence in the system, and therefore it has a life-cycle that can be started, stopped, and checked upon.
  * <p>
- * It is characterized by a name or other form of identification in the system.
+ * It may have a name that is unique in the system.
  * <p>
  * Entities can be placed one in the context of one another, but one entity can have only one type of context that
  * directly contains it (albeit it may run in the context of multiple entities of the same type).
+ * <p>
+ * <b>Access control policy</b>
+ * <p>
+ * An object that has a reference to an {@link Entity} instance is able to <b>control</b> that entity, i.e. it is able
+ * to start it, stop it, and change its context.
+ * <p>
+ * Objects that need to call methods in an entity (such as other entities in this entity's context) should do so through
+ * a <i>proxy</i>. The proxy to an entity should be obtained by calling its {@link #asContext()} method. All proxies to
+ * entities should implement {@link EntityProxy}. The workflow should be as follows:
+ * <ul>
+ * <li>an object <i>C</i> authorized to control entities <i>E</i> and <i>S</i> has a reference to entities <i>E</i> and
+ * <i>S</i>.
+ * <li>object <i>C</i> calls <code>E.{@link #asContext()}</code> to obtain a proxy <i>pE</i> to entity <i>E</i>.
+ * <li>object <i>C</i> calls <code>S.addContext(pE)</code> in order to integrate <i>S</i> in the context of <i>E</i>.
+ * </ul>
+ * <p>
+ * <b>Loading</b>
  * <p>
  * Normally, before being started, {@link Entity} instances are created by {@link Loader} instances.
  * <p>
@@ -39,7 +56,7 @@ public interface Entity<P extends Entity<?>>
 	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
 	 * normally.
 	 * <p>
-	 * The method must guarantee that once it has been started successfully, it can immediately begin to receive events,
+	 * The method must guarantee that once it has been started successfully, it can immediately begin receiving events,
 	 * even if those events will not be processed immediately.
 	 * 
 	 * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
@@ -64,7 +81,7 @@ public interface Entity<P extends Entity<?>>
 	/**
 	 * Retrieves the name (or other identification) of the entity, if any.
 	 * 
-	 * @return the name.
+	 * @return the name, if any has been given; <code>null</code> otherwise.
 	 */
 	public String getName();
 	
@@ -75,7 +92,7 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean addContext(Context<P> context);
+	public boolean addContext(EntityProxy<P> context);
 	
 	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
@@ -89,7 +106,7 @@ public interface Entity<P extends Entity<?>>
 	 * <p>
 	 * It is the responsibility of the called object to verify the correctness of the argument.
 	 * <p>
-	 * The recommended implementation for this method is one that calls {@link #addContext(Entity)} after casting the
+	 * The recommended implementation for this method is one that calls {@link #addContext(EntityProxy)} after casting the
 	 * argument to the appropriate type, optionally catching {@link ClassCastException} and returning <code>false</code>
 	 * if such an exception occurs.
 	 * 
@@ -97,7 +114,7 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean addGeneralContext(Context<Entity<?>> context);
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context);
 	
 	/**
 	 * Removes the link from a subordinate entity to an entity containing it in some way.
@@ -106,12 +123,30 @@ public interface Entity<P extends Entity<?>>
 	 *            - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean removeContext(Context<P> context);
+	public boolean removeContext(EntityProxy<P> context);
 	
-	public <C extends Entity<P>> Context<C> asContext();
+	/**
+	 * Returns a <i>proxy</i> to this entity.
+	 * 
+	 * @param <C>
+	 *            should be the actual class of this entity.
+	 * @return a proxy to the entity, implementing {@link EntityProxy} parameterized with the class of this entity.
+	 */
+	public <C extends Entity<P>> EntityProxy<C> asContext();
 	
-	interface Context<C extends Entity<?>>
+	/**
+	 * Marker interface for classes that provide a proxy to an entity which is an instance of <code>C</code>.
+	 * <p>
+	 * If an entity <i>E</i> is of type <code>C</code>, calling {@link Entity#asContext()} for <i>E</i> should return an
+	 * instance of this class.
+	 * 
+	 * @author Andrei Olaru
+	 *
+	 * @param <C>
+	 *            the class of the entity for which this is a proxy.
+	 */
+	interface EntityProxy<C extends Entity<?>>
 	{
-		// TODO> is it ok to be void?
+		// No actual methods are specified.
 	}
 }

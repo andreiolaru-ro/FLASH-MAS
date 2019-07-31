@@ -85,19 +85,19 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
-	public boolean addContext(Context<Node> context) {
+	public boolean addContext(EntityProxy<Node> context) {
 		// TODO Auto-generated method stub
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context) {
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean removeContext(Context<Node> context) {
+	public boolean removeContext(EntityProxy<Node> context) {
 		throw new UnsupportedOperationException("Cannot remove context from a node");
 	}
 	
@@ -117,7 +117,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 
 	@Override
-	public <C extends Entity<Node>> Context<C> asContext() {
+	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;
 	}
 

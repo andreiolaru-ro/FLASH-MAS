@@ -244,7 +244,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 *            - the {@link CompositeAgent} instance that this shard is part of.
 	 */
 	@Override
-	public final boolean addContext(Context<Agent> parent)
+	public final boolean addContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent != null)
 			return ler(false, "Parent already set");
@@ -256,7 +256,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
 	{
 		le("No general context supported for shards.");
 		return false;
@@ -269,7 +269,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * classes can take appropriate action.
 	 */
 	@Override
-	public final boolean removeContext(Context<Agent> parent)
+	public final boolean removeContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent == null)
 			return ler(false, "Parent is not set");
@@ -292,7 +292,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Context<AgentShard> asContext()
+	public EntityProxy<AgentShard> asContext()
 	{
 		throw new UnsupportedOperationException("THe AgentSharCore cannot be a context of another entity.");
 	}

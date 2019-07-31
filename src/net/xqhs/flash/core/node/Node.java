@@ -55,28 +55,28 @@ public class Node implements Entity<Node>
 	}
 	
 	@Override
-	public boolean addContext(Context<Node> context)
+	public boolean addContext(EntityProxy<Node> context)
 	{
 		// unsupported
 		return false;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
 	{
 		// unsupported
 		return false;
 	}
 	
 	@Override
-	public boolean removeContext(Context<Node> context)
+	public boolean removeContext(EntityProxy<Node> context)
 	{
 		// unsupported
 		return false;
 	}
 	
 	@Override
-	public <C extends Entity<Node>> Context<C> asContext()
+	public <C extends Entity<Node>> EntityProxy<C> asContext()
 	{
 		// no functionality offered
 		return null;

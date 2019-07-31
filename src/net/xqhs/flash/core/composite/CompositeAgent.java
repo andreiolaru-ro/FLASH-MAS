@@ -68,7 +68,7 @@ public class CompositeAgent implements Serializable, Agent
 		}
 
 		@Override
-		public List<Context<Pylon>> getPylons() {
+		public List<EntityProxy<Pylon>> getPylons() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -198,7 +198,7 @@ public class CompositeAgent implements Serializable, Agent
 	 */
 	protected Object										supportLink					= null;
 	
-	protected Context<Agent>								asContext					= new CompositeAgentAsContext(
+	protected EntityProxy<Agent>								asContext					= new CompositeAgentAsContext(
 			this);
 	
 	/**
@@ -307,7 +307,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be added to an agent only when it is not running.
 	 */
 	@Override
-	public boolean addContext(Context<Pylon> link)
+	public boolean addContext(EntityProxy<Pylon> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;
@@ -316,7 +316,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
 	{
 		log("No general context supported.");
 		return false;
@@ -326,7 +326,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be removed from an agent only when it is not running.
 	 */
 	@Override
-	public boolean removeContext(Context<Pylon> link)
+	public boolean removeContext(EntityProxy<Pylon> link)
 	{
 		if(!canAddFeatures() || isRunning())
 			return false;
@@ -336,7 +336,7 @@ public class CompositeAgent implements Serializable, Agent
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Context<Agent> asContext()
+	public EntityProxy<Agent> asContext()
 	{
 		return asContext;
 	}

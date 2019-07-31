@@ -219,7 +219,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	}
 
 	@Override
-	public Context<Pylon> asContext() {
+	public EntityProxy<Pylon> asContext() {
 		return messagingProxy;
 	}
 }
