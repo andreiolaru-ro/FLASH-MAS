@@ -13,6 +13,7 @@ package net.xqhs.flash.core;
 
 import java.util.List;
 
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
@@ -92,7 +93,7 @@ public interface Loader<T extends Entity<?>>
 	 *            empty.
 	 * @return the entity, if loading has been successful.
 	 */
-	public T load(MultiTreeMap configuration, List<Entity<?>> context);
+	public T load(MultiTreeMap configuration, List<EntityProxy<Entity<?>>> context);
 	
 	/**
 	 * Loads a new instance of entity <b>T</b>, without providing it with any context.
@@ -178,7 +179,7 @@ public interface Loader<T extends Entity<?>>
 		 * </ul>
 		 */
 		@Override
-		public Entity<?> load(MultiTreeMap configuration, List<Entity<?>> context)
+		public Entity<?> load(MultiTreeMap configuration, List<EntityProxy<Entity<?>>> context)
 		{
 			if(preload(configuration))
 			{
@@ -206,7 +207,7 @@ public interface Loader<T extends Entity<?>>
 								log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
 										classpath);
 							if(context != null)
-								for(Entity<?> c : context)
+								for(EntityProxy<Entity<?>> c : context)
 									loaded.addGeneralContext(c);
 							return loaded;
 						} catch(Exception e1)
