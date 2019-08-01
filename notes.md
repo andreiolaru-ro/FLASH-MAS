@@ -69,10 +69,30 @@ System model
 
 Some entity types are predefined, but a developer should be able to add any number of additional entity types.
 
+There are two types of pre-defined *virtual* entities which span the whole agent system are
+  * *the deployment* -- the entirety of the FLASH-MAS deployment; its life-cycle is identical to the life-cycle of the FLASH-MAS system; there is only one deployment.
+  * the support infrastructures -- collections of entities (pylons), which offer services to other entities in the system, especially services which involve communication, especially across machines;
+    
+    e.g. one support infrastructure may be able to offer id-based communication for all agents in a deployment.
+
+Pre-defined *actual* entities are
+  * *nodes* -- they represent the presence of FLASH-MAS on a physical machine; normally a node for each machine is sufficient, but more complex setups may have more than one node on a machine;
+  * *pylons* -- they represent the presence of a support infrastructure on a node, and agents (or other entities) are able to use their services;
+  * *agents* -- the autonomous, pro-active entities that are able to interact among each other using support infrastructure (and, more concretely, pylons);
+  * *shards* -- entities encapsulating various functionality that may be useful o agents; the purpose of shards may be to:
+      * if the agent is a *Composite Agent*, the agent is composed exclusively by a set of shards which interact by means of an event queue;
+      * offer a more comfortable means for an agent to access the services offered by a pylon, when the pylon offers a *specific* implementation for a more general type of service (e.g. messaging);
+        * while it is perfectly possible for an agent of arbitrary implementation to skip using a shard and access the services offered by the pylon directly, using shards may be a more uniform manner of abstracting pylon services, since many shards may be already be implemented so that they can be used in composite agents.
+
+
+** Do we need entities at all? **
+
+The only truly mandatory entities are nodes, pylons and agents, which are implicit in an agent system. But nodes can be automatically created and configured, and default pylon implementations are offered, so the developer may used them explicitly only when needed.
+
 
 ### Loaders
 
-In order to support entities which need a special means of creation (e.g. implementations that require that the class is produced by a factory), the creation process is abstracted into Loaders. it si recommended that most entities can be loaded through `SimpleLoader`, which just creates a new instance of the entity.
+In order to support entities which need a special means of creation (e.g. implementations that require that the class is produced by a factory), the creation process is abstracted into Loaders. It is recommended that most entities can be loaded through `SimpleLoader`, which just creates a new instance of the entity.
 
 Choosing a loader
   * the default loader is `SimpleLoader`
@@ -88,6 +108,9 @@ The same policy goes for Support Infrastructures (first is default, if none spec
 
 The Node is always loaded by the NodeLoader.
 
+** Do we need loaders at all? **
+
+Yes, for the cases where instantiating a class to create an entity is not enough.
 
 
 
