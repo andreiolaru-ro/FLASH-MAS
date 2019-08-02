@@ -17,12 +17,13 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 
 /**
@@ -33,28 +34,43 @@ import net.xqhs.flash.core.support.Pylon;
  */
 public class LocalSupport extends DefaultPylonImplementation
 {
-	public static final String LOCAL_SUPPORT_NAME = "Local pylon";
-
-	protected HashMap<String, MessageReceiver> messageReceivers = new HashMap<String, MessageReceiver>();
-
-	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-
-		@Override
-		public boolean send(String source, String destination, String content) {
-			String agentName = getAgentNameFromAddress(getAgentAddress(destination));
-			if (!messageReceivers.containsKey(agentName))
-				return false;
-			messageReceivers.get(agentName).receive(source, destination, content);
-			return true;
-		}
-
-		@Override
-		public boolean register(String agentName, MessageReceiver receiver) {
-			messageReceivers.put(agentName, receiver);
-			return true;
-		}
-	};
-
+	/**
+	 * The type of this support infrastructure (its 'kind')
+	 */
+	public static final String					LOCAL_SUPPORT_NAME	= "Local pylon";
+	
+	/**
+	 * The receivers for each endpoint.
+	 */
+	protected HashMap<String, MessageReceiver>	messageReceivers	= new HashMap<>();
+	
+	/**
+	 * The proxy to this entity.
+	 */
+	public MessagingPylonProxy					messagingProxy		= new MessagingPylonProxy() {
+																		
+																		@Override
+																		public boolean send(String source,
+																				String destination, String content)
+																		{
+																			String agentName = getAgentNameFromAddress(
+																					getAgentAddress(destination));
+																			if(!messageReceivers.containsKey(agentName))
+																				return false;
+																			messageReceivers.get(agentName).receive(
+																					source, destination, content);
+																			return true;
+																		}
+																		
+																		@Override
+																		public boolean register(String agentName,
+																				MessageReceiver receiver)
+																		{
+																			messageReceivers.put(agentName, receiver);
+																			return true;
+																		}
+																	};
+	
 	/**
 	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
 	 * 
@@ -65,38 +81,43 @@ public class LocalSupport extends DefaultPylonImplementation
 		/**
 		 * The serial UID.
 		 */
-		private static final long serialVersionUID = 1L;
-		private MessagingPylonProxy pylon;
-		public MessageReceiver inbox;
+		private static final long	serialVersionUID	= 1L;
+		private MessagingPylonProxy	pylon;
+		public MessageReceiver		inbox;
 		
-		public SimpleLocalMessaging() {
+		/**
+		 * Default constructor.
+		 */
+		public SimpleLocalMessaging()
+		{
 			super();
 			inbox = new MessageReceiver() {
 				@Override
-				public boolean receive(String source, String destination, String content) {
+				public boolean receive(String source, String destination, String content)
+				{
 					receiveMessage(source, destination, content);
 					return true;
 				}
 			};
 		}
-
-		public boolean register() {
-			if (!(getAgent().getPylons().get(0) instanceof MessagingPylonProxy))
+		
+		@Override
+		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+		{
+			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
-			pylon = (MessagingPylonProxy) getAgent().getPylons().get(0);
+			pylon = (MessagingPylonProxy) context;
 			pylon.register(getAgent().getAgentName(), inbox);
 			return true;
 		}
-
+		
 		@Override
 		public boolean sendMessage(String source, String destination, String content)
 		{
-			if (!(getAgent().getPylons().get(0) instanceof MessagingPylonProxy))
-				throw new IllegalStateException("Pylon Context is not of expected type");
 			pylon.send(source, destination, content);
 			return true;
 		}
-
+		
 		@Override
 		protected void receiveMessage(String source, String destination, String content)
 		{
@@ -143,7 +164,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	 * message.
 	 *
 	 */
-	protected Map<String, SimpleLocalMessaging> registry = new HashMap<String, SimpleLocalMessaging>();
+	protected Map<String, SimpleLocalMessaging>										registry		= new HashMap<>();
 	
 	/**
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
@@ -152,19 +173,19 @@ public class LocalSupport extends DefaultPylonImplementation
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
 	 */
-	protected boolean useThread = true;
+	protected boolean																useThread		= true;
 	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this queue is used to gather
 	 * messages.
 	 */
-	protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>> messageQueue = null;
+	protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>	messageQueue	= null;
 	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this is a reference to that
 	 * thread.
 	 */
-	protected Thread messageThread = null;
+	protected Thread																messageThread	= null;
 	
 	@Override
 	public boolean start()
@@ -173,7 +194,7 @@ public class LocalSupport extends DefaultPylonImplementation
 			return false;
 		if(useThread)
 		{
-			messageQueue = new LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>();
+			messageQueue = new LinkedBlockingQueue<>();
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
@@ -206,8 +227,9 @@ public class LocalSupport extends DefaultPylonImplementation
 	}
 	
 	@Override
-	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
-		if (shardName == AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING))
+	public String getRecommendedShardImplementation(AgentShardDesignation shardName)
+	{
+		if(shardName == AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING))
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
@@ -217,9 +239,11 @@ public class LocalSupport extends DefaultPylonImplementation
 	{
 		return LOCAL_SUPPORT_NAME;
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	@Override
-	public EntityProxy<Pylon> asContext() {
+	public EntityProxy<Pylon> asContext()
+	{
 		return messagingProxy;
 	}
 }

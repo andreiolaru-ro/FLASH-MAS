@@ -1,14 +1,11 @@
 package localTest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
@@ -16,10 +13,9 @@ import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
 class TestAgent implements Agent {
 
 	private String name;
-	private SimpleLocalMessaging messagingShard;
+	private AbstractMessagingShard messagingShard;
 	private MessagingPylonProxy pylon;
 	public ShardContainer proxy = new ShardContainer() {
-
 		@Override
 		public void postAgentEvent(AgentEvent event) {
 			System.out.println(event.getValue(AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
@@ -30,20 +26,13 @@ class TestAgent implements Agent {
 				Thread eventThread = new Thread() {
 					@Override
 					public void run() {
-						messagingShard.sendMessage(event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER),
+						getMessagingShard().sendMessage(event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER),
 								event.getValue(AbstractMessagingShard.SOURCE_PARAMETER),
 								Integer.toString(message + 1));
 					}
 				};
 				eventThread.run();
 			}
-		}
-
-		@Override
-		public List<EntityProxy<Pylon>> getPylons() {
-			ArrayList<EntityProxy<Pylon>> list = new ArrayList<EntityProxy<Pylon>>();
-			list.add(pylon);
-			return list;
 		}
 
 		@Override
@@ -83,11 +72,14 @@ class TestAgent implements Agent {
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context) {
 		pylon = (MessagingPylonProxy) context;
+		if(messagingShard != null)
+			messagingShard.addGeneralContext(pylon);
 		return true;
 	}
 
 	@Override
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context) {
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
 		return true;
 	}
 
@@ -103,11 +95,18 @@ class TestAgent implements Agent {
 		return proxy;
 	}
 
-	public boolean addMessagingShard(SimpleLocalMessaging shard) {
+	public boolean addMessagingShard(AbstractMessagingShard shard) {
 		messagingShard = shard;
+		shard.addContext(proxy);
+		if(pylon != null)
+			messagingShard.addGeneralContext(pylon);
 		return true;
 	}
 
+	protected AbstractMessagingShard getMessagingShard()
+	{
+		return messagingShard;
+	}
 }
 
 public class Main {
@@ -120,17 +119,8 @@ public class Main {
 		TestAgent two = new TestAgent("Two");
 		two.addContext(pylon.asContext());
 
-		SimpleLocalMessaging shardOne = new SimpleLocalMessaging();
-		SimpleLocalMessaging shardTwo = new SimpleLocalMessaging();
-
-		shardOne.addContext(one.asContext());
-		shardTwo.addContext(two.asContext());
-
-		shardOne.register();
-		shardTwo.register();
-
-		one.addMessagingShard(shardOne);
-		two.addMessagingShard(shardTwo);
+		one.addMessagingShard(new SimpleLocalMessaging());
+		two.addMessagingShard(new SimpleLocalMessaging());
 
 		one.start();
 		two.start();
