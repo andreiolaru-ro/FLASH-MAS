@@ -87,9 +87,12 @@ public interface Entity<P extends Entity<?>>
 	
 	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
+	 * <p>
+	 * This method should be <b>idempotent</b> (when called with the same argument): adding the same context multiple
+	 * times (with no {@link #removeContext} operations in between) should have no effect.
 	 * 
 	 * @param context
-	 *            - a reference to the higher-level entity.
+	 *                    - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
 	public boolean addContext(EntityProxy<P> context);
@@ -106,12 +109,15 @@ public interface Entity<P extends Entity<?>>
 	 * <p>
 	 * It is the responsibility of the called object to verify the correctness of the argument.
 	 * <p>
-	 * The recommended implementation for this method is one that calls {@link #addContext(EntityProxy)} after casting the
-	 * argument to the appropriate type, optionally catching {@link ClassCastException} and returning <code>false</code>
-	 * if such an exception occurs.
+	 * The recommended implementation for this method is one that calls {@link #addContext(EntityProxy)} after casting
+	 * the argument to the appropriate type, optionally catching {@link ClassCastException} and returning
+	 * <code>false</code> if such an exception occurs.
+	 * <p>
+	 * This method should be <b>idempotent</b> (when called with the same argument): adding the same context multiple
+	 * times (with no {@link #removeContext} operations in between) should have no effect.
 	 * 
 	 * @param context
-	 *            - a reference to the higher-level entity.
+	 *                    - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
 	public boolean addGeneralContext(EntityProxy<Entity<?>> context);
