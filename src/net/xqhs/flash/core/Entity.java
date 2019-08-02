@@ -120,7 +120,7 @@ public interface Entity<P extends Entity<?>>
 	 *                    - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context);
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**
 	 * Removes the link from a subordinate entity to an entity containing it in some way.

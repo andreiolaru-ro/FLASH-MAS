@@ -115,8 +115,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	
 	/**
 	 * Extending classes should override this method to verify and pre-load shard data, based on deployment data. The
-	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(Agent)} is called,
-	 * and actions depending on other shards after the AGENT_START event has occurred.
+	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(ShardContainer)} is
+	 * called, and actions depending on other shards after the AGENT_START event has occurred.
 	 * <p>
 	 * If the shard is surely not going to be able to load, <code>false</code> will be returned. For any non-fatal
 	 * issues, the method should return <code>true</code> and output warnings in the specified log.
@@ -130,8 +130,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * <p>
 	 * 
 	 * @param configuration
-	 *            - parameters for creating the shard. The parameters will be locked (see {@link MultiValueMap#lock()}
-	 *            from this moment on.
+	 *                          - parameters for creating the shard. The parameters will be locked (see
+	 *                          {@link MultiValueMap#lock()} from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -256,7 +256,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		le("No general context supported for shards.");
 		return false;

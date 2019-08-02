@@ -1,11 +1,8 @@
 package net.xqhs.flash.core.shard;
 
-import java.util.List;
-
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.support.Pylon;
 
 /**
  * This interface should be implemented by any proxy to an agent which needs to use {@link AgentShard}s. It enables the
@@ -23,8 +20,6 @@ public interface ShardContainer extends EntityProxy<Agent>
 	 *                  - the event to be signaled to the agent.
 	 */
 	void postAgentEvent(AgentEvent event);
-
-	List<EntityProxy<Pylon>> getPylons();
 
 	/**
 	 * Retrieves the agent name.
