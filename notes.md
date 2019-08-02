@@ -9,8 +9,8 @@ Current targets
 ===============
 
 
-  * **Question:** what is the sequence of Agent.addContext(Pylon), Shard.addContext(Agent), and the internal call of Shard.register()
   * move endpoint management  into a new AgentWave class.
+  * use the MessagingShard interface to describe messaging shard capabilities.
 
 ### Configuration  
   * sort out deployment configuration in terms of how portability and visibility are implemented
