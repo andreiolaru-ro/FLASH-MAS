@@ -14,7 +14,7 @@ package net.xqhs.flash.core.shard;
 import java.io.Serializable;
 
 /**
- * Implementation for feature designations. A feature may either have a standard designation, or a custom designation.
+ * Implementation for shard designations. A shard may either have a standard designation, or a custom designation.
  * 
  * @author Andrei Olaru
  */
@@ -26,9 +26,9 @@ public class AgentShardDesignation implements Serializable
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Enumeration of standard feature names / functionalities.
+	 * Enumeration of standard shard names / functionalities.
 	 * <p>
-	 * The enumeration entries also contain information about the default implementation of the specified feature. The
+	 * The enumeration entries also contain information about the default implementation of the specified shard. The
 	 * name of the implementation class can be given when creating the entry, or can be inferred based on the name of
 	 * the entry and the constants in the enumeration.
 	 * 
@@ -37,96 +37,92 @@ public class AgentShardDesignation implements Serializable
 	public enum StandardAgentShard {
 		
 		/**
-		 * The designation of a feature extending {@link MessagingComponent}.
+		 * The designation of a shard offering messaging services.
 		 */
 		MESSAGING,
 		
 		;
 		
 		/**
-		 * Suffix for feature implementation.
+		 * Suffix for shard implementation.
 		 */
-		private static final String	AGENT_FEATURE_CLASS_SUFFIX	= "Feature";
-		/**
-		 * Default parent package containing default feature implementations.
-		 */
-		static final String			AGENT_FEATURE_PACKAGE_ROOT	= "tatami.core.features";
+		private static final String	AGENT_SHARD_CLASS_SUFFIX	= "Shard";
 		
 		/**
-		 * The fully qualified class name of the default feature implementation.
+		 * The fully qualified class name of the default shard implementation.
 		 */
-		String						featureClass;
+		String						shardClass;
 		
 		/**
-		 * The name of the feature, as appearing in the deployment file.
+		 * The name of the shard, as appearing in the deployment file.
 		 */
-		String						featureName;
+		String						shardName;
 		
 		/**
-		 * Specifies the fully qualified class name of the feature implementation.
+		 * Specifies the fully qualified class name of the shard implementation.
 		 * 
 		 * @param classname
-		 *            - the fully qualified class name.
+		 *                      - the fully qualified class name.
 		 */
 		private StandardAgentShard(String classname)
 		{
 			// FIXME: check that package and class exist
-			featureClass = classname;
-			featureName = this.name().toLowerCase();
+			shardClass = classname;
+			shardName = this.name().toLowerCase();
 		}
 		
 		/**
-		 * Infers the class of the feature implementation based on the name of the feature and constants in this class.
+		 * Infers the class of the shard implementation based on the name of the shard and constants in this class.
 		 */
 		private StandardAgentShard()
 		{
 			this(null);
 			// FIXME: check that package and class exist
-//			String featurePackage = AGENT_FEATURE_PACKAGE_ROOT + "." + featureName;
-//			featureClass = featurePackage + "." + featureName.substring(0, 1).toUpperCase() + featureName.substring(1)
-//					+ AGENT_FEATURE_CLASS_SUFFIX;
+			// String shardPackage = AGENT_SHARD_PACKAGE_ROOT + "." + shardName;
+			// shardClass = shardPackage + "." + shardName.substring(0, 1).toUpperCase() + shardName.substring(1)
+			// + AGENT_SHARD_CLASS_SUFFIX;
 		}
 		
 		/**
-		 * Gets the specified or inferred class name for the default implementation of the feature.
+		 * Gets the specified or inferred class name for the default implementation of the shard.
 		 * 
 		 * @return the class name.
 		 */
 		public String getClassName()
 		{
-			return featureClass;
+			return shardClass;
 		}
 		
 		/**
-		 * Gets the name of the feature, as appearing in the deployment file (in lowercase).
+		 * Gets the name of the shard, as appearing in the deployment file (in lowercase).
 		 * 
-		 * @return the name of the feature.
+		 * @return the name of the shard.
 		 */
-		public String featureName()
+		public String shardName()
 		{
-			return featureName;
+			return shardName;
 		}
 		
 		/**
-		 * @return the {@link AgentShardDesignation} corresponding to this standard feature.
+		 * @return the {@link AgentShardDesignation} corresponding to this standard shard.
 		 */
-		public AgentShardDesignation toAgentFeatureDesignation()
+		public AgentShardDesignation toAgentShardDesignation()
 		{
-			return AgentShardDesignation.standardFeature(this);
+			return AgentShardDesignation.standardShard(this);
 		}
 
 		/**
 		 * Returns the {@link StandardAgentShard} instance that corresponds to the specified name.
 		 * 
-		 * @param featureName
-		 *            - the name of the feature, as appearing in the deployment file.
+		 * @param shardName
+		 *                      - the name of the shard, as appearing in the deployment file.
 		 * @return the corresponding {@link StandardAgentShard} instance.
 		 */
-		public static StandardAgentShard toStandardAgentFeature(String featureName)
+		public static StandardAgentShard toStandardAgentShard(String shardName)
 		{
 			try
 			{
-				return StandardAgentShard.valueOf(featureName.toUpperCase());
+				return StandardAgentShard.valueOf(shardName.toUpperCase());
 			} catch(Exception e)
 			{
 				return null;
@@ -134,39 +130,39 @@ public class AgentShardDesignation implements Serializable
 		}
 		
 		/**
-		 * Combines the functionality of {@link #toStandardAgentFeature} and {@link #toAgentFeatureDesignation} to
-		 * return an {@link AgentShardDesignation} based on a feature name. If no appropriate standard feature is
-		 * found, <code>null</code> is returned.
+		 * Combines the functionality of {@link #toStandardAgentShard} and {@link #toAgentShardDesignation} to return an
+		 * {@link AgentShardDesignation} based on a shard name. If no appropriate standard shard is found,
+		 * <code>null</code> is returned.
 		 * 
-		 * @param featureName
-		 *            - the name of the feature, as appearing in the deployment file.
-		 * @return the {@link AgentShardDesignation} corresponding to this standard feature with the name;
+		 * @param shardName
+		 *                      - the name of the shard, as appearing in the deployment file.
+		 * @return the {@link AgentShardDesignation} corresponding to this standard shard with the name;
 		 *         <code>null</code> if none found.
 		 */
-		public static AgentShardDesignation toStandardAgentFeatureDesignation(String featureName)
+		public static AgentShardDesignation toStandardAgentShardDesignation(String shardName)
 		{
-			StandardAgentShard std = toStandardAgentFeature(featureName);
-			return std != null ? std.toAgentFeatureDesignation() : null;
+			StandardAgentShard std = toStandardAgentShard(shardName);
+			return std != null ? std.toAgentShardDesignation() : null;
 		}
 	}
 	
 	/**
-	 * This field is used if the designation designates a standard feature.
+	 * This field is used if the designation designates a standard shard.
 	 */
-	protected StandardAgentShard	standardFeature;
+	protected StandardAgentShard	standardShard;
 	
 	/**
-	 * This field is used if the designation designates a custom feature.
+	 * This field is used if the designation designates a custom shard.
 	 */
-	protected String				customFeature;
+	protected String				customShard;
 	
 	/**
 	 * Private constructor. One and only one argument must be non-<code>null</code> at a time.
 	 * 
 	 * @param standardsName
-	 *            - the standard feature.
+	 *                          - the standard shard.
 	 * @param customName
-	 *            - the custom feature name.
+	 *                          - the custom shard name.
 	 */
 	private AgentShardDesignation(StandardAgentShard standardsName, String customName)
 	{
@@ -174,54 +170,54 @@ public class AgentShardDesignation implements Serializable
 			throw new IllegalArgumentException("Both arguments cannot be non-null.");
 		if(standardsName == null && customName == null)
 			throw new IllegalArgumentException("Both arguments cannot be null.");
-		standardFeature = standardsName;
-		customFeature = customName;
+		standardShard = standardsName;
+		customShard = customName;
 	}
 	
 	/**
-	 * Creates a custom feature designation with the specified name.
+	 * Creates a custom shard designation with the specified name.
 	 * <p>
 	 * The name must not be the same as an existing {@link StandardAgentShard}.
 	 * 
-	 * @param featureName
-	 *            - the custom name.
+	 * @param shardName
+	 *                      - the custom name.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation customFeature(String featureName)
+	public static AgentShardDesignation customShard(String shardName)
 	{
-		if(StandardAgentShard.toStandardAgentFeature(featureName) != null)
-			throw new IllegalArgumentException("There already is a standard feature with the name " + featureName);
-		return new AgentShardDesignation(null, featureName);
+		if(StandardAgentShard.toStandardAgentShard(shardName) != null)
+			throw new IllegalArgumentException("There already is a standard shard with the name " + shardName);
+		return new AgentShardDesignation(null, shardName);
 	}
 	
 	/**
 	 * Creates a standard designation instance.
 	 * <p>
-	 * An easier way to do this is to call {@link StandardAgentShard#toAgentFeatureDesignation()}.
+	 * An easier way to do this is to call {@link StandardAgentShard#toAgentShardDesignation()}.
 	 * 
-	 * @param standardFeature
-	 *            - the standard feature.
+	 * @param standardShard
+	 *                          - the standard shard.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation standardFeature(StandardAgentShard standardFeature)
+	public static AgentShardDesignation standardShard(StandardAgentShard standardShard)
 	{
-		return new AgentShardDesignation(standardFeature, null);
+		return new AgentShardDesignation(standardShard, null);
 	}
 	
 	/**
 	 * Creates a designation that is either a standard designation, if one such designation is found, or a custom
 	 * designation, otherwise.
 	 * 
-	 * @param featureName
-	 *            - the name of the desired feature.
+	 * @param shardName
+	 *                      - the name of the desired shard.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation autoFeature(String featureName)
+	public static AgentShardDesignation autoDesignation(String shardName)
 	{
-		StandardAgentShard std = StandardAgentShard.toStandardAgentFeature(featureName);
+		StandardAgentShard std = StandardAgentShard.toStandardAgentShard(shardName);
 		if(std != null)
-			return standardFeature(std);
-		return customFeature(featureName);
+			return standardShard(std);
+		return customShard(shardName);
 	}
 	
 	@Override
@@ -229,25 +225,25 @@ public class AgentShardDesignation implements Serializable
 	{
 		if(!(obj instanceof AgentShardDesignation))
 			return false;
-		if(customFeature != null)
-			return customFeature.equals(((AgentShardDesignation) obj).customFeature);
-		return standardFeature.equals(((AgentShardDesignation) obj).standardFeature);
+		if(customShard != null)
+			return customShard.equals(((AgentShardDesignation) obj).customShard);
+		return standardShard.equals(((AgentShardDesignation) obj).standardShard);
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		if(customFeature != null)
-			return customFeature.hashCode();
-		return standardFeature.hashCode();
+		if(customShard != null)
+			return customShard.hashCode();
+		return standardShard.hashCode();
 	}
 	
 	@Override
 	public String toString()
 	{
 		// TODO: decide if there should be different rendering for the two cases.
-		if(customFeature != null)
-			return customFeature;
-		return standardFeature.featureName();
+		if(customShard != null)
+			return customShard;
+		return standardShard.shardName();
 	}
 }

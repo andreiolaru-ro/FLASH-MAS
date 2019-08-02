@@ -36,11 +36,12 @@ public interface Pylon extends ConfigurableEntity<Node>
 	 * infrastructure, for the specified shard type, if any. If no such recommendation exists, <code>null</code> will be
 	 * returned.
 	 * <p>
-	 * This is especially appropriate for shards that depend strongly on the platform, such as messaging and mobility.
-	 * Using this method, agents can be easily implemented by adding the recommended components of the platform.
+	 * This is especially appropriate for cases in which the implementation of the shards depends strongly on the
+	 * infrastructure, such as messaging and mobility. Using this method, agents can be easily implemented by adding the
+	 * shards recommended by the pylon.
 	 * 
 	 * @param shardType
-	 *            - the type/name of the shard to be recommended.
+	 *                      - the type/name of the shard to be recommended.
 	 * @return the name of the class containing the recommended implementation, or <code>null</code> if no
 	 *         recommendation is made.
 	 */

@@ -8,6 +8,10 @@
 Current targets
 ===============
 
+
+  * **Question:** what is the sequence of Agent.addContext(Pylon), Shard.addContext(Agent), and the internal call of Shard.register()
+  * move endpoint management  into a new AgentWave class.
+
 ### Configuration  
   * sort out deployment configuration in terms of how portability and visibility are implemented
     * who adds contexts and when (after all configuration is loaded or both after XML load and CLI parse?) ?
@@ -15,11 +19,9 @@ Current targets
   * manage portables for CLI entries
   
 ### Deployment / loading
-  * Question: what is the sequence of Agent.addContext(Pylon), Shard.addContext(Agent), and the internal call of Shard.register()
-
   * deploy a composite agent
-    * what do about having support implementations when pre-loading features
-      * should we leave loading (and finding) features to the composite agent, till after the agent is added all contexts? (who adds contexts?)
+    * what do about having support implementations when pre-loading shards
+      * should we leave loading (and finding) shards to the composite agent, till after the agent is added all contexts? (who adds contexts?)
 
 ### Utilities
   * implement getAppropriateTree / addAppropriateTree methods
@@ -131,7 +133,7 @@ Yes, for the cases where instantiating a class to create an entity is not enough
 
 
 
-Services / features
+Services / shards
 ===================
 
   * each shard uses one service (pylon)
@@ -261,7 +263,7 @@ Deployment configuration contains:
     * loaders (specified for entities and kinds)
     * support infrastructures
       * agents
-      * features
+      * shards
     * other entities
 
   * categories that are simple values will be overwritten, not added to (e.g. for load_order).
@@ -274,8 +276,8 @@ Future
     * flash package + kind + for + KindForLoader
     * flash package + core + agent 
   * multiple support implementations
-    * multiple features with the same designation
-  * interfaces for common features (e.g. messaging, kb, etc)
+    * multiple shards with the same designation
+  * interfaces for common shards (e.g. messaging, kb, etc)
 
 
 Workings

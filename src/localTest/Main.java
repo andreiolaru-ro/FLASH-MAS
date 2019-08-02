@@ -6,9 +6,9 @@ import java.util.List;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.shard.ShardContext;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
-import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
@@ -18,20 +18,20 @@ class TestAgent implements Agent {
 	private String name;
 	private SimpleLocalMessaging messagingShard;
 	private MessagingPylonProxy pylon;
-	public ShardContext proxy = new ShardContext() {
+	public ShardContainer proxy = new ShardContainer() {
 
 		@Override
 		public void postAgentEvent(AgentEvent event) {
-			System.out.println(event.getValue(MessagingShard.CONTENT_PARAMETER) + " de la "
-					+ event.getValue(MessagingShard.SOURCE_PARAMETER) + " la "
-					+ event.getValue(MessagingShard.DESTINATION_PARAMETER));
-			int message = Integer.parseInt(event.getValue(MessagingShard.CONTENT_PARAMETER));
+			System.out.println(event.getValue(AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
+					+ event.getValue(AbstractMessagingShard.SOURCE_PARAMETER) + " la "
+					+ event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER));
+			int message = Integer.parseInt(event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
 			if (message < 5) {
 				Thread eventThread = new Thread() {
 					@Override
 					public void run() {
-						messagingShard.sendMessage(event.getValue(MessagingShard.DESTINATION_PARAMETER),
-								event.getValue(MessagingShard.SOURCE_PARAMETER),
+						messagingShard.sendMessage(event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER),
+								event.getValue(AbstractMessagingShard.SOURCE_PARAMETER),
 								Integer.toString(message + 1));
 					}
 				};

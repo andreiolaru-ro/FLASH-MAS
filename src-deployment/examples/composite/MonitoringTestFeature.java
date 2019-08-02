@@ -43,7 +43,7 @@ public class MonitoringTestFeature extends CompositeAgentShard
 	 */
 	public MonitoringTestFeature()
 	{
-		super(AgentShardDesignation.customFeature("TESTING"));
+		super(AgentShardDesignation.customShard("TESTING"));
 	}
 	
 	@Override

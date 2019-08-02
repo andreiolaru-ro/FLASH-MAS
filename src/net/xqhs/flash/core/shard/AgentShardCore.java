@@ -64,7 +64,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private ShardContext			parentAgent;
+	private ShardContainer			parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -193,7 +193,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * @param oldParent
 	 *            - the previous value for the parent, if any.
 	 */
-	protected void parentChangeNotifier(ShardContext oldParent)
+	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		// this class does not do anything here.
 	}
@@ -248,9 +248,9 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	{
 		if(parentAgent != null)
 			return ler(false, "Parent already set");
-		if(parent == null || !(parent instanceof ShardContext))
+		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		parentAgent = (ShardContext) parent;
+		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;
 	}
@@ -276,7 +276,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 		if(parentAgent != parent)
 			return ler(false, "Argument is not the same as actual parent.");
 		parentAgent = null;
-		parentChangeNotifier((ShardContext) parent);
+		parentChangeNotifier((ShardContainer) parent);
 		return true;
 	}
 	
@@ -285,7 +285,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * 
 	 * @return the {@link CompositeAgent} that is the parent of this shard; <code>null</code> if there is no parent set.
 	 */
-	final protected ShardContext getAgent()
+	final protected ShardContainer getAgent()
 	{
 		return parentAgent;
 	}

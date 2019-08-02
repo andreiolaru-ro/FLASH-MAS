@@ -22,7 +22,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
-import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 
 /**
@@ -56,11 +56,11 @@ public class LocalSupport extends DefaultPylonImplementation
 	};
 
 	/**
-	 * Simple implementation of {@link MessagingShard}, that uses agents' names as their addresses.
+	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static class SimpleLocalMessaging extends MessagingShard
+	public static class SimpleLocalMessaging extends AbstractMessagingShard
 	{
 		/**
 		 * The serial UID.
@@ -92,7 +92,7 @@ public class LocalSupport extends DefaultPylonImplementation
 		public boolean sendMessage(String source, String destination, String content)
 		{
 			if (!(getAgent().getPylons().get(0) instanceof MessagingPylonProxy))
-				throw new IllegalStateException("Platform Link is not of expected type");
+				throw new IllegalStateException("Pylon Context is not of expected type");
 			pylon.send(source, destination, content);
 			return true;
 		}
@@ -139,7 +139,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	}
 	
 	/**
-	 * The registry of agents that can receive messages, specifying the {@link MessagingShard} receiving the
+	 * The registry of agents that can receive messages, specifying the {@link AbstractMessagingShard} receiving the
 	 * message.
 	 *
 	 */
@@ -206,10 +206,10 @@ public class LocalSupport extends DefaultPylonImplementation
 	}
 	
 	@Override
-	public String getRecommendedShardImplementation(AgentShardDesignation componentName) {
-		if (componentName == AgentShardDesignation.standardFeature(StandardAgentShard.MESSAGING))
+	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
+		if (shardName == AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING))
 			return SimpleLocalMessaging.class.getName();
-		return super.getRecommendedShardImplementation(componentName);
+		return super.getRecommendedShardImplementation(shardName);
 	}
 	
 	@Override

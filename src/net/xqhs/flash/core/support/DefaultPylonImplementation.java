@@ -21,11 +21,11 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 /**
- * The default platform for running agents. It is a minimal platform, offering no services.
+ * Pylon for the default support infrastructure for agents. It is a minimal infrastructure, offering no services.
  * <p>
  * The class extends {@link Unit} so as to make logging easy for extending implementations.
  * <p>
- * Loading agents on the platform will practically have no effect on the agents.
+ * Adding agents in the context of the pylon will practically have no effect on the agents.
  * 
  * @author Andrei Olaru
  */
@@ -102,10 +102,10 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	/**
-	 * The loader recommends no particular implementation for any component.
+	 * The loader recommends no particular implementation for any shard.
 	 */
 	@Override
-	public String getRecommendedShardImplementation(AgentShardDesignation componentName)
+	public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation)
 	{
 		return null;
 	}
@@ -137,10 +137,10 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 
 	/**
 	 * This implementation presumes that the address / name of the agent does not
-	 * contain any occurrence of {@link MessagingShard#ADDRESS_SEPARATOR} (currently
-	 * {@value MessagingShard#ADDRESS_SEPARATOR}).
+	 * contain any occurrence of {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently
+	 * {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
 	 */
 	public String extractAgentAddress(String endpoint) {
-		return endpoint.substring(0, endpoint.indexOf(MessagingShard.ADDRESS_SEPARATOR));
+		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
 	}
 }
