@@ -11,11 +11,11 @@
  ******************************************************************************/
 package examples.composite;
 
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.CompositeAgentShard;
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventHandler;
-import net.xqhs.flash.core.composite.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentFeature;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.util.logging.Logger;
@@ -43,7 +43,7 @@ public class MonitoringTestFeature extends CompositeAgentShard
 	 */
 	public MonitoringTestFeature()
 	{
-		super(AgentShardDesignation.customFeature("TESTING"));
+		super(AgentShardDesignation.customShard("TESTING"));
 	}
 	
 	@Override

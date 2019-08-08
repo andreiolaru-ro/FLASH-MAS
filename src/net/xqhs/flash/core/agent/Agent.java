@@ -12,14 +12,14 @@
 package net.xqhs.flash.core.agent;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.support.Pylon;
 
 /**
- * Interface for agents. Agents can exist in the context of support infrastructures.
+ * Interface for agents. Agents can exist in the context of support infrastructures (and, more concretely, pylons).
  * 
- * @author andreiolaru
+ * @author Andrei Olaru
  */
-public interface Agent extends Entity<Support>
+public interface Agent extends Entity<Pylon>
 {
 	// nothing to add, really.
 }

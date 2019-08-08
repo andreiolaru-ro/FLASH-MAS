@@ -13,7 +13,6 @@ package net.xqhs.flash.core.node;
 
 import net.xqhs.flash.core.Entity;
 
-
 public class Node implements Entity<Node>
 {
 	/**
@@ -56,24 +55,31 @@ public class Node implements Entity<Node>
 	}
 	
 	@Override
-	public boolean addContext(Node context)
+	public boolean addContext(EntityProxy<Node> context)
 	{
-		// TODO Auto-generated method stub
+		// unsupported
 		return false;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
 	{
-		// TODO Auto-generated method stub
+		// unsupported
 		return false;
 	}
 	
 	@Override
-	public boolean removeContext(Node context)
+	public boolean removeContext(EntityProxy<Node> context)
 	{
-		// TODO Auto-generated method stub
+		// unsupported
 		return false;
+	}
+	
+	@Override
+	public <C extends Entity<Node>> EntityProxy<C> asContext()
+	{
+		// no functionality offered
+		return null;
 	}
 	
 }

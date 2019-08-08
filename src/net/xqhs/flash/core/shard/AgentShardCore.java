@@ -16,7 +16,7 @@ import java.io.Serializable;
 import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -36,7 +36,7 @@ import net.xqhs.util.logging.Unit;
  * <p>
  * This implementation exclusively manages the relation with the shard's parent, and as such:
  * <ul>
- * <li>the parent agent must extend {@link ShardLink} if it wishes to be able to notify this shard of agent events.
+ * <li>the parent agent must be an {@link Agent}.
  * <li>{@link #addContext} and {@link #removeContext} methods are final; extending classes can override
  * {@link #parentChangeNotifier};
  * <li>extending classes can access the parent agent by means of {@link #getAgent};
@@ -64,7 +64,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private Agent					parentAgent;
+	private ShardContainer			parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -115,8 +115,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	
 	/**
 	 * Extending classes should override this method to verify and pre-load shard data, based on deployment data. The
-	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(Agent)} is called,
-	 * and actions depending on other shards after the AGENT_START event has occurred.
+	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(ShardContainer)} is
+	 * called, and actions depending on other shards after the AGENT_START event has occurred.
 	 * <p>
 	 * If the shard is surely not going to be able to load, <code>false</code> will be returned. For any non-fatal
 	 * issues, the method should return <code>true</code> and output warnings in the specified log.
@@ -130,8 +130,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * <p>
 	 * 
 	 * @param configuration
-	 *            - parameters for creating the shard. The parameters will be locked (see {@link MultiValueMap#lock()}
-	 *            from this moment on.
+	 *                          - parameters for creating the shard. The parameters will be locked (see
+	 *                          {@link MultiValueMap#lock()} from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -168,8 +168,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 		if(!isRunning)
 			return ler(false, "Shard is not running");
 		if(getAgent() == null)
-			throw new IllegalStateException(
-					"Shard is " + getShardDesignation() + " not in the context of an agent.");
+			throw new IllegalStateException("Shard is " + getShardDesignation() + " not in the context of an agent.");
 		isRunning = false;
 		return true;
 	}
@@ -194,7 +193,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * @param oldParent
 	 *            - the previous value for the parent, if any.
 	 */
-	protected void parentChangeNotifier(Agent oldParent)
+	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		// this class does not do anything here.
 	}
@@ -208,13 +207,13 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	}
 	
 	/**
-	 * The method calls is called by the parent {@link Agent} (in fact, by a class extending {@link ShardLink}) when an
-	 * event occurs.
+	 * The method calls is called by the parent {@link Agent} when an event occurs.
 	 * 
 	 * @param event
 	 *            - the event which occurred.
 	 */
-	protected void signalAgentEvent(AgentEvent event)
+	@Override
+	public void signalAgentEvent(AgentEvent event)
 	{
 		// This method does nothing here.
 	}
@@ -245,28 +244,22 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 *            - the {@link CompositeAgent} instance that this shard is part of.
 	 */
 	@Override
-	public final boolean addContext(Agent parent)
+	public final boolean addContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent != null)
 			return ler(false, "Parent already set");
-		if(parent == null || !(parent instanceof ShardLink))
+		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		parentAgent = parent;
+		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		try
-		{
-			return addContext((Agent) context);
-		} catch(ClassCastException e)
-		{
-			le("Added context is of incorrect type");
-			return false;
-		}
+		le("No general context supported for shards.");
+		return false;
 	}
 	
 	/**
@@ -276,14 +269,14 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * classes can take appropriate action.
 	 */
 	@Override
-	public final boolean removeContext(Agent parent)
+	public final boolean removeContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent == null)
 			return ler(false, "Parent is not set");
 		if(parentAgent != parent)
 			return ler(false, "Argument is not the same as actual parent.");
 		parentAgent = null;
-		parentChangeNotifier(parent);
+		parentChangeNotifier((ShardContainer) parent);
 		return true;
 	}
 	
@@ -292,8 +285,15 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * 
 	 * @return the {@link CompositeAgent} that is the parent of this shard; <code>null</code> if there is no parent set.
 	 */
-	final protected Agent getAgent()
+	final protected ShardContainer getAgent()
 	{
 		return parentAgent;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public EntityProxy<AgentShard> asContext()
+	{
+		throw new UnsupportedOperationException("THe AgentSharCore cannot be a context of another entity.");
 	}
 }

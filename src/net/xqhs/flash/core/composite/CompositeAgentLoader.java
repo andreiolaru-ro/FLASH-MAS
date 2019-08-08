@@ -103,7 +103,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 					log.error(logPre + "Shard has neither name nor class specified. Shard will not be available.");
 					continue;
 				}
-				AgentShardDesignation shardDesignation = AgentShardDesignation.autoFeature(shardName);
+				AgentShardDesignation shardDesignation = AgentShardDesignation.autoDesignation(shardName);
 				if(platformLoader != null)
 				{
 					String recommendedClass = platformLoader.getRecommendedShardImplementation(shardDesignation);
@@ -149,7 +149,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 				XMLNode param = paramsIt.next();
 				componentData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
 			}
-			if(StandardAgentShard.PARAMETRIC_COMPONENT.featureName().equals(shardName))
+			if(StandardAgentShard.PARAMETRIC_COMPONENT.shardName().equals(shardName))
 				componentData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
 						agentCreationData.getParameters());
 			
@@ -179,7 +179,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	{
 		CompositeAgent agent = new CompositeAgent();
 		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addFeature((AgentShardCore) componentObj);
+			agent.addShard((AgentShardCore) componentObj);
 		return agent;
 	}
 }

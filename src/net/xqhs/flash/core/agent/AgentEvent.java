@@ -9,15 +9,16 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.composite;
+package net.xqhs.flash.core.agent;
 
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
- * The class stores an agent event, characterized by its type and, optionally, a set of parameters that have names.
+ * The class models an agent event, characterized by its type and, optionally, a set of parameters that have names.
  * <p>
- * The class is baked by a {@link MultiValueMap}.
+ * The class extends {@link MultiValueMap}, so the same methods can be used to manage parameters.
+ * <p>
+ * There are several predefined types of agent events, as seen in {@link AgentEventType}.
  * 
  * @author andreiolaru
  */
@@ -27,7 +28,7 @@ public class AgentEvent extends MultiValueMap
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = 379942317804425591L;
-
+	
 	/**
 	 * The enumeration specified the full set of agent-internal events that can occur.
 	 * 
@@ -36,12 +37,12 @@ public class AgentEvent extends MultiValueMap
 	public static enum AgentEventType {
 		
 		/**
-		 * Event occurs when the agent starts and the components need to be initialized.
+		 * Event occurs when the agent starts and its functionality (e.g. shards) need to be initialized.
 		 */
 		AGENT_START(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
-		 * Event occurs when the agent must be destroyed and components need to close.
+		 * Event occurs when the agent must be destroyed.
 		 */
 		AGENT_STOP(AgentSequenceType.DESTRUCTIVE),
 		
@@ -56,32 +57,27 @@ public class AgentEvent extends MultiValueMap
 		AFTER_MOVE(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
-		 * Event occurs when the agent has received a message. Events of this type will only get posted when no
-		 * messaging component exists; otherwise, message routing will be handled by the messaging component.
+		 * Event occurs when the agent has received a message, an input, or another type of (generally external) event.
+		 * The other parameters of the agent event are the actual parameters of the wave.
 		 */
-		AGENT_MESSAGE(AgentSequenceType.UNORDERED),
-		
-		/**
-		 * Event occurs when an active input (see AgentGui) is activated by the user and the agent must react to it.
-		 */
-		GUI_INPUT(AgentSequenceType.UNORDERED),
+		AGENT_WAVE(AgentSequenceType.UNORDERED),
 		
 		/**
 		 * Event occurs when the start of the simulation is requested by the user.
 		 */
-		SIMULATION_START(AgentSequenceType.UNORDERED),
+		SIMULATION_START(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
 		 * Event occurs when the simulation is paused by the user.
 		 */
-		SIMULATION_PAUSE(AgentSequenceType.UNORDERED),
+		SIMULATION_PAUSE(AgentSequenceType.DESTRUCTIVE),
 		
 		;
 		
 		/**
 		 * The sequence type that is characteristic to the event.
 		 */
-		protected AgentSequenceType	sequenceType;
+		protected AgentSequenceType sequenceType;
 		
 		/**
 		 * The constructor assigns a sequence type to the event type.
@@ -104,53 +100,47 @@ public class AgentEvent extends MultiValueMap
 	}
 	
 	/**
-	 * The sequence type of an agent event specifies the order in which components should be notified of the event.
+	 * The sequence type of an agent event specifies the order in which its components (e.g. shards) should be notified
+	 * of the event.
 	 * 
 	 * @author Andrei Olaru
 	 */
 	public static enum AgentSequenceType {
 		
 		/**
-		 * The components should be invoked in the order they were added.
+		 * The notification should follow the order in which functionality was added to the agent.
 		 */
 		CONSTRUCTIVE,
 		
 		/**
-		 * The components should be invoked in inverse order as to that in which they were added.
+		 * The notification should follow in reverse the order in which functionality was added to the agent.
 		 */
 		DESTRUCTIVE,
 		
 		/**
-		 * The components can be invoked in any order.
+		 * The notification can be disseminated inside the agent in an arbitrary order.
 		 */
 		UNORDERED,
 	}
 	
 	/**
-	 * The interface should be implemented by a class that can handle agent events for an agent component. Each
-	 * {@link AgentShardCore} instance is able to register, for each event, an event handler.
-	 * <p>
-	 * The class also contains enumerations relevant to event handling: event types ( {@link AgentEventType}) and types
-	 * of sequences for events ({@link AgentSequenceType}).
+	 * The interface should be implemented by any class that can be used as a callback for agent events.
 	 * 
 	 * @author Andrei Olaru
 	 */
 	public interface AgentEventHandler
 	{
 		/**
-		 * The method is invoked whenever the event is posted to the {@link CompositeAgent} the component is part of.
-		 * <p>
-		 * The handlers in various components will be invoked (through the method in {@link AgentShardCore}) in the
-		 * order specified by the {@link AgentSequenceType} associated with the event.
+		 * The method is invoked as a callback when an appropriate event occurs.
 		 * 
 		 * @param event
-		 *            - the event that occurred.
+		 *                  - the event that occurred.
 		 */
 		public void handleEvent(AgentEvent event);
 	}
 	
 	/**
-	 * The name of the parameter in the parameter set, storing the type of the event.
+	 * The name of the parameter in the multi-map, storing the type of the event.
 	 */
 	protected static final String EVENT_TYPE_PARAMETER_NAME = "EVENT_TYPE";
 	
