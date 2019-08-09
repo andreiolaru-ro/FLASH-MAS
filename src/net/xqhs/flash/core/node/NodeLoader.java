@@ -20,6 +20,7 @@ import java.util.Map;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -102,7 +103,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
-	public Node load(MultiTreeMap nodeConfiguration, List<Entity<?>> context)
+	public Node load(MultiTreeMap nodeConfiguration, List<EntityProxy<Entity<?>>> context)
 	{
 		if(context != null && context.size() > 0)
 			lw("nodes don't support context");
@@ -292,7 +293,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							for(Loader<?> loader : loaderList)
 							{ // try loading
 								lf("Trying to load [][] using []th loader for [][]", catName, kind,
-										new Integer(log_nLoader), log_catLoad, log_kindLoad);
+										Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
 								if(loader.preload(entityConfig))
 									entity = loader.load(entityConfig);
 								if(entity != null)

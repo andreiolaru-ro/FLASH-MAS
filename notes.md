@@ -167,6 +167,8 @@ Context
   * the entity B must have been declared (in the deployment) as a descendant of entity A
   * the configuration of a portable entity will be copied to all elements from the element where it has been declared down to its parent entity
   * actual entity instances will be created only for the copy inside the parent (entity C)
+  * TODO
+    * the case when a portable entity has no target where it can be ported in the present, but should be kept somewhere in the configuration to be ported to any legal targets that may be loaded dynamically later on
  
 **Parents**
   * parents specify where an entity can be declared (inside which other entity)
@@ -178,13 +180,17 @@ Context
       * if the parent can be auto-added, and a sibling instance P exists, entity A will be added automatically to instance P (the one with the highest priority)
     * the parent can be mandatory
       * if the parent is mandatory, entity A must be declared inside an entity of type P (additional entities may exist between A and P in more custom deployments)
+      * if the parent must be auto-added, it is;
       * if the parent can be auto-generated (is a property of the parent), the deployment configuration will attempt to generate a parent P (this may lead to further generation of auto-generated parents)
-      * if the parent must be auto-added, it is; if a sibling instance does not exist, it is an error and entity A is not added to the deployment
+      * if the parent cannot be auto-generated or auto-added (or no appropriate sibling exists), it is an error;
+    * it is allowed to have **intermediate** entities between A and P, both in the optional and mandatory cases
     
 **TODO: test cases**
   * no deployment file (or file not found)
   * no schema file
   * invalid deployment file
+  * intermediate entities between predefined levels (e.g. node -> agentarray -> agent)
+    * what happens to porting? and how are correct parents considered?
 
 
 XML
