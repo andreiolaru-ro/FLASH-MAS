@@ -743,6 +743,16 @@ public class MultiTreeMap extends MultiValueMap
 		return this;
 	}
 	
+	/**
+	 * Creates a shallow copy of this {@link MultiTreeMap}, by creating a new instance with the same parings (the same
+	 * backing map) as the original; new, identical lists are created for the simple keys, the tree keys, and the
+	 * singleton keys.
+	 * <p>
+	 * NOTE THAT the values are the same in both maps. That is, both maps have references to the same instances for
+	 * values.
+	 * 
+	 * @return the shallow copy of this map.
+	 */
 	public MultiTreeMap copyShallow()
 	{
 		MultiTreeMap ret = new MultiTreeMap();
