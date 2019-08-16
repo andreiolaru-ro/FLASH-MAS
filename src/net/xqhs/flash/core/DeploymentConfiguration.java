@@ -384,7 +384,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 			}
 		for(String rem : toRemove)
 			liftedEntities.removeKey(rem);
-			
+		
 		// auto-generate entities
 		for(String liftedCatName : liftedEntities.getKeys())
 			if(CategoryName.byName(liftedCatName) != null)
@@ -512,10 +512,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		{
 			// node must be integrated as a different entity
 			String childCatName = getXMLNodeCategory(child);
-			// create implicit root entity, if necessary
-			// manageImplicitRoot(CategoryName.byName(childCatName), rootTree, context);
-			MultiTreeMap childCatTree = integrateChildCat(context.getFirst().elemTree, context.getFirst().category,
-					childCatName, log);
+			MultiTreeMap childCatTree = integrateChildCat(context.getFirst().elemTree, childCatName, log);
 			if(childCatTree == null)
 				continue;
 			// process child
@@ -611,7 +608,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 				// integrate in current context.
 				CtxtTriple cCtxt = context.peek();
 				
-				MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, cCtxt.category, catName, log);
+				MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 				MultiTreeMap node;
 				if(subCatTree.isHierarchical(name))
 					node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
@@ -678,12 +675,19 @@ public class DeploymentConfiguration extends MultiTreeMap
 	
 	/**
 	 * Common XML/CLI functionality: add a parameter and its value to a tree; if already added as a single, overwrite.
-	 * It is added as a multiple name by default. it..
+	 * It is added as a multiple name by default.
 	 * 
+	 * @param node
+	 *                        - the node in which to place the parameter.
+	 * @param par
+	 *                        - the name of the parameter.
+	 * @param val
+	 *                        - the value of the parameter
 	 * @param asSingleton
 	 *                        - if the parameter is a singleton value.
+	 * @param log
+	 *                        - the log to use.
 	 */
-	@SuppressWarnings("javadoc")
 	protected static void addParameter(MultiTreeMap node, String par, String val, boolean asSingleton, Logger log)
 	{
 		if(node.containsHierarchicalName(par))
@@ -698,13 +702,18 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * Common XML/CLI functionality: retrieve or create a category node for a child entity inside the node of a parent
 	 * entity.
 	 * <p>
-	 * Checks if it is correct to nest the child category inside the parent category.
-	 * <p>
 	 * If the child category is unique, checks if there is an existing entity in that category.
+	 * 
+	 * @param parentNodeTree
+	 *                           - the node in which to integrate / from which to retrieve the category; the node should
+	 *                           represent an entity.
+	 * @param subCatName
+	 *                           - the category to integrate / retrieve.
+	 * @param log
+	 *                           - the log to use.
+	 * @return the node associated with the category; is a new node if the category was not pre-existing.
 	 */
-	@SuppressWarnings("javadoc")
-	protected static MultiTreeMap integrateChildCat(MultiTreeMap parentNodeTree, String parentCat, String subCatName,
-			Logger log)
+	protected static MultiTreeMap integrateChildCat(MultiTreeMap parentNodeTree, String subCatName, Logger log)
 	{
 		CategoryName subCat = CategoryName.byName(subCatName);
 		if(parentNodeTree.containsKey(subCatName))
@@ -743,7 +752,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * @param log
 	 *                     - the {@link Logger} to use.
 	 * 
-	 * @return the name of the entity that
+	 * @return the name of the entity that was added.
 	 */
 	protected static String integrateName(MultiTreeMap node, CategoryName category, MultiTreeMap catTree,
 			MultiTreeMap rootTree, Logger log)
@@ -797,7 +806,14 @@ public class DeploymentConfiguration extends MultiTreeMap
 		return name;
 	}
 	
-	@SuppressWarnings("javadoc")
+	/**
+	 * For a node in the deployment XML, retrieve the name of the category of the entity that the node describes. Can be
+	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attreibute.
+	 * 
+	 * @param XMLnode
+	 *                    - the node to process.
+	 * @return the name of the category of the node.
+	 */
 	protected static String getXMLNodeCategory(XMLNode XMLnode)
 	{
 		String catName = XMLnode.getName();
