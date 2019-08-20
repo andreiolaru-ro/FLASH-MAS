@@ -142,6 +142,18 @@ Services / shards
 Configuration
 =============
 
+Deployment configuration contains:
+  * node information
+    * Schema & deployment XML (simple keys, first value counts)
+    * general configuration settings (e.g. network configuration) for this node (tree key)
+    * the load order -- what entities to load and order in which to load entities
+    * package list (simple key, all values are relevant)
+    * loaders (specified for entities and kinds)
+    * support infrastructures
+    * agents
+    * shards
+    * other entities
+  
 Assembling parts to form a name would be done *only* for entities for which this union can stand for its identifier.
 
 Unnamed entities are allowed, but cannot be referenced (such as for <in-context-of>).
@@ -256,20 +268,19 @@ Future
 Loading / Boot
 ==============
 
-Deployment configuration contains:
-  * node information
-    * Schema & deployment XML (simple keys, first value counts)
-    * general configuration settings (e.g. network configs) for this node (tree key)
-    * the load order -- what entities to load and order in which to load entities
-    * package list (simple key, all values are relevant)
-    * loaders (specified for entities and kinds)
-    * support infrastructures
-      * agents
-      * shards
-    * other entities
 
-  * categories that are simple values will be overwritten, not added to (e.g. for load_order).
-  
+**Sequence**
+  * load the configuration (done in NodeLoader)
+    * create a node
+    * load all entities in the configuration -- nothing is running yet, but a loaded entity can take registrations
+    * all contexts are added
+    * the node registers all entities which have loaded successfully and are
+      * present in the load order, or
+      * direct children in the deployment configuration
+  * start the deployment (by starting each node on the current machine)
+    * start the entities registered in the node, in the order in which they have been loaded
+
+
 Future
 ------
   * maybe: multiple default location for classes. E.g. for agent loaders possible classpath can be:
@@ -287,7 +298,7 @@ Workings
 
 Changed
 -------
-  * Shards can be started and stoppped regardless of agent state.
+  * Shards can be started and stopped regardless of agent state.
 
 
 General

@@ -11,33 +11,80 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import net.xqhs.flash.core.Entity;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-public class Node implements Entity<Node>
+import net.xqhs.flash.core.Entity;
+import net.xqhs.util.logging.Unit;
+
+public class Node extends Unit implements Entity<Node>
 {
+	/**
+	 * The name of the node.
+	 */
+	protected String						name				= null;
+	
+
+	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
+	
+	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
 	 * @param name
-	 *            the name of the node, if any. Can be <code>null</code>.
+	 *                 the name of the node, if any. Can be <code>null</code>.
 	 */
 	public Node(String name)
 	{
-		// TODO Auto-generated constructor stub
+		this.name = name;
+	}
+	
+	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
+	{
+		entityOrder.add(entity);
+		if(!registeredEntities.containsKey(entityType))
+			registeredEntities.put(entityType, new LinkedList<Entity<?>>());
+		registeredEntities.get(entityType).add(entity);
+		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
 	
 	@Override
 	public boolean start()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		li("Starting node [].", name);
+		for(Entity<?> entity : entityOrder)
+		{
+			lf("starting an entity...");
+			if(entity.start())
+				lf("entity started successfully.");
+			else
+				le("failed to start entity.");
+		}
+		li("Node [] started.", name);
+		return true;
 	}
 	
 	@Override
 	public boolean stop()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		li("Stopping node [].", name);
+		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
+		Collections.reverse(reversed);
+		for(Entity<?> entity : reversed)
+			if(entity.isRunning())
+			{
+				lf("stopping an entity...");
+				if(entity.stop())
+					lf("entity stopped successfully.");
+				else
+					le("failed to stop entity.");
+			}
+		li("Node [] stopped.", name);
+		return true;
 	}
 	
 	@Override
@@ -62,7 +109,7 @@ public class Node implements Entity<Node>
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		// unsupported
 		return false;

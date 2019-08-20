@@ -20,6 +20,7 @@ import java.util.Map;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -50,14 +51,14 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * <p>
 	 * 
 	 * @param args
-	 *            - the arguments received by the program.
+	 *                 - the arguments received by the program.
 	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
 	public List<Node> loadDeployment(List<String> args)
 	{
 		lf("Booting Flash-MAS.");
 		
-		// ============================================================================== load settings & scenario
+		// load settings & scenario
 		MultiTreeMap deploymentConfiguration = null;
 		try
 		{
@@ -73,22 +74,21 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		MultiTreeMap nodesTrees = deploymentConfiguration.getSingleTree(CategoryName.NODE.s());
 		if(nodesTrees == null)
-			// in case of no configuration, create an empty node
-			nodesTrees = new MultiTreeMap().addOneTree(null, new MultiTreeMap());
+		{ // the DeploymentConfiguration should have created at least an empty node.
+			le("No nodes present in the configuration.");
+			return null;
+		}
 		for(String nodeName : nodesTrees.getTreeKeys())
 		{
-			int index = 0;
 			for(MultiTreeMap nodeConfig : nodesTrees.getTrees(nodeName))
 			{
-				lf("Loading node ", (nodeName != null ? nodeName : "<noname>")
-						+ (nodesTrees.getTrees(nodeName).size() > 1 ? "#" + index : ""));
+				lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(), nodeName));
 				Node node = load(nodeConfig, null);
 				if(node != null)
 					nodes.add(node);
-				index += 1;
 			}
 		}
-		
+		lf("[] nodes loaded.", Integer.valueOf(nodes.size()));
 		doExit();
 		return nodes;
 	}
@@ -97,9 +97,9 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param nodeConfiguration
-	 *            - the configuration.
+	 *                              - the configuration.
 	 * @param context
-	 *            - this argument is not used; nodes don't support context.
+	 *                              - this argument is not used; nodes don't support context.
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
@@ -114,7 +114,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param nodeConfiguration
-	 *            - the configuration.
+	 *                              - the configuration.
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
@@ -122,6 +122,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	{
 		// node instance creation
 		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
+		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
 		
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
@@ -238,7 +239,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 						// try to parse the name / obtain a kind (in order to find an appropriate loader)
 						String kind = null, id = null, cp = entityConfig.get(SimpleLoader.CLASSPATH_KEY);
 						if(name != null && name.contains(NAMESEP))
-						{ // if name is splittable, split it into kind and id
+						{ // if name is can be split, split it into kind and id
 							kind = name.split(NAMESEP)[0];
 							id = name.split(NAMESEP, 2)[1];
 						}
@@ -261,7 +262,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 								id = name;
 						}
 						
-						// find a loader for the enitity
+						// find a loader for the entity
 						List<Loader<?>> loaderList = null;
 						String log_catLoad = null, log_kindLoad = null;
 						int log_nLoader = 0;
@@ -319,7 +320,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 								entity = defaultLoader.load(entityConfig);
 						}
 						if(entity != null)
+						{
 							li("Entity [] of type [] loaded.", name, catName);
+							node.registerEntity(catName, entity, id);
+						}
 						else
 							le("Could not load entity [] of type [].", name, catName);
 					}
@@ -333,7 +337,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Makes the first letter of the given string upper-case.
 	 * 
 	 * @param s
-	 *            - the string.
+	 *              - the string.
 	 * @return the string with the first letter converted to upper-case.
 	 */
 	static String capitalize(String s)
@@ -363,23 +367,23 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *            - a list of java packages in which to search.
+	 *                         - a list of java packages in which to search.
 	 * @param given_cp
-	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
-	 *            class. This classpath will also be searched in the list of packages.
+	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
+	 *                         for the class. This classpath will also be searched in the list of packages.
 	 * @param root_package
-	 *            - the root package in which to search.
+	 *                         - the root package in which to search.
 	 * @param upper_name
-	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
 	 * @param lower_name
-	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
-	 *            class have been searched).
+	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
+	 *                         where the class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	protected static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String root_package,

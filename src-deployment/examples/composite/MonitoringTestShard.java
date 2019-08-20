@@ -14,20 +14,20 @@ package examples.composite;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.CompositeAgentShard;
-import net.xqhs.flash.core.shard.AgentFeature;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
- * An {@link AgentFeature} implementation that monitors all agent events.
+ * An {@link AgentShard} implementation that monitors all agent events.
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestFeature extends CompositeAgentShard
+public class MonitoringTestShard extends CompositeAgentShard
 {
 	/**
 	 * The UID.
@@ -41,7 +41,7 @@ public class MonitoringTestFeature extends CompositeAgentShard
 	/**
 	 * Default constructor
 	 */
-	public MonitoringTestFeature()
+	public MonitoringTestShard()
 	{
 		super(AgentShardDesignation.customShard("TESTING"));
 	}
@@ -80,7 +80,7 @@ public class MonitoringTestFeature extends CompositeAgentShard
 	}
 	
 	@Override
-	protected void parentChangeNotifier(CompositeAgent oldParent)
+	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		super.parentChangeNotifier(oldParent);
 		
