@@ -8,13 +8,12 @@
 Current targets
 ===============
 
-  * move endpoint management  into a new AgentWave class.
+  * move endpoint management into a new AgentWave class.
   * use the MessagingShard interface to describe messaging shard capabilities.
 
 ### Configuration  
-  * sort out deployment configuration in terms of how portability and visibility are implemented
-    * who adds contexts and when (after all configuration is loaded or both after XML load and CLI parse?) ?
-    * how are contexts correctly fused, especially when porting items?
+  * creating default node and support
+  * adding contexts
   * manage portables for CLI entries
   
 ### Deployment / loading
