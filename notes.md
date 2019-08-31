@@ -13,13 +13,17 @@ Current targets
 
 ### Configuration  
   * creating default node and support
-    * remove default entities that are not useful (no non-portable, non-auto-generated entity has been added)
+    * remove default entities that are not useful 
+      * retain the ids of default created entities
+      * check if there is any entity in their context which is not default
   * ported identifiable entities should be copied with different, unique, names
+  * identifiability is probably useless at configuration phase; should support duplicate names for all entities; should add all entities to the entity list
   * what to do when the agents are inside the support, but the node is supposed to load the agents (but the agent list is in deployment).
   * adding contexts
   * manage portables for CLI entries
   
 ### Deployment / loading
+  * move deployment loading from NodeLoader to a new DeploymentLoader class?
   * deploy a composite agent
     * what do about having support implementations when pre-loading shards
       * should we leave loading (and finding) shards to the composite agent, till after the agent is added all contexts? (who adds contexts?)

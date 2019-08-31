@@ -59,7 +59,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		lf("Booting Flash-MAS.");
 		
 		// load settings & scenario
-		MultiTreeMap deploymentConfiguration = null;
+		DeploymentConfiguration deploymentConfiguration = null;
 		try
 		{
 			deploymentConfiguration = new DeploymentConfiguration().loadConfiguration(args, true, null);
@@ -72,21 +72,20 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		List<Node> nodes = new LinkedList<>();
 		
-		MultiTreeMap nodesTrees = deploymentConfiguration.getSingleTree(CategoryName.NODE.s());
-		if(nodesTrees == null)
+		List<MultiTreeMap> nodesTrees = DeploymentConfiguration
+				.filterCategoryInContext(deploymentConfiguration.getEntityList(), CategoryName.NODE.s(), null);
+		if(nodesTrees == null || nodesTrees.isEmpty())
 		{ // the DeploymentConfiguration should have created at least an empty node.
 			le("No nodes present in the configuration.");
 			return null;
 		}
-		for(String nodeName : nodesTrees.getTreeKeys())
+		for(MultiTreeMap nodeConfig : nodesTrees)
 		{
-			for(MultiTreeMap nodeConfig : nodesTrees.getTrees(nodeName))
-			{
-				lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(), nodeName));
-				Node node = load(nodeConfig, null);
-				if(node != null)
-					nodes.add(node);
-			}
+			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
+					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
+			Node node = load(nodeConfig, null);
+			if(node != null)
+				nodes.add(node);
 		}
 		lf("[] nodes loaded.", Integer.valueOf(nodes.size()));
 		doExit();

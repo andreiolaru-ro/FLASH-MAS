@@ -37,7 +37,7 @@ public class DeploymentTest
 		// simple deployments
 		
 		test_args += " -node main";
-		test_args += " -support some";
+		// test_args += " -support some";
 		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
 		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
 		

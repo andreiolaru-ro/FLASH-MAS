@@ -66,7 +66,7 @@ public enum CategoryName {
 	/**
 	 * Agents to create in the deployment, potentially inside particular support infrastructures (hierarchical key).
 	 */
-	AGENT(new CatPar().isIdentifiable().hasParent(SUPPORT, CatPar.CAN_ADD_AUTO)),
+	AGENT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(SUPPORT, CatPar.CAN_ADD_AUTO)),
 	/**
 	 * Shards to be deployed in agents (hierarchical key).
 	 */
@@ -448,7 +448,7 @@ public enum CategoryName {
 	/**
 	 * @return the hierarchical path of the category, from the parent to the farthest ancestor.
 	 */
-	List<String> getAncestorsList()
+	public List<String> getAncestorsList()
 	{
 		List<String> path = (parameters.parent == null) ? new LinkedList<>() : parameters.parent.getAncestorsList();
 		if(parameters.parent != null)
