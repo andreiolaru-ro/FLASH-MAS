@@ -13,6 +13,9 @@ Current targets
 
 ### Configuration  
   * creating default node and support
+    * remove default entities that are not useful (no non-portable, non-auto-generated entity has been added)
+  * ported identifiable entities should be copied with different, unique, names
+  * what to do when the agents are inside the support, but the node is supposed to load the agents (but the agent list is in deployment).
   * adding contexts
   * manage portables for CLI entries
   
@@ -176,10 +179,8 @@ Context
 **Porting**
   * an entity B can be ported from an entity A to an entity C (which is also its declared parent in hierarchy)
   * the entity B must have been declared (in the deployment) as a descendant of entity A
-  * the configuration of a portable entity will be copied to all elements from the element where it has been declared down to its parent entity
+  * the configuration of a portable entity will be **copied** to all elements from the element where it has been declared down to its parent entity
   * actual entity instances will be created only for the copy inside the parent (entity C)
-  * TODO
-    * the case when a portable entity has no target where it can be ported in the present, but should be kept somewhere in the configuration to be ported to any legal targets that may be loaded dynamically later on
  
 **Parents**
   * parents specify where an entity can be declared (inside which other entity)

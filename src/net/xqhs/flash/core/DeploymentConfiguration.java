@@ -375,7 +375,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		for(String portedCatName : portableEntities.getKeys())
 			if(category.equals(CategoryName.byName(portedCatName).getParent()))
 			{ // port the ported entities to this element
-				elemTree.copyNameFrom(portableEntities, portedCatName);
+				elemTree.copyNameFromDeep(portableEntities, portedCatName);
 				toRemove.add(portedCatName);
 			}
 		for(String rem : toRemove)
@@ -591,15 +591,13 @@ public class DeploymentConfiguration extends MultiTreeMap
 				String name = args.next();
 				
 				// create / find the context
-				// search upwards in the current context
+				// search upwards in the current context for a parent or at least an ancestor
 				// save the current context, in case no appropriate context found upwards
 				Deque<CtxtTriple> savedContext = new LinkedList<>(context);
 				while(!context.isEmpty())
 				{
 					if(context.peek().elemTree.isHierarchical(catName)
-							|| (category != null && context.peek().category.equals(category.getParent()))) // TODO use
-																											// ancestor
-																											// list
+							|| (category != null && category.getAncestorsList().contains(context.peek().category)))
 					{ // found a level that contains the same category;
 						// will insert new element in this context
 						// childCatTree = context.peek().elemTree.getSingleTree(catName);
@@ -804,7 +802,6 @@ public class DeploymentConfiguration extends MultiTreeMap
 		}
 		
 		// add to entity list if the entity is identifiable (even if no name)
-		String id = "#" + node.hashCode();
 		if(category != null && category.isIdentifiable())
 		{
 			if(category.isUnique())
@@ -818,6 +815,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 			rootTree.getSingleTree(NAME_LIST_ENTRY, true).addSingleTree(name, node);
 		else if(category != CategoryName.DEPLOYMENT)
 		{
+			String id = "#" + node.hashCode();
 			rootTree.getSingleTree(NAME_LIST_ENTRY, true).addSingleTree(id, node);
 			node.addSingleValue(NAME_LIST_ENTRY, id);
 		}
@@ -827,7 +825,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	
 	/**
 	 * For a node in the deployment XML, retrieve the name of the category of the entity that the node describes. Can be
-	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attreibute.
+	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attribute.
 	 * 
 	 * @param XMLnode
 	 *                    - the node to process.
