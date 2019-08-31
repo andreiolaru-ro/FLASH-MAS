@@ -826,6 +826,15 @@ public class MultiTreeMap extends MultiValueMap
 		}
 	}
 	
+	@Override
+	public MultiValueMap removeKey(String name)
+	{
+		simpleKeys.remove(name);
+		treeKeys.remove(name);
+		singletonKeys.remove(name);
+		return super.removeKey(name);
+	}
+	
 	/**
 	 * Custom string output, with specific depth and potentially a shorter format.
 	 * 
