@@ -97,8 +97,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public String getName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return name;
 	}
 	
 	@Override
