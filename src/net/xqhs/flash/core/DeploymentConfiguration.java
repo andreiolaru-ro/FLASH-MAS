@@ -108,6 +108,11 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * The name under which the category of an element is entered in the element.
 	 */
 	public static final String				CATEGORY_ATTRIBUTE_NAME			= "#category-type";
+	/**
+	 * The name of a parameter in the configuration {@link MultiTreeMap} of an entity indicating that the entity has
+	 * already been loaded.
+	 */
+	public static final String				LOADED_ATTRIBUTE_NAME			= "#loaded";
 	
 	/**
 	 * Root package for FLASH classes.
@@ -150,11 +155,11 @@ public class DeploymentConfiguration extends MultiTreeMap
 		 * Constructor.
 		 * 
 		 * @param cat
-		 *                         - category name.
+		 *            - category name.
 		 * @param categoryTree
-		 *                         - category tree (may be <code>null</code>).
+		 *            - category tree (may be <code>null</code>).
 		 * @param elTree
-		 *                         - current element tree (may be <code>null</code>).
+		 *            - current element tree (may be <code>null</code>).
 		 */
 		public CtxtTriple(String cat, MultiTreeMap categoryTree, MultiTreeMap elTree)
 		{
@@ -204,18 +209,18 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * argument should be set to <code>true</code>.
 	 * 
 	 * @param programArguments
-	 *                                - the arguments passed to the application, exactly as they were passed.
+	 *            - the arguments passed to the application, exactly as they were passed.
 	 * @param parseDeploymentFile
-	 *                                - if <code>true</code>, the deployment file will be parsed to obtain the setting
-	 *                                values placed in the deployment; also, the {@link XMLTree} instance resulting from
-	 *                                the parsing will be placed as content in the last parameter.
+	 *            - if <code>true</code>, the deployment file will be parsed to obtain the setting values placed in the
+	 *            deployment; also, the {@link XMLTree} instance resulting from the parsing will be placed as content in
+	 *            the last parameter.
 	 * @param loadedXML
-	 *                                - if the deployment file is parsed and this argument is not <code>null</code>, the
-	 *                                resulting {@link XMLTree} instance will be stored in this ContentHolder instance.
+	 *            - if the deployment file is parsed and this argument is not <code>null</code>, the resulting
+	 *            {@link XMLTree} instance will be stored in this ContentHolder instance.
 	 * @return the instance itself, which is also the {@link MultiTreeMap} that contains all settings.
 	 * 
 	 * @throws ConfigLockedException
-	 *                                   - if load() is called more than once.
+	 *             - if load() is called more than once.
 	 */
 	public DeploymentConfiguration loadConfiguration(List<String> programArguments, boolean parseDeploymentFile,
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
@@ -326,23 +331,23 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * </ul>
 	 * 
 	 * @param elemTree
-	 *                             - the node of the current entity.
+	 *            - the node of the current entity.
 	 * @param category
-	 *                             - the category of the current entity.
+	 *            - the category of the current entity.
 	 * @param portableEntities
-	 *                             - configurations for entities that should be ported to their correct parents. The
-	 *                             list contains entries which are <i>category names</i>, each category names containing
-	 *                             trees with the configuration of various entities.
+	 *            - configurations for entities that should be ported to their correct parents. The list contains
+	 *            entries which are <i>category names</i>, each category names containing trees with the configuration
+	 *            of various entities.
 	 * @param liftedEntities
-	 *                             - configurations for entities that should be auto-moved to their correct parents. The
-	 *                             list contains entries which are <i>category names</i>, each category names containing
-	 *                             trees with the configuration of various entities.
+	 *            - configurations for entities that should be auto-moved to their correct parents. The list contains
+	 *            entries which are <i>category names</i>, each category names containing trees with the configuration
+	 *            of various entities.
 	 * @param context
-	 *                             - the list of ancestor categories, above the current entity.
+	 *            - the list of ancestor categories, above the current entity.
 	 * @param rootTree
-	 *                             - the root tree (containing the entity list).
+	 *            - the root tree (containing the entity list).
 	 * @param log
-	 *                             - the {@link Logger} to use.
+	 *            - the {@link Logger} to use.
 	 */
 	protected static void postProcess(MultiTreeMap elemTree, String category, MultiTreeMap portableEntities,
 			MultiTreeMap liftedEntities, List<String> context, MultiTreeMap rootTree, Logger log)
@@ -385,6 +390,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 			if(category.equals(CategoryName.byName(portedCatName).getParent()))
 			{ // port the ported entities to this element
 				elemTree.copyNameFromDeep(portableEntities, portedCatName);
+				// integrateName(new MultiTreeMap(), portedCatName, null, rootTree, log); // add to entity list
 				toRemove.add(portedCatName);
 			}
 		for(String rem : toRemove)
@@ -463,9 +469,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * deployment itself.
 	 * 
 	 * @param node
-	 *                         - the node to configure.
+	 *            - the node to configure.
 	 * @param contextAbove
-	 *                         - the local identifiers of all the entities containing this entity.
+	 *            - the local identifiers of all the entities containing this entity.
 	 */
 	protected static void addContext(MultiTreeMap node, List<String> contextAbove)
 	{
@@ -504,15 +510,15 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * </ul>
 	 * 
 	 * @param XMLnode
-	 *                     - the XML node to read.
+	 *            - the XML node to read.
 	 * @param catTree
-	 *                     - the configuration tree corresponding to category containing this node.
+	 *            - the configuration tree corresponding to category containing this node.
 	 * @param context
-	 *                     - the context of the current node, down to the parent entity of this node.
+	 *            - the context of the current node, down to the parent entity of this node.
 	 * @param rootTree
-	 *                     - the root deployment tree, where identifiable entities should be added.
+	 *            - the root deployment tree, where identifiable entities should be added.
 	 * @param log
-	 *                     - the {@link Logger} to use.
+	 *            - the {@link Logger} to use.
 	 */
 	protected static void readXML(XMLNode XMLnode, MultiTreeMap catTree, Deque<CtxtTriple> context,
 			MultiTreeMap rootTree, Logger log)
@@ -599,14 +605,14 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * the level where the entity appeared previously.
 	 * 
 	 * @param args
-	 *                        - an {@link Iterator} through the arguments.
+	 *            - an {@link Iterator} through the arguments.
 	 * @param baseContext
-	 *                        - the {@link CategoryName#DEPLOYMENT} context entry.
+	 *            - the {@link CategoryName#DEPLOYMENT} context entry.
 	 * @param rootTree
-	 *                        - the configuration tree. The given tree is expected to already contain the data from the
-	 *                        XML deployment file.
+	 *            - the configuration tree. The given tree is expected to already contain the data from the XML
+	 *            deployment file.
 	 * @param log
-	 *                        - the {@link Logger} to use.
+	 *            - the {@link Logger} to use.
 	 */
 	protected static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
 			UnitComponentExt log)
@@ -711,7 +717,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * Checks if the given command line argument designates a category (begins with {@value #CLI_CATEGORY_PREFIX}).
 	 * 
 	 * @param arg
-	 *                - the argument.
+	 *            - the argument.
 	 * @return <code>true</code> if it designates a category.
 	 */
 	protected static boolean isCategory(String arg)
@@ -724,7 +730,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * {@value #CLI_CATEGORY_PREFIX})
 	 * 
 	 * @param arg
-	 *                - the argument.
+	 *            - the argument.
 	 * @return the category name.
 	 */
 	protected static String getCategory(String arg)
@@ -737,15 +743,15 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * It is added as a multiple name by default.
 	 * 
 	 * @param node
-	 *                        - the node in which to place the parameter.
+	 *            - the node in which to place the parameter.
 	 * @param par
-	 *                        - the name of the parameter.
+	 *            - the name of the parameter.
 	 * @param val
-	 *                        - the value of the parameter
+	 *            - the value of the parameter
 	 * @param asSingleton
-	 *                        - if the parameter is a singleton value.
+	 *            - if the parameter is a singleton value.
 	 * @param log
-	 *                        - the log to use.
+	 *            - the log to use.
 	 */
 	protected static void addParameter(MultiTreeMap node, String par, String val, boolean asSingleton, Logger log)
 	{
@@ -764,12 +770,12 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * If the child category is unique, checks if there is an existing entity in that category.
 	 * 
 	 * @param parentNodeTree
-	 *                           - the node in which to integrate / from which to retrieve the category; the node should
-	 *                           represent an entity.
+	 *            - the node in which to integrate / from which to retrieve the category; the node should represent an
+	 *            entity.
 	 * @param subCatName
-	 *                           - the category to integrate / retrieve.
+	 *            - the category to integrate / retrieve.
 	 * @param log
-	 *                           - the log to use.
+	 *            - the log to use.
 	 * @return the node associated with the category; is a new node if the category was not pre-existing.
 	 */
 	protected static MultiTreeMap integrateChildCat(MultiTreeMap parentNodeTree, String subCatName, Logger log)
@@ -792,22 +798,23 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * <ul>
 	 * <li>if there is no existing name of the entity, attempts to generate a name based on other attributes of the
 	 * entity (see name parts in {@link CategoryName}) and integrates the generated name in the entity's tree.
-	 * <li>integrates the tree describing the entity into the tree of its category, under the given or generated name
-	 * (or under the <code>null</code> name, if no name could be created. It is added as a singleton value or not
-	 * depending on the value returned by {@link CategoryName#isUnique()}.
+	 * <li>integrates the tree describing the entity into the tree of its category, if a category tree is given, under
+	 * the given or generated name (or under the <code>null</code> name, if no name could be created. It is added as a
+	 * singleton value or not depending on the value returned by {@link CategoryName#isUnique()}; the default (e.g. if
+	 * no category data is found) is as a non-singleton value.
 	 * <li>the entity gets a unique generated id and is added to the local <i>id list</i>.
 	 * </ul>
 	 * 
 	 * @param node
-	 *                         - the tree describing the entity.
+	 *            - the tree describing the entity.
 	 * @param categoryName
-	 *                         - the name of the category of the entity.
+	 *            - the name of the category of the entity.
 	 * @param catTree
-	 *                         - the tree describing the category of the entity.
+	 *            - the tree describing the category of the entity.
 	 * @param rootTree
-	 *                         - the tree describing the entire deployment.
+	 *            - the tree describing the entire deployment.
 	 * @param log
-	 *                         - the {@link Logger} to use.
+	 *            - the {@link Logger} to use.
 	 * 
 	 * @return the name of the entity that was added.
 	 */
@@ -856,7 +863,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attribute.
 	 * 
 	 * @param XMLnode
-	 *                    - the node to process.
+	 *            - the node to process.
 	 * @return the name of the category of the node.
 	 */
 	protected static String getXMLNodeCategory(XMLNode XMLnode)
@@ -879,9 +886,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * </ul>
 	 * 
 	 * @param node
-	 *                       - the node containing the configuration information for the agent.
+	 *            - the node containing the configuration information for the agent.
 	 * @param searchName
-	 *                       - the name of the searched attribute / parameter / node.
+	 *            - the name of the searched attribute / parameter / node.
 	 * @return the value associated with the searched name, or <code>null</code> if nothing found.
 	 */
 	public static String getXMLValue(XMLNode node, String searchName)
@@ -899,6 +906,23 @@ public class DeploymentConfiguration extends MultiTreeMap
 		return null;
 	}
 	
+	/**
+	 * Creates an entity list, as a list of {@link MultiTreeMap} instances, each instance being the configuration of an
+	 * entity.
+	 * <p>
+	 * Each instance should contain:
+	 * <ul>
+	 * <li>a {@link #NAME_LIST_ENTRY} singleton parameter, having a unique local id as value.
+	 * <li>a {@link #CATEGORY_ATTRIBUTE_NAME} singleton parameter, containing the category (the entity type, for
+	 * entities).
+	 * <li>a {@link #CONTEXT_ELEMENT_NAME} attribute, containing as values the local IDs of entities that the entity is
+	 * in the context of, with the first being the 'closest' entity.
+	 * <li>optionally, a {@link #NAME_ATTRIBUTE_NAME} attribute, containing the name of the entity, potentially inferred
+	 * from other attributes.
+	 * </ul>
+	 * 
+	 * @return the entity list.
+	 */
 	public List<MultiTreeMap> getEntityList()
 	{
 		LinkedList<MultiTreeMap> ret = new LinkedList<>();
@@ -907,11 +931,33 @@ public class DeploymentConfiguration extends MultiTreeMap
 		return ret;
 	}
 	
+	/**
+	 * Filters, from an entity list (originally generated by {@link #getEntityList()}), those entities which are in the
+	 * context of the entity with the given ID.
+	 * 
+	 * @param entities
+	 *            - a list of entities.
+	 * @param contextLocalID
+	 *            - the context to filter for.
+	 * @return the list of entities which are in the given context.
+	 */
 	public static List<MultiTreeMap> filterContext(List<MultiTreeMap> entities, String contextLocalID)
 	{
 		return filterCategoryInContext(entities, null, contextLocalID);
 	}
 	
+	/**
+	 * Filters, from an entity list (originally generated by {@link #getEntityList()}), those entities which are in the
+	 * context of the entity with the given ID and which are of a specific category.
+	 * 
+	 * @param entities
+	 *            - a list of entities.
+	 * @param categoryName
+	 *            - the category of the filtered entities.
+	 * @param contextLocalID
+	 *            - the context to filter for.
+	 * @return the list of entities which are in the given context and of the specified category.
+	 */
 	public static List<MultiTreeMap> filterCategoryInContext(List<MultiTreeMap> entities, String categoryName,
 			String contextLocalID)
 	{
