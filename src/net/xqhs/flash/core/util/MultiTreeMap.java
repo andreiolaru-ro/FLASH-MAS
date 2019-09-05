@@ -698,9 +698,10 @@ public class MultiTreeMap extends MultiValueMap
 	 * same type of key (singleton / hierarchical).
 	 * <p>
 	 * If the key already exists, is singleton and is hierarchical, the individual trees are recursively copied into the
-	 * key.
+	 * key (the tree associated with the singleton key is <b>merged</b>).
 	 * <p>
-	 * For singleton simple names, warnings should be issued on overwrite but currently <b>are not</b>.
+	 * For singleton simple names, warnings should be issued (but currently are not) on overwrite but currently <b>are
+	 * not</b>.
 	 * <p>
 	 * WARNING: nothing is copied, except for the actual reference; associated with the name there will be exactly the
 	 * same instances as in the other {@link MultiTreeMap} (except for singleton hierarchical keys, which are merged).
@@ -716,11 +717,43 @@ public class MultiTreeMap extends MultiValueMap
 		return copyNameFrom(from, name, false);
 	}
 	
+	/**
+	 * Adds to this tree the contents associated with the specified name in the <code>from</code> tree, with exactly the
+	 * same type of key (singleton / hierarchical).
+	 * <p>
+	 * If the key already exists, is singleton and is hierarchical, the individual trees are recursively copied into the
+	 * key (the tree associated with the singleton key is <b>merged</b>).
+	 * <p>
+	 * For singleton simple names, warnings should be issued (but currently are not) on overwrite but currently <b>are
+	 * not</b>.
+	 * <p>
+	 * In this version of the method, trees are copied with {@link #copyDeep()}, so that in the end disjoint trees exist
+	 * in the to {@link MultiTreeMap} instances for the given key.
+	 * 
+	 * @param from
+	 *            - the source {@link MultiTreeMap}
+	 * @param name
+	 *            - the name (key) to transfer
+	 * @return the instance itself
+	 */
 	public MultiTreeMap copyNameFromDeep(MultiTreeMap from, String name)
 	{
 		return copyNameFrom(from, name, true);
 	}
 	
+	/**
+	 * Handles the functionality of {@link #copyNameFrom(MultiTreeMap, String)} and
+	 * {@link #copyNameFromDeep(MultiTreeMap, String)}.
+	 * 
+	 * @param from
+	 *            the source {@link MultiTreeMap}.
+	 * @param name
+	 *            - the name (key) to transfer.
+	 * @param deepCopy
+	 *            - if <code>true</code>, tree values are copied; if <code>false</code>, just the reference to the tree
+	 *            is copied.
+	 * @return the instance itself (the {@link MultiTreeMap} which is the destination the transfer.
+	 */
 	protected MultiTreeMap copyNameFrom(MultiTreeMap from, String name, boolean deepCopy)
 	{
 		if(from.isHierarchical(name))
