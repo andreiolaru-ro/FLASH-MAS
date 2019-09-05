@@ -16,11 +16,8 @@ Current targets
     * remove default entities that are not useful 
       * retain the ids of default created entities
       * check if there is any entity in their context which is not default
-  * ported identifiable entities should be copied with different, unique, names
-  * identifiability is probably useless at configuration phase; should support duplicate names for all entities; should add all entities to the entity list
   * what to do when the agents are inside the support, but the node is supposed to load the agents (but the agent list is in deployment).
   * adding contexts
-  * manage portables for CLI entries
   
 ### Deployment / loading
   * move deployment loading from NodeLoader to a new DeploymentLoader class?
@@ -200,6 +197,10 @@ Context
       * if the parent can be auto-generated (is a property of the parent), the deployment configuration will attempt to generate a parent P (this may lead to further generation of auto-generated parents)
       * if the parent cannot be auto-generated or auto-added (or no appropriate sibling exists), it is an error;
     * it is allowed to have **intermediate** entities between A and P, both in the optional and mandatory cases
+
+**TODO**
+  * identifiability is probably useless at configuration phase; should support duplicate names for all entities; should add all entities to the entity list
+  * is auto-generating nodes (and auto-generating in general) still necessary, since a default node is created at the beginning?
     
 **TODO: test cases**
   * no deployment file (or file not found)
@@ -207,6 +208,12 @@ Context
   * invalid deployment file
   * intermediate entities between predefined levels (e.g. node -> agentarray -> agent)
     * what happens to porting? and how are correct parents considered?
+  * multiple support instances to port (with no name, or with the same name)
+  * nested support instances to port / to auto-add agents to
+  * support instances to auto-add agents to, nested under other entities
+  * agents to be loaded are nested under other structures;
+    * agents don't need to be loaded because they already have been loaded by said structures
+  * check correct porting of non-hierarchical things, such as packages, load order, etc 
 
 
 XML

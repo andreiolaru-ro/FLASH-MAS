@@ -13,11 +13,9 @@ package net.xqhs.flash.core;
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -50,52 +48,52 @@ public class DeploymentConfiguration extends MultiTreeMap
 	/**
 	 * The class UID.
 	 */
-	private static final long				serialVersionUID				= 5157567185843194635L;
+	private static final long			serialVersionUID				= 5157567185843194635L;
 	
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String				CLI_CATEGORY_PREFIX				= "-";
+	public static final String			CLI_CATEGORY_PREFIX				= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String				NAME_SEPARATOR					= ":";
+	public static final String			NAME_SEPARATOR					= ":";
 	/**
 	 * Separator for elements in the load order setting.
 	 */
-	public static final String				LOAD_ORDER_SEPARATOR			= " ";
+	public static final String			LOAD_ORDER_SEPARATOR			= " ";
 	/**
 	 * The name of nodes containing parameters.
 	 */
-	public static final String				PARAMETER_ELEMENT_NAME			= "parameter";
+	public static final String			PARAMETER_ELEMENT_NAME			= "parameter";
 	/**
 	 * The name of the attribute which contains the kind.
 	 */
-	public static final String				KIND_ATTRIBUTE_NAME				= "kind";
+	public static final String			KIND_ATTRIBUTE_NAME				= "kind";
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
-	public static final String				PARAMETER_NAME					= "name";
+	public static final String			PARAMETER_NAME					= "name";
 	/**
 	 * The name of the attribute of a parameter node holding the value of the parameter.
 	 */
-	public static final String				PARAMETER_VALUE					= "value";
+	public static final String			PARAMETER_VALUE					= "value";
 	/**
 	 * The name of the attribute which contains the name.
 	 */
-	public static final String				NAME_ATTRIBUTE_NAME				= "name";
+	public static final String			NAME_ATTRIBUTE_NAME				= "name";
 	/**
 	 * The name of the element(s) which contain entity context.
 	 */
-	public static final String				CONTEXT_ELEMENT_NAME			= "in-context-of";
+	public static final String			CONTEXT_ELEMENT_NAME			= "in-context-of";
 	/**
 	 * Name of XML nodes for entities other than those in {@link CategoryName}.
 	 */
-	public static final String				GENERAL_ENTITY_NAME				= "entity";
+	public static final String			GENERAL_ENTITY_NAME				= "entity";
 	/**
 	 * The name of the XML attribute specifying the type of the entity.
 	 */
-	public static final String				GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
+	public static final String			GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
 	
 	/**
 	 * The name of the (singleton) entry in the configuration tree, under which all entities are listed by their name or
@@ -103,34 +101,34 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * <p>
 	 * This constant is also used as a key in entity nodes for their id (if they don't have an identifiable name.
 	 */
-	public static final String				NAME_LIST_ENTRY					= "#local-id";
+	public static final String			LOCAL_ID_ATTRIBUTE				= "#local-id";
 	/**
 	 * The name under which the category of an element is entered in the element.
 	 */
-	public static final String				CATEGORY_ATTRIBUTE_NAME			= "#category-type";
+	public static final String			CATEGORY_ATTRIBUTE_NAME			= "#category-type";
 	/**
 	 * The name of a parameter in the configuration {@link MultiTreeMap} of an entity indicating that the entity has
 	 * already been loaded.
 	 */
-	public static final String				LOADED_ATTRIBUTE_NAME			= "#loaded";
+	public static final String			LOADED_ATTRIBUTE_NAME			= "#loaded";
 	
 	/**
 	 * Root package for FLASH classes.
 	 */
-	public static final String				ROOT_PACKAGE					= "net.xqhs.flash";
+	public static final String			ROOT_PACKAGE					= "net.xqhs.flash";
 	/**
 	 * Package for core FLASH functionality
 	 */
-	public static final String				CORE_PACKAGE					= "core";
+	public static final String			CORE_PACKAGE					= "core";
 	/**
 	 * The default directory for deployment files.
 	 */
-	public static final String				DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
+	public static final String			DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
 	
 	/**
-	 * Default values.
+	 * Local IDs of default created entities.
 	 */
-	public static final Map<String, String>	DEFAULTS						= new HashMap<>();
+	public static final List<String>	autoCreated						= new LinkedList<>();
 	
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
@@ -193,6 +191,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, new DumbLogger());
 		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.SUPPORT.s(),
 				deployment.addSingleTreeGet(CategoryName.SUPPORT.s(), new MultiTreeMap()), this, new DumbLogger());
+		autoCreated.addAll(this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys());
 	}
 	
 	/**
@@ -302,6 +301,17 @@ public class DeploymentConfiguration extends MultiTreeMap
 		
 		addContext(deployment, new LinkedList<String>());
 		
+		// ====================================== remove default created entities
+		log.lf("default created entities: []", autoCreated);
+		// create a reverse index from each id to the ids in its context
+		// iterate in reverse order
+		// remove ids (also from their direct contexts -- use the index) which only have default ids depending on them
+		// use List.containsAll
+		
+		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
+			if(autoCreated.contains(id))
+				;
+		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
 		log.lf("final config:", this);
@@ -389,8 +399,26 @@ public class DeploymentConfiguration extends MultiTreeMap
 		for(String portedCatName : portableEntities.getKeys())
 			if(category.equals(CategoryName.byName(portedCatName).getParent()))
 			{ // port the ported entities to this element
-				elemTree.copyNameFromDeep(portableEntities, portedCatName);
-				// integrateName(new MultiTreeMap(), portedCatName, null, rootTree, log); // add to entity list
+				if(portableEntities.isHierarchical(portedCatName))
+				{
+					MultiTreeMap portedCatTree = portableEntities.getSingleTree(portedCatName);
+					MultiTreeMap targetCatTree = elemTree.getSingleTree(portedCatName, true);
+					for(String name : portedCatTree.getKeys())
+						if(portedCatTree.isSingleton(name))
+							log.le("Cannot overwrite existing singleton element [] of category [] with a ported instance.",
+									name, portedCatName);
+						else
+							for(MultiTreeMap elem : portedCatTree.getTrees(name))
+							{
+								MultiTreeMap clone = elem.copyDeep();
+								integrateName(clone, portedCatName, targetCatTree, rootTree, log);
+								if(autoCreated.contains(elem.getSingleValue(LOCAL_ID_ATTRIBUTE)))
+									// clones of default created entities are also default created
+									autoCreated.add(clone.getSingleValue(LOCAL_ID_ATTRIBUTE));
+							}
+				}
+				else
+					elemTree.copyNameFromDeep(portableEntities, portedCatName);
 				toRemove.add(portedCatName);
 			}
 		for(String rem : toRemove)
@@ -464,8 +492,8 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * Goes through the deployment configuration and adds to each entities the local id of all the entities which for
 	 * the context of this entities.
 	 * <p>
-	 * More specifically, the {@value #NAME_LIST_ENTRY} of each of the entities containing this entity is added to the
-	 * {@value #CONTEXT_ELEMENT_NAME} attribute of this node. The first entry is the closest, and the last is the
+	 * More specifically, the {@value #LOCAL_ID_ATTRIBUTE} of each of the entities containing this entity is added to
+	 * the {@value #CONTEXT_ELEMENT_NAME} attribute of this node. The first entry is the closest, and the last is the
 	 * deployment itself.
 	 * 
 	 * @param node
@@ -478,7 +506,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		for(String context : contextAbove)
 			node.addOneValue(CONTEXT_ELEMENT_NAME, context);
 		LinkedList<String> currentContext = new LinkedList<>(contextAbove);
-		currentContext.push(node.getSingleValue(NAME_LIST_ENTRY));
+		currentContext.push(node.getSingleValue(LOCAL_ID_ATTRIBUTE));
 		
 		for(String childCatName : node.getHierarchicalNames())
 			for(String subElemName : node.getSingleTree(childCatName).getHierarchicalNames())
@@ -851,8 +879,8 @@ public class DeploymentConfiguration extends MultiTreeMap
 		
 		// create a local id and add it to the list
 		String id = "#" + node.hashCode();
-		rootTree.getSingleTree(NAME_LIST_ENTRY, true).addSingleTree(id, node);
-		node.addSingleValue(NAME_LIST_ENTRY, id);
+		rootTree.getSingleTree(LOCAL_ID_ATTRIBUTE, true).addSingleTree(id, node);
+		node.addSingleValue(LOCAL_ID_ATTRIBUTE, id);
 		node.addSingleValue(CATEGORY_ATTRIBUTE_NAME, categoryName);
 		
 		return name;
@@ -912,7 +940,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * <p>
 	 * Each instance should contain:
 	 * <ul>
-	 * <li>a {@link #NAME_LIST_ENTRY} singleton parameter, having a unique local id as value.
+	 * <li>a {@link #LOCAL_ID_ATTRIBUTE} singleton parameter, having a unique local id as value.
 	 * <li>a {@link #CATEGORY_ATTRIBUTE_NAME} singleton parameter, containing the category (the entity type, for
 	 * entities).
 	 * <li>a {@link #CONTEXT_ELEMENT_NAME} attribute, containing as values the local IDs of entities that the entity is
@@ -926,8 +954,8 @@ public class DeploymentConfiguration extends MultiTreeMap
 	public List<MultiTreeMap> getEntityList()
 	{
 		LinkedList<MultiTreeMap> ret = new LinkedList<>();
-		for(String name : getSingleTree(NAME_LIST_ENTRY).getHierarchicalNames())
-			ret.add(getSingleTree(NAME_LIST_ENTRY).getSingleTree(name));
+		for(String name : getSingleTree(LOCAL_ID_ATTRIBUTE).getHierarchicalNames())
+			ret.add(getSingleTree(LOCAL_ID_ATTRIBUTE).getSingleTree(name));
 		return ret;
 	}
 	
