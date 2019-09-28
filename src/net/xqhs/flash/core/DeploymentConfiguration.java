@@ -185,10 +185,22 @@ public class DeploymentConfiguration extends MultiTreeMap
 		integrateName(deployment, CategoryName.DEPLOYMENT.s(), deploymentCat, this, new DumbLogger());
 		
 		// default settings
+		
+		// default schema
 		deployment.addSingleValue(CategoryName.SCHEMA.s(), "src-schema/deployment-schema.xsd");
+		// default load order
 		deployment.addSingleValue(CategoryName.LOAD_ORDER.s(), "support agent");
+		// automatically integrate the composite agent loader
+		// MultiTreeMap compositeLoader = new MultiTreeMap();
+		// compositeLoader.addOneValue(CategoryName.LOADER.nameParts()[0], CategoryName.AGENT.s());
+		// compositeLoader.addOneValue(CategoryName.LOADER.nameParts()[1], "Composite"); // FIXME: string
+		// compositeLoader.addOneValue(SimpleLoader.CLASSPATH_KEY, CompositeAgentLoader.class.getName());
+		// integrateName(compositeLoader, CategoryName.LOADER.s(),
+		// deployment.addSingleTreeGet(CategoryName.LOADER.s(), new MultiTreeMap()), this, new DumbLogger());
+		// default node
 		integrateName(new MultiTreeMap(), CategoryName.NODE.s(),
 				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, new DumbLogger());
+		// default support (local support)
 		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.SUPPORT.s(),
 				deployment.addSingleTreeGet(CategoryName.SUPPORT.s(), new MultiTreeMap()), this, new DumbLogger());
 		autoCreated.addAll(this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys());

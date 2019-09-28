@@ -16,8 +16,8 @@ Current targets
     * remove default entities that are not useful 
       * retain the ids of default created entities
       * check if there is any entity in their context which is not default
-  * what to do when the agents are inside the support, but the node is supposed to load the agents (but the agent list is in deployment).
   * adding contexts
+  * get the composite agent loader out of the comments
   
 ### Deployment / loading
   * move deployment loading from NodeLoader to a new DeploymentLoader class?
