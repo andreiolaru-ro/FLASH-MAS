@@ -23,7 +23,10 @@ Current targets
   * move deployment loading from NodeLoader to a new DeploymentLoader class?
   * deploy a composite agent
     * what do about having support implementations when pre-loading shards
-      * should we leave loading (and finding) shards to the composite agent, till after the agent is added all contexts? (who adds contexts?)
+      * it's ok, they are instanced, there's no need for the pylon to actually be started 
+
+### Communication
+  * local messaging
 
 ### Utilities
   * implement getAppropriateTree / addAppropriateTree methods
