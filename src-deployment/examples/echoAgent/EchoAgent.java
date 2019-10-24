@@ -16,19 +16,20 @@ import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.util.logging.Unit;
 
 /**
  * Simple agent for testing.
  * 
- * @author andreiolaru
+ * @author Andrei Olaru
  */
 @SuppressWarnings("javadoc")
 public class EchoAgent extends Unit implements Agent
 {
-	boolean			isRunning	= false;
-	Set<Support>	supports	= new HashSet<>();
+	boolean						isRunning	= false;
+	Set<MessagingPylonProxy>	supports	= new HashSet<>();
 	
 	public EchoAgent()
 	{
@@ -64,19 +65,20 @@ public class EchoAgent extends Unit implements Agent
 	}
 	
 	@Override
-	public boolean addContext(Support context)
+	public boolean addContext(EntityProxy<Pylon> context)
 	{
-		supports.add(context);
+		supports.add((MessagingPylonProxy) context);
 		li("Support [] added; current contexts:", context, supports);
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
+	public boolean addGeneralContext(EntityProxy<?> context)
 	{
 		try
 		{
-			return addContext((Support) context);
+			return addContext((EntityProxy<Pylon>) context);
 		} catch(ClassCastException e)
 		{
 			le("Added context is of incorrect type");
@@ -85,16 +87,22 @@ public class EchoAgent extends Unit implements Agent
 	}
 	
 	@Override
-	public boolean removeContext(Support context)
+	public boolean removeContext(EntityProxy<Pylon> context)
 	{
 		if(supports.contains(context))
 		{
-			supports.add(context);
+			supports.remove(context);
 			li("Support [] removed; current contexts:", context, supports);
 			return true;
 		}
 		lw("Context [] not present.", context);
 		return false;
+	}
+	
+	@Override
+	public <C extends Entity<Pylon>> EntityProxy<C> asContext()
+	{
+		throw new UnsupportedOperationException("The EchoAgent cannot be a context for other entities.");
 	}
 	
 }
