@@ -16,5 +16,5 @@ import net.xqhs.flash.core.agent.Agent;
 
 public interface MessagingShard extends Entity<Agent>
 {
-	
+	// TODO
 }

@@ -91,7 +91,8 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context) {
+	public boolean addGeneralContext(EntityProxy<?> context)
+	{
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -122,24 +123,38 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 
 	/**
-	 * The implementation considers agent addresses are the same with their names.
+	 * This implementation considers agent addresses are the same with their names.
+	 * 
+	 * @param agentName
+	 *            - the name of the agent.
+	 * @return the address of the agent, as derived from the name.
 	 */
+	@SuppressWarnings("static-method")
 	public String getAgentAddress(String agentName) {
 		return agentName;
 	}
 
 	/**
-	 * The implementation considers agent addresses are the same with their names.
+	 * This implementation considers agent addresses are the same with their names.
+	 * 
+	 * @param agentAddress
+	 *            - the address of the agent.
+	 * @return the name of the agent, as extracted / derived from the address.
 	 */
+	@SuppressWarnings("static-method")
 	public String getAgentNameFromAddress(String agentAddress) {
 		return agentAddress;
 	}
 
 	/**
-	 * This implementation presumes that the address / name of the agent does not
-	 * contain any occurrence of {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently
-	 * {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
+	 * This implementation presumes that the address / name of the agent does not contain any occurrence of
+	 * {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
+	 * 
+	 * @param endpoint
+	 *            - an endpoint, as defined in {@link AbstractMessagingShard}.
+	 * @return the agent address, as extracted from the entpoint.
 	 */
+	@SuppressWarnings("static-method")
 	public String extractAgentAddress(String endpoint) {
 		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
 	}

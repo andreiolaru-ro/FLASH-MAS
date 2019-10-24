@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -52,7 +51,7 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	static class CompositeAgentShardContainer implements ShardContainer
+	class CompositeAgentShardContainer implements ShardContainer
 	{
 		/**
 		 * The agent
@@ -72,11 +71,6 @@ public class CompositeAgent implements Serializable, Agent
 		public void postAgentEvent(AgentEvent event)
 		{
 			agent.postAgentEvent(event);
-		}
-
-		@Override
-		public List<EntityProxy<Pylon>> getPylons() {
-			return null;
 		}
 
 		@Override
@@ -202,7 +196,7 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * This can be used by support implementation-specific shards to contact the support implementation.
 	 */
-	protected Object										supportLink					= null;
+	protected EntityProxy<Pylon>							supportLink					= null;
 	
 	/**
 	 * The proxy to this agent.
@@ -325,7 +319,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<?> context)
 	{
 		log("No general context supported.");
 		return false;
