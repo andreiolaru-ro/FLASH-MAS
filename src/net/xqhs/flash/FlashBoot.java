@@ -12,7 +12,9 @@
 package net.xqhs.flash;
 
 import java.util.Arrays;
+import java.util.List;
 
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.logging.Logging;
@@ -33,19 +35,10 @@ public class FlashBoot
 	public static void main(String[] args)
 	{
 		Logging.getMasterLogging().setLogLevel(Level.ALL);
-		String test_args;
-		// test_args = "";
-		// test_args = "src-deployment/examples/echoAgent/simpleDeployment.xml";
-		// test_args = "src-deployment/examples/composite/basicScenario.xml";
-		// test_args = "-support local:auxilliary host:here -agent bane something:something -component a";
-		test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -shard mobility where:anywhere host:here -agent bane something:something -othercomponent a -support custom par:val -node node2 new:val";
-		// test_args = "-support local -support local arg:val -support last host:here -agent bane something:something
-		// -feature a -feature b par:val -feature c -agent bruce -feature a";
-		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
-		String[] use_args = test_args.split(" ");
 		
-		new NodeLoader().loadDeployment(Arrays.asList(use_args));
-		// new Boot().boot(.split(" "));
+		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+		for(Node node : nodes)
+			node.start();
 	}
 	
 }

@@ -64,7 +64,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private ShardContext			parentAgent;
+	private ShardContainer			parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -115,8 +115,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	
 	/**
 	 * Extending classes should override this method to verify and pre-load shard data, based on deployment data. The
-	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(Agent)} is called,
-	 * and actions depending on other shards after the AGENT_START event has occurred.
+	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(ShardContainer)} is
+	 * called, and actions depending on other shards after the AGENT_START event has occurred.
 	 * <p>
 	 * If the shard is surely not going to be able to load, <code>false</code> will be returned. For any non-fatal
 	 * issues, the method should return <code>true</code> and output warnings in the specified log.
@@ -130,8 +130,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * <p>
 	 * 
 	 * @param configuration
-	 *            - parameters for creating the shard. The parameters will be locked (see {@link MultiValueMap#lock()}
-	 *            from this moment on.
+	 *                          - parameters for creating the shard. The parameters will be locked (see
+	 *                          {@link MultiValueMap#lock()} from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -193,7 +193,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * @param oldParent
 	 *            - the previous value for the parent, if any.
 	 */
-	protected void parentChangeNotifier(ShardContext oldParent)
+	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		// this class does not do anything here.
 	}
@@ -244,19 +244,19 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 *            - the {@link CompositeAgent} instance that this shard is part of.
 	 */
 	@Override
-	public final boolean addContext(Context<Agent> parent)
+	public final boolean addContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent != null)
 			return ler(false, "Parent already set");
-		if(parent == null || !(parent instanceof ShardContext))
+		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		parentAgent = (ShardContext) parent;
+		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		le("No general context supported for shards.");
 		return false;
@@ -269,14 +269,14 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * classes can take appropriate action.
 	 */
 	@Override
-	public final boolean removeContext(Context<Agent> parent)
+	public final boolean removeContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent == null)
 			return ler(false, "Parent is not set");
 		if(parentAgent != parent)
 			return ler(false, "Argument is not the same as actual parent.");
 		parentAgent = null;
-		parentChangeNotifier((ShardContext) parent);
+		parentChangeNotifier((ShardContainer) parent);
 		return true;
 	}
 	
@@ -285,14 +285,14 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * 
 	 * @return the {@link CompositeAgent} that is the parent of this shard; <code>null</code> if there is no parent set.
 	 */
-	final protected ShardContext getAgent()
+	final protected ShardContainer getAgent()
 	{
 		return parentAgent;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Context<AgentShard> asContext()
+	public EntityProxy<AgentShard> asContext()
 	{
 		throw new UnsupportedOperationException("THe AgentSharCore cannot be a context of another entity.");
 	}

@@ -13,23 +13,24 @@ package examples.composite;
 
 import java.util.List;
 
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
-import tatami.core.agent.AgentComponent;
-import tatami.core.agent.AgentEvent;
-import tatami.core.agent.AgentEvent.AgentEventHandler;
-import tatami.core.agent.messaging.MessagingComponent;
-import tatami.core.agent.CompositeAgent;
 
 /**
- * An {@link AgentComponent} implementation that initially sends a message to another agent, it this agent is designated
- * as initiator.
+ * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
+ * initiator.
  * <p>
  * Otherwise, it waits for a ping message, that it then sends back.
  * 
  * @author Andrei Olaru
  */
-public class PingBackTestComponent extends AgentComponent
+public class PingBackTestComponent extends AgentShardCore
 {
 	/**
 	 * The UID.
@@ -95,9 +96,9 @@ public class PingBackTestComponent extends AgentComponent
 			public void handleEvent(AgentEvent event)
 			{
 				getAgentLog().info("Message received: ", event);
-				String[] content = event.get(MessagingComponent.CONTENT_PARAMETER).split(" ");
+				String[] content = event.get(AbstractMessagingShard.CONTENT_PARAMETER).split(" ");
 				String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
-				String sender = event.get(MessagingComponent.SOURCE_PARAMETER);
+				String sender = event.get(AbstractMessagingShard.SOURCE_PARAMETER);
 				sendMessage(replyContent, getComponentEndpoint(COMPONENT_ADDRESS), sender);
 			}
 		}, COMPONENT_ADDRESS);

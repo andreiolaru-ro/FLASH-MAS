@@ -13,6 +13,7 @@ package net.xqhs.flash.core;
 
 import java.util.List;
 
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
@@ -83,19 +84,36 @@ public interface Loader<T extends Entity<?>>
 	public boolean preload(MultiTreeMap configuration);
 	
 	/**
-	 * Loads a new instance of entity <b>T</b> and provides it with the given context.
+	 * Loads a new instance of entity <b>T</b> and provides it with the given context, as well as with a flat (as
+	 * opposed to the hierarchical structure provided by the configuration) list of entities that should be present in
+	 * the context of this entity. The list is expected to be formed similarly to the result of
+	 * {@link DeploymentConfiguration#getEntityList()} and to be able to be processed using
+	 * {@link DeploymentConfiguration#filterContext(List, String)} and
+	 * {@link DeploymentConfiguration#filterCategoryInContext(List, String, String)}. Both the
+	 * <code>configuration</code> and the <code>subordinateEntities</code> list should contain references to the same
+	 * {@link MultiTreeMap} instances.
+	 * <p>
+	 * Note that some of the subordinate entities in the configuration and the subordinateEntities list may contain the
+	 * attribute {@link DeploymentConfiguration#LOADED_ATTRIBUTE_NAME}, indicating that the entity has already been
+	 * loaded and does not need to be loaded anymore.
 	 * 
 	 * @param configuration
 	 *            - the configuration data for the entity.
 	 * @param context
 	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code> or
 	 *            empty.
+	 * @param subordinateEntities
+	 *            - a flat list of entities that should be loaded inside the loaded entity. This may be
+	 *            <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
-	public T load(MultiTreeMap configuration, List<Entity<?>> context);
+	public T load(MultiTreeMap configuration, List<EntityProxy<Entity<?>>> context,
+			List<MultiTreeMap> subordinateEntities);
 	
 	/**
 	 * Loads a new instance of entity <b>T</b>, without providing it with any context.
+	 * <p>
+	 * See also {@link #load(MultiTreeMap, List, List)}.
 	 * 
 	 * @param configuration
 	 *            - the configuration data for the entity.
@@ -171,14 +189,22 @@ public interface Loader<T extends Entity<?>>
 		 * <p>
 		 * The instantiation is tried in order:
 		 * <ul>
-		 * <li>using a constructor that receives a {@link MultiTreeMap} as argument, passing the given
-		 * configuration;
+		 * <li>using a constructor that receives a {@link MultiTreeMap} as argument, passing the given configuration;
 		 * <li>using the default constructor, and if the instance implements {@link ConfigurableEntity}, the
 		 * {@link ConfigurableEntity#configure} method will be called with the given configuration.
 		 * </ul>
+		 * <p>
+		 * After loading, all entities in the <code>context</code> parameter are added as context, using
+		 * {@link Entity#addGeneralContext(EntityProxy)}.
+		 * <p>
+		 * No subordinate entities will be loaded.
+		 * 
+		 * @param subordinateEntities
+		 *            - this will not be used.
 		 */
 		@Override
-		public Entity<?> load(MultiTreeMap configuration, List<Entity<?>> context)
+		public Entity<?> load(MultiTreeMap configuration, List<EntityProxy<Entity<?>>> context,
+				List<MultiTreeMap> subordinateEntities)
 		{
 			if(preload(configuration))
 			{
@@ -206,7 +232,7 @@ public interface Loader<T extends Entity<?>>
 								log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
 										classpath);
 							if(context != null)
-								for(Entity<?> c : context)
+								for(EntityProxy<Entity<?>> c : context)
 									loaded.addGeneralContext(c);
 							return loaded;
 						} catch(Exception e1)
@@ -227,7 +253,7 @@ public interface Loader<T extends Entity<?>>
 		@Override
 		public Entity<?> load(MultiTreeMap configuration)
 		{
-			return load(configuration, null);
+			return load(configuration, null, null);
 		}
 	}
 }

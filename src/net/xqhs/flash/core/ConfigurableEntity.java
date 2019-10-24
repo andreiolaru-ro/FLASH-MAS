@@ -14,7 +14,29 @@ package net.xqhs.flash.core;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.config.Configurable;
 
+/**
+ * This interface extends {@link Entity} with a method dedicated to configuring the entity, using a {@link MultiTreeMap}
+ * holding a tree of multi-maps.
+ * <p>
+ * A {@link ConfigurableEntity} is expected to have a zero-argument constructor such that all configuration can be done
+ * via {@link #configure(MultiTreeMap)}.
+ * <p>
+ * Since {@link ConfigurableEntity} also extends {@link Configurable}, it can be {@link #lock()}ed.
+ * 
+ * @author Andrei Olaru
+ *
+ * @param <P>
+ *            the type of the context of this entity (see {@link Entity}.
+ */
 public interface ConfigurableEntity<P extends Entity<?>> extends Entity<P>, Configurable
 {
+	/**
+	 * Performs configuration on a newly-created instance. All configuration information should be contained in the
+	 * parameter.
+	 * 
+	 * @param configuration
+	 *            - the configuration data.
+	 * @return <code>true</code> if configuration succeeded, <code>false</code> otherwise.
+	 */
 	public boolean configure(MultiTreeMap configuration);
 }

@@ -15,22 +15,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 /**
- * The default platform for running agents. It is a minimal platform, offering no services.
+ * Pylon for the default support infrastructure for agents. It is a minimal infrastructure, offering no services.
  * <p>
  * The class extends {@link Unit} so as to make logging easy for extending implementations.
  * <p>
- * Loading agents on the platform will practically have no effect on the agents.
+ * Adding agents in the context of the pylon will practically have no effect on the agents.
  * 
  * @author Andrei Olaru
  */
-public class DefaultSupportImplementation extends Unit implements Support
+public class DefaultPylonImplementation extends Unit implements Pylon
 {
 	/**
 	 * The default name for instances of this implementation.
@@ -86,49 +85,62 @@ public class DefaultSupportImplementation extends Unit implements Support
 	}
 	
 	@Override
-	public boolean addContext(Node context)
-	{
-		// context has no effect on the default implementation
+	public boolean addContext(EntityProxy<Node> context) {
+		// TODO Auto-generated method stub
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Entity<?> context)
-	{
-		// context has no effect on the default implementation
-		return true;
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context) {
+		// TODO Auto-generated method stub
+		return false;
 	}
-	
+
 	@Override
-	public boolean removeContext(Node context)
-	{
+	public boolean removeContext(EntityProxy<Node> context) {
 		throw new UnsupportedOperationException("Cannot remove context from a node");
 	}
 	
 	/**
-	 * The loader recommends no particular implementation for any component.
+	 * The loader recommends no particular implementation for any shard.
 	 */
 	@Override
-	public String getRecommendedShardImplementation(StandardAgentShard componentName)
+	public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation)
 	{
 		return null;
-	}
-	
-	/**
-	 * The default implementation informs the agent that it has been added to the context of this support
-	 * infrastructure.
-	 */
-	@Override
-	public boolean registerAgent(Agent agent)
-	{
-		agent.addContext(this);
-		lf("[] registered agent", name, agent);
-		return true;
 	}
 	
 	@Override
 	public Set<String> getSupportedServices()
 	{
 		return new HashSet<>();
+	}
+
+	@Override
+	public <C extends Entity<Node>> EntityProxy<C> asContext() {
+		return null;
+	}
+
+	/**
+	 * The implementation considers agent addresses are the same with their names.
+	 */
+	public String getAgentAddress(String agentName) {
+		return agentName;
+	}
+
+	/**
+	 * The implementation considers agent addresses are the same with their names.
+	 */
+	public String getAgentNameFromAddress(String agentAddress) {
+		return agentAddress;
+	}
+
+	/**
+	 * This implementation presumes that the address / name of the agent does not
+	 * contain any occurrence of {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently
+	 * {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
+	 */
+	public String extractAgentAddress(String endpoint) {
+		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
 	}
 }

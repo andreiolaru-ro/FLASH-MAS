@@ -550,6 +550,24 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * Retrieves one value associated with the name (key).
+	 * <ul>
+	 * <li>If the name is a singleton name, the associated value is returned.
+	 * <li>If the name is a non-singleton name, the first value associated with the name is returned.
+	 * 
+	 * @param name
+	 *            - the name (key) to search.
+	 * @return a value associated with the name.
+	 */
+	public String getAValue(String name)
+	{
+		if(!isSimple(name))
+			// slight abuse of the check order in checkKeyAccess.
+			checkKeyAccess(name, true, false);
+		return isSingleton(name) ? getSingleValue(name) : getFirstValue(name);
+	}
+	
+	/**
 	 * Retrieves the tree associated with the given singleton name.
 	 * 
 	 * @param name
@@ -628,6 +646,24 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * Retrieves one tree associated with the name (key).
+	 * <ul>
+	 * <li>If the name is a singleton name, the associated tree is returned.
+	 * <li>If the name is a non-singleton name, the first tree associated with the name is returned.
+	 * 
+	 * @param name
+	 *            - the name (key) to search.
+	 * @return a tree associated with the name.
+	 */
+	public MultiTreeMap getATree(String name)
+	{
+		if(!isHierarchical(name))
+			// slight abuse of the check order in checkKeyAccess.
+			checkKeyAccess(name, false, false);
+		return isSingleton(name) ? getSingleTree(name) : getFirstTree(name);
+	}
+	
+	/**
 	 * Retrieves the first tree associated with the given name.
 	 * <p>
 	 * Optionally, if no such tree exists, creates one, adds it as a value for the given name and returns it.
@@ -658,6 +694,143 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * Adds to this tree the contents associated with the specified name in the <code>from</code> tree, with exactly the
+	 * same type of key (singleton / hierarchical).
+	 * <p>
+	 * If the key already exists, is singleton and is hierarchical, the individual trees are recursively copied into the
+	 * key (the tree associated with the singleton key is <b>merged</b>).
+	 * <p>
+	 * For singleton simple names, warnings should be issued (but currently are not) on overwrite but currently <b>are
+	 * not</b>.
+	 * <p>
+	 * WARNING: nothing is copied, except for the actual reference; associated with the name there will be exactly the
+	 * same instances as in the other {@link MultiTreeMap} (except for singleton hierarchical keys, which are merged).
+	 * 
+	 * @param from
+	 *            - the source {@link MultiTreeMap}
+	 * @param name
+	 *            - the name (key) to transfer
+	 * @return the instance itself
+	 */
+	public MultiTreeMap copyNameFrom(MultiTreeMap from, String name)
+	{
+		return copyNameFrom(from, name, false);
+	}
+	
+	/**
+	 * Adds to this tree the contents associated with the specified name in the <code>from</code> tree, with exactly the
+	 * same type of key (singleton / hierarchical).
+	 * <p>
+	 * If the key already exists, is singleton and is hierarchical, the individual trees are recursively copied into the
+	 * key (the tree associated with the singleton key is <b>merged</b>).
+	 * <p>
+	 * For singleton simple names, warnings should be issued (but currently are not) on overwrite but currently <b>are
+	 * not</b>.
+	 * <p>
+	 * In this version of the method, trees are copied with {@link #copyDeep()}, so that in the end disjoint trees exist
+	 * in the to {@link MultiTreeMap} instances for the given key.
+	 * 
+	 * @param from
+	 *            - the source {@link MultiTreeMap}
+	 * @param name
+	 *            - the name (key) to transfer
+	 * @return the instance itself
+	 */
+	public MultiTreeMap copyNameFromDeep(MultiTreeMap from, String name)
+	{
+		return copyNameFrom(from, name, true);
+	}
+	
+	/**
+	 * Handles the functionality of {@link #copyNameFrom(MultiTreeMap, String)} and
+	 * {@link #copyNameFromDeep(MultiTreeMap, String)}.
+	 * 
+	 * @param from
+	 *            the source {@link MultiTreeMap}.
+	 * @param name
+	 *            - the name (key) to transfer.
+	 * @param deepCopy
+	 *            - if <code>true</code>, tree values are copied; if <code>false</code>, just the reference to the tree
+	 *            is copied.
+	 * @return the instance itself (the {@link MultiTreeMap} which is the destination the transfer.
+	 */
+	protected MultiTreeMap copyNameFrom(MultiTreeMap from, String name, boolean deepCopy)
+	{
+		if(from.isHierarchical(name))
+			if(from.isSingleton(name))
+				if(isSingleton(name) && isHierarchical(name))
+					for(String subName : from.getSingleTree(name).getKeys())
+						getSingleTree(name).copyNameFrom(from.getSingleTree(name), subName, deepCopy);
+				else
+					addSingleTree(name, deepCopy ? from.getSingleTree(name).copyDeep() : from.getSingleTree(name));
+			else if(deepCopy)
+				for(Object tree : from.getTrees(name))
+					addOneTree(name, ((MultiTreeMap) tree).copyDeep());
+			else
+				addTrees(name, from.getTrees(name));
+		else if(from.isSingleton(name))
+		{
+			if(isSingleton(name) && isSimple(name))
+			{
+				// TODO find a way to issue warning
+			}
+			addSingleValue(name, from.getSingleValue(name));
+		}
+		else
+			addAll(name, from.getValues(name));
+		return this;
+	}
+	
+	/**
+	 * Creates a shallow copy of this {@link MultiTreeMap}, by creating a new instance with the same parings (an
+	 * identical backing map) and in the same order as the original; new, identical lists are created for the simple
+	 * keys, the tree keys, and the singleton keys.
+	 * <p>
+	 * NOTE THAT the values are the same in both maps. That is, both maps have references to the same instances for
+	 * values.
+	 * 
+	 * @return the shallow copy of this map.
+	 */
+	public MultiTreeMap copyShallow()
+	{
+		MultiTreeMap ret = new MultiTreeMap();
+		for(String key : backingMap.keySet())
+			ret.backingMap.put(key, new LinkedList<>(backingMap.get(key)));
+		ret.padLen = padLen;
+		ret.simpleKeys.addAll(simpleKeys);
+		ret.treeKeys.addAll(treeKeys);
+		ret.singletonKeys.addAll(singletonKeys);
+		return ret;
+	}
+	
+	/**
+	 * Creates a deep copy of this {@link MultiTreeMap}, by creating a new instance with the same parings and in the
+	 * same order as the original; new, identical lists are created for the simple keys, the tree keys, and the
+	 * singleton keys. The method recurses through the trees that this instance contains.
+	 * 
+	 * @return the shallow copy of this map.
+	 */
+	public MultiTreeMap copyDeep()
+	{
+		MultiTreeMap ret = new MultiTreeMap();
+		for(String key : backingMap.keySet())
+			if(treeKeys.contains(key))
+			{
+				ret.backingMap.put(key, new LinkedList<>());
+				for(Object treeObj : backingMap.get(key))
+					ret.backingMap.get(key).add(((MultiTreeMap) treeObj).copyDeep());
+			}
+			else
+				ret.backingMap.put(key, new LinkedList<>(backingMap.get(key)));
+			
+		ret.padLen = padLen;
+		ret.simpleKeys.addAll(simpleKeys);
+		ret.treeKeys.addAll(treeKeys);
+		ret.singletonKeys.addAll(singletonKeys);
+		return ret;
+	}
+	
+	/**
 	 * Get the value at the end of a path in a tree. The last name must be a simple name. All other names must be
 	 * hierarchical names. For multiple values, only the first value is checked.
 	 * <p>
@@ -684,6 +857,15 @@ public class MultiTreeMap extends MultiValueMap
 			return (isSingleton(names[0]) ? getSingleTree(names[0]) : getFirstTree(names[0]))
 					.getDeepValue(Arrays.copyOfRange(names, 1, names.length));
 		}
+	}
+	
+	@Override
+	public MultiValueMap removeKey(String name)
+	{
+		simpleKeys.remove(name);
+		treeKeys.remove(name);
+		singletonKeys.remove(name);
+		return super.removeKey(name);
 	}
 	
 	/**

@@ -15,22 +15,23 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
-import tatami.core.agent.AgentComponent;
-import tatami.core.agent.AgentEvent;
-import tatami.core.agent.AgentEvent.AgentEventHandler;
-import tatami.core.agent.AgentEvent.AgentEventType;
-import tatami.core.agent.CompositeAgent;
 
 /**
- * An {@link AgentComponent} implementation that sends messages to other agents.
+ * An {@link AgentShard} implementation that sends messages to other agents.
  * <p>
  * This is a rather older implementation, that starts pinging immediately after agent start.
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentComponent
+public class PingTestComponent extends AgentShardCore
 {
 	/**
 	 * The instance sends a message to the "other agent".

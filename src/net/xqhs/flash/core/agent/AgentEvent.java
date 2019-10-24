@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.agent;
 
+<<<<<<< HEAD
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.util.MultiValueMap;

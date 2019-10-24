@@ -20,9 +20,8 @@ import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.composite.VisualizableFeature;
-import net.xqhs.flash.core.support.MessagingComponent;
-import net.xqhs.flash.core.support.MessagingFeature;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
@@ -59,7 +58,7 @@ import net.xqhs.util.logging.Logger;
  * agent, relying the call to the {@link VisualizableFeature} of the agent (if any).
  * 
  * <li>messaging: the methods <code>registerMessageReceiver</code>, <code>sendMessage</code> and
- * <code>getFeatureEndpoint</code> call methods in the {@link MessagingFeature} of the agent (if any) to register a
+ * <code>getFeatureEndpoint</code> call methods in the {@link MessagingShard} of the agent (if any) to register a
  * handler for messages sent to a particular internal endpoint; to send a message; or to compute the endpoint of
  * <i>this</i> feature.
  * </ul>
@@ -255,7 +254,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 *            - the event which occurred.
 	 */
 	@Override
-	protected void signalAgentEvent(AgentEvent event)
+	public void signalAgentEvent(AgentEvent event)
 	{
 		if(eventHandlers.containsKey(event.getType()))
 			eventHandlers.get(event.getType()).handleEvent(event);
@@ -282,7 +281,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	}
 	
 	/**
-	 * Relay for calls to the method {@link CompositeAgent#getFeature(StandardAgentShard)}.
+	 * Relay for calls to the method {@link CompositeAgent#getShard(StandardAgentShard)}.
 	 * 
 	 * @param designation
 	 *            - the designation of the feature.
@@ -290,7 +289,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 */
 	protected AgentShardCore getAgentFeature(AgentShardDesignation designation)
 	{
-		return (getAgent() != null) ? getAgent().getFeature(designation) : null;
+		return (getAgent() != null) ? getAgent().getShard(designation) : null;
 	}
 	
 	/**
@@ -340,7 +339,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 * Handles the registration of an event handler for messages to a target (inside the agent) with the specified
 	 * prefix (elements of the internal path of the endpoint).
 	 * <p>
-	 * If the feature has a parent and a {@link MessagingFeature} exists, the handler will be registered with the
+	 * If the feature has a parent and a {@link MessagingShard} exists, the handler will be registered with the
 	 * messaging feature. Otherwise, the handler be registered to receive any messages, regardless of prefix. In the
 	 * latter case, <code>false</code> will be returned to signal the abnormal behavior.
 	 * 
@@ -355,11 +354,11 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	{
 		// TODO: if the messaging feature disappears, register with the agent; if the messaging feature appears,
 		// register with that.
-		if((getAgent() != null) && (getAgent().hasFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation())))
+		if((getAgent() != null) && (getAgent().hasShard(StandardAgentShard.MESSAGING.toAgentShardDesignation())))
 		{
 			// the implementation somewhat non-intuitively uses the fact that the method in MessagingFeature that is
 			// used has the same name.
-			AgentShardCore msgr = getAgent().getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation());
+			AgentShardCore msgr = getAgent().getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
 			return msgr.registerMessageReceiver(receiver, prefixElements);
 		}
 		registerHandler(AgentEventType.AGENT_MESSAGE, receiver);
@@ -382,8 +381,8 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	{
 		try
 		{
-			return ((MessagingFeature) getAgent()
-					.getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation()))
+			return ((MessagingShard) getAgent()
+					.getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation()))
 							.makeLocalPath(pathElements);
 		} catch(NullPointerException e)
 		{
@@ -403,7 +402,7 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 *            - the source endpoint, as a complete path. See {@link #getFeatureEndpoint(String...)}.
 	 * @param targetAgent
 	 *            - the name of the target agent, as a name that can be passed to
-	 *            {@link MessagingFeature#getAgentAddress(String)}.
+	 *            {@link MessagingShard#getAgentAddress(String)}.
 	 * @param targetPathElements
 	 *            - elements in the internal path of the target.
 	 * @return <code>true</code> if the message has been successfully sent.
@@ -411,8 +410,8 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
 			String... targetPathElements)
 	{
-		MessagingFeature msgr = (MessagingComponent) getAgent()
-				.getFeature(StandardAgentShard.MESSAGING.toAgentFeatureDesignation());
+		MessagingShard msgr = (AbstractMessagingShard) getAgent()
+				.getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
 		if(msgr != null)
 			return msgr.sendMessage(msgr.makePath(targetAgent, targetPathElements), sourceEndpoint, content);
 		return false;
@@ -428,14 +427,14 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 *            - the source endpoint, as a complete path. See {@link #getFeatureEndpoint(String...)}.
 	 * @param targetEndpoint
 	 *            - the destination endpoint, as a complete path. Such a path could be generated using
-	 *            {@link MessagingFeature#makePath(String, String...)}.
+	 *            {@link MessagingShard#makePath(String, String...)}.
 	 * @param targetPathElements
 	 *            - elements in the internal path of the target.
 	 * @return <code>true</code> if the message has been successfully sent.
 	 */
 	protected boolean sendMessageToEndpoint(String content, String sourceEndpoint, String targetEndpoint)
 	{
-		MessagingFeature msgr = (MessagingFeature) getAgent().getFeature(StandardAgentShard.MESSAGING);
+		MessagingShard msgr = (MessagingShard) getAgent().getShard(StandardAgentShard.MESSAGING);
 		if(msgr != null)
 			return msgr.sendMessage(targetEndpoint, sourceEndpoint, content);
 		return false;
@@ -454,8 +453,8 @@ public abstract class CompositeAgentShard extends AgentShardCore
 	 */
 	protected boolean sendReply(String content, AgentEvent replyTo)
 	{
-		return sendMessageToEndpoint(content, replyTo.get(MessagingFeature.DESTINATION_PARAMETER),
-				replyTo.get(MessagingFeature.SOURCE_PARAMETER));
+		return sendMessageToEndpoint(content, replyTo.get(MessagingShard.DESTINATION_PARAMETER),
+				replyTo.get(MessagingShard.SOURCE_PARAMETER));
 	}
 	
 }

@@ -28,35 +28,42 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContext;
-import net.xqhs.flash.core.support.Support;
+import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
- * This class reunites the features of an agent in order for features to be able to call each other and for events to be
- * distributed to all features.
+ * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
+ * other.
  * <p>
- * Various agent features -- instances of {@link AgentShardCore} -- can be added. Features are identified by means of
- * their designation. At most one feature with the same designation is allowed (i.e. at most one feature per
- * functionality).
+ * Various agent shards -- instances of {@link AgentShardCore} -- can be added. Shards are identified by means of their
+ * designation. At most one shard with the same designation is allowed (i.e. at most one shard per functionality). TODO
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
- * an event to all features, which handle it by means of registered handles (each feature registers a handle for an
- * event with itself). See {@link AgentShardCore}.
+ * an event to all shards.
  * 
  * @author Andrei Olaru
- * 
  */
 public class CompositeAgent implements Serializable, Agent
 {
-	static class CompositeAgentAsContext implements ShardContext
+	/**
+	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
+	 */
+	static class CompositeAgentShardContainer implements ShardContainer
 	{
+		/**
+		 * The agent
+		 */
 		CompositeAgent agent = null;
 		
-		protected CompositeAgentAsContext(CompositeAgent agent)
+		/**
+		 * @param agent
+		 *                  - the agent
+		 */
+		protected CompositeAgentShardContainer(CompositeAgent agent)
 		{
 			this.agent = agent;
 		}
@@ -66,6 +73,16 @@ public class CompositeAgent implements Serializable, Agent
 		{
 			agent.postAgentEvent(event);
 		}
+
+		@Override
+		public List<EntityProxy<Pylon>> getPylons() {
+			return null;
+		}
+
+		@Override
+		public String getAgentName() {
+			return agent.getName();
+		}
 	}
 	
 	/**
@@ -73,11 +90,11 @@ public class CompositeAgent implements Serializable, Agent
 	 * <p>
 	 * The normal transition between states is the following: <br/>
 	 * <ul>
-	 * <li>{@link #STOPPED} [here features are normally added] + {@link AgentEventType#AGENT_START} &rarr;
-	 * {@link #STARTING} [starting thread; starting features] &rarr; {@link #RUNNING}.
-	 * <li>while in {@link #RUNNING}, features can be added or removed.
+	 * <li>{@link #STOPPED} [here shards are normally added] + {@link AgentEventType#AGENT_START} &rarr;
+	 * {@link #STARTING} [starting thread; starting shards] &rarr; {@link #RUNNING}.
+	 * <li>while in {@link #RUNNING}, shards can be added or removed.
 	 * <li>{@link #RUNNING} + {@link AgentEventType#AGENT_STOP} &rarr; {@link #STOPPING} [no more events accepted; stop
-	 * features; stop thread] &rarr; {@link #STOPPED}.
+	 * shards; stop thread] &rarr; {@link #STOPPED}.
 	 * <li>when the {@link #TRANSIENT} state is involved, the transitions are as follows: {@link #RUNNING} +
 	 * {@link AgentEventType#AGENT_STOP} w/ parameter {@link CompositeAgent#TRANSIENT_EVENT_PARAMETER} &rarr;
 	 * {@link #STOPPING} &rarr {@link #TRANSIENT} [unable to modify agent] + {@link AgentEventType#AGENT_START} w/
@@ -89,32 +106,32 @@ public class CompositeAgent implements Serializable, Agent
 	enum AgentState {
 		/**
 		 * State indicating that the agent is currently behaving normally and agent events are processed in good order.
-		 * All features are running.
+		 * All shards are running.
 		 */
 		RUNNING,
 		
 		/**
 		 * State indicating that the agent is stopped and is unable to process events. The agent's thread is stopped.
-		 * All features are stopped.
+		 * All shards are stopped.
 		 */
 		STOPPED,
 		
 		/**
 		 * This state is a version of the {@link #STOPPED} state, with the exception that it does not allow any changes
-		 * the general state of the agent (e.g. feature list). The state should be used to "freeze" the agent, such as
-		 * for it to be serialized.. Normally, in this state features should not allow any changes either.
+		 * the general state of the agent (e.g. shard list). The state should be used to "freeze" the agent, such as for
+		 * it to be serialized.. Normally, in this state shards should not allow any changes either.
 		 */
 		TRANSIENT,
 		
 		/**
 		 * State indicating that the agent is in the process of starting, but is not currently accepting events. The
-		 * thread may or may not have been started. The features are in the process of starting.
+		 * thread may or may not have been started. The shards are in the process of starting.
 		 */
 		STARTING,
 		
 		/**
 		 * State indicating that the agent is currently stopping. It is not accepting events any more. The thread may or
-		 * may not be running. The features are in the process of stopping.
+		 * may not be running. The shards are in the process of stopping.
 		 */
 		STOPPING,
 	}
@@ -151,11 +168,11 @@ public class CompositeAgent implements Serializable, Agent
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(AgentShardCore feature : featureOrder)
-							feature.signalAgentEvent(event);
+						for(AgentShardCore shard : shardOrder)
+							shard.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<AgentShardCore> it = featureOrder.listIterator(featureOrder.size()); it
+						for(ListIterator<AgentShardCore> it = shardOrder.listIterator(shardOrder.size()); it
 								.hasPrevious();)
 							it.previous().signalAgentEvent(event);
 						break;
@@ -183,27 +200,30 @@ public class CompositeAgent implements Serializable, Agent
 	public static final String								TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
 	
 	/**
-	 * This can be used by support implementation-specific features to contact the support implementation.
+	 * This can be used by support implementation-specific shards to contact the support implementation.
 	 */
 	protected Object										supportLink					= null;
 	
-	protected Context<Agent>								asContext					= new CompositeAgentAsContext(
+	/**
+	 * The proxy to this agent.
+	 */
+	protected EntityProxy<Agent>							asContext					= new CompositeAgentShardContainer(
 			this);
 	
 	/**
-	 * The {@link Map} that links feature designations (functionalities) to feature instances.
+	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 */
-	protected Map<AgentShardDesignation, AgentShardCore>	features					= new HashMap<>();
+	protected Map<AgentShardDesignation, AgentShardCore>	shards						= new HashMap<>();
 	/**
-	 * A {@link List} that holds the order in which features were added, so as to signal agent events to features in the
+	 * A {@link List} that holds the order in which shards were added, so as to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
-	 * It is important that this list is managed together with {@link #features}.
+	 * It is important that this list is managed together with {@link #shards}.
 	 */
-	protected ArrayList<AgentShardCore>						featureOrder				= new ArrayList<>();
+	protected ArrayList<AgentShardCore>						shardOrder					= new ArrayList<>();
 	
 	/**
-	 * A synchronized queue of agent events, as posted by the features.
+	 * A synchronized queue of agent events, as posted by the shards.
 	 */
 	protected LinkedBlockingQueue<AgentEvent>				eventQueue					= null;
 	/**
@@ -247,7 +267,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Starts the life-cycle of the agent. All features will receive an {@link AgentEventType#AGENT_START} event.
+	 * Starts the life-cycle of the agent. All shards will receive an {@link AgentEventType#AGENT_START} event.
 	 * 
 	 * @return true if the event has been successfully posted. See <code>postAgentEvent()</code>.
 	 */
@@ -258,8 +278,8 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Instructs the agent to unload all features and exit. All features will receive an
-	 * {@link AgentEventType#AGENT_STOP} event.
+	 * Instructs the agent to unload all shards and exit. All shards will receive an {@link AgentEventType#AGENT_STOP}
+	 * event.
 	 * <p>
 	 * No events will be successfully received after this event has been posted.
 	 * 
@@ -296,16 +316,16 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be added to an agent only when it is not running.
 	 */
 	@Override
-	public boolean addContext(Context<Support> link)
+	public boolean addContext(EntityProxy<Pylon> link)
 	{
-		if(!canAddFeatures() || isRunning())
+		if(!canAddShards() || isRunning())
 			return false;
 		supportLink = link;
 		return true;
 	}
 	
 	@Override
-	public boolean addGeneralContext(Context<Entity<?>> context)
+	public boolean addGeneralContext(EntityProxy<Entity<?>> context)
 	{
 		log("No general context supported.");
 		return false;
@@ -315,9 +335,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be removed from an agent only when it is not running.
 	 */
 	@Override
-	public boolean removeContext(Context<Support> link)
+	public boolean removeContext(EntityProxy<Pylon> link)
 	{
-		if(!canAddFeatures() || isRunning())
+		if(!canAddShards() || isRunning())
 			return false;
 		supportLink = null;
 		return true;
@@ -325,14 +345,14 @@ public class CompositeAgent implements Serializable, Agent
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Context<Agent> asContext()
+	public EntityProxy<Agent> asContext()
 	{
 		return asContext;
 	}
 	
 	/**
-	 * The method should be called by an agent feature (relayed through {@link AgentShardCore}) to disseminate a an
-	 * {@link AgentEvent} to the other features.
+	 * The method should be called by an agent shard (relayed through {@link AgentShardCore}) to disseminate a an
+	 * {@link AgentEvent} to the other shards.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
 	 * case of abnormal termination, the event will be processed eventually. Otherwise, it returns <code>false</code>,
@@ -340,7 +360,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * inappropriate state.
 	 * 
 	 * @param event
-	 *            the event to disseminate.
+	 *                  the event to disseminate.
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
@@ -380,11 +400,11 @@ public class CompositeAgent implements Serializable, Agent
 	 * <li>Any event except {@link AgentEventType#AGENT_START} can be posted only in the {@link AgentState#RUNNING}
 	 * state.
 	 * <li>If the {@link AgentEventType#AGENT_START} is posted while the agent is in the {@link AgentState#TRANSIENT}
-	 * state, it needs to feature a parameter called {@value #TRANSIENT_EVENT_PARAMETER} (with any value).
+	 * state, it needs to shard a parameter called {@value #TRANSIENT_EVENT_PARAMETER} (with any value).
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 * 
 	 * @param event
-	 *            - the event one desires to post.
+	 *                  - the event one desires to post.
 	 * @return <code>true</code> if the event could be posted at this moment; <code>false</code> otherwise.
 	 */
 	protected boolean canPostEvent(AgentEvent event)
@@ -444,7 +464,7 @@ public class CompositeAgent implements Serializable, Agent
 	
 	/**
 	 * Change the state of the agent (if it is the case) and perform other actions, <i>after</i> an event has been
-	 * processed by all features.
+	 * processed by all shards.
 	 * <p>
 	 * If the event was {@link AgentEventType#AGENT_START}, the state will be {@link AgentState#RUNNING}.
 	 * <p>
@@ -453,16 +473,17 @@ public class CompositeAgent implements Serializable, Agent
 	 * thread will exit.
 	 * 
 	 * @param eventType
-	 *            - the type of the event.
+	 *                            - the type of the event.
 	 * @param toFromTransient
-	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
+	 *                            - <code>true</code> if the agent should enter / exit from the
+	 *                            {@link AgentState#TRANSIENT} state.
 	 * @return <code>true</code> if the agent thread should exit.
 	 */
 	protected boolean FSMEventOut(AgentEventType eventType, boolean toFromTransient)
 	{
 		switch(eventType)
 		{
-		case AGENT_START: // the agent has completed starting and all features are up.
+		case AGENT_START: // the agent has completed starting and all shards are up.
 			synchronized(eventQueue)
 			{
 				agentState = AgentState.RUNNING;
@@ -522,72 +543,72 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Adds a feature to the agent, which has been configured beforehand. The agent will register with the feature, as
+	 * Adds a shard to the agent, which has been configured beforehand. The agent will register with the shard, as
 	 * parent.
 	 * <p>
-	 * The feature will be identified by the agent by means of its {@link AgentShardCore#getShardDesignation()} method.
+	 * The shard will be identified by the agent by means of its {@link AgentShardCore#getShardDesignation()} method.
 	 * Only one instance per designation (functionality) will be allowed.
 	 * 
-	 * @param feature
-	 *            - the {@link AgentShardCore} instance to add.
-	 * @return the agent instance itself. This can be used to continue adding other features.
+	 * @param shard
+	 *                  - the {@link AgentShardCore} instance to add.
+	 * @return the agent instance itself. This can be used to continue adding other shards.
 	 */
-	protected CompositeAgent addFeature(AgentShardCore feature)
+	protected CompositeAgent addShard(AgentShardCore shard)
 	{
-		if(!canAddFeatures())
-			throw new IllegalStateException("Cannot add features in state [" + agentState + "].");
-		if(feature == null)
-			throw new InvalidParameterException("Feature is null");
-		if(hasFeature(feature.getShardDesignation()))
+		if(!canAddShards())
+			throw new IllegalStateException("Cannot add shards in state [" + agentState + "].");
+		if(shard == null)
+			throw new InvalidParameterException("Shard is null");
+		if(hasShard(shard.getShardDesignation()))
 			throw new InvalidParameterException(
-					"Cannot add multiple features for designation [" + feature.getShardDesignation() + "]");
-		features.put(feature.getShardDesignation(), feature);
-		featureOrder.add(feature);
-		feature.addContext(this.asContext());
+					"Cannot add multiple shards for designation [" + shard.getShardDesignation() + "]");
+		shards.put(shard.getShardDesignation(), shard);
+		shardOrder.add(shard);
+		shard.addContext(this.asContext());
 		return this;
 	}
 	
 	/**
-	 * Removes an existing feature of the agent.
+	 * Removes an existing shard of the agent.
 	 * 
 	 * @param designation
-	 *            - the designation of the feature to remove.
-	 * @return a reference to the just-removed feature instance.
+	 *                        - the designation of the shard to remove.
+	 * @return a reference to the just-removed shard instance.
 	 */
-	protected AgentShardCore removeFeature(AgentShardDesignation designation)
+	protected AgentShardCore removeShard(AgentShardDesignation designation)
 	{
-		if(!hasFeature(designation))
-			throw new InvalidParameterException("Feature [" + designation + "] does not exist");
-		AgentShardCore feature = getFeature(designation);
-		featureOrder.remove(feature);
-		features.remove(designation);
-		return feature;
+		if(!hasShard(designation))
+			throw new InvalidParameterException("Shard [" + designation + "] does not exist");
+		AgentShardCore shard = getShard(designation);
+		shardOrder.remove(shard);
+		shards.remove(designation);
+		return shard;
 	}
 	
 	/**
-	 * Returns <code>true</code> if the agent contains said feature.
+	 * Returns <code>true</code> if the agent contains said shard.
 	 * 
 	 * @param designation
-	 *            - the designation of the feature to search.
-	 * @return <code>true</code> if the feature exists, <code>false</code> otherwise.
+	 *                        - the designation of the shard to search.
+	 * @return <code>true</code> if the shard exists, <code>false</code> otherwise.
 	 */
-	protected boolean hasFeature(AgentShardDesignation designation)
+	protected boolean hasShard(AgentShardDesignation designation)
 	{
-		return features.containsKey(designation);
+		return shards.containsKey(designation);
 	}
 	
 	/**
-	 * Retrieves a feature of the agent, by designation.
+	 * Retrieves a shard of the agent, by designation.
 	 * <p>
-	 * It is <i>strongly recommended</i> that the reference is not kept, as the feature may be removed without notice.
+	 * It is <i>strongly recommended</i> that the reference is not kept, as the shard may be removed without notice.
 	 * 
 	 * @param designation
-	 *            - the designation of the feature to retrieve.
+	 *                        - the designation of the shard to retrieve.
 	 * @return the {@link AgentShardCore} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentShardCore getFeature(AgentShardDesignation designation)
+	protected AgentShardCore getShard(AgentShardDesignation designation)
 	{
-		return features.get(designation);
+		return shards.get(designation);
 	}
 	
 	/**
@@ -612,9 +633,9 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Checks if the agent is currently in <code>RUNNING</code> state. In case features are added during this state,
-	 * they must consider that the agent is already running and no additional {@link AgentEventType#AGENT_START} events
-	 * will be issued.
+	 * Checks if the agent is currently in <code>RUNNING</code> state. In case shards are added during this state, they
+	 * must consider that the agent is already running and no additional {@link AgentEventType#AGENT_START} events will
+	 * be issued.
 	 * 
 	 * @return <code>true</code> if the agent is currently <code>RUNNING</code>; <code>false</code> otherwise.
 	 */
@@ -665,12 +686,12 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * Checks if the state of the agent allows adding features. Features should not be added in intermediary states in
-	 * which the agent is starting or stopping.
+	 * Checks if the state of the agent allows adding shards. Shards should not be added in intermediary states in which
+	 * the agent is starting or stopping.
 	 * 
-	 * @return <code>true</code> if in the current state features can be added.
+	 * @return <code>true</code> if in the current state shards can be added.
 	 */
-	public boolean canAddFeatures()
+	public boolean canAddShards()
 	{
 		return (agentState == AgentState.STOPPED) || (agentState == AgentState.RUNNING);
 	}

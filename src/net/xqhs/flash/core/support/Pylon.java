@@ -13,11 +13,9 @@ package net.xqhs.flash.core.support;
 
 import java.util.Set;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
-import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 /**
  * This interface should be implemented by any persistent entity that exists on a {@link Node} and offers to agents
@@ -25,19 +23,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public interface Support extends Entity<Node>
+public interface Pylon extends ConfigurableEntity<Node>
 {
-	/**
-	 * Configures the {@link Support} instance with the given configuration. Implementations should ensure that some
-	 * configurations are only performed once.
-	 * 
-	 * @param configuration
-	 *            - the configuration.
-	 * @return <code>true</code> if the configuration process succeeded: <code>false</code> if the instance is not
-	 *         expected to perform normally.
-	 */
-	public boolean configure(MultiTreeMap configuration);
-	
 	/**
 	 * @return the names of services that the instance supports. FIXME: services should be better described or be part
 	 *         of some class.
@@ -49,25 +36,14 @@ public interface Support extends Entity<Node>
 	 * infrastructure, for the specified shard type, if any. If no such recommendation exists, <code>null</code> will be
 	 * returned.
 	 * <p>
-	 * This is especially appropriate for shards that depend strongly on the platform, such as messaging and mobility.
-	 * Using this method, agents can be easily implemented by adding the recommended components of the platform.
+	 * This is especially appropriate for cases in which the implementation of the shards depends strongly on the
+	 * infrastructure, such as messaging and mobility. Using this method, agents can be easily implemented by adding the
+	 * shards recommended by the pylon.
 	 * 
 	 * @param shardType
-	 *            - the type/name of the shard to be recommended.
+	 *                      - the type/name of the shard to be recommended.
 	 * @return the name of the class containing the recommended implementation, or <code>null</code> if no
 	 *         recommendation is made.
 	 */
-	public String getRecommendedShardImplementation(StandardAgentShard shardType);
-	
-	/**
-	 * Enrolls the given agent in the support infrastructure, making the supported services available to the agent.
-	 * <p>
-	 * It is expected that the implementation of this method will call {@link Entity#addContext(Entity)} to inform the
-	 * agent of its inclusion in this entity.
-	 * 
-	 * @param agent
-	 *            - the agent to be registered.
-	 * @return <code>true</code> if the registration has been successful, <code>false</code> otherwise.
-	 */
-	public boolean registerAgent(Agent agent);
+	public String getRecommendedShardImplementation(AgentShardDesignation shardType);
 }
