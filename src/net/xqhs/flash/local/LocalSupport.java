@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -66,7 +65,7 @@ public class LocalSupport extends DefaultPylonImplementation
 																		@Override
 																		public boolean register(String agentName,
 																				MessageReceiver receiver)
-{
+																		{
 																			messageReceivers.put(agentName, receiver);
 																			return true;
 																		}
@@ -82,7 +81,7 @@ public class LocalSupport extends DefaultPylonImplementation
 		/**
 		 * The serial UID.
 		 */
-		private static final long serialVersionUID = 1L;
+		private static final long	serialVersionUID	= 1L;
 		private MessagingPylonProxy	pylon;
 		public MessageReceiver		inbox;
 		
@@ -93,18 +92,17 @@ public class LocalSupport extends DefaultPylonImplementation
 		{
 			super();
 			inbox = new MessageReceiver() {
-		@Override
-				public boolean receive(String source, String destination, String content)
-		{
+				@Override
+				public void receive(String source, String destination, String content)
+				{
 					receiveMessage(source, destination, content);
-					return true;
-						}
+				}
 			};
-					}
+		}
 		
 		@Override
 		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-				{
+		{
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
@@ -117,7 +115,7 @@ public class LocalSupport extends DefaultPylonImplementation
 		{
 			pylon.send(source, destination, content);
 			return true;
-			}
+		}
 		
 		@Override
 		protected void receiveMessage(String source, String destination, String content)
@@ -174,19 +172,19 @@ public class LocalSupport extends DefaultPylonImplementation
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
 	 */
-	protected boolean useThread = true;
+	protected boolean																useThread		= true;
 	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this queue is used to gather
 	 * messages.
 	 */
-	protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>> messageQueue = null;
+	protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>	messageQueue	= null;
 	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this is a reference to that
 	 * thread.
 	 */
-	protected Thread messageThread = null;
+	protected Thread																messageThread	= null;
 	
 	@Override
 	public boolean start()

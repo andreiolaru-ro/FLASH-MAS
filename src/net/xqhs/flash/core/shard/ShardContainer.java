@@ -7,7 +7,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 /**
  * This interface should be implemented by any proxy to an agent which needs to use {@link AgentShard}s. It enables the
  * shards to interact with agent functionality such as posting events to agent or getting information about the agent
- * name and its pylons.
+ * name.
  * 
  * @author Andrei Olaru
  */
