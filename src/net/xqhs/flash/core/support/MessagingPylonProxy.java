@@ -1,13 +1,11 @@
 package net.xqhs.flash.core.support;
 
-import net.xqhs.flash.core.Entity.EntityProxy;
-
 /**
  * This interface should be implemented by any proxy to a {@link Pylon} that offers messaging services.
  * 
  * @author Vlad Tălmaciu, Andrei Olaru
  */
-public interface MessagingPylonProxy extends EntityProxy<Pylon>
+public interface MessagingPylonProxy extends PylonProxy
 {
 	/**
 	 * Registers an agent with the specified name, associating with it a {@link MessageReceiver} instance.
