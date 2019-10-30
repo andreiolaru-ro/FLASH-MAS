@@ -2,7 +2,7 @@
 
 
 
-* "Easy for beginners, powerful to experts" *
+*"Easy for beginners, powerful to experts"*
 
 
 Current targets
@@ -27,6 +27,8 @@ Current targets
 
 ### Communication
   * local messaging
+  * implement AgentWave
+  * share implementation between AbstractMessagingShard and NameBasedMessagingShard, specify MessagingShard interface.
 
 ### Utilities
   * implement getAppropriateTree / addAppropriateTree methods
