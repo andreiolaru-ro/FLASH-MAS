@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -101,7 +100,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
-	public Node load(MultiTreeMap nodeConfiguration, List<EntityProxy<Entity<?>>> context,
+	public Node load(MultiTreeMap nodeConfiguration, List<EntityProxy<? extends Entity<?>>> context,
 			List<MultiTreeMap> subordinateEntities)
 	{
 		if(context != null && context.size() > 0)
@@ -164,7 +163,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				
 				// find the implementation
 				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
-				cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.s(),
+				cp = Loader.autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.s(),
 						checkedPaths);
 				if(cp == null)
 					le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
@@ -294,7 +293,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					if(entity == null)
 					{
 						// attempt to obtain classpath information
-						cp = autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, catName, checkedPaths);
+						cp = Loader.autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, catName, checkedPaths);
 						if(cp == null)
 							le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
 						else
@@ -323,106 +322,6 @@ public class NodeLoader extends Unit implements Loader<Node>
 	}
 	
 	/**
-	 * Makes the first letter of the given string upper-case.
-	 * 
-	 * @param s
-	 *            - the string.
-	 * @return the string with the first letter converted to upper-case.
-	 */
-	static String capitalize(String s)
-	{
-		return s.substring(0, 1).toUpperCase() + s.substring(1);
-	}
-	
-	/**
-	 * Attempts to find a specific class given some known information about it. It searches the class in the following
-	 * sequence:
-	 * <ul>
-	 * <li>verify directly the given classpath (<code>given_cp</code>)
-	 * <li>verify if the given classpath can be found in any of the packages
-	 * <li>verify combinations of:
-	 * <ul>
-	 * <li>the <code>root_package</code>, the {@link DeploymentConfiguration#CORE_PACKAGE} in the
-	 * <code>root_package</code> or any of the packages
-	 * <li>with
-	 * <li>combinations of package paths formed of the <code>upper_name</code> and the <code>lower_name</code>
-	 * <li>with
-	 * <li>the given classpath or class names created by joining <code>upper_name</code> and <code>entity</code>;
-	 * <code>lower_name</code> and <code>entity</code>; or <code>lower_name</code>, <code>upper_name</code>, and
-	 * <code>entity</code>.
-	 * </ul>
-	 * </ul>
-	 * <p>
-	 * TODO: example
-	 * 
-	 * @param factory
-	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
-	 * @param packages
-	 *            - a list of java packages in which to search.
-	 * @param given_cp
-	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
-	 *            class. This classpath will also be searched in the list of packages.
-	 * @param root_package
-	 *            - the root package in which to search.
-	 * @param upper_name
-	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
-	 * @param lower_name
-	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
-	 * @param entity
-	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
-	 * @param checkedPaths
-	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
-	 *            class have been searched).
-	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
-	 */
-	protected static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String root_package,
-			String upper_name, String lower_name, String entity, List<String> checkedPaths)
-	{
-		String D = ".";
-		checkedPaths.clear();
-		checkedPaths.add(given_cp);
-		if(given_cp != null && factory.canLoadClass(given_cp))
-			return given_cp;
-		if(packages != null)
-			for(String p : packages)
-			{
-				checkedPaths.add(p + D + given_cp);
-				if(factory.canLoadClass(p + D + given_cp))
-					return p + D + given_cp;
-			}
-		List<String> clsNames = new LinkedList<>();
-		if(given_cp != null)
-			clsNames.add(given_cp);
-		if(upper_name == null)
-			return null;
-		clsNames.add(capitalize(upper_name) + capitalize(entity));
-		if(lower_name != null)
-		{
-			clsNames.add(capitalize(lower_name) + capitalize(entity));
-			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
-		}
-		List<String> roots = new ArrayList<>();
-		roots.add(root_package);
-		roots.add(root_package + D + DeploymentConfiguration.CORE_PACKAGE);
-		roots.addAll(packages);
-		for(String cls : clsNames)
-			for(String r : roots)
-			{
-				checkedPaths.add(r + D + upper_name + D + cls);
-				if(lower_name != null)
-				{
-					checkedPaths.add(r + D + upper_name + D + lower_name + D + cls);
-					checkedPaths.add(r + D + lower_name + D + upper_name + D + cls);
-					checkedPaths.add(r + D + lower_name + D + cls);
-				}
-			}
-		for(String p : checkedPaths)
-			if(factory.canLoadClass(p))
-				return p;
-		return null;
-	}
-	
-	/**
 	 * Functionality not used.
 	 */
 	@Override
@@ -444,7 +343,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Functionality not used.
 	 */
 	@Override
-	public boolean preload(MultiTreeMap configuration, List<Entity<?>> context)
+	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context)
 	{
 		return preload(configuration);
 	}
