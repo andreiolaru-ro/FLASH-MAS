@@ -14,6 +14,7 @@ package net.xqhs.flash.core.composite;
 import java.util.Iterator;
 import java.util.List;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
@@ -46,13 +47,12 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 */
 	protected static final String	NAME_ATTRIBUTE_NAME		= DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 	/**
-	 * Name of XML nodes in the scenario representing components.
+	 * Name of XML nodes in the scenario representing shards.
 	 */
 	private static final String		SHARD_NODE_NAME			= "shard";
 	/**
-	 * The name of the attribute representing the class of the component in the component node. The class may not be
-	 * specified, it the component is standard and its class is specified by the corresponding
-	 * {@link StandardAgentShard} entry.
+	 * The name of the attribute representing the class of the shard in the shard node. The class may not be specified,
+	 * it the shard is standard and its class is specified by the corresponding {@link StandardAgentShard} entry.
 	 */
 	private static final String		SHARD_CLASS_PARAMETER	= SimpleLoader.CLASSPATH_KEY;
 	
@@ -96,7 +96,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 		{
 			String shardName = shardConfig.get(NAME_ATTRIBUTE_NAME);
 			
-			// get feature class
+			// get shard class
 			String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
 			if(shardClass == null)
 			{
@@ -119,52 +119,52 @@ public class CompositeAgentLoader implements Loader<Agent>
 						}
 					}
 				if(shardClass == null)
-					shardClass = shardDesignation.getClassName();
+					shardClass = Loader.autoFind(null, null, null, null, null, null, CategoryName.SHARD.s(), null);
 			}
 			if(shardClass == null)
 			{
-				log.error(logPre + "Component class not specified for component [" + shardName
-						+ "]. Component will not be available.");
+				log.error(logPre + "Shard class not specified for shard [" + shardName
+						+ "]. Shard will not be available.");
 				continue;
 			}
 			
 			if(PlatformUtils.classExists(shardClass))
-				log.trace(logPre + "component [" + shardName + "] can be loaded");
+				log.trace(logPre + "shard [" + shardName + "] can be loaded");
 			else
 			{
-				log.error(logPre + "Component class [" + shardName + " | " + shardClass
+				log.error(logPre + "Shard class [" + shardName + " | " + shardClass
 						+ "] not found; it will not be loaded.");
 				continue;
 			}
 			
-			AgentShardCore component = null;
+			AgentShard shard = null;
 			try
 			{
-				component = (AgentShardCore) PlatformUtils.loadClassInstance(this, shardClass, new Object[0]);
-				log.trace("component [] created for agent []. pre-loading...", shardClass, agentCreationData.getName());
+				shard = (AgentShardCore) PlatformUtils.loadClassInstance(this, shardClass, new Object[0]);
+				log.trace("shard [] created for agent []. pre-loading...", shardClass, agentCreationData.getName());
 			} catch(Exception e)
 			{
-				log.error("Component [] failed to load; it will not be available for agent []:", shardClass,
+				log.error("Shard [] failed to load; it will not be available for agent []:", shardClass,
 						agentCreationData.getName(), PlatformUtils.printException(e));
 				continue;
 			}
 			
-			// load component arguments
-			ComponentCreationData componentData = new ComponentCreationData();
+			// load shard arguments
+			MultiTreeMap shardData = new MultiTreeMap();
 			Iterator<XMLNode> paramsIt = componentNode.getNodeIterator(PARAMETER_NODE_NAME);
 			while(paramsIt.hasNext())
 			{
 				XMLNode param = paramsIt.next();
-				componentData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
+				shardData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
 			}
 			if(StandardAgentShard.PARAMETRIC_COMPONENT.shardName().equals(shardName))
-				componentData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
+				shardData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
 						agentCreationData.getParameters());
 			
-			if(component.preload(componentData, componentNode, agentCreationData.getPackages(), log))
+			if(shard.preload(shardData, componentNode, agentCreationData.getPackages(), log))
 			{
-				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, component);
-				log.trace("component [] pre-loaded for agent []", shardClass, agentCreationData.getName());
+				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, shard);
+				log.trace("shard [] pre-loaded for agent []", shardClass, agentCreationData.getName());
 			}
 			else
 				log.error("Component [] failed pre-loading step; it will not be available for agent [].", shardClass,
@@ -186,8 +186,8 @@ public class CompositeAgentLoader implements Loader<Agent>
 	public Agent load(MultiTreeMap agentCreationData)
 	{
 		CompositeAgent agent = new CompositeAgent();
-		for(Object componentObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addShard((AgentShardCore) componentObj);
+		for(Object shardObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
+			agent.addShard((AgentShard) shardObj);
 		return agent;
 	}
 }
