@@ -132,7 +132,6 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
-		String ROOT_PACKAGE = DeploymentConfiguration.ROOT_PACKAGE;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
 		List<String> checkedPaths = new LinkedList<>(); // used to monitor class paths checked by autoFind().
 		
@@ -163,7 +162,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				
 				// find the implementation
 				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
-				cp = Loader.autoFind(classFactory, packages, cp, ROOT_PACKAGE, entity, kind, CategoryName.LOADER.s(),
+				cp = Loader.autoFind(classFactory, packages, cp, entity, kind, CategoryName.LOADER.s(),
 						checkedPaths);
 				if(cp == null)
 					le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
@@ -293,7 +292,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					if(entity == null)
 					{
 						// attempt to obtain classpath information
-						cp = Loader.autoFind(classFactory, packages, cp, ROOT_PACKAGE, kind, id, catName, checkedPaths);
+						cp = Loader.autoFind(classFactory, packages, cp, kind, id, catName, checkedPaths);
 						if(cp == null)
 							le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
 						else

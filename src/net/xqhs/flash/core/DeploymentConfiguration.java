@@ -119,7 +119,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	/**
 	 * Package for core FLASH functionality
 	 */
-	public static final String			CORE_PACKAGE					= "core";
+	public static final String			CORE_PACKAGE					= ROOT_PACKAGE + ".core";
 	/**
 	 * The default directory for deployment files.
 	 */

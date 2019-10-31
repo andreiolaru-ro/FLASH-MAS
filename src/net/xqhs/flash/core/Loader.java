@@ -261,15 +261,37 @@ public interface Loader<T extends Entity<?>>
 	}
 	
 	/**
-	 * Attempts to find a specific class given some known information about it. It searches the class in the following
-	 * sequence:
+	 * Attempts to find a specific class given some known information about it. Among this information there are 3
+	 * conceptual elements:
+	 * <ul>
+	 * <li>the type of the entity or similar concept (e.g. agent, pylon, loader etc); usually it is the last word in the
+	 * class name, e.g. Composite<i>Agent</i>, SimpleAgent<i>Loader</i>, etc;
+	 * <li>the "upper" name -- the kind of the entity, and normally it should be given (it should not be
+	 * <code>null</code>); e.g. <i>composite</i> (for agents), <i>local</i> or <i>websocket</i> (for pylons), etc;
+	 * <li>the "lower" name -- a more specific name, which may be omitted (can be <code>null</code>); e.g. in
+	 * <i>Sequential</i>CompositeAgent;
+	 * </ul>
+	 * 
+	 * The method searches the class in the following sequence:
 	 * <ul>
 	 * <li>verify directly the given classpath (<code>given_cp</code>)
 	 * <li>verify if the given classpath can be found in any of the packages
-	 * <li>verify combinations of:
+	 * <li>verify all combinations of three elements -- the base package, a specific subtree, and the classpath, where:
 	 * <ul>
-	 * <li>the <code>root_package</code>, the {@link DeploymentConfiguration#CORE_PACKAGE} in the
-	 * <code>root_package</code> or any of the packages
+	 * <li>the base package is one of {@link DeploymentConfiguration#ROOT_PACKAGE},
+	 * {@link DeploymentConfiguration#CORE_PACKAGE}, and any of the given <code>packages</code>.
+	 * <li>the subtree is a classpath segment formed as one of the following (e.g. the <code>base</code> package and for
+	 * the <i>SequentialCompositeAgent</i> lower-upper-entity search case):
+	 * <ul>
+	 * <li>the upper name (e.g. <code>base.composite.</code>)
+	 * <li>the upper name and the lower name (e.g. <code>base.composite.sequential.</code>)
+	 * <li>the lower name and the upper name (e.g. <code>base.sequential.composite.</code>)
+	 * <li>the lower name (e.g. <code>base.sequential.</code>)
+	 * </ul>
+	 * <li>the classpath is any of
+	 * <ul>
+	 * <li>
+	 * </ul>
 	 * <li>with
 	 * <li>combinations of package paths formed of the <code>upper_name</code> and the <code>lower_name</code>
 	 * <li>with
@@ -282,37 +304,36 @@ public interface Loader<T extends Entity<?>>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *                         - a list of java packages in which to search.
+	 *            - a list of java packages in which to search.
 	 * @param given_cp
-	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
-	 *                         for the class. This classpath will also be searched in the list of packages.
-	 * @param root_package
-	 *                         - the root package in which to search.
+	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
+	 *            class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
-	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
 	 * @param lower_name
-	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
-	 *                         where the class have been searched).
+	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
+	 *            class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
-	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String root_package,
-			String upper_name, String lower_name, String entity, List<String> checkedPaths)
+	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
+			String lower_name, String entity, List<String> checkedPaths)
 	{
 		String D = ".";
-		checkedPaths.clear();
-		checkedPaths.add(given_cp);
+		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();
+		paths.clear();
+		paths.add(given_cp);
 		if(given_cp != null && factory.canLoadClass(given_cp))
 			return given_cp;
 		if(packages != null)
 			for(String p : packages)
 			{
-				checkedPaths.add(p + D + given_cp);
+				paths.add(p + D + given_cp);
 				if(factory.canLoadClass(p + D + given_cp))
 					return p + D + given_cp;
 			}
@@ -328,21 +349,21 @@ public interface Loader<T extends Entity<?>>
 			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 		}
 		List<String> roots = new ArrayList<>();
-		roots.add(root_package);
-		roots.add(root_package + D + DeploymentConfiguration.CORE_PACKAGE);
+		roots.add(DeploymentConfiguration.ROOT_PACKAGE);
+		roots.add(DeploymentConfiguration.CORE_PACKAGE);
 		roots.addAll(packages);
 		for(String cls : clsNames)
 			for(String r : roots)
 			{
-				checkedPaths.add(r + D + upper_name + D + cls);
+				paths.add(r + D + upper_name + D + cls);
 				if(lower_name != null)
 				{
-					checkedPaths.add(r + D + upper_name + D + lower_name + D + cls);
-					checkedPaths.add(r + D + lower_name + D + upper_name + D + cls);
-					checkedPaths.add(r + D + lower_name + D + cls);
+					paths.add(r + D + upper_name + D + lower_name + D + cls);
+					paths.add(r + D + lower_name + D + upper_name + D + cls);
+					paths.add(r + D + lower_name + D + cls);
 				}
 			}
-		for(String p : checkedPaths)
+		for(String p : paths)
 			if(factory.canLoadClass(p))
 				return p;
 		return null;
@@ -352,7 +373,7 @@ public interface Loader<T extends Entity<?>>
 	 * Makes the first letter of the given string upper-case.
 	 * 
 	 * @param s
-	 *              - the string.
+	 *            - the string.
 	 * @return the string with the first letter converted to upper-case.
 	 */
 	static String capitalize(String s)
