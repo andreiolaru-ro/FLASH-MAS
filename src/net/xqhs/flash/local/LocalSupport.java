@@ -69,6 +69,18 @@ public class LocalSupport extends DefaultPylonImplementation
 																			messageReceivers.put(agentName, receiver);
 																			return true;
 																		}
+																		
+																		@SuppressWarnings("unlikely-arg-type")
+																		@Override
+																		public String getRecommendedShardImplementation(
+																				AgentShardDesignation shardType)
+																		{
+																			if(shardType.equals(
+																					StandardAgentShard.MESSAGING))
+																				return SimpleLocalMessaging.class
+																						.getName();
+																			return null;
+																		}
 																	};
 	
 	/**
@@ -82,7 +94,13 @@ public class LocalSupport extends DefaultPylonImplementation
 		 * The serial UID.
 		 */
 		private static final long	serialVersionUID	= 1L;
+		/**
+		 * Reference to the local pylon proxy.
+		 */
 		private MessagingPylonProxy	pylon;
+		/**
+		 * The {@link MessageReceiver} instance of this shard.
+		 */
 		public MessageReceiver		inbox;
 		
 		/**
