@@ -44,11 +44,6 @@ public class AgentShardDesignation implements Serializable
 		;
 		
 		/**
-		 * Suffix for shard implementation.
-		 */
-		private static final String	AGENT_SHARD_CLASS_SUFFIX	= "Shard";
-		
-		/**
 		 * The fully qualified class name of the default shard implementation.
 		 */
 		String						shardClass;
@@ -77,20 +72,6 @@ public class AgentShardDesignation implements Serializable
 		private StandardAgentShard()
 		{
 			this(null);
-			// FIXME: check that package and class exist
-			// String shardPackage = AGENT_SHARD_PACKAGE_ROOT + "." + shardName;
-			// shardClass = shardPackage + "." + shardName.substring(0, 1).toUpperCase() + shardName.substring(1)
-			// + AGENT_SHARD_CLASS_SUFFIX;
-		}
-		
-		/**
-		 * Gets the specified or inferred class name for the default implementation of the shard.
-		 * 
-		 * @return the class name.
-		 */
-		public String getClassName()
-		{
-			return shardClass;
 		}
 		
 		/**
