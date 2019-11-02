@@ -281,44 +281,40 @@ public interface Loader<T extends Entity<?>>
 	 * <li>the base package is one of {@link DeploymentConfiguration#ROOT_PACKAGE},
 	 * {@link DeploymentConfiguration#CORE_PACKAGE}, and any of the given <code>packages</code>.
 	 * <li>the subtree is a classpath segment formed as one of the following (e.g. the <code>base</code> package and for
-	 * the <i>SequentialCompositeAgent</i> lower-upper-entity search case):
+	 * the <i>sequential-composite-agent</i> lower-upper-entity search case):
 	 * <ul>
-	 * <li>the upper name (e.g. <code>base.composite.</code>)
-	 * <li>the upper name and the lower name (e.g. <code>base.composite.sequential.</code>)
-	 * <li>the lower name and the upper name (e.g. <code>base.sequential.composite.</code>)
-	 * <li>the lower name (e.g. <code>base.sequential.</code>)
+	 * <li>the upper name -- e.g. <code>base.composite.</code>
+	 * <li>the upper name and the lower name -- e.g. <code>base.composite.sequential.</code>
+	 * <li>the lower name and the upper name -- e.g. <code>base.sequential.composite.</code>
+	 * <li>the lower name -- e.g. <code>base.sequential.</code>
 	 * </ul>
-	 * <li>the classpath is any of
+	 * <li>the classpath is any camel-case rendition of the following combination (e.g. for the
+	 * <i>sequential-composite-agent</i> lower-upper-entity search case):
 	 * <ul>
-	 * <li>
-	 * </ul>
-	 * <li>with
-	 * <li>combinations of package paths formed of the <code>upper_name</code> and the <code>lower_name</code>
-	 * <li>with
-	 * <li>the given classpath or class names created by joining <code>upper_name</code> and <code>entity</code>;
-	 * <code>lower_name</code> and <code>entity</code>; or <code>lower_name</code>, <code>upper_name</code>, and
-	 * <code>entity</code>.
+	 * <li>upper name and entity -- e.g. CompositeAgent
+	 * <li>lower name and entity -- e.g. SequentialAgent
+	 * <li>lower name, upper name, and entity -- e.g. SequentialCompositeAgent
 	 * </ul>
 	 * </ul>
 	 * <p>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *            - a list of java packages in which to search.
+	 *                         - a list of java packages in which to search.
 	 * @param given_cp
-	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
-	 *            class. This classpath will also be searched in the list of packages.
+	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
+	 *                         for the class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
-	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
 	 * @param lower_name
-	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
-	 *            class have been searched).
+	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
+	 *                         where the class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
