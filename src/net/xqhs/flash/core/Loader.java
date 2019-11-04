@@ -41,13 +41,15 @@ public interface Loader<T extends Entity<?>>
 	 * Configures an instance of the loader based on deployment data.
 	 * 
 	 * @param configuration
-	 *            - the deployment data.
+	 *                          - the deployment data.
 	 * @param log
-	 *            - a {@link Logger} instance to use for logging messages, during the loader's activity.
+	 *                          - a {@link Logger} instance to use for logging messages, during the loader's activity.
+	 * @param classLoader
+	 *                          - a {@link ClassFactory} instance to use to load classes.
 	 * @return <code>true</code> if the configuration process was successful and the {@link Loader} instance is ready to
 	 *         load entities; <code>false</code> if this instance cannot be expected to work normally.
 	 */
-	public boolean configure(MultiTreeMap configuration, Logger log);
+	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory classLoader);
 	
 	/**
 	 * Same as {@link #preload(MultiTreeMap)}, but performs the checks in the given context.
@@ -148,11 +150,16 @@ public interface Loader<T extends Entity<?>>
 		 * The log to use.
 		 */
 		protected Logger			log				= null;
+		/**
+		 * The class factory to use.
+		 */
+		protected ClassFactory		classLoader		= null;
 		
 		@Override
-		public boolean configure(MultiTreeMap configuration, Logger _log)
+		public boolean configure(MultiTreeMap configuration, Logger _log, ClassFactory classFactory)
 		{
 			log = _log;
+			classLoader = classFactory;
 			return true;
 		}
 		
@@ -215,7 +222,7 @@ public interface Loader<T extends Entity<?>>
 				try
 				{
 					// try Constructor(configuration)
-					return (Entity<?>) PlatformUtils.getClassFactory().loadClassInstance(classpath, configuration,
+					return (Entity<?>) classLoader.loadClassInstance(classpath, configuration,
 							false);
 				} catch(Exception e)
 				{
@@ -223,7 +230,7 @@ public interface Loader<T extends Entity<?>>
 					{// no constructor with configuration argument
 						try
 						{
-							Entity<?> loaded = (Entity<?>) PlatformUtils.getClassFactory().loadClassInstance(classpath,
+							Entity<?> loaded = (Entity<?>) classLoader.loadClassInstance(classpath,
 									null, true);
 							if(loaded instanceof ConfigurableEntity)
 							{// default constructor used, must try to configure

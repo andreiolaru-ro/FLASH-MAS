@@ -50,7 +50,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * <p>
 	 * 
 	 * @param args
-	 *            - the arguments received by the program.
+	 *                 - the arguments received by the program.
 	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
 	public List<Node> loadDeployment(List<String> args)
@@ -71,8 +71,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 		
 		List<Node> nodes = new LinkedList<>();
 		List<MultiTreeMap> allEntities = deploymentConfiguration.getEntityList();
-		List<MultiTreeMap> nodesTrees = DeploymentConfiguration
-				.filterCategoryInContext(allEntities, CategoryName.NODE.s(), null);
+		List<MultiTreeMap> nodesTrees = DeploymentConfiguration.filterCategoryInContext(allEntities,
+				CategoryName.NODE.s(), null);
 		if(nodesTrees == null || nodesTrees.isEmpty())
 		{ // the DeploymentConfiguration should have created at least an empty node.
 			le("No nodes present in the configuration.");
@@ -96,7 +96,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param context
-	 *            - this argument is not used; nodes don't support context.
+	 *                    - this argument is not used; nodes don't support context.
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
@@ -118,10 +118,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param nodeConfiguration
-	 *            - the configuration.
+	 *                                - the configuration.
 	 * @param subordinateEntities
-	 *            - the entities that should be loaded inside the node, as specified by
-	 *            {@link Loader#load(MultiTreeMap, List, List)}.
+	 *                                - the entities that should be loaded inside the node, as specified by
+	 *                                {@link Loader#load(MultiTreeMap, List, List)}.
 	 * @return the {@link Node} the was loaded.
 	 */
 	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities)
@@ -162,8 +162,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				
 				// find the implementation
 				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
-				cp = Loader.autoFind(classFactory, packages, cp, entity, kind, CategoryName.LOADER.s(),
-						checkedPaths);
+				cp = Loader.autoFind(classFactory, packages, cp, entity, kind, CategoryName.LOADER.s(), checkedPaths);
 				if(cp == null)
 					le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
 				else
@@ -180,7 +179,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 						loaders.get(entity).get(kind).add(loader);
 						// configure // TODO manage with portables
 						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.s(), packages);
-						loader.configure(loader_configs.getFirstTree(name), getLogger());
+						loader.configure(loader_configs.getFirstTree(name), getLogger(), classFactory);
 						li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 					} catch(Exception e)
 					{
@@ -193,7 +192,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 			li("No loaders configured.");
 		
 		Loader<?> defaultLoader = new SimpleLoader();
-		defaultLoader.configure(null, getLogger());
+		defaultLoader.configure(null, getLogger(), classFactory);
 		if(loaders.containsKey(null))
 		{
 			if(loaders.get(null).containsKey(null) && !loaders.get(null).get(null).isEmpty())
@@ -209,6 +208,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		else
 		{
 			li("Loading: ", toLoad);
+			Map<String, Entity<?>> loaded = new HashMap<>();
 			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR))
 			{
 				CategoryName cat = CategoryName.byName(catName);
@@ -222,6 +222,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 				
 				for(MultiTreeMap entityConfig : entities)
 				{
+					// TODO add comments & notes about what names, kinds and ids really are.
 					// try to parse the name / obtain a kind (in order to find an appropriate loader)
 					String name = entityConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 					String kind = null, id = null, cp = entityConfig.get(SimpleLoader.CLASSPATH_KEY);
@@ -236,11 +237,11 @@ public class NodeLoader extends Unit implements Loader<Node>
 							kind = entityConfig.get(DeploymentConfiguration.KIND_ATTRIBUTE_NAME);
 						else if(cat != null && cat.hasNameWithParts())
 							kind = entityConfig.get(cat.nameParts()[0]);
-						if(kind == null)
-							kind = name; // was in the implementation not sure is a good idea
 					}
 					if(id == null || id.length() == 0)
 					{
+						if(entityConfig.isSimple(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE))
+							id = entityConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 						if(entityConfig.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 							id = entityConfig.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 						else if(cat != null && cat.hasNameWithParts())
@@ -275,17 +276,38 @@ public class NodeLoader extends Unit implements Loader<Node>
 							}
 						}
 					}
+					
+					// build context
+					List<EntityProxy<?>> context = new LinkedList<>();
+					if(entityConfig.isSimple(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
+						for(String contextItem : entityConfig.getValues(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
+							if(loaded.containsKey(contextItem))
+							{
+								if(loaded.get(contextItem).asContext() != null)
+									context.add(loaded.get(contextItem).asContext());
+							}
+							else
+								lw("Context item [] for [] []/[] not found as a loaded entity.", contextItem, catName,
+										name, kind);
+							
+					// build subordinate entities list
+					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities, id);
+					
+					// TODO: provide load() with context and an appropriate list of subordinate entities
 					// try to load the entity with a loader
 					Entity<?> entity = null;
 					if(loaderList != null && !loaderList.isEmpty())
 						for(Loader<?> loader : loaderList)
 						{ // try loading
-							lf("Trying to load [][] using []th loader for [][]", catName, kind,
+							lf("Trying to load [] [][] using []th loader for [][]", name, catName, kind,
 									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
-							if(loader.preload(entityConfig))
-								entity = loader.load(entityConfig);
+							if(loader.preload(entityConfig, context))
+								entity = loader.load(entityConfig, context, subEntities);
 							if(entity != null)
+							{
+								loaded.put(id, entity);
 								break;
+							}
 							log_nLoader += 1;
 						}
 					// if not, try to load the entity with the default loader
@@ -297,13 +319,13 @@ public class NodeLoader extends Unit implements Loader<Node>
 							le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
 						else
 						{
-							lf("Trying to load [][] using default loader [], from classpath []", catName, kind,
+							lf("Trying to load [] [][] using default loader [], from classpath []", name, catName, kind,
 									defaultLoader.getClass().getName(), cp);
 							// add the CP -- will be first if no other is provided // TODO
 							entityConfig.addOneValue(SimpleLoader.CLASSPATH_KEY, cp);
 						}
-						if(defaultLoader.preload(entityConfig))
-							entity = defaultLoader.load(entityConfig);
+						if(defaultLoader.preload(entityConfig, context))
+							entity = defaultLoader.load(entityConfig, context, subEntities);
 					}
 					if(entity != null)
 					{
@@ -324,7 +346,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Functionality not used.
 	 */
 	@Override
-	public boolean configure(MultiTreeMap configuration, Logger log)
+	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory factory)
 	{
 		return true;
 	}

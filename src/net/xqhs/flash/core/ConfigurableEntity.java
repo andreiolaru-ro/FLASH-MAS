@@ -22,11 +22,13 @@ import net.xqhs.util.config.Configurable;
  * via {@link #configure(MultiTreeMap)}.
  * <p>
  * Since {@link ConfigurableEntity} also extends {@link Configurable}, it can be {@link #lock()}ed.
+ * <p>
+ * Configuration should be performed prior to adding any contexts.
  * 
  * @author Andrei Olaru
  *
  * @param <P>
- *            the type of the context of this entity (see {@link Entity}.
+ *                the type of the context of this entity (see {@link Entity}.
  */
 public interface ConfigurableEntity<P extends Entity<?>> extends Entity<P>, Configurable
 {

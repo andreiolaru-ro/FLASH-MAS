@@ -114,9 +114,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	}
 	
 	/**
-	 * Extending classes should override this method to verify and pre-load shard data, based on deployment data. The
-	 * shard should perform agent-dependent initialization actions when {@link #parentChangeNotifier(ShardContainer)} is
-	 * called, and actions depending on other shards after the AGENT_START event has occurred.
+	 * Extending classes should override this method to verify and load agent-independent shard data, based on
+	 * deployment data.
 	 * <p>
 	 * If the shard is surely not going to be able to load, <code>false</code> will be returned. For any non-fatal
 	 * issues, the method should return <code>true</code> and output warnings in the specified log.

@@ -58,10 +58,11 @@ public class FlashBoot
 		
 		// simple deployments
 		
+		test_args += " -loader agent:composite";
 		test_args += " -node main";
 		test_args += " -support some";
-		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
-		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
+		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard -shard messaging";
+		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard -shard messaging";
 		
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
 		

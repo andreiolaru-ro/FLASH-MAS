@@ -11,7 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.shard;
 
-import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 
@@ -27,7 +27,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
  * 
  * @author Andrei Olaru
  */
-public interface AgentShard extends Entity<Agent>
+public interface AgentShard extends ConfigurableEntity<Agent>
 {
 	/**
 	 * Retrieves the designation of the shard, so that one can know what services the shard offers. The designation

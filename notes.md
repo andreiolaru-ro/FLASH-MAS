@@ -67,6 +67,11 @@ System model
   * Entity context
     * is all entities containing it, however
     * a special case are the entities of the type specified in the class hierarchy (the generic parameter for the Entity interface), which are its *proper context*
+    * while the `Entity` interface specifies both `addContext` and `addGeneralContext`, it is **strongly recommended** that `addGeneralContext` *always works* for instances of the proper context (as some loaders, such as `SimpleLoader`, only use `addGeneralContext` to add context to entities.
+    
+**Life-cycle**
+  * an entity is instance by a loader (see *Loaders* below)
+    * some pre-instantiation
 
 **Access control**
   * anyone with a reference to an entity is able to control it (start / stop / add/remove context)
@@ -110,7 +115,7 @@ Choosing a loader
       * Workaround: loader should check in the entity's configuration if any loader id is specified and compare this to an internal id.
       * since loaders are tried in order, for a specific kind the first will be 'default'
         * if no adequate kind found, ''null'' kind will be tried
-      * the default loader (SimpleLoader) will only be used if no loader for that type of entity is otherwise specified.
+      * the default loader (SimpleLoader) will only be used if no loader for that type of entity is otherwise specified or otherwise succeeds.
 
 The same policy goes for Support Infrastructures (first is default, if none specified then we use the default in NodeLoader (LocalSupport)).
 

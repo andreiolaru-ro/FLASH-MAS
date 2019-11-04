@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
-import java.util.Iterator;
 import java.util.List;
 
 import net.xqhs.flash.core.CategoryName;
@@ -21,14 +20,12 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
 
 /**
@@ -60,11 +57,21 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * Logger to use during the loading process.
 	 */
 	Logger							log;
+	/**
+	 * The {@link ClassFactory} instance to use for loading classes.
+	 */
+	ClassFactory					classLoader;
+	/**
+	 * The packages configured in the deployment.
+	 */
+	List<String>					packages;
 	
 	@Override
-	public boolean configure(MultiTreeMap config, Logger loaderLog)
+	public boolean configure(MultiTreeMap config, Logger loaderLog, ClassFactory classFactory)
 	{
 		log = loaderLog;
+		classLoader = classFactory;
+		packages = config.getValues(CategoryName.PACKAGE.s());
 		return true;
 	}
 	
@@ -83,111 +90,123 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * If the agent will surely not be able to load, <code>false</code> will be returned. For any non-fatal issues, the
 	 * method should return <code>true</code> and output warnings in the log.
 	 * 
-	 * @param agentCreationData
-	 *                              - the {@link MultiTreeMap}, as loaded from the deployment file.
+	 * @param agentConfiguration
+	 *                               - the {@link MultiTreeMap}, as loaded from the deployment file.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean preload(MultiTreeMap agentCreationData, List<EntityProxy<? extends Entity<?>>> context)
+	public boolean preload(MultiTreeMap agentConfiguration, List<EntityProxy<? extends Entity<?>>> context)
 	{
-		String logPre = (agentCreationData.isSimple(NAME_ATTRIBUTE_NAME) ? agentCreationData.get(NAME_ATTRIBUTE_NAME)
-				: "<agent>") + ":";
-		for(MultiTreeMap shardConfig : agentCreationData.getTrees(SHARD_NODE_NAME))
+		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
+				: "<agent>") + ": ";
+		for(String shardName : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTreeKeys())
 		{
-			String shardName = shardConfig.get(NAME_ATTRIBUTE_NAME);
-			
-			// get shard class
-			String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
-			if(shardClass == null)
+			for(MultiTreeMap shardConfig : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTrees(shardName))
 			{
-				if(shardName == null)
+				// get shard class
+				String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+				// test given class, if any
+				if(shardClass != null)
+					shardClass = Loader.autoFind(classLoader, packages, shardClass, null, null, null, null);
+				if(shardClass == null)
 				{
-					log.error(logPre + "Shard has neither name nor class specified. Shard will not be available.");
+					if(shardName == null)
+					{
+						log.error(logPre + "Shard has neither name nor class specified. Shard will not be available.");
+						continue;
+					}
+					AgentShardDesignation shardDesignation = AgentShardDesignation.autoDesignation(shardName);
+					
+					if(context != null)
+						for(EntityProxy<?> contextEntity : context)
+							if(contextEntity instanceof PylonProxy)
+							{
+								String recommendedClass = ((PylonProxy) contextEntity)
+										.getRecommendedShardImplementation(shardDesignation);
+								if(recommendedClass != null)
+								{
+									shardClass = recommendedClass;
+									break;
+								}
+							}
+					if(shardClass == null)
+						shardClass = Loader.autoFind(classLoader, packages, null, shardName, null,
+								CategoryName.SHARD.s(), null);
+				}
+				if(shardClass == null)
+				{
+					log.error(logPre + "Shard class not specified / not found for shard [" + shardName
+							+ "]. Shard will not be available.");
 					continue;
 				}
-				AgentShardDesignation shardDesignation = AgentShardDesignation.autoDesignation(shardName);
 				
-				for(EntityProxy<?> contextEntity : context)
-					if(contextEntity instanceof PylonProxy)
-					{
-						String recommendedClass = ((PylonProxy) contextEntity)
-								.getRecommendedShardImplementation(shardDesignation);
-						if(recommendedClass != null)
-						{
-							shardClass = recommendedClass;
-							break;
-						}
-					}
-				if(shardClass == null)
-					shardClass = Loader.autoFind(null, null, null, null, null, null, CategoryName.SHARD.s(), null);
+				if(classLoader.canLoadClass(shardClass))
+				{
+					log.trace(logPre + "shard [" + shardName + "] can be loaded");
+					shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass);
+				}
+				else
+				{
+					log.error(logPre + "Shard class [" + shardName + " | " + shardClass
+							+ "] not found; it will not be loaded.");
+					continue;
+				}
 			}
-			if(shardClass == null)
-			{
-				log.error(logPre + "Shard class not specified for shard [" + shardName
-						+ "]. Shard will not be available.");
-				continue;
-			}
-			
-			if(PlatformUtils.classExists(shardClass))
-				log.trace(logPre + "shard [" + shardName + "] can be loaded");
-			else
-			{
-				log.error(logPre + "Shard class [" + shardName + " | " + shardClass
-						+ "] not found; it will not be loaded.");
-				continue;
-			}
-			
-			AgentShard shard = null;
-			try
-			{
-				shard = (AgentShardCore) PlatformUtils.loadClassInstance(this, shardClass, new Object[0]);
-				log.trace("shard [] created for agent []. pre-loading...", shardClass, agentCreationData.getName());
-			} catch(Exception e)
-			{
-				log.error("Shard [] failed to load; it will not be available for agent []:", shardClass,
-						agentCreationData.getName(), PlatformUtils.printException(e));
-				continue;
-			}
-			
-			// load shard arguments
-			MultiTreeMap shardData = new MultiTreeMap();
-			Iterator<XMLNode> paramsIt = componentNode.getNodeIterator(PARAMETER_NODE_NAME);
-			while(paramsIt.hasNext())
-			{
-				XMLNode param = paramsIt.next();
-				shardData.add(param.getAttributeValue(PARAMETER_NAME), param.getAttributeValue(PARAMETER_VALUE));
-			}
-			if(StandardAgentShard.PARAMETRIC_COMPONENT.shardName().equals(shardName))
-				shardData.addObject(ParametricComponent.COMPONENT_PARAMETER_NAME,
-						agentCreationData.getParameters());
-			
-			if(shard.preload(shardData, componentNode, agentCreationData.getPackages(), log))
-			{
-				agentCreationData.getParameters().addObject(COMPONENT_PARAMETER_NAME, shard);
-				log.trace("shard [] pre-loaded for agent []", shardClass, agentCreationData.getName());
-			}
-			else
-				log.error("Component [] failed pre-loading step; it will not be available for agent [].", shardClass,
-						agentCreationData.getName());
 		}
 		
 		return true;
 	}
 	
 	/**
+	 * This method calls {@link #load(MultiTreeMap, List, List)}.
+	 */
+	@Override
+	public Agent load(MultiTreeMap agentConfiguration)
+	{
+		return load(agentConfiguration, null, null);
+	}
+	
+	/**
 	 * The method loads all the information necessary for the creation of an agent and returns an {@link Agent} instance
 	 * used to manage the life-cycle of the loaded agent.
 	 * 
-	 * @param agentCreationData
-	 *                              - the {@link MultiTreeMap}, as loaded at deployment.
+	 * @param agentConfiguration
+	 *                               - the {@link MultiTreeMap}, as loaded at deployment.
 	 * @return an {@link Agent} instance for the loaded agent.
 	 */
 	@Override
-	public Agent load(MultiTreeMap agentCreationData)
+	public Agent load(MultiTreeMap agentConfiguration, List<EntityProxy<? extends Entity<?>>> context,
+			List<MultiTreeMap> subordinateEntities)
 	{
-		CompositeAgent agent = new CompositeAgent();
-		for(Object shardObj : agentCreationData.getParameters().getObjects(COMPONENT_PARAMETER_NAME))
-			agent.addShard((AgentShard) shardObj);
+		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
+				: "<agent>") + ": ";
+		CompositeAgent agent = new CompositeAgent(agentConfiguration);
+		String agentName = agentConfiguration.getValue(NAME_ATTRIBUTE_NAME);
+		
+		if(context != null)
+			for(EntityProxy<?> contextItem : context)
+				agent.addGeneralContext(contextItem);
+			
+		for(String shardName : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTreeKeys())
+			for(MultiTreeMap shardConfig : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTrees(shardName))
+			{
+				String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+				if(shardClass != null)
+					try
+					{
+						AgentShard shard = (AgentShard) classLoader.loadClassInstance(shardClass, null, false);
+						log.trace(logPre + "Shard [] created for agent []. now configuring.", shardName, agentName);
+						if(shard.configure(shardConfig))
+							log.trace(logPre + "Shard [] for agent [] configured.", shardName, agentName);
+						else
+							log.error(logPre + "Shard [] for agent [] configuration failed.", shardName, agentName);
+					} catch(Exception e)
+					{
+						log.error(logPre + "Shard [] failed to load (from []); it will not be available for agent []:",
+								shardName, shardClass, agentName, PlatformUtils.printException(e));
+						continue;
+					}
+			}
 		return agent;
 	}
 }
