@@ -156,7 +156,11 @@ public interface Entity<P extends Entity<?>>
 	 */
 	interface EntityProxy<C extends Entity<?>>
 	{
-		// No actual methods are specified.
+		/**
+		 * @return the name of the proxy-ed {@link Entity}, if the entity does wish to provide it (may be
+		 *         <code>null</code> or may not be identical to the actual name of the entity).
+		 */
+		public String getEntityName();
 	}
 	
 	/**

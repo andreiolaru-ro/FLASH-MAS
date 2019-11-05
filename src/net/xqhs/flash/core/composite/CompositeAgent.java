@@ -74,7 +74,8 @@ public class CompositeAgent implements Serializable, Agent
 		}
 
 		@Override
-		public String getAgentName() {
+		public String getEntityName()
+		{
 			return agent.getName();
 		}
 	}

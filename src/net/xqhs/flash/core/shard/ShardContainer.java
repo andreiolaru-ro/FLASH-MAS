@@ -20,11 +20,4 @@ public interface ShardContainer extends EntityProxy<Agent>
 	 *                  - the event to be signaled to the agent.
 	 */
 	void postAgentEvent(AgentEvent event);
-
-	/**
-	 * Retrieves the agent name.
-	 * 
-	 * @return the name of the agent (may be <code>null</code>).
-	 */
-	String getAgentName();
 }

@@ -76,10 +76,17 @@ public class LocalSupport extends DefaultPylonImplementation
 																				AgentShardDesignation shardType)
 																		{
 																			if(shardType.equals(
-																					StandardAgentShard.MESSAGING))
+																					StandardAgentShard.MESSAGING
+																							.toString()))
 																				return SimpleLocalMessaging.class
 																						.getName();
 																			return null;
+																		}
+																		
+																		@Override
+																		public String getEntityName()
+																		{
+																			return getName();
 																		}
 																	};
 	
@@ -124,7 +131,7 @@ public class LocalSupport extends DefaultPylonImplementation
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
-			pylon.register(getAgent().getAgentName(), inbox);
+			pylon.register(getAgent().getEntityName(), inbox);
 			return true;
 		}
 		
