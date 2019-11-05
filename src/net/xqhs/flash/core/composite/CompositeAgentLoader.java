@@ -91,7 +91,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * method should return <code>true</code> and output warnings in the log.
 	 * 
 	 * @param agentConfiguration
-	 *                               - the {@link MultiTreeMap}, as loaded from the deployment file.
+	 *            - the {@link MultiTreeMap}, as loaded from the deployment file.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -125,9 +125,13 @@ public class CompositeAgentLoader implements Loader<Agent>
 										.getRecommendedShardImplementation(shardDesignation);
 								if(recommendedClass != null)
 								{
+									log.trace("Pylon [] recommends [] shard at classpath [].",
+											contextEntity.getEntityName(), shardName, recommendedClass);
 									shardClass = recommendedClass;
 									break;
 								}
+								log.trace("Pylon [] does not recommend a [] shard.", contextEntity.getEntityName(),
+										shardName);
 							}
 					if(shardClass == null)
 						shardClass = Loader.autoFind(classLoader, packages, null, shardName, null,
@@ -171,7 +175,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	 * used to manage the life-cycle of the loaded agent.
 	 * 
 	 * @param agentConfiguration
-	 *                               - the {@link MultiTreeMap}, as loaded at deployment.
+	 *            - the {@link MultiTreeMap}, as loaded at deployment.
 	 * @return an {@link Agent} instance for the loaded agent.
 	 */
 	@Override

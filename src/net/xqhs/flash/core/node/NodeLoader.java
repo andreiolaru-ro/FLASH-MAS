@@ -50,7 +50,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * <p>
 	 * 
 	 * @param args
-	 *                 - the arguments received by the program.
+	 *            - the arguments received by the program.
 	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
 	public List<Node> loadDeployment(List<String> args)
@@ -96,7 +96,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param context
-	 *                    - this argument is not used; nodes don't support context.
+	 *            - this argument is not used; nodes don't support context.
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
@@ -118,10 +118,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param nodeConfiguration
-	 *                                - the configuration.
+	 *            - the configuration.
 	 * @param subordinateEntities
-	 *                                - the entities that should be loaded inside the node, as specified by
-	 *                                {@link Loader#load(MultiTreeMap, List, List)}.
+	 *            - the entities that should be loaded inside the node, as specified by
+	 *            {@link Loader#load(MultiTreeMap, List, List)}.
 	 * @return the {@link Node} the was loaded.
 	 */
 	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities)
@@ -226,6 +226,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					// try to parse the name / obtain a kind (in order to find an appropriate loader)
 					String name = entityConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 					String kind = null, id = null, cp = entityConfig.get(SimpleLoader.CLASSPATH_KEY);
+					String local_id = entityConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 					if(name != null && name.contains(NAMESEP))
 					{ // if name is can be split, split it into kind and id
 						kind = name.split(NAMESEP)[0];
@@ -240,8 +241,6 @@ public class NodeLoader extends Unit implements Loader<Node>
 					}
 					if(id == null || id.length() == 0)
 					{
-						if(entityConfig.isSimple(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE))
-							id = entityConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 						if(entityConfig.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 							id = entityConfig.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 						else if(cat != null && cat.hasNameWithParts())
@@ -291,7 +290,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 										name, kind);
 							
 					// build subordinate entities list
-					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities, id);
+					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities,
+							local_id);
 					
 					// TODO: provide load() with context and an appropriate list of subordinate entities
 					// try to load the entity with a loader
@@ -305,7 +305,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 								entity = loader.load(entityConfig, context, subEntities);
 							if(entity != null)
 							{
-								loaded.put(id, entity);
+								loaded.put(local_id, entity);
 								break;
 							}
 							log_nLoader += 1;
@@ -326,6 +326,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 						}
 						if(defaultLoader.preload(entityConfig, context))
 							entity = defaultLoader.load(entityConfig, context, subEntities);
+						if(entity != null)
+							loaded.put(local_id, entity);
 					}
 					if(entity != null)
 					{
@@ -336,6 +338,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					}
 					else
 						le("Could not load entity [] of type [].", name, catName);
+					lf("Loaded items:", loaded.keySet());
 				}
 			}
 		}

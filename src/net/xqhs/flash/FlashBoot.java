@@ -60,7 +60,7 @@ public class FlashBoot
 		
 		test_args += " -loader agent:composite";
 		test_args += " -node main";
-		test_args += " -support some";
+		test_args += " -support local:some";
 		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard -shard messaging";
 		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard -shard messaging";
 		
