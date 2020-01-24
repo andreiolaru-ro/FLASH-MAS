@@ -224,6 +224,7 @@ Context
   * agents to be loaded are nested under other structures;
     * agents don't need to be loaded because they already have been loaded by said structures
   * check correct porting of non-hierarchical things, such as packages, load order, etc 
+  * deployment of unnamed agents, with parameters or without
 
 
 XML
