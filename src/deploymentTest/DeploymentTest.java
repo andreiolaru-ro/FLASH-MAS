@@ -36,10 +36,11 @@ public class DeploymentTest
 		
 		// simple deployments
 		
+		test_args += " -package deploymentTest -loader agent:composite";
 		test_args += " -node main";
 		// test_args += " -support some";
-		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
-		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
+		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent -shard MonitoringTestShard classpath:deploymentTest.MonitoringTestShard";
+		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
 		

@@ -20,15 +20,16 @@ Current targets
   * get the composite agent loader out of the comments
   
 ### Deployment / loading
+  * check why MonitoringShard does not monitor anything
   * move deployment loading from NodeLoader to a new DeploymentLoader class?
   * deploy a composite agent
     * what do about having support implementations when pre-loading shards
       * it's ok, they are instanced, there's no need for the pylon to actually be started 
 
 ### Communication
-  * local messaging
+  * local messaging -- document and check the work of Vlad Talmaciu
   * implement AgentWave
-  * share implementation between AbstractMessagingShard and NameBasedMessagingShard, specify MessagingShard interface.
+  * split implementation between AbstractMessagingShard and NameBasedMessagingShard, specify MessagingShard interface.
 
 ### Utilities
   * implement getAppropriateTree / addAppropriateTree methods
