@@ -75,12 +75,7 @@ public class LocalSupport extends DefaultPylonImplementation
 																		public String getRecommendedShardImplementation(
 																				AgentShardDesignation shardType)
 																		{
-																			if(shardType.equals(
-																					StandardAgentShard.MESSAGING
-																							.toString()))
-																				return SimpleLocalMessaging.class
-																						.getName();
-																			return null;
+			return LocalSupport.this.getRecommendedShardImplementation(shardType);
 																		}
 																		
 																		@Override
@@ -253,7 +248,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName)
 	{
-		if(shardName == AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING))
+		if (shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
