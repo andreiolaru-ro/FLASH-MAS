@@ -21,10 +21,11 @@ Current targets
   
 ### Deployment / loading
   * check why MonitoringShard does not monitor anything
-  * move deployment loading from NodeLoader to a new DeploymentLoader class?
+  * check why package is not ported to all entities
   * deploy a composite agent
     * what do about having support implementations when pre-loading shards
       * it's ok, they are instanced, there's no need for the pylon to actually be started 
+  * move deployment loading from NodeLoader to a new DeploymentLoader class?
 
 ### Communication
   * local messaging -- document and check the work of Vlad Talmaciu
