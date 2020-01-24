@@ -13,7 +13,6 @@ package net.xqhs.flash.core.shard;
 
 import java.io.Serializable;
 
-import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -45,7 +44,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardCore extends Unit implements AgentShard, ConfigurableEntity<Agent>, Serializable
+public class AgentShardCore extends Unit implements AgentShard, Serializable
 {
 	/**
 	 * The class UID.
