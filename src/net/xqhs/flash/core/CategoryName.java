@@ -32,12 +32,6 @@ import java.util.List;
  * Some categories may be unique to their context, meaning a new occurrence of the category erases / overwrites any
  * previous occurrences in the same context.
  * <p>
- * Entities in parent categories are visible (passed as context) to their direct children (direct children in the
- * category hierarchy given here or in the actual hierarchy in the deployment). However, some categories may have their
- * entities visible deeper than their direct children, if specified. The scope is given as the last (deepest) category
- * to which they are visible. This scope applies to contained entities and to sibling entities of different type. If the
- * scope is {@link #DEPLOYMENT}, then the entities are visible to all contained and sibling entities.
- * <p>
  * Names of entities may sometimes identify those entities uniquely in the system (e.g. for agents, nodes, etc).
  * Entities which are in categories considered identifiable are not always required to have a name, but will be
  * identifiable only if they have one.

@@ -189,6 +189,7 @@ Context
 * Therefore, visibility can be implemented
 	* in the deployment, through an attribute (TODO)
 	* ad-hoc by the implementation of each loader / each entity that loads other entities
+	* however, specifying visibility in the enum bay be useless because loaders/entities can still pass any context to their children
  
 **Porting**
 * an entity B can be ported from an entity A to an entity C (which is also its declared parent in hierarchy)
