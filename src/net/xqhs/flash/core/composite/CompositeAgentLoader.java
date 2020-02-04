@@ -206,6 +206,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 							log.trace(logPre + "Shard [] for agent [] configured.", shardName, agentName);
 						else
 							log.error(logPre + "Shard [] for agent [] configuration failed.", shardName, agentName);
+						agent.addShard(shard);
 					} catch(Exception e)
 					{
 						log.error(logPre + "Shard [] failed to load (from []); it will not be available for agent []:",

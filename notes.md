@@ -20,7 +20,6 @@ Current targets
 * get the composite agent loader out of the comments
 
 ### Deployment / loading
-* check why MonitoringShard does not monitor anything
 * check why package is not ported to all entities
 * deploy a composite agent
 	* what do about having support implementations when pre-loading shards

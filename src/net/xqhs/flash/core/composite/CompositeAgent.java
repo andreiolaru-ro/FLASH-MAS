@@ -25,7 +25,7 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
-import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
@@ -38,7 +38,7 @@ import net.xqhs.util.logging.UnitComponent;
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
  * other.
  * <p>
- * Various agent shards -- instances of {@link AgentShardCore} -- can be added. Shards are identified by means of their
+ * Various agent shards -- instances of {@link AgentShard} -- can be added. Shards are identified by means of their
  * designation. At most one shard with the same designation is allowed (i.e. at most one shard per functionality). TODO
  * <p>
  * It is this class that handles agent events, by means of the <code>postAgentEvent()</code> method, which disseminates
@@ -60,7 +60,7 @@ public class CompositeAgent implements Serializable, Agent
 		
 		/**
 		 * @param agent
-		 *                  - the agent
+		 *            - the agent
 		 */
 		protected CompositeAgentShardContainer(CompositeAgent agent)
 		{
@@ -72,7 +72,7 @@ public class CompositeAgent implements Serializable, Agent
 		{
 			agent.postAgentEvent(event);
 		}
-
+		
 		@Override
 		public String getEntityName()
 		{
@@ -145,30 +145,32 @@ public class CompositeAgent implements Serializable, Agent
 			while(!threadExit)
 			{
 				// System.out.println("oops");
-				if((eventQueue != null) && eventQueue.isEmpty())
+				AgentEvent event = null;
+				synchronized(eventQueue)
+				{
+					if((eventQueue != null) && eventQueue.isEmpty())
 					try
 					{
-						synchronized(eventQueue)
-						{
 							eventQueue.wait();
 						}
-					} catch(InterruptedException e)
+						catch(InterruptedException e)
 					{
 						// do nothing
 					}
-				else
+					else
+						event = eventQueue.poll();
+				}
+				if(event != null)
 				{
-					AgentEvent event = eventQueue.poll();
 					switch(event.getType().getSequenceType())
 					{
 					case CONSTRUCTIVE:
 					case UNORDERED:
-						for(AgentShardCore shard : shardOrder)
+						for(AgentShard shard : shardOrder)
 							shard.signalAgentEvent(event);
 						break;
 					case DESTRUCTIVE:
-						for(ListIterator<AgentShardCore> it = shardOrder.listIterator(shardOrder.size()); it
-								.hasPrevious();)
+						for(ListIterator<AgentShard> it = shardOrder.listIterator(shardOrder.size()); it.hasPrevious();)
 							it.previous().signalAgentEvent(event);
 						break;
 					default:
@@ -185,67 +187,67 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The class UID
 	 */
-	private static final long								serialVersionUID			= -2693230015986527097L;
+	private static final long							serialVersionUID			= -2693230015986527097L;
 	
 	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to take the agent out of / into the <code>TRANSIENT</code>
 	 * state.
 	 */
-	public static final String								TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
+	public static final String							TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
 	
 	/**
 	 * This can be used by support implementation-specific shards to contact the support implementation.
 	 */
-	protected EntityProxy<Pylon>							supportLink					= null;
+	protected EntityProxy<Pylon>						supportLink					= null;
 	
 	/**
 	 * The proxy to this agent.
 	 */
-	protected EntityProxy<Agent>							asContext					= new CompositeAgentShardContainer(
+	protected EntityProxy<Agent>						asContext					= new CompositeAgentShardContainer(
 			this);
 	
 	/**
 	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 */
-	protected Map<AgentShardDesignation, AgentShardCore>	shards						= new HashMap<>();
+	protected Map<AgentShardDesignation, AgentShard>	shards						= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which shards were added, so as to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #shards}.
 	 */
-	protected ArrayList<AgentShardCore>						shardOrder					= new ArrayList<>();
+	protected ArrayList<AgentShard>						shardOrder					= new ArrayList<>();
 	
 	/**
-	 * A synchronized queue of agent events, as posted by the shards.
+	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
 	 */
-	protected LinkedBlockingQueue<AgentEvent>				eventQueue					= null;
+	protected LinkedBlockingQueue<AgentEvent>			eventQueue					= null;
 	/**
 	 * The thread managing the agent's life-cycle (managing events).
 	 */
-	protected Thread										agentThread					= null;
+	protected Thread									agentThread					= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
 	 */
-	protected AgentState									agentState					= AgentState.STOPPED;
+	protected AgentState								agentState					= AgentState.STOPPED;
 	
 	/**
 	 * The agent name, if given.
 	 */
-	protected String										agentName					= null;
+	protected String									agentName					= null;
 	/**
 	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agent's state. While
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
 	 * the {@link #log(String, Object...)} method.
 	 */
-	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
+	protected UnitComponent								localLog					= (UnitComponent) new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 	/**
 	 * This switch activates the use of the {@link #localLog}.
 	 */
-	protected boolean										USE_LOCAL_LOG				= true;
+	protected boolean									USE_LOCAL_LOG				= true;
 	
 	/**
 	 * Constructor for {@link CompositeAgent} instances.
@@ -257,7 +259,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * is automatically generated.
 	 * 
 	 * @param configuration
-	 *                          - the configuration, from which the name of the agent will be taken.
+	 *            - the configuration, from which the name of the agent will be taken.
 	 */
 	public CompositeAgent(MultiTreeMap configuration)
 	{
@@ -349,7 +351,7 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
-	 * The method should be called by an agent shard (relayed through {@link AgentShardCore}) to disseminate a an
+	 * The method should be called by an agent shard (relayed through {@link AgentShard}) to disseminate a an
 	 * {@link AgentEvent} to the other shards.
 	 * <p>
 	 * If the event has been successfully posted, the method returns <code>true</code>, guaranteeing that, except in the
@@ -358,7 +360,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * inappropriate state.
 	 * 
 	 * @param event
-	 *                  the event to disseminate.
+	 *            the event to disseminate.
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
@@ -379,9 +381,13 @@ public class CompositeAgent implements Serializable, Agent
 						agentState = futureState;
 					eventQueue.put(event);
 					eventQueue.notify();
+					// log("put event", event.getType());
 				}
 			else
+			{
+				log("There is no event queue.");
 				return false;
+			}
 		} catch(InterruptedException e)
 		{
 			e.printStackTrace();
@@ -402,7 +408,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 * 
 	 * @param event
-	 *                  - the event one desires to post.
+	 *            - the event one desires to post.
 	 * @return <code>true</code> if the event could be posted at this moment; <code>false</code> otherwise.
 	 */
 	protected boolean canPostEvent(AgentEvent event)
@@ -424,7 +430,8 @@ public class CompositeAgent implements Serializable, Agent
 	 * and that the event can indeed be posted to the queue in the current state.
 	 * <p>
 	 * If the event was {@link AgentEventType#AGENT_START}, the agent will enter {@link AgentState#STARTING}, the event
-	 * queue is created and the agent thread is started.
+	 * queue is created and the agent thread is started. This method will complete only after the agent thread is
+	 * actually started (synchronization is done through {@link #eventQueue}).
 	 * <p>
 	 * If the event was {@link AgentEventType#AGENT_STOP}, the agent will enter {@link AgentState#STOPPING}.
 	 * 
@@ -471,10 +478,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * thread will exit.
 	 * 
 	 * @param eventType
-	 *                            - the type of the event.
+	 *            - the type of the event.
 	 * @param toFromTransient
-	 *                            - <code>true</code> if the agent should enter / exit from the
-	 *                            {@link AgentState#TRANSIENT} state.
+	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
 	 * @return <code>true</code> if the agent thread should exit.
 	 */
 	protected boolean FSMEventOut(AgentEventType eventType, boolean toFromTransient)
@@ -544,14 +550,14 @@ public class CompositeAgent implements Serializable, Agent
 	 * Adds a shard to the agent, which has been configured beforehand. The agent will register with the shard, as
 	 * parent.
 	 * <p>
-	 * The shard will be identified by the agent by means of its {@link AgentShardCore#getShardDesignation()} method.
-	 * Only one instance per designation (functionality) will be allowed.
+	 * The shard will be identified by the agent by means of its {@link AgentShard#getShardDesignation()} method. Only
+	 * one instance per designation (functionality) will be allowed.
 	 * 
 	 * @param shard
-	 *                  - the {@link AgentShardCore} instance to add.
+	 *            - the {@link AgentShard} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other shards.
 	 */
-	protected CompositeAgent addShard(AgentShardCore shard)
+	protected CompositeAgent addShard(AgentShard shard)
 	{
 		if(!canAddShards())
 			throw new IllegalStateException("Cannot add shards in state [" + agentState + "].");
@@ -570,14 +576,14 @@ public class CompositeAgent implements Serializable, Agent
 	 * Removes an existing shard of the agent.
 	 * 
 	 * @param designation
-	 *                        - the designation of the shard to remove.
+	 *            - the designation of the shard to remove.
 	 * @return a reference to the just-removed shard instance.
 	 */
-	protected AgentShardCore removeShard(AgentShardDesignation designation)
+	protected AgentShard removeShard(AgentShardDesignation designation)
 	{
 		if(!hasShard(designation))
 			throw new InvalidParameterException("Shard [" + designation + "] does not exist");
-		AgentShardCore shard = getShard(designation);
+		AgentShard shard = getShard(designation);
 		shardOrder.remove(shard);
 		shards.remove(designation);
 		return shard;
@@ -587,7 +593,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Returns <code>true</code> if the agent contains said shard.
 	 * 
 	 * @param designation
-	 *                        - the designation of the shard to search.
+	 *            - the designation of the shard to search.
 	 * @return <code>true</code> if the shard exists, <code>false</code> otherwise.
 	 */
 	protected boolean hasShard(AgentShardDesignation designation)
@@ -601,10 +607,10 @@ public class CompositeAgent implements Serializable, Agent
 	 * It is <i>strongly recommended</i> that the reference is not kept, as the shard may be removed without notice.
 	 * 
 	 * @param designation
-	 *                        - the designation of the shard to retrieve.
-	 * @return the {@link AgentShardCore} instance, if any. <code>null</code> otherwise.
+	 *            - the designation of the shard to retrieve.
+	 * @return the {@link AgentShard} instance, if any. <code>null</code> otherwise.
 	 */
-	protected AgentShardCore getShard(AgentShardDesignation designation)
+	protected AgentShard getShard(AgentShardDesignation designation)
 	{
 		return shards.get(designation);
 	}
