@@ -138,6 +138,9 @@ public class CompositeAgentLoader implements Loader<Agent>
 								CategoryName.SHARD.s(), null);
 				}
 				if(shardClass == null)
+					shardClass = Loader.autoFind(classLoader, packages, shardName, shardName, null,
+							CategoryName.SHARD.s(), null);
+				if(shardClass == null)
 				{
 					log.error(logPre + "Shard class not specified / not found for shard [" + shardName
 							+ "]. Shard will not be available.");
@@ -147,7 +150,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 				if(classLoader.canLoadClass(shardClass))
 				{
 					log.trace(logPre + "shard [" + shardName + "] can be loaded");
-					if (shardConfig.containsKey(SHARD_CLASS_PARAMETER))
+					if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
 						shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
 					shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
 				}

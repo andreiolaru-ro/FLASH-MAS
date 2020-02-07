@@ -252,14 +252,14 @@ There are two types of categories: simple values and not-simple-values. This can
 * predefined categories are defined as being values or not
 * not-predefined categories need to state their properties anyway, hence they will also state their property of being a simple value
 
-*Category properties* are meta-properties which describe dynamically properties like the ones in CategoryName 
+*Category properties* are meta-properties which describe dynamically properties like the ones in CategoryName, for categories which are not pre-defined
 * this should be allowed only for categories that are not predefined (maybe?)
 * only properties that exist in CategoryName will be allowed
 
 
 	CLI arguments			 ::= scenario-file? category-description*
 	category-description	 ::= -category(:category-property)* element element_description |
-									-category(:category-property)* (value)*	[actually indistinguishable from the other case]
+									-category(:category-property)* (val)*	[actually indistinguishable from the other case]
 	category-property		 ::= [^: ]			[no space or column]
 	element_description	 ::= (par:val | par)* category-description* [if just par, value will be null]
 	element					 ::= 		// basically anything, but interpreted as:
@@ -276,8 +276,8 @@ Cases where one of the sources contains only a partially specified name are mana
 
 TODO
 ----
-* actually support category properties
-* can we specify category properties in the XML?
+* implement description of not-pre-defined categories
+  * can we specify category properties in the XML?
 
 * check duplicate names for identifiable entities / check identifiables
 * check if in the end unique entities are unique

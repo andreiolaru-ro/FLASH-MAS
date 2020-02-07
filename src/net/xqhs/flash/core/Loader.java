@@ -307,21 +307,22 @@ public interface Loader<T extends Entity<?>>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *                         - a list of java packages in which to search.
+	 *            - a list of java packages in which to search.
 	 * @param given_cp
-	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
-	 *                         for the class. This classpath will also be searched in the list of packages.
+	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
+	 *            class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
-	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if the
+	 *            <code> is <code>null</code>).
 	 * @param lower_name
-	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
-	 *                         where the class have been searched).
+	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
+	 *            class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
@@ -365,6 +366,7 @@ public interface Loader<T extends Entity<?>>
 					paths.add(r + D + lower_name + D + upper_name + D + cls);
 					paths.add(r + D + lower_name + D + cls);
 				}
+				paths.add(r + D + cls);
 			}
 		for(String p : paths)
 			if(factory.canLoadClass(p))
