@@ -353,9 +353,9 @@ public interface Loader<T extends Entity<?>>
 			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 		}
 		List<String> roots = new ArrayList<>();
+		roots.addAll(packages);
 		roots.add(DeploymentConfiguration.ROOT_PACKAGE);
 		roots.add(DeploymentConfiguration.CORE_PACKAGE);
-		roots.addAll(packages);
 		for(String cls : clsNames)
 			for(String r : roots)
 			{
