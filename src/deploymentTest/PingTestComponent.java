@@ -9,20 +9,18 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package examples.composite;
+package deploymentTest;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
-import net.xqhs.util.XML.XMLTree.XMLNode;
-import net.xqhs.util.logging.Logger;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
@@ -50,7 +48,7 @@ public class PingTestComponent extends AgentShardCore
 		{
 			tick++;
 			
-			sendMessage("ping no " + tick, thisAgent, otherAgent);
+			sendMessage("ping no " + tick, thisAgent, getShardData().getFirstValue(OTHER_AGENT_PARAMETER_NAME));
 		}
 		
 	}
@@ -90,90 +88,48 @@ public class PingTestComponent extends AgentShardCore
 	 */
 	public PingTestComponent()
 	{
-		super(AgentComponentName.TESTING_COMPONENT);
+		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
 	}
 	
 	@Override
-	protected boolean preload(ComponentCreationData parameters, XMLNode scenarioNode, List<String> agentPackages,
-			Logger log)
+	public boolean configure(MultiTreeMap configuration)
 	{
-		if(!super.preload(parameters, scenarioNode, agentPackages, log))
+		if(!super.configure(configuration))
 			return false;
-		otherAgent = getComponentData().get(OTHER_AGENT_PARAMETER_NAME);
+		otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
 		return true;
 	}
 	
-	/**
-	 * @return the log provided by the visualizable component.
-	 */
 	@Override
-	public Logger getAgentLog()
+	public void signalAgentEvent(AgentEvent event)
 	{
-		return super.getAgentLog();
+		super.signalAgentEvent(event);
+		if(event.getType() == AgentEventType.AGENT_START)
+			pingTimer = new Timer();
+		if(event.getType() == AgentEventType.SIMULATION_START)
+			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
 	}
 	
 	@Override
-	protected void componentInitializer()
-	{
-		super.componentInitializer();
-		
-		AgentEventHandler allEventHandler = new AgentEventHandler() {
-			@Override
-			public void handleEvent(AgentEvent event)
-			{
-				getAgentLog().li("agent [] event: []", thisAgent, event.getType());
-				
-				if(event.getType() == AgentEventType.AGENT_START)
-					atAgentStart(event);
-				if(event.getType() == AgentEventType.SIMULATION_START)
-					atSimulationStart(event);
-			}
-		};
-		for(AgentEventType eventType : AgentEventType.values())
-			registerHandler(eventType, allEventHandler);
-	}
-	
-	@Override
-	protected void atAgentStart(AgentEvent event)
-	{
-		super.atAgentStart(event);
-		
-		registerMessageReceiver(new AgentEventHandler() {
-			@Override
-			public void handleEvent(AgentEvent messageEvent)
-			{
-				getAgentLog().li("message received: ", messageEvent);
-			}
-		}, "");
-		
-		pingTimer = new Timer();
-	}
-	
-	@Override
-	protected void atSimulationStart(AgentEvent event)
-	{
-		super.atSimulationStart(event);
-		pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
-	}
-	
-	@Override
-	protected void parentChangeNotifier(CompositeAgent oldParent)
+	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		super.parentChangeNotifier(oldParent);
-		
-		if(getParent() != null)
-		{
-			thisAgent = getAgentName();
-		}
+		if(getAgent() != null)
+			thisAgent = getAgent().getEntityName();
 	}
 	
 	/**
-	 * Relay.
+	 * Relays.
 	 */
-	@Override
 	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
 			String... targetPathElements)
 	{
 		return super.sendMessage(content, sourceEndpoint, targetAgent, targetPathElements);
+	}
+	
+	@Override
+	protected MultiTreeMap getShardData()
+	{
+		return super.getShardData();
 	}
 }

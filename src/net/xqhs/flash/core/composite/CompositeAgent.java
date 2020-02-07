@@ -78,6 +78,12 @@ public class CompositeAgent implements Serializable, Agent
 		{
 			return agent.getName();
 		}
+		
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation)
+		{
+			throw new UnsupportedOperationException("not implemented.");
+		}
 	}
 	
 	/**

@@ -41,7 +41,7 @@ public class MonitoringTestShard extends AgentShardCore
 	 */
 	public MonitoringTestShard()
 	{
-		super(AgentShardDesignation.customShard("TESTING"));
+		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
 	}
 	
 	@Override
