@@ -446,7 +446,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 				}
 		for(String rem : toRemove)
 			portableEntities.removeKey(rem);
-			
+		
 		// port appropriate lifted entities to this element
 		toRemove.clear();
 		for(String liftedCatName : liftedEntities.getKeys())
@@ -683,11 +683,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 				CategoryName category = CategoryName.byName(getCategoryName(a));
 				if(!args.hasNext())
 				{ // must check this before creating any trees
-					log.lw("Empty unknown category [] in CLI arguments.", catName);
+					log.lw("Empty category [] in CLI arguments.", catName);
 					return;
 				}
-				// get name
-				String name = args.next();
 				
 				// create / find the context
 				// search upwards in the current context for a parent or at least an ancestor
@@ -695,7 +693,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 				Deque<CtxtTriple> savedContext = new LinkedList<>(context);
 				while(!context.isEmpty())
 				{
-					if(context.peek().elemTree.isHierarchical(catName)
+					if(context.peek().elemTree != null && context.peek().elemTree.isHierarchical(catName)
 							|| (category != null && category.getAncestorsList().contains(context.peek().category)))
 					{ // found a level that contains the same category;
 						// will insert new element in this context
@@ -725,19 +723,29 @@ public class DeploymentConfiguration extends MultiTreeMap
 				
 				// integrate in current context.
 				CtxtTriple cCtxt = context.peek();
-				
-				MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
-				MultiTreeMap node;
-				if(subCatTree.isHierarchical(name))
-					node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
-							: subCatTree.getFirstTree(name);
-				else
-				{
-					node = new MultiTreeMap();
-					node.addOneValue(NAME_ATTRIBUTE_NAME, name);
-					integrateName(node, catName, subCatTree, rootTree, log);
+				if(cCtxt.elemTree == null)
+					log.le("Unable to integrate category [] in current context [] which does not support subordinate categories.",
+							catName, cCtxt.category);
+				else if(category != null && category.isValue())
+				{ // it is a simple value
+					context.push(new CtxtTriple(catName, null, null));
 				}
-				context.push(new CtxtTriple(catName, subCatTree, node));
+				else
+				{ // it is an entity; get entity name
+					String name = args.next();
+					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
+					MultiTreeMap node;
+					if(subCatTree.isHierarchical(name))
+						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
+								: subCatTree.getFirstTree(name);
+					else
+					{
+						node = new MultiTreeMap();
+						node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						integrateName(node, catName, subCatTree, rootTree, log);
+					}
+					context.push(new CtxtTriple(catName, subCatTree, node));
+				}
 			}
 			else
 			{
@@ -748,20 +756,34 @@ public class DeploymentConfiguration extends MultiTreeMap
 				}
 				if(context.peek().elemTree == null)
 				{
-					log.le("incorrect context for parameter []", a);
-					continue;
-				}
-				String parameter, value = null;
-				if(a.contains(NAME_SEPARATOR))
-				{ // parameter name & value
-					String[] es = a.split(NAME_SEPARATOR, 2);
-					parameter = es[0];
-					value = es[1];
+					// could be a simple value category
+					CategoryName paramCateg = CategoryName.byName(context.peek().category);
+					if(context.size() > 1 && paramCateg != null && paramCateg.isValue())
+					{ // place as value in the higher context
+						CtxtTriple placeholder = context.pop();
+						addParameter(context.peek().elemTree, paramCateg.s(), a, paramCateg.isUnique(), log);
+						context.push(placeholder);
+					}
+					else
+					{
+						log.le("incorrect context for parameter []", a);
+						continue;
+					}
 				}
 				else
-					parameter = a;
-				addParameter(context.peek().elemTree, parameter, value,
-						(CategoryName.byName(parameter) != null && CategoryName.byName(parameter).isUnique()), log);
+				{
+					String parameter, value = null;
+					if(a.contains(NAME_SEPARATOR))
+					{ // parameter name & value
+						String[] es = a.split(NAME_SEPARATOR, 2);
+						parameter = es[0];
+						value = es[1];
+					}
+					else
+						parameter = a;
+					addParameter(context.peek().elemTree, parameter, value,
+							(CategoryName.byName(parameter) != null && CategoryName.byName(parameter).isUnique()), log);
+				}
 			}
 		}
 	}
