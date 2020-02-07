@@ -257,14 +257,14 @@ public class DeploymentConfiguration extends MultiTreeMap
 			for(Iterator<String> it = programArguments.iterator(); it.hasNext();)
 			{
 				String arg = it.next();
-				if(isCategory(arg) && (getCategory(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
-						|| getCategory(arg).equals(CategoryName.SCHEMA.s())))
+				if(isCategoryDefinition(arg) && (getCategoryName(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
+						|| getCategoryName(arg).equals(CategoryName.SCHEMA.s())))
 				{
 					String val = null;
-					if(it.hasNext() || isCategory(val = it.next()))
+					if(it.hasNext() || isCategoryDefinition(val = it.next()))
 						throw new IllegalArgumentException(
 								"Program argument after " + arg + " should be a correct value.");
-					deployment.setValue(getCategory(arg), val);
+					deployment.setValue(getCategoryName(arg), val);
 				}
 			}
 		
@@ -676,11 +676,11 @@ public class DeploymentConfiguration extends MultiTreeMap
 			String a = args.next();
 			if(a.trim().length() == 0)
 				continue;
-			if(isCategory(a))
+			if(isCategoryDefinition(a))
 			{
 				// get category
-				String catName = getCategory(a);
-				CategoryName category = CategoryName.byName(getCategory(a));
+				String catName = getCategoryName(a);
+				CategoryName category = CategoryName.byName(getCategoryName(a));
 				if(!args.hasNext())
 				{ // must check this before creating any trees
 					log.lw("Empty unknown category [] in CLI arguments.", catName);
@@ -773,7 +773,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the argument.
 	 * @return <code>true</code> if it designates a category.
 	 */
-	protected static boolean isCategory(String arg)
+	protected static boolean isCategoryDefinition(String arg)
 	{
 		return arg.startsWith(CLI_CATEGORY_PREFIX);
 	}
@@ -786,9 +786,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the argument.
 	 * @return the category name.
 	 */
-	protected static String getCategory(String arg)
+	protected static String getCategoryName(String arg)
 	{
-		return isCategory(arg) ? arg.substring(1) : null;
+		return isCategoryDefinition(arg) ? arg.substring(1) : null;
 	}
 	
 	/**

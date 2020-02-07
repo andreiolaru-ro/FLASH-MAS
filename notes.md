@@ -20,7 +20,8 @@ Current targets
 * get the composite agent loader out of the comments
 
 ### Deployment / loading
-* check why package is not ported to all entities
+* how to define packages (and, in general, simple values) in CLI input
+* document portability in CategoryName
 * deploy a composite agent
 	* what do about having support implementations when pre-loading shards
 		* it's ok, they are instanced, there's no need for the pylon to actually be started 
@@ -86,8 +87,7 @@ Some entity types are predefined, but a developer should be able to add any numb
 There are two types of pre-defined *virtual* entities which span the whole agent system are
 * *the deployment* -- the entirety of the FLASH-MAS deployment; its life-cycle is identical to the life-cycle of the FLASH-MAS system; there is only one deployment.
 * the support infrastructures -- collections of entities (pylons), which offer services to other entities in the system, especially services which involve communication, especially across machines;
-	
-	e.g. one support infrastructure may be able to offer id-based communication for all agents in a deployment.
+	* e.g. one support infrastructure may be able to offer id-based communication for all agents in a deployment.
 
 Pre-defined *actual* entities are
 * *nodes* -- they represent the presence of FLASH-MAS on a physical machine; normally a node for each machine is sufficient, but more complex setups may have more than one node on a machine;
@@ -240,23 +240,34 @@ Each SettingsName contains information on how to assemble elements from the XML 
 CLI
 ---
 
-all name:val pairs belong in an element
+All name:val pairs belong in an element
 
-all elements belong in a category; all categories belong in elements or at the root level
+All elements belong in a category; all categories belong in elements or at the root level
 
-the root level is the local node, which may not be specifically identified. Lacking a specific "-node name" element introduction, a name for it will be automatically generated
+The root level is the local node, which may not be specifically identified. Lacking a specific "-node name" element introduction, a name for it will be automatically generated
 * this way, remote nodes may be specified as well.
-* the first node is the local node.
+* the first node is the local node
+
+There are two types of categories: simple values and not-simple-values. This cannot be distinguished in the grammar, but
+* predefined categories are defined as being values or not
+* not-predefined categories need to state their properties anyway, hence they will also state their property of being a simple value
+
+*Category properties* are meta-properties which describe dynamically properties like the ones in CategoryName 
+* this should be allowed only for categories that are not predefined (maybe?)
+* only properties that exist in CategoryName will be allowed
+
 
 	CLI arguments			 ::= scenario-file? category-description*
-	category-description	 ::= -category element element_description
+	category-description	 ::= -category(:category-property)* element element_description |
+									-category(:category-property)* (value)*	[actually indistinguishable from the other case]
+	category-property		 ::= [^: ]			[no space or column]
 	element_description	 ::= (par:val | par)* category-description* [if just par, value will be null]
 	element					 ::= 		// basically anything, but interpreted as:
 								part1:part2		[depending on category, can mean loader:id or type:id category:type]
 								type:				[an unnamed element with the specified type/loader]
 								name				[depending on category, a named element of the default type or an unnamed element with this type]
 														[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
-													
+	category/par/val/part1/part2/type/name	 ::= [^: ]					[no space or column]
 
 Fusion
 ------
@@ -265,6 +276,9 @@ Cases where one of the sources contains only a partially specified name are mana
 
 TODO
 ----
+* actually support category properties
+* can we specify category properties in the XML?
+
 * check duplicate names for identifiable entities / check identifiables
 * check if in the end unique entities are unique
 * implement all properties also as attributes in the configuration
