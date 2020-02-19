@@ -16,6 +16,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Vector;
 
+import net.xqhs.flash.android.AndroidClassFactory;
 import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.LogWrapper.LoggerType;
 
@@ -37,7 +38,7 @@ public class PlatformUtils
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static enum Platform {
+	public enum Platform {
 	/**
 	 * The current machine runs an OS that contains a standard Java VM.
 	 */
@@ -88,6 +89,8 @@ public class PlatformUtils
 		{
 		case PC:
 			return new PCClassFactory();
+		case ANDROID:
+			return new AndroidClassFactory();
 		default:
 			break;
 		}
