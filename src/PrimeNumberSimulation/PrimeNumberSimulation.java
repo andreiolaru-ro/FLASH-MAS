@@ -28,7 +28,7 @@ class PrimeNumbersNode extends Node
      * intr-un nod. Pune task-urile agentilor intr-un thread pool.
      * Nu prea stiu cum ar functiona asta daca ei asteapta mesaje de la alti agenti
      * adormiti. POate doar daca ceva asteapta prea mult, sa intre in waiting.*/
-    @Override
+    /*@Override
     public boolean start() {
         ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
         li("Starting node [].", name);
@@ -50,6 +50,26 @@ class PrimeNumbersNode extends Node
 
         pool.shutdown();
         return true;
+    }*/
+
+    @Override
+    public void run() {
+        ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+        li("Starting node [].", name);
+        for(Entity<?> entity : entityOrder) {
+            if(entity instanceof Agent) {
+                lf("running an entity...");
+                Runnable agentTask = () -> entity.run();
+
+                pool.execute(agentTask);
+            } else {
+                lf("running an entity...");
+                entity.run();
+            }
+        }
+        li("Node [] is running.", name);
+
+        pool.shutdown();
     }
 }
 
@@ -106,6 +126,7 @@ public class PrimeNumberSimulation {
 
         //startAgents(agentList);
         node.start();
+        node.run();
 
     }
 }

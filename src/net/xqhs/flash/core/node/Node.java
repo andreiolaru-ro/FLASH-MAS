@@ -86,6 +86,9 @@ public class Node extends Unit implements Entity<Node>
 		li("Node [] stopped.", name);
 		return true;
 	}
+
+	@Override
+	public void  run() {}
 	
 	@Override
 	public boolean isRunning()

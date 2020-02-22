@@ -2,8 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src-deployment/examples/echoAgent/EchoAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src-deployment/examples/echoAgent/EchoAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/localTest/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/localTest/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,39 +27,40 @@
     <session id="901198748">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="10" />
+          <entry key="project.closed" value="14" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.10" value="1" />
-          <entry key="project.open.time.12" value="1" />
-          <entry key="project.open.time.13" value="1" />
+          <entry key="project.open.time.12" value="2" />
+          <entry key="project.open.time.13" value="2" />
           <entry key="project.open.time.14" value="1" />
-          <entry key="project.open.time.7" value="1" />
-          <entry key="project.open.time.8" value="3" />
+          <entry key="project.open.time.7" value="2" />
+          <entry key="project.open.time.8" value="5" />
+          <entry key="project.open.time.88" value="1" />
           <entry key="project.open.time.9" value="4" />
-          <entry key="project.opened" value="13" />
+          <entry key="project.opened" value="19" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="class" value="7" />
-          <entry key="java" value="73" />
+          <entry key="java" value="114" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CLASS" value="7" />
-          <entry key="JAVA" value="72" />
+          <entry key="JAVA" value="113" />
           <entry key="Scratch" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="6234" />
+          <entry key="java" value="6999" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="6234" />
+          <entry key="JAVA" value="6999" />
         </counts>
       </usages-collector>
     </session>
@@ -56,27 +68,22 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/localTest/Main.java">
+        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="833">
-              <caret line="81" column="13" lean-forward="true" selection-start-line="81" selection-start-column="13" selection-end-line="81" selection-end-column="13" />
+            <state relative-caret-position="-40">
+              <caret line="33" column="101" selection-start-line="33" selection-start-column="14" selection-end-line="33" selection-end-column="101" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="class#AgentContainer#0" />
-                <element signature="method#setEvent#0;class#AgentContainer#0" />
-                <element signature="method#terminateEvent#0;class#AgentContainer#0" />
-                <element signature="method#broadcastToAgentList#0;class#TestAgent#0" />
-                <element signature="method#setMessageTargetAgents#0;class#TestAgent#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1088">
-              <caret line="64" selection-start-line="64" selection-end-line="64" />
+            <state relative-caret-position="204">
+              <caret line="12" selection-start-line="12" selection-end-line="12" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -87,8 +94,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="24" column="12" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="12" />
+            <state relative-caret-position="51">
+              <caret line="14" column="55" lean-forward="true" selection-start-line="14" selection-start-column="55" selection-end-line="14" selection-end-column="55" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -97,22 +104,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1088">
-              <caret line="70" column="41" selection-start-line="70" selection-start-column="8" selection-end-line="70" selection-end-column="41" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="70" column="9" lean-forward="true" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+            <state relative-caret-position="-461">
+              <caret line="61" column="43" selection-start-line="61" selection-start-column="43" selection-end-line="61" selection-end-column="43" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#388#389#0" expanded="true" />
@@ -123,24 +118,45 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java">
+        <entry file="file://$PROJECT_DIR$/src/localTest/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="14" column="51" selection-start-line="14" selection-start-column="40" selection-end-line="14" selection-end-column="51" />
+            <state relative-caret-position="150">
+              <caret line="109" column="4" selection-start-line="109" selection-start-column="4" selection-end-line="109" selection-end-column="51" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#892#893#0" expanded="true" />
-                <element signature="e#924#925#0" expanded="true" />
+                <element signature="method#setEvent#0;class#AgentContainer#0" />
+                <element signature="method#terminateEvent#0;class#AgentContainer#0" />
+                <element signature="method#registerAgentsInNode#0;class#TestNode#0" />
+                <element signature="method#setMessageTargetAgents#0;class#TestAgent#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java">
+        <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/local/LocalSupport.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" column="66" selection-start-line="4" selection-start-column="66" selection-end-line="4" selection-end-column="66" />
+            <state relative-caret-position="173">
+              <caret line="147" column="27" lean-forward="true" selection-start-line="147" selection-start-column="18" selection-end-line="147" selection-end-column="32" />
+              <folding>
+                <element signature="class#MessageThread#0;class#LocalSupport#0" />
+                <element signature="method#run#0;class#MessageThread#0;class#LocalSupport#0" />
+                <element signature="method#start#0;class#LocalSupport#0" />
+                <element signature="method#stop#0;class#LocalSupport#0" />
+                <element signature="method#getRecommendedShardImplementation#0;class#LocalSupport#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="190">
+              <caret line="135" column="45" selection-start-line="135" selection-start-column="45" selection-end-line="135" selection-end-column="45" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -149,12 +165,18 @@
         <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="238">
-              <caret line="31" column="65" selection-start-line="31" selection-start-column="65" selection-end-line="31" selection-end-column="65" />
+              <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="20" column="30" selection-start-line="20" selection-start-column="12" selection-end-line="20" selection-end-column="30" />
               <folding>
-                <element signature="e#3659#3660#0" expanded="true" />
-                <element signature="e#3682#3683#0" expanded="true" />
-                <element signature="e#4020#4021#0" expanded="true" />
-                <element signature="e#4046#4047#0" expanded="true" />
+                <element signature="imports" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -171,34 +193,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>deployment</find>
-      <find>postAgentEve</find>
-      <find>agentcon</find>
-      <find>agentThread</find>
-      <find>queue</find>
-      <find>agen</find>
-      <find>agentthread</find>
-      <find>registerEnti</find>
-      <find>1</find>
-      <find>postAge</find>
-      <find>postAGe</find>
-      <find>parentAgent</find>
-      <find>addCon</find>
-      <find>proxy</find>
-      <find>addGen</find>
-      <find>.regis</find>
-      <find>addMe</find>
-      <find>addmess</find>
-      <find>getAgent</find>
-      <find>add</find>
-      <find>postAgentEvent</find>
-      <find>add(</find>
       <find>pylon</find>
       <find>postAgen</find>
       <find>content_par</find>
       <find>addGene</find>
       <find>simpleLoca</find>
       <find>addGenera</find>
+      <find>agentcon</find>
+      <find>agentcontainer</find>
+      <find>start()</find>
+      <find>run</find>
+      <find>interface agent</find>
+      <find>run()</find>
+      <find>interface entity</find>
+      <find>class Node</find>
+      <find>runningAgentsNumber</find>
+      <find>controlShard</find>
+      <find>System.out.println</find>
+      <find>send(</find>
+      <find>messagingShard</find>
+      <find>sendMe</find>
+      <find>sendMess</find>
+      <find>LocalSupp</find>
+      <find>addContext</find>
+      <find>asCOnte</find>
+      <find>messagingProxy</find>
+      <find>.register</find>
+      <find>MessageThread</find>
+      <find>.reg</find>
+      <find>source_pa</find>
+      <find>recei</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -210,15 +234,19 @@
       <list>
         <option value="$PROJECT_DIR$/src/net/xqhs/flash/local/LocalSupport.java" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java" />
+        <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java" />
         <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java" />
         <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" />
-        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java" />
         <option value="$PROJECT_DIR$/src/localTest/Main.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java" />
+        <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java" />
+        <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java" />
+        <option value="$PROJECT_DIR$/src-deployment/examples/echoAgent/EchoAgent.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" />
+        <option value="$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java" />
       </list>
     </option>
   </component>
@@ -233,6 +261,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -262,31 +291,17 @@
               <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
               <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="flash" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulation.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
       <pane id="PackagesPane" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1579263022402" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1582371319834" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="JAVA" />
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.0" />
@@ -305,7 +320,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Main">
+  <component name="RunManager" selected="Application.PrimeNumberSimulation">
     <configuration name="DeploymentTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="deploymentTest.DeploymentTest" />
       <module name="Flash-MAS" />
@@ -366,8 +381,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Main" />
         <item itemvalue="Application.PrimeNumberSimulation" />
+        <item itemvalue="Application.Main" />
         <item itemvalue="Application.DeploymentTest" />
         <item itemvalue="Application.FlashBoot" />
       </list>
@@ -397,23 +412,22 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Structure" order="0" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Capture Tool" order="4" />
-      <window_info active="true" content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.24291497" />
+      <window_info content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.1805668" />
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3291815" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49959514" weight="0.07295374" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49959514" weight="0.3113879" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.33274022" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3291815" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.3291815" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.49644127" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.50040483" side_tool="true" weight="0.2188612" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.3291815" />
       <window_info anchor="bottom" id="Messages" order="10" weight="0.19039147" />
@@ -426,34 +440,6 @@
       <window_info anchor="right" id="Palette&#9;" order="6" />
       <window_info anchor="right" id="Maven Projects" order="7" />
     </layout>
-    <layout-to-restore>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22672065" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Image Layers" order="2" />
-      <window_info id="Designer" order="3" />
-      <window_info id="UI Designer" order="4" />
-      <window_info id="Capture Tool" order="5" />
-      <window_info id="Favorites" order="6" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3291815" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49959514" visible="true" weight="0.27935943" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.090747334" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.3291815" />
-      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.50040483" side_tool="true" weight="0.2188612" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.3291815" />
-      <window_info anchor="bottom" id="Messages" order="10" weight="0.19039147" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Palette" order="3" />
-      <window_info anchor="right" id="Capture Analysis" order="4" />
-      <window_info anchor="right" id="Theme Preview" order="5" />
-      <window_info anchor="right" id="Palette&#9;" order="6" />
-      <window_info anchor="right" id="Maven Projects" order="7" />
-    </layout-to-restore>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -463,7 +449,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-          <line>243</line>
+          <line>246</line>
           <properties />
           <option name="timeStamp" value="1" />
         </line-breakpoint>
@@ -480,12 +466,6 @@
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java</url>
-          <line>149</line>
-          <properties />
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
           <line>170</line>
           <properties />
@@ -498,28 +478,34 @@
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java</url>
-          <line>58</line>
-          <properties />
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-          <line>253</line>
+          <line>256</line>
           <properties />
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java</url>
-          <line>246</line>
+          <line>249</line>
           <properties />
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java</url>
-          <line>45</line>
+          <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
+          <line>61</line>
           <properties />
-          <option name="timeStamp" value="13" />
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java</url>
+          <line>74</line>
+          <properties />
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java</url>
+          <line>41</line>
+          <properties />
+          <option name="timeStamp" value="16" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -536,20 +522,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="168">
           <caret line="22" column="22" selection-start-line="22" selection-start-column="22" selection-end-line="22" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/agent/Agent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="21" column="33" lean-forward="true" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2227">
-          <caret line="171" column="58" selection-start-line="171" selection-start-column="42" selection-end-line="171" selection-end-column="58" />
         </state>
       </provider>
     </entry>
@@ -588,13 +560,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3172">
-          <caret line="55" column="17" selection-start-line="55" selection-start-column="17" selection-end-line="55" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_1.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="748">
@@ -630,31 +595,183 @@
         </state>
       </provider>
     </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/System.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="882">
+          <caret line="398" column="30" selection-start-line="398" selection-start-column="30" selection-end-line="398" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Runnable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="401">
+          <caret line="67" column="25" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/Logging-light.jar!/net/xqhs/util/logging/Unit.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="214" selection-start-line="214" selection-end-line="214" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/agent/Agent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="21" column="7" selection-start-line="21" selection-start-column="7" selection-end-line="21" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="21">
+          <caret line="41" column="37" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="29" column="17" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="373">
+          <caret line="301" selection-start-line="301" selection-end-line="301" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src-deployment/examples/echoAgent/EchoAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="56" selection-start-line="56" selection-end-line="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-472">
+          <caret line="58" selection-start-line="58" selection-end-line="58" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1628#1629#0" expanded="true" />
+            <element signature="e#1651#1652#0" expanded="true" />
+            <element signature="method#stop#0;class#Node#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Object.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="36" selection-start-line="36" selection-end-line="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/util/ArrayList.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="866" selection-start-line="866" selection-end-line="866" />
+          <folding>
+            <element signature="e#31007#31008#0" expanded="true" />
+            <element signature="e#31039#31040#0" expanded="true" />
+            <element signature="e#31382#31383#0" expanded="true" />
+            <element signature="e#31427#31428#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Long.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="116">
+          <caret line="393" selection-start-line="393" selection-end-line="393" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/io/PrintStream.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="806" selection-start-line="806" selection-end-line="806" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="291" selection-start-line="291" selection-end-line="291" />
+          <folding>
+            <element signature="method#configure#0;class#AgentShardCore#0" />
+            <element signature="method#start#0;class#AgentShardCore#0" />
+            <element signature="method#stop#0;class#AgentShardCore#0" />
+            <element signature="method#removeContext#0;class#AgentShardCore#0" />
+            <element signature="e#10173#10174#0" expanded="true" />
+            <element signature="method#asContext#0;class#AgentShardCore#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/util/HashMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="595" selection-start-line="595" selection-end-line="595" />
+          <folding>
+            <element signature="e#23684#23685#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/util/MultiValueMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-7">
-          <caret line="48" column="13" selection-start-line="48" selection-start-column="13" selection-end-line="48" selection-end-column="13" />
+        <state relative-caret-position="109">
+          <caret line="141" selection-start-line="141" selection-end-line="141" />
+          <folding>
+            <element signature="e#3458#3459#0" expanded="true" />
+            <element signature="e#3494#3495#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/agent/AgentEvent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="26" column="39" lean-forward="true" selection-start-line="26" selection-start-column="39" selection-end-line="26" selection-end-column="39" />
+        <state relative-caret-position="153">
+          <caret line="161" selection-start-line="161" selection-end-line="161" />
+          <folding>
+            <element signature="e#5024#5025#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/MessagingPylonProxy.java">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/String.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
+        <state relative-caret-position="116">
+          <caret line="1465" selection-start-line="1465" selection-end-line="1465" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="119" column="8" selection-start-line="119" selection-start-column="8" selection-end-line="119" selection-end-column="81" />
+        <state relative-caret-position="-1144">
+          <caret line="162" column="14" selection-start-line="162" selection-start-column="14" selection-end-line="162" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="20" column="30" selection-start-line="20" selection-start-column="12" selection-end-line="20" selection-end-column="30" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -668,72 +785,75 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/MessageReceiver.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="245" column="25" selection-start-line="245" selection-start-column="25" selection-end-line="245" selection-end-column="25" />
-          <folding>
-            <element signature="method#configure#0;class#AgentShardCore#0" />
-            <element signature="method#start#0;class#AgentShardCore#0" />
-            <element signature="method#stop#0;class#AgentShardCore#0" />
-            <element signature="method#removeContext#0;class#AgentShardCore#0" />
-            <element signature="e#10114#10115#0" expanded="true" />
-            <element signature="e#10139#10140#0" expanded="true" />
-            <element signature="method#asContext#0;class#AgentShardCore#0" />
-          </folding>
+        <state relative-caret-position="150">
+          <caret line="11" column="17" selection-start-line="11" selection-start-column="17" selection-end-line="11" selection-end-column="17" />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/System.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/MessagingPylonProxy.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="882">
-          <caret line="398" column="30" selection-start-line="398" selection-start-column="30" selection-end-line="398" selection-end-column="30" />
+        <state relative-caret-position="-85">
+          <caret line="7" column="50" lean-forward="true" selection-start-line="7" selection-start-column="45" selection-end-line="7" selection-end-column="55" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/local/LocalSupport.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="34" column="39" selection-start-line="34" selection-start-column="39" selection-end-line="34" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Runnable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="67" column="25" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/node/Node.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="41" selection-start-line="41" selection-end-line="41" />
+        <state relative-caret-position="173">
+          <caret line="147" column="27" lean-forward="true" selection-start-line="147" selection-start-column="18" selection-end-line="147" selection-end-column="32" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1651#1652#0" expanded="true" />
-            <element signature="method#stop#0;class#Node#0" />
+            <element signature="class#MessageThread#0;class#LocalSupport#0" />
+            <element signature="method#run#0;class#MessageThread#0;class#LocalSupport#0" />
+            <element signature="method#start#0;class#LocalSupport#0" />
+            <element signature="method#stop#0;class#LocalSupport#0" />
+            <element signature="method#getRecommendedShardImplementation#0;class#LocalSupport#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/Logging-light.jar!/net/xqhs/util/logging/Unit.class">
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="100">
-          <caret line="214" selection-start-line="214" selection-end-line="214" />
+        <state relative-caret-position="-40">
+          <caret line="33" column="101" selection-start-line="33" selection-start-column="14" selection-end-line="33" selection-end-column="101" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="135" column="45" selection-start-line="135" selection-start-column="45" selection-end-line="135" selection-end-column="45" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-461">
+          <caret line="61" column="43" selection-start-line="61" selection-start-column="43" selection-end-line="61" selection-end-column="43" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#388#389#0" expanded="true" />
+            <element signature="e#415#416#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/localTest/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="833">
-          <caret line="81" column="13" lean-forward="true" selection-start-line="81" selection-start-column="13" selection-end-line="81" selection-end-column="13" />
+        <state relative-caret-position="150">
+          <caret line="109" column="4" selection-start-line="109" selection-start-column="4" selection-end-line="109" selection-end-column="51" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="class#AgentContainer#0" />
             <element signature="method#setEvent#0;class#AgentContainer#0" />
             <element signature="method#terminateEvent#0;class#AgentContainer#0" />
-            <element signature="method#broadcastToAgentList#0;class#TestAgent#0" />
+            <element signature="method#registerAgentsInNode#0;class#TestNode#0" />
             <element signature="method#setMessageTargetAgents#0;class#TestAgent#0" />
           </folding>
         </state>
@@ -741,53 +861,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="24" column="12" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="12" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1088">
-          <caret line="70" column="41" selection-start-line="70" selection-start-column="8" selection-end-line="70" selection-end-column="41" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="14" column="51" selection-start-line="14" selection-start-column="40" selection-end-line="14" selection-end-column="51" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#892#893#0" expanded="true" />
-            <element signature="e#924#925#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="31" column="65" selection-start-line="31" selection-start-column="65" selection-end-line="31" selection-end-column="65" />
-          <folding>
-            <element signature="e#3659#3660#0" expanded="true" />
-            <element signature="e#3682#3683#0" expanded="true" />
-            <element signature="e#4020#4021#0" expanded="true" />
-            <element signature="e#4046#4047#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1088">
-          <caret line="64" selection-start-line="64" selection-end-line="64" />
+        <state relative-caret-position="51">
+          <caret line="14" column="55" lean-forward="true" selection-start-line="14" selection-start-column="55" selection-end-line="14" selection-end-column="55" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -796,19 +871,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/MasterSlavePylon.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="66" selection-start-line="4" selection-start-column="66" selection-end-line="4" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberSimulation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="70" column="9" lean-forward="true" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+        <state relative-caret-position="204">
+          <caret line="12" selection-start-line="12" selection-end-line="12" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#388#389#0" expanded="true" />
-            <element signature="e#415#416#0" expanded="true" />
           </folding>
         </state>
       </provider>

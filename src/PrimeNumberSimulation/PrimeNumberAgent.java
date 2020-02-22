@@ -22,7 +22,7 @@ public class PrimeNumberAgent implements Agent{
         @Override
         public void postAgentEvent(AgentEvent event) {
             primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
-            System.out.println("Agent" + name + " " + primeNumbersCount);
+            //System.out.println("Agent" + name + " " + primeNumbersCount);
             //Trebuie sa ma asigur ca s-a terminat operatia
             //asta nue buna; in postAgentEvent din PrimeNumberAgent
             //ar trebui sa fac un semnal care sa avertizeze masterul
@@ -43,15 +43,20 @@ public class PrimeNumberAgent implements Agent{
 
     @Override
     public boolean start() {
-        while(isWaitng) {}
-        calculatorShard.findPrimeNumbersCount(primeNumbersLimit);
-
+        while(isWaitng) {
+            ;
+        }
         return true;
     }
 
     @Override
     public boolean stop() {
         return true;
+    }
+
+    @Override
+    public void run() {
+        calculatorShard.findPrimeNumbersCount(primeNumbersLimit);
     }
 
     @Override

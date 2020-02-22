@@ -184,6 +184,9 @@ class TestAgent implements Agent
 		return true;
 	}
 
+	@Override
+	public void run(){}
+
 	public boolean pause()
 	{
 		isAgentPaused = true;

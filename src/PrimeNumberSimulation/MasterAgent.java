@@ -18,7 +18,7 @@ public class MasterAgent implements Agent {
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-            System.out.println(event.get(ControlSlaveAgentsShard.SIMULATION_TIME));
+            System.out.println("Simulation time" + event.get(ControlSlaveAgentsShard.SIMULATION_TIME));
         }
 
         @Override
@@ -35,6 +35,11 @@ public class MasterAgent implements Agent {
     public boolean start() {
         controlShard.giveTasksToAgents(slaveAgents);
         return true;
+    }
+
+    @Override
+    public void run() {
+        controlShard.gatherAgentsResults(slaveAgents);
     }
 
     @Override

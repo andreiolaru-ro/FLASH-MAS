@@ -26,9 +26,14 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
     private static final int PRIME_NUMBERS_LIMIT = 50;
     public static final String SIMULATION_TIME = "Simulation time";
     private MasterSlavePylon pylon;
+    private static  int startedAgentsNumber;
+    private static long startTime;
+
 
     protected ControlSlaveAgentsShard() {
         super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+        startedAgentsNumber = 0;
+        startTime = 0;
     }
 
     @Override
@@ -40,27 +45,30 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
         return true;
     }
 
-    public void giveTasksToAgents(ArrayList<PrimeNumberAgent> slaveAgents){
+    public void giveTasksToAgents(ArrayList<PrimeNumberAgent> slaveAgents) {
 
-        int runningAgentsNumber = 0;
-        long startTime = System.nanoTime();
+        startedAgentsNumber = 0;
+        startTime = System.nanoTime();
         /* Make all agents find number of prime numbers to a certain limit */
-        for(PrimeNumberAgent agent : slaveAgents) {
+        for (PrimeNumberAgent agent : slaveAgents) {
             int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
             agent.setPrimeNumbersLimit(limit);
             agent.startProcessingPrimeNumbers();
-            runningAgentsNumber++;
+            startedAgentsNumber++;
         }
+    }
 
-        /* Gather agents' results */
-        //Trebuie sa ma asigur ca s-a terminat operatia
-        //asta nue buna; in postAgentEvent din PrimeNumberAgent
-        //ar trebui sa fac un semnal care sa avertizeze masterul
-        //ca s-a terminat un agent
-        while(runningAgentsNumber > 0){
+
+    /* Gather agents' results */
+    //Trebuie sa ma asigur ca s-a terminat operatia
+    //asta nue buna; in postAgentEvent din PrimeNumberAgent
+    //ar trebui sa fac un semnal care sa avertizeze masterul
+    //ca s-a terminat un agent
+    public void gatherAgentsResults(ArrayList<PrimeNumberAgent> slaveAgents) {
+        while(startedAgentsNumber > 0){
             for(PrimeNumberAgent agent : slaveAgents) {
                 if(agent.getPrimeNumbersCount() != 0){
-                    runningAgentsNumber--;
+                    startedAgentsNumber--;
                 }
             }
         }

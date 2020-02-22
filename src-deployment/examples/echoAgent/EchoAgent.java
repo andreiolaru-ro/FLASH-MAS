@@ -51,7 +51,12 @@ public class EchoAgent extends Unit implements Agent
 		isRunning = false;
 		return true;
 	}
-	
+
+	@Override
+	public void run() {
+
+	}
+
 	@Override
 	public boolean isRunning()
 	{

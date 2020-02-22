@@ -77,7 +77,12 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 		lf("[] stopped", name);
 		return true;
 	}
-	
+
+	@Override
+	public void run() {
+
+	}
+
 	@Override
 	public boolean isRunning()
 	{

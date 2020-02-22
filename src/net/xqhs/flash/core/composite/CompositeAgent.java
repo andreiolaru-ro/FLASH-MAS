@@ -296,7 +296,12 @@ public class CompositeAgent implements Serializable, Agent
 	{
 		return exit();
 	}
-	
+
+	@Override
+	public void run() {
+
+	}
+
 	/**
 	 * Instructs the agent to switch state between <code>STOPPED</code> and <code>TRANSIENT</code>.
 	 * 

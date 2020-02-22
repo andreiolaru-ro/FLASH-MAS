@@ -171,6 +171,9 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 		isRunning = false;
 		return true;
 	}
+
+	@Override
+	public void run() {}
 	
 	@Override
 	public boolean isRunning()
