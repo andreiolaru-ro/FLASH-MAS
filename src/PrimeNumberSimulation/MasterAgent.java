@@ -4,6 +4,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 
@@ -12,13 +13,13 @@ import java.util.ArrayList;
 public class MasterAgent implements Agent {
 
     private String name;
-    private ArrayList<PrimeNumberAgent> slaveAgents;
+    private int slaveAgentsCount;
     private ControlSlaveAgentsShard controlShard;
     private PylonProxy pylon;
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-            System.out.println("Simulation time" + event.get(ControlSlaveAgentsShard.SIMULATION_TIME));
+            System.out.println("Simulation time " + event.get(ControlSlaveAgentsShard.SIMULATION_TIME));
         }
 
         @Override
@@ -33,13 +34,13 @@ public class MasterAgent implements Agent {
 
     @Override
     public boolean start() {
-        controlShard.giveTasksToAgents(slaveAgents);
+        controlShard.giveTasksToAgents(slaveAgentsCount);
         return true;
     }
 
     @Override
     public void run() {
-        controlShard.gatherAgentsResults(slaveAgents);
+        controlShard.gatherAgentsResults();
     }
 
     @Override
@@ -83,8 +84,9 @@ public class MasterAgent implements Agent {
     }
 
 
-    public void setSlaveAgents(ArrayList<PrimeNumberAgent> slaveAgents) {
-        this.slaveAgents = slaveAgents;
+    public void setSlaveAgentsCount(int slaveAgentsCount)
+    {
+        this.slaveAgentsCount = slaveAgentsCount;
     }
 
     public boolean addControlSlaveAgentsShard(ControlSlaveAgentsShard shard) {

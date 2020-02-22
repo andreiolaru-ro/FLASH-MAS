@@ -22,7 +22,7 @@ public class PrimeNumberCalculatorShard extends AgentShardCore {
      * @param designation - the designation of the shard, as instance of {@link AgentShardDesignation.StandardAgentShard}.
      */
 
-    private MasterSlavePylon pylon;
+    private MasterSlavePylon.MasterPylonProxy pylon;
     public static final String PRIME_NUMBERS_COUNT = "prime numbers found";
 
     protected PrimeNumberCalculatorShard() {
@@ -55,9 +55,9 @@ public class PrimeNumberCalculatorShard extends AgentShardCore {
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        if(!(context instanceof MasterSlavePylon))
+        if(!(context instanceof MasterSlavePylon.MasterPylonProxy))
             throw new IllegalStateException("Pylon Context is not of expected type.");
-        pylon = (MasterSlavePylon) context;
+        pylon = (MasterSlavePylon.MasterPylonProxy) context;
         //pylon.register(getAgent().getEntityName(), inbox);
         return true;
     }

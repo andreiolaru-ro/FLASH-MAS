@@ -24,34 +24,6 @@ class PrimeNumbersNode extends Node
         }
     }
 
-    /*Astea ar trebui mutate in Node. Metoda porneste toate entitatile inregistrate
-     * intr-un nod. Pune task-urile agentilor intr-un thread pool.
-     * Nu prea stiu cum ar functiona asta daca ei asteapta mesaje de la alti agenti
-     * adormiti. POate doar daca ceva asteapta prea mult, sa intre in waiting.*/
-    /*@Override
-    public boolean start() {
-        ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
-        li("Starting node [].", name);
-        for(Entity<?> entity : entityOrder) {
-            if(!(entity instanceof Agent)) {
-                lf("starting an entity...");
-                if (entity.start())
-                    lf("entity started successfully.");
-                else
-                    le("failed to start entity.");
-            } else {
-                lf("starting an entity...");
-                Runnable agentTask = () -> entity.start();
-
-                pool.execute(agentTask);
-            }
-        }
-        li("Node [] started.", name);
-
-        pool.shutdown();
-        return true;
-    }*/
-
     @Override
     public void run() {
         ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
@@ -89,6 +61,7 @@ public class PrimeNumberSimulation {
         for(int i = 0; i < agentList.size(); i++) {
             agentList.get(i).addContext(pylon.asContext());
         }
+        pylon.setSlaveAgents(agentList);
     }
 
     public static void addPrimeNumberCalculatorShardToAgentList( ArrayList<PrimeNumberAgent> agentList) {
@@ -97,8 +70,6 @@ public class PrimeNumberSimulation {
             agentList.get(i).addPrimeNumbersCalculatorShard(new PrimeNumberCalculatorShard());
         }
     }
-
-
 
 
     public static void main(String[] args) {
@@ -110,21 +81,20 @@ public class PrimeNumberSimulation {
 
         /* Create slave agents */
         ArrayList<PrimeNumberAgent> agentList;
-        agentList = createAgentList(2000000);
+        agentList = createAgentList(250000);
         addContextToAgentList(pylon, agentList);
         addPrimeNumberCalculatorShardToAgentList(agentList);
 
         /* Create master agent */
         MasterAgent masterAgent = new MasterAgent("Master");
         masterAgent.addContext(pylon.asContext());
+        pylon.setMasterAgent(masterAgent);
         masterAgent.addControlSlaveAgentsShard(new ControlSlaveAgentsShard());
-        masterAgent.setSlaveAgents(agentList);
+        masterAgent.setSlaveAgentsCount(agentList.size());
 
 
         node.registerAgentsInNode(masterAgent, agentList);
 
-
-        //startAgents(agentList);
         node.start();
         node.run();
 
