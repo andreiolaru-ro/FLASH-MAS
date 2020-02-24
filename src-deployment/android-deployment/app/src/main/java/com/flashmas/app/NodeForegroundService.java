@@ -8,14 +8,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import com.flashmas.app.agents.TestAgent;
+
+import net.xqhs.flash.local.LocalSupport;
+
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 
 public class NodeForegroundService extends Service {
+    private LocalSupport pylon;
 
     @Nullable
     @Override
@@ -26,10 +32,38 @@ public class NodeForegroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        startForeground(Globals.NODE_FOREGROUND_ID,
-                buildForegroundNotification());
+        startForeground(Globals.NODE_FOREGROUND_ID, buildForegroundNotification());
+
+        startNode();
 
         return START_STICKY;
+    }
+
+    private void startNode() {
+        if (pylon == null) {
+            pylon = new LocalSupport();
+        } else {
+            return;
+        }
+
+        TestAgent one = new TestAgent("One");
+        one.addContext(pylon.asContext());
+        TestAgent two = new TestAgent("Two");
+        two.addContext(pylon.asContext());
+
+        one.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        two.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+
+        one.start();
+        two.start();
+        Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        pylon = null;
+        Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 
     private Notification buildForegroundNotification() {
