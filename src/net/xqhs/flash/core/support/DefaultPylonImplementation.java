@@ -45,10 +45,24 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	 * The name of this instance.
 	 */
 	protected String				name			= DEFAULT_NAME;
-	
+
+	/**
+	 * The default name of server address of this instance.
+	 */
+	public static final String  SERVER_ADDRESS = "SERVER_ADDRESS";
+
+	/**
+	 * The name of the server address.
+	 */
+
+	protected String                  serverAddressName;
+
+
 	@Override
 	public boolean configure(MultiTreeMap configuration)
 	{
+		if(configuration.isSingleton(SERVER_ADDRESS))
+			serverAddressName = configuration.getSingleValue(SERVER_ADDRESS);
 		if(configuration.isSimple("name"))
 			name = configuration.get("name");
 		return true;
@@ -157,5 +171,9 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	@SuppressWarnings("static-method")
 	public String extractAgentAddress(String endpoint) {
 		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
+	}
+
+	public String getServerAddressName() {
+		return serverAddressName;
 	}
 }

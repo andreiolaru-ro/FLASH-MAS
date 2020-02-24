@@ -133,8 +133,7 @@ public class LocalSupport extends DefaultPylonImplementation
 		@Override
 		public boolean sendMessage(String source, String destination, String content)
 		{
-			pylon.send(source, destination, content);
-			return true;
+			return pylon.send(source, destination, content);
 		}
 		
 		@Override
