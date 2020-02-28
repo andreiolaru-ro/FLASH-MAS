@@ -67,7 +67,7 @@ public class ServerPylon extends WebSocketServer {
 
     public static void main(String[] args) throws IOException {
         String pylonHost = "localhost";
-        int pylonPort = 8882;
+        int pylonPort = 8883;
         WebSocketServer pylonServer = new ServerPylon(new InetSocketAddress(pylonPort));
         pylonServer.run();
 
