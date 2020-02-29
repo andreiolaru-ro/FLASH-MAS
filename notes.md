@@ -16,15 +16,9 @@ Current targets
 	* remove default entities that are not useful 
 		* retain the ids of default created entities
 		* check if there is any entity in their context which is not default
-* adding contexts
-* get the composite agent loader out of the comments
 
 ### Deployment / loading
-* how to define packages (and, in general, simple values) in CLI input
 * document portability in CategoryName
-* deploy a composite agent
-	* what do about having support implementations when pre-loading shards
-		* it's ok, they are instanced, there's no need for the pylon to actually be started 
 * move deployment loading from NodeLoader to a new DeploymentLoader class?
 
 ### Communication
@@ -260,7 +254,7 @@ There are two types of categories: simple values and not-simple-values. This can
 	CLI arguments			 ::= scenario-file? category-description*
 	category-description	 ::= -category(:category-property)* element element_description |
 									-category(:category-property)* (val)*	[actually indistinguishable from the other case]
-	category-property		 ::= [^: ]			[no space or column]
+	category-property		 ::= [^: ]+			[no space or column]
 	element_description	 ::= (par:val | par)* category-description* [if just par, value will be null]
 	element					 ::= 		// basically anything, but interpreted as:
 								part1:part2		[depending on category, can mean loader:id or type:id category:type]

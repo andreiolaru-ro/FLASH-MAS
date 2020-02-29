@@ -204,7 +204,8 @@ public class CompositeAgentLoader implements Loader<Agent>
 					try
 					{
 						AgentShard shard = (AgentShard) classLoader.loadClassInstance(shardClass, null, true);
-						log.trace(logPre + "Shard [] created for agent []. now configuring.", shardName, agentName);
+						log.trace(logPre + "Shard [] created for agent [] from classpath []. now configuring.",
+								shardName, agentName, shardClass);
 						if(shard.configure(shardConfig))
 							log.trace(logPre + "Shard [] for agent [] configured.", shardName, agentName);
 						else
