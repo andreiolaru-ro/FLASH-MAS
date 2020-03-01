@@ -4,6 +4,7 @@ package PrimeNumberSimulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.local.LocalSupport;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -56,12 +57,11 @@ public class PrimeNumberSimulation {
         return agentList;
     }
 
-    public static void addContextToAgentList(MasterSlavePylon pylon, ArrayList<PrimeNumberAgent> agentList) {
+    public static void addContextToAgentList(LocalSupport pylon, ArrayList<PrimeNumberAgent> agentList) {
 
         for(int i = 0; i < agentList.size(); i++) {
             agentList.get(i).addContext(pylon.asContext());
         }
-        pylon.setSlaveAgents(agentList);
     }
 
     public static void addPrimeNumberCalculatorShardToAgentList( ArrayList<PrimeNumberAgent> agentList) {
@@ -71,12 +71,19 @@ public class PrimeNumberSimulation {
         }
     }
 
+    public static void addMessagingShardToAgentList( ArrayList<PrimeNumberAgent> agentList)
+    {
+        for(int i = 0; i < agentList.size(); i++)
+        {
+            agentList.get(i).addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        }
+    }
+
 
     public static void main(String[] args) {
 
         PrimeNumbersNode node = new PrimeNumbersNode("testNode");
-        MasterSlavePylon pylon = new MasterSlavePylon();
-
+        LocalSupport pylon = new LocalSupport();
 
 
         /* Create slave agents */
@@ -84,13 +91,15 @@ public class PrimeNumberSimulation {
         agentList = createAgentList(250000);
         addContextToAgentList(pylon, agentList);
         addPrimeNumberCalculatorShardToAgentList(agentList);
+        addMessagingShardToAgentList(agentList);
 
         /* Create master agent */
         MasterAgent masterAgent = new MasterAgent("Master");
         masterAgent.addContext(pylon.asContext());
-        pylon.setMasterAgent(masterAgent);
-        masterAgent.addControlSlaveAgentsShard(new ControlSlaveAgentsShard());
         masterAgent.setSlaveAgentsCount(agentList.size());
+        masterAgent.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        masterAgent.addControlSlaveAgentsShard(new ControlSlaveAgentsShard());
+
 
 
         node.registerAgentsInNode(masterAgent, agentList);

@@ -5,39 +5,57 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.support.*;
+import net.xqhs.flash.local.LocalSupport;
 
 public class PrimeNumberAgent implements Agent{
 
     private String name;
     private PrimeNumberCalculatorShard calculatorShard;
-    private PylonProxy pylon;
+    private AbstractMessagingShard messagingShard;
+    private MessagingPylonProxy pylon;
     private int primeNumbersCount;
     private boolean isWaitng;
     private int primeNumbersLimit;
-
-    private ShardContainer primeNumberProxy = new ShardContainer() {
+    public ShardContainer			primeNumberProxy	= new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event) {
-            primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
-            //System.out.println("Agent" + name + " " + primeNumbersCount);
-            //Trebuie sa ma asigur ca s-a terminat operatia
-            //asta nue buna; in postAgentEvent din PrimeNumberAgent
-            //ar trebui sa fac un semnal care sa avertizeze masterul
-            //ca s-a terminat un agent
+        public void postAgentEvent(AgentEvent event)
+        {
+            if(event.containsKey(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT)) {
+                primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
+                pylon.send( name, "Master", Integer.toString(primeNumbersCount));
+
+            } else {
+                /*System.out.println("SLAVE: " + event.getValue(
+                        AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
+                        + event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
+                        + " la " + event.getValue(
+                        AbstractMessagingShard.DESTINATION_PARAMETER));*/
+                primeNumbersLimit = Integer.parseInt(
+                        event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
+                isWaitng = false;
+            }
         }
 
         @Override
-        public String getEntityName() {
-            return null;
+        public String getEntityName()
+        {
+            return getName();
         }
+
     };
+
+    private AbstractMessagingShard getMessagingShard()
+    {
+        return this.messagingShard;
+    }
+
 
     public PrimeNumberAgent(String name)  {
         this.name = name;
         this.isWaitng = true;
+        this.primeNumbersCount = 0;
+        this.primeNumbersLimit = 0;
     }
 
 
@@ -71,9 +89,11 @@ public class PrimeNumberAgent implements Agent{
 
     @Override
     public boolean addContext(EntityProxy<Pylon> context) {
-        pylon = (PylonProxy) context;
+        pylon = (MessagingPylonProxy) context;
         if(calculatorShard != null)
             calculatorShard.addGeneralContext(pylon);
+        if(messagingShard != null)
+            messagingShard.addGeneralContext(pylon);
         return true;
     }
 
@@ -112,6 +132,15 @@ public class PrimeNumberAgent implements Agent{
 
     public int getPrimeNumbersCount(){
         return primeNumbersCount;
+    }
+
+    public boolean addMessagingShard(AbstractMessagingShard shard)
+    {
+        messagingShard = shard;
+        shard.addContext(primeNumberProxy);
+        if(pylon != null)
+            messagingShard.addGeneralContext(pylon);
+        return true;
     }
 
 }

@@ -4,6 +4,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.PylonProxy;
 
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
 
     private static final int PRIME_NUMBERS_LIMIT = 50;
     public static final String SIMULATION_TIME = "Simulation time";
-    private MasterSlavePylon.MasterPylonProxy pylon;
+    public static final String SIMULATION_START_TIME = "Simulation start time";
+    private MessagingPylonProxy pylon;
     private static  int startedAgentsNumber;
     private static long startTime;
 
@@ -39,45 +41,29 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        if(!(context instanceof MasterSlavePylon.MasterPylonProxy))
+        if(!(context instanceof MessagingPylonProxy))
             throw new IllegalStateException("Pylon Context is not of expected type.");
-        pylon = (MasterSlavePylon.MasterPylonProxy) context;
-        //pylon.register(getAgent().getEntityName(), inbox);
+        pylon = (MessagingPylonProxy) context;
         return true;
     }
 
     public void giveTasksToAgents(int slaveAgentsCount) {
-
-        ArrayList<Integer> limits = new ArrayList<>();
         startTime = System.nanoTime();
         /* Make all agents find number of prime numbers to a certain limit */
         for (int i = 0; i < slaveAgentsCount; i++)
         {
             int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
-            limits.add(limit);
-
+            pylon.send("Master", Integer.toString(i), Integer.toString(limit));
         }
 
-        startedAgentsNumber = pylon.signalSlaves(limits);
+        AgentEvent event  = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
+        event.add(SIMULATION_START_TIME, String.valueOf(startTime));
+        getAgent().postAgentEvent(event);
+
     }
 
 
-    /* Gather agents' results */
-    //Trebuie sa ma asigur ca s-a terminat operatia
-    //asta nue buna; in postAgentEvent din PrimeNumberAgent
-    //ar trebui sa fac un semnal care sa avertizeze masterul
-    //ca s-a terminat un agent
     public void gatherAgentsResults() {
-        if (pylon.retrieveInfoFromSlaves(startedAgentsNumber)) {
-            long elapsedTime = System.nanoTime() - startTime;
 
-            AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
-            event.add(SIMULATION_TIME, Long.toString(elapsedTime));
-            getAgent().postAgentEvent(event);
-        } else {
-            AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
-            event.add(SIMULATION_TIME,"Not all agents had finished successfully");
-            getAgent().postAgentEvent(event);
-        }
     }
 }
