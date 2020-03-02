@@ -22,7 +22,7 @@ package net.xqhs.flash.core.support;
  * 
  * @author Andrei Olaru
  */
-public abstract class NameBasedMessagingShard extends AbstractMessagingShard
+public abstract class AbstractNameBasedMessagingShard extends AbstractMessagingShard
 {
 	/**
 	 * The serial UID.

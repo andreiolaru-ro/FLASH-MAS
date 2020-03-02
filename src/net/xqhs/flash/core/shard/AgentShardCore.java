@@ -288,22 +288,10 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		return parentAgent;
 	}
 	
-	/**
-	 * Relay for {@link ShardContainer#getAgentShard(AgentShardDesignation)}.
-	 * 
-	 * @param designation
-	 *            - the designation of the desired {@link AgentShard}.
-	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
-	 */
-	final protected AgentShard getAgentShard(AgentShardDesignation designation)
-	{
-		return parentAgent.getAgentShard(designation);
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<AgentShard> asContext()
 	{
-		throw new UnsupportedOperationException("THe AgentSharCore cannot be a context of another entity.");
+		throw new UnsupportedOperationException("The AgentSharCore cannot be a context of another entity.");
 	}
 }

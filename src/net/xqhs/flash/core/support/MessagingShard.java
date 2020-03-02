@@ -11,10 +11,57 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
 
-public interface MessagingShard extends Entity<Agent>
+/**
+ * Interface for any shard offering messaging functionality to an entity.
+ * <p>
+ * A <i>message</i> is a type of <i>wave</i> (implemented through {@link AgentWave}, generally considered to convey
+ * information between entities which <i>may execute</i> on different nodes or are more loosely coupled (e.g. agents, or
+ * agents and artifacts), as opposed to entities which are always found on the same node and are more tightly coupled
+ * (e.g. shards inside the same agent).
+ * 
+ * 
+ * 
+ * @author Andrei Olaru
+ */
+public interface MessagingShard extends AgentShard
 {
-	// TODO
+	/**
+	 * Sends a message to another agent, according to the specific implementation.
+	 * 
+	 * @param target
+	 *                    - the target (complete) endpoint of the message.
+	 * @param source
+	 *                    - the source (internal) endpoint of the message.
+	 * @param content
+	 *                    - the content of the message.
+	 * @return <code>true</code> if the message was sent successfully.
+	 */
+	public boolean sendMessage(String target, String source, String content);
+	
+	/**
+	 * The method creates a complete path by attaching the specified elements and placing slashes between them.
+	 * <p>
+	 * E.g. it produces targetAgent/element1/element2/element3
+	 * 
+	 * @param targetAgent
+	 *                             - the name of the searched agent.
+	 * @param internalElements
+	 *                             - the elements in the internal path.
+	 * @return the complete path/address.
+	 */
+	public String makePath(String targetAgent, String... internalElements);
+	
+	/**
+	 * The method creates a complete path by attaching the specified elements to the address of this agent.
+	 * <p>
+	 * E.g. it produces thisAgent/element1/element2/element3
+	 * 
+	 * @param elements
+	 *                     - the elements in the path.
+	 * @return the complete path/address.
+	 */
+	public String makeLocalPath(String... elements);
 }

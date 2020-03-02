@@ -41,17 +41,18 @@ public class MonitoringTestShard extends AgentShardCore
 	 */
 	public MonitoringTestShard()
 	{
-		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(DeploymentTest.MONITORING));
 	}
 	
 	@Override
-	public void signalAgentEvent(AgentEvent event) {
+	public void signalAgentEvent(AgentEvent event)
+	{
 		super.signalAgentEvent(event);
 		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
 		locallog.li(eventMessage);
-//		if (getAgentLog() != null)
-//			getAgentLog().info(eventMessage);
-		if (event.getType() == AgentEventType.AGENT_STOP)
+		// if (getAgentLog() != null)
+		// getAgentLog().info(eventMessage);
+		if(event.getType() == AgentEventType.AGENT_STOP)
 			locallog.doExit();
 	}
 	

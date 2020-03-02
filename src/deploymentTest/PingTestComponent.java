@@ -15,10 +15,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -29,7 +28,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentShardCore
+public class PingTestComponent extends AgentShardGeneral
 {
 	/**
 	 * The instance sends a message to the "other agent".
@@ -48,7 +47,7 @@ public class PingTestComponent extends AgentShardCore
 		{
 			tick++;
 			
-			sendMessage("ping no " + tick, thisAgent, getShardData().getFirstValue(OTHER_AGENT_PARAMETER_NAME));
+			sendMessage("ping no " + tick);
 		}
 		
 	}
@@ -104,10 +103,17 @@ public class PingTestComponent extends AgentShardCore
 	public void signalAgentEvent(AgentEvent event)
 	{
 		super.signalAgentEvent(event);
-		if(event.getType() == AgentEventType.AGENT_START)
+		switch(event.getType())
+		{
+		case AGENT_START:
 			pingTimer = new Timer();
-		if(event.getType() == AgentEventType.SIMULATION_START)
+			break;
+		case SIMULATION_START:
 			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
+			break;
+		default:
+			break;
+		}
 	}
 	
 	@Override
@@ -120,11 +126,13 @@ public class PingTestComponent extends AgentShardCore
 	
 	/**
 	 * Relays.
+	 * 
+	 * @param content
+	 * @return a success indication.
 	 */
-	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
-			String... targetPathElements)
+	protected boolean sendMessage(String content)
 	{
-		return super.sendMessage(content, sourceEndpoint, targetAgent, targetPathElements);
+		return sendMessage(content, null, otherAgent);
 	}
 	
 	@Override

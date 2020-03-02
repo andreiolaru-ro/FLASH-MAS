@@ -9,15 +9,14 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package examples.composite;
+package deploymentTest;
 
 import java.util.List;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventHandler;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.logging.Logger;
@@ -30,7 +29,7 @@ import net.xqhs.util.logging.Logger;
  * 
  * @author Andrei Olaru
  */
-public class PingBackTestComponent extends AgentShardCore
+public class PingBackTestComponent extends AgentShardGeneral
 {
 	/**
 	 * The UID.
@@ -49,10 +48,6 @@ public class PingBackTestComponent extends AgentShardCore
 	 */
 	protected static final String	COMPONENT_ADDRESS			= "pingback";
 	/**
-	 * Cache for the name of this agent.
-	 */
-	String							thisAgent					= null;
-	/**
 	 * Cache for the name of the other agent.
 	 */
 	List<String>					otherAgents					= null;
@@ -62,7 +57,7 @@ public class PingBackTestComponent extends AgentShardCore
 	 */
 	public PingBackTestComponent()
 	{
-		super(AgentComponentName.TESTING_COMPONENT);
+		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
 	}
 	
 	@Override
@@ -76,32 +71,22 @@ public class PingBackTestComponent extends AgentShardCore
 	}
 	
 	@Override
-	protected void parentChangeNotifier(CompositeAgent oldParent)
+	public void signalAgentEvent(AgentEvent event)
 	{
-		super.parentChangeNotifier(oldParent);
-		
-		if(getParent() != null)
+		super.signalAgentEvent(event);
+		switch(event.getType())
 		{
-			thisAgent = getAgentName();
+		case AGENT_WAVE:
+			if(event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER))
+			getAgentLog().info("Message received: ", event);
+			String[] content = event.get(AbstractMessagingShard.CONTENT_PARAMETER).split(" ");
+			String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
+			String sender = event.get(AbstractMessagingShard.SOURCE_PARAMETER);
+			sendMessage(replyContent, getComponentEndpoint(COMPONENT_ADDRESS), sender);
+			break;
+		default:
+			break;
 		}
-	}
-	
-	@Override
-	protected void atAgentStart(AgentEvent startEvent)
-	{
-		super.atAgentStart(startEvent);
-		
-		registerMessageReceiver(new AgentEventHandler() {
-			@Override
-			public void handleEvent(AgentEvent event)
-			{
-				getAgentLog().info("Message received: ", event);
-				String[] content = event.get(AbstractMessagingShard.CONTENT_PARAMETER).split(" ");
-				String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
-				String sender = event.get(AbstractMessagingShard.SOURCE_PARAMETER);
-				sendMessage(replyContent, getComponentEndpoint(COMPONENT_ADDRESS), sender);
-			}
-		}, COMPONENT_ADDRESS);
 	}
 	
 	@Override
