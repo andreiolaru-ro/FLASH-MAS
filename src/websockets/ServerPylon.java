@@ -1,4 +1,4 @@
-package websocketsTest;
+package websockets;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -9,10 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.HashMap;
 
 public class ServerPylon extends WebSocketServer {
+    /**
+     * Keep all incoming connected clients for future connections.
+     */
     private HashMap<String, WebSocket> nameConnections = new HashMap<String, WebSocket>();
 
     public ServerPylon(InetSocketAddress address) {
@@ -23,29 +25,29 @@ public class ServerPylon extends WebSocketServer {
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         /*
          * This method sends a message to the new client.
-         * TODO: Check how the client is found in the route table in this framework.
          */
-        webSocket.send("[from server] : Welcome to the ServerPylon!");
+        webSocket.send("[ ServerPylon ] : Welcome to the ServerPylon!");
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-        broadcast(webSocket +  " has left the room");
+        broadcast("[ ServerPylon ]" + webSocket +  " has left the room");
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
+        /* The name of a new agent was send. */
         String[] namePayload = s.split("=");
         if (namePayload.length == 2)
             nameConnections.put(namePayload[1], webSocket);
         else
+            /* The message was sent: source@destination@message */
         {
-            String[] messagePayload = s.split("/");
-            if(messagePayload.length != 0) {
+            String[] messagePayload = s.split("@");
+            if(messagePayload.length == 3) {
                 String destination = messagePayload[1];
-                String message = messagePayload[2];
                 WebSocket destinationWebSocket = nameConnections.get(destination);
-                destinationWebSocket.send(message);
+                destinationWebSocket.send(s);
             }
         }
     }
@@ -66,8 +68,7 @@ public class ServerPylon extends WebSocketServer {
     }
 
     public static void main(String[] args) throws IOException {
-        String pylonHost = "localhost";
-        int pylonPort = 8883;
+        int pylonPort = 8886;
         WebSocketServer pylonServer = new ServerPylon(new InetSocketAddress(pylonPort));
         pylonServer.run();
 
