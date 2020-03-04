@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
@@ -20,14 +22,15 @@ import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 
 public class NodeForegroundService extends Service {
     private static boolean running = false;
+    private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
 
     @Nullable
     @Override
@@ -46,7 +49,6 @@ public class NodeForegroundService extends Service {
     }
 
     private void startNode() {
-
         if (running) {
             return;
         }
@@ -64,13 +66,13 @@ public class NodeForegroundService extends Service {
 
         List<Node> nodes = nodeLoader.loadDeployment(Arrays.asList(test_args.split(" ")));
 
-        List<Agent> agents = new ArrayList<>();
+        List<Agent> agents = new LinkedList<>();
         for(Node node : nodes) {
             node.start();
             agents.addAll(node.getAgents());
         }
 
-
+        agentData.postValue(agents);
 
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
@@ -80,6 +82,9 @@ public class NodeForegroundService extends Service {
         super.onDestroy();
 
         running = false;
+        // Mark agents list as null
+        agentData.postValue(null);
+
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 
@@ -110,5 +115,13 @@ public class NodeForegroundService extends Service {
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         notificationManager.createNotificationChannel(channel);
         return Globals.NODE_NOTIF_CHANNEL_ID;
+    }
+
+    public static LiveData<List<Agent>> getAgentsLiveData() {
+        return agentData;
+    }
+
+    public static boolean isRunning() {
+        return running;
     }
 }
