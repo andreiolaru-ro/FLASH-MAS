@@ -129,9 +129,9 @@ class TestAgent implements Agent
 																										getMessagingShard()
 																												.sendMessage(
 																														event.getValue(
-																																AbstractMessagingShard.DESTINATION_PARAMETER),
-																														event.getValue(
 																																AbstractMessagingShard.SOURCE_PARAMETER),
+																														event.getValue(
+																																AbstractMessagingShard.DESTINATION_PARAMETER),
 																														Integer.toString(
 																																message + 1));
 																										//System.out.println(name + " " + this.getId() +" thread");
@@ -254,7 +254,8 @@ class TestAgent implements Agent
 		{
 			if (i != Integer.parseInt(this.getName()))
 			{
-				messagingShard.sendMessage(this.getName(), agentList.get(i).name, "1");
+				//messagingShard.sendMessage(this.getName(), agentList.get(i).name, "1");
+				messagingShard.sendMessage(agentList.get(i).getName(), this.getName(), "1");
 			}
 
 		}
@@ -341,7 +342,7 @@ public class Main
 		LocalSupport pylon = new LocalSupport();
 
 		ArrayList<TestAgent> agentList;
-		agentList = createAgentList(10);
+		agentList = createAgentList(3);
 		addContextToAgentList(pylon, agentList);
 		addMessagingShardToAgentList(agentList);
 
