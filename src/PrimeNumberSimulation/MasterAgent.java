@@ -16,24 +16,34 @@ public class MasterAgent implements Agent {
     private AbstractMessagingShard  messagingShard;
     private MessagingPylonProxy pylon;
     private static long startTime;
+    private ArrayList<Integer> limits = new ArrayList<>();
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
 
             if(event.containsKey(ControlSlaveAgentsShard.SIMULATION_START_TIME)) {
                 startTime = Long.parseLong(event.get(ControlSlaveAgentsShard.SIMULATION_START_TIME));
-            } else {
-                /*System.out.println(event.getValue(
-                        AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
-                        + event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
-                        + " la " + event.getValue(
-                        AbstractMessagingShard.DESTINATION_PARAMETER));*/
-                decrement();
-                if(slaveAgentsCount == 0) {
-                    long elapsedTime = System.nanoTime() - startTime;
-                    System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
-                }
+                return;
             }
+
+            if(event.containsKey(ControlSlaveAgentsShard.LIMIT)) {
+                int limit = Integer.parseInt(event.get(ControlSlaveAgentsShard.LIMIT));
+                limits.add(limit);
+
+                if(limits.size() == slaveAgentsCount) {
+                    for(int i = 0; i < limits.size(); i++) {
+                        getMessagingShard().sendMessage(Integer.toString(i),"Master", Integer.toString(limits.get(i)));
+                    }
+                }
+                return;
+            }
+
+            decrement();
+            if(slaveAgentsCount == 0) {
+                long elapsedTime = System.nanoTime() - startTime;
+                System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
+            }
+
 
         }
 
@@ -49,6 +59,11 @@ public class MasterAgent implements Agent {
 
     public MasterAgent(String name) {
         this.name = name;
+    }
+
+    private AbstractMessagingShard getMessagingShard()
+    {
+        return this.messagingShard;
     }
 
     @Override

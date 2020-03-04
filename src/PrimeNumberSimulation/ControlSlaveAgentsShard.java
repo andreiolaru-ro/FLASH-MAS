@@ -28,6 +28,7 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
     private static final int PRIME_NUMBERS_LIMIT = 50;
     public static final String SIMULATION_TIME = "Simulation time";
     public static final String SIMULATION_START_TIME = "Simulation start time";
+    public static final String LIMIT = "Limit";
     private MessagingPylonProxy pylon;
     private static  int startedAgentsNumber;
     private static long startTime;
@@ -49,16 +50,21 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
 
     public void giveTasksToAgents(int slaveAgentsCount) {
         startTime = System.nanoTime();
-        /* Make all agents find number of prime numbers to a certain limit */
-        for (int i = 0; i < slaveAgentsCount; i++)
-        {
-            int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
-            pylon.send("Master", Integer.toString(i), Integer.toString(limit));
-        }
 
         AgentEvent event  = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
         event.add(SIMULATION_START_TIME, String.valueOf(startTime));
         getAgent().postAgentEvent(event);
+        /* Make all agents find number of prime numbers to a certain limit */
+        for (int i = 0; i < slaveAgentsCount; i++)
+        {
+            int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
+
+            AgentEvent event2  = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
+            event2.add(LIMIT, String.valueOf(limit));
+            getAgent().postAgentEvent(event2);
+        }
+
+
 
     }
 

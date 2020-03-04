@@ -23,7 +23,8 @@ public class PrimeNumberAgent implements Agent{
         {
             if(event.containsKey(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT)) {
                 primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
-                pylon.send( name, "Master", Integer.toString(primeNumbersCount));
+                getMessagingShard().sendMessage(  "Master", name,    Integer.toString(primeNumbersCount));
+
 
             } else {
                 /*System.out.println("SLAVE: " + event.getValue(

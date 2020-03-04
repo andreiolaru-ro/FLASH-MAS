@@ -51,7 +51,7 @@ public class PrimeNumberSimulation {
     public static ArrayList<PrimeNumberAgent> createAgentList(int agentCount) {
         ArrayList<PrimeNumberAgent> agentList = new ArrayList<>();
         for(int i = 0; i < agentCount; i++) {
-            agentList.add(new PrimeNumberAgent(String.valueOf(i)));
+            agentList.add(new PrimeNumberAgent(Integer.toString(i)));
         }
 
         return agentList;
@@ -88,7 +88,7 @@ public class PrimeNumberSimulation {
 
         /* Create slave agents */
         ArrayList<PrimeNumberAgent> agentList;
-        agentList = createAgentList(250000);
+        agentList = createAgentList(1000000);
         addContextToAgentList(pylon, agentList);
         addPrimeNumberCalculatorShardToAgentList(agentList);
         addMessagingShardToAgentList(agentList);
