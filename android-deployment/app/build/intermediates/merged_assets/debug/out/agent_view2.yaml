@@ -1,0 +1,22 @@
+node:
+  children:
+    - type: form
+      port: messageSend
+      role: content
+    - type: form
+      port: messageSend
+      role: target
+    - type: button
+      port: messageSend
+      role: activate
+      text: "Send"
+    - type: label
+      port: messageSend
+      role: logging
+    - type: label
+      port: sensors
+      role: label
+      text: "Gyro value is: "
+    - type: label
+      port: sensors
+      role: output

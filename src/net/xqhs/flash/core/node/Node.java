@@ -43,6 +43,7 @@ import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.shadowProtocol.MessageFactory;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -369,6 +370,20 @@ public class Node extends Unit implements Entity<Node> {
 			agent.addContext(nodePylonProxy);
 			agent.start();
 		}
+	}
+
+	public List<Entity<?>> getEntities() {
+		return entityOrder;
+	}
+	public List<Agent> getAgents() {
+		LinkedList<Agent> agents = new LinkedList<>();
+		for (Entity<?> e : entityOrder) {
+			if (e instanceof Agent) {
+				agents.add((Agent) e);
+			}
+		}
+
+		return agents;
 	}
 	
 	/**

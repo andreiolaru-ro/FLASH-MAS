@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="colorAccent">#F8E11B</color>
+    <color name="colorPrimary">#b0bec5</color>
+    <color name="colorPrimaryDark">#808e95</color>
+    <color name="colorPrimaryLight">#e2f1f8</color>
+    <color name="white">#ffffff</color>
+    <dimen name="fab_margins">24dp</dimen>
+    <dimen name="main_fab_diameter">56dp</dimen>
+    <dimen name="secondary_fab_diameter">40dp</dimen>
+    <string name="add_agent">Add Agent</string>
+    <string name="app_name">FlashMAS App</string>
+    <string name="start_node_button">Start Node</string>
+    <string name="stop_node_button">Stop Node</string>
+    <style name="FlashMaterialTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+</resources>

@@ -1,0 +1,31 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.flashmas.lib"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+8-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml
+9        android:targetSdkVersion="29" />
+9-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml
+10
+11    <!-- Network permissions needed for communication -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:5:5-67
+12-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:5:22-64
+13    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+13-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:6:5-79
+13-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:6:22-76
+14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+14-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:7:5-77
+14-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:7:22-74
+15
+16    <application>
+16-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:9:5-11:19
+17        <service android:name="com.flashmas.lib.NodeForegroundService" />
+17-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:10:9-74
+17-->/Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/src/main/AndroidManifest.xml:10:18-71
+18    </application>
+19
+20</manifest>

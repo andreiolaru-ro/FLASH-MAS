@@ -1,0 +1,226 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+MERGED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:2:1-20:12
+MERGED from [androidx.navigation:navigation-ui:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/23b8c134f87535b80ad37ff2db4d412b/navigation-ui-2.2.2/AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.android.material:material:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/798f04b27bf0b3a46a01eefc093d9812/material-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.appcompat:appcompat:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/86247e895b7fa570724c32bb8239cb53/appcompat-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee5fea0c82e2ab5528dc96ff762f2fab/constraintlayout-1.1.3/AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a0e6092de3db6971bb451f0d70621733/legacy-support-v4-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4dcbb752d6f71bce1917ae91c51e188c/viewpager2-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/bbf5eafc5d3de49b24961e59f738eeab/recyclerview-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.navigation:navigation-fragment:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c83cdf166babb300d6b399779db1ee13/navigation-fragment-2.2.2/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/84e25643c651ef6be271e04d566a1540/appcompat-resources-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/8f64d013cba647d2e0f534324f4f9d05/legacy-support-core-ui-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/cc6925b101d58a6985d387eac099fce3/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/98282308ceec40808798e04d52aa32dd/coordinatorlayout-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.transition:transition:1.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/eb1d61a2eebf21337753df466edf46d2/transition-1.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/20d81f356611b094b5fe3b18b85d4007/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a71a279d0581cfd4a8b40dbba76ef075/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media:media:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b785e03d52f03066f797de2dc650f2d6/media-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d8e6aec40d35b97e4fa37c8d8f9b48e2/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.fragment:fragment:1.2.4] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/82f73367d125ac12b6ebbe4ca77feae8/fragment-1.2.4/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a2ab35174d15f91d5dbdd231ef43dd24/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c7a12394d849ce33e5dde3ec03bd4d92/slidingpanelayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/863ef48c5291f516db943cf2d056d872/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.loader:loader:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4d301960d8e2d1b9187735d78e7e9cca/loader-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c12657ab55dd0489f04f071b79d48f7c/swiperefreshlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/660a56a982cdedfa954f5649ffde1fb7/asynclayoutinflater-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-runtime:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee7ab3e99d1baffa297fcee504c2763e/navigation-runtime-2.2.2/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.activity:activity:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/f11bc99b79195314543df173e964fe69/activity-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.navigation:navigation-common:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c54533a8fe785228ac5164581248126b/navigation-common-2.2.2/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:17:1-26:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d46fbc9ed488996e0db6707bc2c67501/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/201327207ed64f3d9a056f9cf9a9aae8/cardview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b87dd6c14e87a26e611976a42126b21a/versionedparcelable-1.1.0/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/73cf96dfa6dba64e93de1a1f7460af2b/documentfile-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/08a690f2e5d70e1af0673e325f7a2fb6/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/fce8c5337cf78572aef0730ce17f0407/print-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b89bd857944ea896d1b16d47ee5ccfac/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/375ed533ca1c1deb7c7b243aac414157/lifecycle-viewmodel-savedstate-2.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/437cd2a9779c75a930d6ecca5c8e188c/lifecycle-viewmodel-2.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.savedstate:savedstate:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/5ea3d653f0226b1e513d1fdf62b85e7b/savedstate-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/55c9064b933a9f8addecab7306734556/lifecycle-runtime-2.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/7a08bdc208985a236c7eb4a03051d359/lifecycle-livedata-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/0ec00c5e80adb6ec1e2eb195febeafed/lifecycle-livedata-core-2.2.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4c66066fde72722e509c994d3522bcba/core-runtime-2.1.0/AndroidManifest.xml:17:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+	package
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:4:5-31
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:1-24:12
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:6:5-22:19
+MERGED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:16:5-18:19
+MERGED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:16:5-18:19
+MERGED from [com.google.android.material:material:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/798f04b27bf0b3a46a01eefc093d9812/material-1.1.0/AndroidManifest.xml:22:5-20
+MERGED from [com.google.android.material:material:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/798f04b27bf0b3a46a01eefc093d9812/material-1.1.0/AndroidManifest.xml:22:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee5fea0c82e2ab5528dc96ff762f2fab/constraintlayout-1.1.3/AndroidManifest.xml:9:5-20
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee5fea0c82e2ab5528dc96ff762f2fab/constraintlayout-1.1.3/AndroidManifest.xml:9:5-20
+MERGED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:24:5-89
+MERGED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:24:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b87dd6c14e87a26e611976a42126b21a/versionedparcelable-1.1.0/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b87dd6c14e87a26e611976a42126b21a/versionedparcelable-1.1.0/AndroidManifest.xml:24:5-25:19
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:24:18-86
+	android:supportsRtl
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:11:9-35
+	android:label
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:10:9-41
+	tools:ignore
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:13:9-48
+	android:icon
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:9:9-43
+	android:allowBackup
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:8:9-35
+	android:theme
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:12:9-50
+	android:name
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:7:9-57
+activity#com.flashmas.app.MainActivity
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:15:9-21:20
+	android:name
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:15:19-47
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:16:13-20:29
+action#android.intent.action.MAIN
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:17:17-69
+	android:name
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:17:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:19:17-77
+	android:name
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml:19:27-74
+uses-sdk
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+MERGED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:7:5-9:41
+MERGED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:7:5-9:41
+MERGED from [androidx.navigation:navigation-ui:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/23b8c134f87535b80ad37ff2db4d412b/navigation-ui-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-ui:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/23b8c134f87535b80ad37ff2db4d412b/navigation-ui-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.material:material:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/798f04b27bf0b3a46a01eefc093d9812/material-1.1.0/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.material:material:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/798f04b27bf0b3a46a01eefc093d9812/material-1.1.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/86247e895b7fa570724c32bb8239cb53/appcompat-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/86247e895b7fa570724c32bb8239cb53/appcompat-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee5fea0c82e2ab5528dc96ff762f2fab/constraintlayout-1.1.3/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.constraintlayout:constraintlayout:1.1.3] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee5fea0c82e2ab5528dc96ff762f2fab/constraintlayout-1.1.3/AndroidManifest.xml:5:5-7:41
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a0e6092de3db6971bb451f0d70621733/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a0e6092de3db6971bb451f0d70621733/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4dcbb752d6f71bce1917ae91c51e188c/viewpager2-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager2:viewpager2:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4dcbb752d6f71bce1917ae91c51e188c/viewpager2-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/bbf5eafc5d3de49b24961e59f738eeab/recyclerview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/bbf5eafc5d3de49b24961e59f738eeab/recyclerview-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-fragment:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c83cdf166babb300d6b399779db1ee13/navigation-fragment-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-fragment:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c83cdf166babb300d6b399779db1ee13/navigation-fragment-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/84e25643c651ef6be271e04d566a1540/appcompat-resources-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/84e25643c651ef6be271e04d566a1540/appcompat-resources-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/8f64d013cba647d2e0f534324f4f9d05/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/8f64d013cba647d2e0f534324f4f9d05/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/cc6925b101d58a6985d387eac099fce3/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/cc6925b101d58a6985d387eac099fce3/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/98282308ceec40808798e04d52aa32dd/coordinatorlayout-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/98282308ceec40808798e04d52aa32dd/coordinatorlayout-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/eb1d61a2eebf21337753df466edf46d2/transition-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.transition:transition:1.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/eb1d61a2eebf21337753df466edf46d2/transition-1.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/20d81f356611b094b5fe3b18b85d4007/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/20d81f356611b094b5fe3b18b85d4007/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a71a279d0581cfd4a8b40dbba76ef075/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a71a279d0581cfd4a8b40dbba76ef075/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.media:media:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b785e03d52f03066f797de2dc650f2d6/media-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b785e03d52f03066f797de2dc650f2d6/media-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d8e6aec40d35b97e4fa37c8d8f9b48e2/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d8e6aec40d35b97e4fa37c8d8f9b48e2/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.2.4] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/82f73367d125ac12b6ebbe4ca77feae8/fragment-1.2.4/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.2.4] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/82f73367d125ac12b6ebbe4ca77feae8/fragment-1.2.4/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a2ab35174d15f91d5dbdd231ef43dd24/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/a2ab35174d15f91d5dbdd231ef43dd24/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c7a12394d849ce33e5dde3ec03bd4d92/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c7a12394d849ce33e5dde3ec03bd4d92/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/863ef48c5291f516db943cf2d056d872/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/863ef48c5291f516db943cf2d056d872/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4d301960d8e2d1b9187735d78e7e9cca/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4d301960d8e2d1b9187735d78e7e9cca/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c12657ab55dd0489f04f071b79d48f7c/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c12657ab55dd0489f04f071b79d48f7c/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/660a56a982cdedfa954f5649ffde1fb7/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/660a56a982cdedfa954f5649ffde1fb7/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee7ab3e99d1baffa297fcee504c2763e/navigation-runtime-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-runtime:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/ee7ab3e99d1baffa297fcee504c2763e/navigation-runtime-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/f11bc99b79195314543df173e964fe69/activity-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.activity:activity:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/f11bc99b79195314543df173e964fe69/activity-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-common:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c54533a8fe785228ac5164581248126b/navigation-common-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.navigation:navigation-common:2.2.2] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/c54533a8fe785228ac5164581248126b/navigation-common-2.2.2/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/65dd35f103f68a57c41d59facf99df05/core-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d46fbc9ed488996e0db6707bc2c67501/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/d46fbc9ed488996e0db6707bc2c67501/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/201327207ed64f3d9a056f9cf9a9aae8/cardview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cardview:cardview:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/201327207ed64f3d9a056f9cf9a9aae8/cardview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b87dd6c14e87a26e611976a42126b21a/versionedparcelable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b87dd6c14e87a26e611976a42126b21a/versionedparcelable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/73cf96dfa6dba64e93de1a1f7460af2b/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/73cf96dfa6dba64e93de1a1f7460af2b/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/08a690f2e5d70e1af0673e325f7a2fb6/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/08a690f2e5d70e1af0673e325f7a2fb6/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/fce8c5337cf78572aef0730ce17f0407/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/fce8c5337cf78572aef0730ce17f0407/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b89bd857944ea896d1b16d47ee5ccfac/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/b89bd857944ea896d1b16d47ee5ccfac/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/375ed533ca1c1deb7c7b243aac414157/lifecycle-viewmodel-savedstate-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/375ed533ca1c1deb7c7b243aac414157/lifecycle-viewmodel-savedstate-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/437cd2a9779c75a930d6ecca5c8e188c/lifecycle-viewmodel-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/437cd2a9779c75a930d6ecca5c8e188c/lifecycle-viewmodel-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.savedstate:savedstate:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/5ea3d653f0226b1e513d1fdf62b85e7b/savedstate-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.savedstate:savedstate:1.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/5ea3d653f0226b1e513d1fdf62b85e7b/savedstate-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/55c9064b933a9f8addecab7306734556/lifecycle-runtime-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/55c9064b933a9f8addecab7306734556/lifecycle-runtime-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/7a08bdc208985a236c7eb4a03051d359/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/7a08bdc208985a236c7eb4a03051d359/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/0ec00c5e80adb6ec1e2eb195febeafed/lifecycle-livedata-core-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.2.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/0ec00c5e80adb6ec1e2eb195febeafed/lifecycle-livedata-core-2.2.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4c66066fde72722e509c994d3522bcba/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.1.0] /Users/iogancea/Desktop/FLASH-MAS/android-deployment/.gradle/caches/transforms-2/files-2.1/4c66066fde72722e509c994d3522bcba/core-runtime-2.1.0/AndroidManifest.xml:20:5-22:41
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		ADDED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.INTERNET
+ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:12:5-67
+	android:name
+		ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:12:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:13:5-79
+	android:name
+		ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:13:22-76
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:14:5-77
+	android:name
+		ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:14:22-74
+service#com.flashmas.lib.NodeForegroundService
+ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:17:9-74
+	android:name
+		ADDED from [:flash] /Users/iogancea/research/working_code/FLASH-MAS/android-deployment/flash/build/intermediates/library_manifest/debug/AndroidManifest.xml:17:18-71
