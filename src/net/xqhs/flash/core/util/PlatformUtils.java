@@ -69,6 +69,9 @@ public class PlatformUtils
 	 */
 	public static LoggerType platformLogType()
 	{
+		if (getPlatform() == Platform.ANDROID) {
+			return LoggerType.JAVA;
+		}
 		return LoggerType.CONSOLE;
 	}
 	

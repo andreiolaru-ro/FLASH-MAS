@@ -14,14 +14,20 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.flashmas.app.agents.TestAgent;
+import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.NodeLoader;
+import net.xqhs.util.logging.LoggerSimple;
+import net.xqhs.util.logging.logging.Logging;
 
-import net.xqhs.flash.local.LocalSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 
 public class NodeForegroundService extends Service {
-    private LocalSupport pylon;
+    private static boolean running = false;
 
     @Nullable
     @Override
@@ -40,29 +46,40 @@ public class NodeForegroundService extends Service {
     }
 
     private void startNode() {
-        if (pylon == null) {
-            pylon = new LocalSupport();
-        } else {
+
+        if (running) {
             return;
         }
 
-        TestAgent one = new TestAgent("One");
-        one.addContext(pylon.asContext());
-        TestAgent two = new TestAgent("Two");
-        two.addContext(pylon.asContext());
+        running = true;
 
-        one.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
-        two.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        String test_args = "";
+        test_args += " -package deploymentTest -loader agent:composite";
+        test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
+        test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
 
-        one.start();
-        two.start();
+        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
+
+        NodeLoader nodeLoader = new NodeLoader();
+
+        List<Node> nodes = nodeLoader.loadDeployment(Arrays.asList(test_args.split(" ")));
+
+        List<Agent> agents = new ArrayList<>();
+        for(Node node : nodes) {
+            node.start();
+            agents.addAll(node.getAgents());
+        }
+
+
+
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        pylon = null;
+
+        running = false;
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 
