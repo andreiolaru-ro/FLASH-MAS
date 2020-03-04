@@ -8,10 +8,15 @@ import net.xqhs.flash.FlashBoot;
 public class DeploymentTest
 {
 	/**
+	 * Designation for shards.
+	 */
+	public static final String FUNCTIONALITY = "TESTING";
+	
+	/**
 	 * Performs test.
 	 * 
 	 * @param args
-	 *                 - not used.
+	 *            - not used.
 	 */
 	public static void main(String[] args)
 	{
@@ -23,7 +28,7 @@ public class DeploymentTest
 		
 		// configuration testing
 		
-		// test_args = "src-deployment/examples/composite/basicScenario.xml";
+		test_args += "old-deployment/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -shard a";
 		// test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -shard
 		// mobility where:anywhere host:here -agent bane something:something -othercomponent a -support custom par:val
@@ -37,9 +42,10 @@ public class DeploymentTest
 		// simple deployments
 		
 		test_args += " -node main";
+		test_args += " -package deploymentTest -loader agent:composite";
 		// test_args += " -support some";
-		test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
-		test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
+		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent -shard MonitoringTest";
+		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
 		

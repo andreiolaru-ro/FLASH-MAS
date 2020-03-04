@@ -10,7 +10,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
 
-	<loader for="agent:composite"/>
+	<package>bla</package>
+
+<!--<loader for="agent:composite"/>
 	
 	<agent name="AgentA" kind="composite">
 		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
@@ -20,4 +22,5 @@
 		<parameter name="kind" value="composite" />
 		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
 	</agent>
+	-->
 </deployment>

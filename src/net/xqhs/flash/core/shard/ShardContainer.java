@@ -17,7 +17,16 @@ public interface ShardContainer extends EntityProxy<Agent>
 	 * Agent shards should call this method to signal to the agent a new event (e.g. and <i>wave</i>).
 	 * 
 	 * @param event
-	 *                  - the event to be signaled to the agent.
+	 *            - the event to be signaled to the agent.
 	 */
 	void postAgentEvent(AgentEvent event);
+	
+	/**
+	 * Returns the agent shard corresponding to the given designation.
+	 * 
+	 * @param designation
+	 *            - the designation of the desired {@link AgentShard}.
+	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
+	 */
+	AgentShard getAgentShard(AgentShardDesignation designation);
 }
