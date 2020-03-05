@@ -384,10 +384,13 @@ public abstract class AbstractMessagingShard extends AgentShardCore {
 	/**
 	 * Sends a message to another agent, according to the specific implementation.
 	 * 
-	 * @param target  - the target (complete) endpoint of the message.
-	 * @param source  - the source (internal) endpoint of the message.
-	 * @param content - the content of the message.
+	 * @param source
+	 *            - the source (internal) endpoint of the message.
+	 * @param target
+	 *            - the target (complete) endpoint of the message.
+	 * @param content
+	 *            - the content of the message.
 	 * @return <code>true</code> if the message was sent successfully.
 	 */
-	public abstract boolean sendMessage(String target, String source, String content);
+	public abstract boolean sendMessage(String source, String target, String content);
 }
