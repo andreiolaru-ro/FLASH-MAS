@@ -130,10 +130,10 @@ public class MultiTreeMap extends MultiValueMap
 			keyExists = true;
 			if(isSingleton && !singletonKeys.contains(name))
 				throw new IllegalArgumentException("Name [" + name
-						+ "] is already present, as a multi (non-singleton) name. Multiple values cannot be added to it.");
+						+ "] is already present, as a multi (non-singleton) name. Methods for singleton names cannot be used for it.");
 			if(!isSingleton && singletonKeys.contains(name))
 				throw new IllegalArgumentException("Name [" + name
-						+ "] is already present, as a singleton name. Methods for singleton names cannot be used for it.");
+						+ "] is already present, as a singleton name. Multiple values cannot be added to it.");
 		}
 		else
 			addKey(name, isSimple, isSingleton);

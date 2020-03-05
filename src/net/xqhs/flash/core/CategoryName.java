@@ -32,12 +32,6 @@ import java.util.List;
  * Some categories may be unique to their context, meaning a new occurrence of the category erases / overwrites any
  * previous occurrences in the same context.
  * <p>
- * Entities in parent categories are visible (passed as context) to their direct children (direct children in the
- * category hierarchy given here or in the actual hierarchy in the deployment). However, some categories may have their
- * entities visible deeper than their direct children, if specified. The scope is given as the last (deepest) category
- * to which they are visible. This scope applies to contained entities and to sibling entities of different type. If the
- * scope is {@link #DEPLOYMENT}, then the entities are visible to all contained and sibling entities.
- * <p>
  * Names of entities may sometimes identify those entities uniquely in the system (e.g. for agents, nodes, etc).
  * Entities which are in categories considered identifiable are not always required to have a name, but will be
  * identifiable only if they have one.
@@ -84,7 +78,7 @@ public enum CategoryName {
 	/**
 	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
 	 */
-	PACKAGE(new CatPar().isValue().hasParent(AGENT).isPortableFrom(DEPLOYMENT)),
+	PACKAGE(new CatPar().isValue().isPortableFrom(DEPLOYMENT, CatPar.VISIBLE_ON_PATH)),
 	/**
 	 * The entities to load and their order (entity names, lower-case, separated by
 	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
@@ -158,9 +152,14 @@ public enum CategoryName {
 	private static class CatPar
 	{
 		/**
-		 * Used as argument in #h
+		 * Used as argument in {@link #hasParent(CategoryName, boolean)}
 		 */
 		public static final boolean	CAN_ADD_AUTO		= true;
+		
+		/**
+		 * Used as argument in
+		 */
+		public static final boolean	VISIBLE_ON_PATH		= true;
 		
 		/**
 		 * Indicates whether an entry in the deployment configuration is not an entity, but only a value.
@@ -210,6 +209,12 @@ public enum CategoryName {
 		 * Indicates that the entity can be declared inside this category and then it will be ported to its parent.
 		 */
 		CategoryName				portableFrom		= null;
+		
+		/**
+		 * For portable categories, indicates that it should be added to all entities between where it was declared and
+		 * the actual parent.
+		 */
+		boolean						visibleOnPath		= false;
 		
 		/**
 		 * Default constructor, does nothing.
@@ -268,7 +273,7 @@ public enum CategoryName {
 		 * Indicates a category that has a potentially optional parent.
 		 * 
 		 * @param _parent
-		 *                    - the parent.
+		 *            - the parent.
 		 * @return the CatPar instance.
 		 */
 		CatPar hasParent(CategoryName _parent)
@@ -281,10 +286,10 @@ public enum CategoryName {
 		 * #CAN_ADD_AUTO).
 		 * 
 		 * @param _parent
-		 *                    - the parent.
+		 *            - the parent.
 		 * @param autoadd
-		 *                    - <code>true</code> if the entity can be automatically added as child of a sibling, if an
-		 *                    adequate sibling exists.
+		 *            - <code>true</code> if the entity can be automatically added as child of a sibling, if an adequate
+		 *            sibling exists.
 		 * @return the CatPar instance.
 		 */
 		CatPar hasParent(CategoryName _parent, boolean autoadd)
@@ -298,11 +303,11 @@ public enum CategoryName {
 		 * Indicates a category in which the name of elements if formed from one or two of the element attributes.
 		 * 
 		 * @param part1
-		 *                           - the attribute that gives the first part of the name.
+		 *            - the attribute that gives the first part of the name.
 		 * @param part2
-		 *                           - the attribute that gives the second part of the name.
+		 *            - the attribute that gives the second part of the name.
 		 * @param part2_optional
-		 *                           - <code>true</code> if the element can lack the second part of the name.
+		 *            - <code>true</code> if the element can lack the second part of the name.
 		 * @return the CatPar instance.
 		 */
 		CatPar hasPartName(String part1, String part2, Is part2_optional)
@@ -317,12 +322,28 @@ public enum CategoryName {
 		 * Indicates that the entity can be declared inside this category and then it will be ported to its parent.
 		 * 
 		 * @param origin
-		 *                   - the highest-level entity inside which this entity can be declared.
+		 *            - the highest-level entity inside which this entity can be declared.
 		 * @return the CatPar instance.
 		 */
 		CatPar isPortableFrom(CategoryName origin)
 		{
+			return isPortableFrom(origin, false);
+		}
+		
+		/**
+		 * Indicates that the entity can be declared inside this category and then it will be ported to its parent.
+		 * 
+		 * @param origin
+		 *            - the highest-level entity inside which this entity can be declared.
+		 * @param _visibleOnPath
+		 *            - indicates that it should be added to all entities between where it was declared and the actual
+		 *            parent; use {@link CatPar#VISIBLE_ON_PATH} .
+		 * @return the CatPar instance.
+		 */
+		CatPar isPortableFrom(CategoryName origin, boolean _visibleOnPath)
+		{
 			portableFrom = origin;
+			visibleOnPath = _visibleOnPath;
 			return this;
 		}
 	}
@@ -344,7 +365,7 @@ public enum CategoryName {
 	 * Constructor using parameters build through {@link CatPar}.
 	 * 
 	 * @param _parameters
-	 *                        - the {@link CatPar} instance.
+	 *            - the {@link CatPar} instance.
 	 */
 	private CategoryName(CatPar _parameters)
 	{
@@ -474,10 +495,18 @@ public enum CategoryName {
 	}
 	
 	/**
+	 * @return <code>true</code> if the category should be ported to all entities on the path to its declared parent.
+	 */
+	public boolean visibleOnPath()
+	{
+		return parameters.visibleOnPath;
+	}
+	
+	/**
 	 * Find the {@link CategoryName} identified by the given name.
 	 * 
 	 * @param name
-	 *                 - the name.
+	 *            - the name.
 	 * @return the category.
 	 */
 	public static CategoryName byName(String name)

@@ -13,7 +13,6 @@ package net.xqhs.flash.core.shard;
 
 import java.io.Serializable;
 
-import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -45,7 +44,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardCore extends Unit implements AgentShard, ConfigurableEntity<Agent>, Serializable
+public class AgentShardCore extends Unit implements AgentShard, Serializable
 {
 	/**
 	 * The class UID.
@@ -129,8 +128,8 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	 * <p>
 	 * 
 	 * @param configuration
-	 *                          - parameters for creating the shard. The parameters will be locked (see
-	 *                          {@link MultiValueMap#lock()} from this moment on.
+	 *            - parameters for creating the shard. The parameters will be locked (see {@link MultiValueMap#lock()}
+	 *            from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -203,7 +202,7 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	/**
 	 * @return the shard initialization data. It cannot be modified, and it is guaranteed to not be <code>null</code>.
 	 */
-	protected MultiValueMap getShardData()
+	protected MultiTreeMap getShardData()
 	{
 		return shardConfiguration;
 	}
@@ -290,6 +289,18 @@ public class AgentShardCore extends Unit implements AgentShard, ConfigurableEnti
 	final protected ShardContainer getAgent()
 	{
 		return parentAgent;
+	}
+	
+	/**
+	 * Relay for {@link ShardContainer#getAgentShard(AgentShardDesignation)}.
+	 * 
+	 * @param designation
+	 *            - the designation of the desired {@link AgentShard}.
+	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
+	 */
+	final protected AgentShard getAgentShard(AgentShardDesignation designation)
+	{
+		return parentAgent.getAgentShard(designation);
 	}
 	
 	@SuppressWarnings("unchecked")
