@@ -1,11 +1,10 @@
 package PrimeNumberSimulation;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 public class PrimeNumberCalculatorShard extends AgentShardCore {
     /**
@@ -53,6 +52,12 @@ public class PrimeNumberCalculatorShard extends AgentShardCore {
         }
         return true;
     }
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event)
+	{
+		// TODO Auto-generated method stub
+	}
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
