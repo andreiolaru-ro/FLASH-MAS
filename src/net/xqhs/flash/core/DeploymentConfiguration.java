@@ -19,6 +19,7 @@ import java.util.List;
 
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
 import net.xqhs.util.XML.XMLTree.XMLNode;
@@ -237,7 +238,8 @@ public class DeploymentConfiguration extends MultiTreeMap
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
 	{
 		locked();
-		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt().setUnitName("settings load");
+		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt().setUnitName("settings load")
+				.setLoggerType(PlatformUtils.platformLogType());
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
