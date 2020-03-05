@@ -19,6 +19,7 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.util.logging.Logger;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
@@ -79,6 +80,17 @@ public class MonitoringTestShard extends CompositeAgentShard
 			registerHandler(eventType, allEventHandler);
 	}
 	
+	public void signalAgentEvent(AgentEvent event)
+	{
+		super.signalAgentEvent(event);
+		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
+		locallog.li(eventMessage);
+		// if (getAgentLog() != null)
+		// getAgentLog().info(eventMessage);
+		if(event.getType() == AgentEventType.AGENT_STOP)
+			locallog.doExit();
+	}
+	
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
@@ -86,8 +98,8 @@ public class MonitoringTestShard extends CompositeAgentShard
 		
 		if(getAgent() != null)
 		{
-			locallog = (UnitComponent) new UnitComponent().setUnitName("net.xqhs.flash.core.monitoring-" + getAgentName()).setLogLevel(
-					Level.ALL);
+			locallog = (UnitComponent) new UnitComponent().setUnitName("monitoring-" + getAgent().getEntityName())
+					.setLogLevel(Level.ALL).setLoggerType(PlatformUtils.platformLogType());
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null)
