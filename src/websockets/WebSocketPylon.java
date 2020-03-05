@@ -33,13 +33,13 @@ public class WebSocketPylon extends DefaultPylonImplementation {
     /**
      * The proxy to the webSocket server; this is actually a webSocket client.
      */
-    protected WebSocketMessagingPylonProxy webSocketClient;
+    protected WebSocketClientProxy webSocketClient;
 
     public WebSocketPylon(String serverAddress) {
         super();
         this.configure(new MultiTreeMap().addSingleValue(WEBSOCKET_SERVER_ADDRESS, serverAddress));
         try {
-            webSocketClient = new WebSocketMessagingPylonProxy(new URI(webSocketServerAddressName));
+            webSocketClient = new WebSocketClientProxy(new URI(webSocketServerAddressName));
             webSocketClient.connect();
             Thread.sleep(1000);
         } catch (URISyntaxException | InterruptedException e) {
@@ -78,7 +78,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         }
     };
 
-    public static class WebSocketLocalMessaging extends AbstractMessagingShard {
+    public static class WebSocketMessaging extends AbstractMessagingShard {
 
         private static final long serialVersionUID = 2L;
 
@@ -86,7 +86,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
         public MessageReceiver inbox;
 
-        public WebSocketLocalMessaging() {
+        public WebSocketMessaging() {
             super();
             inbox = new MessageReceiver() {
                 @Override
@@ -139,7 +139,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
                     }
                 else
                 {
-                    Map.Entry<WebSocketPylon.WebSocketLocalMessaging, Vector<String>> event = messageQueue.poll();
+                    Map.Entry<WebSocketPylon.WebSocketMessaging, Vector<String>> event = messageQueue.poll();
                     event.getKey().receiveMessage(event.getValue().get(0), event.getValue().get(1),
                             event.getValue().get(2));
                 }
@@ -147,11 +147,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         }
     }
 
-    protected Map<String, WebSocketLocalMessaging>										             registry		= new HashMap<>();
+    protected Map<String, WebSocketMessaging>										             registry		= new HashMap<>();
 
     protected boolean																                 useThread		= true;
 
-    protected LinkedBlockingQueue<Map.Entry<WebSocketPylon.WebSocketLocalMessaging, Vector<String>>> messageQueue	= null;
+    protected LinkedBlockingQueue<Map.Entry<WebSocketPylon.WebSocketMessaging, Vector<String>>> messageQueue	= null;
 
     protected Thread																                 messageThread	= null;
 
@@ -208,7 +208,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
     public String getRecommendedShardImplementation(AgentShardDesignation shardName)
     {
         if (shardName.equals(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)))
-            return WebSocketPylon.WebSocketLocalMessaging.class.getName();
+            return WebSocketPylon.WebSocketMessaging.class.getName();
         return super.getRecommendedShardImplementation(shardName);
     }
 

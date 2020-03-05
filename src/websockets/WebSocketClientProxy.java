@@ -10,7 +10,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class WebSocketMessagingPylonProxy extends WebSocketClient {
+public class WebSocketClientProxy extends WebSocketClient {
     /*
     * Keep all agents registered in the context of the current pylon.
     * */
@@ -24,11 +24,11 @@ public class WebSocketMessagingPylonProxy extends WebSocketClient {
         return messageReceivers.get(name);
     }
 
-    public WebSocketMessagingPylonProxy(URI serverUri, Draft draft) {
+    public WebSocketClientProxy(URI serverUri, Draft draft) {
         super(serverUri, draft);
     }
 
-    public WebSocketMessagingPylonProxy(URI serverURI) {
+    public WebSocketClientProxy(URI serverURI) {
         super(serverURI);
     }
 

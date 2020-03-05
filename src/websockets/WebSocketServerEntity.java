@@ -1,9 +1,5 @@
 package websockets;
 
-import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,13 +7,18 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
-public class ServerPylon extends WebSocketServer {
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+
+public class WebSocketServerEntity extends WebSocketServer
+{
     /**
      * Keep all incoming connected clients for future connections.
      */
     private HashMap<String, WebSocket> nameConnections = new HashMap<String, WebSocket>();
 
-    public ServerPylon(InetSocketAddress address) {
+    public WebSocketServerEntity(InetSocketAddress address) {
         super(address);
     }
 
@@ -69,7 +70,7 @@ public class ServerPylon extends WebSocketServer {
 
     public static void main(String[] args) throws IOException {
         int pylonPort = 8886;
-        WebSocketServer pylonServer = new ServerPylon(new InetSocketAddress(pylonPort));
+        WebSocketServer pylonServer = new WebSocketServerEntity(new InetSocketAddress(pylonPort));
         pylonServer.run();
 
         BufferedReader system_in = new BufferedReader(new InputStreamReader(System.in));
