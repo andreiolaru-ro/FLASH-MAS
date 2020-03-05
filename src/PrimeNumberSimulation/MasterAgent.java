@@ -1,12 +1,17 @@
 package PrimeNumberSimulation;
 
+import java.util.ArrayList;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.*;
-
-import java.util.ArrayList;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.Pylon;
 
 public class MasterAgent implements Agent {
 
@@ -55,13 +60,22 @@ public class MasterAgent implements Agent {
         public synchronized void decrement() {
             slaveAgentsCount--;
         }
+													
+													@Override
+													public AgentShard getAgentShard(AgentShardDesignation designation)
+													{
+														if(designation.equals(
+																StandardAgentShard.MESSAGING.toAgentShardDesignation()))
+															return getMessagingShard();
+														return null;
+													}
     };
 
     public MasterAgent(String name) {
         this.name = name;
     }
 
-    private AbstractMessagingShard getMessagingShard()
+	AbstractMessagingShard getMessagingShard()
     {
         return this.messagingShard;
     }
