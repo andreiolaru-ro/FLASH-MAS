@@ -14,5 +14,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Logging-light.jar!/doc-Logging-light/pages/javadoc"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/Java-WebSocket-1.4.0-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
