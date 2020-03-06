@@ -19,7 +19,9 @@ import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import net.xqhs.util.logging.logging.LogWrapper;
 
 public class Node extends Unit implements Entity<Node>
 {
@@ -32,7 +34,8 @@ public class Node extends Unit implements Entity<Node>
 	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
-	
+
+
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
@@ -42,6 +45,7 @@ public class Node extends Unit implements Entity<Node>
 	public Node(String name)
 	{
 		this.name = name;
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
