@@ -1,7 +1,6 @@
-package websockets;
+package websocket;
 
 import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;

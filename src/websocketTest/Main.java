@@ -1,7 +1,7 @@
 package websocketTest;
-import websockets.AgentTest;
-import websockets.WebSocketPylon;
-import websockets.WebSocketPylon.WebSocketLocalMessaging;
+import websocket.AgentTest;
+import websocket.WebSocketPylon;
+import websocket.WebSocketPylon.WebSocketLocalMessaging;
 
 public class Main
 {
@@ -20,5 +20,4 @@ public class Main
         one.start();
         two.start();
     }
-
 }
