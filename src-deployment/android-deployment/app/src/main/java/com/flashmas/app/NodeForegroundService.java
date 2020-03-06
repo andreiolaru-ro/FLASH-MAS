@@ -21,7 +21,9 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
+import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +33,11 @@ import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 public class NodeForegroundService extends Service {
     private static boolean running = false;
     private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
+    private static OutputStream logsOutputStream = null;
+
+    public static void setLogOutputStream(OutputStream s) {
+        logsOutputStream = s;
+    }
 
     @Nullable
     @Override
@@ -62,6 +69,7 @@ public class NodeForegroundService extends Service {
 
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
 
+        GlobalLogWrapper.setLogStream(logsOutputStream);
         NodeLoader nodeLoader = new NodeLoader();
 
         List<Node> nodes = nodeLoader.loadDeployment(Arrays.asList(test_args.split(" ")));
