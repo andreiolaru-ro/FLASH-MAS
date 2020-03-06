@@ -54,5 +54,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Java-WebSocket-1.4.0-with-dependencies" level="project" />
+    <orderEntry type="library" exported="" name="json-simple-1.1.1" level="project" />
   </component>
 </module>

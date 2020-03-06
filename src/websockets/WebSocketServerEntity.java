@@ -10,6 +10,8 @@ import java.util.HashMap;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class WebSocketServerEntity extends WebSocketServer
 {
@@ -41,15 +43,13 @@ public class WebSocketServerEntity extends WebSocketServer
         String[] namePayload = s.split("=");
         if (namePayload.length == 2)
             nameConnections.put(namePayload[1], webSocket);
-        else
-            /* The message was sent: source@destination@message */
-        {
-            String[] messagePayload = s.split("@");
-            if(messagePayload.length == 3) {
-                String destination = messagePayload[1];
-                WebSocket destinationWebSocket = nameConnections.get(destination);
-                destinationWebSocket.send(s);
-            }
+        else {
+            Object obj = JSONValue.parse(s);
+            JSONObject jsonObject = (JSONObject) obj;
+
+            String destination = (String) jsonObject.get("destination");
+            WebSocket destinationWebSocket = nameConnections.get(destination);
+            destinationWebSocket.send(s);
         }
     }
 

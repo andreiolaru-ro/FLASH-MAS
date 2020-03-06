@@ -9,6 +9,8 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class WebSocketClientProxy extends WebSocketClient {
     /*
@@ -40,17 +42,21 @@ public class WebSocketClientProxy extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         System.out.println("[ WebSocketMessagingPylonProxy ] : " + message);
-        String[] messagePayload = message.split("@");
-        if (messagePayload.length == 3) {
-            String destination = messagePayload[1];
+
+        Object obj = JSONValue.parse(message);
+        if (obj != null) {
+            JSONObject jsonObject = (JSONObject) obj;
+
+            String destination = (String) jsonObject.get("destination");
             if(!messageReceivers.containsKey(destination))
                 System.out.println("The agent does not exist.");
             else  {
-                String source = messagePayload[0];
-                String msg = messagePayload[2];
-                messageReceivers.get(destination).receive(source, destination, msg);
+                String source = (String) jsonObject.get("source");
+                String content = (String) jsonObject.get("content");
+                messageReceivers.get(destination).receive(source, destination, content);
             }
         }
+
     }
 
     @Override

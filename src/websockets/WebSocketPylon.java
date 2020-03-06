@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.json.simple.JSONObject;
 
 public class WebSocketPylon extends DefaultPylonImplementation {
     /**
@@ -62,8 +63,13 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         @Override
         public boolean send(String source, String destination, String content) {
             String destAgent = getAgentNameFromAddress(getAgentAddress(destination));
-            String message = source + "@" + destAgent + "@" + content;
-            webSocketClient.send(message);
+
+            JSONObject messageToServer = new JSONObject();
+            messageToServer.put("source", source);
+            messageToServer.put("destination", destAgent);
+            messageToServer.put("content", content);
+
+            webSocketClient.send(messageToServer.toString());
             return true;
         }
 

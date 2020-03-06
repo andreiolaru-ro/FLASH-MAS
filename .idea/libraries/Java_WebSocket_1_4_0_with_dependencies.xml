@@ -2,6 +2,7 @@
   <library name="Java-WebSocket-1.4.0-with-dependencies">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/lib/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/json-simple-1.1.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
