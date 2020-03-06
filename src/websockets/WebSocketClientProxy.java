@@ -1,6 +1,7 @@
-package websocket;
+package websockets;
 
 import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
@@ -9,7 +10,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class WebSocketMessagingPylonProxy extends WebSocketClient {
+public class WebSocketClientProxy extends WebSocketClient {
     /*
     * Keep all agents registered in the context of the current pylon.
     * */
@@ -23,11 +24,11 @@ public class WebSocketMessagingPylonProxy extends WebSocketClient {
         return messageReceivers.get(name);
     }
 
-    public WebSocketMessagingPylonProxy(URI serverUri, Draft draft) {
+    public WebSocketClientProxy(URI serverUri, Draft draft) {
         super(serverUri, draft);
     }
 
-    public WebSocketMessagingPylonProxy(URI serverURI) {
+    public WebSocketClientProxy(URI serverURI) {
         super(serverURI);
     }
 

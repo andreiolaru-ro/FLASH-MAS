@@ -1,7 +1,6 @@
 package websocketTest;
-import websocket.AgentTest;
-import websocket.WebSocketPylon;
-import websocket.WebSocketPylon.WebSocketLocalMessaging;
+import websockets.WebSocketPylon;
+import websockets.WebSocketPylon.WebSocketMessaging;
 
 public class Main
 {
@@ -14,10 +13,11 @@ public class Main
         AgentTest two = new AgentTest("Two");
         two.addContext(pylon.asContext());
 
-        one.addMessagingShard(new WebSocketLocalMessaging());
-        two.addMessagingShard(new WebSocketLocalMessaging());
+        one.addMessagingShard(new WebSocketMessaging());
+        two.addMessagingShard(new WebSocketMessaging());
 
         one.start();
         two.start();
     }
+
 }

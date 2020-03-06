@@ -1,4 +1,4 @@
-package websocket;
+package websocketTest;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
