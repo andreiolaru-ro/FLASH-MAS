@@ -3,6 +3,7 @@ package com.flashmas.app;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -106,12 +107,20 @@ public class NodeForegroundService extends Service {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
 
+        PendingIntent notifPendingIntent = PendingIntent.getActivity(
+                this,
+                Globals.PendingIntent.FOREGROUND_NOTIF_PENDING_INTENT_ID,
+                new Intent(this, MainActivity.class),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
         return notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(PRIORITY_MIN)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setContentTitle("Status notification")
-                .setContentText("FLASH node is up and running")
+                .setContentText("FLASH node is running")
+                .setContentIntent(notifPendingIntent)
                 .build();
     }
 
