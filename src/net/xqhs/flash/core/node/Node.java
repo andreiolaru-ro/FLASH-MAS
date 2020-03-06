@@ -44,7 +44,9 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.shadowProtocol.MessageFactory;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+// import net.xqhs.util.logging.logging.LogWrapper;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -125,6 +127,12 @@ public class Node extends Unit implements Entity<Node> {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+	}
+
+	public Node(String name)
+	{
+		this.name = name;
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	/**

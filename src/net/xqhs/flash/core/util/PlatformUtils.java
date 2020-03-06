@@ -79,7 +79,7 @@ public class PlatformUtils
 	public static String getLocalHostURI() {
 		// return "localhost";
 		if (getPlatform() == Platform.ANDROID) {
-			return LoggerType.JAVA;
+			return LoggerType.GLOBAL;
 		}
 		return LoggerType.CONSOLE;
 	}

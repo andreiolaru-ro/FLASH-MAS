@@ -34,7 +34,7 @@ public class DeploymentTest
 		
 		// configuration testing
 		
-		test_args += "old-deployment/composite/basicScenario.xml";
+//		test_args += "old-deployment/composite/basicScenario.xml";
 		// test_args = "-support local:auxilliary host:here -agent bane something:something -shard a";
 		// test_args = "src-deployment/ComplexDeployment/complexDeployment.xml -agent AgentA some:property -shard
 		// mobility where:anywhere host:here -agent bane something:something -othercomponent a -support custom par:val
