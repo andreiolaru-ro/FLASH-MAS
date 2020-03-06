@@ -24,11 +24,11 @@ public class PrimeNumberCalculatorShard extends AgentShardCore {
     private MessagingPylonProxy pylon;
     public static final String PRIME_NUMBERS_COUNT = "prime numbers found";
 
-    protected PrimeNumberCalculatorShard() {
+    public PrimeNumberCalculatorShard() {
         super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
     }
 
-    protected void findPrimeNumbersCount(int maxLimit) {
+    public void findPrimeNumbersCount(int maxLimit) {
         int primeNumbersCount = 0;
 
         for(int nr = 2; nr <= maxLimit; nr++) {

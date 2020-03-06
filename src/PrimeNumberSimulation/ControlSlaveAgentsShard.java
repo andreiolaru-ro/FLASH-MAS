@@ -34,7 +34,7 @@ public class ControlSlaveAgentsShard extends AgentShardCore {
     private static long startTime;
 
 
-    protected ControlSlaveAgentsShard() {
+    public ControlSlaveAgentsShard() {
         super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
         startedAgentsNumber = 0;
         startTime = 0;

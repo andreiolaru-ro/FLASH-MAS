@@ -47,15 +47,15 @@ public class PrimeNumberAgent implements Agent{
             return getName();
         }
 																
-																@Override
-																public AgentShard getAgentShard(
-																		AgentShardDesignation designation)
-																{
-																	if(designation.equals(StandardAgentShard.MESSAGING
-																			.toAgentShardDesignation()))
-																		return getMessagingShard();
-																	return null;
-																}
+        @Override
+        public AgentShard getAgentShard(
+                AgentShardDesignation designation)
+        {
+            if(designation.equals(StandardAgentShard.MESSAGING
+                    .toAgentShardDesignation()))
+                return getMessagingShard();
+            return null;
+        }
 
     };
 

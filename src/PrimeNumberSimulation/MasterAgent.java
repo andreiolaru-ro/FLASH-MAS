@@ -61,14 +61,14 @@ public class MasterAgent implements Agent {
             slaveAgentsCount--;
         }
 													
-													@Override
-													public AgentShard getAgentShard(AgentShardDesignation designation)
-													{
-														if(designation.equals(
-																StandardAgentShard.MESSAGING.toAgentShardDesignation()))
-															return getMessagingShard();
-														return null;
-													}
+        @Override
+        public AgentShard getAgentShard(AgentShardDesignation designation)
+        {
+            if(designation.equals(
+                    StandardAgentShard.MESSAGING.toAgentShardDesignation()))
+                return getMessagingShard();
+            return null;
+        }
     };
 
     public MasterAgent(String name) {
