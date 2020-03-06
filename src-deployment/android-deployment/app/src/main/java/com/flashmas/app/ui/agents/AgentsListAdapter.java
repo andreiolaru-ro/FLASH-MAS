@@ -1,4 +1,4 @@
-package com.flashmas.app;
+package com.flashmas.app.ui.agents;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.flashmas.app.R;
 
 import net.xqhs.flash.core.agent.Agent;
 

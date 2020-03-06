@@ -24,6 +24,7 @@ import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -34,10 +35,14 @@ import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 public class NodeForegroundService extends Service {
     private static boolean running = false;
     private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
-    private static OutputStream logsOutputStream = null;
+    private static OutputStream logsOutputStream = new ByteArrayOutputStream();
 
     public static void setLogOutputStream(OutputStream s) {
         logsOutputStream = s;
+    }
+
+    public static OutputStream getLogOutputStream() {
+        return logsOutputStream;
     }
 
     @Nullable
