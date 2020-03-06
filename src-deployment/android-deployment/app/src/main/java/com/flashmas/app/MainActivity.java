@@ -5,31 +5,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
-import net.xqhs.flash.core.agent.Agent;
+import com.flashmas.app.ui.agents.AgentsFragment;
 
-import java.io.OutputStream;
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity {
-    AgentsListAdapter adapter;
-
-    Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
-        @Override
-        public void onChanged(List<Agent> agents) {
-            if (adapter == null) {
-                return;
-            }
-
-            adapter.updateData(agents);
-        }
-    };
+public class MainActivity extends AppCompatActivity implements AgentsFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button start = findViewById(R.id.start_node);
         Button stop = findViewById(R.id.stop_node);
-        final TextView view = findViewById(R.id.logs_textview);
+        final Button nav = findViewById(R.id.navigate);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,27 +44,24 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, NodeForegroundService.class);
                 stopService(intent);
-                view.setText("");
             }
         });
 
-        // Set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.agents_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AgentsListAdapter(this);
-        recyclerView.setAdapter(adapter);
-
-        NodeForegroundService.getAgentsLiveData().observe(this, agentsObserver);
-
-
-        OutputStream s = new OutputStream() {
+        nav.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void write(int b) {
-                view.append(String.valueOf((char)b));
+            public void onClick(View v) {
+                NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment);
+                if (navController.getCurrentDestination().getId() == R.id.logsFragment) {
+                    navController.navigate(R.id.agentsFragment);
+                } else if (navController.getCurrentDestination().getId() == R.id.agentsFragment) {
+                    navController.navigate(R.id.logsFragment);
+                }
             }
-        };
+        });
+    }
 
-        NodeForegroundService.setLogOutputStream(s);
+    @Override
+    public void onFragmentInteraction() {
 
     }
 }
