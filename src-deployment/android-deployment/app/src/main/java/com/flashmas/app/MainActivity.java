@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -13,10 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.xqhs.flash.core.agent.Agent;
 
+import java.io.OutputStream;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    AgentsListAdapter adapter = new AgentsListAdapter(this);
+    AgentsListAdapter adapter;
 
     Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
         @Override
@@ -38,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
         // TODO use ViewModel
 
         Button start = findViewById(R.id.start_node);
+        Button stop = findViewById(R.id.stop_node);
+        final TextView view = findViewById(R.id.logs_textview);
+
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,20 +56,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        Button stop = findViewById(R.id.stop_node);
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, NodeForegroundService.class);
                 stopService(intent);
+                view.setText("");
             }
         });
 
         // Set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.agents_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new AgentsListAdapter(this);
         recyclerView.setAdapter(adapter);
 
         NodeForegroundService.getAgentsLiveData().observe(this, agentsObserver);
+
+
+        OutputStream s = new OutputStream() {
+            @Override
+            public void write(int b) {
+                view.append(String.valueOf((char)b));
+            }
+        };
+
+        NodeForegroundService.setLogOutputStream(s);
+
     }
 }
