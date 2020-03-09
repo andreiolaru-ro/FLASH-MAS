@@ -76,9 +76,7 @@ public class NodeForegroundService extends Service {
         test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
 
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
-        if (logsOutputStream instanceof ByteArrayOutputStream) {
-            ((ByteArrayOutputStream)logsOutputStream).reset();
-        }
+
         GlobalLogWrapper.setLogStream(logsOutputStream);
         NodeLoader nodeLoader = new NodeLoader();
 
@@ -101,6 +99,11 @@ public class NodeForegroundService extends Service {
 
         running = false;
         runningLiveData.postValue(false);
+
+        if (logsOutputStream instanceof ByteArrayOutputStream) {
+            ((ByteArrayOutputStream)logsOutputStream).reset();
+        }
+
         // Mark agents list as null
         agentData.postValue(null);
 
