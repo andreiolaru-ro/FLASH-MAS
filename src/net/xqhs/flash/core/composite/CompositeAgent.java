@@ -82,7 +82,12 @@ public class CompositeAgent implements Serializable, Agent
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
-			throw new UnsupportedOperationException("not implemented.");
+			try {
+				return shards.get(designation);
+			} catch (Exception e) {
+				throw new InvalidParameterException(
+						"There is no shard with the designation [" + designation + "]");
+			}
 		}
 	}
 	
