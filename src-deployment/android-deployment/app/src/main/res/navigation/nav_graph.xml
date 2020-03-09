@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/agentsFragment">
+    app:startDestination="@id/agentsListFragment">
 
     <fragment
         android:id="@+id/logsFragment"
@@ -11,12 +11,18 @@
         android:label="fragment_logs"
         tools:layout="@layout/fragment_logs" />
     <fragment
-        android:id="@+id/agentsFragment"
-        android:name="com.flashmas.app.ui.agents.AgentsFragment"
-        android:label="fragment_agents"
-        tools:layout="@layout/fragment_agents" >
+        android:id="@+id/agentsListFragment"
+        android:name="com.flashmas.app.ui.agents.AgentsListFragment"
+        android:label="fragment_agents_list"
+        tools:layout="@layout/fragment_agents_list" >
         <action
             android:id="@+id/action_agentsFragment_to_logsFragment"
             app:destination="@id/logsFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/agentDetailsFragment"
+        android:name="com.flashmas.app.ui.agents.AgentDetailsFragment"
+        android:label="fragment_agent_details"
+        tools:layout="@layout/fragment_agent_details"/>
 </navigation>

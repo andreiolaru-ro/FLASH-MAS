@@ -1,12 +1,14 @@
 package com.flashmas.app.ui.agents;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.flashmas.app.R;
@@ -50,7 +52,7 @@ public class AgentsListAdapter extends RecyclerView.Adapter<AgentsListAdapter.Ag
 
     @Override
     public void onBindViewHolder(@NonNull AgentHolder holder, int position) {
-        holder.bind(data.get(position).getName());
+        holder.bind(data.get(position));
     }
 
     @Override
@@ -70,8 +72,16 @@ public class AgentsListAdapter extends RecyclerView.Adapter<AgentsListAdapter.Ag
             agentNameView = itemView.findViewById(R.id.agent_name);
         }
 
-        void bind(String agentName) {
-            agentNameView.setText(agentName);
+        void bind(final Agent agent) {
+            agentNameView.setText(agent.getName());
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable(AgentDetailsFragment.AGENT_KEY, agent);
+                    Navigation.findNavController(v).navigate(R.id.agentDetailsFragment, bundle);
+                }
+            });
         }
     }
 }

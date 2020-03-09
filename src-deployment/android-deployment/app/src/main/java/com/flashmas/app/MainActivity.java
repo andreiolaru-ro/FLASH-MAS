@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
                 if (destination.getId() == R.id.logsFragment) {
                     navController.popBackStack();
-                    navController.navigate(R.id.agentsFragment);
-                } else if (destination.getId() == R.id.agentsFragment) {
+                    navController.navigate(R.id.agentsListFragment);
+                } else if (destination.getId() == R.id.agentsListFragment) {
                     navController.popBackStack();
                     navController.navigate(R.id.logsFragment);
                 }
