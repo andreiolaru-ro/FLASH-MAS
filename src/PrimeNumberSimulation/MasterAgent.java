@@ -37,7 +37,7 @@ public class MasterAgent implements Agent {
 
                 if(limits.size() == slaveAgentsCount) {
                     for(int i = 0; i < limits.size(); i++) {
-                        getMessagingShard().sendMessage(Integer.toString(i),"Master", Integer.toString(limits.get(i)));
+                        getMessagingShard().sendMessage("Master", Integer.toString(i), Integer.toString(limits.get(i)));
                     }
                 }
                 return;

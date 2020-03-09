@@ -26,15 +26,8 @@ public class PrimeNumberAgent implements Agent{
         {
             if(event.containsKey(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT)) {
                 primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
-                getMessagingShard().sendMessage(  "Master", name,    Integer.toString(primeNumbersCount));
-
-
+                getMessagingShard().sendMessage(  name, "Master",    Integer.toString(primeNumbersCount));
             } else {
-                /*System.out.println("SLAVE: " + event.getValue(
-                        AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
-                        + event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
-                        + " la " + event.getValue(
-                        AbstractMessagingShard.DESTINATION_PARAMETER));*/
                 primeNumbersLimit = Integer.parseInt(
                         event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
                 isWaitng = false;
