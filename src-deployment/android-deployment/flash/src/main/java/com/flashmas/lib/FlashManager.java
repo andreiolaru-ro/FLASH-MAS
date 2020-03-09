@@ -70,7 +70,19 @@ public class FlashManager {
         // TODO
     }
 
+    public LiveData<Boolean> getRunningLiveData() {
+        return NodeForegroundService.isRunningLiveData();
+    }
+
     public LiveData<List<Agent>> getAgentsLiveData() {
         return NodeForegroundService.getAgentsLiveData();
+    }
+
+    public void toggleState() {
+        if (NodeForegroundService.isRunning()) {
+            stopNode();
+        } else {
+            startNode();
+        }
     }
 }

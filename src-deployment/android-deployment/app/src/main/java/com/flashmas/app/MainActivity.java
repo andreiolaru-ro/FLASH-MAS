@@ -5,41 +5,47 @@ import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
+
+    private FloatingActionButton fab;
+    private Observer<Boolean> flashStateObserver = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean state) {
+            if (state) {
+                fab.setImageResource(R.drawable.ic_stop_black_24dp);
+            } else {
+                fab.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TODO use only one button for start and stop
         // TODO use ViewModel
 
-        Button start = findViewById(R.id.start_node);
-        Button stop = findViewById(R.id.stop_node);
         final Button nav = findViewById(R.id.navigate);
+        fab = findViewById(R.id.fab);
 
-        start.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FlashManager.getInstance().startNode();
+               FlashManager.getInstance().toggleState();
             }
         });
 
-
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FlashManager.getInstance().stopNode();
-            }
-        });
+        FlashManager.getInstance().getRunningLiveData().observe(this, flashStateObserver);
 
         nav.setOnClickListener(new View.OnClickListener() {
             @Override
