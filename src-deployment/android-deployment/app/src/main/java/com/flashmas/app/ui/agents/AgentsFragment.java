@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.flashmas.app.R;
 import com.flashmas.app.ui.OnFragmentInteractionListener;
-import com.flashmas.lib.NodeForegroundService;
+import com.flashmas.lib.FlashManager;
 
 import net.xqhs.flash.core.agent.Agent;
 
@@ -78,7 +78,7 @@ public class AgentsFragment extends Fragment {
         adapter = new AgentsListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
 
-        NodeForegroundService.getAgentsLiveData().observe(getViewLifecycleOwner(), agentsObserver);
+        FlashManager.getInstance().getAgentsLiveData().observe(getViewLifecycleOwner(), agentsObserver);
     }
 
     public void onButtonPressed() {

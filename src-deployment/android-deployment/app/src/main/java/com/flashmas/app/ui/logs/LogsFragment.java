@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.flashmas.app.R;
-import com.flashmas.lib.NodeForegroundService;
+import com.flashmas.lib.FlashManager;
 
 import java.io.OutputStream;
 
@@ -55,7 +55,7 @@ public class LogsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         logTextView = view.findViewById(R.id.logs_textview);
 
-        OutputStream s = NodeForegroundService.getLogOutputStream();
+        OutputStream s = FlashManager.getLogOutputStream();
         logTextView.setText(s.toString());
     }
 }
