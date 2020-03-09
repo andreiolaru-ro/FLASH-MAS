@@ -24,13 +24,13 @@ import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass for the Agents fragment
- * Use the {@link AgentsFragment#newInstance} factory method to
+ * Use the {@link AgentsListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AgentsFragment extends Fragment {
+public class AgentsListFragment extends Fragment {
     private AgentsListAdapter adapter;
 
-    Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
+    private Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
         @Override
         public void onChanged(List<Agent> agents) {
             if (adapter == null) {
@@ -43,7 +43,7 @@ public class AgentsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public AgentsFragment() {
+    public AgentsListFragment() {
         // Required empty public constructor
     }
 
@@ -51,22 +51,17 @@ public class AgentsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment AgentsFragment.
+     * @return A new instance of fragment AgentsListFragment.
      */
-    public static AgentsFragment newInstance() {
-        return new AgentsFragment();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public static AgentsListFragment newInstance() {
+        return new AgentsListFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_agents, container, false);
+        return inflater.inflate(R.layout.fragment_agents_list, container, false);
     }
 
     @Override
