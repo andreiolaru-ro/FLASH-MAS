@@ -16,8 +16,8 @@
         android:label="fragment_agents_list"
         tools:layout="@layout/fragment_agents_list" >
         <action
-            android:id="@+id/action_agentsFragment_to_logsFragment"
-            app:destination="@id/logsFragment" />
+            android:id="@+id/action_agentsListFragment_to_agentDetailsFragment"
+            app:destination="@id/agentDetailsFragment" />
     </fragment>
 
     <fragment

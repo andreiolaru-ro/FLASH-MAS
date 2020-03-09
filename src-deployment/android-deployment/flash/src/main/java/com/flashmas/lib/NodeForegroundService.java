@@ -34,6 +34,7 @@ import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 
 public class NodeForegroundService extends Service {
     private static boolean running = false;
+    private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
     private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
     private static OutputStream logsOutputStream = new ByteArrayOutputStream();
 
@@ -67,6 +68,7 @@ public class NodeForegroundService extends Service {
         }
 
         running = true;
+        runningLiveData.postValue(true);
 
         String test_args = "";
         test_args += " -package deploymentTest -loader agent:composite";
@@ -74,7 +76,9 @@ public class NodeForegroundService extends Service {
         test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
 
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
-
+        if (logsOutputStream instanceof ByteArrayOutputStream) {
+            ((ByteArrayOutputStream)logsOutputStream).reset();
+        }
         GlobalLogWrapper.setLogStream(logsOutputStream);
         NodeLoader nodeLoader = new NodeLoader();
 
@@ -96,6 +100,7 @@ public class NodeForegroundService extends Service {
         super.onDestroy();
 
         running = false;
+        runningLiveData.postValue(false);
         // Mark agents list as null
         agentData.postValue(null);
 
@@ -145,5 +150,9 @@ public class NodeForegroundService extends Service {
 
     public static boolean isRunning() {
         return running;
+    }
+
+    public static LiveData<Boolean> isRunningLiveData() {
+        return runningLiveData;
     }
 }
