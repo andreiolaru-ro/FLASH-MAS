@@ -128,8 +128,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 * <p>
 	 * 
 	 * @param configuration
-	 *                          - parameters for creating the shard. The parameters will be locked (see
-	 *                          {@link MultiValueMap#lock()} from this moment on.
+	 *            - parameters for creating the shard. The parameters will be locked (see {@link MultiValueMap#lock()}
+	 *            from this moment on.
 	 * @return <code>true</code> if no fatal issues were found; <code>false</code> otherwise.
 	 */
 	@Override
@@ -199,7 +199,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	/**
 	 * @return the shard initialization data. It cannot be modified, and it is guaranteed to not be <code>null</code>.
 	 */
-	protected MultiValueMap getShardData()
+	protected MultiTreeMap getShardData()
 	{
 		return shardConfiguration;
 	}
@@ -286,6 +286,18 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	final protected ShardContainer getAgent()
 	{
 		return parentAgent;
+	}
+	
+	/**
+	 * Relay for {@link ShardContainer#getAgentShard(AgentShardDesignation)}.
+	 * 
+	 * @param designation
+	 *            - the designation of the desired {@link AgentShard}.
+	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
+	 */
+	final protected AgentShard getAgentShard(AgentShardDesignation designation)
+	{
+		return parentAgent.getAgentShard(designation);
 	}
 	
 	@SuppressWarnings("unchecked")
