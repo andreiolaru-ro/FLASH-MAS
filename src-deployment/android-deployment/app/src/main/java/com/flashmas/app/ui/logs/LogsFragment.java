@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.flashmas.app.NodeForegroundService;
 import com.flashmas.app.R;
+import com.flashmas.lib.NodeForegroundService;
 
 import java.io.OutputStream;
 

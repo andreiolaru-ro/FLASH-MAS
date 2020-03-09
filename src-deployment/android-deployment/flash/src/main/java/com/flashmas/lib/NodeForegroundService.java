@@ -1,4 +1,4 @@
-package com.flashmas.app;
+package com.flashmas.lib;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -115,7 +115,7 @@ public class NodeForegroundService extends Service {
         PendingIntent notifPendingIntent = PendingIntent.getActivity(
                 this,
                 Globals.PendingIntent.FOREGROUND_NOTIF_PENDING_INTENT_ID,
-                new Intent(this, MainActivity.class),
+                getPackageManager().getLaunchIntentForPackage(getPackageName()),
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
 

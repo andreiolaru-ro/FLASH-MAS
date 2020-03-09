@@ -13,8 +13,9 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.flashmas.app.NodeForegroundService;
 import com.flashmas.app.R;
+import com.flashmas.app.ui.OnFragmentInteractionListener;
+import com.flashmas.lib.NodeForegroundService;
 
 import net.xqhs.flash.core.agent.Agent;
 
@@ -101,15 +102,5 @@ public class AgentsFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction();
     }
 }

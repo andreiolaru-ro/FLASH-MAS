@@ -8,11 +8,13 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 
-import com.flashmas.app.ui.agents.AgentsFragment;
+import com.flashmas.app.ui.OnFragmentInteractionListener;
+import com.flashmas.lib.NodeForegroundService;
 
-public class MainActivity extends AppCompatActivity implements AgentsFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements AgentsFragment.On
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent intent = new Intent(MainActivity.this, NodeForegroundService.class);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent);
@@ -51,9 +54,15 @@ public class MainActivity extends AppCompatActivity implements AgentsFragment.On
             @Override
             public void onClick(View v) {
                 NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment);
-                if (navController.getCurrentDestination().getId() == R.id.logsFragment) {
+                NavDestination destination = navController.getCurrentDestination();
+
+                if (destination == null) return;
+
+                if (destination.getId() == R.id.logsFragment) {
+                    navController.popBackStack();
                     navController.navigate(R.id.agentsFragment);
-                } else if (navController.getCurrentDestination().getId() == R.id.agentsFragment) {
+                } else if (destination.getId() == R.id.agentsFragment) {
+                    navController.popBackStack();
                     navController.navigate(R.id.logsFragment);
                 }
             }

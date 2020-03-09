@@ -1,4 +1,4 @@
-package com.flashmas.app;
+package com.flashmas.lib;
 
 public class Globals {
     public static final int NODE_FOREGROUND_ID = 101;
