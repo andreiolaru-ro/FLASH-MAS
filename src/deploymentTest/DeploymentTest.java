@@ -48,7 +48,8 @@ public class DeploymentTest
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
-		
+
+
 		FlashBoot.main(test_args.split(" "));
 	}
 	

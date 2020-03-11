@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import net.xqhs.util.logging.logging.LogWrapper;
 
 public class Node extends Unit implements Entity<Node>
 {
@@ -41,6 +43,7 @@ public class Node extends Unit implements Entity<Node>
 	public Node(String name)
 	{
 		this.name = name;
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
