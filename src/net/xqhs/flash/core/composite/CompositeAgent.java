@@ -478,8 +478,8 @@ public class CompositeAgent implements Serializable, Agent
 		default:
 			// nothing to do
 		}
-		if(futureState != null)
-			log("Agent state is soon [][]", futureState, fromToTransient ? "transient" : "");
+		if(futureState != null){}
+			//log("Agent state is soon [][]", futureState, fromToTransient ? "transient" : "");
 		return futureState;
 	}
 	
@@ -507,7 +507,7 @@ public class CompositeAgent implements Serializable, Agent
 			synchronized(eventQueue)
 			{
 				agentState = AgentState.RUNNING;
-				log("state is now ", agentState);
+				//log("state is now ", agentState);
 			}
 			break;
 		case AGENT_STOP:
@@ -515,14 +515,14 @@ public class CompositeAgent implements Serializable, Agent
 			{
 				if(!eventQueue.isEmpty())
 				{
-					while(!eventQueue.isEmpty())
-						log("ignoring event ", eventQueue.poll());
+					while(!eventQueue.isEmpty()){}
+						//log("ignoring event ", eventQueue.poll());
 				}
 				if(toFromTransient)
 					agentState = AgentState.TRANSIENT;
 				else
 					agentState = AgentState.STOPPED;
-				log("state is now ", agentState);
+				//log("state is now ", agentState);
 			}
 			eventQueue = null;
 			localLog.doExit();
@@ -556,9 +556,9 @@ public class CompositeAgent implements Serializable, Agent
 		default:
 			throw new IllegalStateException("Unable to toggle TRANSIENT state while in " + agentState);
 		}
-		if(localLog.getUnitName() != null)
+		if(localLog.getUnitName() != null){}
 			// protect against locking the log
-			log("state switched to ", agentState);
+			//log("state switched to ", agentState);
 		return isTransient();
 	}
 	
@@ -585,6 +585,8 @@ public class CompositeAgent implements Serializable, Agent
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard);
 		shard.addContext(this.asContext());
+		if(supportLink != null)
+			shard.addGeneralContext(supportLink);
 		return this;
 	}
 	
