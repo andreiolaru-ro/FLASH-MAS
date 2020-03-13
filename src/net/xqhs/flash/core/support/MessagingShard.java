@@ -31,15 +31,15 @@ public interface MessagingShard extends AgentShard
 	/**
 	 * Sends a message to another agent, according to the specific implementation.
 	 * 
-	 * @param target
-	 *                    - the target (complete) endpoint of the message.
 	 * @param source
-	 *                    - the source (internal) endpoint of the message.
+	 *            - the source (internal) endpoint of the message.
+	 * @param target
+	 *            - the target (complete) endpoint of the message.
 	 * @param content
-	 *                    - the content of the message.
+	 *            - the content of the message.
 	 * @return <code>true</code> if the message was sent successfully.
 	 */
-	public boolean sendMessage(String target, String source, String content);
+	public boolean sendMessage(String source, String target, String content);
 	
 	/**
 	 * The method creates a complete path by attaching the specified elements and placing slashes between them.

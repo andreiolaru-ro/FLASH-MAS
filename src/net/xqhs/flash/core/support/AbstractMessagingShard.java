@@ -346,5 +346,5 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
-	public abstract boolean sendMessage(String target, String source, String content);
+	public abstract boolean sendMessage(String source, String target, String content);
 }

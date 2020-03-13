@@ -59,7 +59,7 @@ public class AgentWave extends AgentEvent
 		return this;
 	}
 	
-	public AgentWave addSource(String sourceElement)
+	public AgentWave addSourceElement(String sourceElement)
 	{
 		addFirst(SOURCE_ELEMENT, sourceElement);
 		return this;

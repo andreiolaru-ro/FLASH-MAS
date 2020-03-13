@@ -3,6 +3,8 @@ package localTest;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -10,6 +12,7 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
 
+@SuppressWarnings("javadoc")
 class TestAgent implements Agent
 {
 	
@@ -51,6 +54,13 @@ class TestAgent implements Agent
 												public String getEntityName()
 												{
 													return getName();
+												}
+												
+												@Override
+												public AgentShard getAgentShard(AgentShardDesignation designation)
+												{
+													// not supported
+													return null;
 												}
 												
 											};
@@ -132,6 +142,7 @@ class TestAgent implements Agent
 	}
 }
 
+@SuppressWarnings("javadoc")
 public class Main
 {
 	
