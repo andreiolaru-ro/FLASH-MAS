@@ -1,7 +1,10 @@
 package ClientProviderSimulation;
 
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 
 public class FibonacciShard extends AgentShardCore {
     /**
@@ -19,5 +22,33 @@ public class FibonacciShard extends AgentShardCore {
      */
     protected FibonacciShard(AgentShardDesignation designation) {
         super(designation);
+    }
+
+    private MessagingPylonProxy pylon;
+    public static final String FIBONACCI_VALUE = "last number in the fibonacci series";
+
+
+    public void startFibonacci(int maxLimit) {
+        int[] f = new int [maxLimit+2];
+        f[0] = 0;
+        f[1] = 1;
+
+        for(int i = 2; i <= maxLimit; i++) {
+            f[i] = f[i - 1] + f[i - 2];
+        }
+
+        AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
+        event.add(FIBONACCI_VALUE, Integer.toString(f[maxLimit]));
+        getAgent().postAgentEvent(event);
+
+    }
+
+
+    @Override
+    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if(!(context instanceof MessagingPylonProxy))
+            throw new IllegalStateException("Pylon Context is not of expected type.");
+        pylon = (MessagingPylonProxy) context;
+        return true;
     }
 }

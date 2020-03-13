@@ -6,7 +6,9 @@ import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
-public class OddNumbersShard extends AgentShardCore {
+import javax.swing.*;
+
+public class NumberMultiplesCountShard extends AgentShardCore {
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -20,32 +22,34 @@ public class OddNumbersShard extends AgentShardCore {
      *
      * @param designation - the designation of the shard, as instance of {@link AgentShardDesignation.StandardAgentShard}.
      */
-    protected OddNumbersShard(AgentShardDesignation designation) {
+    protected NumberMultiplesCountShard(AgentShardDesignation designation) {
         super(designation);
     }
 
     private MessagingPylonProxy pylon;
-    public static final String ODD_NUMBERS_COUNT = "odd numbers found";
+    public static final String NUMBER_MULTIPLES_COUNT = "the count of multiples found for given number";
 
 
-    public void findOddNumbersCount(int maxLimit) {
-        int oddNumbersCount = 0;
+    public void findNumberMultiplesCount(int number,int maxLimit) {
 
-        for(int nr = 3; nr <= maxLimit; nr++) {
-            if (isOdd(nr)) {
-                oddNumbersCount++;
+        int numberMultiplesCount = 0;
+
+        for(int nr = 2 * number; nr <= maxLimit; nr++) {
+            if (isMultipleOfNumber(nr, number)) {
+                numberMultiplesCount++;
             }
         }
 
         AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
-        event.add(ODD_NUMBERS_COUNT, Integer.toString(oddNumbersCount));
+        event.add(NUMBER_MULTIPLES_COUNT, Integer.toString(numberMultiplesCount));
         getAgent().postAgentEvent(event);
 
     }
 
-    private boolean isOdd(int number) {
-        if (number % 2 != 0)
+    private boolean isMultipleOfNumber(int nrForCheck, int  number) {
+        if  (nrForCheck % number == 0)
             return true;
+
         return false;
     }
 
@@ -57,5 +61,6 @@ public class OddNumbersShard extends AgentShardCore {
         pylon = (MessagingPylonProxy) context;
         return true;
     }
+
 
 }

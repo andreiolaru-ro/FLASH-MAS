@@ -4,7 +4,13 @@
     <bookmark url="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" line="28" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="" />
+    <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,14 +34,14 @@
           <entry key="project.open.time.7" value="5" />
           <entry key="project.open.time.8" value="10" />
           <entry key="project.open.time.88" value="1" />
-          <entry key="project.open.time.9" value="7" />
-          <entry key="project.opened" value="35" />
+          <entry key="project.open.time.9" value="8" />
+          <entry key="project.opened" value="36" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="class" value="9" />
-          <entry key="java" value="295" />
+          <entry key="java" value="305" />
           <entry key="txt" value="1" />
           <entry key="xml" value="1" />
         </counts>
@@ -43,7 +49,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CLASS" value="9" />
-          <entry key="JAVA" value="294" />
+          <entry key="JAVA" value="304" />
           <entry key="Scratch" value="2" />
           <entry key="XML" value="1" />
         </counts>
@@ -51,12 +57,12 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="dummy" value="1" />
-          <entry key="java" value="13615" />
+          <entry key="java" value="14528" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="13615" />
+          <entry key="JAVA" value="14528" />
           <entry key="PLAIN_TEXT" value="1" />
         </counts>
       </usages-collector>
@@ -65,28 +71,34 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberCalculatorShardForComposite.java">
+        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="53">
-              <caret line="63" selection-start-line="63" selection-end-line="63" />
+            <state relative-caret-position="446">
+              <caret line="67" column="5" lean-forward="true" selection-start-line="23" selection-start-column="4" selection-end-line="67" selection-end-column="5" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#findPrimeNumbersCount#0;class#PrimeNumberCalculatorShardForComposite#0" />
-                <element signature="method#isPrime#0;class#PrimeNumberCalculatorShardForComposite#0" />
-                <element signature="method#signalAgentEvent#0;class#PrimeNumberCalculatorShardForComposite#0" />
-                <element signature="method#addGeneralContext#0;class#PrimeNumberCalculatorShardForComposite#0" />
-                <element signature="method#waitProcessing#0;class#PrimeNumberCalculatorShardForComposite#0" />
-                <element signature="method#printMessage#0;class#PrimeNumberCalculatorShardForComposite#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberCompositeAgent.java">
+        <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="25" selection-start-line="25" selection-end-line="25" />
+            <state relative-caret-position="344">
+              <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEcuationSolverShard.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="347">
+              <caret line="53" selection-start-line="53" selection-end-line="53" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -95,31 +107,14 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java">
+        <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/UserRequestShard.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" column="45" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
+            <state relative-caret-position="102">
+              <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#createAgentList#0;class#PrimeNumberSimulationCompositeAgents#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="500">
-              <caret line="399" column="26" selection-start-line="399" selection-start-column="23" selection-end-line="399" selection-end-column="26" />
-              <folding>
-                <element signature="e#2928#2929#0" expanded="true" />
-                <element signature="e#2964#2965#0" expanded="true" />
-                <element signature="e#10087#10088#0" expanded="true" />
-                <element signature="e#10159#10160#0" expanded="true" />
-                <element signature="e#10164#10485#0" />
-                <element signature="e#11846#11847#0" expanded="true" />
-                <element signature="e#11869#11870#0" expanded="true" />
+                <element signature="e#1041#1042#0" expanded="true" />
+                <element signature="e#1075#1076#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -197,15 +192,18 @@
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/MasterCompositeAgent.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java" />
-        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumberShard.java" />
-        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" />
-        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" />
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/ControlSlaveAgentShardForComposite.java" />
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberCalculatorShardForComposite.java" />
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberCompositeAgent.java" />
         <option value="$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java" />
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEcuationSolverShard.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/UserRequestShard.java" />
       </list>
     </option>
   </component>
@@ -241,6 +239,12 @@
               <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
               <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="ClientProviderSimulation" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -249,12 +253,6 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
               <item name="PrimeNumberSimulation.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
-            </path>
-            <path>
-              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulationCompositeAgents" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -265,7 +263,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1584044786537" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1584107157740" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT&#10;JAVA" />
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.0" />
@@ -398,7 +396,7 @@
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Capture Tool" order="4" />
-      <window_info content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.24777327" />
+      <window_info active="true" content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.25182188" />
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3291815" />
@@ -487,6 +485,12 @@
           <properties />
           <option name="timeStamp" value="31" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java</url>
+          <line>63</line>
+          <properties />
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -499,27 +503,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/deploymentTest/DeploymentTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-255">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/System.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="882">
-          <caret line="398" column="30" selection-start-line="398" selection-start-column="30" selection-end-line="398" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Runnable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="67" column="25" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src-deployment/examples/echoAgent/EchoAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="612">
@@ -666,17 +649,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-98">
-          <caret line="42" column="31" selection-start-line="42" selection-start-column="31" selection-end-line="42" selection-end-column="31" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#addGeneralContext#0;class#PrimeNumberCalculatorShard#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/ControlSlaveAgentsShard.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="178">
@@ -723,38 +695,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="17" column="37" selection-start-line="17" selection-start-column="37" selection-end-line="17" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="15" column="28" selection-start-line="15" selection-start-column="28" selection-end-line="15" selection-end-column="28" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1039#1040#0" expanded="true" />
-            <element signature="e#1073#1074#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="18" column="7" selection-start-line="18" selection-start-column="7" selection-end-line="18" selection-end-column="7" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/lib/Logging-light.jar!/net/xqhs/util/logging/UnitLinkData.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
@@ -766,21 +706,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="100">
           <caret line="37" column="11" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="11" />
-          <folding>
-            <element signature="e#6553#6554#0" expanded="true" />
-            <element signature="e#6607#6608#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="143" column="19" selection-start-line="143" selection-start-column="19" selection-end-line="143" selection-end-column="19" />
-          <folding>
-            <element signature="method#PrimeNumberAgent#0;class#PrimeNumberAgent#0" />
-            <element signature="method#start#0;class#PrimeNumberAgent#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -926,9 +851,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="69">
           <caret line="233" selection-start-line="233" selection-end-line="233" />
-          <folding>
-            <element signature="e#8068#8069#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -960,7 +882,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberCalculatorShardForComposite.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="53">
+        <state relative-caret-position="748">
           <caret line="63" selection-start-line="63" selection-end-line="63" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -968,8 +890,18 @@
             <element signature="method#isPrime#0;class#PrimeNumberCalculatorShardForComposite#0" />
             <element signature="method#signalAgentEvent#0;class#PrimeNumberCalculatorShardForComposite#0" />
             <element signature="method#addGeneralContext#0;class#PrimeNumberCalculatorShardForComposite#0" />
-            <element signature="method#waitProcessing#0;class#PrimeNumberCalculatorShardForComposite#0" />
             <element signature="method#printMessage#0;class#PrimeNumberCalculatorShardForComposite#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="14" column="47" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="47" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#createAgentList#0;class#PrimeNumberSimulationCompositeAgents#0" />
           </folding>
         </state>
       </provider>
@@ -986,7 +918,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
+        <state relative-caret-position="480">
           <caret line="399" column="26" selection-start-line="399" selection-start-column="23" selection-end-line="399" selection-end-column="26" />
           <folding>
             <element signature="e#2928#2929#0" expanded="true" />
@@ -1000,13 +932,87 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java">
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" column="45" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
+        <state relative-caret-position="265">
+          <caret line="143" column="19" selection-start-line="143" selection-start-column="19" selection-end-line="143" selection-end-column="19" />
+          <folding>
+            <element signature="method#PrimeNumberAgent#0;class#PrimeNumberAgent#0" />
+            <element signature="method#start#0;class#PrimeNumberAgent#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="39" column="80" selection-start-line="39" selection-start-column="80" selection-end-line="39" selection-end-column="80" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="method#createAgentList#0;class#PrimeNumberSimulationCompositeAgents#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="58">
+          <caret line="27" column="69" selection-start-line="27" selection-start-column="69" selection-end-line="27" selection-end-column="69" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#addGeneralContext#0;class#FibonacciShard#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="329">
+          <caret line="42" column="80" selection-start-line="42" selection-start-column="80" selection-end-line="42" selection-end-column="80" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#addGeneralContext#0;class#NumberMultiplesCountShard#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="344">
+          <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberCalculatorShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="446">
+          <caret line="67" column="5" lean-forward="true" selection-start-line="23" selection-start-column="4" selection-end-line="67" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEcuationSolverShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="53" selection-start-line="53" selection-end-line="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/UserRequestShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1041#1042#0" expanded="true" />
+            <element signature="e#1075#1076#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class PrimeNumberSimulationCompositeAgents {
 
 
-    private static int SLAVE_AGENT_COUNT = 20000;
+    private static int SLAVE_AGENT_COUNT = 1000;
 
     public static ArrayList<PrimeNumberCompositeAgent> createAgentList(int agentCount) {
         ArrayList<PrimeNumberCompositeAgent> agentList = new ArrayList<>();

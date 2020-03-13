@@ -1,12 +1,13 @@
 package ClientProviderSimulation;
 
+import static java.lang.Math.*;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
-public class OddNumbersShard extends AgentShardCore {
+public class QuadraticEcuationSolverShard extends AgentShardCore {
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -20,34 +21,37 @@ public class OddNumbersShard extends AgentShardCore {
      *
      * @param designation - the designation of the shard, as instance of {@link AgentShardDesignation.StandardAgentShard}.
      */
-    protected OddNumbersShard(AgentShardDesignation designation) {
+    protected QuadraticEcuationSolverShard(AgentShardDesignation designation) {
         super(designation);
     }
 
     private MessagingPylonProxy pylon;
-    public static final String ODD_NUMBERS_COUNT = "odd numbers found";
+    public static final String EQUATION_ROOTS = "quadratic equation roots";
 
 
-    public void findOddNumbersCount(int maxLimit) {
-        int oddNumbersCount = 0;
+    public void findQuadraticEqationRoots(int a, int b, int c) {
+        String x1 = "0", x2 = "0";
+        if (a != 0) {
+            int d  = b*b - 4*a*c;
+            double sqrt_val = sqrt(abs(d));
 
-        for(int nr = 3; nr <= maxLimit; nr++) {
-            if (isOdd(nr)) {
-                oddNumbersCount++;
+            if(d > 0) {
+                x1 = (double)(-b + sqrt_val) / (2 * a) + "";
+                x2 = (double)(-b - sqrt_val) / (2 * a) + "";
+            } else {
+                x1 = -(double)b / ( 2 * a ) + " + i"
+                        + sqrt_val;
+                x2 = -(double)b / ( 2 * a )
+                        + " - i" + sqrt_val;
             }
         }
 
         AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
-        event.add(ODD_NUMBERS_COUNT, Integer.toString(oddNumbersCount));
+        event.add(EQUATION_ROOTS, x1 + " " + x2);
         getAgent().postAgentEvent(event);
 
     }
 
-    private boolean isOdd(int number) {
-        if (number % 2 != 0)
-            return true;
-        return false;
-    }
 
 
     @Override
