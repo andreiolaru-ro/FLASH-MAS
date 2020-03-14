@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import net.xqhs.util.logging.logging.LogWrapper;
@@ -129,6 +130,20 @@ public class Node extends Unit implements Entity<Node>
 	{
 		// no functionality offered
 		return null;
+	}
+
+	public List<Entity<?>> getEntities() {
+		return entityOrder;
+	}
+
+	public List<Agent> getAgents() {
+		LinkedList<Agent> agents = new LinkedList<>();
+		for (Entity<?> e : entityOrder) {
+			if (e instanceof Agent) {
+				agents.add((Agent) e);
+			}
+		}
+		return agents;
 	}
 	
 }
