@@ -61,7 +61,12 @@ public class MainBoard {
         });
 
 
-        stopAgentsButton.addActionListener(actionEvent -> JOptionPane.showMessageDialog(null, "Hello!"));
+        stopAgentsButton.addActionListener(actionEvent -> {
+            for(Agent agent : agents)
+                agent.stop();
+            loggingAreaText.setText(out.toString());
+            listModel.removeAllElements();
+        });
         exitButton.addActionListener(actionEvent -> JOptionPane.showMessageDialog(null, "Hello!"));
     }
 
