@@ -9,6 +9,7 @@ import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -41,7 +42,7 @@ public class MainBoard {
     }
 
 
-    private void addListenersToComponents() {
+    private void addListenersToComponents(JFrame frame) {
         createAgentsButton.addActionListener(actionEvent -> {
             String[] args = arg.split(" ");
             nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
@@ -67,13 +68,16 @@ public class MainBoard {
             loggingAreaText.setText(out.toString());
             listModel.removeAllElements();
         });
-        exitButton.addActionListener(actionEvent -> JOptionPane.showMessageDialog(null, "Hello!"));
+
+        exitButton.addActionListener(actionEvent -> {
+            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+        });
     }
 
 
     public void createAndShowGUI() {
         JFrame frame = new JFrame("Monitoring and control");
-        addListenersToComponents();
+        addListenersToComponents(frame);
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
