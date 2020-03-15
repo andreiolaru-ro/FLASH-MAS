@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="fab_margins">24dp</dimen>
+    <dimen name="main_fab_diameter">56dp</dimen>
+    <dimen name="secondary_fab_diameter">40dp</dimen>
 </resources>
