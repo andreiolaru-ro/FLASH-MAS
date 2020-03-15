@@ -6,6 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp" />
+
     <!--  Fragment nav host  -->
     <fragment
         android:id="@+id/nav_host_fragment"
@@ -27,14 +35,42 @@
         android:text="navigate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/add_agent_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_agent"
+        android:layout_margin="16dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/add_agent_fab"
+        app:layout_constraintRight_toLeftOf="@id/add_agent_fab"
+        app:layout_constraintTop_toTopOf="@id/add_agent_fab"
+        tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        app:srcCompat="@drawable/ic_play_arrow_black_24dp"
+        android:id="@+id/add_agent_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabCustomSize="@dimen/secondary_fab_diameter"
+        app:srcCompat="@drawable/ic_plus_1_black_24dp"
+        app:backgroundTint="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/main_fab"
+        app:layout_constraintRight_toRightOf="@id/main_fab"
+        app:layout_constraintLeft_toLeftOf="@id/main_fab"
+        android:layout_margin="@dimen/fab_margins"
+        android:visibility="invisible"
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/main_fab"
+        app:srcCompat="@drawable/ic_add_24dp"
         app:backgroundTint="@color/colorAccent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:fabCustomSize="@dimen/main_fab_diameter"
         android:layout_margin="@dimen/fab_margins"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>

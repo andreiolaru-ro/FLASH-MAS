@@ -2,9 +2,12 @@ package com.flashmas.app;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
@@ -16,14 +19,19 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
-    private FloatingActionButton fab;
+    private FloatingActionButton mainFab;
+    private FloatingActionButton addAgentFab;
+    private TextView addAgentTextView;
+
+    private boolean fabOpen = false;
+
     private Observer<Boolean> flashStateObserver = new Observer<Boolean>() {
         @Override
         public void onChanged(Boolean state) {
             if (state) {
-                fab.setImageResource(R.drawable.ic_stop_black_24dp);
+                mainFab.setImageResource(R.drawable.ic_stop_black_24dp);
             } else {
-                fab.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                mainFab.setImageResource(R.drawable.ic_play_arrow_black_24dp);
             }
         }
     };
@@ -36,12 +44,17 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         // TODO use ViewModel
 
         final Button nav = findViewById(R.id.navigate);
-        fab = findViewById(R.id.fab);
+        mainFab = findViewById(R.id.main_fab);
+        addAgentFab = findViewById(R.id.add_agent_fab);
+        addAgentTextView = findViewById(R.id.add_agent_label);
+        Toolbar bar = findViewById(R.id.toolbar);
+        setSupportActionBar(bar);
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        mainFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               FlashManager.getInstance().toggleState();
+                animateFab();
+                //FlashManager.getInstance().toggleState();
             }
         });
 
@@ -69,5 +82,21 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     @Override
     public void onFragmentInteraction() {
 
+    }
+
+    void animateFab() {
+        if (fabOpen) {
+            mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backwards));
+            addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+            addAgentFab.setClickable(false);
+            addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+            fabOpen = false;
+        } else {
+            mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward));
+            addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+            addAgentFab.setClickable(true);
+            addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+            fabOpen = true;
+        }
     }
 }
