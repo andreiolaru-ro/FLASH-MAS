@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.os.Build;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.node.Node;
 
 import java.io.OutputStream;
 import java.util.List;
@@ -17,11 +20,22 @@ import java.util.List;
 public class FlashManager {
     private static FlashManager instance;
     private static Context appContext;
+    private static Node mainNode;
+    private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
+
+    private Observer<Boolean> stateObserver = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean state) {
+            updateAgentsState();
+        }
+    };
+
 
     private FlashManager() throws IllegalStateException {
         if (appContext == null) {
             throw new IllegalStateException("Flash Manager not initialized with application context");
         }
+        NodeForegroundService.isRunningLiveData().observeForever(stateObserver);
     }
 
     public static void init(Context context) {
@@ -44,29 +58,40 @@ public class FlashManager {
         return instance;
     }
 
+    protected void setMainNode(Node node) {
+        mainNode = node;
+    }
+
     public static OutputStream getLogOutputStream() {
         return NodeForegroundService.getLogOutputStream();
     }
 
     public void startNode() {
-        Intent intent = new Intent(appContext, NodeForegroundService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            appContext.startForegroundService(intent);
-        } else {
-            appContext.startService(intent);
+        if (mainNode == null) {
+            Intent intent = new Intent(appContext, NodeForegroundService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                appContext.startForegroundService(intent);
+            } else {
+                appContext.startService(intent);
+            }
         }
     }
 
     public void stopNode() {
-        Intent intent = new Intent(appContext, NodeForegroundService.class);
-        appContext.stopService(intent);
+        if (mainNode != null) {
+            Intent intent = new Intent(appContext, NodeForegroundService.class);
+            appContext.stopService(intent);
+        }
     }
 
-    public void addAgent() {
-        // TODO
+    public void addAgent(Agent agent) {
+        if (mainNode != null) {
+            mainNode.registerEntity("Agent", agent, agent.getName());
+            updateAgentsState();
+        }
     }
 
-    public void removeAgent() {
+    public void removeAgent(Agent agent) {
         // TODO
     }
 
@@ -75,7 +100,7 @@ public class FlashManager {
     }
 
     public LiveData<List<Agent>> getAgentsLiveData() {
-        return NodeForegroundService.getAgentsLiveData();
+        return agentData;
     }
 
     public void toggleState() {
@@ -83,6 +108,14 @@ public class FlashManager {
             stopNode();
         } else {
             startNode();
+        }
+    }
+
+    private void updateAgentsState() {
+        if (mainNode == null) {
+            agentData.postValue(null);
+        } else {
+            agentData.postValue(mainNode.getAgents());
         }
     }
 }

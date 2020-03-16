@@ -48,7 +48,7 @@ public class Node extends Unit implements Entity<Node>
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
-	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
+	public void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
@@ -76,7 +76,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean stop()
 	{
-		li("Stopping node [].", name);
+		li("Stopping node [start].", name);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed)

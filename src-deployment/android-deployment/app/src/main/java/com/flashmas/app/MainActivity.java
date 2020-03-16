@@ -18,6 +18,8 @@ import com.flashmas.lib.FlashManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import examples.echoAgent.EchoAgent;
+
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
     private FloatingActionButton mainFab;
@@ -57,6 +59,14 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
             @Override
             public void onClick(View v) {
                 animateFab();
+            }
+        });
+
+        addAgentFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EchoAgent agent = new EchoAgent();
+                FlashManager.getInstance().addAgent(agent);
             }
         });
 
