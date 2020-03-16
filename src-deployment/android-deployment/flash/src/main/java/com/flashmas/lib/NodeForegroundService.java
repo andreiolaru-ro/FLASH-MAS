@@ -35,7 +35,6 @@ import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 public class NodeForegroundService extends Service {
     private static boolean running = false;
     private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
-    private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
     private static OutputStream logsOutputStream = new ByteArrayOutputStream();
 
     public static void setLogOutputStream(OutputStream s) {
@@ -85,10 +84,9 @@ public class NodeForegroundService extends Service {
         List<Agent> agents = new LinkedList<>();
         for(Node node : nodes) {
             node.start();
+            FlashManager.getInstance().setMainNode(node);
             agents.addAll(node.getAgents());
         }
-
-        agentData.postValue(agents);
 
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
@@ -97,16 +95,13 @@ public class NodeForegroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        running = false;
-        runningLiveData.postValue(false);
-
         if (logsOutputStream instanceof ByteArrayOutputStream) {
             ((ByteArrayOutputStream)logsOutputStream).reset();
         }
 
-        // Mark agents list as null
-        agentData.postValue(null);
-
+        FlashManager.getInstance().setMainNode(null);
+        running = false;
+        runningLiveData.postValue(false);
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 
@@ -145,10 +140,6 @@ public class NodeForegroundService extends Service {
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         notificationManager.createNotificationChannel(channel);
         return Globals.NODE_NOTIF_CHANNEL_ID;
-    }
-
-    public static LiveData<List<Agent>> getAgentsLiveData() {
-        return agentData;
     }
 
     public static boolean isRunning() {

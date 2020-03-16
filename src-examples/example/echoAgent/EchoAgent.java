@@ -18,6 +18,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -33,6 +34,7 @@ public class EchoAgent extends Unit implements Agent
 	
 	public EchoAgent()
 	{
+		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName("EchoAgent");
 	}
 	

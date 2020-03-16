@@ -145,7 +145,8 @@ public class Node extends Unit implements Entity<Node> {
 	 * @param entityName
 	 *            - the name of the entity.
 	 */
-	protected void registerEntity(String entityType, Entity<?> entity, String entityName) {
+	public void registerEntity(String entityType, Entity<?> entity, String entityName)
+	{
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
