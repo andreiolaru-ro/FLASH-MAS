@@ -15,6 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     private FloatingActionButton mainFab;
     private FloatingActionButton addAgentFab;
     private TextView addAgentTextView;
+    private MaterialButton toggleStateButton;
 
     private boolean fabOpen = false;
 
@@ -29,9 +31,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         @Override
         public void onChanged(Boolean state) {
             if (state) {
-                mainFab.setImageResource(R.drawable.ic_stop_black_24dp);
+                toggleStateButton.setIcon(getDrawable(R.drawable.ic_stop_black_24dp));
             } else {
-                mainFab.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                toggleStateButton.setIcon(getDrawable(R.drawable.ic_play_arrow_black_24dp));
             }
         }
     };
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         mainFab = findViewById(R.id.main_fab);
         addAgentFab = findViewById(R.id.add_agent_fab);
         addAgentTextView = findViewById(R.id.add_agent_label);
+        toggleStateButton = findViewById(R.id.toggle_state_button);
         Toolbar bar = findViewById(R.id.toolbar);
         setSupportActionBar(bar);
 
@@ -54,7 +57,13 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
             @Override
             public void onClick(View v) {
                 animateFab();
-                //FlashManager.getInstance().toggleState();
+            }
+        });
+
+        toggleStateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FlashManager.getInstance().toggleState();
             }
         });
 
@@ -82,6 +91,15 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     @Override
     public void onFragmentInteraction() {
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (fabOpen) {
+            animateFab();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     void animateFab() {
