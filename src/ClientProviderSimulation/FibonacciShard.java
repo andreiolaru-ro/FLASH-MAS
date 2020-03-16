@@ -5,6 +5,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
+import java.util.Random;
 
 public class FibonacciShard extends AgentShardCore {
     /**
@@ -26,9 +27,12 @@ public class FibonacciShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String FIBONACCI_VALUE = "last number in the fibonacci series";
+    public static final int MAX_LIMIT = 50;
+    public static String FIBONACCI_SHARD_DESIGNATION = "Fibonacci shard designation";
 
+    public void startFibonacci() {
+        int maxLimit = new Random().nextInt(MAX_LIMIT);
 
-    public void startFibonacci(int maxLimit) {
         int[] f = new int [maxLimit+2];
         f[0] = 0;
         f[1] = 1;

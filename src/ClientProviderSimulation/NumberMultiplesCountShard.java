@@ -7,6 +7,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
 import javax.swing.*;
+import java.util.Random;
 
 public class NumberMultiplesCountShard extends AgentShardCore {
     /**
@@ -28,9 +29,14 @@ public class NumberMultiplesCountShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String NUMBER_MULTIPLES_COUNT = "the count of multiples found for given number";
+    public static  final int MAX_LIMIT = 50;
+    public static  final int MAX_NUMBER = 100;
+    public static String NUMBER_MULTIPLES_SHARD_DESIGNATION = "Number multiples shard designation";
 
+    public void findNumberMultiplesCount() {
 
-    public void findNumberMultiplesCount(int number,int maxLimit) {
+        int number = new Random().nextInt(MAX_NUMBER);
+        int maxLimit = new Random().nextInt(MAX_LIMIT);
 
         int numberMultiplesCount = 0;
 

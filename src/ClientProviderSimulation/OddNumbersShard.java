@@ -6,6 +6,8 @@ import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
+import java.util.Random;
+
 public class OddNumbersShard extends AgentShardCore {
     /**
      * The constructor assigns the designation to the shard.
@@ -26,9 +28,14 @@ public class OddNumbersShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String ODD_NUMBERS_COUNT = "odd numbers found";
+    private static final int MAX_LIMIT = 50;
+    public static String ODD_NUMBERS_SHARD_DESIGNATION = "Odd numbers shard designation";
 
 
-    public void findOddNumbersCount(int maxLimit) {
+    public void findOddNumbersCount() {
+
+        int maxLimit = new Random().nextInt(MAX_LIMIT);
+
         int oddNumbersCount = 0;
 
         for(int nr = 3; nr <= maxLimit; nr++) {

@@ -7,7 +7,9 @@ import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
-public class QuadraticEcuationSolverShard extends AgentShardCore {
+import java.util.Random;
+
+public class QuadraticEquationSolverShard extends AgentShardCore {
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -21,15 +23,20 @@ public class QuadraticEcuationSolverShard extends AgentShardCore {
      *
      * @param designation - the designation of the shard, as instance of {@link AgentShardDesignation.StandardAgentShard}.
      */
-    protected QuadraticEcuationSolverShard(AgentShardDesignation designation) {
+    protected QuadraticEquationSolverShard(AgentShardDesignation designation) {
         super(designation);
     }
 
     private MessagingPylonProxy pylon;
     public static final String EQUATION_ROOTS = "quadratic equation roots";
+    private static  final int MAX_LIMIT = 50;
+    public static String QUADRATIC_EQUATION_SHARD_DESIGNATION = "Quadratic equation shard designation";
 
+    public void findQuadraticEqationRoots() {
+        int a = new Random().nextInt(MAX_LIMIT);
+        int b = new Random().nextInt(MAX_LIMIT);
+        int c = new Random().nextInt(MAX_LIMIT);
 
-    public void findQuadraticEqationRoots(int a, int b, int c) {
         String x1 = "0", x2 = "0";
         if (a != 0) {
             int d  = b*b - 4*a*c;

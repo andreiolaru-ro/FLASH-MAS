@@ -5,6 +5,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
+import java.util.Random;
 
 public class EvenNumbersShard extends AgentShardCore {
     /**
@@ -26,10 +27,12 @@ public class EvenNumbersShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String EVEN_NUMBERS_COUNT = "even numbers found";
+    public static final int MAX_LIMIT = 50;
+    public static String EVEN_NUMBERS_SHARD_DESIGNATION = "Even numbers shard designation";
 
-
-    public void findEvenNumbersCount(int maxLimit) {
+    public void findEvenNumbersCount() {
         int evenNumbersCount = 0;
+        int maxLimit = new Random().nextInt(MAX_LIMIT);
 
         for(int nr = 2; nr <= maxLimit; nr++) {
             if (isEven(nr)) {

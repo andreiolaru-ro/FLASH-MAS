@@ -1,9 +1,13 @@
 package ClientProviderSimulation;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 
 public class UserRequestShard extends AgentShardCore {
+
+
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -17,7 +21,20 @@ public class UserRequestShard extends AgentShardCore {
      *
      * @param designation - the designation of the shard, as instance of {@link StandardAgentShard}.
      */
+
     protected UserRequestShard(AgentShardDesignation designation) {
         super(designation);
     }
+
+    private MessagingPylonProxy pylon;
+    public static String USER_REQUEST_SHARD_DESIGNATION = "User request shard designation";
+
+    @Override
+    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if(!(context instanceof MessagingPylonProxy))
+            throw new IllegalStateException("Pylon Context is not of expected type.");
+        pylon = (MessagingPylonProxy) context;
+        return true;
+    }
+
 }
