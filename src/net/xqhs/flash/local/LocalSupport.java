@@ -18,6 +18,7 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
@@ -70,7 +71,6 @@ public class LocalSupport extends DefaultPylonImplementation
 																			return true;
 																		}
 																		
-																		@SuppressWarnings("unlikely-arg-type")
 																		@Override
 																		public String getRecommendedShardImplementation(
 																				AgentShardDesignation shardType)
@@ -141,6 +141,18 @@ public class LocalSupport extends DefaultPylonImplementation
 		protected void receiveMessage(String source, String destination, String content)
 		{
 			super.receiveMessage(source, destination, content);
+		}
+		
+		@Override
+		public String getAgentAddress()
+		{
+			return getAgent().getEntityName();
+		}
+		
+		@Override
+		public String extractAgentAddress(String endpoint)
+		{
+			return endpoint.split(AgentWave.ADDRESS_SEPARATOR, 1)[0];
 		}
 	}
 	

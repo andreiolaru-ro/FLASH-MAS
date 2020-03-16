@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -148,14 +149,14 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 
 	/**
 	 * This implementation presumes that the address / name of the agent does not contain any occurrence of
-	 * {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
+	 * {@link AgentWave#ADDRESS_SEPARATOR} (currently {@value AgentWave#ADDRESS_SEPARATOR}).
 	 * 
 	 * @param endpoint
-	 *            - an endpoint, as defined in {@link AbstractMessagingShard}.
-	 * @return the agent address, as extracted from the entpoint.
+	 *                     - an endpoint, as defined in {@link AbstractMessagingShard}.
+	 * @return the agent address, as extracted from the endpoint.
 	 */
 	@SuppressWarnings("static-method")
 	public String extractAgentAddress(String endpoint) {
-		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
+		return endpoint.substring(0, endpoint.indexOf(AgentWave.ADDRESS_SEPARATOR));
 	}
 }

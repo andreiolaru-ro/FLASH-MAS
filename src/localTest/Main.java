@@ -3,6 +3,7 @@ package localTest;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -23,13 +24,11 @@ class TestAgent implements Agent
 												@Override
 												public void postAgentEvent(AgentEvent event)
 												{
-													System.out.println(event.getValue(
-															AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
-															+ event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
-															+ " la " + event.getValue(
-																	AbstractMessagingShard.DESTINATION_PARAMETER));
-													int message = Integer.parseInt(
-															event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
+													if(event instanceof AgentWave)
+														System.out.println(((AgentWave) event).getContent() + " de la "
+																+ ((AgentWave) event).getCompleteSource() + " la "
+																+ ((AgentWave) event).getCompleteDestination());
+													int message = Integer.parseInt(((AgentWave) event).getContent());
 													if(message < 5)
 													{
 														Thread eventThread = new Thread() {
@@ -38,10 +37,10 @@ class TestAgent implements Agent
 																									{
 																										getMessagingShard()
 																												.sendMessage(
-																														event.getValue(
-																																AbstractMessagingShard.DESTINATION_PARAMETER),
-																														event.getValue(
-																																AbstractMessagingShard.SOURCE_PARAMETER),
+																														getMessagingShard()
+																																.getAgentAddress(),
+																														((AgentWave) event)
+																																.getCompleteSource(),
 																														Integer.toString(
 																																message + 1));
 																									}
@@ -75,7 +74,7 @@ class TestAgent implements Agent
 	{
 		if(name.equals("Two"))
 		{
-			messagingShard.sendMessage(this.getName(), "One", "1");
+			messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "1");
 		}
 		return true;
 	}

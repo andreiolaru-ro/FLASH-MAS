@@ -34,32 +34,37 @@ import net.xqhs.flash.core.util.MultiValueMap;
  */
 public class AgentWave extends AgentEvent
 {
-	public final String	CONTENT					= "content";
-	public final String	SOURCE_ELEMENT			= "source-element";
-	public final String	COMPLETE_DESTINATION	= "source-complete";
-	public final String	DESTINATION_ELEMENT		= "source-element";
+	/**
+	 * The serial UID.
+	 */
+	private static final long	serialVersionUID		= 8405841078556036608L;
+	
 	/**
 	 * The string separating elements of an endpoint address.
 	 */
 	public static final String	ADDRESS_SEPARATOR		= "/";
 	
-	public AgentWave(String content, String destination, String... destinationElements)
+	public final String			CONTENT					= "content";
+	public final String			SOURCE_ELEMENT			= "source-element";
+	public final String			COMPLETE_DESTINATION	= "destination-complete";
+	public final String			DESTINATION_ELEMENT		= "destination-element";
+	
+	public AgentWave(String content, String destinationRoot, String... destinationElements)
 	{
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
-		add(COMPLETE_DESTINATION,
-				destination + (destinationElements.length > 0
-						? ADDRESS_SEPARATOR + String.join(ADDRESS_SEPARATOR, destinationElements)
-						: ""));
+		resetDestination(destinationRoot, destinationElements);
 	}
 	
-	public AgentWave setSource(String... sourceElements)
+	public AgentWave setSourceElements(String... sourceElements)
 	{
-		addAll(SOURCE_ELEMENT, Arrays.asList(sourceElements));
+		for(String elem : sourceElements)
+			if(elem.length() > 0)
+				add(SOURCE_ELEMENT, elem);
 		return this;
 	}
 	
-	public AgentWave addSourceElement(String sourceElement)
+	public AgentWave addSourceElementFirst(String sourceElement)
 	{
 		addFirst(SOURCE_ELEMENT, sourceElement);
 		return this;
@@ -80,9 +85,22 @@ public class AgentWave extends AgentEvent
 		return getValue(COMPLETE_DESTINATION);
 	}
 	
-	public String getNextDestination()
+	public String getFirstDestination()
 	{
 		return getValue(DESTINATION_ELEMENT);
+	}
+	
+	public AgentWave resetDestination(String destination, String... destinationElements)
+	{
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
+		String join = String.join(ADDRESS_SEPARATOR, destinationElements);
+		add(COMPLETE_DESTINATION, destination + (join.length() > 0 ? ADDRESS_SEPARATOR + join : ""));
+		if(isSet(DESTINATION_ELEMENT))
+			removeKey(DESTINATION_ELEMENT);
+		add(DESTINATION_ELEMENT, destination);
+		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
+		return this;
 	}
 	
 	public void removeFirstDestinationElement()
@@ -97,24 +115,48 @@ public class AgentWave extends AgentEvent
 	
 	/**
 	 * Produces an endpoint description by assembling the start of the address with the rest of the elements. They will
-	 * be separated by the address separator specified as constant.
+	 * be separated by what is the value of the {@link #ADDRESS_SEPARATOR}.
 	 * <p>
 	 * Elements that are <code>null</code> will not be assembled in the path.
 	 * <p>
 	 * If the start is <code>null</code> the result will begin with a slash.
 	 * 
 	 * @param start
-	 *                     - start of the address.
+	 *                     - start of the address. Special cases:
+	 *                     <ul>
+	 *                     <li><code>null</code> - the path will start with the first element.
+	 *                     <li>{@link #ADDRESS_SEPARATOR} - the path will start with {@value #ADDRESS_SEPARATOR},
+	 *                     followed by the first element
+	 *                     </ul>
 	 * @param elements
 	 *                     - other elements in the address
 	 * @return the resulting address.
 	 */
-	public static String makePathHelper(String start, String... elements)
+	public static String makePath(String start, String... elements)
 	{
 		String ret = (start != null) ? start : "";
 		for(String elem : elements)
-			if(elem != null)
+			if(elem != null && elem.length() > 0)
 				ret += ADDRESS_SEPARATOR + elem;
+		return ret;
+	}
+	
+	public static String[] pathToElements(String path, String prefixToRemove)
+	{
+		String barePath = path.startsWith(prefixToRemove) ? path.substring(prefixToRemove.length()) : path;
+		return (barePath.startsWith(ADDRESS_SEPARATOR) ? barePath.substring(1) : barePath).split(ADDRESS_SEPARATOR);
+	}
+	
+	public static String[] pathToElementsWith(String path, String prefix)
+	{
+		
+		String barePath = path.startsWith(prefix) ? path.substring(prefix.length()) : path;
+		String[] elements = (barePath.startsWith(ADDRESS_SEPARATOR) ? barePath.substring(1) : barePath)
+				.split(ADDRESS_SEPARATOR);
+		String[] ret = new String[elements.length + 1];
+		ret[0] = prefix;
+		for(int i = 0; i < elements.length; i++)
+			ret[i + 1] = elements[i];
 		return ret;
 	}
 }

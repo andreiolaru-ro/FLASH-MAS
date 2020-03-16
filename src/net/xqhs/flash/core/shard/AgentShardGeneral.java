@@ -1,5 +1,6 @@
 package net.xqhs.flash.core.shard;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.MessagingShard;
 
@@ -60,7 +61,7 @@ public class AgentShardGeneral extends AgentShardCore
 	 * 
 	 * @param content
 	 *                               - the content of the message.
-	 * @param sourceEndpoint
+	 * @param sourceInternalEndpoint
 	 *                               - the source endpoint of the message (as an internal endpoint, to which the address
 	 *                               of the agent will be added).
 	 * @param targetAgent
@@ -71,11 +72,11 @@ public class AgentShardGeneral extends AgentShardCore
 	 * @throws UnsupportedOperationException
 	 *                                           if no usable {@link MessagingShard} has been found.
 	 */
-	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
+	protected boolean sendMessage(String content, String sourceInternalEndpoint, String targetAgent,
 			String... targetPathElements)
 	{
 		MessagingShard msd = getMessagingShard();
-		return msd.sendMessage(msd.makePath(targetAgent, targetPathElements), msd.makeLocalPath(sourceEndpoint),
-				content);
+		return msd.sendMessage(AgentWave.makePath(msd.getAgentAddress(), sourceInternalEndpoint),
+				AgentWave.makePath(targetAgent, targetPathElements), content);
 	}
 }
