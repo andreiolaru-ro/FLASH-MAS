@@ -59,6 +59,31 @@ public class MultiValueMap extends Config implements Serializable
 	protected final Map<String, List<Object>>	backingMap			= new LinkedHashMap<>();
 	
 	/**
+	 * Internal method that actually performs insertion.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entry.
+	 * @param value
+	 *            - the value associated with the name.
+	 * @param insertFirst
+	 *            - <code>true</code> if this new value should be inserted at the head of the list; <code>false</code>
+	 *            for the tail of the list.
+	 * @return the instance itself.
+	 */
+	protected MultiValueMap addItem(String name, Object value, boolean insertFirst)
+	{
+		locked();
+		if(!backingMap.containsKey(name))
+			backingMap.put(name, new ArrayList<>());
+		List<Object> list = backingMap.get(name);
+		if(insertFirst)
+			list.add(0, value);
+		else
+			list.add(value);
+		return this;
+	}
+	
+	/**
 	 * Adds a new parameter entry.
 	 * <p>
 	 * Throws an exception if the collection has been previously {@link #locked()}.
@@ -72,6 +97,24 @@ public class MultiValueMap extends Config implements Serializable
 	public MultiValueMap add(String name, String value)
 	{
 		return addObject(name, value);
+	}
+	
+	/**
+	 * Adds a new parameter entry.
+	 * <p>
+	 * Throws an exception if the collection has been previously {@link #locked()}.
+	 * <p>
+	 * The value is added as the first value associated with the name.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entry.
+	 * @param value
+	 *            - the value associated with the name.
+	 * @return the instance itself, for chained calls.
+	 */
+	public MultiValueMap addFirst(String name, String value)
+	{
+		return addFirstObject(name, value);
 	}
 	
 	/**
@@ -95,9 +138,6 @@ public class MultiValueMap extends Config implements Serializable
 	/**
 	 * Adds a new parameter entry. This version of the method supports any {@link Object} instance as value.
 	 * <p>
-	 * This is the only method in the implementation actually performing an addition (all other methods call this
-	 * method.
-	 * <p>
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
@@ -108,11 +148,25 @@ public class MultiValueMap extends Config implements Serializable
 	 */
 	public MultiValueMap addObject(String name, Object value)
 	{
-		locked();
-		if(!backingMap.containsKey(name))
-			backingMap.put(name, new ArrayList<>());
-		backingMap.get(name).add(value);
-		return this;
+		return addItem(name, value, false);
+	}
+	
+	/**
+	 * Adds a new parameter entry. This version of the method supports any {@link Object} instance as value.
+	 * <p>
+	 * The object is added as the first value associated with the name.
+	 * <p>
+	 * Throws an exception if the collection has been previously {@link #locked()}.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entry.
+	 * @param value
+	 *            - the value associated with the name.
+	 * @return the instance itself, for chained calls.
+	 */
+	public MultiValueMap addFirstObject(String name, Object value)
+	{
+		return addItem(name, value, true);
 	}
 	
 	/**
