@@ -9,6 +9,8 @@ import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -24,17 +26,16 @@ public class MainBoard {
     private JPanel panel;
     private JList<String> agentsList;
 
-    private ByteArrayOutputStream out;
     private List<Node> nodes;
     private List<Agent> agents;
-    private DefaultListModel<String> listModel;
+
+    private ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private DefaultListModel<String> listModel = new DefaultListModel<>();
 
     private String arg;
 
     public MainBoard(String arg) {
         this.arg = arg;
-        listModel = new DefaultListModel<String>();
-        out = new ByteArrayOutputStream();
         agentsList.setModel(listModel);
 
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
@@ -43,13 +44,38 @@ public class MainBoard {
 
 
     private void addListenersToComponents(JFrame frame) {
+        final JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.add(new JMenuItem("Start"));
+        popupMenu.add(new JMenuItem("Stop"));
+
+        agentsList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (SwingUtilities.isRightMouseButton(me)
+                        && !agentsList.isSelectionEmpty()
+                        && agentsList.locationToIndex(me.getPoint())
+                        == agentsList.getSelectedIndex()) {
+                    popupMenu.show(agentsList, me.getX(), me.getY());
+                }
+            }
+        });
+
+
+
         createAgentsButton.addActionListener(actionEvent -> {
+            /*
+            * Load deployment to create the requested nodes.
+            * */
             String[] args = arg.split(" ");
             nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
             loggingAreaText.setText(out.toString());
         });
 
         startAgentsButton.addActionListener(actionEvent -> {
+            /*
+            * Start all nodes and store all existing agents.
+            * Update the logging text area and the list of running agents.
+            * */
             agents = new LinkedList<>();
             for(Node node : nodes) {
                 node.start();
@@ -58,20 +84,22 @@ public class MainBoard {
             loggingAreaText.setText(out.toString());
 
             for (Agent agent : agents)
-                listModel.addElement(agent.getName());
+                listModel.addElement("[" + agent.isRunning() + "] " + agent.getName());
         });
 
 
         stopAgentsButton.addActionListener(actionEvent -> {
+            /*
+            * Stop all nodes.
+            * Update the logging area and the list with current running agents.
+            * */
             for(Agent agent : agents)
                 agent.stop();
             loggingAreaText.setText(out.toString());
             listModel.removeAllElements();
         });
 
-        exitButton.addActionListener(actionEvent -> {
-            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-        });
+        exitButton.addActionListener(actionEvent -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));
     }
 
 

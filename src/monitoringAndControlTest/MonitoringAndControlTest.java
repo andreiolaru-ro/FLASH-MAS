@@ -1,7 +1,6 @@
 package monitoringAndControlTest;
 
 import monitoringAndControl.MainBoard;
-import net.xqhs.flash.FlashBoot;
 
 public class MonitoringAndControlTest {
     /**
