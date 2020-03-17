@@ -77,7 +77,7 @@ public class MultiValueMap extends Config implements Serializable
 			backingMap.put(name, new ArrayList<>());
 		List<Object> list = backingMap.get(name);
 		if(insertFirst)
-			list.add(0, list);
+			list.add(0, value);
 		else
 			list.add(value);
 		return this;
