@@ -253,13 +253,6 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		return true;
 	}
 	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
-		le("No general context supported for shards.");
-		return false;
-	}
-	
 	/**
 	 * Sets the parent of the shard to <code>null</code>, effectively eliminating the shard from the agent.
 	 * <p>
@@ -276,6 +269,20 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		parentAgent = null;
 		parentChangeNotifier((ShardContainer) parent);
 		return true;
+	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		lw("No general context supported for shards by default.");
+		return false;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		lw("No general context supported for shards by default.");
+		return false;
 	}
 	
 	/**

@@ -113,6 +113,12 @@ class TestAgent implements Agent
 	}
 	
 	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		return true;
+	}
+	
+	@Override
 	public boolean removeContext(EntityProxy<Pylon> context)
 	{
 		pylon = null;

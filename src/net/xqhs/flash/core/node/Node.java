@@ -115,6 +115,13 @@ public class Node extends Unit implements Entity<Node>
 	}
 	
 	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		// unsupported
+		return false;
+	}
+	
+	@Override
 	public boolean removeContext(EntityProxy<Node> context)
 	{
 		// unsupported

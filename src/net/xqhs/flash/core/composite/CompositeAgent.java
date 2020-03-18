@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -60,7 +61,7 @@ public class CompositeAgent implements Serializable, Agent
 		
 		/**
 		 * @param agent
-		 *            - the agent
+		 *                  - the agent
 		 */
 		protected CompositeAgentShardContainer(CompositeAgent agent)
 		{
@@ -82,7 +83,7 @@ public class CompositeAgent implements Serializable, Agent
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
-			throw new UnsupportedOperationException("not implemented.");
+			return shards.get(designation);
 		}
 	}
 	
@@ -155,14 +156,13 @@ public class CompositeAgent implements Serializable, Agent
 				synchronized(eventQueue)
 				{
 					if((eventQueue != null) && eventQueue.isEmpty())
-					try
-					{
+						try
+						{
 							eventQueue.wait();
+						} catch(InterruptedException e)
+						{
+							// do nothing
 						}
-						catch(InterruptedException e)
-					{
-						// do nothing
-					}
 					else
 						event = eventQueue.poll();
 				}
@@ -193,67 +193,68 @@ public class CompositeAgent implements Serializable, Agent
 	/**
 	 * The class UID
 	 */
-	private static final long							serialVersionUID			= -2693230015986527097L;
+	private static final long								serialVersionUID			= -2693230015986527097L;
 	
 	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to take the agent out of / into the <code>TRANSIENT</code>
 	 * state.
 	 */
-	public static final String							TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
+	public static final String								TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
 	
 	/**
 	 * This can be used by support implementation-specific shards to contact the support implementation.
 	 */
-	protected EntityProxy<Pylon>						supportLink					= null;
+	protected EntityProxy<Pylon>							supportLink					= null;
 	
 	/**
 	 * The proxy to this agent.
 	 */
-	protected EntityProxy<Agent>						asContext					= new CompositeAgentShardContainer(
+	protected EntityProxy<Agent>							asContext					= new CompositeAgentShardContainer(
 			this);
 	
 	/**
 	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 */
-	protected Map<AgentShardDesignation, AgentShard>	shards						= new HashMap<>();
+	protected Map<AgentShardDesignation, AgentShard>		shards						= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which shards were added, so as to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #shards}.
 	 */
-	protected ArrayList<AgentShard>						shardOrder					= new ArrayList<>();
+	protected ArrayList<AgentShard>							shardOrder					= new ArrayList<>();
+	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext						= new ArrayList<>();
 	
 	/**
 	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
 	 */
-	protected LinkedBlockingQueue<AgentEvent>			eventQueue					= null;
+	protected LinkedBlockingQueue<AgentEvent>				eventQueue					= null;
 	/**
 	 * The thread managing the agent's life-cycle (managing events).
 	 */
-	protected Thread									agentThread					= null;
+	protected Thread										agentThread					= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
 	 */
-	protected AgentState								agentState					= AgentState.STOPPED;
+	protected AgentState									agentState					= AgentState.STOPPED;
 	
 	/**
 	 * The agent name, if given.
 	 */
-	protected String									agentName					= null;
+	protected String										agentName					= null;
 	/**
 	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agent's state. While
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
 	 * the {@link #log(String, Object...)} method.
 	 */
-	protected UnitComponent								localLog					= (UnitComponent) new UnitComponent()
+	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 	/**
 	 * This switch activates the use of the {@link #localLog}.
 	 */
-	protected boolean									USE_LOCAL_LOG				= true;
+	protected boolean										USE_LOCAL_LOG				= true;
 	
 	/**
 	 * Constructor for {@link CompositeAgent} instances.
@@ -265,7 +266,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * is automatically generated.
 	 * 
 	 * @param configuration
-	 *            - the configuration, from which the name of the agent will be taken.
+	 *                          - the configuration, from which the name of the agent will be taken.
 	 */
 	public CompositeAgent(MultiTreeMap configuration)
 	{
@@ -311,7 +312,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * @return <code>true</code> if the agent is now in the <code>TRANSIENT</code> state, <code>false</code> otherwise.
 	 * 
 	 * @throws RuntimeException
-	 *             if the agent was in any other state than the two.
+	 *                              if the agent was in any other state than the two.
 	 */
 	public boolean toggleTransient() throws RuntimeException
 	{
@@ -322,30 +323,39 @@ public class CompositeAgent implements Serializable, Agent
 	 * Context can be added to an agent only when it is not running.
 	 */
 	@Override
-	public boolean addContext(EntityProxy<Pylon> link)
+	public boolean addContext(EntityProxy<Pylon> context)
 	{
-		if(!canAddShards() || isRunning())
-			return false;
-		supportLink = link;
-		return true;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context)
-	{
-		log("No general context supported.");
-		return false;
+		return addGeneralContext(context);
 	}
 	
 	/**
 	 * Context can be removed from an agent only when it is not running.
 	 */
 	@Override
-	public boolean removeContext(EntityProxy<Pylon> link)
+	public boolean removeContext(EntityProxy<Pylon> context)
 	{
-		if(!canAddShards() || isRunning())
+		return removeGeneralContext(context);
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		if(isRunning())
 			return false;
-		supportLink = null;
+		agentContext.add(context);
+		for(AgentShard shard : shards.values())
+			shard.addGeneralContext(context);
+		return true;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		if(isRunning())
+			return false;
+		agentContext.remove(context);
+		for(AgentShard shard : shards.values())
+			shard.removeGeneralContext(context);
 		return true;
 	}
 	
@@ -366,7 +376,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * inappropriate state.
 	 * 
 	 * @param event
-	 *            the event to disseminate.
+	 *                  the event to disseminate.
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
@@ -414,7 +424,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 * 
 	 * @param event
-	 *            - the event one desires to post.
+	 *                  - the event one desires to post.
 	 * @return <code>true</code> if the event could be posted at this moment; <code>false</code> otherwise.
 	 */
 	protected boolean canPostEvent(AgentEvent event)
@@ -442,9 +452,10 @@ public class CompositeAgent implements Serializable, Agent
 	 * If the event was {@link AgentEventType#AGENT_STOP}, the agent will enter {@link AgentState#STOPPING}.
 	 * 
 	 * @param eventType
-	 *            - the type of the event.
+	 *                            - the type of the event.
 	 * @param fromToTransient
-	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
+	 *                            - <code>true</code> if the agent should enter / exit from the
+	 *                            {@link AgentState#TRANSIENT} state.
 	 * @return the state the agent should enter next (the actual state change will happen in
 	 *         {@link #postAgentEvent(AgentEvent)}, together with posting the event to the queue.
 	 */
@@ -484,9 +495,10 @@ public class CompositeAgent implements Serializable, Agent
 	 * thread will exit.
 	 * 
 	 * @param eventType
-	 *            - the type of the event.
+	 *                            - the type of the event.
 	 * @param toFromTransient
-	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
+	 *                            - <code>true</code> if the agent should enter / exit from the
+	 *                            {@link AgentState#TRANSIENT} state.
 	 * @return <code>true</code> if the agent thread should exit.
 	 */
 	protected boolean FSMEventOut(AgentEventType eventType, boolean toFromTransient)
@@ -531,7 +543,7 @@ public class CompositeAgent implements Serializable, Agent
 	 *         <code>false</code> if it is now in {@link AgentState#STOPPED}.
 	 * 
 	 * @throws RuntimeException
-	 *             if the agent is in any other state than the two above.
+	 *                              if the agent is in any other state than the two above.
 	 */
 	protected boolean FSMToggleTransient() throws RuntimeException
 	{
@@ -560,7 +572,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * one instance per designation (functionality) will be allowed.
 	 * 
 	 * @param shard
-	 *            - the {@link AgentShard} instance to add.
+	 *                  - the {@link AgentShard} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other shards.
 	 */
 	protected CompositeAgent addShard(AgentShard shard)
@@ -575,6 +587,8 @@ public class CompositeAgent implements Serializable, Agent
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard);
 		shard.addContext(this.asContext());
+		for(EntityProxy<? extends Entity<?>> context : agentContext)
+			shard.addGeneralContext(context);
 		return this;
 	}
 	
@@ -582,7 +596,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Removes an existing shard of the agent.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to remove.
+	 *                        - the designation of the shard to remove.
 	 * @return a reference to the just-removed shard instance.
 	 */
 	protected AgentShard removeShard(AgentShardDesignation designation)
@@ -599,7 +613,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * Returns <code>true</code> if the agent contains said shard.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to search.
+	 *                        - the designation of the shard to search.
 	 * @return <code>true</code> if the shard exists, <code>false</code> otherwise.
 	 */
 	protected boolean hasShard(AgentShardDesignation designation)
@@ -613,7 +627,7 @@ public class CompositeAgent implements Serializable, Agent
 	 * It is <i>strongly recommended</i> that the reference is not kept, as the shard may be removed without notice.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to retrieve.
+	 *                        - the designation of the shard to retrieve.
 	 * @return the {@link AgentShard} instance, if any. <code>null</code> otherwise.
 	 */
 	protected AgentShard getShard(AgentShardDesignation designation)
@@ -720,9 +734,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * {@link UnitComponent#li(String, Object...)} call.
 	 * 
 	 * @param message
-	 *            - the message.
+	 *                      - the message.
 	 * @param arguments
-	 *            - objects to include in the message.
+	 *                      - objects to include in the message.
 	 */
 	protected void log(String message, Object... arguments)
 	{

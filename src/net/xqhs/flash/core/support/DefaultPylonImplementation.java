@@ -92,17 +92,24 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
+	public boolean removeContext(EntityProxy<Node> context) {
+		throw new UnsupportedOperationException("Cannot remove context from a node");
+	}
+
+	@Override
 	public boolean addGeneralContext(EntityProxy<?> context)
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		throw new UnsupportedOperationException("Cannot remove context from a node");
-	}
 	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	/**
 	 * The loader recommends no particular implementation for any shard.
 	 */
