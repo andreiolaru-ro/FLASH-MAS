@@ -46,8 +46,8 @@ public class PingTestComponent extends AgentShardGeneral
 		public void run()
 		{
 			tick++;
-			
-			sendMessage("ping no " + tick);
+			System.out.println("Sending the message....");
+			sendMessage("ping-no " + tick);
 		}
 		
 	}
@@ -67,7 +67,7 @@ public class PingTestComponent extends AgentShardGeneral
 	/**
 	 * Time between ping messages.
 	 */
-	protected static final long		PING_PERIOD					= 1000;
+	protected static final long		PING_PERIOD					= 2000;
 	
 	/**
 	 * Timer for pinging.
@@ -107,9 +107,9 @@ public class PingTestComponent extends AgentShardGeneral
 		{
 		case AGENT_START:
 			pingTimer = new Timer();
+			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
 			break;
 		case SIMULATION_START:
-			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
 			break;
 		default:
 			break;

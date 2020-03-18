@@ -11,15 +11,11 @@
  ******************************************************************************/
 package deploymentTest;
 
-import java.util.List;
-
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.util.XML.XMLTree.XMLNode;
-import net.xqhs.util.logging.Logger;
 
 /**
  * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
@@ -34,23 +30,7 @@ public class PingBackTestComponent extends AgentShardGeneral
 	/**
 	 * The UID.
 	 */
-	private static final long		serialVersionUID			= 5214882018809437402L;
-	/**
-	 * The name of the component parameter that contains the id of the other agent.
-	 */
-	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "other agent";
-	/**
-	 * The name of the component parameter that specifies if the agent is an initiator
-	 */
-	protected static final String	INITIATOR_PARAMETER_NAME	= "initiator";
-	/**
-	 * The internal address of the component.
-	 */
-	protected static final String	COMPONENT_ADDRESS			= "pingback";
-	/**
-	 * Cache for the name of the other agent.
-	 */
-	List<String>					otherAgents					= null;
+	private static final long serialVersionUID = 5214882018809437402L;
 	
 	/**
 	 * Default constructor
@@ -61,60 +41,19 @@ public class PingBackTestComponent extends AgentShardGeneral
 	}
 	
 	@Override
-	protected boolean preload(ComponentCreationData parameters, XMLNode scenarioNode, List<String> agentPackages,
-			Logger log)
-	{
-		if(!super.preload(parameters, scenarioNode, agentPackages, log))
-			return false;
-		otherAgents = getComponentData().getValues(OTHER_AGENT_PARAMETER_NAME);
-		return true;
-	}
-	
-	@Override
 	public void signalAgentEvent(AgentEvent event)
 	{
 		super.signalAgentEvent(event);
 		switch(event.getType())
 		{
 		case AGENT_WAVE:
-			if(event.getValue(AbstractMessagingShard.DESTINATION_PARAMETER))
-			getAgentLog().info("Message received: ", event);
-			String[] content = event.get(AbstractMessagingShard.CONTENT_PARAMETER).split(" ");
+			String[] content = ((AgentWave) event).getContent().split(" ");
 			String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
-			String sender = event.get(AbstractMessagingShard.SOURCE_PARAMETER);
-			sendMessage(replyContent, getComponentEndpoint(COMPONENT_ADDRESS), sender);
+			getMessagingShard().sendMessage(getMessagingShard().getAgentAddress(),
+					((AgentWave) event).getCompleteSource(), replyContent);
 			break;
 		default:
 			break;
 		}
-	}
-	
-	@Override
-	protected Logger getAgentLog()
-	{
-		return super.getAgentLog();
-	}
-	
-	@Override
-	protected boolean sendMessage(String content, String sourceEndpoint, String targetAgent,
-			String... targetPathElements)
-	{
-		return super.sendMessage(content, sourceEndpoint, targetAgent, targetPathElements);
-	}
-	
-	@Override
-	protected String getComponentEndpoint(String... pathElements)
-	{
-		return super.getComponentEndpoint(pathElements);
-	}
-	
-	@Override
-	protected void atSimulationStart(AgentEvent event)
-	{
-		super.atSimulationStart(event);
-		
-		if(Boolean.TRUE.toString().equals(getComponentData().getValue(INITIATOR_PARAMETER_NAME)))
-			for(String otherAgent : otherAgents)
-				sendMessage("ping 0", getComponentEndpoint(COMPONENT_ADDRESS), otherAgent, COMPONENT_ADDRESS);
 	}
 }
