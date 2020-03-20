@@ -25,7 +25,7 @@ import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.config.Config.ConfigLockedException;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
 /**
