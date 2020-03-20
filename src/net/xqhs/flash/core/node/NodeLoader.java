@@ -321,8 +321,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 						{
 							lf("Trying to load [] [][] using default loader [], from classpath []", name, catName, kind,
 									defaultLoader.getClass().getName(), cp);
-							// add the CP -- will be first if no other is provided // TODO
-							entityConfig.addOneValue(SimpleLoader.CLASSPATH_KEY, cp);
+							// add the CP -- will be first
+							entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
 						}
 						if(defaultLoader.preload(entityConfig, context))
 							entity = defaultLoader.load(entityConfig, context, subEntities);
