@@ -32,6 +32,8 @@ Current targets
 
 ### General TODOs
 * establish a policy for when to use exceptions and when to use return values
+* make MultiTreeMap contain, rather than extend, MultiValueMap? (in order to avoid functionality ambiguity between the two)
+	* or rather maybe just contain a hashmap and not be related to MultiValueMap at all? 
 * TODOs
 	* ConfigurableEntity#configure should throw exceptions and return the entity itself.
 

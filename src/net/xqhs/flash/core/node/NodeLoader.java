@@ -25,7 +25,7 @@ import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Logger;
+import net.xqhs.util.config.Config.ConfigLockedException;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -322,7 +322,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							lf("Trying to load [] [][] using default loader [], from classpath []", name, catName, kind,
 									defaultLoader.getClass().getName(), cp);
 							// add the CP -- will be first
-							entityConfig.addOneValue(SimpleLoader.CLASSPATH_KEY, cp);
+							entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
 						}
 						if(defaultLoader.preload(entityConfig, context))
 							entity = defaultLoader.load(entityConfig, context, subEntities);

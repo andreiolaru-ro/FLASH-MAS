@@ -105,18 +105,21 @@ public class MultiTreeMap extends MultiValueMap
 	 * If the name is existing and singleton, the given value replaces the existing association.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                        - the name (key) of the entry.
 	 * @param value
-	 *            - the value, either a {@link String} or a {@link MultiTreeMap} instance.
+	 *                        - the value, either a {@link String} or a {@link MultiTreeMap} instance.
 	 * @param isSimple
-	 *            - <code>true</code> if the name is expected to be simple, <code>false</code> if it is expected to be
-	 *            hierarchical.
+	 *                        - <code>true</code> if the name is expected to be simple, <code>false</code> if it is
+	 *                        expected to be hierarchical.
 	 * @param isSingleton
-	 *            - <code>true</code> if the name is associated with a singleton value, <code>false</code> if multiple
-	 *            values can be associated with the name.
+	 *                        - <code>true</code> if the name is associated with a singleton value, <code>false</code>
+	 *                        if multiple values can be associated with the name.
+	 * @param isFirst
+	 *                        - <code>true</code> if the value should be added as the first value to be associated with
+	 *                        the name; <code>false</code> if as the last.
 	 * @return the instance itself.
 	 */
-	protected MultiTreeMap addItem(String name, Object value, boolean isSimple, boolean isSingleton)
+	protected MultiTreeMap addItem(String name, Object value, boolean isSimple, boolean isSingleton, boolean isFirst)
 	{
 		if(isSimple && treeKeys.contains(name))
 			throw new IllegalArgumentException("Name [" + name
@@ -140,8 +143,10 @@ public class MultiTreeMap extends MultiValueMap
 		if(isSingleton && keyExists)
 			// replace value
 			backingMap.get(name).set(0, value);
+		else if(isFirst)
+			super.addFirstObject(name, value);
 		else
-			addFirstObject(name, value);
+			super.addObject(name, value);
 		return this;
 	}
 	
@@ -158,7 +163,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addSingleValue(String name, String value)
 	{
-		return addItem(name, value, true, true);
+		return addItem(name, value, true, true, false);
 	}
 	
 	/**
@@ -176,7 +181,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addOneValue(String name, String value)
 	{
-		return addItem(name, value, true, false);
+		return addItem(name, value, true, false, false);
 	}
 	
 	/**
@@ -188,6 +193,34 @@ public class MultiTreeMap extends MultiValueMap
 		return addOneValue(name, value);
 	}
 	
+	/**
+	 * Associates an additional value with a name, as the new first value associated with it.
+	 * <p>
+	 * When this method inserts a new name, use this if the name is expected to be associated with several values.
+	 * 
+	 * @param name
+	 *                  - the name (key) of the entry.
+	 * @param value
+	 *                  - the value associated with the name.
+	 * @return the instance itself, for chained calls.
+	 * @throws IllegalArgumentException
+	 *                                      if the given name is already present as a hierarchical name, or as a
+	 *                                      singleton name.
+	 */
+	public MultiTreeMap addFirstValue(String name, String value)
+	{
+		return addItem(name, value, true, false, true);
+	}
+	
+	/**
+	 * Alias of {@link #addFirstValue(String, String)}, but should not be used because of its ambiguity.
+	 */
+	@Override
+	public MultiValueMap addFirst(String name, String value)
+	{
+		return addFirstValue(name, value);
+	}
+	
 	@Override
 	public MultiTreeMap addAll(String name, List<String> values)
 	{
@@ -196,7 +229,7 @@ public class MultiTreeMap extends MultiValueMap
 			return this;
 		String first = values.get(0);
 		// test key and add first value.
-		addItem(name, first, true, false);
+		addItem(name, first, true, false, false);
 		return (MultiTreeMap) super.addAll(name, values.subList(1, values.size()));
 	}
 	
@@ -213,7 +246,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addSingleTree(String name, MultiTreeMap tree)
 	{
-		return addItem(name, tree, false, true);
+		return addItem(name, tree, false, true, false);
 	}
 	
 	/**
@@ -228,7 +261,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addSingleTreeGet(String name, MultiTreeMap tree)
 	{
-		addItem(name, tree, false, true);
+		addItem(name, tree, false, true, false);
 		return tree;
 	}
 	
@@ -247,7 +280,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addOneTree(String name, MultiTreeMap tree)
 	{
-		return addItem(name, tree, false, false);
+		return addItem(name, tree, false, false, false);
 	}
 	
 	/**
@@ -262,7 +295,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	public MultiTreeMap addOneTreeGet(String name, MultiTreeMap tree)
 	{
-		addItem(name, tree, false, false);
+		addItem(name, tree, false, false, false);
 		return tree;
 	}
 	
@@ -281,7 +314,8 @@ public class MultiTreeMap extends MultiValueMap
 			// no effect
 			return this;
 		MultiTreeMap first = trees.get(0);
-		addItem(name, first, false, false);
+		// test key and add first tree.
+		addItem(name, first, false, false, false);
 		for(MultiTreeMap t : trees.subList(1, trees.size()))
 			addOneTree(name, t);
 		return this;
@@ -301,19 +335,32 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	/**
+	 * This method is not available in {@link MultiTreeMap}. One of the other addition methods must be used.
+	 * 
+	 * @throws UnsupportedOperationException
+	 *                                           always.
+	 */
+	@Deprecated
+	@Override
+	public MultiValueMap addFirstObject(String name, Object value)
+	{
+		throw new UnsupportedOperationException("The MultiTreeMap class does not allow adding objects arbitrarily.");
+	}
+	
+	/**
 	 * Replaces or adds the given value for the given singleton name.
 	 * 
 	 * @param name
-	 *            - the (key) name of the entry.
+	 *                  - the (key) name of the entry.
 	 * @param value
-	 *            - the new value.
+	 *                  - the new value.
 	 * @return this instance itself, for chained calls.
 	 * @throws IllegalArgumentException
-	 *             if the name exist and is not simple or is not singleton.
+	 *                                      if the name exist and is not simple or is not singleton.
 	 */
 	public MultiTreeMap setValue(String name, String value)
 	{
-		return addItem(name, value, true, true);
+		return addItem(name, value, true, true, false);
 	}
 	
 	/**
@@ -686,7 +733,7 @@ public class MultiTreeMap extends MultiValueMap
 		if(!containsKey(name) && create)
 		{
 			MultiTreeMap newTree = new MultiTreeMap();
-			addItem(name, newTree, false, isSingletonName);
+			addItem(name, newTree, false, isSingletonName, false);
 			return newTree;
 		}
 		checkKeyAccess(name, false, isSingletonName);
@@ -857,6 +904,20 @@ public class MultiTreeMap extends MultiValueMap
 			return (isSingleton(names[0]) ? getSingleTree(names[0]) : getFirstTree(names[0]))
 					.getDeepValue(Arrays.copyOfRange(names, 1, names.length));
 		}
+	}
+	
+	@Override
+	public MultiValueMap removeFirst(String name)
+	{
+		// nothing to do
+		return super.removeFirst(name);
+	}
+	
+	@Override
+	public MultiValueMap remove(String name, Object value)
+	{
+		// nothing to do
+		return super.remove(name, value);
 	}
 	
 	@Override
