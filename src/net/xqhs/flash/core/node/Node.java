@@ -17,11 +17,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import monitoringAndControl.MonitoringNodeProxy;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
-import net.xqhs.util.logging.logging.LogWrapper;
 
 public class Node extends Unit implements Entity<Node>
 {
@@ -34,7 +35,55 @@ public class Node extends Unit implements Entity<Node>
 	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
-	
+
+	/*
+	 * The node should know the name of the CentralMonitoringAndControlEntity instance available.
+	 */
+	protected String centralMonitoringAndControlName;
+
+    protected MessageReceiver centralReceiver;
+
+
+	protected MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
+		@Override
+		public boolean register(String entityName, MessageReceiver receiver) {
+			centralMonitoringAndControlName = entityName;
+			centralReceiver = receiver;
+			return true;
+		}
+
+		@Override
+		public boolean send(String source, String destination, String content) {
+			return false;
+		}
+
+		@Override
+		public Map<String, List<Entity<?>>> getEntities() {
+			return registeredEntities;
+		}
+
+		@Override
+		public List<Agent> getAgentTypeEntities() {
+			LinkedList<Agent> agents = new LinkedList<>();
+			for (Entity<?> e : entityOrder) {
+				if (e instanceof Agent) {
+					agents.add((Agent) e);
+				}
+			}
+			return agents;
+		}
+
+		@Override
+		public List<Entity<?>> getEntitiesOrder() {
+			return entityOrder;
+		}
+
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+	};
+
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
@@ -130,6 +179,14 @@ public class Node extends Unit implements Entity<Node>
 	{
 		// no functionality offered
 		return null;
+	}
+
+	/*
+	 * Return the local proxy to the this node.
+	 */
+	public EntityProxy<Node> asPowerfulContext() {
+		final MonitoringNodeProxy powerfulProxy = this.powerfulProxy;
+		return powerfulProxy;
 	}
 
 	public List<Entity<?>> getEntities() {
