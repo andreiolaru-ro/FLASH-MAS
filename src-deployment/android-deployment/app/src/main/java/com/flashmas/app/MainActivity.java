@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         toggleStateButton = findViewById(R.id.toggle_state_button);
         toggleStateTextView = findViewById(R.id.toggle_state_text_view);
         Toolbar bar = findViewById(R.id.toolbar);
-        setSupportActionBar(bar);
 
         mainFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+        NavigationUI.setupWithNavController(bar, navController);
     }
 
     @Override
