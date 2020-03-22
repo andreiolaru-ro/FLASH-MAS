@@ -62,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:fabCustomSize="@dimen/secondary_fab_diameter"
-        app:srcCompat="@drawable/ic_plus_1_black_24dp"
+        app:srcCompat="@drawable/ic_agent_add_black_24dp"
         app:backgroundTint="@color/colorAccent"
         app:layout_constraintBottom_toTopOf="@+id/main_fab"
         app:layout_constraintRight_toRightOf="@id/main_fab"
