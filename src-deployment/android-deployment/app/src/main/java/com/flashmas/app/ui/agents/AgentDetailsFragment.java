@@ -18,6 +18,7 @@ import net.xqhs.flash.core.agent.Agent;
 
 public class AgentDetailsFragment extends Fragment {
     public static final String AGENT_KEY = "agent_key";
+    private Agent agent = null;
 
     @Nullable
     @Override
@@ -34,15 +35,21 @@ public class AgentDetailsFragment extends Fragment {
         SwitchMaterial switchMaterial = view.findViewById(R.id.state_switch);
 
         if (args != null && args.get(AGENT_KEY) instanceof Agent) {
-            Agent selectedAgent = (Agent) args.get(AGENT_KEY);
-            nameTextView.setText(selectedAgent.getName());
-            switchMaterial.setChecked(selectedAgent.isRunning());
+            agent = (Agent) args.get(AGENT_KEY);
+            nameTextView.setText(agent.getName());
+            switchMaterial.setChecked(agent.isRunning());
+        } else {
+            switchMaterial.setClickable(false);
         }
-        switchMaterial.setClickable(false); // enable after listener implementation
+
         switchMaterial.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO disable/enable agent
+                if (isChecked) {
+                    agent.start();
+                } else {
+                    agent.stop();
+                }
             }
         });
     }
