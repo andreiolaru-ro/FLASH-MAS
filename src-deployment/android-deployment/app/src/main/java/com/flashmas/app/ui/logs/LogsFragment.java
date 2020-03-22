@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -57,5 +58,7 @@ public class LogsFragment extends Fragment {
 
         OutputStream s = FlashManager.getLogOutputStream();
         logTextView.setText(s.toString());
+        ScrollView scroll = view.findViewById(R.id.scroll_view);
+        scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
     }
 }
