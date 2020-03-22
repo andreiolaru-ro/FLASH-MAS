@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     private FloatingActionButton mainFab;
     private FloatingActionButton addAgentFab;
     private TextView addAgentTextView;
-    private MaterialButton toggleStateButton;
+    private FloatingActionButton toggleStateButton;
+    private TextView toggleStateTextView;
 
     private boolean fabOpen = false;
 
@@ -36,9 +37,11 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         @Override
         public void onChanged(Boolean state) {
             if (state) {
-                toggleStateButton.setIcon(getDrawable(R.drawable.ic_stop_black_24dp));
+                toggleStateButton.setImageResource(R.drawable.ic_stop_black_24dp);
+                toggleStateTextView.setText(R.string.stop_node_button);
             } else {
-                toggleStateButton.setIcon(getDrawable(R.drawable.ic_play_arrow_black_24dp));
+                toggleStateButton.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                toggleStateTextView.setText(R.string.start_node_button);
             }
         }
     };
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         addAgentFab = findViewById(R.id.add_agent_fab);
         addAgentTextView = findViewById(R.id.add_agent_label);
         toggleStateButton = findViewById(R.id.toggle_state_button);
+        toggleStateTextView = findViewById(R.id.toggle_state_text_view);
         Toolbar bar = findViewById(R.id.toolbar);
         setSupportActionBar(bar);
 
@@ -70,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
             public void onClick(View v) {
                 EchoAgent agent = new EchoAgent();
                 FlashManager.getInstance().addAgent(agent);
+                animateFab();
             }
         });
 
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
             @Override
             public void onClick(View v) {
                 FlashManager.getInstance().toggleState();
+                animateFab();
             }
         });
 
@@ -103,15 +109,27 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     void animateFab() {
         if (fabOpen) {
             mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backwards));
+
             addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
             addAgentFab.setClickable(false);
             addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+
+            toggleStateButton.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+            toggleStateButton.setClickable(false);
+            toggleStateTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+
             fabOpen = false;
         } else {
             mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward));
+
             addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
             addAgentFab.setClickable(true);
             addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+
+            toggleStateButton.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+            toggleStateButton.setClickable(true);
+            toggleStateTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+
             fabOpen = true;
         }
     }
