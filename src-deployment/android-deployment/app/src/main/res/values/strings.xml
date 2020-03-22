@@ -2,8 +2,5 @@
     <string name="app_name">FlashMAS App</string>
     <string name="start_node_button">Start Node</string>
     <string name="stop_node_button">Stop Node</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="add_agent">Add agent</string>
+    <string name="add_agent">Add Agent</string>
 </resources>
