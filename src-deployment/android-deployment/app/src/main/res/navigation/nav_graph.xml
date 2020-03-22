@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/agentsListFragment">
+    app:startDestination="@id/agents">
 
     <fragment
-        android:id="@+id/logsFragment"
+        android:id="@+id/logs"
         android:name="com.flashmas.app.ui.logs.LogsFragment"
         android:label="fragment_logs"
         tools:layout="@layout/fragment_logs" />
+
     <fragment
-        android:id="@+id/agentsListFragment"
+        android:id="@+id/agents"
         android:name="com.flashmas.app.ui.agents.AgentsListFragment"
         android:label="fragment_agents_list"
         tools:layout="@layout/fragment_agents_list" >

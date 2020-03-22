@@ -11,7 +11,6 @@
     app:strokeWidth="1dp"
     android:minHeight="50dp">
 
-
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/agent_name"
         android:layout_width="match_parent"
@@ -19,6 +18,7 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:textSize="20sp"
+        android:textColor="@color/colorPrimaryDark"
         tools:text="Agent Name Here"/>
 
 </com.google.android.material.card.MaterialCardView>

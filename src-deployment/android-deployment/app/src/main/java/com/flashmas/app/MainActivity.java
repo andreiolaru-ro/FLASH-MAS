@@ -12,9 +12,12 @@ import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         // TODO use ViewModel
 
-        final Button nav = findViewById(R.id.navigate);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         mainFab = findViewById(R.id.main_fab);
         addAgentFab = findViewById(R.id.add_agent_fab);
         addAgentTextView = findViewById(R.id.add_agent_label);
@@ -79,23 +82,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         FlashManager.getInstance().getRunningLiveData().observe(this, flashStateObserver);
 
-        nav.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment);
-                NavDestination destination = navController.getCurrentDestination();
-
-                if (destination == null) return;
-
-                if (destination.getId() == R.id.logsFragment) {
-                    navController.popBackStack();
-                    navController.navigate(R.id.agentsListFragment);
-                } else if (destination.getId() == R.id.agentsListFragment) {
-                    navController.popBackStack();
-                    navController.navigate(R.id.logsFragment);
-                }
-            }
-        });
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupWithNavController(bottomNavigationView, navController);
     }
 
     @Override
