@@ -20,6 +20,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
+import com.flashmas.lib.TestAgent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     private NavController navController;
     private ViewGroup navFragment;
     private ViewGroup mainViewGroup;
+    int n = 1;
 
     private boolean fabOpen = false;
 
@@ -83,7 +85,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         addAgentFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EchoAgent agent = new EchoAgent();
+                TestAgent agent = new TestAgent("Agent " + n);
+                n++;
                 FlashManager.getInstance().addAgent(agent);
                 animateFab();
             }

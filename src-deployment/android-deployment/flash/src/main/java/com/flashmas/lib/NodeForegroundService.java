@@ -19,18 +19,16 @@ import androidx.lifecycle.MutableLiveData;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
+import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
+import static com.flashmas.lib.Globals.NODE_NAME;
 
 public class NodeForegroundService extends Service {
     private static boolean running = false;
@@ -66,28 +64,25 @@ public class NodeForegroundService extends Service {
             return;
         }
 
-        running = true;
-        runningLiveData.postValue(true);
-
-        String test_args = "";
-        test_args += " -package deploymentTest -loader agent:composite";
-        test_args += " -agent composite:AgentA -shard PingTestComponent -shard MonitoringTestShard";
-        test_args += " -agent composite:AgentB -shard PingBackTestComponent -shard MonitoringTestShard";
-
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
 
         GlobalLogWrapper.setLogStream(logsOutputStream);
-        NodeLoader nodeLoader = new NodeLoader();
 
-        List<Node> nodes = nodeLoader.loadDeployment(Arrays.asList(test_args.split(" ")));
+        LocalSupport pylon = new LocalSupport();
 
-        List<Agent> agents = new LinkedList<>();
-        for(Node node : nodes) {
-            node.start();
-            FlashManager.getInstance().setMainNode(node);
-            agents.addAll(node.getAgents());
+        for (Agent agent : FlashManager.getInstance().getAgents()) {
+            agent.addContext(pylon.asContext());
+            agent.start();
         }
 
+        Node localNode = new Node(NODE_NAME);
+        localNode.registerEntity("pylon", pylon, pylon.getName());
+
+        FlashManager.getInstance().setMainNode(localNode);
+        FlashManager.getInstance().setMainPylon(pylon);
+
+        running = true;
+        runningLiveData.postValue(true);
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
 

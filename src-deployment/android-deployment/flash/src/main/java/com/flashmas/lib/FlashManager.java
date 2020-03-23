@@ -10,8 +10,11 @@ import androidx.lifecycle.Observer;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.local.LocalSupport;
 
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -21,7 +24,9 @@ public class FlashManager {
     private static FlashManager instance;
     private static Context appContext;
     private static Node mainNode;
+    private static Pylon mainPylon;
     private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
+    private static LinkedList<Agent> agents = new LinkedList<>();
 
     private Observer<Boolean> stateObserver = new Observer<Boolean>() {
         @Override
@@ -58,7 +63,7 @@ public class FlashManager {
         return instance;
     }
 
-    protected void setMainNode(Node node) {
+    void setMainNode(Node node) {
         mainNode = node;
     }
 
@@ -81,18 +86,41 @@ public class FlashManager {
         if (mainNode != null) {
             Intent intent = new Intent(appContext, NodeForegroundService.class);
             appContext.stopService(intent);
+            stopAgents();
+        }
+    }
+
+    private void stopAgents() {
+        for (Agent agent: agents) {
+            agent.stop();
         }
     }
 
     public void addAgent(Agent agent) {
-        if (mainNode != null) {
-            mainNode.registerEntity("Agent", agent, agent.getName());
-            updateAgentsState();
+        if (agent instanceof TestAgent) {
+            ((TestAgent) agent).addMessagingShard(new LocalSupport.SimpleLocalMessaging());
         }
+
+        if (mainPylon != null) {
+            agent.addContext(mainPylon.<Pylon>asContext());
+
+
+            if (mainNode != null) {
+                agent.start();
+            }
+        }
+
+        agents.add(agent);
+        updateAgentsState();
     }
 
     public void removeAgent(Agent agent) {
-        // TODO
+        if (agent.isRunning()) {
+            agent.stop();
+        }
+
+        agents.remove(agent);
+        updateAgentsState();
     }
 
     public LiveData<Boolean> getRunningLiveData() {
@@ -112,10 +140,18 @@ public class FlashManager {
     }
 
     private void updateAgentsState() {
-        if (mainNode == null) {
-            agentData.postValue(null);
-        } else {
-            agentData.postValue(mainNode.getAgents());
-        }
+//        if (mainNode == null) {
+//            agentData.postValue(null);
+//        } else {
+//        }
+        agentData.postValue(agents);
+    }
+
+    public List<Agent> getAgents() {
+        return agents;
+    }
+
+    void setMainPylon(Pylon pylon) {
+        mainPylon = pylon;
     }
 }
