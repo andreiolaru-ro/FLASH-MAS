@@ -28,7 +28,7 @@ public class OddNumbersShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String ODD_NUMBERS_COUNT = "odd numbers found";
-    private static final int MAX_LIMIT = 50;
+    private static final int MAX_LIMIT = 10;
     public static String ODD_NUMBERS_SHARD_DESIGNATION = "Odd numbers shard designation";
 
 

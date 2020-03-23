@@ -1,7 +1,10 @@
 package ClientProviderSimulation;
 
+import PrimeNumberSimulation.MasterAgent;
+import PrimeNumberSimulation.PrimeNumberAgent;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.local.LocalSupport;
@@ -10,6 +13,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 enum ProviderServices {
 
@@ -19,14 +24,64 @@ enum ProviderServices {
     NUMBER_MULTIPLES,
     QUADRATIC_EQUATIONS
 
+
+
+}
+
+class ClientProviderNode extends Node
+{
+    public static final int MAX_THREADS = 10;
+    public ClientProviderNode(String name)
+    {
+        super(name);
+    }
+
+    public void registerUsersInNode( ArrayList<UserAgent> agentList) {
+
+        for(Agent agent : agentList ) {
+            registerEntity("Agent",agent, agent.getName() );
+        }
+    }
+
+    public void registerProvidersInNode( ArrayList<ProviderAgent> agentList) {
+
+        for(Agent agent : agentList ) {
+            registerEntity("Agent",agent, agent.getName() );
+        }
+    }
+
+    @Override
+    public void run() {
+        //long startTime = System.nanoTime();
+
+        ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+        li("Starting node [].", name);
+        for(Entity<?> entity : entityOrder) {
+            if(entity instanceof Agent) {
+                lf("running an entity...");
+                Runnable agentTask = () -> entity.run();
+
+                pool.execute(agentTask);
+            } else {
+                lf("running an entity...");
+                entity.run();
+            }
+        }
+        li("Node [] is running.", name);
+
+        pool.shutdown();
+
+        //System.out.println( "Simulation time " + (System.nanoTime() - startTime));
+
+    }
 }
 
 
 public class ClientProviderSimulation {
 
-    private static int USERS_COUNT = 5;
-    private static int PROVIDER_COUNT = 5;
-    private static final int SERVICES_COUNT = 5;
+    public static int USERS_COUNT = 50000;
+    public static int PROVIDER_COUNT = 50000;
+    public static final int SERVICES_COUNT = 5;
 
 
     public static ArrayList<UserAgent> createUserAgentList() {
@@ -79,7 +134,7 @@ public class ClientProviderSimulation {
 
 
         AgentShardCore shard2 = getShardFromService(services[random_service_index1]);
-        agent.addShard(shard2);
+        agent.addShard(service, shard2);
 
         int random_service_index2 = 0;
         do {
@@ -87,7 +142,7 @@ public class ClientProviderSimulation {
         }while(random_service_index2 == service.ordinal()  || random_service_index2 == random_service_index1 );
 
         AgentShardCore shard3 = getShardFromService(services[random_service_index2]);
-        agent.addShard(shard3);
+        agent.addShard(service, shard3);
 
     }
 
@@ -107,12 +162,14 @@ public class ClientProviderSimulation {
 
                 /* Add the mandatory shard from one of the five categories */
                 AgentShardCore shard1 = getShardFromService(service);
-                agent.addShard(shard1);
+                agent.addShard(service, shard1);
 
                 /*  Add the remaining 2 shards random */
                 addRandomShards(agent, service, services);
             }
-            service = services[service.ordinal() + 1];
+            if (service.ordinal() + 1 < SERVICES_COUNT) {
+                service = services[service.ordinal() + 1];
+            }
         }
 
     }
@@ -140,7 +197,10 @@ public class ClientProviderSimulation {
 
     public static void addRequestsToUsersList(ArrayList<UserAgent> users) {
 
-        int chunk = users.size() / SERVICES_COUNT;
+        int chunk = 1;
+        if (users.size() >= SERVICES_COUNT)
+            chunk = users.size() / SERVICES_COUNT;
+
         ProviderServices service = ProviderServices.EVEN_NUMBERS;
         ProviderServices[] services =  ProviderServices.values();
 
@@ -154,7 +214,10 @@ public class ClientProviderSimulation {
                 /*  Add the remaining 2 shards random */
                 addRandomRequests(agent, service, services);
             }
-            service = services[service.ordinal() + 1];
+            if(service.ordinal() + 1 < SERVICES_COUNT) {
+                service = services[service.ordinal() + 1];
+
+            }
         }
 
 
@@ -189,6 +252,7 @@ public class ClientProviderSimulation {
 
     public static void main(String[] args) {
 
+        ClientProviderNode node = new ClientProviderNode("testNode");
         LocalSupport pylon = new LocalSupport();
 
 
@@ -206,6 +270,18 @@ public class ClientProviderSimulation {
         ArrayList<ProviderAgent> providers = createProviderAgentList();
         addContextToProviderAgentsList(pylon, providers);
         addShardsToProvidersList(providers);
+
+
+        node.registerUsersInNode( users);
+        node.registerProvidersInNode(providers);
+
+        node.start();
+        long startTime = System.nanoTime();
+        node.run();
+
+        node.stop();
+
+        System.out.println( "Simulation time " + (System.nanoTime() - startTime));
 
 
     }

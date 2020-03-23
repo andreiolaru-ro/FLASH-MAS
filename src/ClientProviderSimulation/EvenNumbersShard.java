@@ -27,7 +27,7 @@ public class EvenNumbersShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String EVEN_NUMBERS_COUNT = "even numbers found";
-    public static final int MAX_LIMIT = 50;
+    public static final int MAX_LIMIT = 10;
     public static String EVEN_NUMBERS_SHARD_DESIGNATION = "Even numbers shard designation";
 
     public void findEvenNumbersCount() {

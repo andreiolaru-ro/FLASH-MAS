@@ -29,7 +29,7 @@ public class QuadraticEquationSolverShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String EQUATION_ROOTS = "quadratic equation roots";
-    private static  final int MAX_LIMIT = 50;
+    private static  final int MAX_LIMIT = 10;
     public static String QUADRATIC_EQUATION_SHARD_DESIGNATION = "Quadratic equation shard designation";
 
     public void findQuadraticEqationRoots() {

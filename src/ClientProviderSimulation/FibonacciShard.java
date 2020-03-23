@@ -27,7 +27,7 @@ public class FibonacciShard extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String FIBONACCI_VALUE = "last number in the fibonacci series";
-    public static final int MAX_LIMIT = 50;
+    public static final int MAX_LIMIT = 10;
     public static String FIBONACCI_SHARD_DESIGNATION = "Fibonacci shard designation";
 
     public void startFibonacci() {
