@@ -9,11 +9,12 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package deploymentTest;
+package examples.compositeAgent;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
+import deploymentTest.DeploymentTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
