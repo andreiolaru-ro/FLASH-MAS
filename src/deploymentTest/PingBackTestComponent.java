@@ -47,8 +47,7 @@ public class PingBackTestComponent extends AgentShardGeneral
 		switch(event.getType())
 		{
 		case AGENT_WAVE:
-			String[] content = ((AgentWave) event).getContent().split(" ");
-			String replyContent = content[0] + " " + (Integer.parseInt(content[1]) + 1);
+			String replyContent = ((AgentWave) event).getContent() + " reply";
 			getMessagingShard().sendMessage(getMessagingShard().getAgentAddress(),
 					((AgentWave) event).getCompleteSource(), replyContent);
 			break;

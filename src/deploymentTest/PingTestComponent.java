@@ -59,7 +59,7 @@ public class PingTestComponent extends AgentShardGeneral
 	/**
 	 * The name of the component parameter that contains the id of the other agent.
 	 */
-	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "other agent";
+	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "otherAgent";
 	/**
 	 * Initial delay before the first ping message.
 	 */
