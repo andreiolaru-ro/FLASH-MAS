@@ -1,13 +1,16 @@
 package com.flashmas.app;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
@@ -23,6 +26,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import examples.echoAgent.EchoAgent;
 
+import static com.flashmas.app.Utils.enableDisableViewGroup;
+
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
     private FloatingActionButton mainFab;
@@ -30,6 +35,11 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     private TextView addAgentTextView;
     private FloatingActionButton toggleStateButton;
     private TextView toggleStateTextView;
+    private Toolbar toolbar;
+    private BottomNavigationView bottomNavigationView;
+    private NavController navController;
+    private ViewGroup navFragment;
+    private ViewGroup mainViewGroup;
 
     private boolean fabOpen = false;
 
@@ -53,13 +63,15 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         // TODO use ViewModel
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
         mainFab = findViewById(R.id.main_fab);
         addAgentFab = findViewById(R.id.add_agent_fab);
         addAgentTextView = findViewById(R.id.add_agent_label);
         toggleStateButton = findViewById(R.id.toggle_state_button);
         toggleStateTextView = findViewById(R.id.toggle_state_text_view);
-        Toolbar bar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
+        navFragment = findViewById(R.id.nav_host_fragment);
+        mainViewGroup = findViewById(R.id.parent_layout);
 
         mainFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         FlashManager.getInstance().getRunningLiveData().observe(this, flashStateObserver);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
-        NavigationUI.setupWithNavController(bar, navController);
+        NavigationUI.setupWithNavController(toolbar, navController);
     }
 
     @Override
@@ -111,24 +123,46 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
             mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_backwards));
 
             addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
-            addAgentFab.setClickable(false);
             addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
 
             toggleStateButton.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
-            toggleStateButton.setClickable(false);
             toggleStateTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_close));
+
+
+            toolbar.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
+            bottomNavigationView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
+            navFragment.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
+
+
+            addAgentFab.setClickable(false);
+            toggleStateButton.setClickable(false);
+            enableDisableViewGroup(bottomNavigationView, true);
+            enableDisableViewGroup(toolbar, true);
+            enableDisableViewGroup(navFragment, true);
+
+            mainFab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
 
             fabOpen = false;
         } else {
             mainFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_forward));
 
             addAgentFab.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
-            addAgentFab.setClickable(true);
             addAgentTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
 
             toggleStateButton.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
-            toggleStateButton.setClickable(true);
             toggleStateTextView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open));
+
+            toolbar.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
+            bottomNavigationView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
+            navFragment.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out));
+
+            addAgentFab.setClickable(true);
+            toggleStateButton.setClickable(true);
+            enableDisableViewGroup(bottomNavigationView, false);
+            enableDisableViewGroup(toolbar, false);
+            enableDisableViewGroup(navFragment, false);
+
+            mainFab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
 
             fabOpen = true;
         }

@@ -83,7 +83,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/main_fab"
-        app:srcCompat="@drawable/ic_add_24dp"
+        app:srcCompat="@drawable/ic_add_black_24dp"
         app:backgroundTint="@color/colorAccent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
