@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 import monitoringAndControl.MonitoringNodeProxy;
+import monitoringAndControl.MonitoringReceiver;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
@@ -41,14 +41,18 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected String centralMonitoringAndControlName;
 
-    protected MessageReceiver centralReceiver;
+	/*
+	* The receiver for CentralMonitoringAndControlEntity.
+	* */
+
+    protected MonitoringReceiver centralMonitoringAndControlReceiver;
 
 
 	protected MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
 		@Override
-		public boolean register(String entityName, MessageReceiver receiver) {
+		public boolean register(String entityName, MonitoringReceiver receiver) {
 			centralMonitoringAndControlName = entityName;
-			centralReceiver = receiver;
+			centralMonitoringAndControlReceiver = receiver;
 			return true;
 		}
 
@@ -82,6 +86,7 @@ public class Node extends Unit implements Entity<Node>
 		public String getEntityName() {
 			return getName();
 		}
+
 	};
 
 	/**
@@ -185,7 +190,6 @@ public class Node extends Unit implements Entity<Node>
 	 * Return the local proxy to the this node.
 	 */
 	public EntityProxy<Node> asPowerfulContext() {
-		final MonitoringNodeProxy powerfulProxy = this.powerfulProxy;
 		return powerfulProxy;
 	}
 
