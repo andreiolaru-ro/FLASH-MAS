@@ -40,6 +40,12 @@ public class AgentShardDesignation implements Serializable
 		 * The designation of a shard offering messaging services.
 		 */
 		MESSAGING,
+
+		/**
+		 * The designation of a shard offering monitoring services.
+		 */
+
+		MONITORING,
 		
 		;
 		
