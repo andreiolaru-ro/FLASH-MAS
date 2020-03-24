@@ -1,25 +1,40 @@
 package monitoringAndControl;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.agent.Agent;
 
-public class CentralMonitoringShard extends AbstractMessagingShard {
+import java.util.List;
+
+public class CentralMonitoringShard extends AbstractMonitoringShard {
 
     private static final long serialVersionUID = 1L;
 
     private MonitoringNodeProxy nodeProxy;
 
-    public MessageReceiver inbox;
+    public MonitoringReceiver inbox;
 
     public CentralMonitoringShard() {
         super();
-        inbox = new MessageReceiver() {
+        inbox = new MonitoringReceiver() {
             @Override
             public void receive(String source, String destination, String content) {
-                receiveMessage(source, destination, content);
+                receiveCommand(source, destination, content);
             }
         };
+    }
+
+    @Override
+    public boolean startEntity(String entityName) {
+        String entityAddress = makePathHelper(entityName, "control");
+        Agent agent = getAgentWithName(entityName);
+        return agent.start();
+    }
+
+    @Override
+    public boolean stopEntity(String entityName) {
+        String entityAddress = makePathHelper(entityName, "control");
+        Agent agent = getAgentWithName(entityName);
+        return agent.stop();
     }
 
     @Override
@@ -32,16 +47,32 @@ public class CentralMonitoringShard extends AbstractMessagingShard {
         return true;
     }
 
+    /*
+    * source = name of CMACE;
+    * target = name of agent destination;
+    * command = command
+    * */
     @Override
-    public boolean sendMessage(String source, String target, String content) {
-        return false;
+    public boolean sendCommand(String source, String target, String command) {
+        return true;
     }
 
 
     @Override
-    protected void receiveMessage(String source, String destination, String content)
+    protected void receiveCommand(String source, String destination, String content)
     {
-        super.receiveMessage(source, destination, content);
+        super.receiveCommand(source, destination, content);
+    }
+
+    private Agent getAgentWithName(String entityName) {
+        List<Agent> availableAgents = nodeProxy.getAgentTypeEntities();
+
+        for(Agent a : availableAgents) {
+            if(a.getName().equals(entityName)) {
+                return a;
+            }
+        }
+        return null;
     }
 
 }
