@@ -6,12 +6,11 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
 
 public class CentralMonitoringAndControlEntity implements Entity<Node> {
 
     // CentralMonitoringShard within this special entity
-    private AbstractMessagingShard centralMonitoringShard;
+    private AbstractMonitoringShard centralMonitoringShard;
 
     private String                 name;
 
@@ -35,7 +34,10 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     public ShardContainer          proxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-        //TODO: Here is the message from CentralMonitoringShard.
+        //TODO: Here is the message from CentralMonitoringShard when calling receive()
+               //The parent of CentralMonitoringShard will be this ShardContainer - proxy.
+
+            //Aici vor fi logurile primite inapoi prin shardul de monitorizare.
         }
 
         @Override
@@ -49,7 +51,7 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
         }
     };
 
-    public boolean addMonitoringShard(AbstractMessagingShard shard)
+    public boolean addMonitoringShard(AbstractMonitoringShard shard)
     {
         centralMonitoringShard = shard;
         shard.addContext(proxy);
@@ -61,12 +63,13 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
 
     @Override
     public boolean start() {
-        return false;
+        System.out.println("CentralMonitoringAndControl started successfully!");
+        return true;
     }
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override
@@ -104,5 +107,24 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     @Override
     public <C extends Entity<Node>> EntityProxy<C> asContext() {
         return null;
+    }
+
+    /**
+    * Requests to the entity to send a start control command. This is mainly coming
+     * from the GUI component.
+     * received message format: entityName
+     * message format to be sent to the monitoring shard: destination
+    **/
+
+    public boolean sendGUIStartCommand(String entityName) {
+        // destination: entityName
+        centralMonitoringShard.startEntity(entityName);
+        return true;
+    }
+
+    public boolean sendGUIStopCommand(String entityName) {
+        // destination: entityName
+        centralMonitoringShard.stopEntity(entityName);
+        return true;
     }
 }
