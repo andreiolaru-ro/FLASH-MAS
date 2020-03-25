@@ -31,7 +31,7 @@ import net.xqhs.util.logging.Logger;
  * {@link SimpleLoader} may be used.
  * 
  * @param <T>
- *            the type of {@link Entity} instance that the loader can load.
+ *                the type of {@link Entity} instance that the loader can load.
  * 
  * @author andreiolaru
  */
@@ -55,10 +55,10 @@ public interface Loader<T extends Entity<?>>
 	 * Same as {@link #preload(MultiTreeMap)}, but performs the checks in the given context.
 	 * 
 	 * @param configuration
-	 *            - the configuration data for the entity.
+	 *                          - the configuration data for the entity.
 	 * @param context
-	 *            - the entities that form the context of the entity to be loaded. The argument may be <code>null</code>
-	 *            or empty.
+	 *                          - the entities that form the context of the entity to be loaded. The argument may be
+	 *                          <code>null</code> or empty.
 	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
 	 *         if the entity cannot load with the given configuration.
 	 * @see #preload(MultiTreeMap)
@@ -81,8 +81,8 @@ public interface Loader<T extends Entity<?>>
 	 * to call {@link #preload}.
 	 * 
 	 * @param configuration
-	 *            - the configuration of the entity that one intends to load. This COnfiguration may be modified (added
-	 *            to) in this method.
+	 *                          - the configuration of the entity that one intends to load. This COnfiguration may be
+	 *                          modified (added to) in this method.
 	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
 	 *         if the entity cannot load with the given configuration.
 	 */
@@ -103,13 +103,13 @@ public interface Loader<T extends Entity<?>>
 	 * loaded and does not need to be loaded anymore.
 	 * 
 	 * @param configuration
-	 *            - the configuration data for the entity.
+	 *                                - the configuration data for the entity.
 	 * @param context
-	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code> or
-	 *            empty.
+	 *                                - the entities that form the context of the loaded entity. The argument may be
+	 *                                <code>null</code> or empty.
 	 * @param subordinateEntities
-	 *            - a flat list of entities that should be loaded inside the loaded entity. This may be
-	 *            <code>null</code>.
+	 *                                - a flat list of entities that should be loaded inside the loaded entity. This may
+	 *                                be <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
@@ -121,7 +121,7 @@ public interface Loader<T extends Entity<?>>
 	 * See also {@link #load(MultiTreeMap, List, List)}.
 	 * 
 	 * @param configuration
-	 *            - the configuration data for the entity.
+	 *                          - the configuration data for the entity.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(MultiTreeMap configuration);
@@ -210,7 +210,7 @@ public interface Loader<T extends Entity<?>>
 		 * No subordinate entities will be loaded.
 		 * 
 		 * @param subordinateEntities
-		 *            - this will not be used.
+		 *                                - this will not be used.
 		 */
 		@Override
 		public Entity<?> load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
@@ -219,19 +219,18 @@ public interface Loader<T extends Entity<?>>
 			if(preload(configuration))
 			{
 				String classpath = configuration.get(CLASSPATH_KEY);
+				Entity<?> loaded = null;
 				try
 				{
 					// try Constructor(configuration)
-					return (Entity<?>) classLoader.loadClassInstance(classpath, configuration,
-							false);
+					loaded = (Entity<?>) classLoader.loadClassInstance(classpath, configuration, false);
 				} catch(Exception e)
 				{
 					if(e instanceof NoSuchMethodException)
 					{// no constructor with configuration argument
 						try
 						{
-							Entity<?> loaded = (Entity<?>) classLoader.loadClassInstance(classpath,
-									null, true);
+							loaded = (Entity<?>) classLoader.loadClassInstance(classpath, null, true);
 							if(loaded instanceof ConfigurableEntity)
 							{// default constructor used, must try to configure
 								if(!((ConfigurableEntity<?>) loaded).configure(configuration) && log != null)
@@ -241,10 +240,6 @@ public interface Loader<T extends Entity<?>>
 							else
 								log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
 										classpath);
-							if(context != null)
-								for(EntityProxy<? extends Entity<?>> c : context)
-									loaded.addGeneralContext(c);
-							return loaded;
 						} catch(Exception e1)
 						{
 							if(log != null)
@@ -252,10 +247,14 @@ public interface Loader<T extends Entity<?>>
 										PlatformUtils.printException(e));
 						}
 					}
-					if(log != null)
+					else if(log != null)
 						log.le("Failed to load class [] via constructor with configuration: ",
 								configuration.get(CLASSPATH_KEY), PlatformUtils.printException(e));
 				}
+				if(loaded != null && context != null)
+					for(EntityProxy<? extends Entity<?>> c : context)
+						loaded.addGeneralContext(c);
+				return loaded;
 			}
 			return null;
 		}
@@ -307,22 +306,22 @@ public interface Loader<T extends Entity<?>>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *            - a list of java packages in which to search.
+	 *                         - a list of java packages in which to search.
 	 * @param given_cp
-	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
-	 *            class. This classpath will also be searched in the list of packages.
+	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
+	 *                         for the class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
-	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if the
-	 *            <code> is <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if
+	 *                         the <code> is <code>null</code>).
 	 * @param lower_name
-	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
-	 *            class have been searched).
+	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
+	 *                         where the class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
@@ -378,7 +377,7 @@ public interface Loader<T extends Entity<?>>
 	 * Makes the first letter of the given string upper-case.
 	 * 
 	 * @param s
-	 *            - the string.
+	 *              - the string.
 	 * @return the string with the first letter converted to upper-case.
 	 */
 	static String capitalize(String s)

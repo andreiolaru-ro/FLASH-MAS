@@ -101,6 +101,15 @@ public interface Entity<P extends Entity<?>>
 	public boolean addContext(EntityProxy<P> context);
 	
 	/**
+	 * Removes the link from a subordinate entity to an entity containing it in some way.
+	 * 
+	 * @param context
+	 *                    - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
+	public boolean removeContext(EntityProxy<P> context);
+
+	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
 	 * <p>
 	 * This method should only be used (as opposed to {@link #addContext} in the following cases:
@@ -126,13 +135,13 @@ public interface Entity<P extends Entity<?>>
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**
-	 * Removes the link from a subordinate entity to an entity containing it in some way.
+	 * Removes the from a subordinate entity to the specified context.
 	 * 
 	 * @param context
 	 *                    - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean removeContext(EntityProxy<P> context);
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**
 	 * Returns a <i>proxy</i> to this entity.

@@ -249,6 +249,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 							id = name;
 					}
 					
+					// in case the kind:id format was used, we only want the name to be the id
+					if(name != null && name.contains(NAMESEP) && id != null)
+						entityConfig.addFirst(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, id);
+					
 					// find a loader for the entity
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
@@ -322,7 +326,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							lf("Trying to load [] [][] using default loader [], from classpath []", name, catName, kind,
 									defaultLoader.getClass().getName(), cp);
 							// add the CP -- will be first
-							entityConfig.addFirst(SimpleLoader.CLASSPATH_KEY, cp);
+							entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
 						}
 						if(defaultLoader.preload(entityConfig, context))
 							entity = defaultLoader.load(entityConfig, context, subEntities);

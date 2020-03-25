@@ -324,7 +324,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 		
 		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
 			if(autoCreated.contains(id))
-				; // TODO
+			{
+				// TODO
+			}
 				
 		log.lf("==============================================================");
 		log.lf("==============================================================");

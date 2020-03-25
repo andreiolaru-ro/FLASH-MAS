@@ -62,12 +62,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * Internal method that actually performs insertion.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                        - the name (key) of the entry.
 	 * @param value
-	 *            - the value associated with the name.
+	 *                        - the value associated with the name.
 	 * @param insertFirst
-	 *            - <code>true</code> if this new value should be inserted at the head of the list; <code>false</code>
-	 *            for the tail of the list.
+	 *                        - <code>true</code> if this new value should be inserted at the head of the list;
+	 *                        <code>false</code> for the tail of the list.
 	 * @return the instance itself.
 	 */
 	protected MultiValueMap addItem(String name, Object value, boolean insertFirst)
@@ -89,9 +89,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                  - the name (key) of the entry.
 	 * @param value
-	 *            - the value associated with the name.
+	 *                  - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
 	public MultiValueMap add(String name, String value)
@@ -107,9 +107,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * The value is added as the first value associated with the name.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                  - the name (key) of the entry.
 	 * @param value
-	 *            - the value associated with the name.
+	 *                  - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
 	public MultiValueMap addFirst(String name, String value)
@@ -123,9 +123,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entries.
+	 *                   - the name (key) of the entries.
 	 * @param values
-	 *            - the values to be associated with the name.
+	 *                   - the values to be associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
 	public MultiValueMap addAll(String name, List<String> values)
@@ -141,9 +141,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                  - the name (key) of the entry.
 	 * @param value
-	 *            - the value associated with the name.
+	 *                  - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
 	public MultiValueMap addObject(String name, Object value)
@@ -159,9 +159,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *            - the name (key) of the entry.
+	 *                  - the name (key) of the entry.
 	 * @param value
-	 *            - the value associated with the name.
+	 *                  - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
 	public MultiValueMap addFirstObject(String name, Object value)
@@ -186,10 +186,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * The {@link #getValue(String)} method is an alias of this method.
 	 * 
 	 * @param name
-	 *            - the name of the searched entry.
+	 *                 - the name of the searched entry.
 	 * @return the value of an entry with the given name, or <code>null</code> if the name is not found.
 	 * @throws IllegalStateException
-	 *             if the value is not a String.
+	 *                                   if the value is not a String.
 	 */
 	public String get(String name)
 	{
@@ -205,7 +205,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Alias for the {@link #get} method.
 	 * 
 	 * @param name
-	 *            - the name of the searched entry.
+	 *                 - the name of the searched entry.
 	 * @return the value of the entry with the given name.
 	 */
 	public String getValue(String name)
@@ -218,7 +218,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * {@link String}, an exception will be thrown.
 	 * 
 	 * @param name
-	 *            - the name to search for.
+	 *                 - the name to search for.
 	 * @return a {@link List} of values associated with the name. The list is empty if no values exist.
 	 */
 	public List<String> getValues(String name)
@@ -236,7 +236,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Retrieves the (first) value associated with a name, as an {@link Object} instance.
 	 * 
 	 * @param name
-	 *            - the name of the searched entry.
+	 *                 - the name of the searched entry.
 	 * @return the value associated with the name, or <code>null</code> if the name is not found.
 	 */
 	public Object getObject(String name)
@@ -250,7 +250,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Retrieves all objects matching the given name, as a new {@link List}.
 	 * 
 	 * @param name
-	 *            - the name to search for.
+	 *                 - the name to search for.
 	 * @return a {@link List} of objects associated with the name. The list is empty if no values exist.
 	 */
 	public List<Object> getObjects(String name)
@@ -266,7 +266,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Same with {@link #containsKey(String)}.
 	 * 
 	 * @param name
-	 *            - the name of the searched entry.
+	 *                 - the name of the searched entry.
 	 * @return - <code>true</code> if an entry with the specified name exists.
 	 */
 	public boolean isSet(String name)
@@ -280,7 +280,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Same with {@link #isSet(String)}.
 	 * 
 	 * @param name
-	 *            - the name of the searched entry.
+	 *                 - the name of the searched entry.
 	 * @return - <code>true</code> if an entry with the specified name exists.
 	 */
 	public boolean containsKey(String name)
@@ -294,7 +294,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the name does not exist.
 	 * 
 	 * @param name
-	 *            - the name (key) to remove.
+	 *                 - the name (key) to remove.
 	 * @return the map itself.
 	 */
 	public MultiValueMap removeKey(String name)
@@ -312,7 +312,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the name does not exist.
 	 * 
 	 * @param name
-	 *            - the name (key) to remove the first value from.
+	 *                 - the name (key) to remove the first value from.
 	 * @return the map itself.
 	 */
 	public MultiValueMap removeFirst(String name)
@@ -334,9 +334,9 @@ public class MultiValueMap extends Config implements Serializable
 	 * The {@link Object#equals} method must be correctly implemented for the given value.
 	 * 
 	 * @param name
-	 *            - the name (key) to remove the value from.
+	 *                  - the name (key) to remove the value from.
 	 * @param value
-	 *            - the value to remove.
+	 *                  - the value to remove.
 	 * @return the map itself.
 	 */
 	public MultiValueMap remove(String name, Object value)
@@ -364,7 +364,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * into an {@link IllegalStateException}.
 	 * 
 	 * @throws RuntimeException
-	 *             if the set has been {@link #lock()}-ed.
+	 *                              if the set has been {@link #lock()}-ed.
 	 */
 	@Override
 	public void locked() throws RuntimeException
