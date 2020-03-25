@@ -8,19 +8,10 @@ import net.xqhs.flash.FlashBoot;
 public class DeploymentTest
 {
 	/**
-	 * Designation for shards.
-	 */
-	public static final String FUNCTIONALITY = "TESTING";
-	/**
-	 * Different designation for shards.
-	 */
-	public static final String	MONITORING		= "MONITORING";
-	
-	/**
 	 * Performs test.
 	 * 
 	 * @param args
-	 *            - not used.
+	 *                 - not used.
 	 */
 	public static void main(String[] args)
 	{
