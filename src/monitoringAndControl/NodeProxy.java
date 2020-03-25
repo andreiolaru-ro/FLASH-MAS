@@ -2,7 +2,6 @@ package monitoringAndControl;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public interface NodeProxy extends EntityProxy<Node> {
     /*
      * Request entities registered as Agent type.
      */
-    List<Agent> getAgentTypeEntities();
+    List<Entity<?>> getTypeEntities(String entityType);
 
     /*
      * Request entities in order.

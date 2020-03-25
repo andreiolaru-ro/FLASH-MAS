@@ -4,18 +4,21 @@ package monitoringAndControl;
  * This interface should be implemented by any proxy to a {@link Node} that offers monitoring services.
  */
 
+import net.xqhs.flash.core.support.MessageReceiver;
+
+
 public interface MonitoringNodeProxy extends NodeProxy {
 
     /**
-     * Registers an entity with the specified name, associating with it a {@link MonitoringReceiver} instance.
+     * Registers an entity with the specified name, associating with it a {@link MessageReceiver} instance.
      *
      * @param entityName
      *                      - the name of the entity.
      * @param receiver
-     *                      - the {@link MonitoringReceiver} instance to receive command.
+     *                      - the {@link MessageReceiver} instance to receive command.
      * @return an indication of success.
      */
-    boolean register(String entityName, MonitoringReceiver receiver);
+    boolean register(String entityName, MessageReceiver receiver);
 
     /**
      * Requests to the pylon to send a message.
