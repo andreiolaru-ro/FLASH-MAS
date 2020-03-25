@@ -127,7 +127,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities)
 	{
 		// node instance creation
-		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
+		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME), false);
 		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
 		
 		// loader initials

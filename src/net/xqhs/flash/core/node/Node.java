@@ -17,10 +17,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import monitoringAndControl.CentralMonitoringAndControlEntity;
 import monitoringAndControl.MonitoringNodeProxy;
-import monitoringAndControl.MonitoringReceiver;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
@@ -37,22 +38,26 @@ public class Node extends Unit implements Entity<Node>
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 	/*
-	 * The node should know the name of the CentralMonitoringAndControlEntity instance available.
+	 * The name of the CentralMonitoringAndControlEntity available.
 	 */
-	protected String centralMonitoringAndControlName;
+	protected String centralMonitoringEntityName;
 
 	/*
 	* The receiver for CentralMonitoringAndControlEntity.
 	* */
 
-    protected MonitoringReceiver centralMonitoringAndControlReceiver;
+    protected MessageReceiver centralMessagingReceiver;
 
+	/*
+	* The central node will have this monitoring entity.
+	* */
+    protected CentralMonitoringAndControlEntity monitoringEntity = null;
 
 	protected MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
 		@Override
-		public boolean register(String entityName, MonitoringReceiver receiver) {
-			centralMonitoringAndControlName = entityName;
-			centralMonitoringAndControlReceiver = receiver;
+		public boolean register(String entityName, MessageReceiver receiver) {
+			centralMonitoringEntityName = entityName;
+			centralMessagingReceiver = receiver;
 			return true;
 		}
 
@@ -67,14 +72,8 @@ public class Node extends Unit implements Entity<Node>
 		}
 
 		@Override
-		public List<Agent> getAgentTypeEntities() {
-			LinkedList<Agent> agents = new LinkedList<>();
-			for (Entity<?> e : entityOrder) {
-				if (e instanceof Agent) {
-					agents.add((Agent) e);
-				}
-			}
-			return agents;
+		public List<Entity<?>> getTypeEntities(String entityType) {
+			return registeredEntities.get(entityType);
 		}
 
 		@Override
@@ -94,11 +93,24 @@ public class Node extends Unit implements Entity<Node>
 	 * 
 	 * @param name
 	 *                 the name of the node, if any. Can be <code>null</code>.
+	 * @param isCentralNode
+	 * 					if the node possesses the central monitoring entity,
+	 * 				    therefore this will be the central monitoring node
 	 */
-	public Node(String name)
+	public Node(String name, boolean isCentralNode)
 	{
 		this.name = name;
 		setLoggerType(PlatformUtils.platformLogType());
+		if(isCentralNode) {
+			/*
+			* TODO: The name SET for monitoringEntity should be the same as centralMonitoringEntityName
+			*  used by the shard when registered.
+			* */
+			monitoringEntity = new CentralMonitoringAndControlEntity(name + "MonitoringEntity");
+			monitoringEntity.addGeneralContext(powerfulProxy);
+			registerEntity("monitoring", monitoringEntity, centralMonitoringEntityName);
+		}
+
 	}
 	
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
