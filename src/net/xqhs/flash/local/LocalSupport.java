@@ -18,6 +18,7 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
@@ -54,8 +55,8 @@ public class LocalSupport extends DefaultPylonImplementation
 																		public boolean send(String source,
 																				String destination, String content)
 																		{
-																			String agentName = getAgentNameFromAddress(
-																					getAgentAddress(destination));
+																			String agentName = destination.split(
+																					AgentWave.ADDRESS_SEPARATOR)[0];
 																			if(!messageReceivers.containsKey(agentName))
 																				return false;
 																			messageReceivers.get(agentName).receive(
@@ -75,7 +76,9 @@ public class LocalSupport extends DefaultPylonImplementation
 																		public String getRecommendedShardImplementation(
 																				AgentShardDesignation shardType)
 																		{
-			return LocalSupport.this.getRecommendedShardImplementation(shardType);
+																			return LocalSupport.this
+																					.getRecommendedShardImplementation(
+																							shardType);
 																		}
 																		
 																		@Override
@@ -251,7 +254,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName)
 	{
-		if (shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
+		if(shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}

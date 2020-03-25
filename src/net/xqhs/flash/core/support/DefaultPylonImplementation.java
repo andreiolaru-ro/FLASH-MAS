@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -128,42 +127,5 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;
-	}
-
-	/**
-	 * This implementation considers agent addresses are the same with their names.
-	 * 
-	 * @param agentName
-	 *            - the name of the agent.
-	 * @return the address of the agent, as derived from the name.
-	 */
-	@SuppressWarnings("static-method")
-	public String getAgentAddress(String agentName) {
-		return agentName;
-	}
-
-	/**
-	 * This implementation considers agent addresses are the same with their names.
-	 * 
-	 * @param agentAddress
-	 *            - the address of the agent.
-	 * @return the name of the agent, as extracted / derived from the address.
-	 */
-	@SuppressWarnings("static-method")
-	public String getAgentNameFromAddress(String agentAddress) {
-		return agentAddress;
-	}
-
-	/**
-	 * This implementation presumes that the address / name of the agent does not contain any occurrence of
-	 * {@link AgentWave#ADDRESS_SEPARATOR} (currently {@value AgentWave#ADDRESS_SEPARATOR}).
-	 * 
-	 * @param endpoint
-	 *                     - an endpoint, as defined in {@link AbstractMessagingShard}.
-	 * @return the agent address, as extracted from the endpoint.
-	 */
-	@SuppressWarnings("static-method")
-	public String extractAgentAddress(String endpoint) {
-		return endpoint.substring(0, endpoint.indexOf(AgentWave.ADDRESS_SEPARATOR));
 	}
 }
