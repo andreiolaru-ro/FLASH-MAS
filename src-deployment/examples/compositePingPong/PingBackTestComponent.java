@@ -9,9 +9,8 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package examples.compositeAgent;
+package examples.compositePingPong;
 
-import deploymentTest.DeploymentTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -31,14 +30,18 @@ public class PingBackTestComponent extends AgentShardGeneral
 	/**
 	 * The UID.
 	 */
-	private static final long serialVersionUID = 5214882018809437402L;
+	private static final long	serialVersionUID	= 5214882018809437402L;
+	/**
+	 * Endpoint element for this shard.
+	 */
+	public static final String	SHARD_ENDPOINT		= "pong";
 	
 	/**
 	 * Default constructor
 	 */
 	public PingBackTestComponent()
 	{
-		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
 	@Override
@@ -49,8 +52,7 @@ public class PingBackTestComponent extends AgentShardGeneral
 		{
 		case AGENT_WAVE:
 			String replyContent = ((AgentWave) event).getContent() + " reply";
-			getMessagingShard().sendMessage(getMessagingShard().getAgentAddress(),
-					((AgentWave) event).getCompleteSource(), replyContent);
+			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
 			break;
 		default:
 			break;

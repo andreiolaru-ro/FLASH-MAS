@@ -9,12 +9,11 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package examples.compositeAgent;
+package examples.compositePingPong;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import deploymentTest.DeploymentTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -62,6 +61,10 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "otherAgent";
 	/**
+	 * Endpoint element for this shard.
+	 */
+	protected static final String	SHARD_ENDPOINT				= "ping";
+	/**
 	 * Initial delay before the first ping message.
 	 */
 	protected static final long		PING_INITIAL_DELAY			= 0;
@@ -88,7 +91,7 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	public PingTestComponent()
 	{
-		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
 	@Override
@@ -133,7 +136,7 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	protected boolean sendMessage(String content)
 	{
-		return sendMessage(content, null, otherAgent);
+		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
 	}
 	
 	@Override

@@ -9,9 +9,8 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package examples.compositeAgent;
+package examples.compositePingPong;
 
-import deploymentTest.DeploymentTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -43,7 +42,7 @@ public class MonitoringTestShard extends AgentShardCore
 	 */
 	public MonitoringTestShard()
 	{
-		super(AgentShardDesignation.customShard(DeploymentTest.MONITORING));
+		super(AgentShardDesignation.customShard(Boot.MONITORING));
 	}
 	
 	@Override
