@@ -113,6 +113,8 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 					+ ") does not start with the address of this agent (" + localAddr + ")");
 		
 		AgentWave wave = new AgentWave(content, localAddr, AgentWave.pathToElements(destination, localAddr));
+		// already routed to this agent
+		wave.removeFirstDestinationElement();
 		
 		String senderAddr = extractAgentAddress(source);
 		if(!source.startsWith(senderAddr))
