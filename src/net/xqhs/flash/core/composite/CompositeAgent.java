@@ -224,6 +224,9 @@ public class CompositeAgent implements Serializable, Agent
 	 * It is important that this list is managed together with {@link #shards}.
 	 */
 	protected ArrayList<AgentShard>							shardOrder					= new ArrayList<>();
+	/**
+	 * The list of all contexts this agent is placed in, in the order in which they were added.
+	 */
 	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext						= new ArrayList<>();
 	
 	/**

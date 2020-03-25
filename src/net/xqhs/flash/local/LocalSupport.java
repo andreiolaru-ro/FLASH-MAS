@@ -18,10 +18,10 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
+import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -90,7 +90,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static class SimpleLocalMessaging extends AbstractMessagingShard
+	public static class SimpleLocalMessaging extends AbstractNameBasedMessagingShard
 	{
 		/**
 		 * The serial UID.
@@ -120,6 +120,15 @@ public class LocalSupport extends DefaultPylonImplementation
 			};
 		}
 		
+		/**
+		 * Relay for the supertype method.
+		 */
+		@Override
+		protected void receiveMessage(String source, String destination, String content)
+		{
+			super.receiveMessage(source, destination, content);
+		}
+		
 		@Override
 		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 		{
@@ -135,24 +144,6 @@ public class LocalSupport extends DefaultPylonImplementation
 		{
 			pylon.send(source, destination, content);
 			return true;
-		}
-		
-		@Override
-		protected void receiveMessage(String source, String destination, String content)
-		{
-			super.receiveMessage(source, destination, content);
-		}
-		
-		@Override
-		public String getAgentAddress()
-		{
-			return getAgent().getEntityName();
-		}
-		
-		@Override
-		public String extractAgentAddress(String endpoint)
-		{
-			return endpoint.split(AgentWave.ADDRESS_SEPARATOR, 1)[0];
 		}
 	}
 	

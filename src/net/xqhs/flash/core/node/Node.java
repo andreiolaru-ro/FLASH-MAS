@@ -20,6 +20,14 @@ import java.util.Map;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.util.logging.Unit;
 
+/**
+ * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
+ * may exist on the same machine.
+ * <p>
+ * There should be no "higher"-context entity than the node.
+ * 
+ * @author Andrei Olaru
+ */
 public class Node extends Unit implements Entity<Node>
 {
 	/**
@@ -28,8 +36,14 @@ public class Node extends Unit implements Entity<Node>
 	protected String						name				= null;
 	
 
+	/**
+	 * A collection of all entities added in the context of this node, indexed by their names.
+	 */
 	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	
+	/**
+	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
+	 */
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 	
 	/**
@@ -43,6 +57,16 @@ public class Node extends Unit implements Entity<Node>
 		this.name = name;
 	}
 	
+	/**
+	 * Method used to register entities added in the context of this node.
+	 * 
+	 * @param entityType
+	 *                       - the type of the entity.
+	 * @param entity
+	 *                       - a reference to the entity.
+	 * @param entityName
+	 *                       - the name of the entity.
+	 */
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
 		entityOrder.add(entity);

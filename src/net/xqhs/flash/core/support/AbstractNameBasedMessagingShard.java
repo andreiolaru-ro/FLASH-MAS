@@ -11,14 +11,18 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.ShardContainer;
+
 /**
- * A simple extension of {@link AbstractMessagingShard}, which leaves only {@link #sendMessage(String, String, String)} as an
- * abstract method. This class is meant to be extended by messaging shards in support infrastructures that use agent
- * names as agent addresses (agents are addressed by name). Therefore, the address of the agent is always the same with
- * its name.
+ * A simple extension of {@link AbstractMessagingShard}, which leaves to implement only
+ * {@link #sendMessage(String, String, String)} as an abstract method, and also the registration of a message receiver
+ * to the pylon. This class is meant to be extended by messaging shards in support infrastructures that use agent names
+ * as agent addresses (agents are addressed by name). Therefore, the address of the agent is always the same with its
+ * name.
  * <p>
  * It is also presumed that agent names do not contain slashes. An exception is thrown if the shard is loaded in an
- * agent with a name containing a slash (or whatever {@link AbstractMessagingShard#ADDRESS_SEPARATOR} is set to).
+ * agent with a name containing a slash (or whatever {@link AgentWave#ADDRESS_SEPARATOR} is set to).
  * 
  * @author Andrei Olaru
  */
@@ -28,4 +32,25 @@ public abstract class AbstractNameBasedMessagingShard extends AbstractMessagingS
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = 13149367588469383L;
+	
+	@Override
+	protected void parentChangeNotifier(ShardContainer oldParent)
+	{
+		if(getAgent() != null && getAgent().getEntityName().contains(AgentWave.ADDRESS_SEPARATOR))
+			throw new IllegalStateException(
+					"Name-based messaging cannot support agent names containing " + AgentWave.ADDRESS_SEPARATOR);
+		super.parentChangeNotifier(oldParent);
+	}
+	
+	@Override
+	public String getAgentAddress()
+	{
+		return getAgent().getEntityName();
+	}
+	
+	@Override
+	public String extractAgentAddress(String endpoint)
+	{
+		return endpoint.split(AgentWave.ADDRESS_SEPARATOR, 1)[0];
+	}
 }

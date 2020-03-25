@@ -134,6 +134,13 @@ public interface Entity<P extends Entity<?>>
 	 */
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
+	/**
+	 * Removes the from a subordinate entity to the specified context.
+	 * 
+	 * @param context
+	 *                    - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**

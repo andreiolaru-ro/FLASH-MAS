@@ -33,8 +33,11 @@ import net.xqhs.util.logging.Debug.DebugItem;
  * {@link AbstractNameBasedMessagingShard} class.
  * <li>it should implement the {@link #sendMessage(String, String, String)} method that sends a message to another
  * agent.
+ * <li>it should implement the {@link #extractAgentAddress(String)} which extracts the address of the agent from a
+ * complete endpoint.
+ * <li>it should implement the {@link #getAgentAddress()} which retrieves the address of the current agent.
  * <li>when a message is received, the implementation should call the {@link #receiveMessage} of this class, which will
- * pack the information into an {@link AgentEvent} instance and post it in the event queue.
+ * pack the information into an {@link AgentWave} and post it in the event queue.
  * </ul>
  * 
  * @author Andrei Olaru
@@ -80,7 +83,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	/**
 	 * The serial UID.
 	 */
-	private static final long	serialVersionUID		= -7541956285166819418L;
+	private static final long serialVersionUID = -7541956285166819418L;
 	
 	/**
 	 * Default constructor.
@@ -106,9 +109,8 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	{
 		String localAddr = getAgentAddress();
 		if(!destination.startsWith(localAddr))
-			throw new IllegalStateException(
-					"Destination endpoint (" + destination + ") does not start with the address of this agent ("
-							+ localAddr + ")");
+			throw new IllegalStateException("Destination endpoint (" + destination
+					+ ") does not start with the address of this agent (" + localAddr + ")");
 		
 		AgentWave wave = new AgentWave(content, localAddr, AgentWave.pathToElements(destination, localAddr));
 		
@@ -156,4 +158,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * @return the external path, or address of the agent.
 	 */
 	public abstract String extractAgentAddress(String endpoint);
+	
+	@Override
+	public abstract String getAgentAddress();
+	
+	@Override
+	public abstract boolean sendMessage(String source, String target, String content);
 }
