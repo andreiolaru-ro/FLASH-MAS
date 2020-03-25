@@ -51,6 +51,6 @@ public abstract class AbstractNameBasedMessagingShard extends AbstractMessagingS
 	@Override
 	public String extractAgentAddress(String endpoint)
 	{
-		return endpoint.split(AgentWave.ADDRESS_SEPARATOR, 1)[0];
+		return endpoint.split(AgentWave.ADDRESS_SEPARATOR, 2)[0];
 	}
 }
