@@ -6,31 +6,38 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 
 public class CentralMonitoringAndControlEntity implements Entity<Node> {
 
-    // CentralMonitoringShard within this special entity
-    private AbstractMonitoringShard centralMonitoringShard;
+    // Messaging shard to receive monitoring messages.
+    private AbstractMessagingShard centralMessagingShard;
 
-    private String                 name;
+    private String                 name              = null;
 
     /*
     * Proxy to a specific node.
-    * TODO:
-    *  Later we might need a structure to store multiple proxies.
-    *  Each proxy for each node in the network.
-    *  CentralMonitoringAndControlEntity instance must have access to all of them.
+    * TODO: Solve the connection with different/multiple nodes.
     * */
     private MonitoringNodeProxy    nodeProxy;
 
 
+    /*
+    * Graphic User Interface
+    * */
+    private MainBoard GUI;
+
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
-        addMonitoringShard(new CentralMonitoringShard());
+        addMessagingShard(new CentralMessagingShard());
+        /*
+        * TODO: The arg should disappear because the ARGS for loading
+        *  might be taken as GUI input.
+        * */
+        GUI = new MainBoard(null);
     }
 
     // Proxy used to receive messages from outer entities; e.g. logs from agents
-    // TODO: you have to figure out which shard is the receiver from the container
     public ShardContainer          proxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
@@ -51,18 +58,20 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
         }
     };
 
-    public boolean addMonitoringShard(AbstractMonitoringShard shard)
+    public boolean addMessagingShard(AbstractMessagingShard shard)
     {
-        centralMonitoringShard = shard;
+        centralMessagingShard = shard;
         shard.addContext(proxy);
         if(nodeProxy != null)
-            centralMonitoringShard.addGeneralContext(nodeProxy);
+            centralMessagingShard.addGeneralContext(nodeProxy);
         return true;
     }
 
 
     @Override
     public boolean start() {
+        //GUI will actually appear when the monitoringEntity will start.
+        javax.swing.SwingUtilities.invokeLater(() -> GUI.createAndShowGUI());
         System.out.println("CentralMonitoringAndControl started successfully!");
         return true;
     }
@@ -93,8 +102,8 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
         nodeProxy = (MonitoringNodeProxy) context;
-        if(centralMonitoringShard != null) {
-            centralMonitoringShard.addGeneralContext(nodeProxy);
+        if(centralMessagingShard != null) {
+            centralMessagingShard.addGeneralContext(nodeProxy);
         }
         return true;
     }
@@ -112,19 +121,21 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     /**
     * Requests to the entity to send a start control command. This is mainly coming
      * from the GUI component.
-     * received message format: entityName
-     * message format to be sent to the monitoring shard: destination
     **/
 
     public boolean sendGUIStartCommand(String entityName) {
         // destination: entityName
-        centralMonitoringShard.startEntity(entityName);
+        // TODO: send a (WAVE?) message through the pylon
+        //  to agent's monitoring shard;
+        //  monitoring shard will post a STOP event;
         return true;
     }
 
     public boolean sendGUIStopCommand(String entityName) {
         // destination: entityName
-        centralMonitoringShard.stopEntity(entityName);
+        // TODO: send a (WAVE?) message through the pylon
+        //  to agent's monitoring shard;
+        //  monitoring shard will post a STOP event;
         return true;
     }
 }

@@ -35,6 +35,9 @@ public class MainBoard {
     private String arg;
 
     public MainBoard(String arg) {
+        /*
+        * TODO: ARGs should be taken from GUI input.
+        * */
         this.arg = arg;
         agentsList.setModel(listModel);
 
