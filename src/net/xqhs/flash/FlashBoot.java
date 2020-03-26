@@ -38,14 +38,14 @@ public class FlashBoot
 	{
 		Logging.getMasterLogging().setLogLevel(Level.ALL);
 
-		ByteArrayOutputStream s = new ByteArrayOutputStream();
-		GlobalLogWrapper.setLogStream(s);
+//		ByteArrayOutputStream s = new ByteArrayOutputStream();
+//		GlobalLogWrapper.setLogStream(s);
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
 		for(Node node : nodes)
 			node.start();
 
 
-		System.out.println(s.toString());
+		//System.out.println(s.toString());
 	}
 	
 }

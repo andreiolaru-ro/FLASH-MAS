@@ -9,69 +9,53 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License along with tATAmI-PC.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package deploymentTest;
+package examples.compositePingPong;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.LoggerSimple.Level;
-import net.xqhs.util.logging.UnitComponent;
+import net.xqhs.flash.core.shard.AgentShardGeneral;
 
 /**
- * An {@link AgentShard} implementation that monitors all agent events.
+ * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
+ * initiator.
+ * <p>
+ * Otherwise, it waits for a ping message, that it then sends back.
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore
+public class PingBackTestComponent extends AgentShardGeneral
 {
 	/**
 	 * The UID.
 	 */
 	private static final long	serialVersionUID	= 5214882018809437402L;
 	/**
-	 * The log.
+	 * Endpoint element for this shard.
 	 */
-	UnitComponent				locallog			= null;
+	public static final String	SHARD_ENDPOINT		= "pong";
 	
 	/**
 	 * Default constructor
 	 */
-	public MonitoringTestShard()
+	public PingBackTestComponent()
 	{
-		super(AgentShardDesignation.customShard(DeploymentTest.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event)
 	{
 		super.signalAgentEvent(event);
-		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
-		locallog.li(eventMessage);
-		// if (getAgentLog() != null)
-		// getAgentLog().info(eventMessage);
-		if(event.getType() == AgentEventType.AGENT_STOP)
-			locallog.doExit();
-	}
-	
-	@Override
-	protected void parentChangeNotifier(ShardContainer oldParent)
-	{
-		super.parentChangeNotifier(oldParent);
-		
-		if(getAgent() != null)
+		switch(event.getType())
 		{
-			locallog = (UnitComponent) new UnitComponent().setUnitName("monitoring-" + getAgent().getEntityName())
-					.setLogLevel(Level.ALL).setLoggerType(PlatformUtils.platformLogType());
-			locallog.lf("testing started.");
-		}
-		else if(locallog != null)
-		{
-			locallog.doExit();
-			locallog = null;
+		case AGENT_WAVE:
+			String replyContent = ((AgentWave) event).getContent() + " reply";
+			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
+			break;
+		default:
+			break;
 		}
 	}
 }

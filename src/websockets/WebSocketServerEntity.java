@@ -110,6 +110,11 @@ public class WebSocketServerEntity implements Entity {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy context) {
+        return false;
+    }
+
+    @Override
     public EntityProxy asContext() {
         return null;
     }

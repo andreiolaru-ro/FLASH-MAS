@@ -50,13 +50,14 @@ public class WebSocketClientProxy extends WebSocketClient {
             String destination = (String) jsonObject.get("destination");
             if(!messageReceivers.containsKey(destination))
                 System.out.println("The agent does not exist.");
-            else  {
+            else if(messageReceivers.get(destination) == null) {
+                System.out.println("The message receiver does not exist.");
+            } else {
                 String source = (String) jsonObject.get("source");
                 String content = (String) jsonObject.get("content");
                 messageReceivers.get(destination).receive(source, destination, content);
             }
         }
-
     }
 
     @Override

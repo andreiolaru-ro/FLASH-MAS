@@ -28,6 +28,16 @@ public class CentralMessagingShard  extends AbstractMessagingShard {
     }
 
     @Override
+    public String extractAgentAddress(String endpoint) {
+        return null;
+    }
+
+    @Override
+    public String getAgentAddress() {
+        return null;
+    }
+
+    @Override
     public boolean sendMessage(String source, String target, String content) {
         return false;
     }

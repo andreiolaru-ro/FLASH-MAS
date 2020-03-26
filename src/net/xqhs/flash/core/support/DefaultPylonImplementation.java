@@ -112,6 +112,11 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 
 	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		return false;
+	}
+
+	@Override
 	public boolean removeContext(EntityProxy<Node> context) {
 		throw new UnsupportedOperationException("Cannot remove context from a node");
 	}
@@ -158,19 +163,6 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	@SuppressWarnings("static-method")
 	public String getAgentNameFromAddress(String agentAddress) {
 		return agentAddress;
-	}
-
-	/**
-	 * This implementation presumes that the address / name of the agent does not contain any occurrence of
-	 * {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
-	 * 
-	 * @param endpoint
-	 *            - an endpoint, as defined in {@link AbstractMessagingShard}.
-	 * @return the agent address, as extracted from the entpoint.
-	 */
-	@SuppressWarnings("static-method")
-	public String extractAgentAddress(String endpoint) {
-		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
 	}
 
 	public String getServerAddressName() {

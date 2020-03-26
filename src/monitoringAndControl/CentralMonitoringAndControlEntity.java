@@ -109,6 +109,11 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
+    }
+
+    @Override
     public boolean removeContext(EntityProxy<Node> context) {
         return false;
     }

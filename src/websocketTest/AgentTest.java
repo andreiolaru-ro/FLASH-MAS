@@ -3,6 +3,7 @@ package websocketTest;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -19,11 +20,10 @@ public class AgentTest implements Agent
         @Override
         public void postAgentEvent(AgentEvent event)
         {
-            System.out.println("[ " + getName() +" ] : " + event.getValue(
-                    AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
-                    + event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
-                    + " la " + event.getValue(
-                    AbstractMessagingShard.DESTINATION_PARAMETER));
+            if(event instanceof AgentWave)
+                System.out.println(((AgentWave) event).getContent() + " de la "
+                        + ((AgentWave) event).getCompleteSource() + " la "
+                        + ((AgentWave) event).getCompleteDestination());
         }
 
         @Override
@@ -46,7 +46,7 @@ public class AgentTest implements Agent
     @Override
     public boolean start() {
         if(name.equals("Two")) {
-            messagingShard.sendMessage(this.getName(), "One", "Hello from the other side!");
+            messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "Hello from the other side!");
         }
         return true;
     }
@@ -78,6 +78,11 @@ public class AgentTest implements Agent
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
         return true;
+    }
+
+    @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
     }
 
     @Override

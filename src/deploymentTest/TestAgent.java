@@ -49,7 +49,12 @@ public class TestAgent implements Agent
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		return false;
+	}
+
 	@Override
 	public boolean removeContext(EntityProxy<Pylon> context)
 	{

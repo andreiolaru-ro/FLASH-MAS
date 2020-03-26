@@ -63,7 +63,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         @Override
         public boolean send(String source, String destination, String content) {
             String destAgent = getAgentNameFromAddress(getAgentAddress(destination));
-
             JSONObject messageToServer = new JSONObject();
             messageToServer.put("source", source);
             messageToServer.put("destination", destAgent);
@@ -84,7 +83,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         }
     };
 
-    public static class WebSocketMessaging extends AbstractMessagingShard {
+    public static class WebSocketMessaging extends AbstractNameBasedMessagingShard {
 
         private static final long serialVersionUID = 2L;
 
@@ -122,6 +121,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
         {
             super.receiveMessage(source, destination, content);
         }
+
     }
 
     class MessageThread implements Runnable
