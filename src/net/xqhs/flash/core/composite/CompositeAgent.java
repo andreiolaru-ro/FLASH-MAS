@@ -383,6 +383,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			e.printStackTrace();
 			return false;
 		}
+		if(event.isSet(NO_CREATE_THREAD))
+			eventProcessingCycle();
 		return true;
 	}
 	
@@ -452,7 +454,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			else
 			{
 				agentThread = null;
-				eventProcessingCycle();
 			}
 			break;
 		case AGENT_STOP:
