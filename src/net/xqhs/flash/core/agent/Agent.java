@@ -22,4 +22,6 @@ import net.xqhs.flash.core.support.Pylon;
 public interface Agent extends Entity<Pylon>
 {
 	// nothing to add, really.
+	
+	// public interface RunnableAgent extends RunnableEntity<Pylon>
 }
