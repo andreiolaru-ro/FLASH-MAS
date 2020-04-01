@@ -10,22 +10,25 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 
-import java.util.ArrayList;
+
+import javax.sound.midi.SysexMessage;
 import java.util.HashMap;
 
 
 public class UserAgent implements Agent {
 
     private HashMap<ProviderServices, Boolean> unplacedRequests = new HashMap<ProviderServices, Boolean>();
-    private HashMap<ProviderServices, Boolean> placedRequests = new HashMap<ProviderServices, Boolean>();
+    private HashMap<ProviderServices, Boolean> solvedRequests = new HashMap<ProviderServices, Boolean>();
     private int requestsCount = 0;
+    private int solvedRequestsCount = 0;
 
     private String name;
     private MessagingPylonProxy pylon;
     private AbstractMessagingShard messagingShard;
     private UserRequestShard userRequestShard;
     private static String EMPTY = "";
-    private String answaer = EMPTY;
+    private String answer = EMPTY;
+    private Object userLock = new Object();
 
 
     private ShardContainer masterProxy = new ShardContainer() {
@@ -39,16 +42,23 @@ public class UserAgent implements Agent {
         public void postAgentEvent(AgentEvent event) {
 
             if(event.containsKey(AbstractMessagingShard.CONTENT_PARAMETER)) {
-                //printMessage(event);
+                printMessage(event);
                 /* Verifies if the message represents the acceptance or denial of a request placement */
-                if(event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("YES") ||
-                        event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("NO")) {
-                    setAnswaer(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
-                } else {
+                synchronized (userLock){
+                    if(event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("YES") ||
+                            event.get(AbstractMessagingShard.CONTENT_PARAMETER).contains("NO")) {
+                        setAnswer(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
+                        userLock.notify();
+                     } else {
                     /* If the message is not about an accepted or denied request, then it's
                     about the result of a request  */
-                    //placedRequests.put(request, true);
+                        solvedRequestsCount++;
+                        ProviderServices request = ProviderServices.valueOf(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
+                        setSolvedRequests(request, true);
+                        System.out.println(getName() + " solved requests " + getSolvedRequestsCount() + " " + solvedRequestsCount);
+                    }
                 }
+
                 /* Ulterior as putea adauga la stringul content si rezultatul, pe langa numele serviciului
                  * indeplinit.
                   * Ar trebui sa gasesc o solutie, diferita de HM, ca toate serviciile sa fie marcate
@@ -71,6 +81,7 @@ public class UserAgent implements Agent {
 
     @Override
     public boolean start() {
+        printInitialState();
         return true;
     }
 
@@ -82,18 +93,21 @@ public class UserAgent implements Agent {
     @Override
     public void run() {
 
+        Thread thread = Thread.currentThread();
+        thread.setPriority(Thread.NORM_PRIORITY);
+
+
+
         synchronized (unplacedRequests){
             while(countLeftRequests() > 0 ) {
                 for( ProviderServices request : unplacedRequests.keySet() ) {
                     if(!unplacedRequests.get(request)) {
                         makeRequest(request);
                     }
-
                 }
-               // System.out.println(getName() + " has this nr of req left " + requestsCount);
             }
         }
-
+        //finalAnounce();
     }
 
     @Override
@@ -157,34 +171,44 @@ public class UserAgent implements Agent {
     /*Broadcast but be sure that JUST ONE agent takes the service*/
     private void makeRequest(ProviderServices request){
 
-        for(int i = 0; i< ClientProviderSimulation.PROVIDER_COUNT; i++) {
+        synchronized (this){
+            for(int i = 0; i< ClientProviderSimulation.PROVIDER_COUNT; i++) {
 
-            getMessagingShard().sendMessage(getName(), "Provider " + i, request.toString());
-            waitForAnswear();
-            if(getAnswaer().equals("YES")) {
-                removeRequest(request);
-                //placedRequests.put(request, false);
-
-                break;
-            }
-            /* Search for another provider. So the previous answear is no longer needed */
-            if(getAnswaer().equals("NO")) {
-                setAnswaer(EMPTY);
+                getMessagingShard().sendMessage(getName(), "Provider " + i, request.toString());
+                waitForAnswear(); //Lista globala cu providerii care mi-au mai ramas de intrebat
+                if(getAnswer().equals("YES")) {
+                    removeRequest(request);
+                    setSolvedRequests(request, false);
+                    setAnswer(EMPTY);
+                    break;
+                }
+                /* Search for another provider. So the previous answer is no longer needed */
+                if(getAnswer().contains("NO")) {
+                    setAnswer(EMPTY);
+                }
             }
         }
+
     }
 
-    private void setAnswaer(String content) {
-        answaer = content;
+    private void setAnswer(String content) {
+        answer = content;
     }
 
-    private String getAnswaer(){
-        return  answaer;
+    private String getAnswer(){
+        return answer;
     }
 
     private void waitForAnswear() {
-        while(getAnswaer().equals(EMPTY)){
-            ;
+        synchronized (userLock) {
+            while(getAnswer().equals(EMPTY)){
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -211,6 +235,41 @@ public class UserAgent implements Agent {
             }
         }
         return  leftRequests;
+    }
+
+    private void setSolvedRequests(ProviderServices requests, Boolean status) {
+        synchronized (solvedRequests) {
+            solvedRequests.put(requests,status);
+        }
+
+    }
+
+    private int getSolvedRequestsCount() {
+        int solvedRequestsCount = 0;
+        synchronized (solvedRequests){
+            for(Boolean status: solvedRequests.values()) {
+                if(status == true){
+                    solvedRequestsCount++;
+                }
+            }
+        }
+        return solvedRequestsCount;
+    }
+
+    private void finalAnounce() {
+        System.out.println(getName() + " a terminat si are: ");
+        for(ProviderServices service: solvedRequests.keySet()){
+            System.out.println(service.toString() + " " + solvedRequests.get(service));
+        }
+        System.out.println();
+    }
+
+    private  void printInitialState(){
+        System.out.println(getName() + " start si are: ");
+        for(ProviderServices service: unplacedRequests.keySet()){
+            System.out.println(service.toString() + " " + unplacedRequests.get(service));
+        }
+        System.out.println();
     }
 
 }

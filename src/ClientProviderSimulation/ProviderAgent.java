@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class ProviderAgent implements Agent {
 
 
-    private boolean isWaiting = true;
+    public volatile Boolean isWaiting = true;
     private String name;
     private MessagingPylonProxy pylon;
     private HashMap<AgentShardDesignation, AgentShardCore> shards = new HashMap<>();
@@ -31,6 +31,7 @@ public class ProviderAgent implements Agent {
     private String AVAILABLE = "";
     private String currentCustomer = AVAILABLE;
     private String service = "";
+    private Object providerLock = new Object();
 
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
@@ -41,39 +42,38 @@ public class ProviderAgent implements Agent {
         @Override
         public void postAgentEvent(AgentEvent event) {
 
-            /*  Verify if there is a received message and if the message is a request */
-            if(event.containsKey(AbstractMessagingShard.CONTENT_PARAMETER) &&
-                eventContainsRequest(event.get(AbstractMessagingShard.CONTENT_PARAMETER))) {
+            synchronized (providerLock){
 
-                //printMessage(event);
-                /* If the provider is not available, send a deny to the user */
-                if (!isAvailable()) {
-                    //System.out.println("Ocupat");
-                    declineJob(event);
-                    return;
-                }
+                /*  Verify if there is a received message and if the message is a request */
+                if(event.containsKey(AbstractMessagingShard.CONTENT_PARAMETER) &&
+                        eventContainsRequest(event.get(AbstractMessagingShard.CONTENT_PARAMETER))) {
+
+                    printMessage(event);
+                    /* If the provider is not available, send a deny to the user */
+                    if (!isAvailable()) {
+                        declineJob(event, " { Busy } ");
+                        return;
+                    }
                     /* If the provider doesn't have the requested service, send a deny to the user */
-                if (!hasService(event.get(AbstractMessagingShard.CONTENT_PARAMETER))){
-                    declineJob(event);
-                    //System.out.println("Nu am serviciul");
-                    return;
-                }
+                    if (!hasService(event.get(AbstractMessagingShard.CONTENT_PARAMETER))){
+                        declineJob(event, " { No service } ");
+                        return;
+                    }
 
-                /* Otherwise, notify the user that this provider will take the job and start processing*/
+                    /* Otherwise, notify the user that this provider will take the job and start processing*/
                     setCurrentCustomer(event.get(AbstractMessagingShard.SOURCE_PARAMETER));
                     acceptJob(event);
                     //CALL THE NEEDED SHARD IN RUN FOR IT TO RUN ON A THREAD
-                    //startShardForService(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
                     service = event.get(AbstractMessagingShard.CONTENT_PARAMETER);
                     setIsWaiting(false);
-                    startShardForService(service);
+                    providerLock.notify();
+                }
 
-            }
-
-            if(eventContainsResultFromShard(event)) {
-                setIsWaiting(true);
-                sendResult(extractServiceFromShardResult(event));
-                releaseCurrentCustomer();
+                if(eventContainsResultFromShard(event)) {
+                    setIsWaiting(true);
+                    sendResult(service);
+                    releaseCurrentCustomer();
+                }
             }
         }
 
@@ -145,18 +145,46 @@ public class ProviderAgent implements Agent {
 
     @Override
     public void run() {
-       /* long last_service_time = 0;
-        while(true) {
-            if(!isWaiting) {
-                startShardForService(service);
-                last_service_time = System.nanoTime();
-            }
+        Thread thread = Thread.currentThread();
+        thread.setPriority(Thread.MAX_PRIORITY);
+        long last_service_time = System.nanoTime();
 
+        synchronized (providerLock){
+            while(true) {
 
-            if( System.nanoTime() - last_service_time  > MAX_WAITING_TIME_FOR_JOB ) {
-                break;
+                while(getIsWaiting() ) {
+
+                    if( System.nanoTime() - last_service_time  > MAX_WAITING_TIME_FOR_JOB ) {
+                        break;
+                    }
+
+                    try {
+                        System.out.println("Waiting..");
+                        providerLock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        e.printStackTrace();
+                    }
+
+                }
+
+                    startShardForService(service);
+                    last_service_time = System.nanoTime();
+                    if( System.nanoTime() - last_service_time  > MAX_WAITING_TIME_FOR_JOB ) {
+                        break;
+                    }
+
+                /*if(!isWaiting) {
+                    System.out.println("E pe cale sa apeleze un shard");
+                    startShardForService(service);
+                    last_service_time = System.nanoTime();
+                }*/
+
+                //Thread.yield();
             }
-        }*/
+        }
+            System.out.println(getName() + "a terminat run()");
+
     }
 
     @Override
@@ -276,14 +304,14 @@ public class ProviderAgent implements Agent {
         return (LocalSupport.SimpleLocalMessaging) shards.get(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
     }
 
-    private void declineJob(AgentEvent event) {
+    private void declineJob(AgentEvent event, String reason) {
         getMessagingShard()
                 .sendMessage(
                         event.getValue(
                                 AbstractMessagingShard.DESTINATION_PARAMETER),
                         event.getValue(
                                 AbstractMessagingShard.SOURCE_PARAMETER),
-                        "NO");
+                        "NO" + reason);
     }
 
     private void acceptJob(AgentEvent event) {
@@ -335,5 +363,9 @@ public class ProviderAgent implements Agent {
 
     private synchronized void setIsWaiting(boolean value){
         isWaiting = value;
+    }
+
+    private synchronized boolean getIsWaiting(){
+        return isWaiting;
     }
 }

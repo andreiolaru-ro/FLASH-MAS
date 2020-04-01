@@ -24,8 +24,6 @@ enum ProviderServices {
     NUMBER_MULTIPLES,
     QUADRATIC_EQUATIONS
 
-
-
 }
 
 class ClientProviderNode extends Node
@@ -79,8 +77,8 @@ class ClientProviderNode extends Node
 
 public class ClientProviderSimulation {
 
-    public static int USERS_COUNT = 50000;
-    public static int PROVIDER_COUNT = 50000;
+    public static int USERS_COUNT = 5;
+    public static int PROVIDER_COUNT = 5;
     public static final int SERVICES_COUNT = 5;
 
 

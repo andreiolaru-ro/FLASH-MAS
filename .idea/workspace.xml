@@ -7,12 +7,7 @@
     <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEquationSolverShard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEquationSolverShard.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
@@ -26,9 +21,9 @@
     <session id="901198748">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="31" />
+          <entry key="project.closed" value="35" />
           <entry key="project.open.time.0" value="1" />
-          <entry key="project.open.time.10" value="2" />
+          <entry key="project.open.time.10" value="3" />
           <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.12" value="3" />
           <entry key="project.open.time.13" value="3" />
@@ -36,16 +31,16 @@
           <entry key="project.open.time.16" value="2" />
           <entry key="project.open.time.19" value="1" />
           <entry key="project.open.time.7" value="6" />
-          <entry key="project.open.time.8" value="11" />
+          <entry key="project.open.time.8" value="15" />
           <entry key="project.open.time.88" value="1" />
-          <entry key="project.open.time.9" value="10" />
-          <entry key="project.opened" value="42" />
+          <entry key="project.open.time.9" value="11" />
+          <entry key="project.opened" value="48" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="class" value="10" />
-          <entry key="java" value="393" />
+          <entry key="java" value="423" />
           <entry key="txt" value="1" />
           <entry key="xml" value="1" />
         </counts>
@@ -53,7 +48,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CLASS" value="10" />
-          <entry key="JAVA" value="392" />
+          <entry key="JAVA" value="422" />
           <entry key="Scratch" value="2" />
           <entry key="XML" value="1" />
         </counts>
@@ -61,12 +56,12 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="dummy" value="2" />
-          <entry key="java" value="24476" />
+          <entry key="java" value="26474" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="24476" />
+          <entry key="JAVA" value="26474" />
           <entry key="PLAIN_TEXT" value="2" />
         </counts>
       </usages-collector>
@@ -74,11 +69,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="96">
-              <caret line="82" column="41" selection-start-line="82" selection-start-column="41" selection-end-line="82" selection-end-column="41" />
+            <state relative-caret-position="-475">
+              <caret line="59" column="43" selection-start-line="59" selection-start-column="43" selection-end-line="59" selection-end-column="43" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#createUserAgentList#0;class#ClientProviderSimulation#0" />
@@ -99,84 +94,57 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="53">
-              <caret line="50" column="22" selection-start-line="50" selection-start-column="22" selection-end-line="50" selection-end-column="22" />
+            <state relative-caret-position="-1462">
+              <caret line="53" column="53" selection-start-line="53" selection-start-column="53" selection-end-line="53" selection-end-column="53" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#getAgentShard#0;class#ProviderAgent#0" />
                 <element signature="method#addShard#1;class#ProviderAgent#0" />
-                <element signature="e#5533#5534#0" expanded="true" />
-                <element signature="e#5560#5561#0" expanded="true" />
-                <element signature="e#5605#5606#0" expanded="true" />
-                <element signature="e#5632#5633#0" expanded="true" />
+                <element signature="e#6554#6555#0" expanded="true" />
+                <element signature="e#6581#6582#0" expanded="true" />
+                <element signature="e#6626#6627#0" expanded="true" />
+                <element signature="e#6653#6654#0" expanded="true" />
                 <element signature="method#addContext#0;class#ProviderAgent#0" />
-                <element signature="e#5985#5986#0" expanded="true" />
-                <element signature="e#6012#6013#0" expanded="true" />
+                <element signature="e#7006#7007#0" expanded="true" />
+                <element signature="e#7033#7034#0" expanded="true" />
                 <element signature="method#removeContext#0;class#ProviderAgent#0" />
-                <element signature="e#6199#6200#0" expanded="true" />
-                <element signature="e#6233#6234#0" expanded="true" />
-                <element signature="e#6289#6290#0" expanded="true" />
-                <element signature="e#6336#6337#0" expanded="true" />
-                <element signature="e#6378#6379#0" expanded="true" />
-                <element signature="e#6421#6422#0" expanded="true" />
-                <element signature="e#6465#6466#0" expanded="true" />
-                <element signature="e#6513#6514#0" expanded="true" />
-                <element signature="method#isAvailable#0;class#ProviderAgent#0" />
-                <element signature="method#hasService#0;class#ProviderAgent#0" />
-                <element signature="method#eventContainsRequest#0;class#ProviderAgent#0" />
+                <element signature="e#7220#7221#0" expanded="true" />
+                <element signature="e#7254#7255#0" expanded="true" />
+                <element signature="e#7310#7311#0" expanded="true" />
+                <element signature="e#7357#7358#0" expanded="true" />
+                <element signature="e#7399#7400#0" expanded="true" />
+                <element signature="e#7442#7443#0" expanded="true" />
+                <element signature="e#7486#7487#0" expanded="true" />
+                <element signature="e#7534#7535#0" expanded="true" />
                 <element signature="method#extractServiceFromShardResult#0;class#ProviderAgent#0" />
                 <element signature="method#eventContainsResultFromShard#0;class#ProviderAgent#0" />
-                <element signature="method#getMessagingShard#0;class#ProviderAgent#0" />
                 <element signature="method#declineJob#0;class#ProviderAgent#0" />
                 <element signature="method#acceptJob#0;class#ProviderAgent#0" />
-                <element signature="method#sendResult#0;class#ProviderAgent#0" />
                 <element signature="method#startShardForService#0;class#ProviderAgent#0" />
-                <element signature="e#11336#11337#0" expanded="true" />
-                <element signature="e#11369#11370#0" expanded="true" />
+                <element signature="e#12381#12382#0" expanded="true" />
+                <element signature="e#12414#12415#0" expanded="true" />
+                <element signature="e#12464#12465#0" expanded="true" />
+                <element signature="e#12496#12497#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="69">
-              <caret line="150" selection-start-line="150" selection-end-line="150" />
-              <folding>
-                <element signature="e#5094#5095#0" expanded="true" />
-                <element signature="e#5173#5174#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="101">
-              <caret line="200" column="29" selection-start-line="200" selection-start-column="4" selection-end-line="200" selection-end-column="29" />
+            <state relative-caret-position="104">
+              <caret line="182" selection-start-line="182" selection-end-line="182" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#639#666#0" expanded="true" />
+                <element signature="e#2767#2768#0" expanded="true" />
+                <element signature="e#2802#2803#0" expanded="true" />
                 <element signature="method#UserAgent#0;class#UserAgent#0" />
-                <element signature="e#3184#3185#0" expanded="true" />
-                <element signature="e#3211#3212#0" expanded="true" />
-                <element signature="e#3256#3257#0" expanded="true" />
-                <element signature="e#3283#3284#0" expanded="true" />
                 <element signature="method#addContext#0;class#UserAgent#0" />
-                <element signature="e#3708#3709#0" expanded="true" />
-                <element signature="e#3735#3736#0" expanded="true" />
-                <element signature="e#3922#3923#0" expanded="true" />
-                <element signature="e#3957#3958#0" expanded="true" />
                 <element signature="method#addUserRequestShard#0;class#UserAgent#0" />
                 <element signature="method#addMessagingShard#0;class#UserAgent#0" />
-                <element signature="e#5718#5719#0" expanded="true" />
-                <element signature="e#5751#5752#0" expanded="true" />
-                <element signature="e#5785#5786#0" expanded="true" />
-                <element signature="e#5816#5817#0" expanded="true" />
-                <element signature="e#6307#6308#0" expanded="true" />
-                <element signature="e#6345#6346#0" expanded="true" />
+                <element signature="method#removeRequest#0;class#UserAgent#0" />
+                <element signature="method#countLeftRequests#0;class#UserAgent#0" />
               </folding>
             </state>
           </provider>
@@ -193,36 +161,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>postAgentEvent</find>
-      <find>FSMEventOut</find>
-      <find>STARTING</find>
-      <find>supportLink</find>
-      <find>isR</find>
-      <find>class CompositeAgent</find>
-      <find>addConte</find>
-      <find>class SimpleLoca</find>
-      <find>Class COm</find>
-      <find>Slave</find>
-      <find>log</find>
-      <find>class COm</find>
-      <find>addS</find>
-      <find>addContext(</find>
-      <find>hasShard</find>
-      <find>addContext</find>
-      <find>Random</find>
-      <find>class Compos</find>
-      <find>AGENT_WAVE</find>
-      <find>WAVE</find>
-      <find>toStro</find>
-      <find>DESI</find>
-      <find>switch</find>
-      <find>addShard(</find>
-      <find>getNA</find>
-      <find>sync</find>
-      <find>.remo</find>
-      <find>requests</find>
-      <find>currentCus</find>
-      <find>isWa</find>
+      <find>setCurrentCustomer</find>
+      <find>.wa</find>
+      <find>decline</find>
+      <find>.wait</find>
+      <find>wait</find>
+      <find>noti</find>
+      <find>sendMessage</find>
+      <find>.noti</find>
+      <find>YES</find>
+      <find>mai are</find>
+      <find>mai are</find>
+      <find>requestsCount</find>
+      <find>solved requests 3</find>
+      <find>run()</find>
+      <find>olved requests 3</find>
+      <find>run</find>
+      <find>solvedRequestsCount</find>
+      <find>solved</find>
+      <find>solvedRequests</find>
+      <find>solved req</find>
+      <find>solved requests</find>
+      <find>start</find>
+      <find>[User 1]</find>
+      <find>[User 2]</find>
+      <find>[User 3]</find>
+      <find>value</find>
+      <find>[User 4]</find>
+      <find>isWai</find>
+      <find>[User 0]</find>
+      <find>startShardForService</find>
     </findStrings>
     <dirStrings>
       <dir>D:\FLASH-MAS\src\net\xqhs\flash</dir>
@@ -260,14 +228,14 @@
         <option value="$PROJECT_DIR$/src/PrimeNumberSimulationCompositeAgents/PrimeNumberSimulationCompositeAgents.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEcuationSolverShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/UserRequestShard.java" />
-        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEquationSolverShard.java" />
-        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java" />
         <option value="$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java" />
+        <option value="$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java" />
       </list>
     </option>
   </component>
@@ -330,31 +298,18 @@
               <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
               <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulation" type="462c0819:PsiDirectoryNode" />
-              <item name="PrimeNumberSimulation.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
-            </path>
-            <path>
-              <item name="Flash-MAS" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FLASH-MAS" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="PrimeNumberSimulationCompositeAgents" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1584994433465" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1585768065686" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT&#10;JAVA" />
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.0" />
@@ -487,27 +442,27 @@
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Capture Tool" order="4" />
-      <window_info content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.24777327" />
+      <window_info content_ui="combo" id="Project" order="5" side_tool="true" visible="true" weight="0.18299595" />
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3291815" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49878544" visible="true" weight="0.61565834" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.3113879" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49878544" visible="true" weight="0.30427048" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.7241993" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3291815" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.20818505" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.53736657" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.50121456" side_tool="true" weight="0.2366548" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.3291815" />
       <window_info anchor="bottom" id="Messages" order="10" weight="0.35231316" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Maven Projects" order="1" weight="0.32955465" />
-      <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="3" weight="0.25" />
-      <window_info anchor="right" id="Palette" order="4" />
-      <window_info anchor="right" id="Capture Analysis" order="5" />
-      <window_info anchor="right" id="Theme Preview" order="6" />
-      <window_info anchor="right" id="Palette&#9;" order="7" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="right" id="Capture Analysis" order="4" />
+      <window_info anchor="right" id="Theme Preview" order="5" />
+      <window_info anchor="right" id="Palette&#9;" order="6" />
+      <window_info anchor="right" id="Maven Projects" order="7" weight="0.32955465" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -583,34 +538,16 @@
           <option name="timeStamp" value="41" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java</url>
-          <line>45</line>
-          <properties />
-          <option name="timeStamp" value="42" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java</url>
-          <line>52</line>
-          <properties />
-          <option name="timeStamp" value="43" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java</url>
-          <line>48</line>
-          <properties />
-          <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/QuadraticEquationSolverShard.java</url>
           <line>57</line>
           <properties />
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java</url>
-          <line>150</line>
+          <url>file://$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java</url>
+          <line>55</line>
           <properties />
-          <option name="timeStamp" value="46" />
+          <option name="timeStamp" value="54" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -624,27 +561,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Long.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="116">
-          <caret line="393" selection-start-line="393" selection-end-line="393" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/util/HashMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="109">
-          <caret line="595" selection-start-line="595" selection-end-line="595" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/Entity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1144">
-          <caret line="162" column="14" selection-start-line="162" selection-start-column="14" selection-end-line="162" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/PylonProxy.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
@@ -663,9 +579,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="578">
           <caret line="48" column="48" selection-start-line="48" selection-start-column="26" selection-end-line="48" selection-end-column="48" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -739,9 +652,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="302">
           <caret line="622" selection-start-line="622" selection-end-line="622" />
-          <folding>
-            <element signature="e#22821#22822#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -763,39 +673,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="104">
           <caret line="806" selection-start-line="806" selection-end-line="806" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="150" selection-start-line="150" selection-end-line="150" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="290" selection-start-line="290" selection-end-line="290" />
-          <folding>
-            <element signature="method#configure#0;class#AgentShardCore#0" />
-            <element signature="method#start#0;class#AgentShardCore#0" />
-            <element signature="method#stop#0;class#AgentShardCore#0" />
-            <element signature="e#8098#8099#0" expanded="true" />
-            <element signature="e#8128#8129#0" expanded="true" />
-            <element signature="e#8237#8238#0" expanded="true" />
-            <element signature="e#8278#8279#0" expanded="true" />
-            <element signature="method#removeContext#0;class#AgentShardCore#0" />
-            <element signature="e#10070#10071#0" expanded="true" />
-            <element signature="method#asContext#0;class#AgentShardCore#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/util/MultiValueMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="233" selection-start-line="233" selection-end-line="233" />
         </state>
       </provider>
     </entry>
@@ -823,10 +700,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="289">
           <caret line="38" column="120" selection-start-line="38" selection-start-column="120" selection-end-line="38" selection-end-column="120" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#createAgentList#0;class#PrimeNumberSimulationCompositeAgents#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -865,19 +738,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/agent/AgentEvent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-696">
-          <caret line="38" column="23" selection-start-line="38" selection-start-column="23" selection-end-line="38" selection-end-column="23" />
-          <folding>
-            <element signature="e#4999#5000#0" expanded="true" />
-            <element signature="e#5024#5025#0" expanded="true" />
-            <element signature="e#5150#5151#0" expanded="true" />
-            <element signature="e#5217#5218#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/localTest/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
@@ -897,13 +757,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="260">
           <caret line="49" column="185" selection-start-line="49" selection-start-column="109" selection-end-line="49" selection-end-column="185" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#isPrime#0;class#PrimeNumberCalculatorShardForComposite#0" />
-            <element signature="method#signalAgentEvent#0;class#PrimeNumberCalculatorShardForComposite#0" />
-            <element signature="method#addGeneralContext#0;class#PrimeNumberCalculatorShardForComposite#0" />
-            <element signature="method#printMessage#0;class#PrimeNumberCalculatorShardForComposite#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -933,22 +786,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="901">
           <caret line="61" column="12" selection-start-line="61" selection-start-column="12" selection-end-line="62" selection-end-column="53" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardDesignation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3332">
-          <caret line="222" column="23" selection-start-line="222" selection-start-column="23" selection-end-line="222" selection-end-column="23" />
-          <folding>
-            <element signature="docComment;field#serialVersionUID#0;class#AgentShardDesignation#0" />
-            <element signature="docComment;class#StandardAgentShard#0;class#AgentShardDesignation#0" />
-            <element signature="e#2916#2917#0" expanded="true" />
-            <element signature="e#2973#2974#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -966,9 +803,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="107">
           <caret line="214" selection-start-line="214" selection-end-line="214" />
-          <folding>
-            <element signature="e#6553#6554#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1001,35 +835,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="201">
           <caret line="73" column="3" lean-forward="true" selection-start-line="73" selection-start-column="3" selection-end-line="75" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#addGeneralContext#0;class#ControlSlaveAgentShardForComposite#0" />
-            <element signature="method#giveTasksToAgents#0;class#ControlSlaveAgentShardForComposite#0" />
-            <element signature="method#signalAgentEvent#0;class#ControlSlaveAgentShardForComposite#0" />
-            <element signature="e#3236#3237#0" expanded="true" />
-            <element signature="e#3270#3271#0" expanded="true" />
-            <element signature="method#gatherAgentsResults#0;class#ControlSlaveAgentShardForComposite#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="45" selection-start-line="45" selection-end-line="45" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="407">
-          <caret line="48" selection-start-line="48" selection-end-line="48" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1043,62 +848,96 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/sclaim/constructs/ClaimStructure.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="29" column="41" selection-start-line="29" selection-start-column="41" selection-end-line="29" selection-end-column="41" />
+        <state relative-caret-position="17">
+          <caret line="97" column="64" selection-start-line="97" selection-start-column="64" selection-end-line="97" selection-end-column="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/DefaultPylonImplementation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#3695#3696#0" expanded="true" />
+            <element signature="e#3718#3719#0" expanded="true" />
+            <element signature="e#4082#4083#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/local/LocalSupport.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/agent/AgentEvent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="136" selection-start-line="136" selection-end-line="136" />
+        <state relative-caret-position="109">
+          <caret line="162" selection-start-line="162" selection-end-line="162" />
+          <folding>
+            <element signature="e#4999#5000#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardDesignation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="91" selection-start-line="91" selection-end-line="91" />
+          <folding>
+            <element signature="e#2973#2974#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/lang/Enum.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="237" selection-start-line="237" selection-end-line="237" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="69">
+          <caret line="290" selection-start-line="290" selection-end-line="290" />
+          <folding>
+            <element signature="method#configure#0;class#AgentShardCore#0" />
+            <element signature="method#start#0;class#AgentShardCore#0" />
+            <element signature="method#stop#0;class#AgentShardCore#0" />
+            <element signature="e#8098#8099#0" expanded="true" />
+            <element signature="e#8128#8129#0" expanded="true" />
+            <element signature="e#8237#8238#0" expanded="true" />
+            <element signature="e#8278#8279#0" expanded="true" />
+            <element signature="method#removeContext#0;class#AgentShardCore#0" />
+            <element signature="e#10070#10071#0" expanded="true" />
+            <element signature="method#asContext#0;class#AgentShardCore#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_192/src.zip!/java/util/HashMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="595" selection-start-line="595" selection-end-line="595" />
+          <folding>
+            <element signature="e#23684#23685#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/util/MultiValueMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="233" selection-start-line="233" selection-end-line="233" />
           <folding>
             <element signature="e#3458#3459#0" expanded="true" />
-            <element signature="e#3515#3516#0" expanded="true" />
-            <element signature="method#getRecommendedShardImplementation#0;class#LocalSupport#0" />
-            <element signature="e#7733#7734#0" expanded="true" />
-            <element signature="e#7761#7762#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="101">
-          <caret line="200" column="29" selection-start-line="200" selection-start-column="4" selection-end-line="200" selection-end-column="29" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#639#666#0" expanded="true" />
-            <element signature="method#UserAgent#0;class#UserAgent#0" />
-            <element signature="e#3184#3185#0" expanded="true" />
-            <element signature="e#3211#3212#0" expanded="true" />
-            <element signature="e#3256#3257#0" expanded="true" />
-            <element signature="e#3283#3284#0" expanded="true" />
-            <element signature="method#addContext#0;class#UserAgent#0" />
-            <element signature="e#3708#3709#0" expanded="true" />
-            <element signature="e#3735#3736#0" expanded="true" />
-            <element signature="e#3922#3923#0" expanded="true" />
-            <element signature="e#3957#3958#0" expanded="true" />
-            <element signature="method#addUserRequestShard#0;class#UserAgent#0" />
-            <element signature="method#addMessagingShard#0;class#UserAgent#0" />
-            <element signature="e#5718#5719#0" expanded="true" />
-            <element signature="e#5751#5752#0" expanded="true" />
-            <element signature="e#5785#5786#0" expanded="true" />
-            <element signature="e#5816#5817#0" expanded="true" />
-            <element signature="e#6307#6308#0" expanded="true" />
-            <element signature="e#6345#6346#0" expanded="true" />
+            <element signature="e#3494#3495#0" expanded="true" />
+            <element signature="e#8068#8069#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/support/AbstractMessagingShard.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
+        <state relative-caret-position="160">
           <caret line="150" selection-start-line="150" selection-end-line="150" />
           <folding>
             <element signature="e#5094#5095#0" expanded="true" />
@@ -1107,61 +946,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java">
+    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/local/LocalSupport.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="38" column="22" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#addGeneralContext#0;class#NumberMultiplesCountShard#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="53">
-          <caret line="50" column="22" selection-start-line="50" selection-start-column="22" selection-end-line="50" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="method#getAgentShard#0;class#ProviderAgent#0" />
-            <element signature="method#addShard#1;class#ProviderAgent#0" />
-            <element signature="e#5533#5534#0" expanded="true" />
-            <element signature="e#5560#5561#0" expanded="true" />
-            <element signature="e#5605#5606#0" expanded="true" />
-            <element signature="e#5632#5633#0" expanded="true" />
-            <element signature="method#addContext#0;class#ProviderAgent#0" />
-            <element signature="e#5985#5986#0" expanded="true" />
-            <element signature="e#6012#6013#0" expanded="true" />
-            <element signature="method#removeContext#0;class#ProviderAgent#0" />
-            <element signature="e#6199#6200#0" expanded="true" />
-            <element signature="e#6233#6234#0" expanded="true" />
-            <element signature="e#6289#6290#0" expanded="true" />
-            <element signature="e#6336#6337#0" expanded="true" />
-            <element signature="e#6378#6379#0" expanded="true" />
-            <element signature="e#6421#6422#0" expanded="true" />
-            <element signature="e#6465#6466#0" expanded="true" />
-            <element signature="e#6513#6514#0" expanded="true" />
-            <element signature="method#isAvailable#0;class#ProviderAgent#0" />
-            <element signature="method#hasService#0;class#ProviderAgent#0" />
-            <element signature="method#eventContainsRequest#0;class#ProviderAgent#0" />
-            <element signature="method#extractServiceFromShardResult#0;class#ProviderAgent#0" />
-            <element signature="method#eventContainsResultFromShard#0;class#ProviderAgent#0" />
-            <element signature="method#getMessagingShard#0;class#ProviderAgent#0" />
-            <element signature="method#declineJob#0;class#ProviderAgent#0" />
-            <element signature="method#acceptJob#0;class#ProviderAgent#0" />
-            <element signature="method#sendResult#0;class#ProviderAgent#0" />
-            <element signature="method#startShardForService#0;class#ProviderAgent#0" />
-            <element signature="e#11336#11337#0" expanded="true" />
-            <element signature="e#11369#11370#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="109">
+          <caret line="136" selection-start-line="136" selection-end-line="136" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="82" column="41" selection-start-line="82" selection-start-column="41" selection-end-line="82" selection-end-column="41" />
+        <state relative-caret-position="-475">
+          <caret line="59" column="43" selection-start-line="59" selection-start-column="43" selection-end-line="59" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="method#createUserAgentList#0;class#ClientProviderSimulation#0" />
@@ -1174,6 +969,102 @@
             <element signature="method#addRandomRequests#0;class#ClientProviderSimulation#0" />
             <element signature="method#addRequestsToUsersList#0;class#ClientProviderSimulation#0" />
             <element signature="method#getShardFromService#0;class#ClientProviderSimulation#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/EvenNumbersShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-35">
+          <caret line="29" column="41" selection-start-line="29" selection-start-column="41" selection-end-line="29" selection-end-column="41" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/OddNumbersShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="50" selection-start-line="50" selection-end-line="50" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/NumberMultiplesCountShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="379">
+          <caret line="52" selection-start-line="52" selection-end-line="52" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#addGeneralContext#0;class#NumberMultiplesCountShard#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/FibonacciShard.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="356">
+          <caret line="45" selection-start-line="45" selection-end-line="45" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ProviderAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1462">
+          <caret line="53" column="53" selection-start-line="53" selection-start-column="53" selection-end-line="53" selection-end-column="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="method#getAgentShard#0;class#ProviderAgent#0" />
+            <element signature="method#addShard#1;class#ProviderAgent#0" />
+            <element signature="e#6554#6555#0" expanded="true" />
+            <element signature="e#6581#6582#0" expanded="true" />
+            <element signature="e#6626#6627#0" expanded="true" />
+            <element signature="e#6653#6654#0" expanded="true" />
+            <element signature="method#addContext#0;class#ProviderAgent#0" />
+            <element signature="e#7006#7007#0" expanded="true" />
+            <element signature="e#7033#7034#0" expanded="true" />
+            <element signature="method#removeContext#0;class#ProviderAgent#0" />
+            <element signature="e#7220#7221#0" expanded="true" />
+            <element signature="e#7254#7255#0" expanded="true" />
+            <element signature="e#7310#7311#0" expanded="true" />
+            <element signature="e#7357#7358#0" expanded="true" />
+            <element signature="e#7399#7400#0" expanded="true" />
+            <element signature="e#7442#7443#0" expanded="true" />
+            <element signature="e#7486#7487#0" expanded="true" />
+            <element signature="e#7534#7535#0" expanded="true" />
+            <element signature="method#extractServiceFromShardResult#0;class#ProviderAgent#0" />
+            <element signature="method#eventContainsResultFromShard#0;class#ProviderAgent#0" />
+            <element signature="method#declineJob#0;class#ProviderAgent#0" />
+            <element signature="method#acceptJob#0;class#ProviderAgent#0" />
+            <element signature="method#startShardForService#0;class#ProviderAgent#0" />
+            <element signature="e#12381#12382#0" expanded="true" />
+            <element signature="e#12414#12415#0" expanded="true" />
+            <element signature="e#12464#12465#0" expanded="true" />
+            <element signature="e#12496#12497#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/UserAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="104">
+          <caret line="182" selection-start-line="182" selection-end-line="182" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2767#2768#0" expanded="true" />
+            <element signature="e#2802#2803#0" expanded="true" />
+            <element signature="method#UserAgent#0;class#UserAgent#0" />
+            <element signature="method#addContext#0;class#UserAgent#0" />
+            <element signature="method#addUserRequestShard#0;class#UserAgent#0" />
+            <element signature="method#addMessagingShard#0;class#UserAgent#0" />
+            <element signature="method#removeRequest#0;class#UserAgent#0" />
+            <element signature="method#countLeftRequests#0;class#UserAgent#0" />
           </folding>
         </state>
       </provider>
