@@ -155,6 +155,9 @@ public interface Loader<T extends Entity<?>>
 		 */
 		protected ClassFactory		classLoader		= null;
 		
+		/**
+		 * The configuration is not used.
+		 */
 		@Override
 		public boolean configure(MultiTreeMap configuration, Logger _log, ClassFactory classFactory)
 		{
