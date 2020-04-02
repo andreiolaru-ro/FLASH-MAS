@@ -10,8 +10,6 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 
-
-import javax.sound.midi.SysexMessage;
 import java.util.HashMap;
 
 
@@ -21,6 +19,8 @@ public class UserAgent implements Agent {
     private HashMap<ProviderServices, Boolean> solvedRequests = new HashMap<ProviderServices, Boolean>();
     private int requestsCount = 0;
     private int solvedRequestsCount = 0;
+    private int initialRequestsCount = 0;
+    private static final String supervisorName = "Supervisor";
 
     private String name;
     private MessagingPylonProxy pylon;
@@ -55,7 +55,13 @@ public class UserAgent implements Agent {
                         solvedRequestsCount++;
                         ProviderServices request = ProviderServices.valueOf(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
                         setSolvedRequests(request, true);
-                        System.out.println(getName() + " solved requests " + getSolvedRequestsCount() + " " + solvedRequestsCount);
+                        //System.out.println(getName() + " solved requests " + getSolvedRequestsCount() + " "
+                          //      + solvedRequestsCount + " initial requests num " + initialRequestsCount);
+
+                        if(getSolvedRequestsCount() == getRequestCount()) {
+                            /*  Notify the supervisor that you are done */
+                            notifySupervisorRequestsComplted();
+                        }
                     }
                 }
 
@@ -81,7 +87,8 @@ public class UserAgent implements Agent {
 
     @Override
     public boolean start() {
-        printInitialState();
+        //printInitialState();
+        initialRequestsCount = unplacedRequests.size();
         return true;
     }
 
@@ -95,8 +102,6 @@ public class UserAgent implements Agent {
 
         Thread thread = Thread.currentThread();
         thread.setPriority(Thread.NORM_PRIORITY);
-
-
 
         synchronized (unplacedRequests){
             while(countLeftRequests() > 0 ) {
@@ -203,7 +208,7 @@ public class UserAgent implements Agent {
         synchronized (userLock) {
             while(getAnswer().equals(EMPTY)){
                 try {
-                    this.wait();
+                    userLock.wait();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
@@ -270,6 +275,14 @@ public class UserAgent implements Agent {
             System.out.println(service.toString() + " " + unplacedRequests.get(service));
         }
         System.out.println();
+    }
+
+    private void notifySupervisorRequestsComplted(){
+        getMessagingShard().sendMessage(getName(), supervisorName, "DONE");
+    }
+
+    private int getRequestCount(){
+        return initialRequestsCount;
     }
 
 }

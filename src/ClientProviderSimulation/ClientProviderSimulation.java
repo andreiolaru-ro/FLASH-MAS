@@ -28,7 +28,7 @@ enum ProviderServices {
 
 class ClientProviderNode extends Node
 {
-    public static final int MAX_THREADS = 10;
+    public static final int MAX_THREADS = 31;
     public ClientProviderNode(String name)
     {
         super(name);
@@ -46,6 +46,10 @@ class ClientProviderNode extends Node
         for(Agent agent : agentList ) {
             registerEntity("Agent",agent, agent.getName() );
         }
+    }
+
+    public void registerSupervisorInNode(SupervisorAgent supervisorAgent) {
+        registerEntity("Agent", supervisorAgent, supervisorAgent.getName());
     }
 
     @Override
@@ -77,8 +81,8 @@ class ClientProviderNode extends Node
 
 public class ClientProviderSimulation {
 
-    public static int USERS_COUNT = 5;
-    public static int PROVIDER_COUNT = 5;
+    public static int USERS_COUNT = 100;
+    public static int PROVIDER_COUNT = 100;
     public static final int SERVICES_COUNT = 5;
 
 
@@ -257,6 +261,14 @@ public class ClientProviderSimulation {
         /*  Pot face mai multe scenarii: 1. pentru fiecare user, exista un provider liber care il poate ajuta;
           *                              2. exista mai putini provideri decat useri */
 
+
+        /*Create supervisor agent*/
+        SupervisorAgent supervisorAgent = new SupervisorAgent("Supervisor");
+        supervisorAgent.addContext(pylon.asContext());
+        supervisorAgent.addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        supervisorAgent.setUsersCount(USERS_COUNT);
+        supervisorAgent.setProvidersCount(PROVIDER_COUNT);
+
         /* Create user agents */
         ArrayList<UserAgent> users = createUserAgentList();
         addContextToUserAgentsList(pylon, users);
@@ -270,16 +282,13 @@ public class ClientProviderSimulation {
         addShardsToProvidersList(providers);
 
 
+        node.registerSupervisorInNode(supervisorAgent);
         node.registerUsersInNode( users);
         node.registerProvidersInNode(providers);
 
         node.start();
-        long startTime = System.nanoTime();
         node.run();
-
         node.stop();
-
-        System.out.println( "Simulation time " + (System.nanoTime() - startTime));
 
 
     }

@@ -12,10 +12,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 
-import javax.swing.*;
-import javax.swing.tree.ExpandVetoException;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ProviderAgent implements Agent {
@@ -28,10 +25,15 @@ public class ProviderAgent implements Agent {
     private HashMap<ProviderServices, AgentShardCore> shardsByService = new HashMap<>();
     private static final long MAX_WAITING_TIME_FOR_JOB = 10000000;
 
-    private String AVAILABLE = "";
+    private static final String AVAILABLE = "";
     private String currentCustomer = AVAILABLE;
     private String service = "";
+    private static final String supervisorName = "Supervisor";
+
     private Object providerLock = new Object();
+
+    private boolean STOP = false;
+
 
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
@@ -73,6 +75,11 @@ public class ProviderAgent implements Agent {
                     setIsWaiting(true);
                     sendResult(service);
                     releaseCurrentCustomer();
+                }
+
+                if(stopSignalFromSupervisor(event)) {
+                    providerLock.notify();
+                    setSTOP(true);
                 }
             }
         }
@@ -150,16 +157,11 @@ public class ProviderAgent implements Agent {
         long last_service_time = System.nanoTime();
 
         synchronized (providerLock){
-            while(true) {
+            while(!STOP) {
 
-                while(getIsWaiting() ) {
-
-                    if( System.nanoTime() - last_service_time  > MAX_WAITING_TIME_FOR_JOB ) {
-                        break;
-                    }
+                while(getIsWaiting() && !STOP) {
 
                     try {
-                        System.out.println("Waiting..");
                         providerLock.wait();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -167,24 +169,10 @@ public class ProviderAgent implements Agent {
                     }
 
                 }
+                startShardForService(service);
 
-                    startShardForService(service);
-                    last_service_time = System.nanoTime();
-                    if( System.nanoTime() - last_service_time  > MAX_WAITING_TIME_FOR_JOB ) {
-                        break;
-                    }
-
-                /*if(!isWaiting) {
-                    System.out.println("E pe cale sa apeleze un shard");
-                    startShardForService(service);
-                    last_service_time = System.nanoTime();
-                }*/
-
-                //Thread.yield();
             }
         }
-            System.out.println(getName() + "a terminat run()");
-
     }
 
     @Override
@@ -367,5 +355,24 @@ public class ProviderAgent implements Agent {
 
     private synchronized boolean getIsWaiting(){
         return isWaiting;
+    }
+
+    private boolean stopSignalFromSupervisor(AgentEvent event) {
+        if(event.containsKey(AbstractMessagingShard.SOURCE_PARAMETER)&&
+            event.get(AbstractMessagingShard.SOURCE_PARAMETER).equals(supervisorName) &&
+            event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("STOP")) {
+                return true;
+
+        }
+        return false;
+    }
+
+
+    private void setSTOP(boolean value) {
+        this.STOP = value;
+    }
+
+    private boolean getSTOP() {
+        return STOP;
     }
 }
