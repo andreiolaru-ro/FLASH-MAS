@@ -49,7 +49,9 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * {@link MultiTreeMap} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
  * 
  * @param <P>
- *                - the type of the entity that can contain (be the context of) this entity.
+ *            - the type of the entity that can contain (be the context of) this entity.
+ * 
+ * @see RunnableEntity
  * 
  * @author andreiolaru
  */
@@ -59,8 +61,11 @@ public interface Entity<P extends Entity<?>>
 	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
 	 * normally.
 	 * <p>
-	 * The method must guarantee that once it has been started successfully, it can immediately begin receiving events,
-	 * even if those events will not be processed immediately.
+	 * The method must guarantee that once it has been started successfully, the entity can immediately begin receiving
+	 * events, even if those events will not be processed immediately.
+	 * <p>
+	 * The method should return immediately. It is not guaranteed that when the method returned, the entity has
+	 * successfully started; this should checked using {@link #isRunning()}.
 	 * 
 	 * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
 	 */
@@ -107,6 +112,15 @@ public interface Entity<P extends Entity<?>>
 	public boolean addContext(EntityProxy<P> context);
 	
 	/**
+	 * Removes the link from a subordinate entity to an entity containing it in some way.
+	 * 
+	 * @param context
+	 *                    - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
+	public boolean removeContext(EntityProxy<P> context);
+
+	/**
 	 * Creates a link from a subordinate entity to an entity containing it in some way.
 	 * <p>
 	 * This method should only be used (as opposed to {@link #addContext} in the following cases:
@@ -132,13 +146,13 @@ public interface Entity<P extends Entity<?>>
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**
-	 * Removes the link from a subordinate entity to an entity containing it in some way.
+	 * Removes the from a subordinate entity to the specified context.
 	 * 
 	 * @param context
 	 *                    - a reference to the higher-level entity.
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
-	public boolean removeContext(EntityProxy<P> context);
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
 	/**
 	 * Returns a <i>proxy</i> to this entity.

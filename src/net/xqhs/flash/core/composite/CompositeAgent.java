@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.RunnableEntity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -46,7 +48,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class CompositeAgent implements Serializable, Agent
+public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
 {
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
@@ -82,12 +84,16 @@ public class CompositeAgent implements Serializable, Agent
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
+<<<<<<< HEAD
 			try {
 				return shards.get(designation);
 			} catch (Exception e) {
 				throw new InvalidParameterException(
 						"There is no shard with the designation [" + designation + "]");
 			}
+=======
+			return shards.get(designation);
+>>>>>>> master
 		}
 	}
 	
@@ -152,113 +158,83 @@ public class CompositeAgent implements Serializable, Agent
 		@Override
 		public void run()
 		{
-			boolean threadExit = false;
-			while(!threadExit)
-			{
-				// System.out.println("oops");
-				AgentEvent event = null;
-				synchronized(eventQueue)
-				{
-					if((eventQueue != null) && eventQueue.isEmpty())
-					try
-					{
-							eventQueue.wait();
-						}
-						catch(InterruptedException e)
-					{
-						// do nothing
-					}
-					else
-						event = eventQueue.poll();
-				}
-				if(event != null)
-				{
-					switch(event.getType().getSequenceType())
-					{
-					case CONSTRUCTIVE:
-					case UNORDERED:
-						for(AgentShard shard : shardOrder)
-							shard.signalAgentEvent(event);
-						break;
-					case DESTRUCTIVE:
-						for(ListIterator<AgentShard> it = shardOrder.listIterator(shardOrder.size()); it.hasPrevious();)
-							it.previous().signalAgentEvent(event);
-						break;
-					default:
-						throw new IllegalStateException(
-								"Unsupported sequence type: " + event.getType().getSequenceType().toString());
-					}
-					
-					threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
-				}
-			}
+			eventProcessingCycle();
 		}
 	}
 	
 	/**
 	 * The class UID
 	 */
-	private static final long							serialVersionUID			= -2693230015986527097L;
+	private static final long								serialVersionUID			= -2693230015986527097L;
 	
 	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to take the agent out of / into the <code>TRANSIENT</code>
 	 * state.
 	 */
-	public static final String							TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
+	public static final String								TRANSIENT_EVENT_PARAMETER	= "TO_FROM_TRANSIENT";
+	/**
+	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} in order to signal that a
+	 * separate {@link AgentThread} instance should not be created.
+	 */
+	protected static final String							NO_CREATE_THREAD			= "DONT_CREATE_THREAD";
 	
 	/**
 	 * This can be used by support implementation-specific shards to contact the support implementation.
 	 */
-	protected EntityProxy<Pylon>						supportLink					= null;
+	protected EntityProxy<Pylon>							supportLink					= null;
 	
 	/**
 	 * The proxy to this agent.
 	 */
-	protected EntityProxy<Agent>						asContext					= new CompositeAgentShardContainer(
+	protected EntityProxy<Agent>							asContext					= new CompositeAgentShardContainer(
 			this);
 	
 	/**
 	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 */
-	protected Map<AgentShardDesignation, AgentShard>	shards						= new HashMap<>();
+	protected Map<AgentShardDesignation, AgentShard>		shards						= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which shards were added, so as to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #shards}.
 	 */
-	protected ArrayList<AgentShard>						shardOrder					= new ArrayList<>();
+	protected ArrayList<AgentShard>							shardOrder					= new ArrayList<>();
+	/**
+	 * The list of all contexts this agent is placed in, in the order in which they were added.
+	 */
+	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext				= new ArrayList<>();
 	
 	/**
 	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
 	 */
-	protected LinkedBlockingQueue<AgentEvent>			eventQueue					= null;
+	protected LinkedBlockingQueue<AgentEvent>				eventQueue					= null;
 	/**
 	 * The thread managing the agent's life-cycle (managing events).
 	 */
-	protected Thread									agentThread					= null;
+	protected Thread										agentThread					= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
 	 */
-	protected AgentState								agentState					= AgentState.STOPPED;
+	protected AgentState									agentState					= AgentState.STOPPED;
 	
 	/**
 	 * The agent name, if given.
 	 */
-	protected String									agentName					= null;
+	protected String										agentName					= null;
 	/**
 	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agent's state. While
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
 	 * the {@link #log(String, Object...)} method.
 	 */
-	protected UnitComponent								localLog					= (UnitComponent) new UnitComponent()
+	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 	/**
 	 * This switch activates the use of the {@link #localLog}.
 	 */
-	protected boolean									USE_LOCAL_LOG				= true;
+	protected boolean										USE_LOCAL_LOG				= true;
 	
 	/**
 	 * Constructor for {@link CompositeAgent} instances.
@@ -286,6 +262,12 @@ public class CompositeAgent implements Serializable, Agent
 	public boolean start()
 	{
 		return postAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+	}
+	
+	@Override
+	public void run()
+	{
+		postAgentEvent((AgentEvent) new AgentEvent(AgentEventType.AGENT_START).add(NO_CREATE_THREAD, NO_CREATE_THREAD));
 	}
 	
 	/**
@@ -328,42 +310,47 @@ public class CompositeAgent implements Serializable, Agent
 		return FSMToggleTransient();
 	}
 	
-	/**
-	 * Context can be added to an agent only when it is not running.
-	 */
-	@Override
-	public boolean addContext(EntityProxy<Pylon> link)
+	protected void eventProcessingCycle()
 	{
-		if(!canAddShards() || isRunning())
-			return false;
-		supportLink = link;
-		return true;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context)
-	{
-		log("No general context supported.");
-		return false;
-	}
-	
-	/**
-	 * Context can be removed from an agent only when it is not running.
-	 */
-	@Override
-	public boolean removeContext(EntityProxy<Pylon> link)
-	{
-		if(!canAddShards() || isRunning())
-			return false;
-		supportLink = null;
-		return true;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public EntityProxy<Agent> asContext()
-	{
-		return asContext;
+		boolean threadExit = false;
+		while(!threadExit)
+		{
+			// System.out.println("oops");
+			AgentEvent event = null;
+			synchronized(eventQueue)
+			{
+				if((eventQueue != null) && eventQueue.isEmpty())
+					try
+					{
+						eventQueue.wait();
+					} catch(InterruptedException e)
+					{
+						// do nothing
+					}
+				else
+					event = eventQueue.poll();
+			}
+			if(event != null)
+			{
+				switch(event.getType().getSequenceType())
+				{
+				case CONSTRUCTIVE:
+				case UNORDERED:
+					for(AgentShard shard : shardOrder)
+						shard.signalAgentEvent(event);
+					break;
+				case DESTRUCTIVE:
+					for(ListIterator<AgentShard> it = shardOrder.listIterator(shardOrder.size()); it.hasPrevious();)
+						it.previous().signalAgentEvent(event);
+					break;
+				default:
+					throw new IllegalStateException(
+							"Unsupported sequence type: " + event.getType().getSequenceType().toString());
+				}
+				
+				threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
+			}
+		}
 	}
 	
 	/**
@@ -386,7 +373,8 @@ public class CompositeAgent implements Serializable, Agent
 		if(!canPostEvent(event))
 			return false;
 		
-		AgentState futureState = FSMEventIn(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
+		AgentState futureState = FSMEventIn(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER),
+				!event.isSet(NO_CREATE_THREAD));
 		
 		try
 		{
@@ -409,6 +397,8 @@ public class CompositeAgent implements Serializable, Agent
 			e.printStackTrace();
 			return false;
 		}
+		if(event.isSet(NO_CREATE_THREAD))
+			eventProcessingCycle();
 		return true;
 	}
 	
@@ -455,10 +445,11 @@ public class CompositeAgent implements Serializable, Agent
 	 *            - the type of the event.
 	 * @param fromToTransient
 	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
+	 * @param createThread - <code>true</code> if a thread should be created to process events in the event queue; <code>false</code> if this method should only return when the agent has stopped.
 	 * @return the state the agent should enter next (the actual state change will happen in
 	 *         {@link #postAgentEvent(AgentEvent)}, together with posting the event to the queue.
 	 */
-	protected AgentState FSMEventIn(AgentEventType eventType, boolean fromToTransient)
+	protected AgentState FSMEventIn(AgentEventType eventType, boolean fromToTransient, boolean createThread)
 	{
 		AgentState futureState = null;
 		switch(eventType)
@@ -469,8 +460,15 @@ public class CompositeAgent implements Serializable, Agent
 			if(eventQueue != null)
 				log("event queue already present");
 			eventQueue = new LinkedBlockingQueue<>();
-			agentThread = new Thread(new AgentThread());
-			agentThread.start();
+			if(createThread)
+			{
+				agentThread = new Thread(new AgentThread());
+				agentThread.start();
+			}
+			else
+			{
+				agentThread = null;
+			}
 			break;
 		case AGENT_STOP:
 			futureState = AgentState.STOPPING;
@@ -563,6 +561,53 @@ public class CompositeAgent implements Serializable, Agent
 	}
 	
 	/**
+	 * Context can be added to an agent only when it is not running.
+	 */
+	@Override
+	public boolean addContext(EntityProxy<Pylon> context)
+	{
+		return addGeneralContext(context);
+	}
+	
+	/**
+	 * Context can be removed from an agent only when it is not running.
+	 */
+	@Override
+	public boolean removeContext(EntityProxy<Pylon> context)
+	{
+		return removeGeneralContext(context);
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		if(isRunning())
+			return false;
+		agentContext.add(context);
+		for(AgentShard shard : shards.values())
+			shard.addGeneralContext(context);
+		return true;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		if(isRunning())
+			return false;
+		agentContext.remove(context);
+		for(AgentShard shard : shards.values())
+			shard.removeGeneralContext(context);
+		return true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public EntityProxy<Agent> asContext()
+	{
+		return asContext;
+	}
+	
+	/**
 	 * Adds a shard to the agent, which has been configured beforehand. The agent will register with the shard, as
 	 * parent.
 	 * <p>
@@ -585,8 +630,13 @@ public class CompositeAgent implements Serializable, Agent
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard);
 		shard.addContext(this.asContext());
+<<<<<<< HEAD
 		if(supportLink != null)
 			shard.addGeneralContext(supportLink);
+=======
+		for(EntityProxy<? extends Entity<?>> context : agentContext)
+			shard.addGeneralContext(context);
+>>>>>>> master
 		return this;
 	}
 	

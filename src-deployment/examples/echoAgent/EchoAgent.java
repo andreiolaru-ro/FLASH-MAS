@@ -110,4 +110,11 @@ public class EchoAgent extends Unit implements Agent
 		throw new UnsupportedOperationException("The EchoAgent cannot be a context for other entities.");
 	}
 	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 }

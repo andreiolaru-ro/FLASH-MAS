@@ -4,6 +4,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -13,6 +14,7 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +103,9 @@ class TestNode extends Node
 	}
 }
 
+=======
+@SuppressWarnings("javadoc")
+>>>>>>> master
 class TestAgent implements Agent
 {
 	/*Adaugate acum*/
@@ -115,13 +120,11 @@ class TestAgent implements Agent
 												@Override
 												public void postAgentEvent(AgentEvent event)
 												{
-													System.out.println(event.getValue(
-															AbstractMessagingShard.CONTENT_PARAMETER) + " de la "
-															+ event.getValue(AbstractMessagingShard.SOURCE_PARAMETER)
-															+ " la " + event.getValue(
-																	AbstractMessagingShard.DESTINATION_PARAMETER));
-													int message = Integer.parseInt(
-															event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
+													if(event instanceof AgentWave)
+														System.out.println(((AgentWave) event).getContent() + " de la "
+																+ ((AgentWave) event).getCompleteSource() + " la "
+																+ ((AgentWave) event).getCompleteDestination());
+													int message = Integer.parseInt(((AgentWave) event).getContent());
 													if(message < 5)
 													{
 														Thread eventThread = new Thread() {
@@ -130,10 +133,10 @@ class TestAgent implements Agent
 																									{
 																										getMessagingShard()
 																												.sendMessage(
-																														event.getValue(
-																																AbstractMessagingShard.DESTINATION_PARAMETER),
-																														event.getValue(
-																																AbstractMessagingShard.SOURCE_PARAMETER),
+																														getMessagingShard()
+																																.getAgentAddress(),
+																														((AgentWave) event)
+																																.getCompleteSource(),
 																														Integer.toString(
 																																message + 1));
 																										//System.out.println(name + " " + this.getId() +" thread");
@@ -160,7 +163,7 @@ class TestAgent implements Agent
 												@Override
 												public AgentShard getAgentShard(AgentShardDesignation designation)
 												{
-													// no support for shard discovery.
+													// not supported
 													return null;
 												}
 												
@@ -177,12 +180,16 @@ class TestAgent implements Agent
 	{
 		/*if(name.equals("Two"))
 		{
+<<<<<<< HEAD
 			messagingShard.sendMessage( this.getName(), "One",  "1");
 
 		}*/
 		if(name.equals("2"))
 		{
 			broadcastToAgentList(this.messageTargetAgents);
+=======
+			messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "1");
+>>>>>>> master
 		}
 		return true;
 	}
@@ -225,6 +232,12 @@ class TestAgent implements Agent
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		return true;
 	}
@@ -276,6 +289,7 @@ class TestAgent implements Agent
 	}
 }
 
+@SuppressWarnings("javadoc")
 public class Main
 {
 

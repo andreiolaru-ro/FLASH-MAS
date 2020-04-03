@@ -256,13 +256,6 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		return true;
 	}
 	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
-		le("No general context supported for shards.");
-		return false;
-	}
-	
 	/**
 	 * Sets the parent of the shard to <code>null</code>, effectively eliminating the shard from the agent.
 	 * <p>
@@ -280,6 +273,20 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		parentChangeNotifier((ShardContainer) parent);
 		return true;
 	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		lw("No general context supported for shards by default.");
+		return false;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		lw("No general context supported for shards by default.");
+		return false;
+	}
 	
 	/**
 	 * Retrieves the parent of the shard.
@@ -291,22 +298,10 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		return parentAgent;
 	}
 	
-	/**
-	 * Relay for {@link ShardContainer#getAgentShard(AgentShardDesignation)}.
-	 * 
-	 * @param designation
-	 *            - the designation of the desired {@link AgentShard}.
-	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
-	 */
-	final protected AgentShard getAgentShard(AgentShardDesignation designation)
-	{
-		return parentAgent.getAgentShard(designation);
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<AgentShard> asContext()
 	{
-		throw new UnsupportedOperationException("THe AgentSharCore cannot be a context of another entity.");
+		throw new UnsupportedOperationException("The AgentSharCore cannot be a context of another entity.");
 	}
 }
