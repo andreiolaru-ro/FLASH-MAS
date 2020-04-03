@@ -81,8 +81,8 @@ class ClientProviderNode extends Node
 
 public class ClientProviderSimulation {
 
-    public static int USERS_COUNT = 100;
-    public static int PROVIDER_COUNT = 100;
+    public static int USERS_COUNT = 35;
+    public static int PROVIDER_COUNT = 15;
     public static final int SERVICES_COUNT = 5;
 
 
