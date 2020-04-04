@@ -2,7 +2,6 @@ package monitoringAndControl;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
@@ -13,11 +12,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
+
 import java.util.List;
 
 public class MainBoard {
+
+    private CentralMonitoringAndControlEntity centralEntityProxy;
+
     private JTextArea loggingAreaText;
     private JButton createAgentsButton;
     private JButton startAgentsButton;
@@ -34,11 +35,11 @@ public class MainBoard {
 
     private String arg;
 
-    public MainBoard(String arg) {
+    public MainBoard(CentralMonitoringAndControlEntity centralEntityProxy) {
         /*
         * TODO: ARGs should be taken from GUI input.
         * */
-        this.arg = arg;
+        this.centralEntityProxy = centralEntityProxy;
         agentsList.setModel(listModel);
 
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
@@ -66,12 +67,7 @@ public class MainBoard {
 
 
         createAgentsButton.addActionListener(actionEvent -> {
-            /*
-            * Load deployment to create the requested nodes.
-            * */
-            String[] args = arg.split(" ");
-            nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
-            loggingAreaText.setText(out.toString());
+             centralEntityProxy.sendGUICommand("AgentC", "stop");
         });
 
         startAgentsButton.addActionListener(actionEvent -> {
@@ -79,15 +75,15 @@ public class MainBoard {
             * Start all nodes and store all existing agents.
             * Update the logging text area and the list of running agents.
             * */
-            agents = new LinkedList<>();
-            for(Node node : nodes) {
-                node.start();
-                agents.addAll(node.getAgents());
-            }
-            loggingAreaText.setText(out.toString());
-
-            for (Agent agent : agents)
-                listModel.addElement("[" + agent.isRunning() + "] " + agent.getName());
+//            agents = new LinkedList<>();
+//            for(Node node : nodes) {
+//                node.start();
+//                agents.addAll(node.getAgents());
+//            }
+//            loggingAreaText.setText(out.toString());
+//
+//            for (Agent agent : agents)
+//                listModel.addElement("[" + agent.isRunning() + "] " + agent.getName());
         });
 
 
@@ -96,10 +92,10 @@ public class MainBoard {
             * Stop all nodes.
             * Update the logging area and the list with current running agents.
             * */
-            for(Agent agent : agents)
-                agent.stop();
-            loggingAreaText.setText(out.toString());
-            listModel.removeAllElements();
+//            for(Agent agent : agents)
+//                agent.stop();
+//            loggingAreaText.setText(out.toString());
+//            listModel.removeAllElements();
         });
 
         exitButton.addActionListener(actionEvent -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));

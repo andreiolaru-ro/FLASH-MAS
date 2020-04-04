@@ -130,7 +130,23 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * Local IDs of default created entities.
 	 */
 	public static final List<String>	autoCreated						= new LinkedList<>();
-	
+
+
+	/**
+	 *  Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 */
+	public static       boolean         isCentralNode                   = true;
+
+	/**
+	 * Type for monitoring and control entity.
+	 * */
+	public static final String MONITORING_TYPE                          = "monitoring";
+
+	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "CentralMonitoring";
+
+	public static final String CENTRAL_NODE_NAME                        = "central";
+
+
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
 	 * tree while parsing CLI arguments.

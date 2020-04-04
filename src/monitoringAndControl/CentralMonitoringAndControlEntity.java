@@ -2,49 +2,39 @@ package monitoringAndControl;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.local.LocalSupport;
 
-public class CentralMonitoringAndControlEntity implements Entity<Node> {
+public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
+
+    protected static final String	SHARD_ENDPOINT				        = "control";
+
+    protected static final String	OTHER_SHARD_ENDPOINT				= "control";
 
     // Messaging shard to receive monitoring messages.
-    private AbstractMessagingShard centralMessagingShard;
+    private MessagingShard centralMessagingShard;
 
-    private String                 name              = null;
-
-    /*
-    * Proxy to a specific node.
-    * TODO: Solve the connection with different/multiple nodes.
-    * */
-    private MonitoringNodeProxy    nodeProxy;
-
+    private String                 name                                 = null;
 
     /*
     * Graphic User Interface
     * */
     private MainBoard GUI;
 
-    public CentralMonitoringAndControlEntity(String name) {
-        this.name = name;
-        addMessagingShard(new CentralMessagingShard());
-        /*
-        * TODO: The arg should disappear because the ARGS for loading
-        *  might be taken as GUI input.
-        * */
-        GUI = new MainBoard(null);
-    }
+    private static boolean RUNNING_STATE;
+
 
     // Proxy used to receive messages from outer entities; e.g. logs from agents
     public ShardContainer          proxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-        //TODO: Here is the message from CentralMonitoringShard when calling receive()
-               //The parent of CentralMonitoringShard will be this ShardContainer - proxy.
-
-            //Aici vor fi logurile primite inapoi prin shardul de monitorizare.
+            System.out.println(event.toString());
         }
 
         @Override
@@ -54,36 +44,39 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
 
         @Override
         public String getEntityName() {
-            return null;
+            return getName();
         }
     };
 
-    public boolean addMessagingShard(AbstractMessagingShard shard)
-    {
-        centralMessagingShard = shard;
-        shard.addContext(proxy);
-        if(nodeProxy != null)
-            centralMessagingShard.addGeneralContext(nodeProxy);
-        return true;
+    public CentralMonitoringAndControlEntity(String name) {
+        this.name = name;
+        centralMessagingShard = new LocalSupport.SimpleLocalMessaging();
+        centralMessagingShard.addContext(proxy);
+        GUI = new MainBoard(this);
     }
 
 
     @Override
     public boolean start() {
-        //GUI will actually appear when the monitoringEntity will start.
-        javax.swing.SwingUtilities.invokeLater(() -> GUI.createAndShowGUI());
-        System.out.println("CentralMonitoringAndControl started successfully!");
+        System.out.println(getName() + "## CENTRAL MONITORING ENTITY STARTED...");
+        RUNNING_STATE = true;
         return true;
+    }
+
+    public void startGUI(){
+        javax.swing.SwingUtilities.invokeLater(() -> GUI.createAndShowGUI());
     }
 
     @Override
     public boolean stop() {
+        System.out.println(getName() + "## CENTRAL MONITORING ENTITY STOPPED...");
+        RUNNING_STATE = false;
         return true;
     }
 
     @Override
     public boolean isRunning() {
-        return false;
+        return RUNNING_STATE;
     }
 
     @Override
@@ -92,20 +85,18 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     }
 
     @Override
-    public boolean addContext(EntityProxy<Node> context) {
+    public boolean addContext(EntityProxy<Pylon> context) {
+        return centralMessagingShard.addGeneralContext(context);
+    }
+
+    @Override
+    public boolean removeContext(EntityProxy<Pylon> context) {
         return false;
     }
 
-    /*
-    * Keep the MonitoringNodeProxy reference from the main node.
-    * */
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        nodeProxy = (MonitoringNodeProxy) context;
-        if(centralMessagingShard != null) {
-            centralMessagingShard.addGeneralContext(nodeProxy);
-        }
-        return true;
+        return addContext((MessagingPylonProxy) context);
     }
 
     @Override
@@ -114,33 +105,22 @@ public class CentralMonitoringAndControlEntity implements Entity<Node> {
     }
 
     @Override
-    public boolean removeContext(EntityProxy<Node> context) {
-        return false;
-    }
-
-    @Override
-    public <C extends Entity<Node>> EntityProxy<C> asContext() {
+    public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
         return null;
     }
+
 
     /**
     * Requests to the entity to send a start control command. This is mainly coming
      * from the GUI component.
     **/
 
-    public boolean sendGUIStartCommand(String entityName) {
-        // destination: entityName
-        // TODO: send a (WAVE?) message through the pylon
-        //  to agent's monitoring shard;
-        //  monitoring shard will post a STOP event;
-        return true;
-    }
-
-    public boolean sendGUIStopCommand(String entityName) {
-        // destination: entityName
-        // TODO: send a (WAVE?) message through the pylon
-        //  to agent's monitoring shard;
-        //  monitoring shard will post a STOP event;
+    public boolean sendGUICommand(String entityName, String command) {
+        centralMessagingShard
+                .sendMessage(
+                        AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                        AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
+                        command);
         return true;
     }
 }

@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import monitoringAndControl.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -25,6 +26,7 @@ import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
@@ -127,7 +129,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities)
 	{
 		// node instance creation
-		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME), false);
+		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
 		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
 		
 		// loader initials
@@ -339,6 +341,18 @@ public class NodeLoader extends Unit implements Loader<Node>
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						node.registerEntity(catName, entity, id);
+						if(catName.equals("support") && node.name != null && DeploymentConfiguration.isCentralNode)
+						{
+							CentralMonitoringAndControlEntity monitoringEntity = new CentralMonitoringAndControlEntity(
+									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+							monitoringEntity.addGeneralContext(entity.asContext());
+							node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, monitoringEntity,
+									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+							li("Entity [] of type [] registered.",
+									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+									DeploymentConfiguration.MONITORING_TYPE);
+							DeploymentConfiguration.isCentralNode = false;
+						}
 					}
 					else
 						le("Could not load entity [] of type [].", name, catName);
