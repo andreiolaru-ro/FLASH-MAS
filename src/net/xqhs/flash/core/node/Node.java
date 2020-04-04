@@ -185,11 +185,13 @@ public class Node extends Unit implements Entity<Node>
 				registerToCentralNode();
 			}
 		}
+
 		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
 		{
 			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
 			centralMonitoringEntity.startGUI();
 		}
+
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<Entity<?>>());

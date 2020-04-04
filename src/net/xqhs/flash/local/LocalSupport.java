@@ -149,7 +149,7 @@ public class LocalSupport extends DefaultPylonImplementation
 	public LocalSupport() {
 		super();
 		try {
-			webSocketClient = new WebSocketClientProxy(new URI("ws://localhost:8885"));
+			webSocketClient = new WebSocketClientProxy(new URI("ws://localhost:8886"));
 			webSocketClient.connect();
 			Thread.sleep(1000);
 		} catch (URISyntaxException | InterruptedException e) {

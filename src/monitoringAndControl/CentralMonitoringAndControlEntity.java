@@ -17,17 +17,16 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     protected static final String	OTHER_SHARD_ENDPOINT				= "control";
 
-    // Messaging shard to receive monitoring messages.
-    private MessagingShard centralMessagingShard;
+    private MessagingShard          centralMessagingShard;
 
-    private String                 name                                 = null;
+    private String                  name                                 = null;
 
     /*
     * Graphic User Interface
     * */
-    private MainBoard GUI;
+    private MainBoard               GUI;
 
-    private static boolean RUNNING_STATE;
+    private static boolean          RUNNING_STATE;
 
 
     // Proxy used to receive messages from outer entities; e.g. logs from agents
@@ -111,7 +110,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
 
     /**
-    * Requests to the entity to send a start control command. This is mainly coming
+    * Requests to send a control command. This is mainly coming
      * from the GUI component.
     **/
 

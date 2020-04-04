@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 
 public class StartServer {
     public static void main(String[] args) throws IOException {
-        int pylonPort = 8885;
+        int pylonPort = 8886;
         WebSocketServerEntity pylonServer = new WebSocketServerEntity(pylonPort);
         pylonServer.runServer();
 

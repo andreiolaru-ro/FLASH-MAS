@@ -27,23 +27,15 @@ public class MainBoard {
     private JPanel panel;
     private JList<String> agentsList;
 
-    private List<Node> nodes;
-    private List<Agent> agents;
 
     private ByteArrayOutputStream out = new ByteArrayOutputStream();
     private DefaultListModel<String> listModel = new DefaultListModel<>();
 
-    private String arg;
-
     public MainBoard(CentralMonitoringAndControlEntity centralEntityProxy) {
-        /*
-        * TODO: ARGs should be taken from GUI input.
-        * */
         this.centralEntityProxy = centralEntityProxy;
         agentsList.setModel(listModel);
-
-        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
-        GlobalLogWrapper.setLogStream(out);
+//        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
+//        GlobalLogWrapper.setLogStream(out);
     }
 
 
@@ -65,7 +57,6 @@ public class MainBoard {
         });
 
 
-
         createAgentsButton.addActionListener(actionEvent -> {
              centralEntityProxy.sendGUICommand("AgentC", "stop");
         });
@@ -75,15 +66,6 @@ public class MainBoard {
             * Start all nodes and store all existing agents.
             * Update the logging text area and the list of running agents.
             * */
-//            agents = new LinkedList<>();
-//            for(Node node : nodes) {
-//                node.start();
-//                agents.addAll(node.getAgents());
-//            }
-//            loggingAreaText.setText(out.toString());
-//
-//            for (Agent agent : agents)
-//                listModel.addElement("[" + agent.isRunning() + "] " + agent.getName());
         });
 
 
@@ -92,10 +74,6 @@ public class MainBoard {
             * Stop all nodes.
             * Update the logging area and the list with current running agents.
             * */
-//            for(Agent agent : agents)
-//                agent.stop();
-//            loggingAreaText.setText(out.toString());
-//            listModel.removeAllElements();
         });
 
         exitButton.addActionListener(actionEvent -> frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)));
