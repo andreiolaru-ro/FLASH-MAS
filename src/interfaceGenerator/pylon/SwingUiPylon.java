@@ -126,7 +126,7 @@ public class SwingUiPylon {
         return componentMap.get(id);
     }
 
-    public static void mapElements(JFrame frame) {
+    private static void mapElements(JFrame frame) {
         var contentPane = frame.getRootPane().getContentPane();
         if (contentPane instanceof JPanel) {
             var windowsPanel = (JPanel) contentPane;
