@@ -10,10 +10,7 @@ import javax.swing.*;
 import java.io.*;
 
 public class PageBuilder {
-    public static Object buildPage(InputStream input) throws Exception {
-        Yaml yaml = new Yaml();
-        Configuration data = yaml.loadAs(input, Configuration.class);
-
+    public static Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
 
@@ -21,8 +18,7 @@ public class PageBuilder {
             switch (type) {
                 case HTML:
                     var html = WebUiPylon.generate(data.getNode());
-                    System.out.println(html);
-                    FileWriter fileWriter = new FileWriter("interface-files\\model-page\\page.html");
+                    FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
@@ -48,13 +44,20 @@ public class PageBuilder {
         return null;
     }
 
-    public static InputStream buildPageFile(String path) {
+    public static Configuration buildPageFile(String path) {
         InputStream input = null;
         try {
             input = new FileInputStream(new File(path));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        return input;
+        Yaml yaml = new Yaml();
+        return yaml.loadAs(input, Configuration.class);
     }
+
+    public static Configuration buildPageInline(String inline) {
+        Yaml yaml = new Yaml();
+        return yaml.loadAs(inline, Configuration.class);
+    }
+
 }

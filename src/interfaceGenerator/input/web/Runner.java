@@ -26,21 +26,16 @@ public class Runner {
 
     public static void runExample(String exampleDir, String verticleID, VertxOptions options, DeploymentOptions deploymentOptions) {
         if (options == null) {
-            // Default parameter
             options = new VertxOptions();
         }
-        // Smart cwd detection
 
-        // Based on the current directory (.) and the desired directory (exampleDir), we try to compute the vertx.cwd
-        // directory:
         try {
-            // We need to use the canonical file. Without the file name is .
             File current = new File(".").getCanonicalFile();
             if (exampleDir.startsWith(current.getName()) && !exampleDir.equals(current.getName())) {
                 exampleDir = exampleDir.substring(current.getName().length() + 1);
             }
         } catch (IOException e) {
-            // Ignore it.
+            e.printStackTrace();
         }
 
         System.setProperty("vertx.cwd", exampleDir);
