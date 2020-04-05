@@ -26,6 +26,7 @@ public class SwingUiPylon {
             }
         }
         window.add(windowPanel);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return window;
     }
 

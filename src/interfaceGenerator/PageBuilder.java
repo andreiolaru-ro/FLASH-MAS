@@ -22,7 +22,7 @@ public class PageBuilder {
                 case HTML:
                     var html = WebUiPylon.generate(data.getNode());
                     System.out.println(html);
-                    FileWriter fileWriter = new FileWriter("test\\generated-pages\\page.html");
+                    FileWriter fileWriter = new FileWriter("interface-files\\model-page\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
@@ -56,13 +56,5 @@ public class PageBuilder {
             e.printStackTrace();
         }
         return input;
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        var file = buildPageFile(args[0]);
-        if (file != null) {
-            buildPage(file);
-        }
     }
 }
