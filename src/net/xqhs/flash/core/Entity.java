@@ -49,7 +49,9 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * {@link MultiTreeMap} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
  * 
  * @param <P>
- *                - the type of the entity that can contain (be the context of) this entity.
+ *            - the type of the entity that can contain (be the context of) this entity.
+ * 
+ * @see RunnableEntity
  * 
  * @author andreiolaru
  */
@@ -59,8 +61,11 @@ public interface Entity<P extends Entity<?>>
 	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
 	 * normally.
 	 * <p>
-	 * The method must guarantee that once it has been started successfully, it can immediately begin receiving events,
-	 * even if those events will not be processed immediately.
+	 * The method must guarantee that once it has been started successfully, the entity can immediately begin receiving
+	 * events, even if those events will not be processed immediately.
+	 * <p>
+	 * The method should return immediately. It is not guaranteed that when the method returned, the entity has
+	 * successfully started; this should checked using {@link #isRunning()}.
 	 * 
 	 * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
 	 */

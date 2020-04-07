@@ -52,7 +52,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 	 * <p>
 	 * 
 	 * @param args
-	 *            - the arguments received by the program.
+	 *                 - the arguments received by the program.
 	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
 	public List<Node> loadDeployment(List<String> args)
@@ -94,11 +94,17 @@ public class NodeLoader extends Unit implements Loader<Node>
 		return nodes;
 	}
 	
+	@Override
+	public Node load(MultiTreeMap configuration)
+	{
+		return load(configuration, null, null);
+	}
+	
 	/**
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param context
-	 *            - this argument is not used; nodes don't support context.
+	 *                    - this argument is not used; nodes don't support context.
 	 * @return the {@link Node} the was loaded.
 	 */
 	@Override
@@ -110,28 +116,18 @@ public class NodeLoader extends Unit implements Loader<Node>
 		return load(nodeConfiguration, subordinateEntities);
 	}
 	
-	@Override
-	public Node load(MultiTreeMap configuration)
-	{
-		return load(configuration, null, null);
-	}
-	
 	/**
 	 * Loads one {@link Node} instance, based on the provided configuration.
 	 * 
 	 * @param nodeConfiguration
-	 *            - the configuration.
+	 *                                - the configuration.
 	 * @param subordinateEntities
-	 *            - the entities that should be loaded inside the node, as specified by
-	 *            {@link Loader#load(MultiTreeMap, List, List)}.
+	 *                                - the entities that should be loaded inside the node, as specified by
+	 *                                {@link Loader#load(MultiTreeMap, List, List)}.
 	 * @return the {@link Node} the was loaded.
 	 */
 	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities)
 	{
-		// node instance creation
-		Node node = new Node(nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
-		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
-		
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
@@ -204,6 +200,29 @@ public class NodeLoader extends Unit implements Loader<Node>
 		}
 		
 		// ============================================================================== load entities
+		// node instance creation
+		if(!nodeConfiguration.isSet(SimpleLoader.CLASSPATH_KEY))
+			nodeConfiguration.addOneValue(SimpleLoader.CLASSPATH_KEY, Node.class.getCanonicalName());
+		String nodeCatName = CategoryName.NODE.s();
+		String nodeName = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		String nodecp = Loader.autoFind(classFactory, packages, nodeConfiguration.get(SimpleLoader.CLASSPATH_KEY), null,
+				null, nodeCatName, checkedPaths);
+		if(nodecp == null)
+		{
+			le("Class for [] [] can not be found; tried paths ", nodeCatName, nodeName, checkedPaths);
+			return null;
+		}
+		nodeConfiguration.addFirstValue(SimpleLoader.CLASSPATH_KEY, nodecp);
+		lf("Trying to load node using default loader [], from classpath []", defaultLoader.getClass().getName(),
+				CategoryName.NODE.s(), nodecp);
+		Node node = (Node) defaultLoader.load(nodeConfiguration);
+		if(node == null)
+		{
+			le("Could not load [][].", nodeCatName, nodeName);
+			return null;
+		}
+		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
+		
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");

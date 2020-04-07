@@ -115,6 +115,9 @@ public class PingTestComponent extends AgentShardGeneral
 			break;
 		case SIMULATION_START:
 			break;
+		case AGENT_STOP:
+			pingTimer.cancel();
+			break;
 		default:
 			break;
 		}

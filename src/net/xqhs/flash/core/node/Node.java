@@ -11,7 +11,14 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import monitoringAndControl.CentralMonitoringAndControlEntity;
 import monitoringAndControl.MonitoringNodeProxy;
@@ -25,11 +32,9 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingShard;
-import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.util.logging.Unit;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -146,15 +151,17 @@ public class Node extends Unit implements Entity<Node>
 			return getName();
 		}
 	};
+	
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
-	 * @param name
-	 *                 the name of the node, if any. Can be <code>null</code>.
+	 * @param nodeConfiguration
+	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(String name)
+	public Node(MultiTreeMap nodeConfiguration)
 	{
-		this.name = name;
+		if(nodeConfiguration != null)
+			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		//setLoggerType(PlatformUtils.platformLogType());
 		messagingShard = new LocalSupport.SimpleLocalMessaging();
 	}
