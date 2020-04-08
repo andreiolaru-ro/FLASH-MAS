@@ -97,6 +97,8 @@ public class SwingUiPylon {
         JTextArea form = new JTextArea();
         if (element.getText() != null) {
             form.setText(element.getText());
+        } else {
+            form.setText("");
         }
 
         // hack for a fixed size of form

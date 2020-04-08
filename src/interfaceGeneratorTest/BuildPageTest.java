@@ -6,11 +6,11 @@ public class BuildPageTest {
     private final static String INLINE = "inline";
     private final static String FILE = "file";
 
-    private final static String inlineExample = "{platformType: desktop, node: {id: root, children: " +
+    public final static String inlineExample = "{platformType: desktop, node: {id: root, children: " +
             "[{id: child1, type: button, children: []}, {id: child2, children: []}]}}";
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
+        if (args.length < 2) {
             System.err.println("Incorrect number of parameters");
             return;
         }
