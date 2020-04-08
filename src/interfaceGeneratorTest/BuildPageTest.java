@@ -20,7 +20,7 @@ public class BuildPageTest {
             System.out.println("Inline");
 
             // with inline yaml
-            var configuration = PageBuilder.buildPageInline(args[1]);
+            var configuration = PageBuilder.buildPageInline(inlineExample);
             PageBuilder.buildPage(configuration);
         } else if (args[0].equals(FILE)) {
             // example: file <file-path>
