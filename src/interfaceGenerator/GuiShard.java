@@ -1,33 +1,23 @@
-package interfaceGenerator.pylon;
+package interfaceGenerator;
 
-import interfaceGenerator.Element;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.config.Config;
 import net.xqhs.util.config.Configurable;
 
-import java.util.Set;
-
-public class AndroidUiPylon implements Pylon {
-    private final static String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-    private static int indentLevel = 0;
-
-    public static String generate(Element element) {
-        // TODO: Android interface generator
+public class GuiShard implements AgentShard {
+    @Override
+    public AgentShardDesignation getShardDesignation() {
         return null;
     }
 
     @Override
-    public Set<String> getSupportedServices() {
-        return null;
-    }
+    public void signalAgentEvent(AgentEvent event) {
 
-    @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-        return null;
     }
 
     @Override
@@ -37,7 +27,7 @@ public class AndroidUiPylon implements Pylon {
 
     @Override
     public boolean start() {
-        return true;
+        return false;
     }
 
     @Override
@@ -56,12 +46,12 @@ public class AndroidUiPylon implements Pylon {
     }
 
     @Override
-    public boolean addContext(EntityProxy<Node> context) {
+    public boolean addContext(EntityProxy<Agent> context) {
         return false;
     }
 
     @Override
-    public boolean removeContext(EntityProxy<Node> context) {
+    public boolean removeContext(EntityProxy<Agent> context) {
         return false;
     }
 
@@ -76,7 +66,7 @@ public class AndroidUiPylon implements Pylon {
     }
 
     @Override
-    public <C extends Entity<Node>> EntityProxy<C> asContext() {
+    public <C extends Entity<Agent>> EntityProxy<C> asContext() {
         return null;
     }
 
@@ -105,4 +95,3 @@ public class AndroidUiPylon implements Pylon {
 
     }
 }
-
