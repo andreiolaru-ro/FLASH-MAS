@@ -3,6 +3,7 @@ package PrimeNumberSimulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -29,7 +30,7 @@ public class PrimeNumberAgent implements Agent{
                 getMessagingShard().sendMessage(  name, "Master",    Integer.toString(primeNumbersCount));
             } else {
                 primeNumbersLimit = Integer.parseInt(
-                        event.getValue(AbstractMessagingShard.CONTENT_PARAMETER));
+                        ((AgentWave) event).getContent());
                 isWaitng = false;
             }
         }
@@ -107,6 +108,11 @@ public class PrimeNumberAgent implements Agent{
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
         return true;
+    }
+
+    @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
     }
 
     @Override

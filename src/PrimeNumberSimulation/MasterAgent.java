@@ -122,6 +122,11 @@ public class MasterAgent implements Agent {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
+    }
+
+    @Override
     public boolean removeContext(EntityProxy<Pylon> context) {
 
         pylon = null;

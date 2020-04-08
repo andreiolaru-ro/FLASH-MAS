@@ -1,9 +1,11 @@
 package PrimeNumberSimulation;
 
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
 
 import java.util.ArrayList;
@@ -13,9 +15,10 @@ import java.util.concurrent.Executors;
 class PrimeNumbersNode extends Node
 {
     public static final int MAX_THREADS = 3;
-    public PrimeNumbersNode(String name)
+    public PrimeNumbersNode(MultiTreeMap configuration)
     {
-        super(name);
+
+        super(configuration);
     }
 
     public void registerAgentsInNode(MasterAgent master,  ArrayList<PrimeNumberAgent> agentList) {
@@ -82,7 +85,9 @@ public class PrimeNumberSimulation {
 
     public static void main(String[] args) {
 
-        PrimeNumbersNode node = new PrimeNumbersNode("testNode");
+        MultiTreeMap configuration = new MultiTreeMap();
+        configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "testNode");
+        PrimeNumbersNode node = new PrimeNumbersNode(configuration);
         LocalSupport pylon = new LocalSupport();
 
 
