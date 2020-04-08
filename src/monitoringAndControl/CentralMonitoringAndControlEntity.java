@@ -1,5 +1,6 @@
 package monitoringAndControl;
 
+import monitoringAndControl.gui.GUIBoard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -10,6 +11,8 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
+
+import javax.swing.*;
 
 public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
@@ -24,7 +27,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
     /*
     * Graphic User Interface
     * */
-    private MainBoard               GUI;
+    private GUIBoard                GUI;
 
     private static boolean          RUNNING_STATE;
 
@@ -51,7 +54,6 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
         this.name = name;
         centralMessagingShard = new LocalSupport.SimpleLocalMessaging();
         centralMessagingShard.addContext(proxy);
-        GUI = new MainBoard(this);
     }
 
 
@@ -59,11 +61,18 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
     public boolean start() {
         System.out.println(getName() + "## CENTRAL MONITORING ENTITY STARTED...");
         RUNNING_STATE = true;
+        startGUIBoard();
         return true;
     }
 
-    public void startGUI(){
-        javax.swing.SwingUtilities.invokeLater(() -> GUI.createAndShowGUI());
+    public void startGUIBoard() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                GUI = new GUIBoard(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

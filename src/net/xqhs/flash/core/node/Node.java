@@ -196,7 +196,6 @@ public class Node extends Unit implements Entity<Node>
 		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
 		{
 			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
-			centralMonitoringEntity.startGUI();
 		}
 
 		entityOrder.add(entity);
@@ -309,15 +308,4 @@ public class Node extends Unit implements Entity<Node>
 	public List<Entity<?>> getEntities() {
 		return entityOrder;
 	}
-
-	public List<Agent> getAgents() {
-		LinkedList<Agent> agents = new LinkedList<>();
-		for (Entity<?> e : entityOrder) {
-			if (e instanceof Agent) {
-				agents.add((Agent) e);
-			}
-		}
-		return agents;
-	}
-
 }
