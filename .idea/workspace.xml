@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-<<<<<<< HEAD
   <component name="BookmarkManager">
     <bookmark url="file://$PROJECT_DIR$/src/PrimeNumberSimulation/PrimeNumberAgent.java" line="28" />
   </component>
@@ -8,10 +7,6 @@
     <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
-=======
-  <component name="ChangeListManager">
-    <list default="true" id="84025506-91ff-4f21-b2e4-90dbfb311de5" name="Default Changelist" comment="" />
->>>>>>> master
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,11 +37,7 @@
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="class" value="10" />
-<<<<<<< HEAD
           <entry key="java" value="450" />
-=======
-          <entry key="java" value="451" />
->>>>>>> master
           <entry key="txt" value="1" />
           <entry key="xml" value="1" />
         </counts>
@@ -54,11 +45,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CLASS" value="10" />
-<<<<<<< HEAD
           <entry key="JAVA" value="449" />
-=======
-          <entry key="JAVA" value="450" />
->>>>>>> master
           <entry key="Scratch" value="2" />
           <entry key="XML" value="1" />
         </counts>
@@ -78,7 +65,6 @@
     </session>
   </component>
   <component name="FileEditorManager">
-<<<<<<< HEAD
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java">
@@ -171,9 +157,6 @@
         </entry>
       </file>
     </leaf>
-=======
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
->>>>>>> master
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -333,11 +316,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-<<<<<<< HEAD
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1585935442175" />
-=======
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1585935593339" />
->>>>>>> master
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT&#10;JAVA" />
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.0" />
@@ -478,11 +457,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3291815" />
-<<<<<<< HEAD
       <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.6725979" />
-=======
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.6209964" />
->>>>>>> master
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.50121456" side_tool="true" weight="0.2366548" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.3291815" />
       <window_info anchor="bottom" id="Messages" order="10" weight="0.35231316" />
@@ -504,66 +479,41 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-<<<<<<< HEAD
           <line>255</line>
-=======
-          <line>144</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-<<<<<<< HEAD
           <line>179</line>
-=======
-          <line>75</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-<<<<<<< HEAD
           <line>142</line>
-=======
-          <line>48</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-<<<<<<< HEAD
           <line>265</line>
-=======
-          <line>146</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/shard/AgentShardCore.java</url>
-<<<<<<< HEAD
           <line>248</line>
-=======
-          <line>245</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
-<<<<<<< HEAD
           <line>63</line>
-=======
-          <line>14</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-<<<<<<< HEAD
           <url>file://$PROJECT_DIR$/src/localTest/Main.java</url>
           <line>55</line>
           <properties />
@@ -572,10 +522,6 @@
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java</url>
           <line>71</line>
-=======
-          <url>file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java</url>
-          <line>73</line>
->>>>>>> master
           <properties />
           <option name="timeStamp" value="27" />
         </line-breakpoint>
@@ -1051,7 +997,6 @@
         </state>
       </provider>
     </entry>
-<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4">
@@ -1070,8 +1015,6 @@
         </state>
       </provider>
     </entry>
-=======
->>>>>>> master
     <entry file="file://$PROJECT_DIR$/src/ClientProviderSimulation/ClientProviderSimulation.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="82">
@@ -1091,40 +1034,6 @@
         </state>
       </provider>
     </entry>
-<<<<<<< HEAD
-=======
-    <entry file="file://$PROJECT_DIR$/src/net/xqhs/flash/core/composite/CompositeAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="52" column="7" lean-forward="true" selection-start-line="52" selection-start-column="7" selection-end-line="52" selection-end-column="7" />
-          <folding>
-            <element signature="e#2936#2937#0" expanded="true" />
-            <element signature="e#2963#2964#0" expanded="true" />
-            <element signature="e#3029#3030#0" expanded="true" />
-            <element signature="e#3065#3066#0" expanded="true" />
-            <element signature="e#3116#3117#0" expanded="true" />
-            <element signature="e#3147#3148#0" expanded="true" />
-            <element signature="e#3235#3236#0" expanded="true" />
-            <element signature="e#3274#3275#0" expanded="true" />
-            <element signature="e#5660#5661#0" expanded="true" />
-            <element signature="e#5691#5692#0" expanded="true" />
-            <element signature="e#9502#9503#0" expanded="true" />
-            <element signature="e#9574#9575#0" expanded="true" />
-            <element signature="e#10078#10079#0" expanded="true" />
-            <element signature="e#10149#10150#0" expanded="true" />
-            <element signature="e#10229#10230#0" expanded="true" />
-            <element signature="e#10249#10250#0" expanded="true" />
-            <element signature="e#18925#18926#0" expanded="true" />
-            <element signature="e#18965#18966#0" expanded="true" />
-            <element signature="e#19119#19120#0" expanded="true" />
-            <element signature="e#19162#19163#0" expanded="true" />
-            <element signature="e#19764#19765#0" expanded="true" />
-            <element signature="e#19787#19788#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
->>>>>>> master
   </component>
   <component name="masterDetails">
     <states>

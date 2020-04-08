@@ -122,7 +122,12 @@ public class AgentPingPong implements Agent
 	{
 		return false;
 	}
-	
+
+	@Override
+	public void run() {
+
+	}
+
 	@Override
 	public boolean isRunning()
 	{
