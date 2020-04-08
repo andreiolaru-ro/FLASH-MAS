@@ -3,6 +3,7 @@ package ClientProviderSimulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -47,8 +48,8 @@ public class ProviderAgent implements Agent {
             synchronized (providerLock){
 
                 /*  Verify if there is a received message and if the message is a request */
-                if(event.containsKey(AbstractMessagingShard.CONTENT_PARAMETER) &&
-                        eventContainsRequest(event.get(AbstractMessagingShard.CONTENT_PARAMETER))) {
+                if(event instanceof AgentWave &&
+                        eventContainsRequest(((AgentWave) event).getContent())) {
 
                     printMessage(event);
                     /* If the provider is not available, send a deny to the user */
@@ -57,16 +58,16 @@ public class ProviderAgent implements Agent {
                         return;
                     }
                     /* If the provider doesn't have the requested service, send a deny to the user */
-                    if (!hasService(event.get(AbstractMessagingShard.CONTENT_PARAMETER))){
+                    if (!hasService(((AgentWave) event).getContent())){
                         declineJob(event, " { No service } ");
                         return;
                     }
 
                     /* Otherwise, notify the user that this provider will take the job and start processing*/
-                    setCurrentCustomer(event.get(AbstractMessagingShard.SOURCE_PARAMETER));
+                    setCurrentCustomer(((AgentWave) event).getCompleteSource());
                     acceptJob(event);
                     //CALL THE NEEDED SHARD IN RUN FOR IT TO RUN ON A THREAD
-                    service = event.get(AbstractMessagingShard.CONTENT_PARAMETER);
+                    service = event.get(((AgentWave) event).getContent());
                     setIsWaiting(false);
                     providerLock.notify();
                 }
@@ -200,6 +201,11 @@ public class ProviderAgent implements Agent {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
+    }
+
+    @Override
     public boolean removeContext(EntityProxy<Pylon> context) {
         pylon = null;
         return true;
@@ -295,20 +301,16 @@ public class ProviderAgent implements Agent {
     private void declineJob(AgentEvent event, String reason) {
         getMessagingShard()
                 .sendMessage(
-                        event.getValue(
-                                AbstractMessagingShard.DESTINATION_PARAMETER),
-                        event.getValue(
-                                AbstractMessagingShard.SOURCE_PARAMETER),
-                        "NO" + reason);
+                        ((AgentWave) event).getCompleteDestination(),
+                        ((AgentWave) event).getCompleteSource(),
+                        "NO");
     }
 
     private void acceptJob(AgentEvent event) {
         getMessagingShard()
                 .sendMessage(
-                        event.getValue(
-                                AbstractMessagingShard.DESTINATION_PARAMETER),
-                        event.getValue(
-                                AbstractMessagingShard.SOURCE_PARAMETER),
+                        ((AgentWave) event).getCompleteDestination(),
+                        ((AgentWave) event).getCompleteSource(),
                         "YES");
     }
 
@@ -344,9 +346,9 @@ public class ProviderAgent implements Agent {
     }
 
     private void printMessage(AgentEvent event) {
-        System.out.println("[" + getName() +"] "  + event.get(AbstractMessagingShard.CONTENT_PARAMETER) +
-                " de la " + event.get(AbstractMessagingShard.SOURCE_PARAMETER )+ " la " +
-                event.get(AbstractMessagingShard.DESTINATION_PARAMETER));
+        System.out.println("["+getName()+"] " + ((AgentWave) event).getContent() +
+                " de la " + ((AgentWave) event).getCompleteSource()+ " la " +
+                ((AgentWave) event).getCompleteDestination());
     }
 
     private synchronized void setIsWaiting(boolean value){
@@ -358,9 +360,9 @@ public class ProviderAgent implements Agent {
     }
 
     private boolean stopSignalFromSupervisor(AgentEvent event) {
-        if(event.containsKey(AbstractMessagingShard.SOURCE_PARAMETER)&&
-            event.get(AbstractMessagingShard.SOURCE_PARAMETER).equals(supervisorName) &&
-            event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("STOP")) {
+        if(event instanceof  AgentWave &&
+                ((AgentWave) event).getCompleteSource().equals(supervisorName) &&
+                ((AgentWave) event).getContent().equals("STOP")) {
                 return true;
 
         }

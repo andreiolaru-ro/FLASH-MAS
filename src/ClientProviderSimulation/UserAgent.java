@@ -3,6 +3,7 @@ package ClientProviderSimulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -41,19 +42,19 @@ public class UserAgent implements Agent {
         @Override
         public void postAgentEvent(AgentEvent event) {
 
-            if(event.containsKey(AbstractMessagingShard.CONTENT_PARAMETER)) {
+            if(event instanceof AgentWave) {
                 printMessage(event);
                 /* Verifies if the message represents the acceptance or denial of a request placement */
                 synchronized (userLock){
-                    if(event.get(AbstractMessagingShard.CONTENT_PARAMETER).equals("YES") ||
-                            event.get(AbstractMessagingShard.CONTENT_PARAMETER).contains("NO")) {
-                        setAnswer(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
+                    if(((AgentWave) event).getContent().equals("YES") ||
+                            ((AgentWave) event).getContent().contains("NO")) {
+                        setAnswer(((AgentWave) event).getContent());
                         userLock.notify();
                      } else {
                     /* If the message is not about an accepted or denied request, then it's
                     about the result of a request  */
                         solvedRequestsCount++;
-                        ProviderServices request = ProviderServices.valueOf(event.get(AbstractMessagingShard.CONTENT_PARAMETER));
+                        ProviderServices request = ProviderServices.valueOf(((AgentWave) event).getContent());
                         setSolvedRequests(request, true);
                         //System.out.println(getName() + " solved requests " + getSolvedRequestsCount() + " "
                           //      + solvedRequestsCount + " initial requests num " + initialRequestsCount);
@@ -141,6 +142,11 @@ public class UserAgent implements Agent {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
+    }
+
+    @Override
     public boolean removeContext(EntityProxy<Pylon> context) {
         pylon = null;
         return true;
@@ -218,9 +224,9 @@ public class UserAgent implements Agent {
     }
 
     private void printMessage(AgentEvent event) {
-        System.out.println("["+getName()+"] " + event.get(AbstractMessagingShard.CONTENT_PARAMETER) +
-                " de la " + event.get(AbstractMessagingShard.SOURCE_PARAMETER )+ " la " +
-                event.get(AbstractMessagingShard.DESTINATION_PARAMETER));
+        System.out.println("["+getName()+"] " + ((AgentWave) event).getContent() +
+                " de la " + ((AgentWave) event).getCompleteSource()+ " la " +
+                ((AgentWave) event).getCompleteDestination());
     }
 
     private AbstractMessagingShard getMessagingShard() {

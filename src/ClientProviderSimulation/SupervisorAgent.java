@@ -3,6 +3,7 @@ package ClientProviderSimulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -116,6 +117,11 @@ public class SupervisorAgent implements Agent {
     }
 
     @Override
+    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        return false;
+    }
+
+    @Override
     public boolean removeContext(EntityProxy<Pylon> context) {
         pylon = null;
         return true;
@@ -155,8 +161,8 @@ public class SupervisorAgent implements Agent {
     }
 
     private boolean messageFromUser(AgentEvent event) {
-        if(event.containsKey(AbstractMessagingShard.SOURCE_PARAMETER) &&
-            event.get(AbstractMessagingShard.SOURCE_PARAMETER).contains("User")){
+        if(event instanceof AgentWave &&
+                ((AgentWave) event).getCompleteSource().contains("User")){
 
             return true;
         }

@@ -2,11 +2,13 @@ package ClientProviderSimulation;
 
 import PrimeNumberSimulation.MasterAgent;
 import PrimeNumberSimulation.PrimeNumberAgent;
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
 
 import java.util.Arrays;
@@ -29,9 +31,9 @@ enum ProviderServices {
 class ClientProviderNode extends Node
 {
     public static final int MAX_THREADS = 31;
-    public ClientProviderNode(String name)
+    public ClientProviderNode(MultiTreeMap configuration)
     {
-        super(name);
+        super(configuration);
     }
 
     public void registerUsersInNode( ArrayList<UserAgent> agentList) {
@@ -254,7 +256,9 @@ public class ClientProviderSimulation {
 
     public static void main(String[] args) {
 
-        ClientProviderNode node = new ClientProviderNode("testNode");
+        MultiTreeMap configuration = new MultiTreeMap();
+        configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "testNode");
+        ClientProviderNode node = new ClientProviderNode(configuration);
         LocalSupport pylon = new LocalSupport();
 
 
