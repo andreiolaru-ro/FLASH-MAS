@@ -84,16 +84,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
-<<<<<<< HEAD
-			try {
-				return shards.get(designation);
-			} catch (Exception e) {
-				throw new InvalidParameterException(
-						"There is no shard with the designation [" + designation + "]");
-			}
-=======
 			return shards.get(designation);
->>>>>>> master
 		}
 	}
 	
@@ -263,7 +254,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	{
 		return postAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 	}
-	
+
 	@Override
 	public void run()
 	{
@@ -292,10 +283,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		return exit();
 	}
 
-	@Override
-	public void run() {
-
-	}
 
 	/**
 	 * Instructs the agent to switch state between <code>STOPPED</code> and <code>TRANSIENT</code>.
@@ -630,13 +617,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard);
 		shard.addContext(this.asContext());
-<<<<<<< HEAD
-		if(supportLink != null)
-			shard.addGeneralContext(supportLink);
-=======
 		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			shard.addGeneralContext(context);
->>>>>>> master
 		return this;
 	}
 	
