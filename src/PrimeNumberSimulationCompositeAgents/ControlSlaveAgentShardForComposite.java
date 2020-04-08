@@ -2,6 +2,7 @@ package PrimeNumberSimulationCompositeAgents;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
@@ -50,7 +51,7 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
         /* Make all agents find number of prime numbers to a certain limit */
         for (int i = 0; i < slaveAgentsCount; i++) {
             int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
-            LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getAgentShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
+            LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getAgent().getAgentShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
             messagingShard.sendMessage("Master", Integer.toString(i), Integer.toString(limit));
         }
 
@@ -59,8 +60,8 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
 
     @Override
     public void signalAgentEvent(AgentEvent event) {
-        if(event.containsKey(AbstractMessagingShard.SOURCE_PARAMETER)){
-            if (event.get(AbstractMessagingShard.DESTINATION_PARAMETER).equals("Master")) {
+        if(event instanceof AgentWave){
+            if (((AgentWave) event).getCompleteDestination().equals("Master")) {
                 decrementSlaveAgentCount();
                 if (slaveAgentsCount == 0) {
                     long elapsedTime = System.nanoTime() - startTime;
@@ -81,4 +82,11 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
     public void setSlaveAgentsCounts(int slaveAgentsCount) {
         this.slaveAgentsCount = slaveAgentsCount;
     }
+
+    private void printMessage(AgentEvent event) {
+        System.out.println("MASTER: " + ((AgentWave) event).getContent() + " de la "
+                + ((AgentWave) event).getCompleteSource() + " la " +
+                ((AgentWave) event).getCompleteDestination());
+    }
+
 }
