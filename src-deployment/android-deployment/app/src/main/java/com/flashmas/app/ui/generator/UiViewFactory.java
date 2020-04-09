@@ -2,10 +2,14 @@ package com.flashmas.app.ui.generator;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import net.xqhs.flash.core.agent.Agent;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -20,7 +24,7 @@ public class UiViewFactory {
         return yamlParser.loadAs(inputStream, Configuration.class);
     }
 
-    public static View createView(Configuration config, Context context) {
+    public static View createView(Configuration config, Context context, Agent agent) {
         if (config == null) {
             return null;
         }
@@ -30,10 +34,10 @@ public class UiViewFactory {
             return null;
         }
 
-        return createView(config.getNode(), context);
+        return createView(config.getNode(), context, agent);
     }
 
-    public static View createView(Element element, Context context) {
+    public static View createView(Element element, Context context, Agent agent) {
         if (element == null) {
             return null;
         }
@@ -43,17 +47,17 @@ public class UiViewFactory {
             case BLOCK:
                 currentView = createLinearLayout(element, context);
                 for (Element childElement: element.getChildren()) {
-                    childView = createView(childElement, context);
+                    childView = createView(childElement, context, agent);
                     if (childView == null)
                         continue;
                     ((LinearLayout) currentView).addView(childView);
                 }
                 break;
             case BUTTON:
-                currentView = createButton(element, context);
+                currentView = createButton(element, context, agent);
                 break;
             case LABEL:
-                currentView = createLabel(element, context);
+                currentView = createLabel(element, context, agent);
                 break;
             default:
                 currentView = null;
@@ -62,15 +66,31 @@ public class UiViewFactory {
         return currentView;
     }
 
-    private static View createLabel(Element element, Context context) {
+    private static View createLabel(Element element, Context context, Agent agent) {
         TextView textView = new TextView(context);
-        textView.setText(element.getText());
+        if (element.getText() != null && element.getText().equals("__agent_name__")) {
+            textView.setText(agent.getName());
+        } else {
+            textView.setText(element.getText());
+        }
+
+        if (element.getProperties().containsKey("align") &&
+                element.getProperties().get("align").equals("center")) {
+            textView.setGravity(Gravity.CENTER);
+        }
         return textView;
     }
 
-    private static View createButton(Element element, Context context) {
+    private static View createButton(Element element, Context context, Agent agent) {
         Button button = new Button(context);
         button.setText(element.getText());
+        if (element.getProperties().containsKey("action") &&
+                element.getProperties().get("action").equals("disable")) {
+            button.setOnClickListener(v -> {
+                agent.stop();
+                Toast.makeText(context, "Agent " + agent.getName() + " stopped", Toast.LENGTH_LONG).show();
+            });
+        }
         return button;
     }
 
@@ -89,8 +109,8 @@ public class UiViewFactory {
         return linearLayout;
     }
 
-    public static View parseAndCreateView(InputStream inputStream, Context context) {
-        if (inputStream == null || context == null) {
+    public static View parseAndCreateView(InputStream inputStream, Context context, Agent agent) {
+        if (inputStream == null || context == null || agent == null) {
             return null;
         }
 
@@ -101,6 +121,6 @@ public class UiViewFactory {
             return null;
         }
 
-        return createView(config, context);
+        return createView(config, context, agent);
     }
 }

@@ -2,13 +2,17 @@ platformType: android
 node:
   id: root
   properties:
-    orientation: horizontal
+    orientation: vertical
   children:
     - id: child1
       type: label
-      text: " Click here: "
+      text: __agent_name__
       children: []
+      properties:
+        align: center
     - id: child2
       type: button
-      text: The button
+      text: "The button"
       children: []
+      properties:
+        action: disable
