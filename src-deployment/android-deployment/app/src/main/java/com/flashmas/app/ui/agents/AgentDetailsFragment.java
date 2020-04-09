@@ -11,12 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.flashmas.app.R;
-import com.flashmas.app.ui.generator.Configuration;
 import com.flashmas.app.ui.generator.UiViewFactory;
 
 import net.xqhs.flash.core.agent.Agent;
-
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +22,16 @@ public class AgentDetailsFragment extends Fragment {
     public static final String AGENT_KEY = "agent_key";
     private Agent agent = null;
 
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null && args.get(AGENT_KEY) instanceof Agent) {
+            agent = (Agent) args.get(AGENT_KEY);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -32,7 +39,7 @@ public class AgentDetailsFragment extends Fragment {
 
         try {
             InputStream inputStream = getActivity().getAssets().open("example_agent_view.yaml");
-            view = UiViewFactory.parseAndCreateView(inputStream, getContext());
+            view = UiViewFactory.parseAndCreateView(inputStream, getContext(), agent);
         } catch (IOException e) {
             e.printStackTrace();
         }
