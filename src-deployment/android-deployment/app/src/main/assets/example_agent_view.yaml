@@ -1,0 +1,14 @@
+platformType: android
+node:
+  id: root
+  properties:
+    orientation: horizontal
+  children:
+    - id: child1
+      type: label
+      text: " Click here: "
+      children: []
+    - id: child2
+      type: button
+      text: The button
+      children: []
