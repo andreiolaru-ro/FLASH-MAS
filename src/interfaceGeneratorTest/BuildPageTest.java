@@ -3,8 +3,8 @@ package interfaceGeneratorTest;
 import interfaceGenerator.PageBuilder;
 
 public class BuildPageTest {
-    private final static String INLINE = "inline";
-    private final static String FILE = "file";
+    public final static String INLINE = "inline";
+    public final static String FILE = "file";
 
     public final static String inlineExample = "{platformType: desktop, node: {id: root, children: " +
             "[{id: child1, type: button, children: []}, {id: child2, children: []}]}}";
