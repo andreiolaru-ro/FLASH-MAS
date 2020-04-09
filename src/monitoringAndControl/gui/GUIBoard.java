@@ -3,6 +3,7 @@ package monitoringAndControl.gui;
 import monitoringAndControl.CentralMonitoringAndControlEntity;
 
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -44,19 +45,25 @@ public class GUIBoard extends JFrame {
         contentPane.setLayout(new BorderLayout(0, 0));
         setContentPane(contentPane);
 
-        JButton createAgentsBtn = newButton("Create agents");
+        JButton startSimulation = newButton("Start simulation");
         JButton startAgentsBtn  = newButton("Start agents");
         JButton stopAgentsBtn   = newButton("Stop agents");
         JButton exitBtn         = newButton("Exit");
 
-        createAgentsBtn.addActionListener(actionEvent ->
-                centralEntityProxy.sendGUICommand("AgentC", "stop"));
+        startSimulation.addActionListener(actionEvent ->
+                centralEntityProxy.sendToAll("simulation"));
+        startAgentsBtn.addActionListener(actionEvent ->
+                centralEntityProxy.sendToAll("start"));
+        stopAgentsBtn.addActionListener(actionEvent ->
+                centralEntityProxy.sendToAll("stop"));
+        exitBtn.addActionListener(actionEvent ->
+                dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setBorder(new EmptyBorder(5,5,5,5));
         buttonsPanel.setLayout(new FlowLayout());
 
-        buttonsPanel.add(createAgentsBtn);
+        buttonsPanel.add(startSimulation);
         buttonsPanel.add(startAgentsBtn);
         buttonsPanel.add(stopAgentsBtn);
         buttonsPanel.add(exitBtn);

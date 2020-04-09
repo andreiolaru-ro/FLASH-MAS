@@ -11,11 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -24,7 +21,6 @@ import monitoringAndControl.CentralMonitoringAndControlEntity;
 import monitoringAndControl.MonitoringNodeProxy;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -79,6 +75,8 @@ public class Node extends Unit implements Entity<Node>
 
     protected static final String SHARD_ENDPOINT                 = "monitoring";
 
+	private HashMap<String, List<String>> nodeToAgents           = new LinkedHashMap<>();
+
 	protected MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
 		@Override
 		public boolean register(String entityName, MessageReceiver receiver) {
@@ -90,6 +88,22 @@ public class Node extends Unit implements Entity<Node>
 		@Override
 		public boolean send(String source, String destination, String content) {
 			return false;
+		}
+
+		@Override
+		public List<String> getAgentsFromOuterNodes() {
+			List<String> list = nodeToAgents.entrySet()
+					.stream()
+					.flatMap(e -> e.getValue().stream())
+					.collect(Collectors.toList());
+			return list;
+		}
+
+		@Override
+		public List<String> getOwnAgents() {
+			List<Entity<?>> list = getTypeEntities("agent");
+			List<String> ownEntities = list.stream().map(el -> el.getName()).collect(Collectors.toList());
+			return ownEntities;
 		}
 
 		@Override
@@ -122,7 +136,13 @@ public class Node extends Unit implements Entity<Node>
 			if(jsonObject.get("nodeName") != null)
 			{
 				String newNodeToRegister = (String)jsonObject.get("nodeName");
-				registeredNodes.add(newNodeToRegister);
+				if(jsonObject.get("agentName") != null) {
+					String newAgent = (String)jsonObject.get("agentName");
+					nodeToAgents.get(newNodeToRegister).add(newAgent);
+				} else {
+					registeredNodes.add(newNodeToRegister);
+					nodeToAgents.put(newNodeToRegister, new LinkedList<>());
+				}
 			}
 		}
 
@@ -131,7 +151,6 @@ public class Node extends Unit implements Entity<Node>
 			switch (event.getType())
 			{
 				case AGENT_WAVE:
-					System.out.println(event.toString());
 					String content = ((AgentWave) event).getContent();
 					Object obj = JSONValue.parse(content);
 					if(obj != null) parseJSON(obj);
@@ -189,13 +208,17 @@ public class Node extends Unit implements Entity<Node>
 				((LocalSupport) entity).setIsCentralNode(DeploymentConfiguration.isCentralNode);
 				((LocalSupport) entity).registerNodeId(getName());
 				isCentralNode = DeploymentConfiguration.isCentralNode;
-				registerToCentralNode();
+				registerNodeToCentralNode();
 			}
 		}
+
+		if(entityType.equals("agent"))
+			registerAgentToCentralNode(entityName);
 
 		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
 		{
 			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
+			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
 		}
 
 		entityOrder.add(entity);
@@ -205,7 +228,7 @@ public class Node extends Unit implements Entity<Node>
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
 
-	protected void registerToCentralNode() {
+	protected void registerNodeToCentralNode() {
 		if(isCentralNode) return;
 		JSONObject registerNode = new JSONObject();
 		registerNode.put("nodeName", getName());
@@ -213,6 +236,17 @@ public class Node extends Unit implements Entity<Node>
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(DeploymentConfiguration.CENTRAL_NODE_NAME, SHARD_ENDPOINT),
 				registerNode.toString());
+	}
+
+	protected void registerAgentToCentralNode(String agentName) {
+		if(isCentralNode) return;
+		JSONObject registerAgent = new JSONObject();
+		registerAgent.put("agentName", agentName);
+		registerAgent.put("nodeName", getName());
+		messagingShard.sendMessage(
+				AgentWave.makePath(getName(), SHARD_ENDPOINT),
+				AgentWave.makePath(DeploymentConfiguration.CENTRAL_NODE_NAME, SHARD_ENDPOINT),
+				registerAgent.toString());
 	}
 	
 	@Override

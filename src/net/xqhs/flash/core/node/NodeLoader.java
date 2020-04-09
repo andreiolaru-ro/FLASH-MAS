@@ -360,6 +360,10 @@ public class NodeLoader extends Unit implements Loader<Node>
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						node.registerEntity(catName, entity, id);
+						 /**
+						  * A central entity is registered within the central node.
+						  * Therefore it must be registered in the context of the same pylon.
+						  * */
 						if(catName.equals("support") && node.name != null && DeploymentConfiguration.isCentralNode)
 						{
 							CentralMonitoringAndControlEntity monitoringEntity = new CentralMonitoringAndControlEntity(
@@ -370,6 +374,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 							li("Entity [] of type [] registered.",
 									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 									DeploymentConfiguration.MONITORING_TYPE);
+							DeploymentConfiguration.CENTRAL_NODE_NAME = node.getName();
 							DeploymentConfiguration.isCentralNode = false;
 						}
 					}

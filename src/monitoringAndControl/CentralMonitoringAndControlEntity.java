@@ -4,6 +4,7 @@ import monitoringAndControl.gui.GUIBoard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -13,6 +14,7 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.local.LocalSupport;
 
 import javax.swing.*;
+import java.util.List;
 
 public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
@@ -31,8 +33,10 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     private static boolean          RUNNING_STATE;
 
+    protected MonitoringNodeProxy powerfulProxy;
 
-    // Proxy used to receive messages from outer entities; e.g. logs from agents
+
+        // Proxy used to receive messages from outer entities; e.g. logs from agents
     public ShardContainer          proxy = new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
@@ -117,6 +121,14 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
         return null;
     }
 
+    public boolean addNodeProxy(EntityProxy<Node> proxy)
+    {
+        if(!(proxy instanceof MonitoringNodeProxy))
+            throw new IllegalStateException("Node proxy is not of expected type");
+        powerfulProxy = (MonitoringNodeProxy)proxy;
+        return true;
+    }
+
 
     /**
     * Requests to send a control command. This is mainly coming
@@ -129,6 +141,20 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
                         AgentWave.makePath(getName(), SHARD_ENDPOINT),
                         AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
                         command);
+        return true;
+    }
+
+    public boolean sendToAll(String command) {
+        List<String > agents = powerfulProxy.getAgentsFromOuterNodes();
+        agents.addAll(powerfulProxy.getOwnAgents());
+        for(String ag : agents)
+        {
+            centralMessagingShard
+                    .sendMessage(
+                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                            AgentWave.makePath(ag, OTHER_SHARD_ENDPOINT),
+                            command);
+        }
         return true;
     }
 }

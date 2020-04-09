@@ -55,12 +55,28 @@ public class MonitoringShard extends AgentShardGeneral
                 System.out.println("## MONITORING SHARD STARTED");
                 break;
             case AGENT_WAVE:
-                System.out.println("##" + ((AgentWave)event).getContent());
-                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
+                parseAgentWave(((AgentWave)event).getContent());
                 break;
             case SIMULATION_START:
                 System.out.println("## MONITORING SHARD SIMULATION STARTED");
                 break;
+            default:
+                break;
+        }
+    }
+
+    protected void parseAgentWave(String command)
+    {
+        switch (command)
+        {
+            case "stop":
+                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
+                break;
+            case "start":
+                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+                break;
+            case "simulation":
+                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
             default:
                 break;
         }

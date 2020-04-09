@@ -6,6 +6,8 @@ package monitoringAndControl;
 
 import net.xqhs.flash.core.support.MessageReceiver;
 
+import java.util.List;
+
 
 public interface MonitoringNodeProxy extends NodeProxy {
 
@@ -33,4 +35,7 @@ public interface MonitoringNodeProxy extends NodeProxy {
      */
     boolean send(String source, String destination, String content);
 
+    List<String> getAgentsFromOuterNodes();
+
+    List<String> getOwnAgents();
 }
