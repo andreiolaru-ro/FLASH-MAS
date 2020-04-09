@@ -32,10 +32,11 @@ public class AgentGUI implements Agent {
         arguments[1] = interfaceConfiguration;
         try {
             BuildPageTest.main(arguments);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     @Override
