@@ -18,10 +18,10 @@ public class DeploymentPageTest {
 
         test_args += " -package interfaceGenerator";
         test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUI";
-        test_args += " -shard gui";
+        test_args += " -shard GuiShard";
         test_args += " -config";
 
-        var args_list = new ArrayList<String>(Arrays.asList(test_args.split(" ")));
+        var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
 
         StringBuilder configuration = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
