@@ -2,21 +2,15 @@ package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.types.ElementType;
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.util.config.Config;
-import net.xqhs.util.config.Configurable;
+import net.xqhs.flash.core.support.PylonProxy;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 
-public class SwingUiPylon implements Pylon {
+public class SwingUiPylon implements PylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
     private static HashSet<String> ids = new HashSet<>();
 
@@ -171,87 +165,12 @@ public class SwingUiPylon implements Pylon {
     }
 
     @Override
-    public Set<String> getSupportedServices() {
-        return null;
-    }
-
-    @Override
     public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
         return null;
     }
 
     @Override
-    public boolean configure(MultiTreeMap configuration) {
-        return false;
-    }
-
-    @Override
-    public boolean start() {
-        return false;
-    }
-
-    @Override
-    public boolean stop() {
-        return false;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return false;
-    }
-
-    @Override
-    public String getName() {
+    public String getEntityName() {
         return null;
-    }
-
-    @Override
-    public boolean addContext(EntityProxy<Node> context) {
-        return false;
-    }
-
-    @Override
-    public boolean removeContext(EntityProxy<Node> context) {
-        return false;
-    }
-
-    @Override
-    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return false;
-    }
-
-    @Override
-    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return false;
-    }
-
-    @Override
-    public <C extends Entity<Node>> EntityProxy<C> asContext() {
-        return null;
-    }
-
-    @Override
-    public Configurable makeDefaults() {
-        return null;
-    }
-
-    @Override
-    public Config lock() {
-        return null;
-    }
-
-    @Override
-    public Config build() {
-        return null;
-    }
-
-    @Override
-    public void ensureLocked() {
-
-    }
-
-    @Override
-    public void locked() throws Config.ConfigLockedException {
-
     }
 }
