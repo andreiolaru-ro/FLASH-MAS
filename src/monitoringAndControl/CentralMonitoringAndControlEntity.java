@@ -65,7 +65,6 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
     public boolean start() {
         System.out.println(getName() + "## CENTRAL MONITORING ENTITY STARTED...");
         RUNNING_STATE = true;
-        startGUIBoard();
         return true;
     }
 
@@ -144,7 +143,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
         return true;
     }
 
-    public boolean sendToAll(String command) {
+    public boolean sendToAllAgents(String command) {
         List<String > agents = powerfulProxy.getAgentsFromOuterNodes();
         agents.addAll(powerfulProxy.getOwnAgents());
         for(String ag : agents)

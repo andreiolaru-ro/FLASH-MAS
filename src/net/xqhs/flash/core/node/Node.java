@@ -73,7 +73,7 @@ public class Node extends Unit implements Entity<Node>
 
     protected static final String SUPPORT                        = "support";
 
-    protected static final String SHARD_ENDPOINT                 = "monitoring";
+    protected static final String SHARD_ENDPOINT                 = "control";
 
 	private HashMap<String, List<String>> nodeToAgents           = new LinkedHashMap<>();
 
@@ -219,6 +219,7 @@ public class Node extends Unit implements Entity<Node>
 		{
 			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
 			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
+			centralMonitoringEntity.startGUIBoard();
 		}
 
 		entityOrder.add(entity);

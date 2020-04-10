@@ -51,11 +51,11 @@ public class GUIBoard extends JFrame {
         JButton exitBtn         = newButton("Exit");
 
         startSimulation.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("simulation"));
+                centralEntityProxy.sendToAllAgents("simulation"));
         startAgentsBtn.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("start"));
+                centralEntityProxy.sendToAllAgents("start"));
         stopAgentsBtn.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("stop"));
+                centralEntityProxy.sendToAllAgents("stop"));
         exitBtn.addActionListener(actionEvent ->
                 dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
