@@ -12,8 +12,12 @@ You should have received a copy of the GNU General Public License along with Fla
 
 
 FLASH-MAS contributors:
+
 	* Project coordination, architecture and coding if not otherwise specified:
-		* Andrei Olaru
+		* Andrei Olaru <cs@andreiolaru.ro>
+	
+	* Websockets support
+		* initial implementation: Vlad Tălmaciu
 	
 
 
