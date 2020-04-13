@@ -122,9 +122,12 @@ public class Node extends Unit implements Entity<Node> {
 	 * @param nodeConfiguration
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(MultiTreeMap nodeConfiguration) {
-		if(nodeConfiguration != null)
+	public Node(MultiTreeMap nodeConfiguration)
+	{
+		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		}
+		setUnitName(name);
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
@@ -381,10 +384,10 @@ public class Node extends Unit implements Entity<Node> {
 		}
 	}
 
-	public List<Entity<?>> getEntities() {
+	public List<Entity<?>> getEntitiesList() {
 		return entityOrder;
 	}
-	public List<Agent> getAgents() {
+	public List<Agent> getAgentsList() {
 		LinkedList<Agent> agents = new LinkedList<>();
 		for (Entity<?> e : entityOrder) {
 			if (e instanceof Agent) {
