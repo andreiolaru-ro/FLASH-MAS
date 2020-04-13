@@ -16,8 +16,8 @@ public class DeploymentPageTest {
 
         String test_args = "";
 
-        test_args += " -package interfaceGenerator";
-        test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUI";
+        test_args += " -package interfaceGenerator -loader agent:composite";
+        test_args += " -agent composite:AgentA";
         test_args += " -shard GuiShard";
         test_args += " -config";
 
