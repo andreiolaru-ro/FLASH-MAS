@@ -1,5 +1,6 @@
 package examples.simplePingPong;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -11,12 +12,14 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * The implementation of the agents.
@@ -34,7 +37,7 @@ public class AgentPingPong implements Agent
 	/**
 	 * Initial delay before the first ping message.
 	 */
-	protected static final long		PING_INITIAL_DELAY			= 0;
+	protected static final long		PING_INITIAL_DELAY			= 5000;
 	/**
 	 * Time between ping messages.
 	 */
@@ -65,31 +68,6 @@ public class AgentPingPong implements Agent
 		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
 			otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
 		agentName = configuration.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		msgShard = new LocalSupport.SimpleLocalMessaging();
-		msgShard.addContext(new ShardContainer() {
-			@Override
-			public String getEntityName()
-			{
-				return getName();
-			}
-			@Override
-			public void postAgentEvent(AgentEvent event)
-			{
-				System.out.println(event.toString());
-				if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgent == null)
-				{
-					String replyContent = ((AgentWave) event).getContent() + " reply";
-					msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-							((AgentWave) event).getCompleteSource(), replyContent);
-				}
-			}
-			
-			@Override
-			public AgentShard getAgentShard(AgentShardDesignation designation)
-			{
-				return null;
-			}
-		});
 	}
 	
 	@Override
@@ -109,8 +87,8 @@ public class AgentPingPong implements Agent
 				{
 					tick++;
 					System.out.println("Sending the message....");
-					msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
-							AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick);
+					msgShard.sendMessage(AgentWave.makePath(getName(), "ping"), AgentWave.makePath(otherAgent, "pong"),
+							"ping-no " + tick);
 				}
 			}, PING_INITIAL_DELAY, PING_PERIOD);
 		}
@@ -138,6 +116,42 @@ public class AgentPingPong implements Agent
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context)
 	{
+		PylonProxy proxy = (PylonProxy) context;
+		String recommendedShard = proxy
+				.getRecommendedShardImplementation(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING));
+		try
+		{
+			msgShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null, true);
+		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+				| InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		msgShard.addContext(new ShardContainer() {
+			@Override
+			public String getEntityName()
+			{
+				return getName();
+			}
+			
+			@Override
+			public void postAgentEvent(AgentEvent event)
+			{
+				System.out.println(event.toString());
+				if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgent == null)
+				{
+					String replyContent = ((AgentWave) event).getContent() + " reply";
+					msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+							((AgentWave) event).getCompleteSource(), replyContent);
+				}
+			}
+			
+			@Override
+			public AgentShard getAgentShard(AgentShardDesignation designation)
+			{
+				return null;
+			}
+		});
 		return msgShard.addGeneralContext(context);
 	}
 	
