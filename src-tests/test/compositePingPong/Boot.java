@@ -1,4 +1,4 @@
-package examples.compositePingPong;
+package test.compositePingPong;
 
 import net.xqhs.flash.FlashBoot;
 

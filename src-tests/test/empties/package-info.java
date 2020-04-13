@@ -13,8 +13,8 @@
  * 
  */
 /**
- * Example scenarios.
+ * Examples of empty configurations.
  * 
  * @author andreiolaru
  */
-package examples;
+package test.empties;

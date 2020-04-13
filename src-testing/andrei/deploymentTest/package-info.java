@@ -6,4 +6,4 @@
  * 
  * @author Andrei Olaru
  */
-package deploymentTest;
+package andrei.deploymentTest;

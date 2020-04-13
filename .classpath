@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="src-deployment"/>
+	<classpathentry kind="src" path="src-examples"/>
+	<classpathentry kind="src" path="src-tests"/>
+	<classpathentry kind="src" path="src-testing"/>
 	<classpathentry kind="lib" path="lib/Config.jar" sourcepath="lib/Config.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Config.jar!/doc-Config/pages/"/>

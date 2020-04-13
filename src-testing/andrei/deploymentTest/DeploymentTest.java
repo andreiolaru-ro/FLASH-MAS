@@ -1,4 +1,4 @@
-package deploymentTest;
+package andrei.deploymentTest;
 
 import net.xqhs.flash.FlashBoot;
 

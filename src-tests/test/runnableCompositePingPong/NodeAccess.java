@@ -1,4 +1,4 @@
-package examples.runnableCompositePingPong;
+package test.runnableCompositePingPong;
 
 import java.util.LinkedList;
 import java.util.List;

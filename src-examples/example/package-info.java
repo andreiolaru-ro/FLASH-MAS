@@ -13,8 +13,8 @@
  * 
  */
 /**
- * Examples of empty configurations.
+ * These are example scenarios, meant for better understanding how the framework works.
  * 
- * @author andreiolaru
+ * @author Andrei Olaru
  */
-package examples.empties;
+package example;

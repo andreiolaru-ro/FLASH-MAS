@@ -1,4 +1,4 @@
-package localTest;
+package andrei.localTest;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
