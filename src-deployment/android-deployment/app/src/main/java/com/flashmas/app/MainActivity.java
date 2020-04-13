@@ -25,6 +25,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.util.MultiTreeMap;
+
 import examples.echoAgent.EchoAgent;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
@@ -85,9 +89,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         addAgentFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TestAgent agent = new TestAgent("Agent " + n);
+                MultiTreeMap configuration = new MultiTreeMap();
+                configuration.add("name","CompositeAgent" + n);
                 n++;
-                FlashManager.getInstance().addAgent(agent);
+                FlashManager.getInstance().addAgent(new CompositeAgent(configuration));
                 animateFab();
             }
         });
