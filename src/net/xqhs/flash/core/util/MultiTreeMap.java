@@ -12,7 +12,7 @@
 package net.xqhs.flash.core.util;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -51,15 +51,15 @@ public class MultiTreeMap extends MultiValueMap
 	/**
 	 * Keys that have String values.
 	 */
-	protected Set<String>		simpleKeys			= new HashSet<>();
+	protected Set<String>		simpleKeys			= new LinkedHashSet<>();
 	/**
 	 * Keys that have {@link MultiTreeMap} values.
 	 */
-	protected Set<String>		treeKeys			= new HashSet<>();
+	protected Set<String>		treeKeys			= new LinkedHashSet<>();
 	/**
 	 * Keys that should only hold one value (can be simple or hierarchical).
 	 */
-	protected Set<String>		singletonKeys		= new HashSet<>();
+	protected Set<String>		singletonKeys		= new LinkedHashSet<>();
 	
 	/**
 	 * Is updated with the longest length of a key; used for pretty printing without calculating the longest key every
