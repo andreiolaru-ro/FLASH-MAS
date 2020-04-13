@@ -17,31 +17,13 @@ import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.local.LocalSupport;
-import net.xqhs.util.logging.LoggerSimple;
-import net.xqhs.util.logging.logging.Logging;
-import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
-
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
-import static com.flashmas.lib.Globals.NODE_NAME;
 
 public class NodeForegroundService extends Service {
     private static boolean running = false;
     private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
-    private static OutputStream logsOutputStream = new ByteArrayOutputStream();
-
-    public static void setLogOutputStream(OutputStream s) {
-        logsOutputStream = s;
-    }
-
-    public static OutputStream getLogOutputStream() {
-        return logsOutputStream;
-    }
 
     @Nullable
     @Override
@@ -64,25 +46,13 @@ public class NodeForegroundService extends Service {
             return;
         }
 
-        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
-
-        GlobalLogWrapper.setLogStream(logsOutputStream);
-
-        LocalSupport pylon = new LocalSupport();
-
-        for (Agent agent : FlashManager.getInstance().getAgents()) {
-            agent.addContext(pylon.asContext());
-            agent.start();
+        if (FlashManager.getLogOutputStream() instanceof ByteArrayOutputStream) {
+            ((ByteArrayOutputStream) FlashManager.getLogOutputStream()).reset();
         }
 
-        Node localNode = new Node(NODE_NAME);
-        localNode.registerEntity("pylon", pylon, pylon.getName());
+        running = FlashManager.getInstance().getDeviceNode().start();
+        runningLiveData.postValue(running);
 
-        FlashManager.getInstance().setMainNode(localNode);
-        FlashManager.getInstance().setMainPylon(pylon);
-
-        running = true;
-        runningLiveData.postValue(true);
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
 
@@ -90,13 +60,8 @@ public class NodeForegroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        if (logsOutputStream instanceof ByteArrayOutputStream) {
-            ((ByteArrayOutputStream)logsOutputStream).reset();
-        }
-
-        FlashManager.getInstance().setMainNode(null);
-        running = false;
-        runningLiveData.postValue(false);
+        running = !FlashManager.getInstance().getDeviceNode().stop();
+        runningLiveData.postValue(running);
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 

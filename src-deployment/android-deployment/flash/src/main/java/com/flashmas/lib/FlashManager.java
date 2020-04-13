@@ -8,14 +8,22 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.util.logging.LoggerSimple;
+import net.xqhs.util.logging.logging.Logging;
+import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.flashmas.lib.Globals.NODE_NAME;
 
 /**
  * Singleton class for usage of Flash Framework on Android platform
@@ -23,15 +31,18 @@ import java.util.List;
 public class FlashManager {
     private static FlashManager instance;
     private static Context appContext;
-    private static Node mainNode;
-    private static Pylon mainPylon;
-    private static MutableLiveData<List<Agent>> agentData = new MutableLiveData<>();
-    private static LinkedList<Agent> agents = new LinkedList<>();
+    private Node deviceNode;
+    private Pylon devicePylon;
+    private MutableLiveData<List<Agent>> agentsLiveData = new MutableLiveData<>();
+    private List<Agent> agentsList = new ArrayList<>(0);
+    private static OutputStream logsOutputStream = new ByteArrayOutputStream();
+
+    private String deviceNodeName = NODE_NAME;  // init deviceNodeName with default
 
     private Observer<Boolean> stateObserver = new Observer<Boolean>() {
         @Override
         public void onChanged(Boolean state) {
-            updateAgentsState();
+            updateAgents();
         }
     };
 
@@ -41,6 +52,16 @@ public class FlashManager {
             throw new IllegalStateException("Flash Manager not initialized with application context");
         }
         NodeForegroundService.isRunningLiveData().observeForever(stateObserver);
+
+        //TODO get unique deviceNodeName in FLASHMAS topology
+        MultiTreeMap nodeConfig = new MultiTreeMap();
+        nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
+        deviceNode = new Node(nodeConfig);
+        deviceNode.setLogLevel(LoggerSimple.Level.ALL);
+        devicePylon = new LocalSupport();
+        deviceNode.registerEntity("pylon", devicePylon, devicePylon.getName());
+        GlobalLogWrapper.setLogStream(logsOutputStream);
+        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
     }
 
     public static void init(Context context) {
@@ -63,64 +84,61 @@ public class FlashManager {
         return instance;
     }
 
-    void setMainNode(Node node) {
-        mainNode = node;
+    public static OutputStream getLogOutputStream() {
+        return logsOutputStream;
     }
 
-    public static OutputStream getLogOutputStream() {
-        return NodeForegroundService.getLogOutputStream();
+    Node getDeviceNode() {
+        return deviceNode;
     }
+
 
     public void startNode() {
-        if (mainNode == null) {
-            Intent intent = new Intent(appContext, NodeForegroundService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                appContext.startForegroundService(intent);
-            } else {
-                appContext.startService(intent);
-            }
+        Intent intent = new Intent(appContext, NodeForegroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            appContext.startForegroundService(intent);
+        } else {
+            appContext.startService(intent);
         }
     }
 
     public void stopNode() {
-        if (mainNode != null) {
-            Intent intent = new Intent(appContext, NodeForegroundService.class);
-            appContext.stopService(intent);
-            stopAgents();
-        }
+        Intent intent = new Intent(appContext, NodeForegroundService.class);
+        appContext.stopService(intent);
+        stopAgents();
     }
 
     private void stopAgents() {
-        for (Agent agent: agents) {
+        for (Agent agent: agentsList) {
             agent.stop();
         }
     }
 
     public void addAgent(Agent agent) {
-        if (agent instanceof TestAgent) {
-            ((TestAgent) agent).addMessagingShard(new LocalSupport.SimpleLocalMessaging());
+        if (agent == null)
+            return;
+
+        agent.addContext(devicePylon.<Pylon>asContext());
+
+        if (NodeForegroundService.isRunning()) {
+            agent.start();
         }
 
-        if (mainPylon != null) {
-            agent.addContext(mainPylon.<Pylon>asContext());
-
-
-            if (mainNode != null) {
-                agent.start();
-            }
-        }
-
-        agents.add(agent);
-        updateAgentsState();
+        deviceNode.registerEntity("agent", agent, agent.getName());
+        updateAgents();
     }
 
     public void removeAgent(Agent agent) {
+        if (agent == null)
+            return;
+
         if (agent.isRunning()) {
             agent.stop();
         }
 
-        agents.remove(agent);
-        updateAgentsState();
+        // TODO deregister agent from node
+        // deviceNode.deregisterEntity(...);
+        updateAgents();
     }
 
     public LiveData<Boolean> getRunningLiveData() {
@@ -128,7 +146,7 @@ public class FlashManager {
     }
 
     public LiveData<List<Agent>> getAgentsLiveData() {
-        return agentData;
+        return agentsLiveData;
     }
 
     public void toggleState() {
@@ -139,19 +157,12 @@ public class FlashManager {
         }
     }
 
-    private void updateAgentsState() {
-//        if (mainNode == null) {
-//            agentData.postValue(null);
-//        } else {
-//        }
-        agentData.postValue(agents);
+    private void updateAgents() {
+        agentsList = deviceNode.getAgentsList();
+        agentsLiveData.postValue(agentsList);
     }
 
-    public List<Agent> getAgents() {
-        return agents;
-    }
-
-    void setMainPylon(Pylon pylon) {
-        mainPylon = pylon;
+    public List<Agent> getAgentsList() {
+        return agentsList;
     }
 }

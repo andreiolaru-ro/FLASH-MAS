@@ -59,8 +59,10 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	public Node(MultiTreeMap nodeConfiguration)
 	{
-		if(nodeConfiguration != null)
+		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		}
+		setUnitName(name);
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
@@ -166,10 +168,10 @@ public class Node extends Unit implements Entity<Node>
 		return null;
 	}
 
-	public List<Entity<?>> getEntities() {
+	public List<Entity<?>> getEntitiesList() {
 		return entityOrder;
 	}
-	public List<Agent> getAgents() {
+	public List<Agent> getAgentsList() {
 		LinkedList<Agent> agents = new LinkedList<>();
 		for (Entity<?> e : entityOrder) {
 			if (e instanceof Agent) {

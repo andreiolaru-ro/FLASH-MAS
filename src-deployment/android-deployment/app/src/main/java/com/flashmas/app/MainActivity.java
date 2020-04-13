@@ -5,31 +5,24 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
-import com.flashmas.lib.TestAgent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
-
-import examples.echoAgent.EchoAgent;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -89,10 +82,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         addAgentFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MultiTreeMap configuration = new MultiTreeMap();
-                configuration.add("name","CompositeAgent" + n);
-                n++;
-                FlashManager.getInstance().addAgent(new CompositeAgent(configuration));
+                Agent agent = getCompositeAgent();
+                FlashManager.getInstance().addAgent(agent);
                 animateFab();
             }
         });
@@ -110,6 +101,13 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
         NavigationUI.setupWithNavController(toolbar, navController);
+    }
+
+    private Agent getCompositeAgent() {
+        MultiTreeMap configuration = new MultiTreeMap();
+        configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,"CompositeAgent" + n);
+        n++;
+        return new CompositeAgent(configuration);
     }
 
     @Override
