@@ -56,10 +56,15 @@ public class WebSocketServerEntity implements Entity
 					 * A JSON with source, destination and content is received.
 					 */
 					Object obj = JSONValue.parse(s);
+					if(obj == null) return;
+
 					JSONObject jsonObject = (JSONObject) obj;
-					
+					if(jsonObject.get("destination") == null) return;
+
 					String destination = (String) jsonObject.get("destination");
 					WebSocket destinationWebSocket = nameConnections.get(destination);
+					if(destinationWebSocket == null) return;
+
 					destinationWebSocket.send(s);
 				}
 			}

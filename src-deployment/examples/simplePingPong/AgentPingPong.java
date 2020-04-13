@@ -73,6 +73,7 @@ public class AgentPingPong implements Agent
 	@Override
 	public boolean start()
 	{
+		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 		if(otherAgent != null)
 		{
 			pingTimer = new Timer();

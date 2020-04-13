@@ -45,6 +45,7 @@ public class AgentTest implements Agent
 
     @Override
     public boolean start() {
+        messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
         if(name.equals("Two")) {
             messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "Hello from the other side!");
         }

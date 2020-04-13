@@ -364,19 +364,19 @@ public class NodeLoader extends Unit implements Loader<Node>
 						  * A central entity is registered within the central node.
 						  * Therefore it must be registered in the context of the same pylon.
 						  * */
-						if(catName.equals("support") && node.name != null && DeploymentConfiguration.isCentralNode)
-						{
-							CentralMonitoringAndControlEntity monitoringEntity = new CentralMonitoringAndControlEntity(
-									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-							monitoringEntity.addGeneralContext(entity.asContext());
-							node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, monitoringEntity,
-									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-							li("Entity [] of type [] registered.",
-									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-									DeploymentConfiguration.MONITORING_TYPE);
-							DeploymentConfiguration.CENTRAL_NODE_NAME = node.getName();
-							DeploymentConfiguration.isCentralNode = false;
-						}
+//						if(catName.equals("support") && node.name != null && DeploymentConfiguration.isCentralNode)
+//						{
+//							CentralMonitoringAndControlEntity monitoringEntity = new CentralMonitoringAndControlEntity(
+//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+//							monitoringEntity.addGeneralContext(entity.asContext());
+//							node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, monitoringEntity,
+//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+//							li("Entity [] of type [] registered.",
+//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+//									DeploymentConfiguration.MONITORING_TYPE);
+//							DeploymentConfiguration.CENTRAL_NODE_NAME = node.getName();
+//							DeploymentConfiguration.isCentralNode = false;
+//						}
 					}
 					else
 						le("Could not load entity [] of type [].", name, catName);

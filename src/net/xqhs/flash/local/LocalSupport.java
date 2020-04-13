@@ -84,14 +84,14 @@ public class LocalSupport extends DefaultPylonImplementation
 							AgentWave.ADDRESS_SEPARATOR)[0];
 					if(!messageReceivers.containsKey(agentName))
 					{
-						JSONObject msgToServer = new JSONObject();
-						msgToServer.put("nodeName", nodeId);
-						msgToServer.put("simpleDest", agentName);
-						msgToServer.put("source", source);
-						msgToServer.put("destination", destination);
-						msgToServer.put("content", content);
-
-						webSocketClient.send(msgToServer.toString());
+//						JSONObject msgToServer = new JSONObject();
+//						msgToServer.put("nodeName", nodeId);
+//						msgToServer.put("simpleDest", agentName);
+//						msgToServer.put("source", source);
+//						msgToServer.put("destination", destination);
+//						msgToServer.put("content", content);
+//
+//						webSocketClient.send(msgToServer.toString());
 						return true;
 					}
 					messageReceivers.get(agentName).receive(
@@ -104,15 +104,15 @@ public class LocalSupport extends DefaultPylonImplementation
 						MessageReceiver receiver)
 				{
 					messageReceivers.put(agentName, receiver);
-					webSocketClient.addReceiverAgent(agentName, receiver);
-
-					if(agentName.equals(nodeId)) return true;
-
-					JSONObject agentRegMsg = new JSONObject();
-					agentRegMsg.put("nodeName", nodeId);
-					agentRegMsg.put("agentName", agentName);
-
-					webSocketClient.send(agentRegMsg.toString());
+//					webSocketClient.addReceiverAgent(agentName, receiver);
+//
+//					if(agentName.equals(nodeId)) return true;
+//
+//					JSONObject agentRegMsg = new JSONObject();
+//					agentRegMsg.put("nodeName", nodeId);
+//					agentRegMsg.put("agentName", agentName);
+//
+//					webSocketClient.send(agentRegMsg.toString());
 					return true;
 				}
 
@@ -146,16 +146,16 @@ public class LocalSupport extends DefaultPylonImplementation
 		this.isCentralNode = isCentralNode;
 	}
 
-	public LocalSupport() {
-		super();
-		try {
-			webSocketClient = new WebSocketClientProxy(new URI("ws://localhost:8886"));
-			webSocketClient.connect();
-			Thread.sleep(1000);
-		} catch (URISyntaxException | InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+//	public LocalSupport() {
+//		super();
+//		try {
+//			webSocketClient = new WebSocketClientProxy(new URI("ws://localhost:8886"));
+//			webSocketClient.connect();
+//			Thread.sleep(1000);
+//		} catch (URISyntaxException | InterruptedException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	/**
 	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.

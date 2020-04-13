@@ -198,29 +198,29 @@ public class Node extends Unit implements Entity<Node>
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
 		if(name == null) return;
-		if(entityType.equals(SUPPORT) && entity.asContext() != null)
-		{
-			messagingShard.addContext(proxy);
-			messagingShard.addGeneralContext(entity.asContext());
+//		if(entityType.equals(SUPPORT) && entity.asContext() != null)
+//		{
+//			messagingShard.addContext(proxy);
+//			messagingShard.addGeneralContext(entity.asContext());
+//
+//			if(entity instanceof LocalSupport)
+//			{
+//				((LocalSupport) entity).setIsCentralNode(DeploymentConfiguration.isCentralNode);
+//				((LocalSupport) entity).registerNodeId(getName());
+//				isCentralNode = DeploymentConfiguration.isCentralNode;
+//				registerNodeToCentralNode();
+//			}
+//		}
 
-			if(entity instanceof LocalSupport)
-			{
-				((LocalSupport) entity).setIsCentralNode(DeploymentConfiguration.isCentralNode);
-				((LocalSupport) entity).registerNodeId(getName());
-				isCentralNode = DeploymentConfiguration.isCentralNode;
-				registerNodeToCentralNode();
-			}
-		}
-
-		if(entityType.equals("agent"))
-			registerAgentToCentralNode(entityName);
-
-		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
-		{
-			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
-			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
-			centralMonitoringEntity.startGUIBoard();
-		}
+//		if(entityType.equals("agent"))
+//			registerAgentToCentralNode(entityName);
+//
+//		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
+//		{
+//			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
+//			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
+//			centralMonitoringEntity.startGUIBoard();
+//		}
 
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))

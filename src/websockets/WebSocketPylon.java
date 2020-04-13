@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -89,8 +90,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
         @Override
         public boolean send(String source, String destination, String content) {
-            String destAgent = getAgentNameFromAddress(getAgentAddress(destination));
-            JSONObject messageToServer = new JSONObject();
+            String destAgent = destination.split(
+                    AgentWave.ADDRESS_SEPARATOR)[0];            JSONObject messageToServer = new JSONObject();
             messageToServer.put("source", source);
             messageToServer.put("destination", destAgent);
             messageToServer.put("content", content);
