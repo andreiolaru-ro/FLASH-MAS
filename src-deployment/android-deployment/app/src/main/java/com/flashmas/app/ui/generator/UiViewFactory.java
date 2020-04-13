@@ -14,7 +14,6 @@ import net.xqhs.flash.core.agent.Agent;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
-import java.util.List;
 
 public class UiViewFactory {
     private static final String TAG = "UiViewFactory";
