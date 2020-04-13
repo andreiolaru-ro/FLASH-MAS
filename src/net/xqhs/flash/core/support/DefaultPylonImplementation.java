@@ -91,17 +91,24 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
+	public boolean removeContext(EntityProxy<Node> context) {
+		throw new UnsupportedOperationException("Cannot remove context from a node");
+	}
+
+	@Override
 	public boolean addGeneralContext(EntityProxy<?> context)
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		throw new UnsupportedOperationException("Cannot remove context from a node");
-	}
 	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	/**
 	 * The loader recommends no particular implementation for any shard.
 	 */
@@ -120,42 +127,5 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;
-	}
-
-	/**
-	 * This implementation considers agent addresses are the same with their names.
-	 * 
-	 * @param agentName
-	 *            - the name of the agent.
-	 * @return the address of the agent, as derived from the name.
-	 */
-	@SuppressWarnings("static-method")
-	public String getAgentAddress(String agentName) {
-		return agentName;
-	}
-
-	/**
-	 * This implementation considers agent addresses are the same with their names.
-	 * 
-	 * @param agentAddress
-	 *            - the address of the agent.
-	 * @return the name of the agent, as extracted / derived from the address.
-	 */
-	@SuppressWarnings("static-method")
-	public String getAgentNameFromAddress(String agentAddress) {
-		return agentAddress;
-	}
-
-	/**
-	 * This implementation presumes that the address / name of the agent does not contain any occurrence of
-	 * {@link AbstractMessagingShard#ADDRESS_SEPARATOR} (currently {@value AbstractMessagingShard#ADDRESS_SEPARATOR}).
-	 * 
-	 * @param endpoint
-	 *            - an endpoint, as defined in {@link AbstractMessagingShard}.
-	 * @return the agent address, as extracted from the entpoint.
-	 */
-	@SuppressWarnings("static-method")
-	public String extractAgentAddress(String endpoint) {
-		return endpoint.substring(0, endpoint.indexOf(AbstractMessagingShard.ADDRESS_SEPARATOR));
 	}
 }

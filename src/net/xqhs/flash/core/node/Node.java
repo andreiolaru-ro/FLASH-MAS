@@ -17,12 +17,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import net.xqhs.util.logging.logging.LogWrapper;
 
+/**
+ * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
+ * may exist on the same machine.
+ * <p>
+ * There should be no "higher"-context entity than the node.
+ *
+ * @author Andrei Olaru
+ */
 public class Node extends Unit implements Entity<Node>
 {
 	/**
@@ -30,24 +40,40 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected String						name				= null;
 	
-
+	/**
+	 * A collection of all entities added in the context of this node, indexed by their names.
+	 */
 	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	
+	/**
+	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
+	 */
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
-	 * @param name
-	 *                 the name of the node, if any. Can be <code>null</code>.
+	 * @param nodeConfiguration
+	 *                              the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(String name)
+	public Node(MultiTreeMap nodeConfiguration)
 	{
-		this.name = name;
+		if(nodeConfiguration != null)
+			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
+	/**
+	 * Method used to register entities added in the context of this node.
+	 *
+	 * @param entityType
+	 *                       - the type of the entity.
+	 * @param entity
+	 *                       - a reference to the entity.
+	 * @param entityName
+	 *                       - the name of the entity.
+	 */
 	public void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
 		entityOrder.add(entity);
@@ -118,7 +144,14 @@ public class Node extends Unit implements Entity<Node>
 		// unsupported
 		return false;
 	}
-	
+
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
+	{
+		// unsupported
+		return false;
+	}
+
 	@Override
 	public boolean removeContext(EntityProxy<Node> context)
 	{
@@ -146,5 +179,5 @@ public class Node extends Unit implements Entity<Node>
 
 		return agents;
 	}
-	
+
 }

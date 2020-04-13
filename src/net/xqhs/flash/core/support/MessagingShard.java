@@ -11,10 +11,38 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
 
-public interface MessagingShard extends Entity<Agent>
+/**
+ * Interface for any shard offering messaging functionality to an entity.
+ * <p>
+ * A <i>message</i> is a type of <i>wave</i> (implemented through {@link AgentWave}, generally considered to convey
+ * information between entities which <i>may execute</i> on different nodes or are more loosely coupled (e.g. agents, or
+ * agents and artifacts), as opposed to entities which are always found on the same node and are more tightly coupled
+ * (e.g. shards inside the same agent).
+ * 
+ * 
+ * 
+ * @author Andrei Olaru
+ */
+public interface MessagingShard extends AgentShard
 {
-	// TODO
+	/**
+	 * Sends a message to another agent, according to the specific implementation.
+	 * 
+	 * @param source
+	 *                    - the source (complete) endpoint of the message.
+	 * @param target
+	 *                    - the target (complete) endpoint of the message.
+	 * @param content
+	 *                    - the content of the message.
+	 * @return <code>true</code> if the message was sent successfully.
+	 */
+	public boolean sendMessage(String source, String target, String content);
+	
+	/**
+	 * @return the address of this agent in the {@link Pylon} this shard is assigned to.
+	 */
+	public String getAgentAddress();
 }

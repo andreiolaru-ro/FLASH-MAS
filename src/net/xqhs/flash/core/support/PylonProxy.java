@@ -3,6 +3,12 @@ package net.xqhs.flash.core.support;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
+/**
+ * {@link EntityProxy} for a {@link Pylon}, specifying the only one required method, for retrieving the recommended
+ * implementation for shards connecting to the pylon.
+ * 
+ * @author Andrei Olaru
+ */
 public interface PylonProxy extends EntityProxy<Pylon>
 {
 	/**
