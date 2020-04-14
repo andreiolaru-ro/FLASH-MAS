@@ -87,7 +87,12 @@ public class NodeLoader extends Unit implements Loader<Node>
 			Node node = load(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
 					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)));
 			if(node != null)
+			{
 				nodes.add(node);
+				lf("node loaded: []", node.getName());
+			}
+			else
+				le("node not loaded.");
 		}
 		lf("[] nodes loaded.", Integer.valueOf(nodes.size()));
 		doExit();

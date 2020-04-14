@@ -9,6 +9,23 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
+
+
+FLASH-MAS contributors:
+
+	* Project coordination, architecture and coding if not otherwise specified:
+		* Andrei Olaru <cs@andreiolaru.ro>
+	
+	* Websockets support
+		* initial implementation: Vlad Tălmaciu
+	
+
+
+
+
+
+
+
 This project is based on [tATAmI](https://github.com/tATAmI-Project tATAmI repository collection), which was developed over the years by a team consisting of:
 
 * Coordination:

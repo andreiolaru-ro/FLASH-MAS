@@ -62,7 +62,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		
 		/**
 		 * @param agent
-		 *            - the agent
+		 *                  - the agent
 		 */
 		protected CompositeAgentShardContainer(CompositeAgent agent)
 		{
@@ -237,7 +237,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * is automatically generated.
 	 * 
 	 * @param configuration
-	 *            - the configuration, from which the name of the agent will be taken.
+	 *                          - the configuration, from which the name of the agent will be taken.
 	 */
 	public CompositeAgent(MultiTreeMap configuration)
 	{
@@ -289,23 +289,33 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * @return <code>true</code> if the agent is now in the <code>TRANSIENT</code> state, <code>false</code> otherwise.
 	 * 
 	 * @throws RuntimeException
-	 *             if the agent was in any other state than the two.
+	 *                              if the agent was in any other state than the two.
 	 */
 	public boolean toggleTransient() throws RuntimeException
 	{
 		return FSMToggleTransient();
 	}
 	
+	/**
+	 * The method handles the entire event processing cycle of the agent, from after the
+	 * {@link AgentEventType#AGENT_START} event to the {@link AgentEventType#AGENT_STOP} event. The method should only
+	 * return when the agent has completed stopping.
+	 */
 	protected void eventProcessingCycle()
 	{
 		boolean threadExit = false;
 		while(!threadExit)
 		{
+			if(eventQueue == null)
+			{
+				log("No event queue present");
+				return;
+			}
 			// System.out.println("oops");
 			AgentEvent event = null;
 			synchronized(eventQueue)
 			{
-				if((eventQueue != null) && eventQueue.isEmpty())
+				if(eventQueue.isEmpty())
 					try
 					{
 						eventQueue.wait();
@@ -313,7 +323,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 					{
 						// do nothing
 					}
-				else
+				if(!eventQueue.isEmpty())
 					event = eventQueue.poll();
 			}
 			if(event != null)
@@ -349,7 +359,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * inappropriate state.
 	 * 
 	 * @param event
-	 *            the event to disseminate.
+	 *                  the event to disseminate.
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
@@ -383,7 +393,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			e.printStackTrace();
 			return false;
 		}
-		if(event.isSet(NO_CREATE_THREAD))
+		if(event.getType().equals(AgentEventType.AGENT_START) && futureState != null
+				&& futureState.equals(AgentState.STARTING) && event.isSet(NO_CREATE_THREAD))
 			eventProcessingCycle();
 		return true;
 	}
@@ -400,7 +411,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 * 
 	 * @param event
-	 *            - the event one desires to post.
+	 *                  - the event one desires to post.
 	 * @return <code>true</code> if the event could be posted at this moment; <code>false</code> otherwise.
 	 */
 	protected boolean canPostEvent(AgentEvent event)
@@ -428,10 +439,14 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * If the event was {@link AgentEventType#AGENT_STOP}, the agent will enter {@link AgentState#STOPPING}.
 	 * 
 	 * @param eventType
-	 *            - the type of the event.
+	 *                            - the type of the event.
 	 * @param fromToTransient
-	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
-	 * @param createThread - <code>true</code> if a thread should be created to process events in the event queue; <code>false</code> if this method should only return when the agent has stopped.
+	 *                            - <code>true</code> if the agent should enter / exit from the
+	 *                            {@link AgentState#TRANSIENT} state.
+	 * @param createThread
+	 *                            - <code>true</code> if a thread should be created to process events in the event
+	 *                            queue; <code>false</code> if this method should only return when the agent has
+	 *                            stopped.
 	 * @return the state the agent should enter next (the actual state change will happen in
 	 *         {@link #postAgentEvent(AgentEvent)}, together with posting the event to the queue.
 	 */
@@ -478,9 +493,10 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * thread will exit.
 	 * 
 	 * @param eventType
-	 *            - the type of the event.
+	 *                            - the type of the event.
 	 * @param toFromTransient
-	 *            - <code>true</code> if the agent should enter / exit from the {@link AgentState#TRANSIENT} state.
+	 *                            - <code>true</code> if the agent should enter / exit from the
+	 *                            {@link AgentState#TRANSIENT} state.
 	 * @return <code>true</code> if the agent thread should exit.
 	 */
 	protected boolean FSMEventOut(AgentEventType eventType, boolean toFromTransient)
@@ -525,7 +541,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 *         <code>false</code> if it is now in {@link AgentState#STOPPED}.
 	 * 
 	 * @throws RuntimeException
-	 *             if the agent is in any other state than the two above.
+	 *                              if the agent is in any other state than the two above.
 	 */
 	protected boolean FSMToggleTransient() throws RuntimeException
 	{
@@ -601,7 +617,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * one instance per designation (functionality) will be allowed.
 	 * 
 	 * @param shard
-	 *            - the {@link AgentShard} instance to add.
+	 *                  - the {@link AgentShard} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other shards.
 	 */
 	protected CompositeAgent addShard(AgentShard shard)
@@ -625,7 +641,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * Removes an existing shard of the agent.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to remove.
+	 *                        - the designation of the shard to remove.
 	 * @return a reference to the just-removed shard instance.
 	 */
 	protected AgentShard removeShard(AgentShardDesignation designation)
@@ -642,7 +658,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * Returns <code>true</code> if the agent contains said shard.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to search.
+	 *                        - the designation of the shard to search.
 	 * @return <code>true</code> if the shard exists, <code>false</code> otherwise.
 	 */
 	protected boolean hasShard(AgentShardDesignation designation)
@@ -656,7 +672,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * It is <i>strongly recommended</i> that the reference is not kept, as the shard may be removed without notice.
 	 * 
 	 * @param designation
-	 *            - the designation of the shard to retrieve.
+	 *                        - the designation of the shard to retrieve.
 	 * @return the {@link AgentShard} instance, if any. <code>null</code> otherwise.
 	 */
 	protected AgentShard getShard(AgentShardDesignation designation)
@@ -763,9 +779,9 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * {@link UnitComponent#li(String, Object...)} call.
 	 * 
 	 * @param message
-	 *            - the message.
+	 *                      - the message.
 	 * @param arguments
-	 *            - objects to include in the message.
+	 *                      - objects to include in the message.
 	 */
 	protected void log(String message, Object... arguments)
 	{
