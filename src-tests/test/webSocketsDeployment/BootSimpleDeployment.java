@@ -3,9 +3,9 @@ package test.webSocketsDeployment;
 import net.xqhs.flash.FlashBoot;
 
 /**
- * Deployment testing.
+ * Tests websockets support works in a deployment of non-composite agents.
  */
-public class Boot
+public class BootSimpleDeployment
 {
 	/**
 	 * Performs test.a
