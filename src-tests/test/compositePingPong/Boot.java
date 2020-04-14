@@ -26,7 +26,7 @@ public class Boot
 	{
 		String test_args = "";
 		
-		test_args += " -package examples.compositePingPong -loader agent:composite";
+		test_args += " -package test.compositePingPong -loader agent:composite";
 		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
