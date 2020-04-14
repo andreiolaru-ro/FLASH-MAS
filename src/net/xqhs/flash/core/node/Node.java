@@ -34,7 +34,7 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -187,7 +187,7 @@ public class Node extends Unit implements Entity<Node>
 		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		//setLoggerType(PlatformUtils.platformLogType());
-		messagingShard = new LocalSupport.SimpleLocalMessaging();
+		messagingShard = new LocalPylon.SimpleLocalMessaging();
 	}
 	
 	/**

@@ -13,7 +13,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.local.LocalPylon;
 
 
 /**
@@ -64,7 +64,7 @@ public class AgentTest implements Agent
 	public AgentTest(MultiTreeMap configuration)
 	{
 		agentName = configuration.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		msgShard = new LocalSupport.SimpleLocalMessaging();
+		msgShard = new LocalPylon.SimpleLocalMessaging();
 		msgShard.addContext(proxy);
 	}
 	

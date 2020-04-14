@@ -38,7 +38,7 @@ import org.json.simple.JSONObject;
  * 
  * @author Andrei Olaru
  */
-public class LocalSupport extends DefaultPylonImplementation
+public class LocalPylon extends DefaultPylonImplementation
 {
 	/**
 	 * The type of this support infrastructure (its 'kind')
@@ -120,7 +120,7 @@ public class LocalSupport extends DefaultPylonImplementation
 				public String getRecommendedShardImplementation(
 						AgentShardDesignation shardType)
 				{
-					return LocalSupport.this
+					return LocalPylon.this
 							.getRecommendedShardImplementation(
 									shardType);
 				}
