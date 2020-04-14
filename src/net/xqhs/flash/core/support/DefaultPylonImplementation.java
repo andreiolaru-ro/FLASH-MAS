@@ -14,6 +14,7 @@ package net.xqhs.flash.core.support;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -63,8 +64,8 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	{
 		if(configuration.isSingleton(SERVER_ADDRESS))
 			serverAddressName = configuration.getSingleValue(SERVER_ADDRESS);
-		if(configuration.isSimple("name"))
-			name = configuration.get("name");
+		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
+			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		return true;
 	}
 	
@@ -100,14 +101,12 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<?> context)
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
