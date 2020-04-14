@@ -1,4 +1,4 @@
-package websockets;
+package net.xqhs.flash.webSocket;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;

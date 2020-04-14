@@ -17,14 +17,14 @@ public class BootSimpleDeployment
 	{
 		String test_args = "";
 		
-		//test_args += " -package FLASH-MAS";
+		test_args += " -package test.simplePingPong";
 		test_args += " -node node1";
-		test_args += " -support websocket:slave1 serverPort:8886 connectTo:ws://localhost:8886 classpath:websockets.WebSocketPylon";
-		test_args += " -agent AgentA classpath:test.simplePingPong.AgentPingPong otherAgent:AgentB";
+		test_args += " -pylon webSocket:slave1 serverPort:8886 connectTo:ws://localhost:8886";
+		test_args += " -agent AgentA classpath:AgentPingPong otherAgent:AgentB";
 		
 		test_args += " -node node2";
-		test_args += " -support websocket:slave2 connectTo:ws://localhost:8886 classpath:websockets.WebSocketPylon";
-		test_args += " -agent AgentB classpath:test.simplePingPong.AgentPingPong";
+		test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8886";
+		test_args += " -agent AgentB classpath:AgentPingPong";
 		
 		FlashBoot.main(test_args.split(" "));
 	}

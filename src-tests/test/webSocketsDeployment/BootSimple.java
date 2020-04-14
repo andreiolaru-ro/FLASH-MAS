@@ -11,8 +11,8 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import websockets.WebSocketMessaging;
-import websockets.WebSocketPylon;
+import net.xqhs.flash.webSocket.WebSocketMessagingShard;
+import net.xqhs.flash.webSocket.WebSocketPylon;
 
 /**
  * Tests websockets support works for a manually-constructed deployment.
@@ -166,7 +166,7 @@ public class BootSimple
 		pylon.start();
 		AgentTest one = new AgentTest("One");
 		one.addContext(pylon.asContext());
-		one.addMessagingShard(new WebSocketMessaging());
+		one.addMessagingShard(new WebSocketMessagingShard());
 		
 		WebSocketPylon pylon2 = new WebSocketPylon();
 		pylon2.configure(
@@ -174,7 +174,7 @@ public class BootSimple
 		pylon2.start();
 		AgentTest two = new AgentTest("Two");
 		two.addContext(pylon2.asContext());
-		two.addMessagingShard(new WebSocketMessaging());
+		two.addMessagingShard(new WebSocketMessagingShard());
 		
 		one.start();
 		two.start();

@@ -1,4 +1,4 @@
-package websockets;
+package net.xqhs.flash.webSocket;
 
 import java.net.URI;
 import java.util.Arrays;
