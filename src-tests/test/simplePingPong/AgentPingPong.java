@@ -73,6 +73,8 @@ public class AgentPingPong implements Agent
 	@Override
 	public boolean start()
 	{
+		if(msgShard == null)
+			throw new IllegalStateException("No messaging shard present");
 		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 		if(otherAgent != null)
 		{
