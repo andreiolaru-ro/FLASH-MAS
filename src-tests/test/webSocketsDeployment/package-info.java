@@ -5,4 +5,4 @@
  * @author Andrei Olaru
  *
  */
-package examples.webSocketsDeployment;
+package test.webSocketsDeployment;
