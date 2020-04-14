@@ -36,12 +36,12 @@ public class WebSocketClientProxy extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
-        System.out.println("[ WebSocketMessagingPylonProxy ] " + "new connection opened " + this.isOpen());
+        System.out.println("[WebSocketClient] " + "new connection opened: " + this.isOpen());
     }
 
     @Override
     public void onMessage(String message) {
-        System.out.println("[ WebSocketMessagingPylonProxy ] : " + message);
+        System.out.println("[WebSocketClient] : " + message);
 
         Object obj = JSONValue.parse(message);
         if (obj != null) {
@@ -62,7 +62,7 @@ public class WebSocketClientProxy extends WebSocketClient {
 
     @Override
     public void onClose(int i, String s, boolean b) {
-        System.out.println("[ WebSocketMessagingPylonProxy ] " + " closed with exit code " + i +
+        System.out.println("[WebSocketClient] " + " closed with exit code: " + i +
                 " because of " + s);
     }
 

@@ -32,13 +32,13 @@ public class WebSocketServerEntity implements Entity
 				/*
 				 * This method sends a message to the new client.
 				 */
-				webSocket.send("[ ServerPylon ] : Welcome to the ServerPylon!");
+				webSocket.send("[Server] : Welcome to the Server!");
 			}
 			
 			@Override
 			public void onClose(WebSocket webSocket, int i, String s, boolean b)
 			{
-				broadcast("[ ServerPylon ]" + webSocket + " has left the room");
+				broadcast("[Server]" + webSocket + " has left the room");
 			}
 			
 			@Override

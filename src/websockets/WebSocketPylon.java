@@ -48,13 +48,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
     }
 
     /**
-     * The type of this support infrastructure (its 'kind')
-     */
-
-	protected static final String	WEBSOCKET_SUPPORT_NAME			= "WebSocket";
-
-
-    /**
      * The default name of server address of this instance.
      */
 	public static final String														WEBSOCKET_SERVER_ADDRESS_NAME	= "connectTo";
@@ -64,6 +57,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected boolean				hasServer						= false;
 	protected int					serverPort						= -1;
 	protected WebSocketServerEntity	serverEntity					= null;
+	protected String                name;
 
     /**
      * The server address itself.
@@ -200,7 +194,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddressName = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
         if(configuration.isSimple("name"))
-            name = configuration.get("name");
+            name = configuration.getFirstValue("name");
 		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME))
 		{
 			hasServer = true;
@@ -220,7 +214,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
     @Override
     public String getName()
     {
-        return WEBSOCKET_SUPPORT_NAME;
+        return name;
     }
 
     @SuppressWarnings("unchecked")
