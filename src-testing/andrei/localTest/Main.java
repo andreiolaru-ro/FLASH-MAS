@@ -10,8 +10,8 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.local.LocalSupport;
-import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
+import net.xqhs.flash.local.LocalPylon;
+import net.xqhs.flash.local.LocalPylon.SimpleLocalMessaging;
 
 @SuppressWarnings("javadoc")
 class TestAgent implements Agent
@@ -153,7 +153,7 @@ public class Main
 	
 	public static void main(String[] args)
 	{
-		LocalSupport pylon = new LocalSupport();
+		LocalPylon pylon = new LocalPylon();
 		
 		TestAgent one = new TestAgent("One");
 		one.addContext(pylon.asContext());

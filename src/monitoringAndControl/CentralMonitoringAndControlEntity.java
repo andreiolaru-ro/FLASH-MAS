@@ -11,7 +11,7 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.local.LocalPylon;
 
 import javax.swing.*;
 import java.util.List;
@@ -56,7 +56,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
-        centralMessagingShard = new LocalSupport.SimpleLocalMessaging();
+        centralMessagingShard = new LocalPylon.SimpleLocalMessaging();
         centralMessagingShard.addContext(proxy);
     }
 

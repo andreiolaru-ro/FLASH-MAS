@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Logging-light">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/Logging-light.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

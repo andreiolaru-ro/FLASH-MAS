@@ -11,7 +11,12 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
@@ -29,7 +34,7 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -182,7 +187,7 @@ public class Node extends Unit implements Entity<Node>
 		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		//setLoggerType(PlatformUtils.platformLogType());
-		messagingShard = new LocalSupport.SimpleLocalMessaging();
+		messagingShard = new LocalPylon.SimpleLocalMessaging();
 	}
 	
 	/**
@@ -197,7 +202,7 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
-		if(name == null) return;
+		// if(name == null) return;
 //		if(entityType.equals(SUPPORT) && entity.asContext() != null)
 //		{
 //			messagingShard.addContext(proxy);

@@ -1,11 +1,11 @@
-package test.compositePingPong;
+package test.webSocketsDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
 /**
  * Deployment testing.
  */
-public class Boot
+public class BootCompositeDeployment
 {
 	/**
 	 * Designation for shards.
@@ -27,7 +27,13 @@ public class Boot
 		String test_args = "";
 		
 		test_args += " -package test.compositePingPong -loader agent:composite";
+		
+		test_args += " -node node1";
+		test_args += " -pylon webSocket:slave1 serverPort:8886 connectTo:ws://localhost:8886";
 		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
+		
+		test_args += " -node node2";
+		test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8886";
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
 		FlashBoot.main(test_args.split(" "));

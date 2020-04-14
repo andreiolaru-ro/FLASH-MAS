@@ -1,16 +1,16 @@
-package websockets;
-
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.handshake.ServerHandshake;
+package net.xqhs.flash.webSocket;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import net.xqhs.flash.core.support.MessageReceiver;
 
 public class WebSocketClientProxy extends WebSocketClient {
     /*

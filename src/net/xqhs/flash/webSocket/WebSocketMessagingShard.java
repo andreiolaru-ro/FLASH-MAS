@@ -1,4 +1,4 @@
-package websockets;
+package net.xqhs.flash.webSocket;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -7,7 +7,7 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
-public class WebSocketMessaging extends AbstractNameBasedMessagingShard {
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 
     private static final long serialVersionUID = 2L;
 
@@ -15,7 +15,7 @@ public class WebSocketMessaging extends AbstractNameBasedMessagingShard {
 
     public MessageReceiver inbox;
 
-    public WebSocketMessaging() {
+    public WebSocketMessagingShard() {
         super();
         inbox = new MessageReceiver() {
             @Override
