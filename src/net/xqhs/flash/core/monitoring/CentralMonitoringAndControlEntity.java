@@ -11,9 +11,12 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.local.LocalPylon;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
@@ -24,7 +27,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     private MessagingShard          centralMessagingShard;
 
-    private String                  name                                 = null;
+    private String                  name;
 
     /*
     * Graphic User Interface
@@ -36,34 +39,40 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
     protected MonitoringNodeProxy powerfulProxy;
 
 
-        // Proxy used to receive messages from outer entities; e.g. logs from agents
+    // Proxy used to receive messages from outer entities; e.g. logs from agents
     public ShardContainer          proxy = new ShardContainer() {
-        @Override
-        public void postAgentEvent(AgentEvent event) {
-            System.out.println(event.toString());
-        }
+            @Override
+            public void postAgentEvent(AgentEvent event) {
+                System.out.println(event.toString());
+                if(event.getType().equals(AgentEvent.AgentEventType.AGENT_WAVE))
+                {
+                    String content = ((AgentWave) event).getContent();
+                    System.out.println(" [] [] " + content);
+                }
+            }
 
-        @Override
-        public AgentShard getAgentShard(AgentShardDesignation designation) {
-            return null;
-        }
+            @Override
+            public AgentShard getAgentShard(AgentShardDesignation designation) {
+                return null;
+            }
 
-        @Override
-        public String getEntityName() {
-            return getName();
-        }
+            @Override
+            public String getEntityName() {
+                return getName();
+            }
     };
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
-        //centralMessagingShard = new LocalPylon.SimpleLocalMessaging();
-        //centralMessagingShard.addContext(proxy);
     }
 
 
     @Override
     public boolean start() {
-        System.out.println(getName() + "## CENTRAL MONITORING ENTITY STARTED...");
+        if(centralMessagingShard == null)
+            throw new IllegalStateException("No messaging shard present");
+        centralMessagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        System.out.println("[" + getName() + "] starting...");
         RUNNING_STATE = true;
         return true;
     }
@@ -97,6 +106,22 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean addContext(EntityProxy<Pylon> context) {
+        PylonProxy pylonProxy = (PylonProxy) context;
+        String recommendedShard = pylonProxy
+                .getRecommendedShardImplementation(
+                        AgentShardDesignation.standardShard(
+                                AgentShardDesignation.StandardAgentShard.MESSAGING));
+        try
+        {
+            centralMessagingShard = (MessagingShard) PlatformUtils
+                    .getClassFactory().loadClassInstance(recommendedShard, null, true);
+        } catch(ClassNotFoundException
+                | InstantiationException | NoSuchMethodException
+                | IllegalAccessException | InvocationTargetException e)
+        {
+            e.printStackTrace();
+        }
+        centralMessagingShard.addContext(proxy);
         return centralMessagingShard.addGeneralContext(context);
     }
 
@@ -107,8 +132,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        //return addContext((MessagingPylonProxy) context);
-        return true;
+        return addContext((MessagingPylonProxy) context);
     }
 
     @Override
