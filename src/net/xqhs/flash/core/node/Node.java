@@ -76,8 +76,6 @@ public class Node extends Unit implements Entity<Node>
     protected MessageReceiver centralMessagingReceiver;
 
 
-    protected static final String SUPPORT                        = "support";
-
     protected static final String SHARD_ENDPOINT                 = "control";
 
 	private HashMap<String, List<String>> nodeToAgents           = new LinkedHashMap<>();

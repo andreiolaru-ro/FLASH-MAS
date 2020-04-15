@@ -33,13 +33,13 @@ public class WebSocketServerEntity implements Entity
 				/*
 				 * This method sends a message to the new client.
 				 */
-				webSocket.send("[Server] : Welcome to the Server!");
+				webSocket.send("Welcome to the Server!");
 			}
 			
 			@Override
 			public void onClose(WebSocket webSocket, int i, String s, boolean b)
 			{
-				broadcast("[Server]" + webSocket + " has left the room");
+				broadcast(webSocket + " has left.");
 			}
 			
 			@Override

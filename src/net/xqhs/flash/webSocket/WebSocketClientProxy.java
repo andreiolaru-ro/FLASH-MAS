@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -23,14 +22,6 @@ public class WebSocketClientProxy extends WebSocketClient {
         messageReceivers.put(name, receiver);
     }
 
-    MessageReceiver getMessageReceiver(String name) {
-        return messageReceivers.get(name);
-    }
-
-    public WebSocketClientProxy(URI serverUri, Draft draft) {
-        super(serverUri, draft);
-    }
-
     public WebSocketClientProxy(URI serverURI) {
         super(serverURI);
     }
@@ -41,10 +32,10 @@ public class WebSocketClientProxy extends WebSocketClient {
     }
 
     @Override
-    public void onMessage(String message) {
-        System.out.println("[WebSocketClient] : " + message);
+    public void onMessage(String s) {
+        System.out.println("[WebSocketClient] : " + s);
 
-        Object obj = JSONValue.parse(message);
+        Object obj = JSONValue.parse(s);
         if (obj != null) {
             JSONObject jsonObject = (JSONObject) obj;
 

@@ -57,8 +57,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		
 		@Override
 		public boolean send(String source, String destination, String content) {
-			String destAgent = destination.split(
-					AgentWave.ADDRESS_SEPARATOR)[0];
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("source", source);
 			messageToServer.put("destination", destination);
@@ -78,11 +76,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			return getName();
 		}
 	};
-	
-	/**
-	 * The type of this support infrastructure (its 'kind')
-	 */
-	protected static final String	WEBSOCKET_SUPPORT_NAME			= "websocket";
+
 	/**
 	 * The attribute name of server address of this instance.
 	 */
@@ -193,11 +187,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		if(shardName.equals(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)))
 			return WebSocketMessagingShard.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
-	}
-	
-	@Override
-	public String getName() {
-		return name;
 	}
 	
 	@SuppressWarnings("unchecked")
