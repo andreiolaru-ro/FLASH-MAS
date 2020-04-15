@@ -32,38 +32,18 @@ import net.xqhs.util.logging.Unit;
  */
 public class DefaultPylonImplementation extends Unit implements Pylon
 {
-	/**
-	 * The default name for instances of this implementation.
-	 */
-	protected static final String	DEFAULT_NAME	= "Default Support ";
 	
 	/**
 	 * Indicates whether the implementation is currently running.
 	 */
 	protected boolean	isRunning		= false;
-	
-	/**
-	 * The name of this instance.
-	 */
-	protected String				name			= DEFAULT_NAME;
 
-	/**
-	 * The default name of server address of this instance.
-	 */
-	public static final String  SERVER_ADDRESS = "SERVER_ADDRESS";
-
-	/**
-	 * The name of the server address.
-	 */
-
-	protected String                  serverAddressName;
+	protected String    name;
 
 
 	@Override
 	public boolean configure(MultiTreeMap configuration)
 	{
-		if(configuration.isSingleton(SERVER_ADDRESS))
-			serverAddressName = configuration.getSingleValue(SERVER_ADDRESS);
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		return true;
@@ -162,9 +142,5 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	@SuppressWarnings("static-method")
 	public String getAgentNameFromAddress(String agentAddress) {
 		return agentAddress;
-	}
-
-	public String getServerAddressName() {
-		return serverAddressName;
 	}
 }

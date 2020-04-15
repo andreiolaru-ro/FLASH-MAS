@@ -8,6 +8,7 @@ import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.agent.AgentWave;
@@ -178,8 +179,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean configure(MultiTreeMap configuration) {
 		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddressName = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
-		if(configuration.isSimple("name"))
-			name = configuration.get("name");
+		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
+			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
 			hasServer = true;
 			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
