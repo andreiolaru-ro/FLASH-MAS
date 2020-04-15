@@ -11,10 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -22,6 +19,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -233,6 +231,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 		{
 			li("Loading: ", toLoad);
 			Map<String, Entity<?>> loaded = new HashMap<>();
+			Set<EntityProxy<?>> contextAllCat = new HashSet<>();
 			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR))
 			{
 				CategoryName cat = CategoryName.byName(catName);
@@ -316,7 +315,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 							else
 								lw("Context item [] for [] []/[] not found as a loaded entity.", contextItem, catName,
 										name, kind);
-							
+
+					contextAllCat.addAll(context);
 					// build subordinate entities list
 					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities,
 							local_id);
@@ -363,29 +363,30 @@ public class NodeLoader extends Unit implements Loader<Node>
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						node.registerEntity(catName, entity, id);
-						 /**
-						  * A central entity is registered within the central node.
-						  * Therefore it must be registered in the context of the same pylon.
-						  * */
-//						if(catName.equals("support") && node.name != null && DeploymentConfiguration.isCentralNode)
-//						{
-//							CentralMonitoringAndControlEntity monitoringEntity = new CentralMonitoringAndControlEntity(
-//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-//							monitoringEntity.addGeneralContext(entity.asContext());
-//							node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, monitoringEntity,
-//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-//							li("Entity [] of type [] registered.",
-//									DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-//									DeploymentConfiguration.MONITORING_TYPE);
-//							DeploymentConfiguration.CENTRAL_NODE_NAME = node.getName();
-//							DeploymentConfiguration.isCentralNode = false;
-//						}
 					}
 					else
 						le("Could not load entity [] of type [].", name, catName);
 					lf("Loaded items:", loaded.keySet());
 				}
 			}
+			// delegate the central node
+			// and register the central monitoring and control entity in its context
+			if(node.getName() == null ||
+					!DeploymentConfiguration.isCentralNode ||
+					contextAllCat.isEmpty()) return node;
+
+			li("Node [] is central node.", node.getName());
+			Iterator<EntityProxy<?>> it = contextAllCat.iterator();
+			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+			centralEntity.addGeneralContext(it.next());
+			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+			li("Entity [] of type [] registered.",
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+					DeploymentConfiguration.MONITORING_TYPE);
+			DeploymentConfiguration.CENTRAL_NODE_NAME = node.getName();
+			DeploymentConfiguration.isCentralNode = false;
 		}
 		return node;
 	}

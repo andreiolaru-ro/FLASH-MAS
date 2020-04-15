@@ -56,8 +56,8 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
-        centralMessagingShard = new LocalPylon.SimpleLocalMessaging();
-        centralMessagingShard.addContext(proxy);
+        //centralMessagingShard = new LocalPylon.SimpleLocalMessaging();
+        //centralMessagingShard.addContext(proxy);
     }
 
 
@@ -107,7 +107,8 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return addContext((MessagingPylonProxy) context);
+        //return addContext((MessagingPylonProxy) context);
+        return true;
     }
 
     @Override
