@@ -1,7 +1,7 @@
-package monitoringAndControl;
+package net.xqhs.flash.core.monitoring;
 
 /*
- * This interface should be implemented by any proxy to a {@link Node} that offers monitoring services.
+ * This interface should be implemented by any proxy to a {@link Node} that offers net.xqhs.flash.core.monitoring services.
  */
 
 import net.xqhs.flash.core.support.MessageReceiver;

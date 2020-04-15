@@ -1,4 +1,4 @@
-package monitoringAndControl.monitoringAndControlTest;
+package florina.monitoringAndControlTest;
 
 import net.xqhs.flash.FlashBoot;
 

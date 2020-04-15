@@ -1,4 +1,4 @@
-package monitoringAndControl.websockets;
+package net.xqhs.flash.core.monitoring.websockets;
 
 import java.net.InetSocketAddress;
 import java.util.*;

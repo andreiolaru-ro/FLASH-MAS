@@ -1,4 +1,4 @@
-package monitoringAndControl;
+package net.xqhs.flash.core.monitoring;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;

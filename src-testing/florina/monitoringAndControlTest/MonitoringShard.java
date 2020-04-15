@@ -1,4 +1,4 @@
-package monitoringAndControl.monitoringAndControlTest;
+package florina.monitoringAndControlTest;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -17,7 +17,7 @@ public class MonitoringShard extends AgentShardGeneral
     /**
      * Endpoint element for this shard.
      */
-    protected static final String	SHARD_ENDPOINT				= "monitoring";
+    protected static final String	SHARD_ENDPOINT				= "net/xqhs/flash/core/monitoring";
 
     /**
      * Cache for the name of this agent.

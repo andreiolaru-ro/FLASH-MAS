@@ -1,6 +1,6 @@
-package monitoringAndControl.monitoringAndControlTest;
+package florina.monitoringAndControlTest;
 
-import monitoringAndControl.websockets.WebSocketServerEntity;
+import net.xqhs.flash.core.monitoring.websockets.WebSocketServerEntity;
 
 import java.io.BufferedReader;
 import java.io.IOException;

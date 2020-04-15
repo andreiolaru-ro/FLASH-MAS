@@ -11,8 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.local;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +27,7 @@ import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import monitoringAndControl.websockets.WebSocketClientProxy;
+import net.xqhs.flash.core.monitoring.websockets.WebSocketClientProxy;
 import org.json.simple.JSONObject;
 
 /**
@@ -57,7 +55,7 @@ public class LocalPylon extends DefaultPylonImplementation
 	protected String nodeId                                         = null;
 
 	/*
-	* Whether this pylon is part of central node for monitoring and control.
+	* Whether this pylon is part of central node for net.xqhs.flash.core.monitoring and control.
 	* */
 
 	protected boolean isCentralNode;

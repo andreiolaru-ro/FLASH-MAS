@@ -1,4 +1,4 @@
-package monitoringAndControl.monitoringAndControlTest;
+package florina.monitoringAndControlTest;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;

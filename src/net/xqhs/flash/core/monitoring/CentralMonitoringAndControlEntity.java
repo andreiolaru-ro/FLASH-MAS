@@ -1,6 +1,6 @@
-package monitoringAndControl;
+package net.xqhs.flash.core.monitoring;
 
-import monitoringAndControl.gui.GUIBoard;
+import net.xqhs.flash.core.monitoring.gui.GUIBoard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;

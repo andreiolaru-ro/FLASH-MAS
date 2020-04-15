@@ -1,6 +1,6 @@
-package monitoringAndControl.gui;
+package net.xqhs.flash.core.monitoring.gui;
 
-import monitoringAndControl.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;

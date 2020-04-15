@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import monitoringAndControl.CentralMonitoringAndControlEntity;
-import monitoringAndControl.MonitoringNodeProxy;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.monitoring.MonitoringNodeProxy;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;

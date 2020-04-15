@@ -1,4 +1,4 @@
-package monitoringAndControl.websockets;
+package net.xqhs.flash.core.monitoring.websockets;
 
 import net.xqhs.flash.core.support.MessageReceiver;
 import org.java_websocket.client.WebSocketClient;

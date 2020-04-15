@@ -138,9 +138,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	public static       boolean         isCentralNode                   = true;
 
 	/**
-	 * Type for monitoring and control entity.
+	 * Type for net.xqhs.flash.core.monitoring and control entity.
 	 * */
-	public static final String MONITORING_TYPE                          = "monitoring";
+	public static final String MONITORING_TYPE                          = "net/xqhs/flash/core/monitoring";
 
 	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "CentralMonitoring";
 

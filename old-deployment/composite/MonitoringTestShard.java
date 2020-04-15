@@ -86,7 +86,7 @@ public class MonitoringTestShard extends CompositeAgentShard
 		
 		if(getAgent() != null)
 		{
-			locallog = (UnitComponent) new UnitComponent().setUnitName("monitoring-" + getAgentName()).setLogLevel(
+			locallog = (UnitComponent) new UnitComponent().setUnitName("net.xqhs.flash.core.monitoring-" + getAgentName()).setLogLevel(
 					Level.ALL);
 			locallog.lf("testing started.");
 		}
