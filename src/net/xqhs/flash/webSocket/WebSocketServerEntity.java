@@ -3,6 +3,7 @@ package net.xqhs.flash.webSocket;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -62,7 +63,9 @@ public class WebSocketServerEntity implements Entity
 					if(jsonObject.get("destination") == null) return;
 
 					String destination = (String) jsonObject.get("destination");
-					WebSocket destinationWebSocket = nameConnections.get(destination);
+					String destAgent = destination.split(
+							AgentWave.ADDRESS_SEPARATOR)[0];
+					WebSocket destinationWebSocket = nameConnections.get(destAgent);
 					if(destinationWebSocket == null) return;
 
 					destinationWebSocket.send(s);

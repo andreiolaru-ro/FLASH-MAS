@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
@@ -48,14 +49,16 @@ public class WebSocketClientProxy extends WebSocketClient {
             JSONObject jsonObject = (JSONObject) obj;
 
             String destination = (String) jsonObject.get("destination");
-            if(!messageReceivers.containsKey(destination))
+            String destAgent = destination.split(
+                    AgentWave.ADDRESS_SEPARATOR)[0];
+            if(!messageReceivers.containsKey(destAgent))
                 System.out.println("The agent does not exist.");
-            else if(messageReceivers.get(destination) == null) {
+            else if(messageReceivers.get(destAgent) == null) {
                 System.out.println("The message receiver does not exist.");
             } else {
                 String source = (String) jsonObject.get("source");
                 String content = (String) jsonObject.get("content");
-                messageReceivers.get(destination).receive(source, destination, content);
+                messageReceivers.get(destAgent).receive(source, destination, content);
             }
         }
     }

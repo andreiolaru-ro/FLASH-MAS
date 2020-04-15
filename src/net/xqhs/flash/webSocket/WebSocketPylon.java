@@ -56,10 +56,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		
 		@Override
 		public boolean send(String source, String destination, String content) {
-			String destAgent = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
+			String destAgent = destination.split(
+					AgentWave.ADDRESS_SEPARATOR)[0];
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("source", source);
-			messageToServer.put("destination", destAgent);
+			messageToServer.put("destination", destination);
 			messageToServer.put("content", content);
 			
 			webSocketClient.send(messageToServer.toString());
