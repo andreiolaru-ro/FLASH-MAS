@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -12,8 +14,11 @@ import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.Entity;
 
-public class WebSocketServerEntity implements Entity
+public class WebSocketServerEntity extends Unit implements Entity
 {
+	{
+		setUnitName("websocket-server").setLoggerType(PlatformUtils.platformLogType());
+	}
 	
 	protected static final int			SERVER_STOP_TIME	= 10;
 	protected WebSocketServer			webSocketServer;
@@ -33,43 +38,39 @@ public class WebSocketServerEntity implements Entity
 				/*
 				 * This method sends a message to the new client.
 				 */
-				webSocket.send("Welcome to the Server!");
+				li("new client connected []", webSocket);
 			}
 			
 			@Override
 			public void onClose(WebSocket webSocket, int i, String s, boolean b)
 			{
-				broadcast(webSocket + " has left.");
+				li(("[] closed with exit code " + i), webSocket);
 			}
 			
 			@Override
 			public void onMessage(WebSocket webSocket, String s)
 			{
-				/*
-				 * The name of a new agent was send and we need to store it.
-				 */
-				String[] namePayload = s.split("=");
-				if(namePayload.length == 2)
-					nameConnections.put(namePayload[1], webSocket);
-				else
+				Object obj = JSONValue.parse(s);
+				if(obj == null) return;
+				JSONObject jsonObject = (JSONObject) obj;
+
+				if(jsonObject.get("name") != null)
 				{
-					/*
-					 * A JSON with source, destination and content is received.
-					 */
-					Object obj = JSONValue.parse(s);
-					if(obj == null) return;
-
-					JSONObject jsonObject = (JSONObject) obj;
-					if(jsonObject.get("destination") == null) return;
-
-					String destination = (String) jsonObject.get("destination");
-					String destAgent = destination.split(
-							AgentWave.ADDRESS_SEPARATOR)[0];
-					WebSocket destinationWebSocket = nameConnections.get(destAgent);
-					if(destinationWebSocket == null) return;
-
-					destinationWebSocket.send(s);
+					String name = (String) jsonObject.get("name");
+					nameConnections.put(name, webSocket);
+					li("Registered agent []. ", name);
+					return;
 				}
+				if(jsonObject.get("destination") == null) return;
+
+				li("Received: []. ", s);
+				String destination = (String) jsonObject.get("destination");
+				String destAgent = destination.split(
+						AgentWave.ADDRESS_SEPARATOR)[0];
+				WebSocket destinationWebSocket = nameConnections.get(destAgent);
+				if(destinationWebSocket == null) return;
+
+				destinationWebSocket.send(s);
 			}
 			
 			@Override
@@ -81,7 +82,7 @@ public class WebSocketServerEntity implements Entity
 			@Override
 			public void onStart()
 			{
-				System.out.println(("ServerPylon started successfully!"));
+				li("Server started successfully.");
 			}
 		};
 	}

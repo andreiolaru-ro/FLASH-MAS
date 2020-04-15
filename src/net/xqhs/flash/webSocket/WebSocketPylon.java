@@ -50,8 +50,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		@Override
 		public boolean register(String agentName, MessageReceiver receiver) {
 			webSocketClient.addReceiverAgent(agentName, receiver);
-			String registerMessage = "name=" + agentName;
-			webSocketClient.send(registerMessage);
+			JSONObject message = new JSONObject();
+			message.put("name", agentName);
+			webSocketClient.send(message.toString());
 			return true;
 		}
 		
