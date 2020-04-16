@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.support.*;
 import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -35,8 +34,6 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.Unit;
@@ -232,6 +229,10 @@ public class Node extends Unit implements Entity<Node>
 				AgentWave.makePath(DeploymentConfiguration.CENTRAL_NODE_NAME, SHARD_ENDPOINT),
 				registerAgent.toString());
 	}
+
+	protected void registerNodeToPylon() {
+		messagingShard.registerNode(getName(), centralMonitoringEntity != null);
+	}
 	
 	@Override
 	public boolean start()
@@ -242,7 +243,11 @@ public class Node extends Unit implements Entity<Node>
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
 			if(entity.start())
+			{
 				lf("entity [] started successfully.", entityName);
+				if(getName() != null && (entity instanceof DefaultPylonImplementation))
+					registerNodeToPylon();
+			}
 			else
 				le("failed to start entity [].", entityName);
 		}

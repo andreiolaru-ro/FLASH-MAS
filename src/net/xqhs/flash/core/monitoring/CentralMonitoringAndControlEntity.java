@@ -114,7 +114,8 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
         try
         {
             centralMessagingShard = (MessagingShard) PlatformUtils
-                    .getClassFactory().loadClassInstance(recommendedShard, null, true);
+                    .getClassFactory()
+                    .loadClassInstance(recommendedShard, null, true);
         } catch(ClassNotFoundException
                 | InstantiationException | NoSuchMethodException
                 | IllegalAccessException | InvocationTargetException e)

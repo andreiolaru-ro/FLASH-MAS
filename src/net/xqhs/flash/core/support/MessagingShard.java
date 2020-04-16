@@ -45,4 +45,7 @@ public interface MessagingShard extends AgentShard
 	 * @return the address of this agent in the {@link Pylon} this shard is assigned to.
 	 */
 	public String getAgentAddress();
+
+	public void registerNode(String nodeName, boolean isCentral);
+
 }

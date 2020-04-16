@@ -378,8 +378,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 			PylonProxy pylon = (PylonProxy)contextAllCat.stream().findFirst().get();
 			node.addGeneralContext(pylon);
 
-			if(node.getName() == null ||
-					!DeploymentConfiguration.isCentralNode) return node;
+			if(!DeploymentConfiguration.isCentralNode) return node;
 
 			// delegate the central node
 			// and register the central monitoring and control entity in its context

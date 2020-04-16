@@ -30,4 +30,14 @@ public interface MessagingPylonProxy extends PylonProxy
 	 * @return an indication of success.
 	 */
 	boolean send(String source, String destination, String content);
+
+	/**
+	 * Register the local node.
+	 *
+	 * @param nodeName
+	 *                        - the name of node.
+	 * @param isCentral
+	 *                        - if node is delegated as central.
+	 */
+	void registerNode(String nodeName, boolean isCentral);
 }

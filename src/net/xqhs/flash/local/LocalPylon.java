@@ -27,8 +27,6 @@ import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.monitoring.websockets.WebSocketClientProxy;
-import org.json.simple.JSONObject;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -48,40 +46,20 @@ public class LocalPylon extends DefaultPylonImplementation
 	 */
 	protected HashMap<String, MessageReceiver>	messageReceivers	= new HashMap<>();
 
-	/**
-	 * The id of that node.
-	 * */
+	protected String nodeName;
 
-	protected String nodeId                                         = null;
-
-	/*
-	* Whether this pylon is part of central node for net.xqhs.flash.core.monitoring and control.
-	* */
-
-	protected boolean isCentralNode;
-
-	/**
-	 * The proxy to the webSocket server; this is actually a webSocket client.
-	 */
-	protected WebSocketClientProxy webSocketClient;
-
-
-	/**
-	 * The server address itself.
-	 */
-	protected String                  serverAddress;
-
+	protected boolean isPylonOnCentralNode;
 
 	public MessagingPylonProxy					messagingProxy		= new MessagingPylonProxy() {
 																		
-				@Override
-				public boolean send(String source,
-						String destination, String content)
-				{
-					String agentName = destination.split(
-							AgentWave.ADDRESS_SEPARATOR)[0];
-					if(!messageReceivers.containsKey(agentName))
-					{
+		@Override
+		public boolean send(String source,
+				String destination, String content)
+		{
+			String agentName = destination.split(
+					AgentWave.ADDRESS_SEPARATOR)[0];
+			if(!messageReceivers.containsKey(agentName))
+			{
 //						JSONObject msgToServer = new JSONObject();
 //						msgToServer.put("nodeName", nodeId);
 //						msgToServer.put("simpleDest", agentName);
@@ -90,70 +68,42 @@ public class LocalPylon extends DefaultPylonImplementation
 //						msgToServer.put("content", content);
 //
 //						webSocketClient.send(msgToServer.toString());
-						return true;
-					}
-					messageReceivers.get(agentName).receive(
-							source, destination, content);
-					return true;
-				}
-																		
-				@Override
-				public boolean register(String agentName,
-						MessageReceiver receiver)
-				{
-					messageReceivers.put(agentName, receiver);
-//					webSocketClient.addReceiverAgent(agentName, receiver);
-//
-//					if(agentName.equals(nodeId)) return true;
-//
-//					JSONObject agentRegMsg = new JSONObject();
-//					agentRegMsg.put("nodeName", nodeId);
-//					agentRegMsg.put("agentName", agentName);
-//
-//					webSocketClient.send(agentRegMsg.toString());
-					return true;
-				}
+				return true;
+			}
+			messageReceivers.get(agentName).receive(
+					source, destination, content);
+			return true;
+		}
 
-				@Override
-				public String getRecommendedShardImplementation(
-						AgentShardDesignation shardType)
-				{
-					return LocalPylon.this
-							.getRecommendedShardImplementation(
-									shardType);
-				}
+		@Override
+		public void registerNode(String id, boolean isCentralNode) {
+			nodeName = id;
+			isPylonOnCentralNode = isCentralNode;
+		}
 
-				@Override
-				public String getEntityName()
-				{
-					return getName();
-				}
-			};
+		@Override
+		public boolean register(String agentName,
+				MessageReceiver receiver)
+		{
+			messageReceivers.put(agentName, receiver);
+			return true;
+		}
 
+		@Override
+		public String getRecommendedShardImplementation(
+				AgentShardDesignation shardType)
+		{
+			return LocalPylon.this
+					.getRecommendedShardImplementation(
+							shardType);
+		}
 
-	public void registerNodeId(String nodeId) {
-		this.nodeId = nodeId;
-		JSONObject msg = new JSONObject();
-		msg.put("nodeName", nodeId);
-		msg.put("isCentral", isCentralNode);
-
-		webSocketClient.send(msg.toString());
-	}
-
-	public void setIsCentralNode(boolean isCentralNode) {
-		this.isCentralNode = isCentralNode;
-	}
-
-//	public LocalSupport() {
-//		super();
-//		try {
-//			webSocketClient = new WebSocketClientProxy(new URI("ws://localhost:8886"));
-//			webSocketClient.connect();
-//			Thread.sleep(1000);
-//		} catch (URISyntaxException | InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//	}
+		@Override
+		public String getEntityName()
+		{
+			return getName();
+		}
+	};
 
 	/**
 	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
@@ -213,6 +163,11 @@ public class LocalPylon extends DefaultPylonImplementation
 		public boolean sendMessage(String source, String destination, String content)
 		{
 			return pylon.send(source, destination, content);
+		}
+
+		@Override
+		public void registerNode(String nodeName, boolean isCentral) {
+			pylon.registerNode(nodeName, isCentral);
 		}
 	}
 	
