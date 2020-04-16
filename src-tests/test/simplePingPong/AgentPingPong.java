@@ -1,5 +1,6 @@
 package test.simplePingPong;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,16 +18,16 @@ import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.util.logging.Unit;
 
 /**
  * The implementation of the agents.
  */
-public class AgentPingPong implements Agent
-{
+public class AgentPingPong extends Unit implements Agent {
 	/**
 	 * The name of the component parameter that contains the id of the other agent.
 	 */
-	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "otherAgent";
+	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "sendTo";
 	/**
 	 * Endpoint element for this shard.
 	 */
@@ -39,7 +40,6 @@ public class AgentPingPong implements Agent
 	 * Time between ping messages.
 	 */
 	protected static final long		PING_PERIOD					= 2000;
-	
 	/**
 	 * Timer for pinging.
 	 */
@@ -47,7 +47,7 @@ public class AgentPingPong implements Agent
 	/**
 	 * Cache for the name of the other agent.
 	 */
-	String							otherAgent					= null;
+	List<String>					otherAgents					= null;
 	/**
 	 * The messaging shard.
 	 */
@@ -60,43 +60,34 @@ public class AgentPingPong implements Agent
 	/**
 	 * @param configuration
 	 */
-	public AgentPingPong(MultiTreeMap configuration)
-	{
-		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
-			otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
+	public AgentPingPong(MultiTreeMap configuration) {
 		agentName = configuration.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		setUnitName(agentName);// .setLogLevel(Level.ALL);
+		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
+			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
 		msgShard = new LocalSupport.SimpleLocalMessaging();
 		msgShard.addContext(new ShardContainer() {
 			@Override
-			public String getEntityName()
-			{
+			public String getEntityName() {
 				return getName();
-			}
-			@Override
-			public void postAgentEvent(AgentEvent event)
-			{
-				System.out.println(event.toString());
-				if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgent == null)
-				{
-					String replyContent = ((AgentWave) event).getContent() + " reply";
-					msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-							((AgentWave) event).getCompleteSource(), replyContent);
-				}
 			}
 			
 			@Override
-			public AgentShard getAgentShard(AgentShardDesignation designation)
-			{
+			public void postAgentEvent(AgentEvent event) {
+				AgentPingPong.this.postAgentEvent(event);
+			}
+			
+			@Override
+			public AgentShard getAgentShard(AgentShardDesignation designation) {
 				return null;
 			}
 		});
+		lf("Agent started.");
 	}
 	
 	@Override
-	public boolean start()
-	{
-		if(otherAgent != null)
-		{
+	public boolean start() {
+		if(otherAgents != null) {
 			pingTimer = new Timer();
 			pingTimer.schedule(new TimerTask() {
 				/**
@@ -105,64 +96,81 @@ public class AgentPingPong implements Agent
 				int tick = 0;
 				
 				@Override
-				public void run()
-				{
+				public void run() {
 					tick++;
-					System.out.println("Sending the message....");
-					msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
-							AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick);
+					for(String otherAgent : otherAgents) {
+						lf("Sending the message to ", otherAgent);
+						if(!msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
+								AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick))
+							le("Message sending failed");
+					}
 				}
 			}, PING_INITIAL_DELAY, PING_PERIOD);
 		}
 		return true;
 	}
 	
+	/**
+	 * @param event
+	 *            - the event received.
+	 */
+	protected void postAgentEvent(AgentEvent event) {
+		li("received: " + event.toString());
+		if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgents == null) {
+			String replyContent = ((AgentWave) event).getContent() + " reply";
+			msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT), ((AgentWave) event).getCompleteSource(),
+					replyContent);
+		}
+	}
+	
 	@Override
-	public boolean stop()
-	{
+	public boolean stop() {
 		return false;
 	}
 	
 	@Override
-	public boolean isRunning()
-	{
+	public boolean isRunning() {
 		return true;
 	}
 	
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return agentName;
 	}
 	
 	@Override
-	public boolean addContext(EntityProxy<Pylon> context)
-	{
+	public boolean addContext(EntityProxy<Pylon> context) {
+		lf("Context added: ", context.getEntityName());
 		return msgShard.addGeneralContext(context);
 	}
 	
 	@Override
-	public boolean removeContext(EntityProxy<Pylon> context)
-	{
+	public boolean removeContext(EntityProxy<Pylon> context) {
 		return false;
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return addContext((MessagingPylonProxy) context);
 	}
 	
 	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return false;
 	}
 	
 	@Override
-	public <C extends Entity<Pylon>> EntityProxy<C> asContext()
-	{
+	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
 		return null;
 	}
 	
+	@Override
+	protected void le(String message, Object... arguments) {
+		super.le(message, arguments);
+	}
+	
+	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
 }

@@ -18,7 +18,7 @@ public class Boot
 		String test_args = "";
 		
 		test_args += " -package test.simplePingPong";
-		test_args += " -agent AgentA classpath:test.simplePingPong.AgentPingPong otherAgent:AgentB";
+		test_args += " -agent AgentA classpath:test.simplePingPong.AgentPingPong sendTo:AgentB";
 		test_args += " -agent AgentB classpath:test.simplePingPong.AgentPingPong";
 		
 		FlashBoot.main(test_args.split(" "));
