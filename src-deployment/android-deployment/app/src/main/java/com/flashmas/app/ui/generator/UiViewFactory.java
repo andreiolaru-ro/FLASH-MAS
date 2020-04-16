@@ -9,11 +9,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flashmas.lib.AgentGuiShard;
+
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+
+import static com.flashmas.lib.FlashUtils.registerGuiEventHandler;
 
 public class UiViewFactory {
     private static final String TAG = "UiViewFactory";
@@ -68,7 +78,11 @@ public class UiViewFactory {
     private static View createLabel(Element element, Context context, Agent agent) {
         TextView textView = new TextView(context);
         if (element.getText() != null && element.getText().equals("__agent_name__")) {
-            textView.setText(agent.getName());
+            textView.setText("Waiting agent event..."); // Default text maybe?
+            if (agent instanceof CompositeAgent) {
+                registerGuiEventHandler((CompositeAgent) agent,
+                        agentEvent -> textView.setText(agentEvent.getType().toString()));
+            }
         } else {
             textView.setText(element.getText());
         }
@@ -80,16 +94,18 @@ public class UiViewFactory {
         return textView;
     }
 
+
+
     private static View createButton(Element element, Context context, Agent agent) {
         Button button = new Button(context);
         button.setText(element.getText());
-        if (element.getProperties().containsKey("action") &&
-                element.getProperties().get("action").equals("disable")) {
-            button.setOnClickListener(v -> {
-                agent.stop();
-                Toast.makeText(context, "Agent " + agent.getName() + " stopped", Toast.LENGTH_LONG).show();
-            });
-        }
+//        if (element.getProperties().containsKey("action") &&
+//                element.getProperties().get("action").equals("disable")) {
+//            button.setOnClickListener(v -> {
+//                agent.stop();
+//                Toast.makeText(context, "Agent " + agent.getName() + " stopped", Toast.LENGTH_LONG).show();
+//            });
+//        }
         return button;
     }
 

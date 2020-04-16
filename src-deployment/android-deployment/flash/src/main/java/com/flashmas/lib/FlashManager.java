@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;

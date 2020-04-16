@@ -14,9 +14,12 @@ import com.flashmas.app.R;
 import com.flashmas.app.ui.generator.UiViewFactory;
 
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.composite.CompositeAgent;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import static com.flashmas.lib.FlashUtils.unregisterAllAgentGuiHandlers;
 
 public class AgentDetailsFragment extends Fragment {
     public static final String AGENT_KEY = "agent_key";
@@ -77,5 +80,13 @@ public class AgentDetailsFragment extends Fragment {
 //                }
 //            }
 //        });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (agent instanceof CompositeAgent) {
+            unregisterAllAgentGuiHandlers((CompositeAgent) agent);
+        }
     }
 }
