@@ -50,15 +50,17 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		@Override
 		public boolean register(String agentName, MessageReceiver receiver) {
 			webSocketClient.addReceiverAgent(agentName, receiver);
-			JSONObject message = new JSONObject();
-			message.put("name", agentName);
-			webSocketClient.send(message.toString());
+			JSONObject messageToServer = new JSONObject();
+			messageToServer.put("nodeName", nodeName);
+			messageToServer.put("agentName", agentName);
+			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
 		
 		@Override
 		public boolean send(String source, String destination, String content) {
 			JSONObject messageToServer = new JSONObject();
+			messageToServer.put("nodeName", nodeName);
 			messageToServer.put("source", source);
 			messageToServer.put("destination", destination);
 			messageToServer.put("content", content);
@@ -66,7 +68,17 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
-		
+
+		@Override
+		public void registerNode(String id, boolean isCentral) {
+			nodeName = id;
+			isCentralNode = isCentral;
+			JSONObject messageToServer = new JSONObject();
+			messageToServer.put("nodeName", nodeName);
+			messageToServer.put("isCentral", isCentralNode);
+			webSocketClient.send(messageToServer.toString());
+		}
+
 		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
 			return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
@@ -90,6 +102,10 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected boolean				hasServer		= false;
 	protected int					serverPort		= -1;
 	protected WebSocketServerEntity	serverEntity	= null;
+
+	protected String                nodeName;
+
+	protected boolean               isCentralNode;
 	
 	/**
 	 * The server address itself.

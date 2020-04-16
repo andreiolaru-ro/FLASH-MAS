@@ -1,7 +1,10 @@
 package net.xqhs.flash.webSocket;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -20,14 +23,18 @@ public class WebSocketServerEntity extends Unit implements Entity
 		setUnitName("websocket-server").setLoggerType(PlatformUtils.platformLogType());
 	}
 	
-	protected static final int			SERVER_STOP_TIME	= 10;
-	protected WebSocketServer			webSocketServer;
-	protected boolean					running				= false;
-	/*
-	 * All clients' addresses are stored in case one of them is target socket.
-	 */
-	private HashMap<String, WebSocket>	nameConnections		= new HashMap<String, WebSocket>();
-	
+	private static final int		SERVER_STOP_TIME	= 10;
+	private WebSocketServer			webSocketServer;
+	private boolean					running				= false;
+
+	private HashMap<String, WebSocket> agentToWebSocket = new HashMap<>();
+	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
+	private HashMap<String, List<String>> nodeToAgents = new LinkedHashMap<>();
+
+	private String centralNodeName;
+	private WebSocket centralNodeWebSocket;
+
+
 	public WebSocketServerEntity(int serverAddress)
 	{
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverAddress)) {
@@ -54,23 +61,60 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(obj == null) return;
 				JSONObject jsonObject = (JSONObject) obj;
 
-				if(jsonObject.get("name") != null)
+				if(jsonObject.get("nodeName") == null) return;
+				String nodeName = (String)jsonObject.get("nodeName");
+
+				boolean isCentralNode;
+				if(jsonObject.get("isCentral") != null)
 				{
-					String name = (String) jsonObject.get("name");
-					nameConnections.put(name, webSocket);
-					li("Registered agent []. ", name);
+					isCentralNode = (boolean)jsonObject.get("isCentral");
+					if(isCentralNode)
+					{
+						centralNodeName = nodeName;
+						centralNodeWebSocket = webSocket;
+					}
+					nodeToWebSocket.put(nodeName, webSocket);
+					nodeToAgents.put(nodeName, new ArrayList<>());
+					li("Registered node []. ", nodeName);
 					return;
 				}
-				if(jsonObject.get("destination") == null) return;
 
-				li("Received: []. ", s);
-				String destination = (String) jsonObject.get("destination");
-				String destAgent = destination.split(
-						AgentWave.ADDRESS_SEPARATOR)[0];
-				WebSocket destinationWebSocket = nameConnections.get(destAgent);
-				if(destinationWebSocket == null) return;
+				String newAgent;
+				if(jsonObject.get("agentName") != null)
+				{
+					newAgent = (String)jsonObject.get("agentName");
+					agentToWebSocket.put(newAgent, webSocket);
+					nodeToAgents.get(nodeName).add(newAgent);
+					li("Registered agent []. ", newAgent);
+					return;
+				}
 
-				destinationWebSocket.send(s);
+				if(jsonObject.get("destination") != null) {
+					li("Received: []. ", s);
+					String destination = (String) jsonObject.get("destination");
+					String destAgent = destination.split(
+							AgentWave.ADDRESS_SEPARATOR)[0];
+					WebSocket destinationWebSocket = agentToWebSocket.get(destAgent);
+					if(destinationWebSocket == null) {
+						le("Filed to find the entity [] websocket.", destAgent);
+						return;
+					}
+					destinationWebSocket.send(s);
+				}
+
+				nodeToWebSocket.entrySet().forEach(entry->{
+					System.out.println("#nod: " + entry.getKey());
+				});
+
+				agentToWebSocket.entrySet().forEach(entry->{
+					System.out.println("#agent: " + entry.getKey());
+				});
+
+				nodeToAgents.entrySet().forEach(entry->{
+					System.out.println("#nod->ent: " + entry.getKey() + " : " + entry.getValue());
+				});
+
+				System.out.println("##CentralNode " + centralNodeName);
 			}
 			
 			@Override

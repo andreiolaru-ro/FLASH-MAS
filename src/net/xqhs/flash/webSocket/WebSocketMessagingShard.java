@@ -53,4 +53,8 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
         super.receiveMessage(source, destination, content);
     }
 
+    @Override
+    public void registerNode(String nodeName, boolean isCentral) {
+        pylon.registerNode(nodeName, isCentral);
+    }
 }

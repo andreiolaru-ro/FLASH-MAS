@@ -37,8 +37,6 @@ public class WebSocketClientProxy extends Unit {
 
             @Override
             public void onMessage(String s) {
-                li("Received: []", s);
-
                 Object obj = JSONValue.parse(s);
                 if(obj == null) return;
                 JSONObject jsonObject = (JSONObject) obj;
