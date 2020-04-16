@@ -314,8 +314,8 @@ public class NodeLoader extends Unit implements Loader<Node>
 									context.add(loaded.get(contextItem).asContext());
 							}
 							else
-								lw("Context item [] for [] []/[] not found as a loaded entity.", contextItem, catName,
-										name, kind);
+								lw("Context item [] for [] []/[]/[] not found as a loaded entity.", contextItem,
+										catName, name, kind, local_id);
 							
 					// build subordinate entities list
 					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities,
@@ -327,7 +327,7 @@ public class NodeLoader extends Unit implements Loader<Node>
 					if(loaderList != null && !loaderList.isEmpty())
 						for(Loader<?> loader : loaderList)
 						{ // try loading
-							lf("Trying to load [] [][] using []th loader for [][]", name, catName, kind,
+							lf("Trying to load []/[] [][] using []th loader for [][]", name, local_id, catName, kind,
 									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
 							if(loader.preload(entityConfig, context))
 								entity = loader.load(entityConfig, context, subEntities);
@@ -344,10 +344,12 @@ public class NodeLoader extends Unit implements Loader<Node>
 						// attempt to obtain classpath information
 						cp = Loader.autoFind(classFactory, packages, cp, kind, id, catName, checkedPaths);
 						if(cp == null)
-							le("Class for [] []/[] can not be found; tried paths ", catName, name, kind, checkedPaths);
+							le("Class for [] []/[]/[] can not be found; tried paths ", catName, name, kind, local_id,
+									checkedPaths);
 						else
 						{
-							lf("Trying to load [] [][] using default loader [], from classpath []", name, catName, kind,
+							lf("Trying to load []/[] [][] using default loader [], from classpath []", name, local_id,
+									catName, kind,
 									defaultLoader.getClass().getName(), cp);
 							// add the CP -- will be first
 							entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
@@ -359,13 +361,13 @@ public class NodeLoader extends Unit implements Loader<Node>
 					}
 					if(entity != null)
 					{
-						li("Entity [] of type [] loaded.", name, catName);
+						li("Entity []/[] of type [] loaded.", name, local_id, catName);
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						node.registerEntity(catName, entity, id);
 					}
 					else
-						le("Could not load entity [] of type [].", name, catName);
+						le("Could not load entity []/[] of type [].", name, local_id, catName);
 					lf("Loaded items:", loaded.keySet());
 				}
 			}
