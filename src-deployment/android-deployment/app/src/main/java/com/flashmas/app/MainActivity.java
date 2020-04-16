@@ -2,6 +2,7 @@ package com.flashmas.app;
 
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -15,14 +16,21 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
+import com.flashmas.lib.AgentGuiShard;
 import com.flashmas.lib.FlashManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import net.xqhs.flash.android.AndroidClassFactory;
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.util.logging.BaseLogger;
+import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -107,7 +115,32 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         MultiTreeMap configuration = new MultiTreeMap();
         configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,"CompositeAgent" + n);
         n++;
-        return new CompositeAgent(configuration);
+
+
+        MultiTreeMap guiShardTree = new MultiTreeMap();
+        MultiTreeMap shardConfig = new MultiTreeMap();
+        shardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AgentGuiShard.class.getName());
+        Log.d("getCompositeAgent", AgentGuiShard.class.getName());
+        guiShardTree.addOneTree("guiShard", shardConfig);
+        configuration.addSingleTree("shard", guiShardTree);
+        CompositeAgentLoader loader = new CompositeAgentLoader();
+        MultiTreeMap loaderConfig = new MultiTreeMap();
+        loaderConfig.add(CategoryName.PACKAGE.s(), "nothingfornow");
+        loader.configure(loaderConfig, new BaseLogger() {
+            @Override
+            public Object lr(Object o, String s, Object... objects) {
+                return null;
+            }
+
+            @Override
+            protected void l(Level level, String s, Object... objects) {
+                Log.d("Composite agents", s);
+                for (Object o : objects) {
+                    Log.d("Composite agents", o.toString());
+                }
+            }
+        }, new AndroidClassFactory());
+        return loader.load(configuration);
     }
 
     @Override
