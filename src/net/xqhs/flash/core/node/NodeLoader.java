@@ -20,6 +20,8 @@ import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -369,19 +371,25 @@ public class NodeLoader extends Unit implements Loader<Node>
 					lf("Loaded items:", loaded.keySet());
 				}
 			}
+
+			if(contextAllCat.isEmpty()) return node;
+
+			// add a proper messaging shard to any node
+			PylonProxy pylon = (PylonProxy)contextAllCat.stream().findFirst().get();
+			node.addGeneralContext(pylon);
+
+			if(node.getName() == null ||
+					!DeploymentConfiguration.isCentralNode) return node;
+
 			// delegate the central node
 			// and register the central monitoring and control entity in its context
-			if(node.getName() == null ||
-					!DeploymentConfiguration.isCentralNode ||
-					contextAllCat.isEmpty()) return node;
-
 			li("Node [] is central node.", node.getName());
-			Iterator<EntityProxy<?>> it = contextAllCat.iterator();
 			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-			centralEntity.addGeneralContext(it.next());
+			centralEntity.addGeneralContext(pylon);
 			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+
 			li("Entity [] of type [] registered.",
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 					DeploymentConfiguration.MONITORING_TYPE);

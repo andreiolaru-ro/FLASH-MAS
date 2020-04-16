@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -47,11 +51,7 @@ import net.xqhs.util.logging.Unit;
  */
 public class Node extends Unit implements Entity<Node>
 {
-	/**
-	 * The name of the node.
-	 */
-	protected String						name				= null;
-	
+	protected String						name;
 
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
@@ -65,22 +65,21 @@ public class Node extends Unit implements Entity<Node>
 
 	protected List<String>                  registeredNodes     = new LinkedList<>();
 
-	protected MessagingShard messagingShard                     = null;
+	protected MessagingShard messagingShard;
 
-	protected CentralMonitoringAndControlEntity centralMonitoringEntity   = null;
-
-	protected boolean isCentralNode                             = false;
+	protected CentralMonitoringAndControlEntity centralMonitoringEntity;
 
 	protected String centralMonitoringEntityName;
 
     protected MessageReceiver centralMessagingReceiver;
 
+    private boolean isRunning;
 
-    protected static final String SHARD_ENDPOINT                 = "control";
+    private static final String SHARD_ENDPOINT                  = "control";
 
-	private HashMap<String, List<String>> nodeToAgents           = new LinkedHashMap<>();
+	private HashMap<String, List<String>> nodeToAgents          = new LinkedHashMap<>();
 
-	protected MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
+	private MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
 		@Override
 		public boolean register(String entityName, MessageReceiver receiver) {
 			centralMonitoringEntityName = entityName;
@@ -185,7 +184,6 @@ public class Node extends Unit implements Entity<Node>
 		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		//setLoggerType(PlatformUtils.platformLogType());
-		messagingShard = new LocalPylon.SimpleLocalMessaging();
 	}
 	
 	/**
@@ -200,30 +198,12 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
-		// if(name == null) return;
-//		if(entityType.equals(SUPPORT) && entity.asContext() != null)
-//		{
-//			messagingShard.addContext(proxy);
-//			messagingShard.addGeneralContext(entity.asContext());
-//
-//			if(entity instanceof LocalSupport)
-//			{
-//				((LocalSupport) entity).setIsCentralNode(DeploymentConfiguration.isCentralNode);
-//				((LocalSupport) entity).registerNodeId(getName());
-//				isCentralNode = DeploymentConfiguration.isCentralNode;
-//				registerNodeToCentralNode();
-//			}
-//		}
-
-//		if(entityType.equals("agent"))
-//			registerAgentToCentralNode(entityName);
-//
-//		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
-//		{
-//			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
+		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
+		{
+			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
 //			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
 //			centralMonitoringEntity.startGUIBoard();
-//		}
+		}
 
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
@@ -233,7 +213,7 @@ public class Node extends Unit implements Entity<Node>
 	}
 
 	protected void registerNodeToCentralNode() {
-		if(isCentralNode) return;
+		if(centralMonitoringEntity != null) return;
 		JSONObject registerNode = new JSONObject();
 		registerNode.put("nodeName", getName());
 		messagingShard.sendMessage(
@@ -243,7 +223,7 @@ public class Node extends Unit implements Entity<Node>
 	}
 
 	protected void registerAgentToCentralNode(String agentName) {
-		if(isCentralNode) return;
+		if(centralMonitoringEntity != null) return;
 		JSONObject registerAgent = new JSONObject();
 		registerAgent.put("agentName", agentName);
 		registerAgent.put("nodeName", getName());
@@ -266,6 +246,7 @@ public class Node extends Unit implements Entity<Node>
 			else
 				le("failed to start entity [].", entityName);
 		}
+		isRunning = true;
 		li("Node [] started.", name);
 		return true;
 	}
@@ -285,6 +266,7 @@ public class Node extends Unit implements Entity<Node>
 				else
 					le("failed to stop entity.");
 			}
+		isRunning = false;
 		li("Node [] stopped.", name);
 		return true;
 	}
@@ -292,8 +274,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean isRunning()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return isRunning;
 	}
 	
 	@Override
@@ -312,8 +293,24 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		// unsupported
-		return false;
+		PylonProxy pylonProxy = (PylonProxy)context;
+		String recommendedShard = pylonProxy
+				.getRecommendedShardImplementation(
+						AgentShardDesignation.standardShard(
+								AgentShardDesignation.StandardAgentShard.MESSAGING));
+		try
+		{
+			messagingShard = (MessagingShard) PlatformUtils
+					.getClassFactory()
+					.loadClassInstance(recommendedShard, null, true);
+		} catch(ClassNotFoundException
+				| InstantiationException | NoSuchMethodException
+				| IllegalAccessException | InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		messagingShard.addContext(proxy);
+		return messagingShard.addGeneralContext(context);
 	}
 	
 	@Override
@@ -337,9 +334,6 @@ public class Node extends Unit implements Entity<Node>
 		return null;
 	}
 
-	/*
-	 * Return the local proxy to the this node.
-	 */
 	public EntityProxy<Node> asPowerfulContext() {
 		return powerfulProxy;
 	}
