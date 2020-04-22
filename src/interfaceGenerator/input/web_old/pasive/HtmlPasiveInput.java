@@ -1,6 +1,6 @@
-package interfaceGenerator.input.web.pasive;
+package interfaceGenerator.input.web_old.pasive;
 
-import interfaceGenerator.input.web.Runner;
+import interfaceGenerator.input.web_old.Runner;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
