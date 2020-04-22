@@ -2,15 +2,12 @@ package interfaceGenerator.input.web;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-
-import java.util.Map;
 
 public class Runner extends AbstractVerticle {
     @Override
@@ -31,18 +28,13 @@ public class Runner extends AbstractVerticle {
                     System.out.println("register");
                     vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
                         if (objectMessage.body().equals("init")) {
-                            vertx.eventBus().send("server-to-client", "PLM");
-
+                            vertx.eventBus().send("server-to-client", "yes");
                         } else if (objectMessage.body().equals("stop")) {
                             vertx.close();
                         } else {
-                            JsonObject command = new JsonObject((String) objectMessage.body());
-                            Map.Entry<String, Object> entryIterator = command.iterator().next();
-                            //entity.commandAgent(entryIterator.getKey(), (String) entryIterator.getValue());
+                            String input = (String) objectMessage.body();
+                            System.out.println(input);
                         }
-                    });
-                    vertx.setPeriodic(10000l, t -> {
-                        vertx.eventBus().send("server-to-client", "plm");
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {
                     System.out.println("unregister");
@@ -55,7 +47,7 @@ public class Runner extends AbstractVerticle {
 
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
                 be.complete(true);
             }
@@ -73,6 +65,6 @@ public class Runner extends AbstractVerticle {
 
     @Override
     public void stop(Future<Void> stopFuture) throws Exception {
-        System.out.println("HTTP server stoped");
+        System.out.println("HTTP server stopped");
     }
 }
