@@ -60,7 +60,9 @@ public class Runner extends AbstractVerticle {
                 be.complete(true);
             }
         }));
-        router.route().handler(StaticHandler.create("src/web").setIndexPage("index.html"));
+        router.route()
+                .handler(StaticHandler.create("src/interfaceGenerator/input/web")
+                        .setIndexPage("index.html"));
         vertx.createHttpServer().requestHandler(router).listen(8080, http -> {
             if (http.succeeded())
                 System.out.println("HTTP server started on port 8080");
