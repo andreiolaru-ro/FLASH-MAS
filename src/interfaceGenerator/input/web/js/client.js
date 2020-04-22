@@ -1,5 +1,4 @@
 var eb;
-var agents_number = 0;
 var agents_index = {};
 
 function init() {
@@ -12,52 +11,6 @@ function init() {
             var header = document.getElementById('header');
             var body = document.getElementById('body');
             console.log(agents_info)
-            /*
-            if(agents_number === 0) {
-                if(jQuery.isEmptyObject(agents_info))
-                    header.innerText = 'No agents Found';
-                else {
-                    header.innerText = 'Agents:';
-                    index = 1;
-                    for(var agent_name in agents_info) {
-                        agent_entry(body, agent_name, agents_info[agent_name], index);
-                        index += 1;
-                    }
-                    agents_number = index - 1;
-                }
-            } else if(jQuery.isEmptyObject(agents_info)) {
-                header.innerText = 'No agents Found';
-                body.innerHTML = '';
-            } else {
-                console.log(agents_number);
-                for(var index = 1; index <= agents_number; index += 1) {
-                    agent_name = agents_index[index];
-                    if(agents_info.hasOwnProperty(agent_name)) {
-                        document.getElementById('status_' + index).innerText = agents_info[agent_name];
-                        delete agents_info[agent_name];
-                    }
-                    else {
-                        if(index == agents_number)
-                            body.removeChild(document.getElementById(agent_name));
-                        else {
-                            document.getElementById('status_' + index).innerText = document.getElementById('status_' + agents_number).innerText;
-                            document.getElementById(agents_index[agents_number]).remove();
-                            document.getElementById(agent_name).children[0].innerText = 'Agent ' + agents_index[agents_number] + ' is ';
-                            document.getElementById(agent_name).setAttribute('id', agents_index[agents_number]);
-                            agents_index[index] = agents_index[agents_number];
-                            index -= 1;
-                        }
-                        delete agents_index[agents_number];
-                        agents_number -= 1;
-                    }
-                }
-                index = agents_number + 1;
-                for(var agent_name in agents_info) {
-                    agent_entry(body, agent_name, agents_info[agent_name], index);
-                    index += 1;
-                }
-                agents_number = index - 1;
-            } */
         });
         eb.send('client-to-server', "init");
     };
@@ -113,6 +66,8 @@ function send(index) {
         alert('Agnet ' + agents_index[index] + ' is allready ' + status);
     else
         eb.send('client-to-server', '{\"' + agents_index[index] + '\":\"' + command + '\"}');
+
+    eb.send('client-to-server', "plm");
 }
 
 function check_for_reload() {
@@ -121,4 +76,8 @@ function check_for_reload() {
 
 function stop() {
     eb.send('client-to-server', 'stop');
+}
+
+function send_data(data) {
+
 }

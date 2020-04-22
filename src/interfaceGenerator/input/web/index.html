@@ -11,14 +11,9 @@
 
 <body onload="init();">
 
-<h3 id="header"></h3>
-<button id="check_for_reload" onclick="check_for_reload()">Check for reload</button>
-<button onclick="stop()">Stop server</button>
-<form id="body"></form>
-
-<label for="name">Enter data</label>
+<label>Enter data</label>
 <input id="active_input" name="active_input" type="text"/>
-<button onclick="getFormText()" type="submit">Send data to agent</button>
+<button onclick="send_data()" type="submit">Send data to agent</button>
 
 </body>
 
