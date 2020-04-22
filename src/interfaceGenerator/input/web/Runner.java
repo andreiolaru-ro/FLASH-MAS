@@ -1,67 +1,76 @@
 package interfaceGenerator.input.web;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.bridge.BridgeEventType;
+import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.function.Consumer;
+import java.util.Map;
 
-public class Runner {
-
-    private static final String WEB_EXAMPLES_JAVA_DIR = "src/";
-
-    public static void runExample(Class clazz) {
-        runExample(WEB_EXAMPLES_JAVA_DIR, clazz, new VertxOptions().setClustered(false), null);
-    }
-
-    public static void runExample(String exampleDir, Class clazz, VertxOptions options, DeploymentOptions
-            deploymentOptions) {
-        System.out.println(clazz.getPackage().getName());
-        System.out.println(exampleDir + clazz.getPackage().getName().replace(".", "/"));
-        runExample(exampleDir + clazz.getPackage().getName().replace(".", "/"), clazz.getName(), options, deploymentOptions);
-    }
-
-
-    public static void runExample(String exampleDir, String verticleID, VertxOptions options, DeploymentOptions deploymentOptions) {
-        if (options == null) {
-            options = new VertxOptions();
-        }
-
-        try {
-            File current = new File(".").getCanonicalFile();
-            if (exampleDir.startsWith(current.getName()) && !exampleDir.equals(current.getName())) {
-                exampleDir = exampleDir.substring(current.getName().length() + 1);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.setProperty("vertx.cwd", exampleDir);
-        Consumer<Vertx> runner = vertx -> {
+public class Runner extends AbstractVerticle {
+    @Override
+    public void start(Future<Void> startFuture) throws Exception {
+        Router router = Router.router(vertx);
+        SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
+        BridgeOptions options = new BridgeOptions()
+                .addOutboundPermitted(new PermittedOptions()
+                        .setAddress("server-to-client"))
+                .addInboundPermitted(new PermittedOptions()
+                        .setAddress("client-to-server"));
+        // mount the bridge on the router
+        router.mountSubRouter("/eventbus", sockJSHandler.bridge(options, be -> {
             try {
-                if (deploymentOptions != null) {
-                    vertx.deployVerticle(verticleID, deploymentOptions);
-                } else {
-                    vertx.deployVerticle(verticleID);
+                if (be.type() == BridgeEventType.SOCKET_CREATED) {
+                    System.out.println("created");
+                } else if (be.type() == BridgeEventType.REGISTER) {
+                    System.out.println("register");
+                    vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
+                        if (objectMessage.body().equals("init")) {
+                            vertx.eventBus().send("server-to-client", "PLM");
+
+                        } else if (objectMessage.body().equals("stop")) {
+                            vertx.close();
+                        } else {
+                            JsonObject command = new JsonObject((String) objectMessage.body());
+                            Map.Entry<String, Object> entryIterator = command.iterator().next();
+                            //entity.commandAgent(entryIterator.getKey(), (String) entryIterator.getValue());
+                        }
+                    });
+                    vertx.setPeriodic(10000l, t -> {
+                        vertx.eventBus().send("server-to-client", "plm");
+                    });
+                } else if (be.type() == BridgeEventType.UNREGISTER) {
+                    System.out.println("unregister");
+                } else if (be.type() == BridgeEventType.SOCKET_CLOSED) {
+                    System.out.println("closed");
+                } else if (be.type() == BridgeEventType.SEND) {
+                    System.out.println("client-message");
+                } else if (be.type() == BridgeEventType.RECEIVE) {
+                    System.out.println("server-message");
+
                 }
-            } catch (Throwable t) {
-                t.printStackTrace();
+            } catch (Exception e) {
+
+            } finally {
+                be.complete(true);
             }
-        };
-        if (options.isClustered()) {
-            Vertx.clusteredVertx(options, res -> {
-                if (res.succeeded()) {
-                    Vertx vertx = res.result();
-                    runner.accept(vertx);
-                } else {
-                    res.cause().printStackTrace();
-                }
-            });
-        } else {
-            Vertx vertx = Vertx.vertx(options);
-            runner.accept(vertx);
-        }
+        }));
+        router.route().handler(StaticHandler.create("src/web").setIndexPage("index.html"));
+        vertx.createHttpServer().requestHandler(router).listen(8080, http -> {
+            if (http.succeeded())
+                System.out.println("HTTP server started on port 8080");
+            else
+                System.out.println("HTTP server failed to start on port 8080");
+        });
+    }
+
+    @Override
+    public void stop(Future<Void> stopFuture) throws Exception {
+        System.out.println("HTTP server stoped");
     }
 }

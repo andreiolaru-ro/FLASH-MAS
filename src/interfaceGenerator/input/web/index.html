@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Input</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
+    <script src="js/vertx-eventbus.js"></script>
+    <script src="js/client.js"></script>
+</head>
+
+<body onload="init();">
+
+<h3 id="header"></h3>
+<button id="check_for_reload" onclick="check_for_reload()">Check for reload</button>
+<button onclick="stop()">Stop server</button>
+<form id="body"></form>
+
+<label for="name">Enter data</label>
+<input id="active_input" name="active_input" type="text"/>
+<button onclick="getFormText()" type="submit">Send data to agent</button>
+
+</body>
+
+</html>
