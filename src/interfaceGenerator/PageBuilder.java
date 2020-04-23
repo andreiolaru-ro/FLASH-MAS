@@ -14,6 +14,11 @@ public class PageBuilder {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
 
+        // generating ids for every element in configuration
+        var configuration = data.getNode();
+        configuration = IdGenerator.attributeIds(configuration);
+        System.out.println(configuration);
+
         if (type != null) {
             switch (type) {
                 case HTML:
