@@ -2,6 +2,7 @@ package interfaceGenerator;
 
 import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
@@ -33,5 +34,14 @@ public class GUIShard extends AgentShardCore {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public AgentWave getInput(String portName) {
+        AgentWave event = null;
+        return event;
+    }
+
+    public void sendOutput(AgentWave agentWave) {
+
     }
 }

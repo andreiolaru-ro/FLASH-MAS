@@ -2,7 +2,10 @@ package interfaceGenerator;
 
 import interfaceGenerator.types.ElementType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Element {
     private String id;
@@ -10,6 +13,8 @@ public class Element {
     private String type = ElementType.BLOCK.type;
     private Map<String, String> properties = new HashMap<>();
     private String text;
+    private String port;
+    private String role;
 
     public List<Element> getChildren() {
         return children;
@@ -51,31 +56,33 @@ public class Element {
         this.text = text;
     }
 
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @Override
     public String toString() {
+        // TODO toString with tabs, recursively
         return "Element{" +
-                "name='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", children=" + children +
                 ", type='" + type + '\'' +
                 ", properties=" + properties +
                 ", text='" + text + '\'' +
+                ", port='" + port + '\'' +
+                ", role='" + role + '\'' +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Element)) return false;
-        Element element = (Element) o;
-        return Objects.equals(id, element.id) &&
-                Objects.equals(children, element.children) &&
-                Objects.equals(type, element.type) &&
-                Objects.equals(properties, element.properties) &&
-                Objects.equals(text, element.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, children, type, properties, text);
     }
 }
