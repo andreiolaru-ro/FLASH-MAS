@@ -65,6 +65,7 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
     {
         if(event instanceof AgentWave){
             if(((AgentWave) event).getCompleteSource().equals( "Master" )) {
+                //printMessage(event);
                 primeNumbersLimit = Integer.parseInt(
                         ((AgentWave) event).getContent());
                 isWaiting = false;

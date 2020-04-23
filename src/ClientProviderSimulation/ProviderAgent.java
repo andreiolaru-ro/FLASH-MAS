@@ -67,7 +67,7 @@ public class ProviderAgent implements Agent {
                     setCurrentCustomer(((AgentWave) event).getCompleteSource());
                     acceptJob(event);
                     //CALL THE NEEDED SHARD IN RUN FOR IT TO RUN ON A THREAD
-                    service = event.get(((AgentWave) event).getContent());
+                    service = ((AgentWave) event).getContent();
                     setIsWaiting(false);
                     providerLock.notify();
                 }
@@ -170,7 +170,9 @@ public class ProviderAgent implements Agent {
                     }
 
                 }
-                startShardForService(service);
+                if (!service.equals("") ) {
+                    startShardForService(service);
+                }
 
             }
         }
@@ -319,6 +321,9 @@ public class ProviderAgent implements Agent {
     }
 
     private void startShardForService(String requestedService) {
+        if (service.equals("")) {
+            return;
+        }
         ProviderServices service = ProviderServices.valueOf(requestedService);
         AgentShardCore shard = shardsByService.get(service);
 

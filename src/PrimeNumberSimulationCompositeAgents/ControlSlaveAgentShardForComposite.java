@@ -62,6 +62,7 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
     public void signalAgentEvent(AgentEvent event) {
         if(event instanceof AgentWave){
             if (((AgentWave) event).getCompleteDestination().equals("Master")) {
+                //printMessage(event);
                 decrementSlaveAgentCount();
                 if (slaveAgentsCount == 0) {
                     long elapsedTime = System.nanoTime() - startTime;
