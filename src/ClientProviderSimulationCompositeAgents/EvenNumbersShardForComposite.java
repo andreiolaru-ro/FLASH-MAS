@@ -28,6 +28,7 @@ public class EvenNumbersShardForComposite extends AgentShardCore {
 
     private MessagingPylonProxy pylon;
     public static final String EVEN_NUMBERS_COUNT = ProviderServices.EVEN_NUMBERS.toString();
+    public static String EVEN_NUMBERS_SHARD_DESIGNATION = "Even numbers shard designation";
     public static final int MAX_LIMIT = 10;
 
     private String parentAgentName = "";

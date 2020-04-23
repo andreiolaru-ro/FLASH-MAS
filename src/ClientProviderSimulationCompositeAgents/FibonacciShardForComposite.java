@@ -30,6 +30,7 @@ public class FibonacciShardForComposite extends AgentShardCore {
     private MessagingPylonProxy pylon;
     public static final String FIBONACCI_VALUE  = ProviderServices.FIBONACCI.toString();
     public static final int MAX_LIMIT = 10;
+    public static String FIBONACCI_SHARD_DESIGNATION = "Fibonacci shard designation";
 
     private String parentAgentName = "";
     private String clientName = "";

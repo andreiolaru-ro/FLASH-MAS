@@ -36,6 +36,8 @@ public class OddNumbersShardForComposite extends AgentShardCore {
     private String parentAgentName = "";
     private String clientName = "";
     private boolean isWaiting = true;
+    public static String ODD_NUMBERS_SHARD_DESIGNATION = "Odd numbers shard designation";
+
 
 
     public void findOddNumbersCount() {

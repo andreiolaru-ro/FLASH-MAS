@@ -34,6 +34,8 @@ public class QuadraticEquationSolverShardForComposite extends AgentShardCore {
     private MessagingPylonProxy pylon;
     public static final String EQUATION_ROOTS  = ProviderServices.QUADRATIC_EQUATIONS.toString();
     public static final int MAX_LIMIT = 10;
+    public static String QUADRATIC_EQUATION_SHARD_DESIGNATION = "Quadratic equation shard designation";
+
 
     private String parentAgentName = "";
     private String clientName = "";

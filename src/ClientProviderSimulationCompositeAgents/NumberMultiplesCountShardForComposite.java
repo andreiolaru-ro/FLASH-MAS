@@ -32,6 +32,8 @@ public class NumberMultiplesCountShardForComposite extends AgentShardCore {
     public static final String NUMBER_MULTIPLES_COUNT  = ProviderServices.NUMBER_MULTIPLES.toString();
     public static  final int MAX_LIMIT = 10;
     public static  final int MAX_NUMBER = 100;
+    public static String NUMBER_MULTIPLES_SHARD_DESIGNATION = "Number multiples shard designation";
+
 
     private String parentAgentName = "";
     private String clientName = "";
