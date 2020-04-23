@@ -10,7 +10,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class AgentGUI implements Agent {
     private static final String name = "AgentGUI";
     private String interfaceConfiguration;
-    private GuiShard guiShard;
+    private GUIShard guiShard;
     private PylonProxy pylon;
 
     public AgentGUI(MultiTreeMap configuration) {
@@ -22,7 +22,7 @@ public class AgentGUI implements Agent {
         // System.out.println(guiTrees.get(0).getSingleTree("config").getHierarchicalNames());
         // System.out.println(guiTrees.get(0).getSingleTree("config").getHierarchicalNames().get(0));
         this.interfaceConfiguration = guiTrees.get(0).getSingleTree("config").getHierarchicalNames().get(0);
-        this.guiShard = new GuiShard();
+        this.guiShard = new GUIShard();
     }
 
     @Override

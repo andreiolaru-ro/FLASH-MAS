@@ -5,12 +5,12 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
-public class GuiShard extends AgentShardCore {
-    protected GuiShard(AgentShardDesignation designation) {
+public class GUIShard extends AgentShardCore {
+    protected GUIShard(AgentShardDesignation designation) {
         super(designation);
     }
 
-    public GuiShard() {
+    public GUIShard() {
         super(AgentShardDesignation.autoDesignation("GUI"));
     }
 

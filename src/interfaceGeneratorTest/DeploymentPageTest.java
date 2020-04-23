@@ -18,7 +18,7 @@ public class DeploymentPageTest {
 
         test_args += " -package interfaceGenerator -loader agent:composite";
         test_args += " -agent composite:AgentA";
-        test_args += " -shard GuiShard";
+        test_args += " -shard GUIShard";
         test_args += " -config";
 
         var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
