@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -44,6 +45,7 @@ public class MasterAgent implements Agent {
             }
 
             decrement();
+            //printMessage(event);
             if(slaveAgentsCount == 0) {
                 long elapsedTime = System.nanoTime() - startTime;
                 System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
@@ -159,5 +161,11 @@ public class MasterAgent implements Agent {
         if(pylon != null)
             messagingShard.addGeneralContext(pylon);
         return true;
+    }
+
+    private void printMessage(AgentEvent event) {
+        System.out.println("["+getName()+"] " + ((AgentWave) event).getContent() +
+                " de la " + ((AgentWave) event).getCompleteSource()+ " la " +
+                ((AgentWave) event).getCompleteDestination());
     }
 }

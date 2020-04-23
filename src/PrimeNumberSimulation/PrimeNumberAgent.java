@@ -29,6 +29,7 @@ public class PrimeNumberAgent implements Agent{
                 primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
                 getMessagingShard().sendMessage(  name, "Master",    Integer.toString(primeNumbersCount));
             } else {
+                //printMessage(event);
                 primeNumbersLimit = Integer.parseInt(
                         ((AgentWave) event).getContent());
                 isWaitng = false;
@@ -154,6 +155,12 @@ public class PrimeNumberAgent implements Agent{
         if(pylon != null)
             messagingShard.addGeneralContext(pylon);
         return true;
+    }
+
+    private void printMessage(AgentEvent event) {
+        System.out.println("["+getName()+"] " + ((AgentWave) event).getContent() +
+                " de la " + ((AgentWave) event).getCompleteSource()+ " la " +
+                ((AgentWave) event).getCompleteDestination());
     }
 
 }
