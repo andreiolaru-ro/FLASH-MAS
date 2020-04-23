@@ -1,7 +1,9 @@
 package ClientProviderSimulationCompositeAgents;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 
 public class UserRequestShardForComposite extends AgentShardCore {
     /**
@@ -15,9 +17,20 @@ public class UserRequestShardForComposite extends AgentShardCore {
      * Event registration is not dependent on the parent, so it can be performed in the constructor or in the
      * {@link #shardInitializer()} method.
      *
-     * @param designation - the designation of the shard, as instance of {@link StandardAgentShard}.
+     * @param designation - the designation of the shard, as instance of {@link AgentShardDesignation.StandardAgentShard}.
      */
     protected UserRequestShardForComposite(AgentShardDesignation designation) {
         super(designation);
+    }
+
+    private MessagingPylonProxy pylon;
+    public static String USER_REQUEST_SHARD_DESIGNATION = "User request shard designation";
+
+    @Override
+    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if(!(context instanceof MessagingPylonProxy))
+            throw new IllegalStateException("Pylon Context is not of expected type.");
+        pylon = (MessagingPylonProxy) context;
+        return true;
     }
 }

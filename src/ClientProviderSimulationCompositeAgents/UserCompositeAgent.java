@@ -26,6 +26,7 @@ public class UserCompositeAgent extends CompositeAgent {
     private HashMap<ProviderServices, Boolean> solvedRequests = new HashMap<ProviderServices, Boolean>();
     private int initialRequestsCount = 0;
     private static final String supervisorName = "Supervisor";
+    private int requestsCount  = 0;
 
     public UserCompositeAgent(MultiTreeMap configuration) {
         super(configuration);
@@ -37,6 +38,12 @@ public class UserCompositeAgent extends CompositeAgent {
             addShard(shard);
         }
     }
+
+    public void addRequest(ProviderServices request) {
+        unplacedRequests.put(request, false);
+        requestsCount++;
+    }
+
 
 
 
