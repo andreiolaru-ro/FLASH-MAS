@@ -1,8 +1,8 @@
 package net.xqhs.flash.core.agent;
 
-import java.util.Arrays;
-
 import net.xqhs.flash.core.util.MultiValueMap;
+
+import java.util.Arrays;
 
 /**
  * The <i>wave</i> is a type of event that conveys information between two entities, whether these entities are agents,
@@ -68,19 +68,27 @@ public class AgentWave extends AgentEvent
 	public final String			DESTINATION_ELEMENT		= "destination-element";
 	
 	/**
-	 * Creates an agent wave with a <b>single</b> destination.
-	 * <p>
-	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
+	 * Creates an agent wave with <b>no</b> destination.
 	 * 
 	 * @param content
 	 *                                - the content of the wave.
-	 * @param destinationRoot
-	 *                                - the first element of the destination endpoint.
-	 * @param destinationElements
-	 *                                - other elements of the destination endpoint.
 	 */
-	public AgentWave(String content, String destinationRoot, String... destinationElements)
+	public AgentWave(String content)
 	{
+		super(AgentEventType.AGENT_WAVE);
+		add(CONTENT, content);
+	}
+
+	/**
+	 * Creates an agent wave with a <b>single</b> destination.
+	 * <p>
+	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
+	 *
+	 * @param content             - the content of the wave.
+	 * @param destinationRoot     - the first element of the destination endpoint.
+	 * @param destinationElements - other elements of the destination endpoint.
+	 */
+	public AgentWave(String content, String destinationRoot, String... destinationElements) {
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
 		resetDestination(destinationRoot, destinationElements);
