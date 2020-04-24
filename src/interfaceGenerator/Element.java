@@ -100,6 +100,21 @@ public class Element {
         return map;
     }
 
+    public static List<Element> findElementsByPort(Element element, String portName) {
+        List<Element> elements = new ArrayList<>();
+        if (element.getPort() != null) {
+            if (element.getPort().equals(portName)) {
+                elements.add(element);
+            }
+        }
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                elements.addAll(findElementsByPort(child, portName));
+            }
+        }
+        return elements;
+    }
+
     @Override
     public String toString() {
         String tab = "\t";

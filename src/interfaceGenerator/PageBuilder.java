@@ -10,12 +10,19 @@ import javax.swing.*;
 import java.io.*;
 
 public class PageBuilder {
+    private static Element page = null;
+
+    public static Element getPage() {
+        return page;
+    }
+
     public static Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
 
         // generating ids for every element in configuration
         var configuration = IdGenerator.attributeIds(data.getNode());
+        page = configuration;
         // System.out.println(configuration);
 
         // checking the active ports, with their elements

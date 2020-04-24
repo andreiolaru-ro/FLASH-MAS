@@ -49,7 +49,7 @@ public class GUIShard extends AgentShardCore {
 
             // TODO: AgentWave content
 
-            AgentWave activeInput = new AgentWave(null, "/");
+            AgentWave activeInput = new AgentWave("null", "/");
             activeInput.addSourceElementFirst("/gui/port");
 
             context.postAgentEvent(activeInput);
@@ -58,11 +58,14 @@ public class GUIShard extends AgentShardCore {
 
     public AgentWave getInput(String portName) {
         // TODO: pasive input
-        AgentWave event = null;
+        var elements = Element.findElementsByPort(PageBuilder.getPage(), portName);
+        AgentWave event = new AgentWave(null);
         return event;
     }
 
     public void sendOutput(AgentWave agentWave) {
         // TODO: output port
+        var port = agentWave.getCompleteDestination();
+        var content = agentWave.getContent();
     }
 }
