@@ -74,17 +74,17 @@ public class Element {
     /*
         area for active input ports
      */
-    private static HashMap<String, List<Element>> map = new HashMap<>();
+    private static HashMap<String, List<Element>> activePorts = new HashMap<>();
 
     public static void checkActivePorts(Element element) {
         if (element.getPort() != null) {
             if (element.getRole().equals(PortType.ACTIVE.type)) {
-                if (map.containsKey(element.getPort())) {
-                    var value = map.get(element.getPort());
+                if (activePorts.containsKey(element.getPort())) {
+                    var value = activePorts.get(element.getPort());
                     value.add(element);
-                    map.put(element.getPort(), value);
+                    activePorts.put(element.getPort(), value);
                 } else {
-                    map.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
+                    activePorts.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
                 }
             }
         }
@@ -96,8 +96,8 @@ public class Element {
         }
     }
 
-    public static HashMap<String, List<Element>> getPorts() {
-        return map;
+    public static HashMap<String, List<Element>> getActivePorts() {
+        return activePorts;
     }
 
     public static List<Element> findElementsByPort(Element element, String portName) {

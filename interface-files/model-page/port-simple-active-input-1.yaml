@@ -1,0 +1,9 @@
+platformType: desktop
+node:
+  children:
+    - type: form
+      port: port1
+      role: activate
+    - type: button
+      port: port1
+      role: activate

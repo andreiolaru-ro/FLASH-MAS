@@ -2,6 +2,7 @@ package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.types.ElementType;
+import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.PylonProxy;
 
@@ -41,6 +42,11 @@ public class WebUiPylon implements PylonProxy {
         var elementType = ElementType.valueOfLabel(type);
         if (elementType != null) {
             var tag = getTag(elementType);
+
+            if (element.getRole().equals(PortType.ACTIVE.type)) {
+                // TODO: add callback functionality if role is activate for button
+                // TODO: check for form / spinner in the same port
+            }
 
             if (element.getProperties() == null || element.getProperties().isEmpty()) {
                 result.append(tab.repeat(indentLevel))
