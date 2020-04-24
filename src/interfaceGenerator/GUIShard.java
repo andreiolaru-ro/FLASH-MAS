@@ -47,19 +47,29 @@ public class GUIShard extends AgentShardCore {
             var port = entry.getKey();
             var elementsList = entry.getValue();
 
-            // TODO: AgentWave content
-
-            AgentWave activeInput = new AgentWave("null", "/");
+            // initially, no content
+            AgentWave activeInput = new AgentWave(null, "/");
             activeInput.addSourceElementFirst("/gui/port");
 
+            for (var value : elementsList) {
+                activeInput.addContent(value.toString());
+            }
+
+            // TODO: check why event isn't in event queue
             context.postAgentEvent(activeInput);
         }
     }
 
     public AgentWave getInput(String portName) {
         // TODO: pasive input
+
         var elements = Element.findElementsByPort(PageBuilder.getPage(), portName);
-        AgentWave event = new AgentWave(null);
+        AgentWave event = new AgentWave();
+
+        for (var element : elements) {
+            event.addContent(element.toString());
+        }
+
         return event;
     }
 
