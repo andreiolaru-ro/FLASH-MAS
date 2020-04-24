@@ -15,9 +15,11 @@ public class PageBuilder {
         var type = PlatformType.valueOfLabel(platformType);
 
         // generating ids for every element in configuration
-        var configuration = data.getNode();
-        configuration = IdGenerator.attributeIds(configuration);
-        System.out.println(configuration);
+        var configuration = IdGenerator.attributeIds(data.getNode());
+        // System.out.println(configuration);
+
+        // checking the active ports, with their elements
+        Element.checkActivePorts(configuration);
 
         if (type != null) {
             switch (type) {

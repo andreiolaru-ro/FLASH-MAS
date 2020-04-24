@@ -34,14 +34,35 @@ public class GUIShard extends AgentShardCore {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // active input
+
+        // shard context
+        var context = super.getAgent();
+        // System.err.println(context.getClass());
+
+        // hashmap with ports and their elements
+        var portsWithElements = Element.getPorts();
+        for (var entry : portsWithElements.entrySet()) {
+            var port = entry.getKey();
+            var elementsList = entry.getValue();
+
+            // TODO: AgentWave content
+
+            AgentWave activeInput = new AgentWave(null, "/");
+            activeInput.addSourceElementFirst("/gui/port");
+
+            context.postAgentEvent(activeInput);
+        }
     }
 
     public AgentWave getInput(String portName) {
+        // TODO: pasive input
         AgentWave event = null;
         return event;
     }
 
     public void sendOutput(AgentWave agentWave) {
-
+        // TODO: output port
     }
 }
