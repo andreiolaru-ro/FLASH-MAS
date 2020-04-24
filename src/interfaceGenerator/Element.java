@@ -1,11 +1,9 @@
 package interfaceGenerator;
 
 import interfaceGenerator.types.ElementType;
+import interfaceGenerator.types.PortType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Element {
     private String id;
@@ -72,17 +70,58 @@ public class Element {
         this.role = role;
     }
 
+    private static int counter = 0;
+    /*
+        area for active input ports
+     */
+    private static HashMap<String, List<Element>> map = new HashMap<>();
+
+    public static void checkActivePorts(Element element) {
+        if (element.getPort() != null) {
+            if (element.getRole().equals(PortType.ACTIVE.type)) {
+                if (map.containsKey(element.getPort())) {
+                    var value = map.get(element.getPort());
+                    value.add(element);
+                    map.put(element.getPort(), value);
+                } else {
+                    map.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
+                }
+            }
+        }
+
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                checkActivePorts(child);
+            }
+        }
+    }
+
+    public static HashMap<String, List<Element>> getPorts() {
+        return map;
+    }
+
     @Override
     public String toString() {
-        // TODO toString with tabs, recursively
-        return "Element{" +
-                "id='" + id + '\'' +
-                ", children=" + children +
-                ", type='" + type + '\'' +
-                ", properties=" + properties +
-                ", text='" + text + '\'' +
-                ", port='" + port + '\'' +
-                ", role='" + role + '\'' +
-                '}';
+        String tab = "\t";
+        StringBuilder result = new StringBuilder();
+        result.append(tab.repeat(counter)).append("id: ").append(id).append('\n');
+        result.append(tab.repeat(counter)).append("type: ").append(type).append('\n');
+        result.append(tab.repeat(counter)).append("port: ").append(port).append('\n');
+        result.append(tab.repeat(counter)).append("role: ").append(role).append('\n');
+        result.append(tab.repeat(counter)).append("children: ");
+        if (children != null) {
+            if (children.isEmpty()) {
+                result.append("[]").append('\n');
+            } else {
+                result.append('\n');
+                ++Element.counter;
+                for (var child : children) {
+                    result.append(child.toString());
+                }
+                --Element.counter;
+            }
+        }
+        result.append('\n');
+        return result.toString();
     }
 }

@@ -1,15 +1,13 @@
-platformType: desktop
-node:
-  children:
+platformType: desktop # gotta delete it later
+node: # node is the root of the page
+  children: # list of elements from page
     - type: form
-      port: port1
-      role: activate
+      port: port1 # name of active input port the element is part of
+      role: activate # so the port is the active input
     - type: button
       port: port1
       role: activate
-    - type: block
-      port: port1
-      role: activate
+    - role: activate
       children:
         - type: form
           port: port2
@@ -17,3 +15,6 @@ node:
         - type: button
           port: port2
           role: activate
+        - type: label
+          port: port5
+          role: some-text # not active input
