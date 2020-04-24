@@ -66,17 +66,14 @@ public class AgentWave extends AgentEvent
 	 * The name associated with the elements of one of the destinations.
 	 */
 	public final String			DESTINATION_ELEMENT		= "destination-element";
-	
+
 	/**
-	 * Creates an agent wave with <b>no</b> destination.
-	 * 
-	 * @param content
-	 *                                - the content of the wave.
+     * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
+     *
 	 */
-	public AgentWave(String content)
+    public AgentWave()
 	{
 		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
 	}
 
 	/**
@@ -90,9 +87,23 @@ public class AgentWave extends AgentEvent
 	 */
 	public AgentWave(String content, String destinationRoot, String... destinationElements) {
 		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
+        if (content != null) {
+            add(CONTENT, content);
+        }
 		resetDestination(destinationRoot, destinationElements);
 	}
+
+    /**
+     * Creates an agent wave with <b>no</b> destination.
+     * <p>
+     * A <i>complete</i> destination will be added by assembling the elements of the destination..
+     *
+     * @param content - the content of the wave.
+     */
+    public AgentWave(String content) {
+        super(AgentEventType.AGENT_WAVE);
+        add(CONTENT, content);
+    }
 	
 	/**
 	 * Appends elements to the list of source endpoint elements.
@@ -181,10 +192,18 @@ public class AgentWave extends AgentEvent
 	/**
 	 * Removes the first element in the list of destination endpoint elements.
 	 */
-	public void removeFirstDestinationElement()
-	{
-		removeFirst(DESTINATION_ELEMENT);
-	}
+	public void removeFirstDestinationElement() {
+        removeFirst(DESTINATION_ELEMENT);
+    }
+
+    /**
+     * Adds content to wave.
+     *
+     * @param content - content to be added.
+     */
+    public void addContent(String content) {
+        add(CONTENT, content);
+    }
 	
 	/**
 	 * @return the content of the wave.
