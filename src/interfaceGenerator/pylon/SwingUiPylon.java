@@ -2,6 +2,7 @@ package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.types.ElementType;
+import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.PylonProxy;
 
@@ -71,11 +72,36 @@ public class SwingUiPylon implements PylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         JButton button = new JButton();
+
         if (element.getText() != null) {
             button.setText(element.getText());
         } else {
             button.setText(element.getId());
         }
+
+        if (element.getRole().equals(PortType.ACTIVE.type)) {
+            // TODO: add callback functionality if role is activate
+            // TODO: check for form / spinner in the same port
+            button.addActionListener(e -> {
+                var port = element.getPort();
+                var activePorts = Element.getActivePorts();
+                var elements = activePorts.get(port);
+
+                String inputId = null;
+
+                for (var elem : elements) {
+                    if (elem.getType().equals(ElementType.SPINNER.type)
+                            || elem.getType().equals(ElementType.FORM.type)) {
+                        inputId = elem.getId();
+                    }
+                }
+
+                if (inputId != null) {
+                    // TODO: search for the element with the respective id
+                }
+            });
+        }
+
         panel.add(button);
         panel.putClientProperty(element.getId(), button);
         return panel;

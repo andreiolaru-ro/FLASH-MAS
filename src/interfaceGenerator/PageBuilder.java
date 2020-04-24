@@ -11,9 +11,15 @@ import java.io.*;
 
 public class PageBuilder {
     private static Element page = null;
+    private static JFrame window = null;
 
     public static Element getPage() {
         return page;
+    }
+
+    public static JFrame getWindow() {
+        // TODO: maybe create a Singleton?
+        return window;
     }
 
     public static Object buildPage(Configuration data) throws Exception {

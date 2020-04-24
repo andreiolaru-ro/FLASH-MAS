@@ -42,7 +42,7 @@ public class GUIShard extends AgentShardCore {
         // System.err.println(context.getClass());
 
         // hashmap with ports and their elements
-        var portsWithElements = Element.getPorts();
+        var portsWithElements = Element.getActivePorts();
         for (var entry : portsWithElements.entrySet()) {
             var port = entry.getKey();
             var elementsList = entry.getValue();
