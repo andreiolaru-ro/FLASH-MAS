@@ -31,6 +31,7 @@ public class GUIShard extends AgentShardCore {
         }
 
         try {
+            // System.out.println(PageBuilder.platformType);
             if (!PageBuilder.createdSwingPage) {
                 BuildPageTest.main(parameters);
             }

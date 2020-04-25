@@ -8,13 +8,18 @@ import net.xqhs.flash.core.support.PylonProxy;
 
 public class WebUiPylon implements PylonProxy {
     private final static String head = "<!DOCTYPE html>\n" +
-            "    <html lang=\"en\">\n" +
-            "    <head>\n" +
-            "        <meta charset=\"UTF-8\">\n" +
-            "    <title>Page</title>\n" +
-            "    </head>\n" +
-            "    <body>";
+            "<html>\n" +
+            "<head>\n" +
+            "    <meta charset=\"utf-8\">\n" +
+            "    <title>Input</title>\n" +
+            "    <script src=\"https://code.jquery.com/jquery-3.4.1.min.js\"></script>\n" +
+            "    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js\"></script>\n" +
+            "    <script src=\"js/vertx-eventbus.js\"></script>\n" +
+            "    <script src=\"js/client.js\"></script>\n" +
+            "</head>\n" +
+            "<body onload=\"init()\">";
     private static int indentLevel = 0;
+    private final static String tab = "\t";
 
     public static String getTag(ElementType type) {
         switch (type) {
@@ -31,7 +36,6 @@ public class WebUiPylon implements PylonProxy {
 
     public static String generate(Element element) throws Exception {
         StringBuilder result = new StringBuilder();
-        String tab = "\t";
 
         if (indentLevel == 0) {
             result.append(head).append('\n');
@@ -41,55 +45,130 @@ public class WebUiPylon implements PylonProxy {
         var type = element.getType();
         var elementType = ElementType.valueOfLabel(type);
         if (elementType != null) {
-            var tag = getTag(elementType);
+            switch (elementType) {
+                case BLOCK:
+                    result.append(generateDiv(element));
+                    break;
+                case SPINNER:
+                    result.append(generateSpinner(element));
+                    break;
+                case FORM:
+                    result.append(generateForm(element));
+                    break;
+                case LABEL:
+                    result.append(generateLabel(element));
+                    break;
+                case BUTTON:
+                    result.append(generateButton(element));
+                    break;
+            }
+        }
 
-            if (element.getRole().equals(PortType.ACTIVE.type)) {
-                // TODO: add callback functionality if role is activate for button
-                // TODO: check for form / spinner in the same port
-            }
-
-            if (element.getProperties() == null || element.getProperties().isEmpty()) {
-                result.append(tab.repeat(indentLevel))
-                        .append('<')
-                        .append(tag)
-                        .append(" id = \"")
-                        .append(element.getId())
-                        .append("\">\n");
-            } else {
-                result.append(tab.repeat(indentLevel))
-                        .append('<')
-                        .append(tag)
-                        .append(" id = \"")
-                        .append(element.getId())
-                        .append("\"")
-                        .append(' ');
-                for (var pair : element.getProperties().entrySet()) {
-                    result.append(pair.getKey())
-                            .append(" = \"")
-                            .append(pair.getValue())
-                            .append('\"');
-                }
-                result.append(">\n");
-            }
-            indentLevel++;
-            for (var child : element.getChildren()) {
-                result.append(generate(child)).append('\n');
-            }
-            indentLevel--;
-            result.append(tab.repeat(indentLevel))
-                    .append("</")
-                    .append(tag)
-                    .append(">\n");
-
-            if (indentLevel == 1) {
-                --indentLevel;
-                result.append("</body>");
-            }
-        } else {
-            throw new Exception("Invalid element type");
+        if (indentLevel == 1) {
+            --indentLevel;
+            result.append("</body>");
         }
 
         return result.toString();
+    }
+
+    private static String generateButton(Element element) {
+        String result = "";
+        result += tab.repeat(indentLevel);
+        result += "<button ";
+        result += "id = \"";
+        result += element.getId();
+        result += "\"";
+
+        if (element.getRole().equals(PortType.ACTIVE.type)) {
+            // TODO: add callback
+            result += " type = \"submit\" ";
+            result += "onclick=\"send_data()\"";
+        }
+        result += ">\n";
+
+        indentLevel++;
+        result += tab.repeat(indentLevel);
+        if (element.getText() != null) {
+            result += element.getText();
+        } else {
+            result += element.getId();
+        }
+        --indentLevel;
+        result += '\n';
+        result += tab.repeat(indentLevel);
+        result += "</button>\n";
+        return result;
+    }
+
+    private static String generateDiv(Element element) {
+        StringBuilder result = new StringBuilder();
+        result.append(tab.repeat(indentLevel));
+        result.append("<div ");
+        result.append("id = \"");
+        result.append(element.getId());
+        result.append("\"");
+        result.append(">\n");
+        indentLevel++;
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                var type = ElementType.valueOfLabel(child.getType());
+                if (type != null) {
+                    switch (type) {
+                        case BUTTON:
+                            result.append(generateButton(child));
+                            break;
+                        case LABEL:
+                            result.append(generateLabel(child));
+                            break;
+                        case FORM:
+                            result.append(generateForm(child));
+                            break;
+                        case SPINNER:
+                            result.append(generateSpinner(child));
+                            break;
+                        case BLOCK:
+                            result.append(generateDiv(child));
+                            break;
+                    }
+                }
+            }
+        }
+        indentLevel--;
+        result.append(tab.repeat(indentLevel));
+        result.append("</div>\n");
+        return result.toString();
+    }
+
+    private static String generateLabel(Element element) {
+        String result = "";
+        result += tab.repeat(indentLevel);
+        result += "<label ";
+        result += "id = \"";
+        result += element.getId();
+        result += "\"";
+        result += ">\n";
+        return result;
+    }
+
+    private static String generateSpinner(Element element) {
+        String result = "";
+        result += tab.repeat(indentLevel);
+        result += "<input type = \"range\" ";
+        result += "id = ";
+        result += element.getId();
+        result += ">\n";
+        return result;
+    }
+
+    private static String generateForm(Element element) {
+        String result = "";
+        result += tab.repeat(indentLevel);
+        result += "<input type = \"text\" ";
+        result += "id = ";
+        result += element.getId();
+        result += ">\n";
+        return result;
     }
 
     @Override

@@ -22,6 +22,7 @@ public class PageBuilder {
         return window;
     }
 
+    public static PlatformType platformType = null;
     public static boolean createdSwingPage = false;
 
     public static GUIShard guiShard = null;
@@ -29,6 +30,7 @@ public class PageBuilder {
     public static Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
+        PageBuilder.platformType = type;
 
         // generating ids for every element in configuration
         var configuration = IdGenerator.attributeIds(data.getNode());
