@@ -22,6 +22,10 @@ public class PageBuilder {
         return window;
     }
 
+    public static boolean createdSwingPage = false;
+
+    public static GUIShard guiShard = null;
+
     public static Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
@@ -58,6 +62,10 @@ public class PageBuilder {
                     }
                     var frame = SwingUiPylon.generateWindow(data.getNode());
                     frame.setVisible(true);
+                    if (window == null) {
+                        window = frame;
+                    }
+                    PageBuilder.createdSwingPage = true;
                     return frame;
             }
         }

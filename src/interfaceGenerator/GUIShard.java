@@ -20,6 +20,7 @@ public class GUIShard extends AgentShardCore {
         super.signalAgentEvent(event);
         var guiShardConfiguration = super.getShardData().getSingleTree("config");
         var configuration = guiShardConfiguration.getTreeKeys().get(0);
+        PageBuilder.guiShard = this;
 
         String[] parameters = new String[2];
         parameters[1] = configuration;
@@ -30,34 +31,19 @@ public class GUIShard extends AgentShardCore {
         }
 
         try {
-            BuildPageTest.main(parameters);
+            if (!PageBuilder.createdSwingPage) {
+                BuildPageTest.main(parameters);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        // active input
-
-        // shard context
-        var context = super.getAgent();
-        // System.err.println(context.getClass());
-
-        // hashmap with ports and their elements
-        var portsWithElements = Element.getActivePorts();
-        for (var entry : portsWithElements.entrySet()) {
-            var port = entry.getKey();
-            var elementsList = entry.getValue();
-
-            // initially, no content
-            AgentWave activeInput = new AgentWave(null, "/");
-            activeInput.addSourceElementFirst("/gui/port");
-
-            for (var value : elementsList) {
-                activeInput.addContent(value.toString());
-            }
-
-            // TODO: check why event isn't in event queue
-            context.postAgentEvent(activeInput);
-        }
+    public void getActiveInput(String value) {
+        // System.out.println(value);
+        AgentWave activeInput = new AgentWave(value, "/");
+        activeInput.addSourceElementFirst("/gui/port");
+        super.getAgent().postAgentEvent(activeInput);
     }
 
     public AgentWave getInput(String portName) {
