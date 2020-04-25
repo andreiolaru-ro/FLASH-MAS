@@ -1,5 +1,5 @@
 var eb;
-var agents_index = {};
+var active_input_element_id;
 var active_input_value;
 
 function init() {
@@ -18,7 +18,7 @@ function init() {
     };
 
     eb.onclose = () => {
-        console.log('Eventbus closed')
+        console.log('Eventbus closed');
     }
 }
 

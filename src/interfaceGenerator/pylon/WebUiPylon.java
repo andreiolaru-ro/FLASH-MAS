@@ -83,7 +83,7 @@ public class WebUiPylon implements PylonProxy {
         if (element.getRole().equals(PortType.ACTIVE.type)) {
             // TODO: add callback
             result += " type = \"submit\" ";
-            result += "onclick=\"send_data()\"";
+            result += "onclick=\"send_data(this.id)\"";
         }
         result += ">\n";
 
