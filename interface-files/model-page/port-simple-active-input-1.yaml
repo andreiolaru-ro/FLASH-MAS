@@ -1,4 +1,4 @@
-platformType: html
+platformType: desktop
 node:
   children:
     - type: form

@@ -1,6 +1,7 @@
 package interfaceGenerator.web;
 
 import interfaceGenerator.Element;
+import interfaceGenerator.PageBuilder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -33,6 +34,8 @@ public class Runner extends AbstractVerticle {
                         } else if (objectMessage.body().equals("stop")) {
                             vertx.close();
                         } else if (((String) objectMessage.body()).split(" ")[0].equals("button-id:")) {
+                            // receiving button id from client, in order to check the port
+                            // for active input and identify the id of form / spinner
                             String buttonId = ((String) objectMessage.body()).split(" ")[1];
                             var port = Element.identifyActivePortOfElement(buttonId);
                             if (port != null) {
@@ -40,8 +43,9 @@ public class Runner extends AbstractVerticle {
                                 vertx.eventBus().send("server-to-client", id);
                             }
                         } else if (((String) objectMessage.body()).split(" ")[0].equals("active-value:")) {
+                            // receiving active input from client
                             String input = ((String) objectMessage.body()).split(" ")[1];
-                            System.out.println(input);
+                            PageBuilder.guiShard.getActiveInput(input);
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {

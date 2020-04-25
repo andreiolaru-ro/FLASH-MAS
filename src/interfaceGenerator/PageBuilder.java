@@ -27,6 +27,7 @@ public class PageBuilder {
 
     public static PlatformType platformType = null;
     public static boolean createdSwingPage = false;
+    public static boolean createdWebPage = false;
 
     public static GUIShard guiShard = null;
 
@@ -55,6 +56,7 @@ public class PageBuilder {
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                         Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
                     }
+                    createdWebPage = true;
                     return null;
                 case ANDROID:
                     var android = AndroidUiPylon.generate(data.getNode());

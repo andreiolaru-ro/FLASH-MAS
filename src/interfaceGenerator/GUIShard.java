@@ -32,7 +32,7 @@ public class GUIShard extends AgentShardCore {
 
         try {
             // System.out.println(PageBuilder.platformType);
-            if (!PageBuilder.createdSwingPage) {
+            if (!PageBuilder.createdSwingPage && !PageBuilder.createdWebPage) {
                 BuildPageTest.main(parameters);
             }
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class GUIShard extends AgentShardCore {
     }
 
     public void getActiveInput(String value) {
-        // System.out.println(value);
+        System.out.println("Generating AgentWave for active input...");
         AgentWave activeInput = new AgentWave(value, "/");
         activeInput.addSourceElementFirst("/gui/port");
         super.getAgent().postAgentEvent(activeInput);
