@@ -4,10 +4,13 @@ import interfaceGenerator.pylon.AndroidUiPylon;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.pylon.WebUiPylon;
 import interfaceGenerator.types.PlatformType;
+import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
 
 public class PageBuilder {
     private static Element page = null;
@@ -48,6 +51,10 @@ public class PageBuilder {
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
+                    Input.main(new String[]{});
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                        Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+                    }
                     return null;
                 case ANDROID:
                     var android = AndroidUiPylon.generate(data.getNode());

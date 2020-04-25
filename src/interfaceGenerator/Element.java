@@ -139,4 +139,32 @@ public class Element {
         result.append('\n');
         return result.toString();
     }
+
+    public static String identifyActivePortOfElement(String id) {
+        System.out.println(id);
+        System.out.println(activePorts);
+        for (var entry : activePorts.entrySet()) {
+            var port = entry.getKey();
+            for (var element : entry.getValue()) {
+                if (id.equals(element.getId())) {
+                    return port;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String findActiveInputIdFromPort(String port) {
+        for (var entry : activePorts.entrySet()) {
+            if (port.equals(entry.getKey())) {
+                for (var element : entry.getValue()) {
+                    if (element.getType().equals(ElementType.FORM.type)
+                            || element.getType().equals(ElementType.SPINNER.type)) {
+                        return element.getId();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
