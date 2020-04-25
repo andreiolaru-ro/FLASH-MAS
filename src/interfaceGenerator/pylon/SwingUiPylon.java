@@ -1,6 +1,7 @@
 package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
+import interfaceGenerator.PageBuilder;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -80,8 +81,6 @@ public class SwingUiPylon implements PylonProxy {
         }
 
         if (element.getRole().equals(PortType.ACTIVE.type)) {
-            // TODO: add callback functionality if role is activate
-            // TODO: check for form / spinner in the same port
             button.addActionListener(e -> {
                 var port = element.getPort();
                 var activePorts = Element.getActivePorts();
@@ -97,7 +96,16 @@ public class SwingUiPylon implements PylonProxy {
                 }
 
                 if (inputId != null) {
-                    // TODO: search for the element with the respective id
+                    var component = getComponentById(inputId, PageBuilder.getWindow());
+                    if (component instanceof JTextArea) {
+                        var form = (JTextArea) component;
+                        var value = form.getText();
+                        PageBuilder.guiShard.getActiveInput(value);
+                    } else if (component instanceof JSpinner) {
+                        var spinner = (JSpinner) component;
+                        var value = spinner.getValue().toString();
+                        PageBuilder.guiShard.getActiveInput(value);
+                    }
                 }
             });
         }
