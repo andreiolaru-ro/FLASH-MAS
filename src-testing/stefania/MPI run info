@@ -1,0 +1,33 @@
+    1. Trebuie instalat mpi pentru Java.
+Am urmarit acest tutorial:
+http://charith.wickramaarachchi.org/2014/07/how-to-install-open-mpi-java.html
+
+Am descarcat arhiva openmpi-4.0.3.tar.gz de aici:
+https://www.open-mpi.org/software/ompi/v4.0/
+
+Am importat mpi.jar ca biblioteca externa in IntelliJ.
+
+    2. Pentru rulare:
+Am creat un jar:
+https://www.youtube.com/watch?v=3Xo6zSBgdgk
+
+Apoi din folderul proiectului, in /classes/artifacts/Flash_MAS_jar am rulat comanda:
+mpirun -np <nprocesses> java -jar Flash-MAS.jar
+
+Exemplu de output:
+I am Agent0 with rank 0
+I am Agent2 with rank 2
+I am Agent1 with rank 1
+I am Agent3 with rank 3
+I am Agent4 with rank 4
+I am Agent5 with rank 5
+Master received: Hello from 1
+Master received: Hello from 2
+[1] ACK
+Master received: Hello from 3
+Master received: Hello from 4
+[2] ACK
+[4] ACK
+[3] ACK
+Master received: Hello from 5
+[5] ACK
