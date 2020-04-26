@@ -6,6 +6,8 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
+import java.util.List;
+
 public class GUIShard extends AgentShardCore {
     protected GUIShard(AgentShardDesignation designation) {
         super(designation);
@@ -47,15 +49,23 @@ public class GUIShard extends AgentShardCore {
         super.getAgent().postAgentEvent(activeInput);
     }
 
+    public void getActiveInput(List<String> values) {
+        System.out.println("Generating AgentWave for active input...");
+        AgentWave activeInput = new AgentWave(null, "/");
+        activeInput.addSourceElementFirst("/gui/port");
+        for (var value : values) {
+            activeInput.addContent(value);
+        }
+        super.getAgent().postAgentEvent(activeInput);
+    }
+
     public AgentWave getInput(String portName) {
         // TODO: pasive input
 
         var elements = Element.findElementsByPort(PageBuilder.getPage(), portName);
         AgentWave event = new AgentWave();
 
-        for (var element : elements) {
-            event.addContent(element.toString());
-        }
+        // TODO: check the pasive ports
 
         return event;
     }

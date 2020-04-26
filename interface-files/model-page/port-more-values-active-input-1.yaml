@@ -1,0 +1,15 @@
+platformType: html
+node:
+  children:
+    - type: form
+      port: port1
+      role: activate
+    - type: spinner
+      port: port1
+      role: activate
+    - type: form
+      port: port1
+      role: activate
+    - type: button
+      port: port1
+      role: activate

@@ -1,5 +1,8 @@
 package interfaceGenerator.web;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
 import io.vertx.core.AbstractVerticle;
@@ -10,6 +13,11 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Runner extends AbstractVerticle {
     @Override
@@ -39,13 +47,30 @@ public class Runner extends AbstractVerticle {
                             String buttonId = ((String) objectMessage.body()).split(" ")[1];
                             var port = Element.identifyActivePortOfElement(buttonId);
                             if (port != null) {
-                                var id = Element.findActiveInputIdFromPort(port);
-                                vertx.eventBus().send("server-to-client", id);
+                                var ids = Element.findActiveInputIdsFromPort(port);
+                                Map<String, List<String>> data = new HashMap<>();
+                                data.put("data", ids);
+
+                                GsonBuilder gsonMapBuilder = new GsonBuilder();
+                                Gson gsonObject = gsonMapBuilder.create();
+
+                                String JSONObject = gsonObject.toJson(data);
+                                // System.out.println(JSONObject);
+                                vertx.eventBus().send("server-to-client", JSONObject);
                             }
                         } else if (((String) objectMessage.body()).split(" ")[0].equals("active-value:")) {
                             // receiving active input from client
-                            String input = ((String) objectMessage.body()).split(" ")[1];
-                            PageBuilder.guiShard.getActiveInput(input);
+                            String input = ((String) objectMessage.body()).substring("active-value: ".length());
+                            // System.out.println(input);
+
+                            Gson gson = new Gson();
+                            Type type = new TypeToken<HashMap<String, List<String>>>() {
+                            }.getType();
+                            HashMap<String, List<String>> clonedMap = gson.fromJson(input, type);
+
+                            // System.out.println(clonedMap);
+                            var ids = clonedMap.get("data");
+                            PageBuilder.guiShard.getActiveInput(ids);
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {

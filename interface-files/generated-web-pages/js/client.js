@@ -1,5 +1,5 @@
 let eb;
-let value;
+let values;
 
 function init() {
     eb = new EventBus("/eventbus");
@@ -8,11 +8,19 @@ function init() {
         console.log('Eventbus opened');
         eb.send('client-to-server', "init");
         eb.registerHandler('server-to-client', (error, message) => {
-            console.log("id input from server " + message.body);
-            value = document.getElementById(message.body).value;
-            console.log(value);
-            console.log("value = " + value);
-            eb.send('client-to-server', "active-value: " + value); // sending input value to server
+            let ids = JSON.parse(message.body)["data"];
+            console.log(ids);
+            let list_values = [];
+
+            for (let i = 0; i < ids.length; i++) {
+                let val = document.getElementById(ids[i]).value;
+                list_values.push(val);
+            }
+
+            values = {"data": list_values};
+            let data = JSON.stringify(values);
+            console.log(data);
+            eb.send('client-to-server', "active-value: " + data); // sending input value to server
         });
     };
 

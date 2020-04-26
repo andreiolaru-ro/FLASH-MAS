@@ -167,4 +167,19 @@ public class Element {
         }
         return null;
     }
+
+    public static List<String> findActiveInputIdsFromPort(String port) {
+        List<String> list = new ArrayList<>();
+        for (var entry : activePorts.entrySet()) {
+            if (port.equals(entry.getKey())) {
+                for (var element : entry.getValue()) {
+                    if (element.getType().equals(ElementType.FORM.type)
+                            || element.getType().equals(ElementType.SPINNER.type)) {
+                        list.add(element.getId());
+                    }
+                }
+            }
+        }
+        return list;
+    }
 }
