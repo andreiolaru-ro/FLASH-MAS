@@ -9,6 +9,7 @@ import net.xqhs.flash.core.support.PylonProxy;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -86,27 +87,30 @@ public class SwingUiPylon implements PylonProxy {
                 var activePorts = Element.getActivePorts();
                 var elements = activePorts.get(port);
 
-                String inputId = null;
+                ArrayList<String> inputIds = new ArrayList<>();
+                ArrayList<String> values = new ArrayList<>();
 
                 for (var elem : elements) {
                     if (elem.getType().equals(ElementType.SPINNER.type)
                             || elem.getType().equals(ElementType.FORM.type)) {
-                        inputId = elem.getId();
+                        inputIds.add(elem.getId());
                     }
                 }
 
-                if (inputId != null) {
+                for (var inputId : inputIds) {
                     var component = getComponentById(inputId, PageBuilder.getWindow());
                     if (component instanceof JTextArea) {
                         var form = (JTextArea) component;
                         var value = form.getText();
-                        PageBuilder.guiShard.getActiveInput(value);
+                        values.add(value);
                     } else if (component instanceof JSpinner) {
                         var spinner = (JSpinner) component;
                         var value = spinner.getValue().toString();
-                        PageBuilder.guiShard.getActiveInput(value);
+                        values.add(value);
                     }
                 }
+
+                PageBuilder.guiShard.getActiveInput(values);
             });
         }
 
