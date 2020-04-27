@@ -14,6 +14,11 @@ import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.support.MessageReceiver;
 
+/**
+ * The {@link WebSocketClientProxy} manages communication with the server.
+ *
+ *  @author Florina Nastasoiu
+ */
 public class WebSocketClientProxy extends Unit {
     {
         setUnitName("websocket-client").setLoggerType(PlatformUtils.platformLogType());
@@ -35,6 +40,14 @@ public class WebSocketClientProxy extends Unit {
                 li("new connection to server.");
             }
 
+            /**
+             * Receives a message from the server. The message was previously routed to this websocket client address
+             * and it is further routed to a specific agent using the {@link MessageReceiver} instance. The agent is
+             * searched within the context of this support.
+             *
+             * @param s
+             *          - the JSON string containing a message and routing information
+             */
             @Override
             public void onMessage(String s) {
                 Object obj = JSONValue.parse(s);

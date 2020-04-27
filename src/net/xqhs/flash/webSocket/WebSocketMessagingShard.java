@@ -7,6 +7,11 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
+/**
+ * The {@link WebSocketMessagingShard} class manages the link between agent's messaging service and its pylon.
+ *
+ *  @author Florina Nastasoiu
+ */
 public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 
     private static final long serialVersionUID = 2L;

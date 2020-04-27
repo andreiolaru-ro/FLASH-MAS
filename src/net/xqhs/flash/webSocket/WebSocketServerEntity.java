@@ -10,6 +10,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
+import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONObject;
@@ -17,6 +18,12 @@ import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.Entity;
 
+/**
+ *  The {@link WebSocketServerEntity} class manages the routing of messages between different entities. It knows the
+ *  available agents in the FLASH-MAS system along with their websocket address. It also keeps track of central nodes.
+ *
+ *  @author Florina Nastasoiu
+ */
 public class WebSocketServerEntity extends Unit implements Entity
 {
 	{
@@ -53,7 +60,19 @@ public class WebSocketServerEntity extends Unit implements Entity
 			{
 				li(("[] closed with exit code " + i), webSocket);
 			}
-			
+
+			/**
+			 * Receives message from a {@link WebSocketClient}.
+			 * Messages can be:
+			 * 					- node registration message
+			 * 					- agent registration message
+			 * 					- raw message from one entity to another
+			 *
+			 * @param webSocket
+			 * 					- the sender websocket client
+			 * @param s
+			 * 					- the JSON string containing a message and routing information
+			 */
 			@Override
 			public void onMessage(WebSocket webSocket, String s)
 			{
@@ -64,6 +83,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("nodeName") == null) return;
 				String nodeName = (String)jsonObject.get("nodeName");
 
+				// node registration message
 				boolean isCentralNode;
 				if(jsonObject.get("isCentral") != null)
 				{
@@ -79,6 +99,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 					return;
 				}
 
+				// agent registration message
 				String newAgent;
 				if(jsonObject.get("agentName") != null)
 				{
@@ -89,6 +110,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 					return;
 				}
 
+				// raw message from one entity to another
 				if(jsonObject.get("destination") != null) {
 					li("Received: []. ", s);
 					String destination = (String) jsonObject.get("destination");
@@ -138,14 +160,17 @@ public class WebSocketServerEntity extends Unit implements Entity
 		running = true;
 		return true;
 	}
-	
+
+	/**
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 */
 	@Override
 	public boolean stop()
 	{
-		running = false;
 		try
 		{
 			webSocketServer.stop(SERVER_STOP_TIME);
+			running = false;
 			return true;
 		} catch(InterruptedException e)
 		{
@@ -165,31 +190,46 @@ public class WebSocketServerEntity extends Unit implements Entity
 	{
 		return null;
 	}
-	
+
+	/**
+	 * Functionality not used yet.
+	 */
 	@Override
 	public boolean addContext(EntityProxy context)
 	{
 		return false;
 	}
-	
+
+	/**
+	 * Functionality not used yet.
+	 */
 	@Override
 	public boolean removeContext(EntityProxy context)
 	{
 		return false;
 	}
-	
+
+	/**
+	 * Functionality not used yet.
+	 */
 	@Override
 	public boolean removeGeneralContext(EntityProxy context)
 	{
 		return false;
 	}
-	
+
+	/**
+	 * Functionality not used yet.
+	 */
 	@Override
 	public EntityProxy asContext()
 	{
 		return null;
 	}
-	
+
+	/**
+	 * Functionality not used yet.
+	 */
 	@Override
 	public boolean addGeneralContext(EntityProxy context)
 	{

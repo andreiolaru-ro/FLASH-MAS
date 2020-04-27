@@ -19,6 +19,13 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
+/**
+ * WebSocket support implementation that allows agents to send messages whether they are inside the same JVM or not.
+ * The support has a {@link WebSocketClientProxy} which is connected to the {@link WebSocketServerEntity}. Therefore
+ * any agent in the context of this support is able to send messages to agents located on any other support.
+ *
+ *  @author Florina Nastasoiu
+ */
 public class WebSocketPylon extends DefaultPylonImplementation {
 	
 	class MessageThread implements Runnable {
@@ -44,8 +51,19 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	}
 	
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-		/*
-		 * The agent is registered within the webSocket client.
+		/**
+		 * The agent is both:
+		 * 					- registered within the {@link WebSocketClientProxy} local instance which is useful for
+		 * 					  routing a message back to the the {@link MessageReceiver} instance when it arrives from
+		 * 					  the server
+		 * 					- registered to the {@link WebSocketServerEntity} using an agent registration format message
+		 * 				      which is sent by the local {@link WebSocketClientProxy} client
+		 *
+		 * @param agentName
+		 * 					- the name of the agent.
+		 * @param receiver
+		 * 					- the {@link MessageReceiver} instance to receive messages.
+		 * @return an indication of success.
 		 */
 		@Override
 		public boolean register(String agentName, MessageReceiver receiver) {
@@ -56,7 +74,18 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
-		
+
+		/**
+		 * Send a raw message to the server.
+		 *
+		 * @param source
+		 * 					- the source endpoint.
+		 * @param destination
+		 * 					- the destination endpoint.
+		 * @param content
+		 * 					- the content of the message.
+		 * @return an indication of success.
+		 */
 		@Override
 		public boolean send(String source, String destination, String content) {
 			JSONObject messageToServer = new JSONObject();
@@ -69,6 +98,16 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			return true;
 		}
 
+		/**
+		 * The node is both:
+		 * 				- registered in the current support
+		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
+		 * 				  which is sent by the local {@link WebSocketClientProxy} client
+		 * @param id
+		 * 				- the name of the node in the context of which the pylon is located
+		 * @param isCentral
+		 * 				- whether or not the node is central
+		 */
 		@Override
 		public void registerNode(String id, boolean isCentral) {
 			nodeName = id;
@@ -113,7 +152,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected String webSocketServerAddressName;
 	
 	/**
-	 * The proxy to the webSocket server; this is actually a webSocket client.
+	 * The proxy to the {@link WebSocketServerEntity} which has a webSocket client.
 	 */
 	protected WebSocketClientProxy webSocketClient;
 	
@@ -124,7 +163,14 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>> messageQueue = null;
 	
 	protected Thread messageThread = null;
-	
+
+	/**
+	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment and instantiates its
+	 * local {@link WebSocketClientProxy which is further connected to the server.
+	 * Now the entity is ready to send and receive messages.
+	 *
+	 * @return an indication of success.
+	 */
 	@Override
 	public boolean start() {
 		if(hasServer) {
