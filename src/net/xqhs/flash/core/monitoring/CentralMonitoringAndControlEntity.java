@@ -4,7 +4,6 @@ import net.xqhs.flash.core.monitoring.gui.GUIBoard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -13,11 +12,13 @@ import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.local.LocalPylon;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.util.*;
 
 public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
@@ -29,58 +30,123 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     private String                  name;
 
-    /*
-    * Graphic User Interface
-    * */
-    private GUIBoard                GUI;
+    private GUIBoard                gui;
 
-    private static boolean          RUNNING_STATE;
+    private static boolean          isRunning;
 
-    protected MonitoringNodeProxy powerfulProxy;
+    /**
+     * Keeps track of all agents deployed in the system and operations which can be done by agents themselves.
+     */
+    private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
 
-
-    // Proxy used to receive messages from outer entities; e.g. logs from agents
-    public ShardContainer          proxy = new ShardContainer() {
-            @Override
-            public void postAgentEvent(AgentEvent event) {
-                System.out.println(event.toString());
-                if(event.getType().equals(AgentEvent.AgentEventType.AGENT_WAVE))
-                {
-                    String content = ((AgentWave) event).getContent();
-                    System.out.println(" [] [] " + content);
-                }
-            }
-
-            @Override
-            public AgentShard getAgentShard(AgentShardDesignation designation) {
-                return null;
-            }
-
-            @Override
-            public String getEntityName() {
-                return getName();
-            }
-    };
+    /**
+     * Keeps track of all nodes deployed in the system, along with their entities,
+     * indexed by their names.
+     */
+    private HashMap<String, HashMap<String, List<String>>> allNodeEntities = new LinkedHashMap<>();
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
     }
 
+    public ShardContainer          proxy = new ShardContainer() {
+
+        @Override
+        public void postAgentEvent(AgentEvent event) {
+            switch (event.getType())
+            {
+                case AGENT_WAVE:
+                    String content = ((AgentWave) event).getContent();
+                    Object obj = JSONValue.parse(content);
+                    if(obj != null) parseJSON(obj);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void parseJSON(Object obj)
+        {
+            // entities registered in the context of a node come as json arrays
+            if(obj instanceof JSONArray)
+            {
+                JSONArray ja = (JSONArray)obj;
+                for (Object o : ja) {
+                    JSONObject entity   = (JSONObject) o;
+                    String node         = (String)entity.get("node");
+                    String category     = (String)entity.get("category");
+                    String name         = (String)entity.get("name");
+                    String[] operations = ((String)entity.get("operations")).split(" ");
+
+                    if(category.equals("agent"))
+                    {
+                        if(!allAgents.containsKey(name))
+                            allAgents.put(name, new LinkedList<>());
+                        allAgents.get(name).addAll(Arrays.asList(operations));
+                    }
+                    if(!allNodeEntities.containsKey(node))
+                        allNodeEntities.put(node, new LinkedHashMap<>());
+                    if(!allNodeEntities.get(node).containsKey(category))
+                        allNodeEntities.get(node).put(category, new LinkedList<>());
+                    allNodeEntities.get(node).get(category).add(name);
+                }
+            }
+        }
+
+        @Override
+        public AgentShard getAgentShard(AgentShardDesignation designation) {
+            return null;
+        }
+
+        @Override
+        public String getEntityName() {
+            return getName();
+        }
+    };
+
+
+    /**
+     * @param childEntity
+     *                      - an ordinary entity.
+     * @return
+     *                      - the name of its parent in context hierarchy - as a node - .
+     */
+    public String getParentNode(String childEntity) {
+        for (Map.Entry<String, HashMap<String, List<String>>> entry : allNodeEntities.entrySet()) {
+            for (Map.Entry<String, List<String>> stringListEntry : entry.getValue().entrySet()) {
+                if (stringListEntry.getValue().contains(childEntity))
+                    return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return
+     *          - a {@link List} of all nodes deployed in the system by their names
+     */
+    public List<String> getNodes() {
+        List<String> nodes = new LinkedList<>();
+        allNodeEntities.entrySet().forEach(entry-> {
+            nodes.add(entry.getKey());
+        });
+        return nodes;
+    }
 
     @Override
     public boolean start() {
         if(centralMessagingShard == null)
             throw new IllegalStateException("No messaging shard present");
-        centralMessagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        centralMessagingShard.registerCentralEntity(name);
         System.out.println("[" + getName() + "] starting...");
-        RUNNING_STATE = true;
+        isRunning = true;
         return true;
     }
 
     public void startGUIBoard() {
         SwingUtilities.invokeLater(() -> {
             try {
-                GUI = new GUIBoard(this);
+                gui = new GUIBoard(this);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -89,14 +155,14 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean stop() {
-        System.out.println(getName() + "## CENTRAL MONITORING ENTITY STOPPED...");
-        RUNNING_STATE = false;
+        System.out.println(getName() + "stopped...");
+        isRunning = false;
         return true;
     }
 
     @Override
     public boolean isRunning() {
-        return RUNNING_STATE;
+        return isRunning;
     }
 
     @Override
@@ -146,40 +212,26 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
         return null;
     }
 
-    public boolean addNodeProxy(EntityProxy<Node> proxy)
-    {
-        if(!(proxy instanceof MonitoringNodeProxy))
-            throw new IllegalStateException("Node proxy is not of expected type");
-        powerfulProxy = (MonitoringNodeProxy)proxy;
-        return true;
-    }
-
 
     /**
-    * Requests to send a control command. This is mainly coming
-     * from the GUI component.
-    **/
-
+     * @param entityName
+     *                  - the name of destination entity
+     * @param command
+     *                  - control command
+     * @return
+     *                  - an indication of success
+     */
     public boolean sendGUICommand(String entityName, String command) {
-        centralMessagingShard
+        //TODO: Change this if necessary
+        return centralMessagingShard
                 .sendMessage(
                         AgentWave.makePath(getName(), SHARD_ENDPOINT),
                         AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
                         command);
-        return true;
     }
 
     public boolean sendToAllAgents(String command) {
-        List<String > agents = powerfulProxy.getAgentsFromOuterNodes();
-        agents.addAll(powerfulProxy.getOwnAgents());
-        for(String ag : agents)
-        {
-            centralMessagingShard
-                    .sendMessage(
-                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(ag, OTHER_SHARD_ENDPOINT),
-                            command);
-        }
+        //TODO:
         return true;
     }
 }

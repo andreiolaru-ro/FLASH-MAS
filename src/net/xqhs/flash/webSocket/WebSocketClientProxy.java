@@ -59,7 +59,7 @@ public class WebSocketClientProxy extends Unit {
                 String destAgent = destination.split(
                         AgentWave.ADDRESS_SEPARATOR)[0];
                 if(!messageReceivers.containsKey(destAgent) || messageReceivers.get(destAgent) == null)
-                    le("Agent [] does not exist.", destAgent);
+                    le("Entity [] does not exist.", destAgent);
                 else {
                     String source = (String) jsonObject.get("source");
                     String content = (String) jsonObject.get("content");

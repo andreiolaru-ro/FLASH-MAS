@@ -46,7 +46,7 @@ public class LocalPylon extends DefaultPylonImplementation {
 
 	protected String nodeName;
 
-	protected boolean isPylonOnCentralNode;
+	protected String centralEntityName;
 	/**
 	 * The proxy to this entity.
 	 */
@@ -78,11 +78,16 @@ public class LocalPylon extends DefaultPylonImplementation {
 		}
 
 		@Override
-		public void registerNode(String id, boolean isCentralNode) {
+		public void registerNode(String id, MessageReceiver inbox) {
+			messageReceivers.put(id, inbox);
 			nodeName = id;
-			isPylonOnCentralNode = isCentralNode;
 		}
 
+		@Override
+		public void registerCentralEntity(String name, MessageReceiver inbox) {
+			messageReceivers.put(name, inbox);
+			centralEntityName = name;
+		}
 	};
 	
 	/**
@@ -145,8 +150,13 @@ public class LocalPylon extends DefaultPylonImplementation {
 		}
 
 		@Override
-		public void registerNode(String nodeName, boolean isCentral) {
-			pylon.registerNode(nodeName, isCentral);
+		public void registerNode(String name) {
+			pylon.registerNode(name, inbox);
+		}
+
+		@Override
+		public void registerCentralEntity(String name) {
+			pylon.registerCentralEntity(name, inbox);
 		}
 	}
 	

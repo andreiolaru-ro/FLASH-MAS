@@ -100,22 +100,40 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 		/**
 		 * The node is both:
-		 * 				- registered in the current support
+		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
 		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
 		 * 				  which is sent by the local {@link WebSocketClientProxy} client
 		 * @param id
 		 * 				- the name of the node in the context of which the pylon is located
-		 * @param isCentral
-		 * 				- whether or not the node is central
+		 * @param inbox
+		 * 				- the receiver instance
 		 */
 		@Override
-		public void registerNode(String id, boolean isCentral) {
+		public void registerNode(String id, MessageReceiver inbox) {
+			webSocketClient.addReceiverAgent(id, inbox);
 			nodeName = id;
-			isCentralNode = isCentral;
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("nodeName", nodeName);
-			messageToServer.put("isCentral", isCentralNode);
 			webSocketClient.send(messageToServer.toString());
+		}
+
+		/**
+		 * The central entity for monitoring and control is both:
+		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
+		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
+		 * 				  which is sent by the local {@link WebSocketClientProxy} client
+		 * @param name
+		 * 				- the name of node.
+		 * @param inbox
+		 * 				- the receiver instance
+		 */
+		@Override
+		public void registerCentralEntity(String name, MessageReceiver inbox) {
+			webSocketClient.addReceiverAgent(name, inbox);
+			centralEntityName = name;
+			JSONObject msg = new JSONObject();
+			msg.put("controlEntity", name);
+			webSocketClient.send(msg.toString());
 		}
 
 		@Override
@@ -144,17 +162,17 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 	protected String                nodeName;
 
-	protected boolean               isCentralNode;
+	protected String                centralEntityName;
 	
 	/**
 	 * The server address itself.
 	 */
-	protected String webSocketServerAddressName;
+	protected String                webSocketServerAddressName;
 	
 	/**
 	 * The proxy to the {@link WebSocketServerEntity} which has a webSocket client.
 	 */
-	protected WebSocketClientProxy webSocketClient;
+	protected WebSocketClientProxy  webSocketClient;
 	
 	protected Map<String, WebSocketMessagingShard> registry = new HashMap<>();
 	

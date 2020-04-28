@@ -36,8 +36,17 @@ public interface MessagingPylonProxy extends PylonProxy
 	 *
 	 * @param nodeName
 	 *                        - the name of node.
-	 * @param isCentral
-	 *                        - if node is delegated as central.
+	 * @param inbox
+	 * 						  - the receiver of the registered node
 	 */
-	void registerNode(String nodeName, boolean isCentral);
+	void registerNode(String nodeName, MessageReceiver inbox);
+
+	/**
+	 * Register the entity for monitoring and control within the context of local pylon.
+	 * @param name
+	 * 				- the name of node.
+	 * @param inbox
+	 * 				- the receiver of the registered entity
+	 */
+	void registerCentralEntity(String name, MessageReceiver inbox);
 }

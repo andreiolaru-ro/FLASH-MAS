@@ -41,6 +41,9 @@ public class WebSocketServerEntity extends Unit implements Entity
 	private String centralNodeName;
 	private WebSocket centralNodeWebSocket;
 
+	private String controlEntity;
+	private WebSocket controlEntityWebSocket;
+
 
 	public WebSocketServerEntity(int serverAddress)
 	{
@@ -66,6 +69,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 			 * Messages can be:
 			 * 					- node registration message
 			 * 					- agent registration message
+			 * 					- central entity for monitoring and control message
 			 * 					- raw message from one entity to another
 			 *
 			 * @param webSocket
@@ -80,23 +84,24 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(obj == null) return;
 				JSONObject jsonObject = (JSONObject) obj;
 
+				// control and monitoring entity registration
+				if(jsonObject.get("controlEntity") != null)
+				{
+					controlEntity = (String)jsonObject.get("controlEntity");
+					controlEntityWebSocket = webSocket;
+					li("Registered: []. ", controlEntity);
+					return;
+				}
+
 				if(jsonObject.get("nodeName") == null) return;
 				String nodeName = (String)jsonObject.get("nodeName");
 
 				// node registration message
-				boolean isCentralNode;
-				if(jsonObject.get("isCentral") != null)
+                if(jsonObject.size() == 1)
 				{
-					isCentralNode = (boolean)jsonObject.get("isCentral");
-					if(isCentralNode)
-					{
-						centralNodeName = nodeName;
-						centralNodeWebSocket = webSocket;
-					}
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToAgents.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					return;
 				}
 
 				// agent registration message
@@ -112,16 +117,22 @@ public class WebSocketServerEntity extends Unit implements Entity
 
 				// raw message from one entity to another
 				if(jsonObject.get("destination") != null) {
-					li("Received: []. ", s);
 					String destination = (String) jsonObject.get("destination");
 					String destAgent = destination.split(
 							AgentWave.ADDRESS_SEPARATOR)[0];
+					if(destAgent.equals(controlEntity))
+					{
+						controlEntityWebSocket.send(s);
+						li("Sent to central: []. ", s);
+						return;
+					}
 					WebSocket destinationWebSocket = agentToWebSocket.get(destAgent);
 					if(destinationWebSocket == null) {
 						le("Filed to find the entity [] websocket.", destAgent);
 						return;
 					}
 					destinationWebSocket.send(s);
+					li("Sent to agent: []. ", s);
 				}
 
 				nodeToWebSocket.entrySet().forEach(entry->{
@@ -136,7 +147,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 					System.out.println("#nod->ent: " + entry.getKey() + " : " + entry.getValue());
 				});
 
-				System.out.println("##CentralNode " + centralNodeName);
+				System.out.println("##Central entity " + controlEntity);
 			}
 			
 			@Override

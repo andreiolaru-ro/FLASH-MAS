@@ -34,8 +34,4 @@ public interface MonitoringNodeProxy extends NodeProxy {
      * @return an indication of success.
      */
     boolean send(String source, String destination, String content);
-
-    List<String> getAgentsFromOuterNodes();
-
-    List<String> getOwnAgents();
 }

@@ -12,21 +12,13 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import net.xqhs.flash.core.support.*;
 import net.xqhs.flash.core.util.PlatformUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
-import net.xqhs.flash.core.monitoring.MonitoringNodeProxy;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -35,7 +27,6 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -48,7 +39,7 @@ import net.xqhs.util.logging.Unit;
  */
 public class Node extends Unit implements Entity<Node>
 {
-	protected String						name;
+	protected String						 name;
 
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
@@ -60,90 +51,19 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
-	protected List<String>                  registeredNodes     = new LinkedList<>();
+	protected MessagingShard                messagingShard;
 
-	protected MessagingShard messagingShard;
-
-	protected CentralMonitoringAndControlEntity centralMonitoringEntity;
-
-	protected String centralMonitoringEntityName;
-
-    protected MessageReceiver centralMessagingReceiver;
+	protected String                        centralMonitoringEntityName;
 
     private boolean isRunning;
 
-    private static final String SHARD_ENDPOINT                  = "control";
+    private static final String             SHARD_ENDPOINT                  = "control";
 
-	private HashMap<String, List<String>> nodeToAgents          = new LinkedHashMap<>();
-
-	private MonitoringNodeProxy powerfulProxy = new MonitoringNodeProxy() {
-		@Override
-		public boolean register(String entityName, MessageReceiver receiver) {
-			centralMonitoringEntityName = entityName;
-			centralMessagingReceiver = receiver;
-			return true;
-		}
-
-		@Override
-		public boolean send(String source, String destination, String content) {
-			return false;
-		}
-
-		@Override
-		public List<String> getAgentsFromOuterNodes() {
-			List<String> list = nodeToAgents.entrySet()
-					.stream()
-					.flatMap(e -> e.getValue().stream())
-					.collect(Collectors.toList());
-			return list;
-		}
-
-		@Override
-		public List<String> getOwnAgents() {
-			List<Entity<?>> list = getTypeEntities("agent");
-			List<String> ownEntities = list.stream().map(el -> el.getName()).collect(Collectors.toList());
-			return ownEntities;
-		}
-
-		@Override
-		public Map<String, List<Entity<?>>> getEntities() {
-			return registeredEntities;
-		}
-
-		@Override
-		public List<Entity<?>> getTypeEntities(String entityType) {
-			return registeredEntities.get(entityType);
-		}
-
-		@Override
-		public List<Entity<?>> getEntitiesOrder() {
-			return entityOrder;
-		}
-
-		@Override
-		public String getEntityName() {
-			return getName();
-		}
-
-	};
+	public void setCentralMonitoringEntityName(String name) {
+		centralMonitoringEntityName = name;
+	}
 
 	protected ShardContainer proxy = new ShardContainer() {
-
-		public void parseJSON(Object obj)
-		{
-			JSONObject jsonObject = (JSONObject) obj;
-			if(jsonObject.get("nodeName") != null)
-			{
-				String newNodeToRegister = (String)jsonObject.get("nodeName");
-				if(jsonObject.get("agentName") != null) {
-					String newAgent = (String)jsonObject.get("agentName");
-					nodeToAgents.get(newNodeToRegister).add(newAgent);
-				} else {
-					registeredNodes.add(newNodeToRegister);
-					nodeToAgents.put(newNodeToRegister, new LinkedList<>());
-				}
-			}
-		}
 
 		@Override
 		public void postAgentEvent(AgentEvent event) {
@@ -151,8 +71,6 @@ public class Node extends Unit implements Entity<Node>
 			{
 				case AGENT_WAVE:
 					String content = ((AgentWave) event).getContent();
-					Object obj = JSONValue.parse(content);
-					if(obj != null) parseJSON(obj);
 					break;
 				default:
 					break;
@@ -195,13 +113,6 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName)
 	{
-		if(entityType.equals(DeploymentConfiguration.MONITORING_TYPE))
-		{
-			centralMonitoringEntity = (CentralMonitoringAndControlEntity) entity;
-//			centralMonitoringEntity.addNodeProxy(asPowerfulContext());
-//			centralMonitoringEntity.startGUIBoard();
-		}
-
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<Entity<?>>());
@@ -209,29 +120,31 @@ public class Node extends Unit implements Entity<Node>
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
 
-	protected void registerNodeToCentralNode() {
-		if(centralMonitoringEntity != null) return;
-		JSONObject registerNode = new JSONObject();
-		registerNode.put("nodeName", getName());
-		messagingShard.sendMessage(
+	/**
+	 * Method used to send monitoring message to central entity: the message covers necessary information
+	 * about all entities registered and started in the context of current node.
+	 *
+	 * @return
+	 * 				- an indication of success.
+	 */
+	protected boolean registerEntitiesToControlEntity() {
+		JSONArray entities = new JSONArray();
+		registeredEntities.entrySet().forEach(entry-> {
+			String category = entry.getKey();
+			for(Entity<?> entity : entry.getValue())
+			{
+				JSONObject ent = new JSONObject();
+				ent.put("node", getName());
+				ent.put("category", category);
+				ent.put("name", entity.getName());
+				ent.put("operations", "stop");
+				entities.add(ent);
+			}
+		});
+		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(DeploymentConfiguration.CENTRAL_NODE_NAME, SHARD_ENDPOINT),
-				registerNode.toString());
-	}
-
-	protected void registerAgentToCentralNode(String agentName) {
-		if(centralMonitoringEntity != null) return;
-		JSONObject registerAgent = new JSONObject();
-		registerAgent.put("agentName", agentName);
-		registerAgent.put("nodeName", getName());
-		messagingShard.sendMessage(
-				AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(DeploymentConfiguration.CENTRAL_NODE_NAME, SHARD_ENDPOINT),
-				registerAgent.toString());
-	}
-
-	protected void registerNodeToPylon() {
-		messagingShard.registerNode(getName(), centralMonitoringEntity != null);
+				AgentWave.makePath(centralMonitoringEntityName, SHARD_ENDPOINT),
+				entities.toString());
 	}
 	
 	@Override
@@ -246,13 +159,16 @@ public class Node extends Unit implements Entity<Node>
 			{
 				lf("entity [] started successfully.", entityName);
 				if(getName() != null && (entity instanceof DefaultPylonImplementation))
-					registerNodeToPylon();
+					messagingShard.registerNode(getName());
 			}
 			else
 				le("failed to start entity [].", entityName);
 		}
 		isRunning = true;
 		li("Node [] started.", name);
+
+		if(getName() != null && registerEntitiesToControlEntity())
+			lf("Entities successfully registered to control entity.");
 		return true;
 	}
 	
@@ -337,10 +253,6 @@ public class Node extends Unit implements Entity<Node>
 	{
 		// no functionality offered
 		return null;
-	}
-
-	public EntityProxy<Node> asPowerfulContext() {
-		return powerfulProxy;
 	}
 
 	public List<Entity<?>> getEntities() {
