@@ -1,6 +1,6 @@
 package net.xqhs.flash.core.monitoring.gui;
 
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
@@ -9,7 +9,7 @@ import javax.swing.border.EmptyBorder;
 
 public class GUIBoard extends JFrame {
     private JPanel contentPane;
-    private CentralMonitoringAndControlEntity centralEntityProxy;
+    private CentralEntityProxy centralEntityProxy;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -28,14 +28,16 @@ public class GUIBoard extends JFrame {
         JButton btn = new JButton(text);
         btn.setBackground(Color.decode("#41B880"));
         btn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.decode("#34495E"), 2),
-                BorderFactory.createLineBorder(Color.decode("#41B880"), 7)));
+                BorderFactory.createLineBorder(Color.decode("#34495E"), 1),
+                BorderFactory.createLineBorder(Color.decode("#41B880"), 5)));
+        btn.setFont(new Font(Font.DIALOG, Font.PLAIN|Font.BOLD, 12));
         return btn;
     }
 
 
-    public GUIBoard(CentralMonitoringAndControlEntity entity) {
+    public GUIBoard(CentralEntityProxy entity) {
         centralEntityProxy = entity;
+        setName("MainGuiBoard");
 
         setTitle("Monitoring and control");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -87,7 +89,7 @@ public class GUIBoard extends JFrame {
         setSize(width / 2, height / 2);
         setLocationRelativeTo(null);
 
-        setVisible(true);
+        setVisible(false);
     }
 
 }

@@ -154,17 +154,22 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         centralMessagingShard.registerCentralEntity(name);
         isRunning = true;
         li("[] started successfully.", getName());
+
+        if(canStartGuiBoard())
+            li("[] launched.", gui.getName());
         return true;
     }
 
-    public void startGUIBoard() {
+    public boolean canStartGuiBoard() {
+        gui = new GUIBoard(new CentralEntityProxy());
         SwingUtilities.invokeLater(() -> {
             try {
-                gui = new GUIBoard(this);
-            } catch (Exception e) {
+                gui.setVisible(true);
+            } catch (RuntimeException e) {
                 e.printStackTrace();
             }
         });
+        return true;
     }
 
     @Override
@@ -226,26 +231,27 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         return null;
     }
 
+    public class CentralEntityProxy {
+        /**
+         * @param entityName
+         *                  - the name of destination entity
+         * @param command
+         *                  - control command
+         * @return
+         *                  - an indication of success
+         */
+        public boolean isGuiCommandSent(String entityName, String command) {
+            //TODO: Change this if necessary
+            return centralMessagingShard
+                    .sendMessage(
+                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                            AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
+                            command);
+        }
 
-    /**
-     * @param entityName
-     *                  - the name of destination entity
-     * @param command
-     *                  - control command
-     * @return
-     *                  - an indication of success
-     */
-    public boolean sendGUICommand(String entityName, String command) {
-        //TODO: Change this if necessary
-        return centralMessagingShard
-                .sendMessage(
-                        AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                        AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
-                        command);
-    }
-
-    public boolean sendToAllAgents(String command) {
-        //TODO:
-        return true;
+        public boolean sendToAllAgents(String command) {
+            //TODO:
+            return true;
+        }
     }
 }
