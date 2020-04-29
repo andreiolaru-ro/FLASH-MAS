@@ -3,13 +3,13 @@ node:
   children:
     - type: form
       port: port1
-      role: activate
+      role: content
     - type: spinner
       port: port1
-      role: activate
+      role: content
     - type: form
       port: port1
-      role: activate
+      role: content
     - type: button
       port: port1
       role: activate

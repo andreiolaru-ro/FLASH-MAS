@@ -4,6 +4,6 @@ node:
     - type: form
       port: port1
       role: content
-    - type: button
+    - type: form
       port: port1
-      role: activate
+      role: content

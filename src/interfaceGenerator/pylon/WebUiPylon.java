@@ -89,8 +89,8 @@ public class WebUiPylon implements PylonProxy {
 
         indentLevel++;
         result += tab.repeat(indentLevel);
-        if (element.getText() != null) {
-            result += element.getText();
+        if (element.getValue() != null) {
+            result += element.getValue();
         } else {
             result += element.getId();
         }

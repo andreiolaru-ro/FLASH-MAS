@@ -3,7 +3,7 @@ node:
   children:
     - type: spinner
       port: port1
-      role: activate
+      role: content
     - type: button
       text: activate!
       port: port1

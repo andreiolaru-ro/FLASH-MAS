@@ -75,8 +75,8 @@ public class SwingUiPylon implements PylonProxy {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         JButton button = new JButton();
 
-        if (element.getText() != null) {
-            button.setText(element.getText());
+        if (element.getValue() != null) {
+            button.setText(element.getValue());
         } else {
             button.setText(element.getId());
         }
@@ -84,7 +84,7 @@ public class SwingUiPylon implements PylonProxy {
         if (element.getRole().equals(PortType.ACTIVE.type)) {
             button.addActionListener(e -> {
                 var port = element.getPort();
-                var activePorts = Element.getActivePorts();
+                var activePorts = Element.getActivePortsWithElements();
                 var elements = activePorts.get(port);
 
                 ArrayList<String> inputIds = new ArrayList<>();
@@ -123,8 +123,8 @@ public class SwingUiPylon implements PylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         JLabel label = new JLabel();
-        if (element.getText() != null) {
-            label.setText(element.getText());
+        if (element.getValue() != null) {
+            label.setText(element.getValue());
         }
         panel.add(label);
         panel.putClientProperty(element.getId(), label);
@@ -135,8 +135,8 @@ public class SwingUiPylon implements PylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         JTextArea form = new JTextArea();
-        if (element.getText() != null) {
-            form.setText(element.getText());
+        if (element.getValue() != null) {
+            form.setText(element.getValue());
         } else {
             form.setText("");
         }
