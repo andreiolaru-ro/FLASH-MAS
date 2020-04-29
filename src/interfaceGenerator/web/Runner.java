@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
+import interfaceGenerator.Pair;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -15,6 +16,7 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,13 +66,18 @@ public class Runner extends AbstractVerticle {
                             // System.out.println(input);
 
                             Gson gson = new Gson();
-                            Type type = new TypeToken<HashMap<String, List<String>>>() {
+                            Type type = new TypeToken<HashMap<String, Map<String, String>>>() {
                             }.getType();
-                            HashMap<String, List<String>> clonedMap = gson.fromJson(input, type);
+                            HashMap<String, Map<String, String>> clonedMap = gson.fromJson(input, type);
 
-                            // System.out.println(clonedMap);
+                            // map of id - value of element with the respective id
                             var ids = clonedMap.get("data");
-                            PageBuilder.guiShard.getActiveInput(ids);
+                            ArrayList<Pair<String, String>> data = new ArrayList<>();
+                            for (var entry : ids.entrySet()) {
+                                var role = Element.findRoleOfElementById(entry.getKey());
+                                data.add(new Pair<>(role, entry.getValue()));
+                            }
+                            PageBuilder.guiShard.getActiveInput(data);
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {
