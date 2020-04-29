@@ -3,6 +3,7 @@ package net.xqhs.flash.core.agent;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * The <i>wave</i> is a type of event that conveys information between two entities, whether these entities are agents,
@@ -211,6 +212,13 @@ public class AgentWave extends AgentEvent
 	public String getContent()
 	{
 		return getValue(CONTENT);
+	}
+
+	/**
+	 * @return the contents of the wave.
+	 */
+	public List<String> getContents() {
+		return getValues(CONTENT);
 	}
 	
 	/**

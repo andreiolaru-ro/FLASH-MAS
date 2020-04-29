@@ -1,5 +1,6 @@
 package interfaceGenerator;
 
+import interfaceGenerator.types.PortType;
 import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -56,16 +57,21 @@ public class GUIShard extends AgentShardCore {
         for (var value : values) {
             activeInput.addContent(value);
         }
+        System.out.println(activeInput.getContents());
         super.getAgent().postAgentEvent(activeInput);
     }
 
     public AgentWave getInput(String portName) {
-        // TODO: pasive input
-
         var elements = Element.findElementsByPort(PageBuilder.getPage(), portName);
         AgentWave event = new AgentWave();
 
-        // TODO: check the pasive ports
+        for (var element : elements) {
+            if (element.getRole().equals(PortType.CONTENT.name())) {
+                if (element.getValue() != null) {
+                    event.addContent(element.getValue());
+                }
+            }
+        }
 
         return event;
     }
@@ -73,6 +79,7 @@ public class GUIShard extends AgentShardCore {
     public void sendOutput(AgentWave agentWave) {
         // TODO: output port
         var port = agentWave.getCompleteDestination();
-        var content = agentWave.getContent();
+        var content = agentWave.getContents();
+        // TODO: check output ports>
     }
 }

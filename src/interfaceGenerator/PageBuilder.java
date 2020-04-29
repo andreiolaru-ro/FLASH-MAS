@@ -42,7 +42,7 @@ public class PageBuilder {
         // System.out.println(configuration);
 
         // checking the active ports, with their elements
-        Element.checkActivePorts(configuration);
+        Element.checkActivePortsWithElement(configuration);
 
         if (type != null) {
             switch (type) {

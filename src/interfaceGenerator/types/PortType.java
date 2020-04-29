@@ -3,6 +3,7 @@ package interfaceGenerator.types;
 public enum PortType {
     ACTIVE("activate"),
     PASSIVE("passive"),
+    CONTENT("content"),
     OUTPUT("output");
 
     public final String type;

@@ -10,7 +10,10 @@ public class Element {
     private List<Element> children = new ArrayList<>();
     private String type = ElementType.BLOCK.type;
     private Map<String, String> properties = new HashMap<>();
-    private String text;
+    /*
+        area for active input ports
+     */
+    private static HashMap<String, List<Element>> activePortsWithElements = new HashMap<>();
     private String port;
     private String role;
 
@@ -46,13 +49,8 @@ public class Element {
         this.properties = properties;
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
+    private static HashMap<String, List<Element>> pasivePortsWithElements = new HashMap<>();
+    private static Set<String> activePorts = new HashSet<>();
 
     public String getPort() {
         return port;
@@ -71,34 +69,99 @@ public class Element {
     }
 
     private static int counter = 0;
-    /*
-        area for active input ports
-     */
-    private static HashMap<String, List<Element>> activePorts = new HashMap<>();
+    private static Set<String> pasivePorts = new HashSet<>();
+    private static Set<String> ports = new HashSet<>();
+    private static boolean checked = false;
+    private String value;
 
-    public static void checkActivePorts(Element element) {
+    public static void checkActivePortsWithElement(Element element) {
         if (element.getPort() != null) {
+            ports.add(element.getPort());
             if (element.getRole().equals(PortType.ACTIVE.type)) {
-                if (activePorts.containsKey(element.getPort())) {
-                    var value = activePorts.get(element.getPort());
+                if (activePortsWithElements.containsKey(element.getPort())) {
+                    var value = activePortsWithElements.get(element.getPort());
                     value.add(element);
-                    activePorts.put(element.getPort(), value);
+                    activePortsWithElements.put(element.getPort(), value);
                 } else {
-                    activePorts.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
+                    activePorts.add(element.getPort());
+                    activePortsWithElements.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
                 }
             }
         }
 
         if (element.getChildren() != null) {
             for (var child : element.getChildren()) {
-                checkActivePorts(child);
+                checkActivePortsWithElement(child);
             }
         }
     }
 
-    public static HashMap<String, List<Element>> getActivePorts() {
-        return activePorts;
+    public static void checkPasivePortsWithElements(Element element) {
+        if (!checked) {
+            // checking pasive ports (non-active ones)
+            for (var port : ports) {
+                if (!activePorts.contains(port)) {
+                    pasivePorts.add(port);
+                }
+            }
+            checked = true;
+        }
+
+        if (element.getPort() != null) {
+            if (pasivePorts.contains(element.getPort())) {
+                if (pasivePortsWithElements.containsKey(element.getPort())) {
+                    var value = pasivePortsWithElements.get(element.getPort());
+                    value.add(element);
+                    pasivePortsWithElements.put(element.getPort(), value);
+                } else {
+                    pasivePortsWithElements.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
+                }
+            }
+        }
+
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                checkPasivePortsWithElements(child);
+            }
+        }
     }
+
+    public static HashMap<String, List<Element>> getActivePortsWithElements() {
+        return activePortsWithElements;
+    }
+
+    public static HashMap<String, List<Element>> getPasivePortsWithElements() {
+        return pasivePortsWithElements;
+    }
+
+    public static String identifyActivePortOfElement(String id) {
+        System.out.println(id);
+        System.out.println(activePortsWithElements);
+        for (var entry : activePortsWithElements.entrySet()) {
+            var port = entry.getKey();
+            for (var element : entry.getValue()) {
+                if (id.equals(element.getId())) {
+                    return port;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String findActiveInputIdFromPort(String port) {
+        for (var entry : activePortsWithElements.entrySet()) {
+            if (port.equals(entry.getKey())) {
+                for (var element : entry.getValue()) {
+                    if (element.getType().equals(ElementType.FORM.type)
+                            || element.getType().equals(ElementType.SPINNER.type)) {
+                        return element.getId();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     public static List<Element> findElementsByPort(Element element, String portName) {
         List<Element> elements = new ArrayList<>();
@@ -140,37 +203,9 @@ public class Element {
         return result.toString();
     }
 
-    public static String identifyActivePortOfElement(String id) {
-        System.out.println(id);
-        System.out.println(activePorts);
-        for (var entry : activePorts.entrySet()) {
-            var port = entry.getKey();
-            for (var element : entry.getValue()) {
-                if (id.equals(element.getId())) {
-                    return port;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static String findActiveInputIdFromPort(String port) {
-        for (var entry : activePorts.entrySet()) {
-            if (port.equals(entry.getKey())) {
-                for (var element : entry.getValue()) {
-                    if (element.getType().equals(ElementType.FORM.type)
-                            || element.getType().equals(ElementType.SPINNER.type)) {
-                        return element.getId();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public static List<String> findActiveInputIdsFromPort(String port) {
         List<String> list = new ArrayList<>();
-        for (var entry : activePorts.entrySet()) {
+        for (var entry : activePortsWithElements.entrySet()) {
             if (port.equals(entry.getKey())) {
                 for (var element : entry.getValue()) {
                     if (element.getType().equals(ElementType.FORM.type)
@@ -181,5 +216,13 @@ public class Element {
             }
         }
         return list;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
