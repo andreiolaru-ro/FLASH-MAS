@@ -12,6 +12,7 @@ import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -20,7 +21,11 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
+public class CentralMonitoringAndControlEntity extends Unit implements  Entity<Pylon> {
+
+    {
+        setUnitName("monitoring-and-control-entity").setLoggerType(PlatformUtils.platformLogType());
+    }
 
     protected static final String	SHARD_ENDPOINT				        = "control";
 
@@ -57,17 +62,22 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
             {
                 case AGENT_WAVE:
                     String content = ((AgentWave) event).getContent();
+                    String source = ((AgentWave) event).getFirstSource();
                     Object obj = JSONValue.parse(content);
-                    if(obj != null) parseJSON(obj);
+                    if(obj == null)
+                        le("null message from [].", source);
+                    if(parseJSON(obj))
+                        li("Entities from [] registered.", source);
                     break;
                 default:
                     break;
             }
         }
 
-        public void parseJSON(Object obj)
+        public boolean parseJSON(Object obj)
         {
-            // entities registered in the context of a node come as json arrays
+            // Here comes the entities registered in the context of a node. Being a bunch of entities,
+            // they always come in json array format.
             if(obj instanceof JSONArray)
             {
                 JSONArray ja = (JSONArray)obj;
@@ -90,7 +100,9 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
                         allNodeEntities.get(node).put(category, new LinkedList<>());
                     allNodeEntities.get(node).get(category).add(name);
                 }
+                return true;
             }
+            return false;
         }
 
         @Override
@@ -135,11 +147,13 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean start() {
-        if(centralMessagingShard == null)
-            throw new IllegalStateException("No messaging shard present");
+        if(centralMessagingShard == null){
+            le("[] unable to start. No messaging shard found.", getName());
+            return false;
+        }
         centralMessagingShard.registerCentralEntity(name);
-        System.out.println("[" + getName() + "] starting...");
         isRunning = true;
+        li("[] started successfully.", getName());
         return true;
     }
 
@@ -155,7 +169,7 @@ public class CentralMonitoringAndControlEntity implements  Entity<Pylon> {
 
     @Override
     public boolean stop() {
-        System.out.println(getName() + "stopped...");
+        li("[] stopped successfully.", getName());
         isRunning = false;
         return true;
     }
