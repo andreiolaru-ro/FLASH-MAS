@@ -3,19 +3,19 @@ node:
   children:
     - type: form
       port: port1
-      role: activate
+      role: ggaga
     - type: spinner
       port: port1
-      role: activate
+      role: shsahdsh
     - type: form
       port: port2
-      role: activate
+      role: hsdhsdh
     - type: button
       port: port2
       role: activate
     - type: form
       port: port1
-      role: activate
+      role: fsafasfasf
     - type: button
       port: port1
       role: activate

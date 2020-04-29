@@ -3,7 +3,7 @@ node:
   children:
     - type: form
       port: port1
-      role: content
+      role: gdsgsdg
     - type: button
       port: port1
       role: activate
