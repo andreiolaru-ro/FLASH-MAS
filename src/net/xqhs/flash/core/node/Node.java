@@ -53,15 +53,9 @@ public class Node extends Unit implements Entity<Node>
 
 	protected MessagingShard                messagingShard;
 
-	protected String                        centralMonitoringEntityName;
-
     private boolean isRunning;
 
     private static final String             SHARD_ENDPOINT                  = "control";
-
-	public void setCentralMonitoringEntityName(String name) {
-		centralMonitoringEntityName = name;
-	}
 
 	protected ShardContainer proxy = new ShardContainer() {
 
@@ -143,7 +137,7 @@ public class Node extends Unit implements Entity<Node>
 		});
 		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(centralMonitoringEntityName, SHARD_ENDPOINT),
+				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
 				entities.toString());
 	}
 	

@@ -142,10 +142,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * */
 	public static final String MONITORING_TYPE                          = "net/xqhs/flash/core/monitoring";
 
-	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "Central Monitoring Entity";
-
-	public static String CENTRAL_NODE_NAME   ;
-
+	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "Monitoring&Control_Entity";
 
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
