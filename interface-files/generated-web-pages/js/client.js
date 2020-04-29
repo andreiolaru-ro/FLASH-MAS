@@ -10,11 +10,10 @@ function init() {
         eb.registerHandler('server-to-client', (error, message) => {
             let ids = JSON.parse(message.body)["data"];
             console.log(ids);
-            let list_values = [];
+            let list_values = {};
 
             for (let i = 0; i < ids.length; i++) {
-                let val = document.getElementById(ids[i]).value;
-                list_values.push(val);
+                list_values[ids[i]] = document.getElementById(ids[i]).value
             }
 
             values = {"data": list_values};

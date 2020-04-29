@@ -8,7 +8,6 @@ import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GUIShard extends AgentShardCore {
     protected GUIShard(AgentShardDesignation designation) {
@@ -48,17 +47,6 @@ public class GUIShard extends AgentShardCore {
         System.out.println("Generating AgentWave for active input...");
         AgentWave activeInput = new AgentWave(value, "/");
         activeInput.addSourceElementFirst("/gui/port");
-        super.getAgent().postAgentEvent(activeInput);
-    }
-
-    public void getActiveInput(List<String> values) {
-        System.out.println("Generating AgentWave for active input...");
-        AgentWave activeInput = new AgentWave(null, "/");
-        activeInput.addSourceElementFirst("/gui/port");
-        for (var value : values) {
-            activeInput.addContent(value);
-        }
-        System.out.println(activeInput.getContents());
         super.getAgent().postAgentEvent(activeInput);
     }
 

@@ -144,7 +144,6 @@ public class Element {
         return null;
     }
 
-
     public static List<Element> findElementsByPort(Element element, String portName) {
         List<Element> elements = new ArrayList<>();
         if (element.getPort() != null) {
@@ -222,6 +221,27 @@ public class Element {
         }
 
         return elements;
+    }
+
+    private static String findRoleOfElementById(Element element, String id) {
+        if (element.getId().equals(id)) {
+            return element.getRole();
+        }
+
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                var port = findRoleOfElementById(child, id);
+                if (port != null) {
+                    return port;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static String findRoleOfElementById(String id) {
+        return findRoleOfElementById(PageBuilder.getPage(), id);
     }
 
 }
