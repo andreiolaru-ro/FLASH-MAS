@@ -2,6 +2,7 @@ package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
+import interfaceGenerator.Pair;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -83,33 +84,35 @@ public class SwingUiPylon implements PylonProxy {
 
         if (element.getRole().equals(PortType.ACTIVE.type)) {
             button.addActionListener(e -> {
+                System.out.println(element.getRole());
+
                 var port = element.getPort();
                 var activePorts = Element.getActivePortsWithElements();
                 var elements = activePorts.get(port);
 
-                ArrayList<String> inputIds = new ArrayList<>();
-                ArrayList<String> values = new ArrayList<>();
+                ArrayList<Pair<String, String>> inputIds = new ArrayList<>();
+                ArrayList<Pair<String, String>> values = new ArrayList<>();
 
                 for (var elem : elements) {
                     if (elem.getType().equals(ElementType.SPINNER.type)
                             || elem.getType().equals(ElementType.FORM.type)) {
-                        inputIds.add(elem.getId());
+                        inputIds.add(new Pair<>(elem.getId(), elem.getRole()));
                     }
                 }
 
                 for (var inputId : inputIds) {
-                    var component = getComponentById(inputId, PageBuilder.getWindow());
+                    var component = getComponentById(inputId.getKey(), PageBuilder.getWindow());
                     if (component instanceof JTextArea) {
                         var form = (JTextArea) component;
                         var value = form.getText();
-                        values.add(value);
+                        values.add(new Pair<>(value, inputId.getValue()));
                     } else if (component instanceof JSpinner) {
                         var spinner = (JSpinner) component;
                         var value = spinner.getValue().toString();
-                        values.add(value);
+                        values.add(new Pair<>(value, inputId.getValue()));
                     }
                 }
-
+                System.out.println(values);
                 PageBuilder.guiShard.getActiveInput(values);
             });
         }

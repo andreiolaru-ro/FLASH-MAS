@@ -49,9 +49,6 @@ public class Element {
         this.properties = properties;
     }
 
-    private static HashMap<String, List<Element>> pasivePortsWithElements = new HashMap<>();
-    private static Set<String> activePorts = new HashSet<>();
-
     public String getPort() {
         return port;
     }
@@ -69,15 +66,33 @@ public class Element {
     }
 
     private static int counter = 0;
-    private static Set<String> pasivePorts = new HashSet<>();
+    private static Set<String> activePorts = new HashSet<>();
     private static Set<String> ports = new HashSet<>();
-    private static boolean checked = false;
+    private static boolean checkedActivePorts = false;
     private String value;
 
-    public static void checkActivePortsWithElement(Element element) {
+    public static void checkActivePorts(Element element) {
         if (element.getPort() != null) {
-            ports.add(element.getPort());
             if (element.getRole().equals(PortType.ACTIVE.type)) {
+                activePorts.add(element.getPort());
+            }
+        }
+
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                checkActivePorts(child);
+            }
+        }
+    }
+
+    public static void checkActivePortsWithElement(Element element) {
+        if (!checkedActivePorts) {
+            checkActivePorts(element);
+            checkedActivePorts = true;
+        }
+
+        if (element.getPort() != null) {
+            if (activePorts.contains(element.getPort())) {
                 if (activePortsWithElements.containsKey(element.getPort())) {
                     var value = activePortsWithElements.get(element.getPort());
                     value.add(element);
@@ -96,42 +111,9 @@ public class Element {
         }
     }
 
-    public static void checkPasivePortsWithElements(Element element) {
-        if (!checked) {
-            // checking pasive ports (non-active ones)
-            for (var port : ports) {
-                if (!activePorts.contains(port)) {
-                    pasivePorts.add(port);
-                }
-            }
-            checked = true;
-        }
-
-        if (element.getPort() != null) {
-            if (pasivePorts.contains(element.getPort())) {
-                if (pasivePortsWithElements.containsKey(element.getPort())) {
-                    var value = pasivePortsWithElements.get(element.getPort());
-                    value.add(element);
-                    pasivePortsWithElements.put(element.getPort(), value);
-                } else {
-                    pasivePortsWithElements.put(element.getPort(), new ArrayList<>(Collections.singletonList(element)));
-                }
-            }
-        }
-
-        if (element.getChildren() != null) {
-            for (var child : element.getChildren()) {
-                checkPasivePortsWithElements(child);
-            }
-        }
-    }
 
     public static HashMap<String, List<Element>> getActivePortsWithElements() {
         return activePortsWithElements;
-    }
-
-    public static HashMap<String, List<Element>> getPasivePortsWithElements() {
-        return pasivePortsWithElements;
     }
 
     public static String identifyActivePortOfElement(String id) {
@@ -225,4 +207,21 @@ public class Element {
     public void setValue(String value) {
         this.value = value;
     }
+
+    public static List<Element> findElementsByRole(Element element, String role) {
+        List<Element> elements = new ArrayList<>();
+
+        if (element.getRole() != null && element.getRole().equals(role)) {
+            elements.add(element);
+        }
+
+        if (element.getChildren() != null) {
+            for (var child : element.getChildren()) {
+                elements.addAll(findElementsByRole(child, role));
+            }
+        }
+
+        return elements;
+    }
+
 }
