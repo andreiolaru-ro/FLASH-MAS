@@ -3,7 +3,7 @@ node:
   children:
     - type: form
       port: port1
-      role: content
+      role: sdgsdg
     - type: form
       port: port1
-      role: content
+      role: hsfbsfdv
