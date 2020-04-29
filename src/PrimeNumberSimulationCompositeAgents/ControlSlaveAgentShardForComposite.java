@@ -82,29 +82,10 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
                         long elapsedTime = System.nanoTime() - startTime;
                         System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
                         setSimulationReady(true);
-                        System.out.println(isSimulationReady());
                     }
                     break;
             }
 
-            /*if (((AgentWave) event).getCompleteDestination().equals("Master")) {
-                //printMessage(event);
-                decrementSlaveAgentCount();
-                if (slaveAgentsCount == 0) {
-                    long elapsedTime = System.nanoTime() - startTime;
-                    System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
-                }
-            } else if (((AgentWave) event).getCompleteDestination().contains("Master")) {
-                String content = ((AgentWave) event).getContent();
-                switch (content) {
-                    case SEND_LIMITS:
-                        giveTasksToAgents();
-                        break;
-                    case GATHER_RESULTS:
-                        gatherAgentsResults();
-                        break;
-                }
-            }*/
         }
     }
 

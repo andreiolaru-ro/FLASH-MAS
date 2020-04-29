@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class PrimeNumberSimulationCompositeAgents {
 
 
-    private static int SLAVE_AGENT_COUNT = 125000;
+    private static int SLAVE_AGENT_COUNT = 10;
 
     public static ArrayList<PrimeNumberCompositeAgent> createAgentList(int agentCount) {
         ArrayList<PrimeNumberCompositeAgent> agentList = new ArrayList<>();
@@ -83,9 +83,6 @@ public class PrimeNumberSimulationCompositeAgents {
         LocalSupport.SimpleLocalMessaging messagingShardMaster =  masterAgent.getMessagingShard();
         messagingShardMaster.sendMessage(masterAgent.getName(), masterAgent.getName(), ControlSlaveAgentShardForComposite.SEND_LIMITS);
 
-        /*  Make master gather agents responses { gatherAgentsResuls} */
-        messagingShardMaster.sendMessage(masterAgent.getName(), masterAgent.getName(), ControlSlaveAgentShardForComposite.GATHER_RESULTS);
-
         /* Start agents  {findPrimeNumbersCount }*/
        for(PrimeNumberCompositeAgent agent: agentList) {
            LocalSupport.SimpleLocalMessaging messagingShardSlave =  agent.getMessagingShard();
@@ -94,19 +91,15 @@ public class PrimeNumberSimulationCompositeAgents {
 
 
         //* STOP EVERYTHING  *//
-        System.out.println("UHM");
         ControlSlaveAgentShardForComposite contrlShard = masterAgent.getControlShard();
        while(!contrlShard.isSimulationReady()) {
            ;
           // System.out.println("while");
        }
-       System.out.println("A trecut de while");
 
         masterAgent.stop();
-        System.out.println("S-a oprit master");
         for(PrimeNumberCompositeAgent agent : agentList) {
             agent.stop();
-           // System.out.println("S-a oprit " + agent.getName());
         }
 
         System.out.println("Stop " + Thread.activeCount()  + " threaduri");
