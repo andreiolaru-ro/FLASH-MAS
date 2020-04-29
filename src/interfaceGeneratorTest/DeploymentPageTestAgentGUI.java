@@ -5,7 +5,7 @@ import net.xqhs.flash.FlashBoot;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class DeploymentPageTest {
+public class DeploymentPageTestAgentGUI {
     public static void main(String[] args) {
 
         if (args.length == 0) {
@@ -15,9 +15,9 @@ public class DeploymentPageTest {
         }
 
         String test_args = "";
-
-        test_args += " -package interfaceGenerator -loader agent:composite";
-        test_args += " -agent composite:AgentA";
+        // TODO: AgentGUI
+        test_args += " -package interfaceGenerator";
+        test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUI";
         test_args += " -shard GUIShard";
         test_args += " -config";
 

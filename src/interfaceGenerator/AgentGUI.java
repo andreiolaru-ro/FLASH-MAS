@@ -1,6 +1,5 @@
 package interfaceGenerator;
 
-import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.support.Pylon;
@@ -27,6 +26,7 @@ public class AgentGUI implements Agent {
 
     @Override
     public boolean start() {
+        /*
         String[] arguments = new String[2];
 
         // check if it's not a file
@@ -46,6 +46,9 @@ public class AgentGUI implements Agent {
             e.printStackTrace();
             return false;
         }
+
+         */
+        return true;
     }
 
     @Override

@@ -10,28 +10,28 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import java.util.ArrayList;
 
 public class GUIShard extends AgentShardCore {
+    private String[] parameters = new String[2];
     protected GUIShard(AgentShardDesignation designation) {
         super(designation);
     }
 
     public GUIShard() {
         super(AgentShardDesignation.autoDesignation("GUI"));
+        var guiShardConfiguration = super.getShardData().getSingleTree("config");
+        var configuration = guiShardConfiguration.getTreeKeys().get(0);
+        PageBuilder.guiShard = this;
+
+        this.parameters[1] = configuration;
+        if (configuration.indexOf('{') == -1) {
+            this.parameters[0] = BuildPageTest.FILE;
+        } else {
+            this.parameters[0] = BuildPageTest.INLINE;
+        }
     }
 
     @Override
     public void signalAgentEvent(AgentEvent event) {
         super.signalAgentEvent(event);
-        var guiShardConfiguration = super.getShardData().getSingleTree("config");
-        var configuration = guiShardConfiguration.getTreeKeys().get(0);
-        PageBuilder.guiShard = this;
-
-        String[] parameters = new String[2];
-        parameters[1] = configuration;
-        if (configuration.indexOf('{') == -1) {
-            parameters[0] = BuildPageTest.FILE;
-        } else {
-            parameters[0] = BuildPageTest.INLINE;
-        }
 
         try {
             // System.out.println(PageBuilder.platformType);
