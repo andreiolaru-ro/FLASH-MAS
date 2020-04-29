@@ -1,15 +1,21 @@
-platformType: html
+platformType: desktop
 node:
   children:
     - type: form
       port: port1
-      role: content
+      role: abc
     - type: spinner
       port: port1
-      role: content
+      role: ascas
     - type: form
       port: port1
-      role: content
+      role: fasfsafsa
+    - type: form
+      port: port1
+      role: gsdgsdgdg
+    - type: form
+      port: port1
+      role: faasgfagasgatga
     - type: button
       port: port1
       role: activate

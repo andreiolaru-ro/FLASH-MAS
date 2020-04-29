@@ -7,6 +7,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GUIShard extends AgentShardCore {
@@ -61,6 +62,17 @@ public class GUIShard extends AgentShardCore {
         super.getAgent().postAgentEvent(activeInput);
     }
 
+    public void getActiveInput(ArrayList<Pair<String, String>> values) {
+        System.out.println("Generating AgentWave for active input...");
+        AgentWave activeInput = new AgentWave(null, "/");
+        activeInput.addSourceElementFirst("/gui/port");
+        for (var value : values) {
+            activeInput.add(value.getKey(), value.getValue());
+        }
+        System.out.println(activeInput.getKeys());
+        super.getAgent().postAgentEvent(activeInput);
+    }
+
     public AgentWave getInput(String portName) {
         var elements = Element.findElementsByPort(PageBuilder.getPage(), portName);
         AgentWave event = new AgentWave();
@@ -68,7 +80,7 @@ public class GUIShard extends AgentShardCore {
         for (var element : elements) {
             if (element.getRole().equals(PortType.CONTENT.name())) {
                 if (element.getValue() != null) {
-                    event.addContent(element.getValue());
+                    event.add(element.getRole(), element.getValue());
                 }
             }
         }
@@ -79,7 +91,17 @@ public class GUIShard extends AgentShardCore {
     public void sendOutput(AgentWave agentWave) {
         // TODO: output port
         var port = agentWave.getCompleteDestination();
-        var content = agentWave.getContents();
-        // TODO: check output ports>
+        var roles = agentWave.getKeys();
+        /*
+        TODO
+        find elements with the respective roles - a map with role and list of elements with the respective role
+        for each role - fill the elements in the interface
+         */
+        for (var role : roles) {
+            var elementsFromPort = Element.findElementsByRole(PageBuilder.getPage(), role);
+            var values = agentWave.getValues(role);
+            int size = Math.min(elementsFromPort.size(), values.size());
+            // TODO: fill the elements
+        }
     }
 }
