@@ -11,6 +11,7 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.local.LocalSupport;
 
 import java.util.ArrayList;
 
@@ -44,7 +45,17 @@ public class MasterCompositeAgent extends CompositeAgent {
         this.slaveAgentsCount = slaveAgentsCount;
     }
 
-    @Override
+    public LocalSupport.SimpleLocalMessaging getMessagingShard() {
+        LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
+        return  messagingShard;
+    }
+
+    public ControlSlaveAgentShardForComposite getControlShard() {
+        ControlSlaveAgentShardForComposite controlShard = (ControlSlaveAgentShardForComposite) getShard(AgentShardDesignation.customShard(ControlSlaveAgentShardForComposite.CONTROL_SHARD_DESIGNATION));
+        return  controlShard;
+    }
+
+    /*@Override
     public boolean start() {
         super.start();
         ControlSlaveAgentShardForComposite controlShard = (ControlSlaveAgentShardForComposite) getShard(AgentShardDesignation.customShard(ControlSlaveAgentShardForComposite.CONTROL_SHARD_DESIGNATION));
@@ -57,7 +68,7 @@ public class MasterCompositeAgent extends CompositeAgent {
         super.run();
         ControlSlaveAgentShardForComposite controlShard = (ControlSlaveAgentShardForComposite) getShard(AgentShardDesignation.customShard(ControlSlaveAgentShardForComposite.CONTROL_SHARD_DESIGNATION));
         controlShard.gatherAgentsResults();
-    }
+    }*/
 
 
 

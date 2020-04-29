@@ -9,22 +9,27 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.local.LocalSupport;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class ControlSlaveAgentShardForComposite extends AgentShardCore {
 
     private static final int PRIME_NUMBERS_LIMIT = 50;
-    public static final String LIMIT = "Limit";
     private MessagingPylonProxy pylon;
     private static long startTime = 0;
     private int slaveAgentsCount = 0;
+
     public static String CONTROL_SHARD_DESIGNATION = "Control slave agents shard designation";
+    public static final String SEND_LIMITS = "Send limits";
+    public static final String GATHER_RESULTS = "Gather Results";
+
+    private boolean simulationReady = false;
 
     /**
      * The constructor assigns the designation to the shard.
      * <p>
      * IMPORTANT: extending classes should only perform in the constructor initializations that do not depend on the
-     * parent agent or on other shards, as when the shard is created, the {@link AgentShardCore#parentAgent} member is
+     * parent agent or on other shards, as when the shard is created, the  member is
      * <code>null</code>. The assignment of a parent (as any parent change) is notified to extending classes by calling
      * the method {@link AgentShardCore#parentChangeNotifier}.
      * <p>
@@ -52,7 +57,7 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
         for (int i = 0; i < slaveAgentsCount; i++) {
             int limit = new Random().nextInt(PRIME_NUMBERS_LIMIT);
             LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getAgent().getAgentShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
-            messagingShard.sendMessage("Master", Integer.toString(i), Integer.toString(limit));
+            messagingShard.sendMessage("Master", "Agent " + Integer.toString(i), Integer.toString(limit));
         }
 
     }
@@ -61,14 +66,45 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
     @Override
     public void signalAgentEvent(AgentEvent event) {
         if(event instanceof AgentWave){
-            if (((AgentWave) event).getCompleteDestination().equals("Master")) {
+
+            String content = ((AgentWave) event).getContent();
+            switch (content) {
+                case SEND_LIMITS:
+                    giveTasksToAgents(slaveAgentsCount);
+                    break;
+                case GATHER_RESULTS:
+                    gatherAgentsResults();
+                    break;
+                default:
+                    //printMessage(event);
+                    decrementSlaveAgentCount();
+                    if (slaveAgentsCount == 0) {
+                        long elapsedTime = System.nanoTime() - startTime;
+                        System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
+                        setSimulationReady(true);
+                        System.out.println(isSimulationReady());
+                    }
+                    break;
+            }
+
+            /*if (((AgentWave) event).getCompleteDestination().equals("Master")) {
                 //printMessage(event);
                 decrementSlaveAgentCount();
                 if (slaveAgentsCount == 0) {
                     long elapsedTime = System.nanoTime() - startTime;
                     System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
                 }
-            }
+            } else if (((AgentWave) event).getCompleteDestination().contains("Master")) {
+                String content = ((AgentWave) event).getContent();
+                switch (content) {
+                    case SEND_LIMITS:
+                        giveTasksToAgents();
+                        break;
+                    case GATHER_RESULTS:
+                        gatherAgentsResults();
+                        break;
+                }
+            }*/
         }
     }
 
@@ -89,5 +125,14 @@ public class ControlSlaveAgentShardForComposite extends AgentShardCore {
                 + ((AgentWave) event).getCompleteSource() + " la " +
                 ((AgentWave) event).getCompleteDestination());
     }
+
+    public boolean isSimulationReady (){
+        return simulationReady;
+    }
+
+    public  void setSimulationReady(boolean value) {
+        simulationReady = value;
+    }
+
 
 }

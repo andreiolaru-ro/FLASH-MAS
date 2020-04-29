@@ -12,13 +12,13 @@ import java.util.ArrayList;
 public class PrimeNumberSimulationCompositeAgents {
 
 
-    private static int SLAVE_AGENT_COUNT = 250000;
+    private static int SLAVE_AGENT_COUNT = 125000;
 
     public static ArrayList<PrimeNumberCompositeAgent> createAgentList(int agentCount) {
         ArrayList<PrimeNumberCompositeAgent> agentList = new ArrayList<>();
         for(int i = 0; i < agentCount; i++) {
             MultiTreeMap configuration = new MultiTreeMap();
-            configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, Integer.toString(i));
+            configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "Agent " + Integer.toString(i));
             agentList.add(new PrimeNumberCompositeAgent(configuration));
         }
 
@@ -71,25 +71,45 @@ public class PrimeNumberSimulationCompositeAgents {
 
 
 
-
         //*  START EVERYTHING *//
+        masterAgent.start();
         for(PrimeNumberCompositeAgent agent: agentList) {
             agent.start();
         }
-        masterAgent.start();
 
+        //*  START POSTING EVENTS IN AGENTS *//
 
-        //* RUN EVERYTHING *//
-        masterAgent.run();
-        for(PrimeNumberCompositeAgent agent: agentList) {
-            agent.run();
-        }
+        /* Make master send limits to slaves {giveTasksToAgents}*/
+        LocalSupport.SimpleLocalMessaging messagingShardMaster =  masterAgent.getMessagingShard();
+        messagingShardMaster.sendMessage(masterAgent.getName(), masterAgent.getName(), ControlSlaveAgentShardForComposite.SEND_LIMITS);
+
+        /*  Make master gather agents responses { gatherAgentsResuls} */
+        messagingShardMaster.sendMessage(masterAgent.getName(), masterAgent.getName(), ControlSlaveAgentShardForComposite.GATHER_RESULTS);
+
+        /* Start agents  {findPrimeNumbersCount }*/
+       for(PrimeNumberCompositeAgent agent: agentList) {
+           LocalSupport.SimpleLocalMessaging messagingShardSlave =  agent.getMessagingShard();
+           messagingShardSlave.sendMessage(agent.getName(), "Agent " + Integer.toString(1),  PrimeNumberCalculatorShardForComposite.START_PROCESSING);
+       }
+
 
         //* STOP EVERYTHING  *//
+        System.out.println("UHM");
+        ControlSlaveAgentShardForComposite contrlShard = masterAgent.getControlShard();
+       while(!contrlShard.isSimulationReady()) {
+           ;
+          // System.out.println("while");
+       }
+       System.out.println("A trecut de while");
+
         masterAgent.stop();
+        System.out.println("S-a oprit master");
         for(PrimeNumberCompositeAgent agent : agentList) {
             agent.stop();
+           // System.out.println("S-a oprit " + agent.getName());
         }
+
+        System.out.println("Stop " + Thread.activeCount()  + " threaduri");
     }
 
 }

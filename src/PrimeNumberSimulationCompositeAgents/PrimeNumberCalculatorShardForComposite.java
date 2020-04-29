@@ -15,14 +15,14 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
 
 
     private int primeNumbersLimit;
-    private boolean isWaiting = true;
+    private boolean isWaiting = false;
     private String agentName;
 
     /**
      * The constructor assigns the designation to the shard.
      * <p>
      * IMPORTANT: extending classes should only perform in the constructor initializations that do not depend on the
-     * parent agent or on other shards, as when the shard is created, the {@link AgentShardCore#parentAgent} member is
+     * parent agent or on other shards, as when the shard is created, the  member is
      * <code>null</code>. The assignment of a parent (as any parent change) is notified to extending classes by calling
      * the method {@link AgentShardCore#parentChangeNotifier}.
      * <p>
@@ -38,6 +38,7 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
     private MessagingPylonProxy pylon;
     public static final String PRIME_NUMBERS_COUNT = "prime numbers found";
     public static final String CALCULATOR_SHARD_DESIGNATION = "Prime number calculator shard designation";
+    public static final String START_PROCESSING = "Start Processing";
 
     public void findPrimeNumbersCount() {
         waitInfoForProcessing();
@@ -49,7 +50,7 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
             }
         }
         LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getAgent().getAgentShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
-        messagingShard.sendMessage(  agentName,  "Master",  Integer.toString(primeNumbersCount));
+        messagingShard.sendMessage( getAgent().getEntityName(),  "Master",  Integer.toString(primeNumbersCount));
     }
 
     private boolean isPrime(int number) {
@@ -64,12 +65,20 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
     public void signalAgentEvent(AgentEvent event)
     {
         if(event instanceof AgentWave){
-            if(((AgentWave) event).getCompleteSource().equals( "Master" )) {
+            String source = ((AgentWave) event).getCompleteSource();
+            if(source.equals( "Master" )) {
                 //printMessage(event);
                 primeNumbersLimit = Integer.parseInt(
                         ((AgentWave) event).getContent());
                 isWaiting = false;
-                agentName = ((AgentWave) event).getCompleteDestination();
+                //agentName.((AgentWave) event).getCompleteDestination();
+            } else {
+                if (source.contains("Agent")) {
+                    String content = ((AgentWave) event).getContent();
+                    if(content.equals(START_PROCESSING)) {
+                        findPrimeNumbersCount();
+                    }
+                }
             }
         }
 
