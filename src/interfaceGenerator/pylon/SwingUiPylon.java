@@ -101,7 +101,7 @@ public class SwingUiPylon implements PylonProxy {
                 }
 
                 for (var inputId : inputIds) {
-                    var component = getComponentById(inputId.getKey(), PageBuilder.getWindow());
+                    var component = getComponentById(inputId.getKey(), PageBuilder.getInstance().getWindow());
                     if (component instanceof JTextArea) {
                         var form = (JTextArea) component;
                         var value = form.getText();
@@ -113,7 +113,11 @@ public class SwingUiPylon implements PylonProxy {
                     }
                 }
                 System.out.println(values);
-                PageBuilder.guiShard.getActiveInput(values);
+                try {
+                    PageBuilder.getInstance().guiShard.getActiveInput(values);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             });
         }
 
@@ -163,6 +167,10 @@ public class SwingUiPylon implements PylonProxy {
         panel.add(spinner);
         panel.putClientProperty(element.getId(), spinner);
         return panel;
+    }
+
+    public static Component getComponentById(String id) {
+        return getComponentById(id, PageBuilder.getInstance().getWindow());
     }
 
     public static Component getComponentById(String id, JFrame frame) {

@@ -20,16 +20,16 @@ public class BuildPageTest {
             System.out.println("Inline");
 
             // with inline yaml
-            var configuration = PageBuilder.buildPageInline(inlineExample);
-            PageBuilder.buildPage(configuration);
+            var configuration = PageBuilder.getInstance().buildPageInline(inlineExample);
+            PageBuilder.getInstance().buildPage(configuration);
         } else if (args[0].equals(FILE)) {
             // example: file <file-path>
             System.out.println("Specified file");
 
             // with specified file
-            var file = PageBuilder.buildPageFile(args[1]);
+            var file = PageBuilder.getInstance().buildPageFile(args[1]);
             if (file != null) {
-                PageBuilder.buildPage(file);
+                PageBuilder.getInstance().buildPage(file);
             }
         } else {
             System.err.println("Invalid parameters");

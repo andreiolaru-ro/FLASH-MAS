@@ -77,7 +77,11 @@ public class Runner extends AbstractVerticle {
                                 var role = Element.findRoleOfElementById(entry.getKey());
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
-                            PageBuilder.guiShard.getActiveInput(data);
+                            try {
+                                PageBuilder.getInstance().guiShard.getActiveInput(data);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {

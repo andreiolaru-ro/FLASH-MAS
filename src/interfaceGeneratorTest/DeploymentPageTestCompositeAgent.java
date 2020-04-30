@@ -1,5 +1,6 @@
 package interfaceGeneratorTest;
 
+import interfaceGenerator.GUIShard;
 import net.xqhs.flash.FlashBoot;
 
 import java.util.ArrayList;
@@ -32,6 +33,9 @@ public class DeploymentPageTestCompositeAgent {
         }
 
         args_list.add(configuration.toString());
+
+        // testing passive input and output
+        GUIShard.testing = true;
 
         FlashBoot.main(args_list.toArray(new String[0]));
     }
