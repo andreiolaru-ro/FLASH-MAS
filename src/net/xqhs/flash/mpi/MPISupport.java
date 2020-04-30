@@ -12,10 +12,10 @@ public class MPISupport extends DefaultPylonImplementation {
     public MPIMessagingPylonProxy messagingProxy		= new MPIMessagingPylonProxy() {
 
         @Override
-        public boolean send(String source, String destination, String content)
+        public boolean send(String destination, String content, int tag)
         {
             try {
-                MPI.COMM_WORLD.send(content.toCharArray(), content.length(), MPI.CHAR, Integer.parseInt(destination), 0);
+                MPI.COMM_WORLD.send(content.toCharArray(), content.length(), MPI.CHAR, Integer.parseInt(destination), tag);
             } catch (MPIException e) {
                 e.printStackTrace();
             }
@@ -24,16 +24,43 @@ public class MPISupport extends DefaultPylonImplementation {
         }
 
         @Override
-        public String receive(String source, int messageLength, int tag, mpi.Datatype datatype) {
+        public boolean send(String destination, int content, int tag) {
+            int[] message = new int[1];
+            message[0] = content;
+
+            try {
+                MPI.COMM_WORLD.send(message, 1, MPI.INT, Integer.parseInt(destination), tag);
+            } catch (MPIException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+
+        @Override
+        public String receive(String source, int messageLength, mpi.Datatype datatype, int tag) {
             char[] message = new char[messageLength];
 
             try {
-                MPI.COMM_WORLD.recv(message, messageLength, MPI.CHAR, Integer.parseInt(source), 0);
+                MPI.COMM_WORLD.recv(message, messageLength, MPI.CHAR, Integer.parseInt(source), tag);
             } catch (mpi.MPIException e) {
                 System.out.println("MPI couldn't receive message");
             }
 
             return new String(message);
+        }
+
+        @Override
+        public int receive(String source, int tag) {
+            int[] value = new int[1];
+
+            try {
+                MPI.COMM_WORLD.recv(value, 1, MPI.INT, Integer.parseInt(source), tag);
+            } catch (mpi.MPIException e) {
+                System.out.println("MPI couldn't receive message");
+            }
+
+            return value[0];
         }
 
         @Override
@@ -63,6 +90,11 @@ public class MPISupport extends DefaultPylonImplementation {
         }
 
         @Override
+        public boolean sendMessage(String source, String target, String content) {
+            return false;
+        }
+
+        @Override
         public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
         {
             if(!(context instanceof MPIMessagingPylonProxy))
@@ -71,16 +103,22 @@ public class MPISupport extends DefaultPylonImplementation {
             return true;
         }
 
-        @Override
-        public boolean sendMessage(String source, String target, String content) {
-
-            pylon.send(source, target, content);
-
+        public boolean sendMessage(String target, String content, int tag) {
+            pylon.send(target, content, tag);
             return true;
         }
 
-        public String receiveMessage(String source, int messageLength, int tag, mpi.Datatype datatype) {
-            return pylon.receive(source, messageLength, tag, datatype);
+        public boolean sendMessage(String target, int content, int tag) {
+            pylon.send(target, content, tag);
+            return true;
+        }
+
+        public String receiveMessage(String source, int messageLength, mpi.Datatype datatype, int tag) {
+            return pylon.receive(source, messageLength, datatype, tag);
+        }
+
+        public int receiveMessage(String source, int tag) {
+            return pylon.receive(source, tag);
         }
     }
 

@@ -51,17 +51,30 @@ class TestMPIAgent implements Agent {
     public boolean start() {
 
         if (myRank != 0) {
-            this.messagingShard.sendMessage("" + this.myRank, "0", "Hello from " + this.myRank);
-            String response = this.messagingShard.receiveMessage("0", 3, 0, MPI.CHAR);
+            String message = "Hello from " + this.myRank;
+            String response = "";
+            int responseLength = 0;
+
+            this.messagingShard.sendMessage("0", message.length(), 0);
+            this.messagingShard.sendMessage("0", message, 0);
+
+            responseLength = this.messagingShard.receiveMessage("0", 0);
+            response = this.messagingShard.receiveMessage("0", responseLength, MPI.CHAR, 0);
+
             System.out.println("[" + this.myRank + "] " + response);
         } else {
             String message;
             String ack = "ACK";
+            int messageLength = 0;
 
             for (int i = 1; i < this.size; i++) {
-                message = this.messagingShard.receiveMessage("" + i, 12, 0,  MPI.CHAR);
+                messageLength = this.messagingShard.receiveMessage("" + i, 0);
+                message = this.messagingShard.receiveMessage("" + i, messageLength,  MPI.CHAR, 0);
+
                 System.out.println("Master received: " + message);
-                this.messagingShard.sendMessage("" + this.myRank, "" + i, ack);
+
+                this.messagingShard.sendMessage("" + i, ack.length(), 0);
+                this.messagingShard.sendMessage("" + i, ack, 0);
             }
         }
 
