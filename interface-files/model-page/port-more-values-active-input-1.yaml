@@ -1,4 +1,4 @@
-platformType: html
+platformType: desktop
 node:
   children:
     - type: form
@@ -19,3 +19,12 @@ node:
     - type: button
       port: port1
       role: activate
+    - type: form
+      port: port2
+      role: asfacxxad
+    - type: form
+      port: port2
+      role: name
+    - type: spinner
+      port: port2
+      role: name

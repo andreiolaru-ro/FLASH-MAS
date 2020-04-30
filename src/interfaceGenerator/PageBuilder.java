@@ -13,28 +13,34 @@ import java.io.*;
 import java.net.URI;
 
 public class PageBuilder {
-    private static Element page = null;
-    private static JFrame window = null;
+    private static PageBuilder instance = null;
+    public PlatformType platformType = null;
+    public boolean createdSwingPage = false;
+    public boolean createdWebPage = false;
+    public GUIShard guiShard = null;
+    private Element page = null;
+    private JFrame window = null;
 
-    public static Element getPage() {
+    public static PageBuilder getInstance() {
+        if (instance == null) {
+            instance = new PageBuilder();
+        }
+        return instance;
+    }
+
+    public Element getPage() {
         return page;
     }
 
-    public static JFrame getWindow() {
+    public JFrame getWindow() {
         // TODO: maybe create a Singleton?
         return window;
     }
 
-    public static PlatformType platformType = null;
-    public static boolean createdSwingPage = false;
-    public static boolean createdWebPage = false;
-
-    public static GUIShard guiShard = null;
-
-    public static Object buildPage(Configuration data) throws Exception {
+    public Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();
         var type = PlatformType.valueOfLabel(platformType);
-        PageBuilder.platformType = type;
+        this.platformType = type;
 
         // generating ids for every element in configuration
         var configuration = IdGenerator.attributeIds(data.getNode());
@@ -76,14 +82,14 @@ public class PageBuilder {
                     if (window == null) {
                         window = frame;
                     }
-                    PageBuilder.createdSwingPage = true;
+                    createdSwingPage = true;
                     return frame;
             }
         }
         return null;
     }
 
-    public static Configuration buildPageFile(String path) {
+    public Configuration buildPageFile(String path) {
         InputStream input = null;
         try {
             input = new FileInputStream(new File(path));
@@ -94,7 +100,7 @@ public class PageBuilder {
         return yaml.loadAs(input, Configuration.class);
     }
 
-    public static Configuration buildPageInline(String inline) {
+    public Configuration buildPageInline(String inline) {
         Yaml yaml = new Yaml();
         return yaml.loadAs(inline, Configuration.class);
     }

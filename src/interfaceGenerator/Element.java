@@ -10,10 +10,6 @@ public class Element {
     private List<Element> children = new ArrayList<>();
     private String type = ElementType.BLOCK.type;
     private Map<String, String> properties = new HashMap<>();
-    /*
-        area for active input ports
-     */
-    private static HashMap<String, List<Element>> activePortsWithElements = new HashMap<>();
     private String port;
     private String role;
 
@@ -66,13 +62,16 @@ public class Element {
     }
 
     private static int counter = 0;
+    private static HashMap<String, List<Element>> activePortsWithElements = new HashMap<>();
     private static Set<String> activePorts = new HashSet<>();
+    private static Set<String> nonActivePorts = new HashSet<>();
     private static Set<String> ports = new HashSet<>();
     private static boolean checkedActivePorts = false;
     private String value;
 
     public static void checkActivePorts(Element element) {
         if (element.getPort() != null) {
+            ports.add(element.getPort());
             if (element.getRole().equals(PortType.ACTIVE.type)) {
                 activePorts.add(element.getPort());
             }
@@ -89,6 +88,13 @@ public class Element {
         if (!checkedActivePorts) {
             checkActivePorts(element);
             checkedActivePorts = true;
+
+            // checking for non-active ports
+            for (var port : ports) {
+                if (!activePorts.contains(port)) {
+                    nonActivePorts.add(port);
+                }
+            }
         }
 
         if (element.getPort() != null) {
@@ -241,7 +247,13 @@ public class Element {
     }
 
     public static String findRoleOfElementById(String id) {
-        return findRoleOfElementById(PageBuilder.getPage(), id);
+        return findRoleOfElementById(PageBuilder.getInstance().getPage(), id);
+    }
+
+    static Optional<String> randomPort() {
+        return nonActivePorts.stream()
+                .skip((int) (nonActivePorts.size() * Math.random()))
+                .findFirst();
     }
 
 }
