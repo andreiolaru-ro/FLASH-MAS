@@ -16,6 +16,7 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +80,7 @@ public class Runner extends AbstractVerticle {
                             }
                             try {
                                 PageBuilder.getInstance().guiShard.getActiveInput(data);
-                            } catch (InterruptedException e) {
+                            } catch (InterruptedException | ParseException e) {
                                 e.printStackTrace();
                             }
                         }

@@ -1,6 +1,7 @@
 platformType: desktop
 node:
   children:
+    # rubbish role names for testing
     - type: form
       port: port1
       role: abc
@@ -24,7 +25,16 @@ node:
       role: asfacxxad
     - type: form
       port: port2
-      role: name
+      role: t3w4t
     - type: spinner
       port: port2
       role: name
+    - type: form
+      port: port3
+      role: chicken
+    - type: form
+      port: port3
+      role: nuggets
+    - type: spinner
+      port: port3
+      role: kfc
