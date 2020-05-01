@@ -8,6 +8,7 @@ function init() {
         console.log('Eventbus opened');
         eb.send('client-to-server', "init");
         eb.registerHandler('server-to-client', (error, message) => {
+            // TODO: cases for active input, passive input and output
             let ids = JSON.parse(message.body)["data"];
             console.log(ids);
             let list_values = {};

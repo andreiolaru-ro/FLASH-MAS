@@ -10,13 +10,14 @@ import net.xqhs.flash.core.support.PylonProxy;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class SwingUiPylon implements PylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
-    private static HashSet<String> ids = new HashSet<>();
+    public static HashSet<String> ids = new HashSet<>();
 
     public static JFrame generateWindow(Element element) {
         JFrame window = new JFrame();
@@ -101,7 +102,7 @@ public class SwingUiPylon implements PylonProxy {
                 }
 
                 for (var inputId : inputIds) {
-                    var component = getComponentById(inputId.getKey(), PageBuilder.getInstance().getWindow());
+                    var component = getComponentById(inputId.getKey(), PageBuilder.window);
                     if (component instanceof JTextArea) {
                         var form = (JTextArea) component;
                         var value = form.getText();
@@ -115,7 +116,7 @@ public class SwingUiPylon implements PylonProxy {
                 System.out.println(values);
                 try {
                     PageBuilder.getInstance().guiShard.getActiveInput(values);
-                } catch (InterruptedException ex) {
+                } catch (InterruptedException | ParseException ex) {
                     ex.printStackTrace();
                 }
             });
@@ -148,6 +149,8 @@ public class SwingUiPylon implements PylonProxy {
             form.setText("");
         }
 
+        //form
+
         // hack for a fixed size of form
         form.setMaximumSize(new Dimension(100, 40));
         form.setMinimumSize(new Dimension(100, 40));
@@ -170,7 +173,7 @@ public class SwingUiPylon implements PylonProxy {
     }
 
     public static Component getComponentById(String id) {
-        return getComponentById(id, PageBuilder.getInstance().getWindow());
+        return getComponentById(id, PageBuilder.window);
     }
 
     public static Component getComponentById(String id, JFrame frame) {
@@ -211,6 +214,89 @@ public class SwingUiPylon implements PylonProxy {
             }
         }
         return map;
+    }
+
+    public static void changeValueElement(String id, String value) throws ParseException {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = changeValueElement(PageBuilder.window, id, value);
+        PageBuilder.window.setVisible(true);
+    }
+
+    private static JFrame changeValueElement(JFrame frame, String id, String value) throws ParseException {
+        var contentPane = frame.getRootPane().getContentPane();
+        if (contentPane instanceof JPanel) {
+            var windowsPanel = (JPanel) contentPane;
+            var mainComponent = windowsPanel.getComponents()[0];
+            if (mainComponent instanceof JPanel) {
+                windowsPanel.remove(mainComponent);
+                mainComponent = changeValueElement(mainComponent, id, value);
+                windowsPanel.add(mainComponent);
+            }
+            JFrame temp = new JFrame();
+            temp.setSize(new Dimension(600, 600));
+            temp.add(windowsPanel);
+            frame.dispose();
+            return temp;
+        }
+        return frame;
+    }
+
+    private static Component changeValueElement(Component component, String idElement, String value) throws ParseException {
+        if (component instanceof JPanel) {
+            var panel = (JPanel) component;
+            ArrayList<Component> componentList = new ArrayList<>();
+            Pair<Component, Component> pair = new Pair<>();
+
+            for (var id : ids) {
+                var obj = panel.getClientProperty(id);
+                if (obj != null) {
+                    if (obj instanceof Component) {
+                        //map.put(id, (Component) obj);
+                        if (id.equals(idElement)) {
+                            if (obj instanceof JTextArea) {
+                                var form = (JTextArea) obj;
+                                pair.setKey((Component) obj);
+                                form.setText(value);
+                                pair.setValue(form);
+                                componentMap.put(id, form);
+                                panel.putClientProperty(id, form);
+                            } else if (obj instanceof JSpinner) {
+                                var spinner = (JSpinner) obj;
+                                pair.setKey((Component) obj);
+                                //spinner.commitEdit();
+                                //spinner.setValue(value);
+                                pair.setValue(spinner);
+                                componentMap.put(id, spinner);
+                                panel.putClientProperty(id, spinner);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (var comp : panel.getComponents()) {
+                if (comp.equals(pair.getKey())) {
+                    componentList.add(pair.getValue());
+                } else {
+                    if (comp instanceof JPanel) {
+                        comp = changeValueElement(comp, idElement, value);
+                    }
+                    componentList.add(comp);
+                }
+            }
+
+            for (int i = componentList.size() - 1; i >= 1; i--) {
+                panel.remove(i);
+            }
+
+            for (var comp : componentList) {
+                panel.add(comp);
+            }
+
+            return panel;
+        }
+        return component;
     }
 
     @Override

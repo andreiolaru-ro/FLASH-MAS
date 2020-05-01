@@ -21,7 +21,3 @@ public enum PortType {
         return null;
     }
 }
-
-/*
-toate elementele au rolul specificat?
- */

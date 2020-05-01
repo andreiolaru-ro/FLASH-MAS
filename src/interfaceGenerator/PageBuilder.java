@@ -19,7 +19,7 @@ public class PageBuilder {
     public boolean createdWebPage = false;
     public GUIShard guiShard = null;
     private Element page = null;
-    private JFrame window = null;
+    public static JFrame window = null;
 
     public static PageBuilder getInstance() {
         if (instance == null) {
@@ -31,11 +31,14 @@ public class PageBuilder {
     public Element getPage() {
         return page;
     }
-
+    /*
     public JFrame getWindow() {
-        // TODO: maybe create a Singleton?
         return window;
     }
+
+    public void setWindow(JFrame window) {
+        this.window = window;
+    }*/
 
     public Object buildPage(Configuration data) throws Exception {
         var platformType = data.getPlatformType();

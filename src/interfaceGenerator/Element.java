@@ -117,7 +117,6 @@ public class Element {
         }
     }
 
-
     public static HashMap<String, List<Element>> getActivePortsWithElements() {
         return activePortsWithElements;
     }
@@ -255,5 +254,25 @@ public class Element {
                 .skip((int) (nonActivePorts.size() * Math.random()))
                 .findFirst();
     }
+
+    /*
+    public static void setValueOFElementById(String id, String value) {
+        setValueOFElementById(PageBuilder.getInstance().getPage(), id, value);
+    }
+
+    public static void setValueOFElementById(Element element, String id, String value) {
+        if (element.getId() != null && element.getId().equals(id)) {
+            element.setValue(value);
+            return;
+        }
+
+        if (element.getChildren() != null) {
+            for (var child: element.getChildren()) {
+                setValueOFElementById(child, id, value);
+            }
+        }
+    }
+    */
+
 
 }
