@@ -116,7 +116,7 @@ public class SwingUiPylon implements PylonProxy {
                 System.out.println(values);
                 try {
                     PageBuilder.getInstance().guiShard.getActiveInput(values);
-                } catch (InterruptedException | ParseException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             });

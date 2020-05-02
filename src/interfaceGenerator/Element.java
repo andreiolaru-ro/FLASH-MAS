@@ -249,7 +249,7 @@ public class Element {
         return findRoleOfElementById(PageBuilder.getInstance().getPage(), id);
     }
 
-    static Optional<String> randomPort() {
+    public static Optional<String> randomPort() {
         return nonActivePorts.stream()
                 .skip((int) (nonActivePorts.size() * Math.random()))
                 .findFirst();

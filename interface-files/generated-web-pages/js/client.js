@@ -9,18 +9,51 @@ function init() {
         eb.send('client-to-server', "init");
         eb.registerHandler('server-to-client', (error, message) => {
             // TODO: cases for active input, passive input and output
-            let ids = JSON.parse(message.body)["data"];
-            console.log(ids);
-            let list_values = {};
+            let tokens = message.body.split(" ");
 
-            for (let i = 0; i < ids.length; i++) {
-                list_values[ids[i]] = document.getElementById(ids[i]).value
+            if (tokens[0] === "active-input:") {
+                // active input
+                let info = message.body.slice("active-input: ".length);
+                let ids = JSON.parse(info)["data"];
+                let list_values = {};
+
+                for (let i = 0; i < ids.length; i++) {
+                    list_values[ids[i]] = document.getElementById(ids[i]).value
+                }
+
+                values = {"data": list_values};
+                let data = JSON.stringify(values);
+                eb.send('client-to-server', "active-value: " + data); // sending input value to server
+            } else if (tokens[0] === 'passive-input:') {
+                // passive input
+                let info = message.body.slice("passive-input: ".length);
+                let ids = JSON.parse(info)["data"];
+                let list_values = {};
+
+                for (let i = 0; i < ids.length; i++) {
+                    list_values[ids[i]] = document.getElementById(ids[i]).value
+                }
+
+                values = {"data": list_values};
+                let data = JSON.stringify(values);
+                eb.send('client-to-server', "passive-value: " + data);
+            } else if (tokens[0] === 'output:') {
+                let info = message.body.slice("output: ".length);
+                let ids = JSON.parse(info)["data"];
+                console.log(ids);
+                for (let key in ids) {
+                    if (ids.hasOwnProperty(key)) {
+                        let val = ids[key];
+                        if (document.getElementById("key").getAttribute("type") === 'text') {
+                            document.getElementById("key").value = val;
+                        } else {
+                            if (!isNaN(val)) {
+                                document.getElementById("key").value = Number(val);
+                            }
+                        }
+                    }
+                }
             }
-
-            values = {"data": list_values};
-            let data = JSON.stringify(values);
-            console.log(data);
-            eb.send('client-to-server', "active-value: " + data); // sending input value to server
         });
     };
 
