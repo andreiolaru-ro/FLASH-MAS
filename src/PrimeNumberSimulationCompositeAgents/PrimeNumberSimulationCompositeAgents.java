@@ -7,12 +7,15 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class PrimeNumberSimulationCompositeAgents {
 
 
     private static int SLAVE_AGENT_COUNT = 10;
+    private static int MAX_THREADS = 5;
 
     public static ArrayList<PrimeNumberCompositeAgent> createAgentList(int agentCount) {
         ArrayList<PrimeNumberCompositeAgent> agentList = new ArrayList<>();
@@ -40,6 +43,16 @@ public class PrimeNumberSimulationCompositeAgents {
             shards.add(new LocalSupport.SimpleLocalMessaging());
             agentList.get(i).addShards(shards);
         }
+    }
+
+    public static void runAgents(ArrayList<PrimeNumberCompositeAgent> agents) {
+        ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+        for(PrimeNumberCompositeAgent agent: agents) {
+            Runnable agentTask = () -> agent.run();
+            pool.execute(agentTask);
+        }
+
+        pool.shutdown();
     }
 
 
@@ -72,26 +85,28 @@ public class PrimeNumberSimulationCompositeAgents {
 
 
         //*  START EVERYTHING *//
-        masterAgent.start();
-        for(PrimeNumberCompositeAgent agent: agentList) {
-            agent.start();
-        }
 
+        //* Uncomment this to start agents with run() *//
+        runAgents(agentList);
+
+        masterAgent.start();
+
+        //* Uncomment this to start slaves with start() *//
+        /*for(PrimeNumberCompositeAgent agent: agentList) {
+            agent.start();
+        }*/
+
+        ArrayList a = agentList;
         //*  START POSTING EVENTS IN AGENTS *//
 
         /* Make master send limits to slaves {giveTasksToAgents}*/
         LocalSupport.SimpleLocalMessaging messagingShardMaster =  masterAgent.getMessagingShard();
         messagingShardMaster.sendMessage(masterAgent.getName(), masterAgent.getName(), ControlSlaveAgentShardForComposite.SEND_LIMITS);
 
-        /* Start agents  {findPrimeNumbersCount }*/
-       for(PrimeNumberCompositeAgent agent: agentList) {
-           LocalSupport.SimpleLocalMessaging messagingShardSlave =  agent.getMessagingShard();
-           messagingShardSlave.sendMessage(agent.getName(), "Agent " + Integer.toString(1),  PrimeNumberCalculatorShardForComposite.START_PROCESSING);
-       }
-
 
         //* STOP EVERYTHING  *//
-        ControlSlaveAgentShardForComposite contrlShard = masterAgent.getControlShard();
+
+       ControlSlaveAgentShardForComposite contrlShard = masterAgent.getControlShard();
        while(!contrlShard.isSimulationReady()) {
            ;
           // System.out.println("while");
