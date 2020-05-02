@@ -30,13 +30,5 @@ public class PrimeNumberCompositeAgent extends CompositeAgent {
         return  messagingShard;
     }
 
-   /* @Override
-    public void run() {
-        super.run();
-        PrimeNumberCalculatorShardForComposite calculatorShard = (PrimeNumberCalculatorShardForComposite) getShard(AgentShardDesignation.customShard(PrimeNumberCalculatorShardForComposite.CALCULATOR_SHARD_DESIGNATION));
-        calculatorShard.findPrimeNumbersCount();
-    }*/
-
-
 
 }

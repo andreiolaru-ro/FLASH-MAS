@@ -55,22 +55,4 @@ public class MasterCompositeAgent extends CompositeAgent {
         return  controlShard;
     }
 
-    /*@Override
-    public boolean start() {
-        super.start();
-        ControlSlaveAgentShardForComposite controlShard = (ControlSlaveAgentShardForComposite) getShard(AgentShardDesignation.customShard(ControlSlaveAgentShardForComposite.CONTROL_SHARD_DESIGNATION));
-        controlShard.giveTasksToAgents(slaveAgentsCount);
-        return true;
-    }
-
-    @Override
-    public void run() {
-        super.run();
-        ControlSlaveAgentShardForComposite controlShard = (ControlSlaveAgentShardForComposite) getShard(AgentShardDesignation.customShard(ControlSlaveAgentShardForComposite.CONTROL_SHARD_DESIGNATION));
-        controlShard.gatherAgentsResults();
-    }*/
-
-
-
-
 }
