@@ -12,14 +12,20 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalPylon;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
+import test.simplePingPong.AgentPingPong;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 
 /**
- * The implementation of the agents.
+ * The implementation of the agent.
  */
-public class AgentTest implements Agent
+public class AgentTest extends Unit implements Agent
 {
 	/**
 	 * The messaging shard.
@@ -30,64 +36,87 @@ public class AgentTest implements Agent
 	 */
 	String							agentName					= null;
 
-	private static boolean RUNNING_STATE;
+	/**
+	 * The name of the component parameter that contains the id of the other agent.
+	 */
+	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "sendTo";
+	/**
+	 * Endpoint element for this shard.
+	 */
+	protected static final String	SHARD_ENDPOINT				= "control";
 
-	private ShardContainer proxy = new ShardContainer() {
+	/**
+	 * Endpoint element for other shards.
+	 */
+	protected static final String   OTHER_SHARD_ENDPOINT        = "control";
 
-		@Override
-		public String getEntityName()
-		{
-			return getName();
-		}
+	/**
+	 * Cache for the name of the other agent.
+	 */
+	List<String> otherAgents					= null;
 
-		@Override
-		public void postAgentEvent(AgentEvent event)
-		{
-			System.out.println(event.toString());
-				if(event.getType().equals(AgentEventType.AGENT_WAVE))
-				{
-					String content = ((AgentWave) event).getContent();
-					if (content.equals("stop")) {
-						stop();
-					}
-				}
-		}
-
-		@Override
-		public AgentShard getAgentShard(AgentShardDesignation designation)
-		{
-			return null;
-		}
-	};
-
+	private static boolean isRunning;
 
 	public AgentTest(MultiTreeMap configuration)
 	{
 		agentName = configuration.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		msgShard = new LocalPylon.SimpleLocalMessaging();
-		msgShard.addContext(proxy);
+		setUnitName(agentName);
+		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
+			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
 	}
 	
 	@Override
 	public boolean start()
 	{
-		System.out.println(getName() + "Agent starting...");
-		RUNNING_STATE = true;
+		if(msgShard == null)
+			throw new IllegalStateException("No messaging shard present");
+		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+		if(otherAgents != null) {
+			for(String otherAgent : otherAgents) {
+				lf("Sending the message to ", otherAgent);
+				if(!msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+						AgentWave.makePath(otherAgent, OTHER_SHARD_ENDPOINT), "hello dear"))
+					le("Message sending failed");
+			}
+		}
+
+		isRunning = true;
 		return true;
+	}
+
+	/**
+	 * @param event
+	 *            - the event received.
+	 */
+	protected void postAgentEvent(AgentEvent event) {
+		li("received: " + event.toString());
+		if(event.getType().equals(AgentEventType.AGENT_WAVE)) {
+			String content = ((AgentWave) event).getContent();
+			if(content.equals("simulation"))
+				lf("[] started simulation.", getName());
+			else if(content.equals("stop"))
+				stop();
+			else if(otherAgents == null) {
+				String replyContent = content + " reply";
+				msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT), ((AgentWave) event).getCompleteSource(),
+						replyContent);
+			}
+		}
 	}
 	
 	@Override
 	public boolean stop()
 	{
-		System.out.println(getName() + "Agent stopped...");
-		RUNNING_STATE = false;
-		return false;
+		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+		lf("[] stopped.", getName());
+		isRunning = false;
+		return true;
 	}
 	
 	@Override
 	public boolean isRunning()
 	{
-		return RUNNING_STATE;
+		return isRunning;
 	}
 	
 	@Override
@@ -99,6 +128,37 @@ public class AgentTest implements Agent
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context)
 	{
+		PylonProxy proxy = (PylonProxy) context;
+		String recommendedShard = proxy
+				.getRecommendedShardImplementation(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+		try
+		{
+			msgShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null, true);
+		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+				| InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		msgShard.addContext(new ShardContainer() {
+			@Override
+			public String getEntityName()
+			{
+				return getName();
+			}
+
+			@Override
+			public void postAgentEvent(AgentEvent event)
+			{
+				AgentTest.this.postAgentEvent(event);
+			}
+
+			@Override
+			public AgentShard getAgentShard(AgentShardDesignation designation)
+			{
+				return null;
+			}
+		});
+		lf("Context added: ", context.getEntityName());
 		return msgShard.addGeneralContext(context);
 	}
 	

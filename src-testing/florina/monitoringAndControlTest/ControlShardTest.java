@@ -6,8 +6,11 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.LoggerSimple;
+import net.xqhs.util.logging.Unit;
 
-public class MonitoringShard extends AgentShardGeneral
+public class ControlShardTest extends AgentShardGeneral
 {
     /**
      * The UID.
@@ -17,7 +20,7 @@ public class MonitoringShard extends AgentShardGeneral
     /**
      * Endpoint element for this shard.
      */
-    protected static final String	SHARD_ENDPOINT				= "net/xqhs/flash/core/monitoring";
+    protected static final String	SHARD_ENDPOINT				= "control";
 
     /**
      * Cache for the name of this agent.
@@ -25,14 +28,16 @@ public class MonitoringShard extends AgentShardGeneral
     String							thisAgent					= null;
 
 
-    public static final String	FUNCTIONALITY	= "MONITORING";
+    public static final String	FUNCTIONALITY	                = "CONTROL";
 
-
+    {
+        setUnitName("control-shard").setLoggerType(PlatformUtils.platformLogType());
+    }
 
     /**
      * Default constructor
      */
-    public MonitoringShard()
+    public ControlShardTest()
     {
         super(AgentShardDesignation.customShard(FUNCTIONALITY));
     }
@@ -51,29 +56,31 @@ public class MonitoringShard extends AgentShardGeneral
         super.signalAgentEvent(event);
         switch(event.getType())
         {
-            case AGENT_START:
-                System.out.println("## MONITORING SHARD STARTED");
-                break;
             case AGENT_WAVE:
-                parseAgentWave(((AgentWave)event).getContent());
+                parseAgentWave(event);
+                break;
+            case AGENT_START:
+                li("Shard of agent [] started.", thisAgent);
                 break;
             case SIMULATION_START:
-                System.out.println("## MONITORING SHARD SIMULATION STARTED");
+                li("Shard of agent [] started simulation.", thisAgent);
+                break;
+            case AGENT_STOP:
+                li("Shard of agent [] stopped.", thisAgent);
                 break;
             default:
                 break;
         }
     }
 
-    protected void parseAgentWave(String command)
+    protected void parseAgentWave(AgentEvent event)
     {
-        switch (command)
+        if(!((AgentWave)event).getFirstDestinationElement().equals(SHARD_ENDPOINT)) return;
+
+        switch (((AgentWave)event).getContent())
         {
             case "stop":
                 getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
-                break;
-            case "start":
-                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
                 break;
             case "simulation":
                 getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
@@ -103,5 +110,6 @@ public class MonitoringShard extends AgentShardGeneral
     {
         return super.getShardData();
     }
+
 }
 
