@@ -1,7 +1,10 @@
 package interfaceGenerator;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.types.PlatformType;
+import interfaceGenerator.web.Input;
 import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -12,7 +15,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import javax.swing.*;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.HashMap;
+import java.util.List;
 
 public class GUIShard extends AgentShardCore {
     private String[] parameters = new String[2];
@@ -34,9 +38,25 @@ public class GUIShard extends AgentShardCore {
         this.configuration = guiTrees.get(0).getSingleTree("config").getHierarchicalNames().get(0);
     }
 
+    private static List<Pair<String, String>> passiveDataInput;
+
+    public void getActiveInput(String value) {
+        System.out.println("Generating AgentWave for active input...");
+        AgentWave activeInput = new AgentWave(value, "/");
+        activeInput.addSourceElementFirst("/gui/port");
+        super.getAgent().postAgentEvent(activeInput);
+    }
+
+    public static void sendPassiveInputToShard(List<Pair<String, String>> dataInput) {
+        System.out.println("data input" + dataInput);
+        passiveDataInput = dataInput;
+        System.out.println("passive " + passiveDataInput);
+    }
+
     @Override
     public void signalAgentEvent(AgentEvent event) {
         super.signalAgentEvent(event);
+
         if (configuration == null) {
             var guiShardConfiguration = super.getShardData().getSingleTree("config");
             configuration = guiShardConfiguration.getTreeKeys().get(0);
@@ -61,40 +81,38 @@ public class GUIShard extends AgentShardCore {
         }
     }
 
-    public void getActiveInput(String value) {
-        System.out.println("Generating AgentWave for active input...");
-        AgentWave activeInput = new AgentWave(value, "/");
-        activeInput.addSourceElementFirst("/gui/port");
-        super.getAgent().postAgentEvent(activeInput);
-    }
-
-    public void getActiveInput(ArrayList<Pair<String, String>> values) throws InterruptedException, ParseException {
+    public void getActiveInput(ArrayList<Pair<String, String>> values) throws Exception {
         System.out.println("Generating AgentWave for active input...");
         AgentWave activeInput = new AgentWave(null, "/");
         activeInput.addSourceElementFirst("/gui/port");
         for (var value : values) {
             activeInput.add(value.getKey(), value.getValue());
         }
-        System.out.println(activeInput.getKeys());
         super.getAgent().postAgentEvent(activeInput);
-        System.out.println(SwingUiPylon.ids);
-
+        /*
         if (testing) {
             // TODO: add code test for passive input and output - to be deleted in final code
             // passive input
-                var port = Element.randomPort();
+            var port = Element.randomPort();
 
-                if (port.isPresent()) {
-                    System.out.println("Testing passive input");
-                    var passiveInput = getInput(port.get());
+            if (port.isPresent()) {
+                System.out.println("Testing passive input");
+                AgentWave passiveInput = null;
+                try {
+                    passiveInput = getInput(port.get());
                     var contentKeys = passiveInput.getKeys();
                     contentKeys.remove("EVENT_TYPE");
                     System.out.println(contentKeys);
                     for (var key : contentKeys) {
                         System.out.println(key + ": " + passiveInput.getValues(key));
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
+            }
+        }*/
+        /*
+        if (testing) {
             AgentWave agentWave = new AgentWave();
             // some rubbish values for testing
             agentWave.add("chicken", getAlphaNumericString(10));
@@ -102,10 +120,10 @@ public class GUIShard extends AgentShardCore {
             agentWave.add("kfc", String.valueOf(new Random().nextInt(30)));
             sendOutput(agentWave);
             System.out.println("Testing passive input and output finished.");
-        }
+        }*/
     }
 
-    public AgentWave getInput(String portName) {
+    public AgentWave getInput(String portName) throws Exception {
         var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
@@ -124,7 +142,30 @@ public class GUIShard extends AgentShardCore {
                 }
             }
         } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
-            // TODO: add passive input support for web
+            // TODO: server gives ids to client and client gives back the ids with their values
+            //  and associate ids with roles
+            List<String> ids = new ArrayList<>();
+
+            for (var element : elements) {
+                ids.add(element.getId());
+            }
+
+            HashMap<String, List<String>> data = new HashMap<>();
+            data.put("data", ids);
+
+            GsonBuilder gsonMapBuilder = new GsonBuilder();
+            Gson gsonObject = gsonMapBuilder.create();
+            String JSONObject = gsonObject.toJson(data);
+
+            Input.runner.getVertx().eventBus().send("server-to-client", "passive-input: " + JSONObject);
+
+            // TODO: add some waiting for getting info from client? + receive data from client
+            System.out.println("passive data " + passiveDataInput);
+            if (passiveDataInput != null) {
+                for (var passiveData : passiveDataInput) {
+                    event.add(passiveData.getKey(), passiveData.getValue());
+                }
+            }
         }
 
         return event;
@@ -154,6 +195,17 @@ public class GUIShard extends AgentShardCore {
                 }
             } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
                 // TODO: web
+                HashMap<String, String> data = new HashMap<>();
+                for (int i = 0; i < size; i++) {
+                    var elementId = elementsFromPort.get(i).getId();
+                    var value = values.get(i);
+                    data.put(elementId, value);
+                }
+                GsonBuilder gsonMapBuilder = new GsonBuilder();
+                Gson gsonObject = gsonMapBuilder.create();
+
+                String JSONObject = gsonObject.toJson(data);
+                Input.runner.getVertx().eventBus().send("server-to-client", "output: " + JSONObject);
             }
         }
     }
@@ -161,31 +213,5 @@ public class GUIShard extends AgentShardCore {
     @Override
     public String getName() {
         return "GUIShard";
-    }
-
-    private String getAlphaNumericString(int n) {
-
-        // chose a Character random from this String
-        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                + "0123456789"
-                + "abcdefghijklmnopqrstuvxyz";
-
-        // create StringBuffer size of AlphaNumericString
-        StringBuilder sb = new StringBuilder(n);
-
-        for (int i = 0; i < n; i++) {
-
-            // generate a random number between
-            // 0 to AlphaNumericString variable length
-            int index
-                    = (int) (AlphaNumericString.length()
-                    * Math.random());
-
-            // add Character one by one in end of sb
-            sb.append(AlphaNumericString
-                    .charAt(index));
-        }
-
-        return sb.toString();
     }
 }

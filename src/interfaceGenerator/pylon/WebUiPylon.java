@@ -154,7 +154,7 @@ public class WebUiPylon implements PylonProxy {
     private static String generateSpinner(Element element) {
         String result = "";
         result += tab.repeat(indentLevel);
-        result += "<input type = \"range\" ";
+        result += "<input type = \"number\" ";
         result += "id = ";
         result += element.getId();
         result += ">\n";
