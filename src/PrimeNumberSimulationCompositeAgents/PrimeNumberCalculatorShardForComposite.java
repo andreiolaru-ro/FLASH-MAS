@@ -14,10 +14,6 @@ import net.xqhs.flash.local.LocalSupport;
 public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
 
 
-    private int primeNumbersLimit;
-    private boolean isWaiting = false;
-    private String agentName;
-
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -35,13 +31,19 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
         super(designation);
     }
 
+    private int primeNumbersLimit;
+    private boolean isWaiting = true;
+    private String agentName;
+
     private MessagingPylonProxy pylon;
     public static final String PRIME_NUMBERS_COUNT = "prime numbers found";
     public static final String CALCULATOR_SHARD_DESIGNATION = "Prime number calculator shard designation";
     public static final String START_PROCESSING = "Start Processing";
+    public  Object blockingObject = new Object();
 
-    public void findPrimeNumbersCount() {
-        waitInfoForProcessing();
+
+    public void findPrimeNumbersCount () {
+        //waitInfoForProcessing();
         int primeNumbersCount = 0;
 
         for(int nr = 2; nr <= primeNumbersLimit; nr++) {
@@ -65,13 +67,19 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
     public void signalAgentEvent(AgentEvent event)
     {
         if(event instanceof AgentWave){
+
             String source = ((AgentWave) event).getCompleteSource();
             if(source.equals( "Master" )) {
-                //printMessage(event);
+                printMessage(event);
                 primeNumbersLimit = Integer.parseInt(
                         ((AgentWave) event).getContent());
-                isWaiting = false;
-                //agentName.((AgentWave) event).getCompleteDestination();
+                setIsWaiting(false);
+                agentName = ((AgentWave)event).getCompleteDestination();
+                /*(synchronized (blockingObject) {
+                    blockingObject.notify();
+                }*/
+                LocalSupport.SimpleLocalMessaging messagingShard = (LocalSupport.SimpleLocalMessaging) getAgent().getAgentShard(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
+                messagingShard.sendMessage(agentName, agentName,  PrimeNumberCalculatorShardForComposite.START_PROCESSING);
             } else {
                 if (source.contains("Agent")) {
                     String content = ((AgentWave) event).getContent();
@@ -94,9 +102,20 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
 
 
     private void waitInfoForProcessing() {
-        while (isWaiting) {
+
+        while(getIsWaitng()) {
             ;
         }
+        /*synchronized (blockingObject) {
+            //while (getIsWaitng()) {
+                try {
+                    blockingObject.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                }
+            //}
+        }*/
     }
 
 
@@ -104,6 +123,14 @@ public class PrimeNumberCalculatorShardForComposite extends AgentShardCore {
         System.out.println("SLAVE: " + ((AgentWave) event).getContent() + " de la "
                 + ((AgentWave) event).getCompleteSource() + " la " +
                 ((AgentWave) event).getCompleteDestination());
+    }
+
+    private synchronized boolean getIsWaitng() {
+        return  isWaiting;
+    }
+
+    private synchronized void setIsWaiting(boolean value) {
+        this.isWaiting = value;
     }
 
 
