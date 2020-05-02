@@ -38,9 +38,6 @@ public class WebSocketServerEntity extends Unit implements Entity
 	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
 	private HashMap<String, List<String>> nodeToAgents = new LinkedHashMap<>();
 
-	private String centralNodeName;
-	private WebSocket centralNodeWebSocket;
-
 	private String controlEntity;
 	private WebSocket controlEntityWebSocket;
 
@@ -90,8 +87,14 @@ public class WebSocketServerEntity extends Unit implements Entity
 					controlEntity = (String)jsonObject.get("controlEntity");
 					controlEntityWebSocket = webSocket;
 					li("Registered: []. ", controlEntity);
+					printState();
 					return;
 				}
+
+				// specify if the entity will be registered or unregistered
+				boolean toRegister = false;
+				if(jsonObject.get("register") != null)
+					toRegister = (boolean)jsonObject.get("register");
 
 				if(jsonObject.get("nodeName") == null) return;
 				String nodeName = (String)jsonObject.get("nodeName");
@@ -102,6 +105,8 @@ public class WebSocketServerEntity extends Unit implements Entity
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToAgents.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
+					printState();
+					return;
 				}
 
 				// agent registration message
@@ -109,45 +114,49 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("agentName") != null)
 				{
 					newAgent = (String)jsonObject.get("agentName");
-					agentToWebSocket.put(newAgent, webSocket);
-					nodeToAgents.get(nodeName).add(newAgent);
-					li("Registered agent []. ", newAgent);
+					if(toRegister) {
+						agentToWebSocket.put(newAgent, webSocket);
+						nodeToAgents.get(nodeName).add(newAgent);
+						li("Registered agent []. ", newAgent);
+					} else {
+						agentToWebSocket.remove(newAgent);
+						nodeToAgents.get(nodeName).remove(newAgent);
+						li("Unregistered agent []. ", newAgent);
+					}
+					printState();
 					return;
 				}
 
 				// raw message from one entity to another
 				if(jsonObject.get("destination") != null) {
 					String destination = (String) jsonObject.get("destination");
-					String destAgent = destination.split(
+					String destEntity = destination.split(
 							AgentWave.ADDRESS_SEPARATOR)[0];
-					if(destAgent.equals(controlEntity))
+					if(destEntity.equals(controlEntity))
 					{
 						controlEntityWebSocket.send(s);
-						li("Sent to central: []. ", s);
+						li("Sent to central entity: []. ", s);
+						printState();
 						return;
 					}
-					WebSocket destinationWebSocket = agentToWebSocket.get(destAgent);
-					if(destinationWebSocket == null) {
-						le("Filed to find the entity [] websocket.", destAgent);
+
+					WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
+					if(destinationWebSocket != null) {
+						destinationWebSocket.send(s);
+						li("Sent to agent: []. ", s);
 						return;
 					}
-					destinationWebSocket.send(s);
-					li("Sent to agent: []. ", s);
+
+					destinationWebSocket = nodeToWebSocket.get(destEntity);
+					if(destinationWebSocket != null) {
+						destinationWebSocket.send(s);
+						li("Sent to node: []. ", s);
+						return;
+					}
+
+					le("Filed to find the entity [] websocket.", destEntity);
+					printState();
 				}
-
-				nodeToWebSocket.entrySet().forEach(entry->{
-					System.out.println("#nod: " + entry.getKey());
-				});
-
-				agentToWebSocket.entrySet().forEach(entry->{
-					System.out.println("#agent: " + entry.getKey());
-				});
-
-				nodeToAgents.entrySet().forEach(entry->{
-					System.out.println("#nod->ent: " + entry.getKey() + " : " + entry.getValue());
-				});
-
-				System.out.println("##Central entity " + controlEntity);
 			}
 			
 			@Override
@@ -160,6 +169,12 @@ public class WebSocketServerEntity extends Unit implements Entity
 			public void onStart()
 			{
 				li("Server started successfully.");
+			}
+
+			private void printState() {
+				li("###agent:  " + agentToWebSocket.keySet());
+				li("###nodes: " + nodeToAgents.keySet());
+				li("###agents: " + nodeToAgents.values());
 			}
 		};
 	}

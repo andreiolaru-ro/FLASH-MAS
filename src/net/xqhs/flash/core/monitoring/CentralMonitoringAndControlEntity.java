@@ -26,10 +26,15 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     {
         setUnitName("monitoring-and-control-entity").setLoggerType(PlatformUtils.platformLogType());
     }
-
+    /**
+     * Endpoint element for this shard.
+     */
     protected static final String	SHARD_ENDPOINT				        = "control";
 
-    protected static final String	OTHER_SHARD_ENDPOINT				= "control";
+    /**
+     * Endpoint element for shards of control.
+     */
+    protected static final String   OTHER_CONTROL_SHARD_ENDPOINT        = "control";
 
     private MessagingShard          centralMessagingShard;
 
@@ -61,13 +66,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             switch (event.getType())
             {
                 case AGENT_WAVE:
-                    String content = ((AgentWave) event).getContent();
                     String source = ((AgentWave) event).getFirstSource();
+                    String content = ((AgentWave) event).getContent();
                     Object obj = JSONValue.parse(content);
                     if(obj == null)
                         le("null message from [].", source);
                     if(parseJSON(obj))
-                        li("Entities from [] registered.", source);
+                        li("Registered entities from [].", source);
                     break;
                 default:
                     break;
@@ -86,13 +91,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                     String node         = (String)entity.get("node");
                     String category     = (String)entity.get("category");
                     String name         = (String)entity.get("name");
-                    String[] operations = ((String)entity.get("operations")).split(" ");
-
+                    List<String> operations = (List<String>) entity.get("operations");
                     if(category.equals("agent"))
                     {
                         if(!allAgents.containsKey(name))
                             allAgents.put(name, new LinkedList<>());
-                        allAgents.get(name).addAll(Arrays.asList(operations));
+                        allAgents.get(name).addAll(operations);
                     }
                     if(!allNodeEntities.containsKey(node))
                         allNodeEntities.put(node, new LinkedHashMap<>());
@@ -245,13 +249,38 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return centralMessagingShard
                     .sendMessage(
                             AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(entityName, OTHER_SHARD_ENDPOINT),
+                            AgentWave.makePath(entityName, OTHER_CONTROL_SHARD_ENDPOINT),
                             command);
         }
 
-        public boolean sendToAllAgents(String command) {
-            //TODO:
-            return true;
+        /**
+         * Check if agents are able to perform the operation. If so, send the command.
+         *
+         * @param command
+         *                  - command to be sent to all agents running in the system.
+         */
+        public void sendToAll(String command) {
+            allAgents.entrySet().forEach(entry -> {
+                if(entry.getValue().contains(command)) {
+                    if(!centralMessagingShard.sendMessage(
+                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                            AgentWave.makePath(entry.getKey(), OTHER_CONTROL_SHARD_ENDPOINT),
+                            command))
+                        le("Message from [] to [] failed.", getName(), entry.getKey());
+                }
+                else {
+                    String parent = getParentNode(entry.getKey());
+                    JSONObject routedCommand = new JSONObject();
+                    routedCommand.put("child", entry.getKey());
+                    routedCommand.put("command", command);
+                    if(!centralMessagingShard.sendMessage(
+                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                            AgentWave.makePath(parent, OTHER_CONTROL_SHARD_ENDPOINT),
+                            routedCommand.toString()))
+                        le("Message from [] to parent [] of [] failed.", getName(), parent, entry.getKey());
+                }
+            });
+            return;
         }
     }
 }

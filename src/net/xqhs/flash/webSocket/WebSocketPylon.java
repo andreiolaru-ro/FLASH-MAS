@@ -69,6 +69,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		public boolean register(String agentName, MessageReceiver receiver) {
 			webSocketClient.addReceiverAgent(agentName, receiver);
 			JSONObject messageToServer = new JSONObject();
+			messageToServer.put("register", true);
 			messageToServer.put("nodeName", nodeName);
 			messageToServer.put("agentName", agentName);
 			webSocketClient.send(messageToServer.toString());
@@ -134,6 +135,26 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			JSONObject msg = new JSONObject();
 			msg.put("controlEntity", name);
 			webSocketClient.send(msg.toString());
+		}
+
+		/**
+		 * This node is both:
+		 *			- unregistered from the {@link WebSocketClientProxy} local instance
+		 * 		    - unregistered from the {@link WebSocketServerEntity} using an agent unregistering format message
+		 * 		      which is sent by the local {@link WebSocketClientProxy} client
+		 * @param agentName
+		 * 					- the name of the agent
+		 * @return
+		 */
+		@Override
+		public boolean unregister(String agentName) {
+			webSocketClient.removeReceiverAgent(agentName);
+			JSONObject msg = new JSONObject();
+			msg.put("register", false);
+			msg.put("nodeName", nodeName);
+			msg.put("agentName", agentName);
+			webSocketClient.send(msg.toString());
+			return true;
 		}
 
 		@Override

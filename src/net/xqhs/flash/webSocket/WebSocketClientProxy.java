@@ -32,6 +32,10 @@ public class WebSocketClientProxy extends Unit {
         messageReceivers.put(name, receiver);
     }
 
+    void removeReceiverAgent(String name) {
+        messageReceivers.remove(name);
+    }
+
     public WebSocketClientProxy(URI serverURI) {
         client = new WebSocketClient(serverURI) {
 

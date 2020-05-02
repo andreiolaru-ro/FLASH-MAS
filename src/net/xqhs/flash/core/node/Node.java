@@ -28,6 +28,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONValue;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -57,14 +58,40 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT                  = "control";
 
+    // operations that entities in the context of the node can perform themselves
+	List<String> operations = new LinkedList<>();
+
 	protected ShardContainer proxy = new ShardContainer() {
+
+		private boolean parseJSON(Object obj) {
+			if(obj instanceof JSONObject) {
+				JSONObject jo = (JSONObject) obj;
+				String child   = (String)jo.get("child");
+				String command = (String)jo.get("command");
+				Entity<?> entity = entityOrder.stream()
+						.filter(en -> en.getName().equals(child))
+						.findFirst().orElse(null);
+				if(entity == null) {
+					le("[] child not found in the context of [].", child, name);
+					return false;
+				}
+				if(command.equals("start"))
+					if(entity.start())
+						lf("[] was started by parent [].", child, name);
+
+			}
+			return true;
+		}
 
 		@Override
 		public void postAgentEvent(AgentEvent event) {
 			switch (event.getType())
 			{
 				case AGENT_WAVE:
-					String content = ((AgentWave) event).getContent();
+					if(!((AgentWave)event).getFirstDestinationElement().equals(SHARD_ENDPOINT)) break;
+					Object obj = JSONValue.parse(((AgentWave)event).getContent());
+					if(obj == null) break;
+					parseJSON(obj);
 					break;
 				default:
 					break;
@@ -122,6 +149,11 @@ public class Node extends Unit implements Entity<Node>
 	 * 				- an indication of success.
 	 */
 	protected boolean registerEntitiesToControlEntity() {
+		if(operations.isEmpty()) {
+			operations.add("stop");
+			operations.add("simulation");
+		}
+
 		JSONArray entities = new JSONArray();
 		registeredEntities.entrySet().forEach(entry-> {
 			String category = entry.getKey();
@@ -131,7 +163,7 @@ public class Node extends Unit implements Entity<Node>
 				ent.put("node", getName());
 				ent.put("category", category);
 				ent.put("name", entity.getName());
-				ent.put("operations", "stop");
+				ent.put("operations", operations);
 				entities.add(ent);
 			}
 		});

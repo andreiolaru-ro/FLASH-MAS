@@ -49,4 +49,14 @@ public interface MessagingPylonProxy extends PylonProxy
 	 * 				- the receiver of the registered entity
 	 */
 	void registerCentralEntity(String name, MessageReceiver inbox);
+
+	/**
+	 * Unregisters an agent with the specified name and associated {@link MessageReceiver} instance.
+	 *
+	 * @param agentName
+	 * 						- the name of the agent
+	 * @return
+	 * 						- an indication of success.
+	 */
+	boolean unregister(String agentName);
 }

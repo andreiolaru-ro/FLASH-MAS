@@ -18,6 +18,7 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -88,6 +89,12 @@ public class LocalPylon extends DefaultPylonImplementation {
 			messageReceivers.put(name, inbox);
 			centralEntityName = name;
 		}
+
+		@Override
+		public boolean unregister(String agentName) {
+			messageReceivers.remove(agentName);
+			return true;
+		}
 	};
 	
 	/**
@@ -135,7 +142,6 @@ public class LocalPylon extends DefaultPylonImplementation {
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
-			pylon.register(getAgent().getEntityName(), inbox);
 			return true;
 		}
 		
@@ -157,6 +163,15 @@ public class LocalPylon extends DefaultPylonImplementation {
 		@Override
 		public void registerCentralEntity(String name) {
 			pylon.registerCentralEntity(name, inbox);
+		}
+
+		@Override
+		public void signalAgentEvent(AgentEvent event) {
+			super.signalAgentEvent(event);
+			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
+				pylon.register(getAgent().getEntityName(), inbox);
+			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP))
+				pylon.unregister(getAgent().getEntityName());
 		}
 	}
 	
