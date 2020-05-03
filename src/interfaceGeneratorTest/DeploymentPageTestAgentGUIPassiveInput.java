@@ -5,7 +5,7 @@ import net.xqhs.flash.FlashBoot;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class DeploymentPageTestAgentGUI {
+public class DeploymentPageTestAgentGUIPassiveInput {
     public static void main(String[] args) {
         if (args.length == 0) {
             // YAML configuration provided in command line args
@@ -16,7 +16,7 @@ public class DeploymentPageTestAgentGUI {
         String test_args = "";
 
         test_args += " -package interfaceGenerator";
-        test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUI";
+        test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUIPassiveInput";
         test_args += " -config";
 
         var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));

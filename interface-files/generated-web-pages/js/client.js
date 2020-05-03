@@ -31,6 +31,7 @@ function init() {
             } else if (tokens[0] === 'passive-input:') {
                 // passive input
                 let info = message.body.slice("passive-input: ".length);
+                console.log(info);
                 let ids = JSON.parse(info)["data"];
                 let list_values = {};
 
@@ -42,10 +43,8 @@ function init() {
                 let data = JSON.stringify(values);
                 eb.send('client-to-server', "passive-value: " + data);
             } else if (tokens[0] === 'output:') {
-                console.log(message.body);
                 let info = message.body.slice("output: ".length);
                 let ids = JSON.parse(info);
-                console.log(ids);
                 for (let key in ids) {
                     if (ids.hasOwnProperty(key)) {
                         let val = ids[key];
