@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.types.PlatformType;
 import interfaceGenerator.web.Input;
+import interfaceGenerator.web.Runner;
 import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -33,9 +34,7 @@ public class GUIShard extends AgentShardCore {
 
     public GUIShard(MultiTreeMap configuration) {
         this();
-        var guiShard = configuration.getSingleTree("shard");
-        var guiTrees = guiShard.getTrees("GUIShard");
-        this.configuration = guiTrees.get(0).getSingleTree("config").getHierarchicalNames().get(0);
+        this.configuration = configuration.getSingleTree("config").getTreeKeys().get(0);
     }
 
     private static List<Pair<String, String>> passiveDataInput;
@@ -89,41 +88,12 @@ public class GUIShard extends AgentShardCore {
             activeInput.add(value.getKey(), value.getValue());
         }
         super.getAgent().postAgentEvent(activeInput);
-        /*
-        if (testing) {
-            // TODO: add code test for passive input and output - to be deleted in final code
-            // passive input
-            var port = Element.randomPort();
-
-            if (port.isPresent()) {
-                System.out.println("Testing passive input");
-                AgentWave passiveInput = null;
-                try {
-                    passiveInput = getInput(port.get());
-                    var contentKeys = passiveInput.getKeys();
-                    contentKeys.remove("EVENT_TYPE");
-                    System.out.println(contentKeys);
-                    for (var key : contentKeys) {
-                        System.out.println(key + ": " + passiveInput.getValues(key));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }*/
-        /*
-        if (testing) {
-            AgentWave agentWave = new AgentWave();
-            // some rubbish values for testing
-            agentWave.add("chicken", getAlphaNumericString(10));
-            agentWave.add("nuggets", getAlphaNumericString(10));
-            agentWave.add("kfc", String.valueOf(new Random().nextInt(30)));
-            sendOutput(agentWave);
-            System.out.println("Testing passive input and output finished.");
-        }*/
     }
 
     public AgentWave getInput(String portName) throws Exception {
+        if (!Runner.connectionInit) {
+            return null;
+        }
         var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
@@ -142,28 +112,28 @@ public class GUIShard extends AgentShardCore {
                 }
             }
         } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
-            // TODO: server gives ids to client and client gives back the ids with their values
-            //  and associate ids with roles
-            List<String> ids = new ArrayList<>();
+            if (Runner.connectionInit) {
+                List<String> ids = new ArrayList<>();
 
-            for (var element : elements) {
-                ids.add(element.getId());
-            }
+                for (var element : elements) {
+                    ids.add(element.getId());
+                }
 
-            HashMap<String, List<String>> data = new HashMap<>();
-            data.put("data", ids);
+                HashMap<String, List<String>> data = new HashMap<>();
+                data.put("data", ids);
 
-            GsonBuilder gsonMapBuilder = new GsonBuilder();
-            Gson gsonObject = gsonMapBuilder.create();
-            String JSONObject = gsonObject.toJson(data);
+                GsonBuilder gsonMapBuilder = new GsonBuilder();
+                Gson gsonObject = gsonMapBuilder.create();
+                String JSONObject = gsonObject.toJson(data);
 
-            Input.runner.getVertx().eventBus().send("server-to-client", "passive-input: " + JSONObject);
+                Input.runner.getVertx().eventBus().send("server-to-client", "passive-input: " + JSONObject);
 
-            // TODO: add some waiting for getting info from client? + receive data from client
-            System.out.println("passive data " + passiveDataInput);
-            if (passiveDataInput != null) {
-                for (var passiveData : passiveDataInput) {
-                    event.add(passiveData.getKey(), passiveData.getValue());
+                // TODO: add some waiting for getting info from client? + receive data from client
+                System.out.println("passive data " + passiveDataInput);
+                if (passiveDataInput != null) {
+                    for (var passiveData : passiveDataInput) {
+                        event.add(passiveData.getKey(), passiveData.getValue());
+                    }
                 }
             }
         }
@@ -201,6 +171,7 @@ public class GUIShard extends AgentShardCore {
                     var value = values.get(i);
                     data.put(elementId, value);
                 }
+                System.out.println(data);
                 GsonBuilder gsonMapBuilder = new GsonBuilder();
                 Gson gsonObject = gsonMapBuilder.create();
 
