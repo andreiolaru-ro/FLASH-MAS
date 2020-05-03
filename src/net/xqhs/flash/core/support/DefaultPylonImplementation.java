@@ -14,10 +14,13 @@ package net.xqhs.flash.core.support;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.CategoryName;
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -29,40 +32,36 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class DefaultPylonImplementation extends Unit implements Pylon
-{
+public class DefaultPylonImplementation extends Unit implements Pylon {
 	/**
 	 * The default name for instances of this implementation.
 	 */
-	protected static final String	DEFAULT_NAME	= "Default Support ";
+	protected static final String DEFAULT_NAME = "Default";
 	
 	/**
 	 * Indicates whether the implementation is currently running.
 	 */
-	protected boolean	isRunning		= false;
+	protected boolean isRunning = false;
 	
 	/**
 	 * The name of this instance.
 	 */
-	protected String				name			= DEFAULT_NAME;
+	protected String name = DEFAULT_NAME;
 	
 	@Override
-	public boolean configure(MultiTreeMap configuration)
-	{
-		if(configuration.isSimple("name"))
-			name = configuration.get("name");
+	public boolean configure(MultiTreeMap configuration) {
+		name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		this.setUnitName(getName()).setLogLevel(Level.ALL);
 		return true;
 	}
 	
 	@Override
-	public String getName()
-	{
-		return name;
+	public String getName() {
+		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.SUPPORT.s();
 	}
 	
 	@Override
-	public boolean start()
-	{
+	public boolean start() {
 		// does nothing, only changes state.
 		isRunning = true;
 		lf("[] started", name);
@@ -70,8 +69,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
-	public boolean stop()
-	{
+	public boolean stop() {
 		// does nothing, only changes state.
 		isRunning = false;
 		lf("[] stopped", name);
@@ -79,51 +77,43 @@ public class DefaultPylonImplementation extends Unit implements Pylon
 	}
 	
 	@Override
-	public boolean isRunning()
-	{
+	public boolean isRunning() {
 		return isRunning;
 	}
 	
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 	
 	@Override
 	public boolean removeContext(EntityProxy<Node> context) {
-		throw new UnsupportedOperationException("Cannot remove context from a node");
-	}
-
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context)
-	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	
 	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
-		// TODO Auto-generated method stub
-		return false;
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		return true;
 	}
-
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		return true;
+	}
+	
 	/**
 	 * The loader recommends no particular implementation for any shard.
 	 */
 	@Override
-	public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation)
-	{
+	public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation) {
 		return null;
 	}
 	
 	@Override
-	public Set<String> getSupportedServices()
-	{
+	public Set<String> getSupportedServices() {
 		return new HashSet<>();
 	}
-
+	
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;
