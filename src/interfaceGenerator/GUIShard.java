@@ -91,9 +91,10 @@ public class GUIShard extends AgentShardCore {
     }
 
     public AgentWave getInput(String portName) throws Exception {
-        if (!Runner.connectionInit) {
+        if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML) && !Runner.connectionInit) {
             return null;
         }
+
         var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
@@ -142,7 +143,10 @@ public class GUIShard extends AgentShardCore {
     }
 
     public void sendOutput(AgentWave agentWave) throws ParseException {
-        // TODO: output port
+        if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML) && !Runner.connectionInit) {
+            return;
+        }
+
         var port = agentWave.getCompleteDestination();
         var roles = agentWave.getKeys();
         roles.remove("EVENT_TYPE");
@@ -164,7 +168,6 @@ public class GUIShard extends AgentShardCore {
                     SwingUiPylon.changeValueElement(elementId, value);
                 }
             } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
-                // TODO: web
                 HashMap<String, String> data = new HashMap<>();
                 for (int i = 0; i < size; i++) {
                     var elementId = elementsFromPort.get(i).getId();
