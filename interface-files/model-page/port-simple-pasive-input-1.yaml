@@ -1,4 +1,3 @@
-platformType: desktop
 node:
   children:
     - type: form

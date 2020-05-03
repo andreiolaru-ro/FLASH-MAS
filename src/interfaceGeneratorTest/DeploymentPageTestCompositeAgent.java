@@ -1,6 +1,7 @@
 package interfaceGeneratorTest;
 
-import interfaceGenerator.GUIShard;
+import interfaceGenerator.PageBuilder;
+import interfaceGenerator.types.PlatformType;
 import net.xqhs.flash.FlashBoot;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class DeploymentPageTestCompositeAgent {
         var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
 
         StringBuilder configuration = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             configuration.append(args[i]);
             if (i != args.length - 1) {
                 configuration.append(" ");
@@ -34,8 +35,14 @@ public class DeploymentPageTestCompositeAgent {
 
         args_list.add(configuration.toString());
 
-        // testing passive input and output
-        GUIShard.testing = true;
+        var platformType = PlatformType.valueOfLabel(args[0]);
+        System.err.println(platformType);
+        if (platformType == null) {
+            System.err.println("Invalid platform type");
+            return;
+        }
+        PageBuilder.getInstance().platformType = platformType;
+        System.err.println(PageBuilder.getInstance().platformType);
 
         FlashBoot.main(args_list.toArray(new String[0]));
     }

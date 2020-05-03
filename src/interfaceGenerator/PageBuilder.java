@@ -32,20 +32,8 @@ public class PageBuilder {
     public Element getPage() {
         return page;
     }
-    /*
-    public JFrame getWindow() {
-        return window;
-    }
-
-    public void setWindow(JFrame window) {
-        this.window = window;
-    }*/
 
     public Object buildPage(Configuration data) throws Exception {
-        var platformType = data.getPlatformType();
-        var type = PlatformType.valueOfLabel(platformType);
-        this.platformType = type;
-
         // generating ids for every element in configuration
         var configuration = IdGenerator.attributeIds(data.getNode());
         page = configuration;
@@ -55,9 +43,9 @@ public class PageBuilder {
         Element.checkActivePortsWithElement(configuration);
         GUIPylonProxy guiPylonProxy;
 
-        if (type != null) {
-            switch (type) {
-                case HTML:
+        if (platformType != null) {
+            switch (platformType) {
+                case WEB:
                     guiPylonProxy = new WebUiPylon();
                     var html = (String) guiPylonProxy.generate(data.getNode());
                     FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
