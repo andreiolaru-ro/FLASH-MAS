@@ -84,8 +84,10 @@ public class GUIShard extends AgentShardCore {
     }
 
     public AgentWave getInput(String portName) throws Exception {
-        if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML) && !Runner.connectionInit) {
-            return null;
+        if (PageBuilder.getInstance().platformType.equals(PlatformType.WEB)) {
+            if (!Runner.connectionInit) {
+                return null;
+            }
         }
 
         var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
@@ -105,7 +107,7 @@ public class GUIShard extends AgentShardCore {
                     event.add(element.getRole(), value);
                 }
             }
-        } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
+        } else if (PageBuilder.getInstance().platformType.equals(PlatformType.WEB)) {
             if (Runner.connectionInit) {
                 List<String> ids = new ArrayList<>();
 
@@ -136,7 +138,7 @@ public class GUIShard extends AgentShardCore {
     }
 
     public void sendOutput(AgentWave agentWave) throws ParseException {
-        if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML) && !Runner.connectionInit) {
+        if (PageBuilder.getInstance().platformType.equals(PlatformType.WEB) && !Runner.connectionInit) {
             return;
         }
 
@@ -160,7 +162,7 @@ public class GUIShard extends AgentShardCore {
                     var value = values.get(i);
                     SwingUiPylon.changeValueElement(elementId, value);
                 }
-            } else if (PageBuilder.getInstance().platformType.equals(PlatformType.HTML)) {
+            } else if (PageBuilder.getInstance().platformType.equals(PlatformType.WEB)) {
                 HashMap<String, String> data = new HashMap<>();
                 for (int i = 0; i < size; i++) {
                     var elementId = elementsFromPort.get(i).getId();

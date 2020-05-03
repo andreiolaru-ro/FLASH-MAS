@@ -1,4 +1,3 @@
-platformType: html
 node:
   children:
     - type: spinner

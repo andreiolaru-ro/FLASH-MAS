@@ -1,9 +1,0 @@
-platformType: desktop
-node:
-  id: root
-  children:
-    - id: child1
-      type: button
-      text: send to agent
-    - id: spinner1
-      type: spinner

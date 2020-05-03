@@ -1,7 +1,6 @@
 package interfaceGenerator;
 
 public class Configuration {
-    private String platformType;
     private Element node;
 
     public Element getNode() {
@@ -10,13 +9,5 @@ public class Configuration {
 
     public void setNode(Element node) {
         this.node = node;
-    }
-
-    public String getPlatformType() {
-        return platformType;
-    }
-
-    public void setPlatformType(String platformType) {
-        this.platformType = platformType;
     }
 }

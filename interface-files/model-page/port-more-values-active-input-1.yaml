@@ -1,4 +1,3 @@
-platformType: html
 node:
   children:
     # rubbish role names for testing
