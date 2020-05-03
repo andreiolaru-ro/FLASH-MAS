@@ -12,8 +12,7 @@ import net.xqhs.flash.core.node.NodeLoader;
 /**
  * Deployment testing.
  */
-public class Boot
-{
+public class Boot {
 	/**
 	 * Stop after this time.
 	 */
@@ -23,11 +22,10 @@ public class Boot
 	 * Performs test.
 	 * 
 	 * @param args
-	 *                 - not used.
+	 *            - not used.
 	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) throws InterruptedException
-	{
+	public static void main(String[] args) throws InterruptedException {
 		String test_args = "";
 		
 		test_args += " -package test.compositePingPong test.runnableCompositePingPong -loader agent:composite";
@@ -41,7 +39,13 @@ public class Boot
 		// node.start();
 		// Thread.sleep(RUN_TIME);
 		// node.stop();
+		
+		// in comments below an example where sending and delivering the messages is done at a distance
+		// LocalSupport pylon = null;
 		for(Entity<?> e : node.getOtherEntities())
+			// if(e.getName().equals("main-pylon support"))
+			// pylon = (LocalSupport) e;
+			// else
 			e.start();
 		Set<Thread> threads = new HashSet<>();
 		for(Entity<?> e : node.getAgents())
@@ -49,6 +53,8 @@ public class Boot
 		for(Thread t : threads)
 			t.start();
 		Thread.sleep(RUN_TIME);
+		// pylon.start();
+		// Thread.sleep(1000);
 		for(Entity<?> e : node.getAgents())
 			e.stop();
 		for(Entity<?> e : node.getOtherEntities())
