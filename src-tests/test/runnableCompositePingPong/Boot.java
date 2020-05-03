@@ -32,6 +32,7 @@ public class Boot
 		
 		test_args += " -package test.compositePingPong test.runnableCompositePingPong -loader agent:composite";
 		test_args += " -node main classpath:NodeAccess";
+		test_args += " -support local:main-pylon use-thread";
 		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
