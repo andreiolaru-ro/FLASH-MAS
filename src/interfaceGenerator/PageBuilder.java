@@ -1,6 +1,7 @@
 package interfaceGenerator;
 
 import interfaceGenerator.pylon.AndroidUiPylon;
+import interfaceGenerator.pylon.GUIPylonProxy;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.pylon.WebUiPylon;
 import interfaceGenerator.types.PlatformType;
@@ -52,11 +53,13 @@ public class PageBuilder {
 
         // checking the active ports, with their elements
         Element.checkActivePortsWithElement(configuration);
+        GUIPylonProxy guiPylonProxy;
 
         if (type != null) {
             switch (type) {
                 case HTML:
-                    var html = WebUiPylon.generate(data.getNode());
+                    guiPylonProxy = new WebUiPylon();
+                    var html = (String) guiPylonProxy.generate(data.getNode());
                     FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
@@ -72,6 +75,7 @@ public class PageBuilder {
                     System.out.println(android);
                     return null;
                 case DESKTOP:
+                    guiPylonProxy = new SwingUiPylon();
                     try {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     } catch (ClassNotFoundException
@@ -80,7 +84,7 @@ public class PageBuilder {
                             | UnsupportedLookAndFeelException ex) {
                         ex.printStackTrace();
                     }
-                    var frame = SwingUiPylon.generateWindow(data.getNode());
+                    var frame = (JFrame) guiPylonProxy.generate(data.getNode());
                     frame.setVisible(true);
                     if (window == null) {
                         window = frame;

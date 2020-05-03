@@ -1,6 +1,10 @@
 let eb;
 let values;
 
+function timer() {
+
+}
+
 function init() {
     eb = new EventBus("/eventbus");
 
@@ -38,17 +42,18 @@ function init() {
                 let data = JSON.stringify(values);
                 eb.send('client-to-server', "passive-value: " + data);
             } else if (tokens[0] === 'output:') {
+                console.log(message.body);
                 let info = message.body.slice("output: ".length);
-                let ids = JSON.parse(info)["data"];
+                let ids = JSON.parse(info);
                 console.log(ids);
                 for (let key in ids) {
                     if (ids.hasOwnProperty(key)) {
                         let val = ids[key];
-                        if (document.getElementById("key").getAttribute("type") === 'text') {
-                            document.getElementById("key").value = val;
+                        if (document.getElementById(key).getAttribute("type") === 'text') {
+                            document.getElementById(key).value = val;
                         } else {
                             if (!isNaN(val)) {
-                                document.getElementById("key").value = Number(val);
+                                document.getElementById(key).value = Number(val);
                             }
                         }
                     }

@@ -6,7 +6,6 @@ import interfaceGenerator.Pair;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.PylonProxy;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,11 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class SwingUiPylon implements PylonProxy {
+public class SwingUiPylon implements GUIPylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
     public static HashSet<String> ids = new HashSet<>();
 
-    public static JFrame generateWindow(Element element) {
+    public Object generate(Element element) {
         JFrame window = new JFrame();
         window.setSize(new Dimension(600, 600));
         JPanel windowPanel = new JPanel();

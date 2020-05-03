@@ -29,6 +29,7 @@ public class Runner extends AbstractVerticle {
     private Gson gson = new Gson();
     private Type inputType = new TypeToken<HashMap<String, Map<String, String>>>() {
     }.getType();
+    public static boolean connectionInit = false;
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -46,6 +47,7 @@ public class Runner extends AbstractVerticle {
                     System.out.println("created");
                 } else if (be.type() == BridgeEventType.REGISTER) {
                     System.out.println("register");
+                    connectionInit = true;
                     vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
                         if (objectMessage.body().equals("init")) {
                             vertx.eventBus().send("server-to-client", "yes");

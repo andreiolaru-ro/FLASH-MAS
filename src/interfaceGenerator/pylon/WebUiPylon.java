@@ -4,9 +4,8 @@ import interfaceGenerator.Element;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.PylonProxy;
 
-public class WebUiPylon implements PylonProxy {
+public class WebUiPylon implements GUIPylonProxy {
     private final static String head = "<!DOCTYPE html>\n" +
             "<html>\n" +
             "<head>\n" +
@@ -21,20 +20,7 @@ public class WebUiPylon implements PylonProxy {
     private static int indentLevel = 0;
     private final static String tab = "\t";
 
-    public static String getTag(ElementType type) {
-        switch (type) {
-            case BLOCK:
-                return "div";
-            case FORM:
-            case LABEL:
-            case BUTTON:
-            case SPINNER:
-                return type.type;
-        }
-        return null;
-    }
-
-    public static String generate(Element element) throws Exception {
+    public Object generate(Element element) {
         StringBuilder result = new StringBuilder();
 
         if (indentLevel == 0) {
@@ -72,7 +58,7 @@ public class WebUiPylon implements PylonProxy {
         return result.toString();
     }
 
-    private static String generateButton(Element element) {
+    private String generateButton(Element element) {
         String result = "";
         result += tab.repeat(indentLevel);
         result += "<button ";
@@ -101,7 +87,7 @@ public class WebUiPylon implements PylonProxy {
         return result;
     }
 
-    private static String generateDiv(Element element) {
+    private String generateDiv(Element element) {
         StringBuilder result = new StringBuilder();
         result.append(tab.repeat(indentLevel));
         result.append("<div ");
@@ -140,7 +126,7 @@ public class WebUiPylon implements PylonProxy {
         return result.toString();
     }
 
-    private static String generateLabel(Element element) {
+    private String generateLabel(Element element) {
         String result = "";
         result += tab.repeat(indentLevel);
         result += "<label ";
@@ -151,7 +137,7 @@ public class WebUiPylon implements PylonProxy {
         return result;
     }
 
-    private static String generateSpinner(Element element) {
+    private String generateSpinner(Element element) {
         String result = "";
         result += tab.repeat(indentLevel);
         result += "<input type = \"number\" ";
@@ -161,7 +147,7 @@ public class WebUiPylon implements PylonProxy {
         return result;
     }
 
-    private static String generateForm(Element element) {
+    private String generateForm(Element element) {
         String result = "";
         result += tab.repeat(indentLevel);
         result += "<input type = \"text\" ";
