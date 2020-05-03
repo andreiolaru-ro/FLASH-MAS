@@ -39,13 +39,6 @@ public class GUIShard extends AgentShardCore {
 
     private static List<Pair<String, String>> passiveDataInput;
 
-    public void getActiveInput(String value) {
-        System.out.println("Generating AgentWave for active input...");
-        AgentWave activeInput = new AgentWave(value, "/");
-        activeInput.addSourceElementFirst("/gui/port");
-        super.getAgent().postAgentEvent(activeInput);
-    }
-
     public static void sendPassiveInputToShard(List<Pair<String, String>> dataInput) {
         System.out.println("data input" + dataInput);
         passiveDataInput = dataInput;
