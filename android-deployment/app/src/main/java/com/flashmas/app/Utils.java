@@ -2,6 +2,7 @@ package com.flashmas.app;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 public class Utils {
     public static void enableDisableViewGroup(ViewGroup viewGroup, boolean enabled) {
@@ -10,6 +11,10 @@ public class Utils {
             View view = viewGroup.getChildAt(i);
             view.setEnabled(enabled);
             view.setFocusable(enabled);
+            if (view instanceof EditText) {
+                ((EditText)view).setTextIsSelectable(enabled);
+                view.setFocusableInTouchMode(enabled);
+            }
             if (view instanceof ViewGroup) {
                 enableDisableViewGroup((ViewGroup) view, enabled);
             }
