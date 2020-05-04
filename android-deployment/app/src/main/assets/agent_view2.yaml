@@ -9,24 +9,30 @@ node:
       text: __agent_name__
       properties:
         align: center
-    - id: content
+    - id: content-form
       type: form
       text: "Default content"
+      port: main
     - id: target
       type: form
+      port: main
       text: "Default target"  # TODO
     - id: send_button
       type: button
+      port: main
       text: "Send"
-      properties:
-        action: send
+      role: send
     - id: move_button
       type: button
       text: "Move agent"
-      properties:
-        action: move
+      role: move
     - id: send_button
       type: button
+      port: quick_send
       text: "Quick Send"
-      properties:
-        action: quick_send
+      role: quick_send
+    - id: log_view
+      type: label
+      text: "LOGS:"
+      port: logs
+      role: logging

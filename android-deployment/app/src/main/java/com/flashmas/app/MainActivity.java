@@ -27,7 +27,9 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgentLoader;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.util.logging.BaseLogger;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
@@ -115,12 +117,11 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         n++;
 
 
-        MultiTreeMap guiShardTree = new MultiTreeMap();
-        MultiTreeMap shardConfig = new MultiTreeMap();
-        shardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
-        Log.d("getCompositeAgent", AndroidGuiShard.class.getName());
-        guiShardTree.addOneTree("guiShard", shardConfig);
-        configuration.addSingleTree("shard", guiShardTree);
+        MultiTreeMap shardsTree = new MultiTreeMap();
+        MultiTreeMap guiShardConfig = new MultiTreeMap();
+        guiShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
+        shardsTree.addOneTree("guiShard", guiShardConfig);
+        configuration.addSingleTree("shard", shardsTree);
         CompositeAgentLoader loader = new CompositeAgentLoader();
         MultiTreeMap loaderConfig = new MultiTreeMap();
         loaderConfig.add(CategoryName.PACKAGE.s(), "nothingfornow");
@@ -132,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
             @Override
             protected void l(Level level, String s, Object... objects) {
-                Log.d("Composite agents", s);
                 for (Object o : objects) {
                     Log.d("Composite agents", o.toString());
                 }
