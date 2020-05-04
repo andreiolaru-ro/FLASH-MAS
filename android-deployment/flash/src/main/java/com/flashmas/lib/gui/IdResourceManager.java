@@ -1,10 +1,10 @@
-package com.flashmas.app.ui.generator;
+package com.flashmas.lib.gui;
 
 import java.util.HashMap;
 
 public class IdResourceManager {
     private static HashMap<String, Integer> idMap = new HashMap<>();
-    private static int n = 123421;
+    private static int n = 123421;  // TODO replace with unique id generator
 
     public static Integer addId(String name) {
         int id = n;

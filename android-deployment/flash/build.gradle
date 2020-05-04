@@ -22,12 +22,18 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.github.bmoliveira:snake-yaml:v1.18-android'
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
     testImplementation 'junit:junit:4.12'

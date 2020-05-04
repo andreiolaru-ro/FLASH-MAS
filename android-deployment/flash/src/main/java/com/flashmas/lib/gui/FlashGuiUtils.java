@@ -1,4 +1,6 @@
-package com.flashmas.lib;
+package com.flashmas.lib.gui;
+
+import com.flashmas.lib.gui.AndroidGuiShard;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
@@ -6,7 +8,7 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 
-public class FlashUtils {
+public class FlashGuiUtils {
     public static final String GUI_SHARD_DESIGNATION = "gui";
 
     public static void registerGuiEventHandler(CompositeAgent agent, AgentEvent.AgentEventHandler handler) {
