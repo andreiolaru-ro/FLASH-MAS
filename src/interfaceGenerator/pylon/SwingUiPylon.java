@@ -18,28 +18,10 @@ public class SwingUiPylon implements GUIPylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
     public static HashSet<String> ids = new HashSet<>();
 
-    public Object generate(Element element) {
-        JFrame window = new JFrame();
-        window.setSize(new Dimension(600, 600));
-        JPanel windowPanel = new JPanel();
-        windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
-        componentMap.put(element.getId(), windowPanel);
-        ids.add(element.getId());
-        if (element.getChildren() != null) {
-            for (var child : element.getChildren()) {
-                var panel = generatePanel(child);
-                windowPanel.add(panel);
-            }
-        }
-        window.add(windowPanel);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        return window;
-    }
-
     private static JPanel generatePanel(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        var type = ElementType.valueOfLabel(element.getType());
+        ElementType type = ElementType.valueOfLabel(element.getType());
         if (type != null) {
             ids.add(element.getId());
             switch (type) {
@@ -56,7 +38,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                     JPanel subPanel = new JPanel();
                     subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
                     if (element.getChildren() != null) {
-                        for (var child : element.getChildren()) {
+                        for (Element child : element.getChildren()) {
                             subPanel.add(generatePanel(child));
                         }
                     }
@@ -86,29 +68,29 @@ public class SwingUiPylon implements GUIPylonProxy {
             button.addActionListener(e -> {
                 System.out.println(element.getRole());
 
-                var port = element.getPort();
-                var activePorts = Element.getActivePortsWithElements();
-                var elements = activePorts.get(port);
+                String port = element.getPort();
+                HashMap<String, ArrayList<Element>> activePorts = Element.getActivePortsWithElements();
+                ArrayList<Element> elements = activePorts.get(port);
 
                 ArrayList<Pair<String, String>> inputIds = new ArrayList<>();
                 ArrayList<Pair<String, String>> values = new ArrayList<>();
 
-                for (var elem : elements) {
+                for (Element elem : elements) {
                     if (elem.getType().equals(ElementType.SPINNER.type)
                             || elem.getType().equals(ElementType.FORM.type)) {
                         inputIds.add(new Pair<>(elem.getId(), elem.getRole()));
                     }
                 }
 
-                for (var inputId : inputIds) {
-                    var component = getComponentById(inputId.getKey(), PageBuilder.window);
+                for (Pair<String, String> inputId : inputIds) {
+                    Component component = getComponentById(inputId.getKey(), PageBuilder.window);
                     if (component instanceof JTextArea) {
-                        var form = (JTextArea) component;
-                        var value = form.getText();
+                        JTextArea form = (JTextArea) component;
+                        String value = form.getText();
                         values.add(new Pair<>(value, inputId.getValue()));
                     } else if (component instanceof JSpinner) {
-                        var spinner = (JSpinner) component;
-                        var value = spinner.getValue().toString();
+                        JSpinner spinner = (JSpinner) component;
+                        String value = spinner.getValue().toString();
                         values.add(new Pair<>(value, inputId.getValue()));
                     }
                 }
@@ -124,6 +106,18 @@ public class SwingUiPylon implements GUIPylonProxy {
         panel.add(button);
         panel.putClientProperty(element.getId(), button);
         return panel;
+    }
+
+    private static void mapElements(JFrame frame) {
+        Container contentPane = frame.getRootPane().getContentPane();
+        if (contentPane instanceof JPanel) {
+            JPanel windowsPanel = (JPanel) contentPane;
+            Component mainComponent = windowsPanel.getComponents()[0];
+
+            if (mainComponent instanceof JPanel) {
+                componentMap = mapElements(mainComponent);
+            }
+        }
     }
 
     private static JPanel generateLabel(Element element) {
@@ -181,26 +175,13 @@ public class SwingUiPylon implements GUIPylonProxy {
         return componentMap.get(id);
     }
 
-    private static void mapElements(JFrame frame) {
-        var contentPane = frame.getRootPane().getContentPane();
-        if (contentPane instanceof JPanel) {
-            var windowsPanel = (JPanel) contentPane;
-            var mainComponent = windowsPanel.getComponents()[0];
-
-            if (mainComponent instanceof JPanel) {
-                var mainPanel = (JPanel) mainComponent;
-                componentMap = mapElements(mainComponent);
-            }
-        }
-    }
-
     private static HashMap<String, Component> mapElements(Component component) {
         HashMap<String, Component> map = new HashMap<>();
         if (component instanceof JPanel) {
-            var panel = (JPanel) component;
-            for (var comp : panel.getComponents()) {
-                for (var id : ids) {
-                    var obj = panel.getClientProperty(id);
+            JPanel panel = (JPanel) component;
+            for (Component comp : panel.getComponents()) {
+                for (String id : ids) {
+                    Object obj = panel.getClientProperty(id);
                     if (obj != null) {
                         if (obj instanceof Component) {
                             map.put(id, (Component) obj);
@@ -215,18 +196,11 @@ public class SwingUiPylon implements GUIPylonProxy {
         return map;
     }
 
-    public static void changeValueElement(String id, String value) throws ParseException {
-        PageBuilder.window.setVisible(false);
-        PageBuilder.window.dispose();
-        PageBuilder.window = changeValueElement(PageBuilder.window, id, value);
-        PageBuilder.window.setVisible(true);
-    }
-
     private static JFrame changeValueElement(JFrame frame, String id, String value) throws ParseException {
-        var contentPane = frame.getRootPane().getContentPane();
+        Container contentPane = frame.getRootPane().getContentPane();
         if (contentPane instanceof JPanel) {
-            var windowsPanel = (JPanel) contentPane;
-            var mainComponent = windowsPanel.getComponents()[0];
+            JPanel windowsPanel = (JPanel) contentPane;
+            Component mainComponent = windowsPanel.getComponents()[0];
             if (mainComponent instanceof JPanel) {
                 windowsPanel.remove(mainComponent);
                 mainComponent = changeValueElement(mainComponent, id, value);
@@ -241,27 +215,34 @@ public class SwingUiPylon implements GUIPylonProxy {
         return frame;
     }
 
+    public static void changeValueElement(String id, String value) throws ParseException {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = changeValueElement(PageBuilder.window, id, value);
+        PageBuilder.window.setVisible(true);
+    }
+
     private static Component changeValueElement(Component component, String idElement, String value) throws ParseException {
         if (component instanceof JPanel) {
-            var panel = (JPanel) component;
+            JPanel panel = (JPanel) component;
             ArrayList<Component> componentList = new ArrayList<>();
             Pair<Component, Component> pair = new Pair<>();
 
-            for (var id : ids) {
-                var obj = panel.getClientProperty(id);
+            for (String id : ids) {
+                Object obj = panel.getClientProperty(id);
                 if (obj != null) {
                     if (obj instanceof Component) {
                         //map.put(id, (Component) obj);
                         if (id.equals(idElement)) {
                             if (obj instanceof JTextArea) {
-                                var form = (JTextArea) obj;
+                                JTextArea form = (JTextArea) obj;
                                 pair.setKey((Component) obj);
                                 form.setText(value);
                                 pair.setValue(form);
                                 componentMap.put(id, form);
                                 panel.putClientProperty(id, form);
                             } else if (obj instanceof JSpinner) {
-                                var spinner = (JSpinner) obj;
+                                JSpinner spinner = (JSpinner) obj;
                                 pair.setKey((Component) obj);
                                 //spinner.commitEdit();
                                 //spinner.setValue(value);
@@ -274,7 +255,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                 }
             }
 
-            for (var comp : panel.getComponents()) {
+            for (Component comp : panel.getComponents()) {
                 if (comp.equals(pair.getKey())) {
                     componentList.add(pair.getValue());
                 } else {
@@ -289,13 +270,31 @@ public class SwingUiPylon implements GUIPylonProxy {
                 panel.remove(i);
             }
 
-            for (var comp : componentList) {
+            for (Component comp : componentList) {
                 panel.add(comp);
             }
 
             return panel;
         }
         return component;
+    }
+
+    public Object generate(Element element) {
+        JFrame window = new JFrame();
+        window.setSize(new Dimension(600, 600));
+        JPanel windowPanel = new JPanel();
+        windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        componentMap.put(element.getId(), windowPanel);
+        ids.add(element.getId());
+        if (element.getChildren() != null) {
+            for (Element child : element.getChildren()) {
+                JPanel panel = generatePanel(child);
+                windowPanel.add(panel);
+            }
+        }
+        window.add(windowPanel);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        return window;
     }
 
     @Override

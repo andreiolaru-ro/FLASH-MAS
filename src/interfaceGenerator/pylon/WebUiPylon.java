@@ -28,8 +28,8 @@ public class WebUiPylon implements GUIPylonProxy {
             indentLevel++;
         }
 
-        var type = element.getType();
-        var elementType = ElementType.valueOfLabel(type);
+        String type = element.getType();
+        ElementType elementType = ElementType.valueOfLabel(type);
         if (elementType != null) {
             switch (elementType) {
                 case BLOCK:
@@ -97,8 +97,8 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append(">\n");
         indentLevel++;
         if (element.getChildren() != null) {
-            for (var child : element.getChildren()) {
-                var type = ElementType.valueOfLabel(child.getType());
+            for (Element child : element.getChildren()) {
+                ElementType type = ElementType.valueOfLabel(child.getType());
                 if (type != null) {
                     switch (type) {
                         case BUTTON:
