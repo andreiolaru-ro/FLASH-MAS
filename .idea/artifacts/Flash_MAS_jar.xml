@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Flash-MAS:jar">
+    <output-path>$PROJECT_DIR$/classes/artifacts/Flash_MAS_jar</output-path>
+    <root id="archive" name="Flash-MAS.jar">
+      <element id="module-output" name="Flash-MAS" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Light-Logging.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/net.xqhs.XML.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Config.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

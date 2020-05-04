@@ -42,18 +42,13 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Logging-light.jar">
+      <library>
         <CLASSES>
-          <root url="file://lib/Logging-light.jar" />
+          <root url="jar://$MODULE_DIR$/lib/Light-Logging.jar!/" />
         </CLASSES>
-        <JAVADOC>
-          <root url="jar:platform:/resource/Flash-MAS/lib/Logging-light.jar!/doc-Logging-light/pages/javadoc" />
-        </JAVADOC>
-        <SOURCES>
-          <root url="file://lib/Logging-light.jar" />
-        </SOURCES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Light-Logging" level="project" />
   </component>
 </module>
