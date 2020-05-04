@@ -91,11 +91,12 @@ public class Node extends Unit implements Entity<Node>
 		li("Starting node [].", name);
 		for(Entity<?> entity : entityOrder)
 		{
-			lf("starting an entity...");
+			String entityName = entity.getName();
+			lf("starting entity []...", entityName);
 			if(entity.start())
-				lf("entity started successfully.");
+				lf("entity [] started successfully.", entityName);
 			else
-				le("failed to start entity.");
+				le("failed to start entity [].", entityName);
 		}
 		li("Node [] started.", name);
 		return true;
