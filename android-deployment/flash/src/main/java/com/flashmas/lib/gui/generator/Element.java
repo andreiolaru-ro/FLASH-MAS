@@ -8,6 +8,8 @@ public class Element {
     private String type = ElementType.BLOCK.type;
     private Map<String, String> properties = new HashMap<>();
     private String text;
+    private String port;
+    private String role;
 
     public List<Element> getChildren() {
         return children;
@@ -49,6 +51,22 @@ public class Element {
         this.text = text;
     }
 
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @Override
     public String toString() {
         return "Element{" +
@@ -57,6 +75,8 @@ public class Element {
                 ", type='" + type + '\'' +
                 ", properties=" + properties +
                 ", text='" + text + '\'' +
+                ", port='" + port + '\'' +
+                ", role='" + role + '\'' +
                 '}';
     }
 
@@ -69,11 +89,13 @@ public class Element {
                 Objects.equals(children, element.children) &&
                 Objects.equals(type, element.type) &&
                 Objects.equals(properties, element.properties) &&
-                Objects.equals(text, element.text);
+                Objects.equals(text, element.text) &&
+                Objects.equals(port, element.port) &&
+                Objects.equals(role, element.role);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, children, type, properties, text);
+        return Objects.hash(id, children, type, properties, text, port, role);
     }
 }
