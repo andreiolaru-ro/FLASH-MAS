@@ -16,7 +16,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
-import com.flashmas.lib.AgentGuiShard;
+import com.flashmas.lib.AndroidGuiShard;
 import com.flashmas.lib.FlashManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,11 +26,9 @@ import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.BaseLogger;
-import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -119,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         MultiTreeMap guiShardTree = new MultiTreeMap();
         MultiTreeMap shardConfig = new MultiTreeMap();
-        shardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AgentGuiShard.class.getName());
-        Log.d("getCompositeAgent", AgentGuiShard.class.getName());
+        shardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
+        Log.d("getCompositeAgent", AndroidGuiShard.class.getName());
         guiShardTree.addOneTree("guiShard", shardConfig);
         configuration.addSingleTree("shard", guiShardTree);
         CompositeAgentLoader loader = new CompositeAgentLoader();

@@ -1,0 +1,32 @@
+platformType: android
+node:
+  id: root
+  properties:
+    orientation: vertical
+  children:
+    - id: child1
+      type: label
+      text: __agent_name__
+      properties:
+        align: center
+    - id: content
+      type: form
+      text: "Default content"
+    - id: target
+      type: form
+      text: "Default target"  # TODO
+    - id: send_button
+      type: button
+      text: "Send"
+      properties:
+        action: send
+    - id: move_button
+      type: button
+      text: "Move agent"
+      properties:
+        action: move
+    - id: send_button
+      type: button
+      text: "Quick Send"
+      properties:
+        action: quick_send
