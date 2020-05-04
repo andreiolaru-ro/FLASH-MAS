@@ -15,6 +15,7 @@
 
 	You should have received a copy of the GNU General Public License along with Flash-MAS. If not, see 
 	<http://www.gnu.org/licenses/>.
+-->
 
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
 	targetNamespace="http://flash.xqhs.net/deployment-schema"
