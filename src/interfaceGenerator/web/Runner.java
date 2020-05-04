@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import interfaceGenerator.Element;
-import interfaceGenerator.GUIShard;
+import interfaceGenerator.GUIShardWeb;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import io.vertx.core.AbstractVerticle;
@@ -101,7 +101,7 @@ public class Runner extends AbstractVerticle {
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             System.out.println(data);
-                            GUIShard.sendPassiveInputToShard(data);
+                            GUIShardWeb.sendPassiveInputToShard(data);
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {

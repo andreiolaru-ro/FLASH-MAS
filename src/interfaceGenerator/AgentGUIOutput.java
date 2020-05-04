@@ -4,7 +4,6 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-import java.text.ParseException;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,11 +25,7 @@ public class AgentGUIOutput extends AgentGUI {
                 agentWave.add("chicken", TestUtils.getAlphaNumericString(10));
                 agentWave.add("nuggets", TestUtils.getAlphaNumericString(10));
                 agentWave.add("kfc", String.valueOf(new Random().nextInt(30)));
-                try {
-                    guiShard.sendOutput(agentWave);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                guiShard.sendOutput(agentWave);
             }
         }, delay, period);
         return true;

@@ -17,26 +17,26 @@ public abstract class AgentGUI implements Agent {
     protected GUIShard guiShard;
     protected Timer timer;
 
-    // TODO: trigger page generation
-
     protected AgentGUI(MultiTreeMap configuration) {
-        guiShard = new GUIShard(configuration);
-        guiShard.addContext(new ShardContainer() {
-            @Override
-            public void postAgentEvent(AgentEvent event) {
-                guiShard.signalAgentEvent(event);
-            }
+        guiShard = GUIShardFactory.factoryGuiShard(configuration);
+        if (guiShard != null) {
+            guiShard.addContext(new ShardContainer() {
+                @Override
+                public void postAgentEvent(AgentEvent event) {
+                    guiShard.signalAgentEvent(event);
+                }
 
-            @Override
-            public AgentShard getAgentShard(AgentShardDesignation designation) {
-                return null;
-            }
+                @Override
+                public AgentShard getAgentShard(AgentShardDesignation designation) {
+                    return null;
+                }
 
-            @Override
-            public String getEntityName() {
-                return getName();
-            }
-        });
+                @Override
+                public String getEntityName() {
+                    return getName();
+                }
+            });
+        }
     }
 
     @Override
