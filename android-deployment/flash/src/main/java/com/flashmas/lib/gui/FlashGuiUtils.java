@@ -4,8 +4,10 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
+import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.gui.AndroidGuiShard;
 
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -61,5 +63,28 @@ public class FlashGuiUtils {
         }
 
         return agentView;
+    }
+
+    public static View getAgentView(String agentName, Context context) {
+        View agentView = null;
+
+        if (agentName == null || context == null) {
+            Log.e(TAG, "Agent or context is null");
+            return null;
+        }
+
+        Agent agent = FlashManager.getInstance().getAgent(agentName);
+        if (agent instanceof CompositeAgent) {
+            agentView = getAgentView((CompositeAgent) agent, context);
+        }
+        return agentView;
+    }
+
+    public static void onDestroyView(String agentName) {
+        // TODO parse view hierarchy to free resources
+        Agent agent = FlashManager.getInstance().getAgent(agentName);
+        if (agent instanceof CompositeAgent) {
+            unregisterAllAgentGuiHandlers((CompositeAgent) agent);
+        }
     }
 }

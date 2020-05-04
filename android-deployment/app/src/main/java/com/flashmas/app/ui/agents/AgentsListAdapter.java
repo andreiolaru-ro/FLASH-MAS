@@ -78,7 +78,7 @@ public class AgentsListAdapter extends RecyclerView.Adapter<AgentsListAdapter.Ag
                 @Override
                 public void onClick(View v) {
                     Bundle bundle = new Bundle();
-                    bundle.putSerializable(AgentDetailsFragment.AGENT_KEY, agent);
+                    bundle.putString(AgentDetailsFragment.AGENT_KEY, agent.getName());
                     Navigation.findNavController(v).navigate(R.id.agentDetailsFragment, bundle);
                 }
             });
