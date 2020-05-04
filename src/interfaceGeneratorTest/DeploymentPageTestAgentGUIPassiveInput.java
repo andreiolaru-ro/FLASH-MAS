@@ -6,6 +6,7 @@ import net.xqhs.flash.FlashBoot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class DeploymentPageTestAgentGUIPassiveInput {
     public static void main(String[] args) {
@@ -21,7 +22,7 @@ public class DeploymentPageTestAgentGUIPassiveInput {
         test_args += " -agent AgentA classpath:interfaceGenerator.AgentGUIPassiveInput";
         test_args += " -config";
 
-        var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
+        List<String> args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
 
         StringBuilder configuration = new StringBuilder();
         for (int i = 1; i < args.length; i++) {
@@ -33,7 +34,7 @@ public class DeploymentPageTestAgentGUIPassiveInput {
 
         args_list.add(configuration.toString());
 
-        var platformType = PlatformType.valueOfLabel(args[0]);
+        PlatformType platformType = PlatformType.valueOfLabel(args[0]);
         System.err.println(platformType);
         if (platformType == null) {
             System.err.println("Invalid platform type");

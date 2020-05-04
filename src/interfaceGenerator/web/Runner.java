@@ -57,9 +57,9 @@ public class Runner extends AbstractVerticle {
                             // receiving button id from client, in order to check the port
                             // for active input and identify the id of form / spinner
                             String buttonId = ((String) objectMessage.body()).split(" ")[1];
-                            var port = Element.identifyActivePortOfElement(buttonId);
+                            String port = Element.identifyActivePortOfElement(buttonId);
                             if (port != null) {
-                                var ids = Element.findActiveInputIdsFromPort(port);
+                                List<String> ids = Element.findActiveInputIdsFromPort(port);
                                 Map<String, List<String>> data = new HashMap<>();
                                 data.put("data", ids);
 
@@ -78,10 +78,10 @@ public class Runner extends AbstractVerticle {
                             HashMap<String, Map<String, String>> clonedMap = gson.fromJson(activeInput, inputType);
 
                             // map of id - value of element with the respective id
-                            var ids = clonedMap.get("data");
+                            Map<String, String> ids = clonedMap.get("data");
                             ArrayList<Pair<String, String>> data = new ArrayList<>();
-                            for (var entry : ids.entrySet()) {
-                                var role = Element.findRoleOfElementById(entry.getKey());
+                            for (Map.Entry<String, String> entry : ids.entrySet()) {
+                                String role = Element.findRoleOfElementById(entry.getKey());
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             try {
@@ -94,10 +94,10 @@ public class Runner extends AbstractVerticle {
                             HashMap<String, Map<String, String>> clonedMap = gson.fromJson(passiveInput, inputType);
 
                             // map of id - value of element with the respective id
-                            var ids = clonedMap.get("data");
+                            Map<String, String> ids = clonedMap.get("data");
                             ArrayList<Pair<String, String>> data = new ArrayList<>();
-                            for (var entry : ids.entrySet()) {
-                                var role = Element.findRoleOfElementById(entry.getKey());
+                            for (Map.Entry<String, String> entry : ids.entrySet()) {
+                                String role = Element.findRoleOfElementById(entry.getKey());
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             System.out.println(data);

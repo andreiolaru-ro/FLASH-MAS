@@ -4,6 +4,8 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,18 +22,16 @@ public class AgentGUIPassiveInput extends AgentGUI {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                // TODO: add action for output and passive input
-
-                var port = Element.randomPort();
+                Optional<String> port = Element.randomPort();
                 if (port.isPresent()) {
                     AgentWave passiveInput = null;
                     try {
                         passiveInput = guiShard.getInput(port.get());
                         if (passiveInput != null) {
-                            var contentKeys = passiveInput.getKeys();
+                            Set<String> contentKeys = passiveInput.getKeys();
                             contentKeys.remove("EVENT_TYPE");
                             System.out.println(contentKeys);
-                            for (var key : contentKeys) {
+                            for (String key : contentKeys) {
                                 System.out.println(key + ": " + passiveInput.getValues(key));
                             }
                         }

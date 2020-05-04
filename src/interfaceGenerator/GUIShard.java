@@ -31,8 +31,7 @@ public abstract class GUIShard extends AgentShardCore {
         super.signalAgentEvent(event);
 
         if (configuration == null) {
-            var guiShardConfiguration = super.getShardData().getSingleTree("config");
-            configuration = guiShardConfiguration.getTreeKeys().get(0);
+            configuration = super.getShardData().getSingleTree("config").getTreeKeys().get(0);
         }
 
         PageBuilder.getInstance().guiShard = this;
@@ -57,7 +56,7 @@ public abstract class GUIShard extends AgentShardCore {
         System.out.println("Generating AgentWave for active input...");
         AgentWave activeInput = new AgentWave(null, "/");
         activeInput.addSourceElementFirst("/gui/port");
-        for (var value : values) {
+        for (Pair<String, String> value : values) {
             activeInput.add(value.getKey(), value.getValue());
         }
         super.getAgent().postAgentEvent(activeInput);

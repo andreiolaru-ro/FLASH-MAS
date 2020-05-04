@@ -11,6 +11,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class GUIShardWeb extends GUIShard {
     private static List<Pair<String, String>> passiveDataInput;
@@ -34,11 +35,11 @@ public class GUIShardWeb extends GUIShard {
             }
         }
 
-        var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
+        List<Element> elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
         List<String> ids = new ArrayList<>();
-        for (var element : elements) {
+        for (Element element : elements) {
             ids.add(element.getId());
         }
 
@@ -53,7 +54,7 @@ public class GUIShardWeb extends GUIShard {
 
         System.out.println("passive data " + passiveDataInput);
         if (passiveDataInput != null) {
-            for (var passiveData : passiveDataInput) {
+            for (Pair<String, String> passiveData : passiveDataInput) {
                 event.add(passiveData.getKey(), passiveData.getValue());
             }
         }
@@ -66,26 +67,26 @@ public class GUIShardWeb extends GUIShard {
             return;
         }
 
-        var port = agentWave.getCompleteDestination();
-        var roles = agentWave.getKeys();
+        Set<String> roles = agentWave.getKeys();
         roles.remove("EVENT_TYPE");
 
-        for (var role : roles) {
-            var elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
+        for (String role : roles) {
+            List<Element> elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
 
             if (elementsFromPort.size() == 0) {
                 continue;
             }
 
-            var values = agentWave.getValues(role);
+            List<String> values = agentWave.getValues(role);
             int size = Math.min(elementsFromPort.size(), values.size());
 
             HashMap<String, String> data = new HashMap<>();
             for (int i = 0; i < size; i++) {
-                var elementId = elementsFromPort.get(i).getId();
-                var value = values.get(i);
+                String elementId = elementsFromPort.get(i).getId();
+                String value = values.get(i);
                 data.put(elementId, value);
             }
+
             System.out.println(data);
             GsonBuilder gsonMapBuilder = new GsonBuilder();
             Gson gsonObject = gsonMapBuilder.create();

@@ -1,5 +1,6 @@
 package interfaceGeneratorTest;
 
+import interfaceGenerator.Configuration;
 import interfaceGenerator.PageBuilder;
 
 public class BuildPageTest {
@@ -20,14 +21,14 @@ public class BuildPageTest {
             System.out.println("Inline");
 
             // with inline yaml
-            var configuration = PageBuilder.getInstance().buildPageInline(inlineExample);
+            Configuration configuration = PageBuilder.getInstance().buildPageInline(inlineExample);
             PageBuilder.getInstance().buildPage(configuration);
         } else if (args[0].equals(FILE)) {
             // example: file <file-path>
             System.out.println("Specified file");
 
             // with specified file
-            var file = PageBuilder.getInstance().buildPageFile(args[1]);
+            Configuration file = PageBuilder.getInstance().buildPageFile(args[1]);
             if (file != null) {
                 PageBuilder.getInstance().buildPage(file);
             }

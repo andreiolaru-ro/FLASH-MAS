@@ -5,7 +5,10 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import javax.swing.*;
+import java.awt.*;
 import java.text.ParseException;
+import java.util.List;
+import java.util.Set;
 
 public class GUIShardSwing extends GUIShard {
     public GUIShardSwing() {
@@ -17,18 +20,18 @@ public class GUIShardSwing extends GUIShard {
     }
 
     public AgentWave getInput(String portName) {
-        var elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
+        List<Element> elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
-        for (var element : elements) {
-            var input = SwingUiPylon.getComponentById(element.getId());
+        for (Element element : elements) {
+            Component input = SwingUiPylon.getComponentById(element.getId());
             if (input instanceof JTextArea) {
-                var form = (JTextArea) input;
+                JTextArea form = (JTextArea) input;
                 String value = form.getText();
                 event.add(element.getRole(), value);
             } else if (input instanceof JSpinner) {
-                var spinner = (JSpinner) input;
-                var value = spinner.getValue().toString();
+                JSpinner spinner = (JSpinner) input;
+                String value = spinner.getValue().toString();
                 System.out.println(value);
                 event.add(element.getRole(), value);
             }
@@ -38,22 +41,21 @@ public class GUIShardSwing extends GUIShard {
     }
 
     public void sendOutput(AgentWave agentWave) {
-        var port = agentWave.getCompleteDestination();
-        var roles = agentWave.getKeys();
+        Set<String> roles = agentWave.getKeys();
         roles.remove("EVENT_TYPE");
 
-        for (var role : roles) {
-            var elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
+        for (String role : roles) {
+            List<Element> elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
 
             if (elementsFromPort.size() == 0) {
                 continue;
             }
 
-            var values = agentWave.getValues(role);
+            List<String> values = agentWave.getValues(role);
             int size = Math.min(elementsFromPort.size(), values.size());
             for (int i = 0; i < size; i++) {
-                var elementId = elementsFromPort.get(i).getId();
-                var value = values.get(i);
+                String elementId = elementsFromPort.get(i).getId();
+                String value = values.get(i);
                 try {
                     SwingUiPylon.changeValueElement(elementId, value);
                 } catch (ParseException e) {
