@@ -1,6 +1,8 @@
 package com.flashmas.lib.gui.generator;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -10,26 +12,26 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flashmas.lib.gui.AndroidGuiShard;
 import com.flashmas.lib.gui.IdResourceManager;
 
-import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.agent.AgentWave;
 
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 
-import static com.flashmas.lib.gui.FlashGuiUtils.registerGuiEventHandler;
-
 public class UiViewFactory {
-    private static final String TAG = "UiViewFactory";
+    private static final String TAG = UiViewFactory.class.getSimpleName();
     private static Yaml yamlParser = new Yaml();
+    private static Handler uiHandler = new Handler(Looper.getMainLooper());
+    private static Handler backendHandler = new Handler();
 
     public static Configuration parseYaml(InputStream inputStream) {
         return yamlParser.loadAs(inputStream, Configuration.class);
     }
 
-    public static View createView(Configuration config, Context context, Agent agent) {
+    public static View createView(Configuration config, Context context, AndroidGuiShard guiShard) {
         if (config == null) {
             return null;
         }
@@ -39,10 +41,10 @@ public class UiViewFactory {
             return null;
         }
 
-        return createView(config.getNode(), context, agent);
+        return createView(config.getNode(), context, guiShard);
     }
 
-    public static View createView(Element element, Context context, Agent agent) {
+    public static View createView(Element element, Context context, AndroidGuiShard guiShard) {
         if (element == null || element.getType() == null) {
             return null;
         }
@@ -58,20 +60,22 @@ public class UiViewFactory {
             case BLOCK:
                 currentView = createLinearLayout(element, context);
                 for (Element childElement: element.getChildren()) {
-                    childView = createView(childElement, context, agent);
+                    childView = createView(childElement, context, guiShard);
                     if (childView == null)
                         continue;
+                    childView.setLayoutParams(
+                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     ((LinearLayout) currentView).addView(childView);
                 }
                 break;
             case BUTTON:
-                currentView = createButton(element, context, agent);
+                currentView = createButton(element, context, guiShard);
                 break;
             case LABEL:
-                currentView = createLabel(element, context, agent);
+                currentView = createLabel(element, context, guiShard);
                 break;
             case FORM:
-                currentView = createForm(element, context, agent);
+                currentView = createForm(element, context, guiShard);
                 break;
             default:
                 currentView = null;
@@ -80,11 +84,13 @@ public class UiViewFactory {
         return currentView;
     }
 
-    private static View createForm(Element element, Context context, Agent agent) {
+    private static View createForm(Element element, Context context, AndroidGuiShard guiShard) {
         EditText view = new EditText(context);
 
         if (element.getId() != null) {
-            view.setId(IdResourceManager.addId(element.getId()));
+            view.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        } else {
+            Log.e(TAG, "Form element doesn't have id");
         }
 
         if (element.getText() != null) {
@@ -94,21 +100,32 @@ public class UiViewFactory {
         return view;
     }
 
-    private static View createLabel(Element element, Context context, Agent agent) {
+    private static View createLabel(Element element, Context context, AndroidGuiShard guiShard) {
         TextView view = new TextView(context);
 
         if (element.getId() != null) {
-            view.setId(IdResourceManager.addId(element.getId()));
+            view.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        } else {
+            Log.e(TAG, "Label element doesn't have id");
         }
 
         if (element.getText() != null && element.getText().equals("__agent_name__")) {
             view.setText("Waiting agent event..."); // Default text maybe?
-            if (agent instanceof CompositeAgent) {
-                registerGuiEventHandler((CompositeAgent) agent,
-                        agentEvent -> view.setText(agentEvent.getType().toString()));
-            }
+            guiShard.registerEventHandler(agentEvent ->
+                    uiHandler.post(() -> view.setText(agentEvent.getType().toString()))
+            );
         } else {
             view.setText(element.getText());
+        }
+
+        if (element.getRole() != null && element.getRole().equals("logging")) {
+            guiShard.registerEventHandler(agentEvent -> {
+                if (agentEvent instanceof AgentWave) {
+                    uiHandler.post(() ->
+                        view.append("\nReceived agent wave: " + agentEvent.toString())
+                    );
+                }
+            });
         }
 
         if (element.getProperties().containsKey("align") &&
@@ -118,29 +135,21 @@ public class UiViewFactory {
         return view;
     }
 
-    private static View createButton(Element element, Context context, Agent agent) {
+    private static View createButton(Element element, Context context, AndroidGuiShard guiShard) {
         Button button = new Button(context);
         button.setText(element.getText());
         if (element.getId() != null) {
-            button.setId(IdResourceManager.addId(element.getId()));
+            button.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        } else {
+            Log.e(TAG, "Button element doesn't have id");
         }
 
-        if (element.getProperties().containsKey("action") &&
-                element.getProperties().get("action").equals("send")) {
-            button.setOnClickListener(v -> {
-                Toast.makeText(context, "Sending message...", Toast.LENGTH_LONG).show();
-//                if (agent instanceof CompositeAgent) {
-//
-//                }
-            });
-        }
-
-        if (element.getProperties().containsKey("action") &&
-                element.getProperties().get("action").equals("move")) {
-            button.setOnClickListener(v -> {
-                Toast.makeText(context, "Moving agent...", Toast.LENGTH_LONG).show();
-            });
-        }
+        button.setOnClickListener(v -> {
+            Toast.makeText(context, "Sending message...", Toast.LENGTH_LONG).show();
+            backendHandler.post(() ->
+                    guiShard.onActiveInput(element.getId(), element.getRole(), element.getPort())
+            );
+        });
 
         return button;
     }
@@ -149,7 +158,9 @@ public class UiViewFactory {
         LinearLayout linearLayout = new LinearLayout(context);
 
         if (element.getId() != null) {
-            linearLayout.setId(IdResourceManager.addId(element.getId()));
+            linearLayout.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        } else {
+            Log.e(TAG, "BLOCK element doesn't have id");
         }
 
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -164,8 +175,8 @@ public class UiViewFactory {
         return linearLayout;
     }
 
-    public static View parseAndCreateView(InputStream inputStream, Context context, Agent agent) {
-        if (inputStream == null || context == null || agent == null) {
+    public static View parseAndCreateView(InputStream inputStream, Context context, AndroidGuiShard guiShard) {
+        if (inputStream == null || context == null || guiShard == null) {
             return null;
         }
 
@@ -176,6 +187,6 @@ public class UiViewFactory {
             return null;
         }
 
-        return createView(config, context, agent);
+        return createView(config, context, guiShard);
     }
 }
