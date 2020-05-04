@@ -166,4 +166,14 @@ public class FlashManager {
     public List<Agent> getAgentsList() {
         return agentsList;
     }
+
+    public Agent getAgent(String name) {
+        for (Agent agent: agentsList) {
+            if (agent.getName().equals(name)) {
+                return agent;
+            }
+        }
+
+        return null;
+    }
 }
