@@ -35,19 +35,18 @@ public class PageBuilder {
 
     public Object buildPage(Configuration data) throws Exception {
         // generating ids for every element in configuration
-        var configuration = IdGenerator.attributeIds(data.getNode());
-        page = configuration;
+        page = IdGenerator.attributeIds(data.getNode());
         // System.out.println(configuration);
 
         // checking the active ports, with their elements
-        Element.checkActivePortsWithElement(configuration);
+        Element.checkActivePortsWithElement(page);
         GUIPylonProxy guiPylonProxy;
 
         if (platformType != null) {
             switch (platformType) {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
-                    var html = (String) guiPylonProxy.generate(data.getNode());
+                    String html = (String) guiPylonProxy.generate(data.getNode());
                     FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
@@ -59,7 +58,7 @@ public class PageBuilder {
                     createdWebPage = true;
                     return null;
                 case ANDROID:
-                    var android = AndroidUiPylon.generate(data.getNode());
+                    Object android = AndroidUiPylon.generate(data.getNode());
                     System.out.println(android);
                     return null;
                 case DESKTOP:
@@ -72,7 +71,7 @@ public class PageBuilder {
                             | UnsupportedLookAndFeelException ex) {
                         ex.printStackTrace();
                     }
-                    var frame = (JFrame) guiPylonProxy.generate(data.getNode());
+                    JFrame frame = (JFrame) guiPylonProxy.generate(data.getNode());
                     frame.setVisible(true);
                     if (window == null) {
                         window = frame;

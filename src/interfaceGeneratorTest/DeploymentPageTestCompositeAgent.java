@@ -18,9 +18,24 @@ public class DeploymentPageTestCompositeAgent {
 
         String test_args = "";
 
+        var platformType = PlatformType.valueOfLabel(args[0]);
+        System.err.println(platformType);
+        if (platformType == null) {
+            System.err.println("Invalid platform type");
+            return;
+        }
+        PageBuilder.getInstance().platformType = platformType;
+
         test_args += " -package interfaceGenerator -loader agent:composite";
         test_args += " -agent composite:AgentA";
-        test_args += " -shard GUIShard";
+        switch (platformType) {
+            case WEB:
+                test_args += " -shard GUIShardWeb";
+                break;
+            case DESKTOP:
+                test_args += " -shard GUIShardSwing";
+                break;
+        }
         test_args += " -config";
 
         var args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
@@ -34,15 +49,6 @@ public class DeploymentPageTestCompositeAgent {
         }
 
         args_list.add(configuration.toString());
-
-        var platformType = PlatformType.valueOfLabel(args[0]);
-        System.err.println(platformType);
-        if (platformType == null) {
-            System.err.println("Invalid platform type");
-            return;
-        }
-        PageBuilder.getInstance().platformType = platformType;
-        System.err.println(PageBuilder.getInstance().platformType);
 
         FlashBoot.main(args_list.toArray(new String[0]));
     }
