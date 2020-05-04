@@ -5,19 +5,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.flashmas.lib.AgentGuiShard;
-
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
-import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContainer;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -47,12 +41,18 @@ public class UiViewFactory {
     }
 
     public static View createView(Element element, Context context, Agent agent) {
-        if (element == null) {
+        if (element == null || element.getType() == null) {
             return null;
         }
 
         View currentView, childView;
-        switch (ElementType.valueOfLabel(element.getType())) {
+        ElementType type = ElementType.valueOfLabel(element.getType());
+
+        if (type == null) {
+            return null;
+        }
+
+        switch (type) {
             case BLOCK:
                 currentView = createLinearLayout(element, context);
                 for (Element childElement: element.getChildren()) {
@@ -68,6 +68,9 @@ public class UiViewFactory {
             case LABEL:
                 currentView = createLabel(element, context, agent);
                 break;
+            case FORM:
+                currentView = createForm(element, context, agent);
+                break;
             default:
                 currentView = null;
         }
@@ -75,49 +78,84 @@ public class UiViewFactory {
         return currentView;
     }
 
+    private static View createForm(Element element, Context context, Agent agent) {
+        EditText view = new EditText(context);
+
+        if (element.getId() != null) {
+            view.setId(IdResourceManager.addId(element.getId()));
+        }
+
+        if (element.getText() != null) {
+            view.setText(element.getText());
+        }
+
+        return view;
+    }
+
     private static View createLabel(Element element, Context context, Agent agent) {
-        TextView textView = new TextView(context);
+        TextView view = new TextView(context);
+
+        if (element.getId() != null) {
+            view.setId(IdResourceManager.addId(element.getId()));
+        }
+
         if (element.getText() != null && element.getText().equals("__agent_name__")) {
-            textView.setText("Waiting agent event..."); // Default text maybe?
+            view.setText("Waiting agent event..."); // Default text maybe?
             if (agent instanceof CompositeAgent) {
                 registerGuiEventHandler((CompositeAgent) agent,
-                        agentEvent -> textView.setText(agentEvent.getType().toString()));
+                        agentEvent -> view.setText(agentEvent.getType().toString()));
             }
         } else {
-            textView.setText(element.getText());
+            view.setText(element.getText());
         }
 
         if (element.getProperties().containsKey("align") &&
                 element.getProperties().get("align").equals("center")) {
-            textView.setGravity(Gravity.CENTER);
+            view.setGravity(Gravity.CENTER);
         }
-        return textView;
+        return view;
     }
-
-
 
     private static View createButton(Element element, Context context, Agent agent) {
         Button button = new Button(context);
         button.setText(element.getText());
-//        if (element.getProperties().containsKey("action") &&
-//                element.getProperties().get("action").equals("disable")) {
-//            button.setOnClickListener(v -> {
-//                agent.stop();
-//                Toast.makeText(context, "Agent " + agent.getName() + " stopped", Toast.LENGTH_LONG).show();
-//            });
-//        }
+        if (element.getId() != null) {
+            button.setId(IdResourceManager.addId(element.getId()));
+        }
+
+        if (element.getProperties().containsKey("action") &&
+                element.getProperties().get("action").equals("send")) {
+            button.setOnClickListener(v -> {
+                Toast.makeText(context, "Sending message...", Toast.LENGTH_LONG).show();
+//                if (agent instanceof CompositeAgent) {
+//
+//                }
+            });
+        }
+
+        if (element.getProperties().containsKey("action") &&
+                element.getProperties().get("action").equals("move")) {
+            button.setOnClickListener(v -> {
+                Toast.makeText(context, "Moving agent...", Toast.LENGTH_LONG).show();
+            });
+        }
+
         return button;
     }
 
     private static View createLinearLayout(Element element, Context context) {
         LinearLayout linearLayout = new LinearLayout(context);
 
+        if (element.getId() != null) {
+            linearLayout.setId(IdResourceManager.addId(element.getId()));
+        }
+
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
+                LinearLayout.LayoutParams.WRAP_CONTENT));
 
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         if (element.getProperties().containsKey("orientation") &&
-                    element.getProperties().get("orientation").equals("horizontal")) {
+                element.getProperties().get("orientation").equals("horizontal")) {
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
         }
 

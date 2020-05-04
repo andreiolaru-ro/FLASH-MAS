@@ -41,7 +41,7 @@ public class AgentDetailsFragment extends Fragment {
         View view = null;
 
         try {
-            InputStream inputStream = getActivity().getAssets().open("example_agent_view.yaml");
+            InputStream inputStream = getActivity().getAssets().open("agent_view2.yaml");
             view = UiViewFactory.parseAndCreateView(inputStream, getContext(), agent);
         } catch (IOException e) {
             e.printStackTrace();

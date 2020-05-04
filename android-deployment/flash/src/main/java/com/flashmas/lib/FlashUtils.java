@@ -13,8 +13,8 @@ public class FlashUtils {
         if (agent.asContext() instanceof ShardContainer) {
             AgentShard shard = ((ShardContainer) agent.asContext())
                     .getAgentShard(AgentShardDesignation.autoDesignation(GUI_SHARD_DESIGNATION));
-            if (shard instanceof AgentGuiShard) {
-                ((AgentGuiShard) shard).registerEventHandler(handler);
+            if (shard instanceof AndroidGuiShard) {
+                ((AndroidGuiShard) shard).registerEventHandler(handler);
             }
         }
     }
@@ -23,8 +23,8 @@ public class FlashUtils {
         if (agent.asContext() instanceof ShardContainer) {
             AgentShard shard = ((ShardContainer) agent.asContext())
                     .getAgentShard(AgentShardDesignation.autoDesignation(GUI_SHARD_DESIGNATION));
-            if (shard instanceof AgentGuiShard) {
-                ((AgentGuiShard) shard).unregisterAllEventHandlers();
+            if (shard instanceof AndroidGuiShard) {
+                ((AndroidGuiShard) shard).unregisterAllEventHandlers();
             }
         }
     }
