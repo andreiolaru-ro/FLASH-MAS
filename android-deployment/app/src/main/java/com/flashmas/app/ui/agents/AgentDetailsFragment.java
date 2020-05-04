@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.flashmas.app.R;
-import com.flashmas.lib.gui.FlashGuiUtils;
 
 import static com.flashmas.lib.gui.FlashGuiUtils.getAgentView;
 
@@ -43,7 +42,7 @@ public class AgentDetailsFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        FlashGuiUtils.onDestroyView(agentName);
+//        FlashGuiUtils.onDestroyView(agentName);
         super.onDestroyView();
         Log.d(TAG, "On destory view called");
     }

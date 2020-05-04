@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +42,16 @@ public class UiViewFactory {
             return null;
         }
 
-        return createView(config.getNode(), context, guiShard);
+        ScrollView scrollView = null;
+        View rootView = createView(config.getNode(), context, guiShard);
+        if (rootView != null) {
+            scrollView = new ScrollView(context);
+            scrollView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            scrollView.addView(rootView);
+        }
+
+        return scrollView;
     }
 
     public static View createView(Element element, Context context, AndroidGuiShard guiShard) {
