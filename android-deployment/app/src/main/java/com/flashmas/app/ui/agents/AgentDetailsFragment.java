@@ -1,7 +1,6 @@
 package com.flashmas.app.ui.agents;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.flashmas.app.R;
-import com.flashmas.app.ui.generator.UiViewFactory;
+import com.flashmas.lib.gui.generator.UiViewFactory;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
@@ -19,7 +18,7 @@ import net.xqhs.flash.core.composite.CompositeAgent;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.flashmas.lib.FlashUtils.unregisterAllAgentGuiHandlers;
+import static com.flashmas.lib.gui.FlashGuiUtils.unregisterAllAgentGuiHandlers;
 
 public class AgentDetailsFragment extends Fragment {
     public static final String AGENT_KEY = "agent_key";

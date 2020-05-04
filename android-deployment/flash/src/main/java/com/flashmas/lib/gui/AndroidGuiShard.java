@@ -1,4 +1,4 @@
-package com.flashmas.lib;
+package com.flashmas.lib.gui;
 
 import android.util.Log;
 import android.util.Pair;
@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+// TODO must extend abstract class GuiShard, from @florinrm
 public class AndroidGuiShard extends AgentShardCore {
     private static final String TAG = "Agent GUI Shard";
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();

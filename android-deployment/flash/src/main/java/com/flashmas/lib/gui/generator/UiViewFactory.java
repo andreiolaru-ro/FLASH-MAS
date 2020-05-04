@@ -1,4 +1,4 @@
-package com.flashmas.app.ui.generator;
+package com.flashmas.lib.gui.generator;
 
 import android.content.Context;
 import android.util.Log;
@@ -10,6 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flashmas.lib.gui.IdResourceManager;
+
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 
@@ -17,7 +19,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 
-import static com.flashmas.lib.FlashUtils.registerGuiEventHandler;
+import static com.flashmas.lib.gui.FlashGuiUtils.registerGuiEventHandler;
 
 public class UiViewFactory {
     private static final String TAG = "UiViewFactory";

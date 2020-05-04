@@ -16,7 +16,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
-import com.flashmas.lib.AndroidGuiShard;
+import com.flashmas.lib.gui.AndroidGuiShard;
 import com.flashmas.lib.FlashManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
