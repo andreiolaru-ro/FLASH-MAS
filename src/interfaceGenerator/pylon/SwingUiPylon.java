@@ -3,6 +3,7 @@ package interfaceGenerator.pylon;
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
+import interfaceGenerator.Utils;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -69,7 +70,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                 System.out.println(element.getRole());
 
                 String port = element.getPort();
-                HashMap<String, ArrayList<Element>> activePorts = Element.getActivePortsWithElements();
+                HashMap<String, ArrayList<Element>> activePorts = Utils.getActivePortsWithElements();
                 ArrayList<Element> elements = activePorts.get(port);
 
                 ArrayList<Pair<String, String>> inputIds = new ArrayList<>();

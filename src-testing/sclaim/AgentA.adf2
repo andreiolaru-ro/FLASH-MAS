@@ -1,0 +1,8 @@
+(agent AgentCA
+	(behavior
+		(initial register
+			(input theinput check ?value)
+			(output theoutput the_value_is ?value the_end)
+		)
+	)
+)

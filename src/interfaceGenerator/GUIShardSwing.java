@@ -20,7 +20,7 @@ public class GUIShardSwing extends GUIShard {
     }
 
     public AgentWave getInput(String portName) {
-        List<Element> elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
+        List<Element> elements = Utils.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
         for (Element element : elements) {
@@ -45,7 +45,7 @@ public class GUIShardSwing extends GUIShard {
         roles.remove("EVENT_TYPE");
 
         for (String role : roles) {
-            List<Element> elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
+            List<Element> elementsFromPort = Utils.findElementsByRole(PageBuilder.getInstance().getPage(), role);
 
             if (elementsFromPort.size() == 0) {
                 continue;

@@ -22,7 +22,7 @@ public class AgentGUIPassiveInput extends AgentGUI {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Optional<String> port = Element.randomPort();
+                Optional<String> port = Utils.randomPort();
                 if (port.isPresent()) {
                     AgentWave passiveInput = null;
                     try {

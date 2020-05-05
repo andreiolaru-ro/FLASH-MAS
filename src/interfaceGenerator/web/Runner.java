@@ -3,10 +3,10 @@ package interfaceGenerator.web;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import interfaceGenerator.Element;
 import interfaceGenerator.GUIShardWeb;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
+import interfaceGenerator.Utils;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -57,9 +57,9 @@ public class Runner extends AbstractVerticle {
                             // receiving button id from client, in order to check the port
                             // for active input and identify the id of form / spinner
                             String buttonId = ((String) objectMessage.body()).split(" ")[1];
-                            String port = Element.identifyActivePortOfElement(buttonId);
+                            String port = Utils.identifyActivePortOfElement(buttonId);
                             if (port != null) {
-                                List<String> ids = Element.findActiveInputIdsFromPort(port);
+                                List<String> ids = Utils.findActiveInputIdsFromPort(port);
                                 Map<String, List<String>> data = new HashMap<>();
                                 data.put("data", ids);
 
@@ -81,7 +81,7 @@ public class Runner extends AbstractVerticle {
                             Map<String, String> ids = clonedMap.get("data");
                             ArrayList<Pair<String, String>> data = new ArrayList<>();
                             for (Map.Entry<String, String> entry : ids.entrySet()) {
-                                String role = Element.findRoleOfElementById(entry.getKey());
+                                String role = Utils.findRoleOfElementById(entry.getKey());
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             try {
@@ -97,7 +97,7 @@ public class Runner extends AbstractVerticle {
                             Map<String, String> ids = clonedMap.get("data");
                             ArrayList<Pair<String, String>> data = new ArrayList<>();
                             for (Map.Entry<String, String> entry : ids.entrySet()) {
-                                String role = Element.findRoleOfElementById(entry.getKey());
+                                String role = Utils.findRoleOfElementById(entry.getKey());
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             System.out.println(data);

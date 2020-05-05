@@ -35,7 +35,7 @@ public class GUIShardWeb extends GUIShard {
             }
         }
 
-        List<Element> elements = Element.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
+        List<Element> elements = Utils.findElementsByPort(PageBuilder.getInstance().getPage(), portName);
         AgentWave event = new AgentWave();
 
         List<String> ids = new ArrayList<>();
@@ -71,7 +71,7 @@ public class GUIShardWeb extends GUIShard {
         roles.remove("EVENT_TYPE");
 
         for (String role : roles) {
-            List<Element> elementsFromPort = Element.findElementsByRole(PageBuilder.getInstance().getPage(), role);
+            List<Element> elementsFromPort = Utils.findElementsByRole(PageBuilder.getInstance().getPage(), role);
 
             if (elementsFromPort.size() == 0) {
                 continue;

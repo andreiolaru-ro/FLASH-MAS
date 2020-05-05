@@ -11,10 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.sclaim.parser;
 
-import java.io.FileNotFoundException;
-
 import net.xqhs.flash.sclaim.constructs.ClaimAgentDefinition;
 import net.xqhs.flash.sclaim.parser.generation.ParserSClaim;
+
+import java.io.FileNotFoundException;
 
 /**
  * The Claim2 parser. It is intended to be an interface between the class
@@ -50,9 +50,9 @@ public class Parser {
 
 	/** a way to use the parser - main function 
 	 * @throws FileNotFoundException */
-	public static void main(String args[]) {
-		
-		args = new String[] { "src-testing/sclaim/ChatAgent.adf2" };
+	public static void main(String[] args) {
+
+		args = new String[]{"src-testing/sclaim/AgentA.adf2"};
 		
 	  Parser parser;
 	  System.out.println(args[0]);
@@ -60,7 +60,9 @@ public class Parser {
 	  if(args.length>0)
 	  {
 		parser = new Parser(args[0]);
-	    System.out.println(parser.parse());
+		  ClaimAgentDefinition agent = parser.parse();
+		  System.out.println(agent);
+		  System.out.println(agent.getBehaviors());
 	  }
 	  else
 	  {
