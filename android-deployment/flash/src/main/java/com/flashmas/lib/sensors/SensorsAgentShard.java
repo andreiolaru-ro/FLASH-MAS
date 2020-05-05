@@ -9,13 +9,14 @@ import android.util.Log;
 
 import com.flashmas.lib.FlashManager;
 
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class SensorsAgentShard extends AgentShardCore implements SensorEventListener {
     private static final String TAG = SensorsAgentShard.class.getSimpleName();
-    private MultiTreeMap configuration;
     private SensorManager sensorManager;
     private Sensor pressureSensor;
 
@@ -32,13 +33,24 @@ public class SensorsAgentShard extends AgentShardCore implements SensorEventList
         this(AgentShardDesignation.autoDesignation("sensors"));
     }
 
-    public SensorsAgentShard(MultiTreeMap configuration) {
-        this();
-        this.configuration = configuration;
+    @Override
+    public void signalAgentEvent(AgentEvent event) {
+        super.signalAgentEvent(event);
+        switch (event.getType()) {
+            case AGENT_START:
+                start();
+                break;
+            case AGENT_STOP:
+                stop();
+                break;
+            default:
+                // Nothing
+        }
     }
 
     @Override
     public boolean start() {
+        Log.d(TAG, "start");
         boolean returnCode = super.start();
         sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_NORMAL);
         return returnCode;
@@ -46,6 +58,7 @@ public class SensorsAgentShard extends AgentShardCore implements SensorEventList
 
     @Override
     public boolean stop() {
+        Log.d(TAG, "stop");
         boolean returnCode = super.stop();
         sensorManager.unregisterListener(this, pressureSensor);
         return returnCode;
