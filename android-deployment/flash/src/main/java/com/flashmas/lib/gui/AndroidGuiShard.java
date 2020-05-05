@@ -24,7 +24,7 @@ import java.util.Set;
 
 // TODO must extend abstract class GuiShard, from @florinrm
 public class AndroidGuiShard extends AgentShardCore {
-    private static final String TAG = "Agent GUI Shard";
+    private static final String TAG = AndroidGuiShard.class.getSimpleName();
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();
     private String configuration;
     private View agentView = null;
