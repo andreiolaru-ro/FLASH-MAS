@@ -59,37 +59,45 @@ public class WebUiPylon implements GUIPylonProxy {
     }
 
     private String generateButton(Element element) {
-        String result = "";
-        result += tab.repeat(indentLevel);
-        result += "<button ";
-        result += "id = \"";
-        result += element.getId();
-        result += "\"";
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("<button ");
+        result.append("id = \"");
+        result.append(element.getId());
+        result.append("\"");
 
         if (element.getRole().equals(PortType.ACTIVE.type)) {
             // TODO: add callback
-            result += " type = \"submit\" ";
-            result += "onclick=\"send_data(this.id)\"";
+            result.append(" type = \"submit\" ");
+            result.append("onclick=\"send_data(this.id)\"");
         }
-        result += ">\n";
+        result.append(">\n");
 
         indentLevel++;
-        result += tab.repeat(indentLevel);
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
         if (element.getValue() != null) {
-            result += element.getValue();
+            result.append(element.getValue());
         } else {
-            result += element.getId();
+            result.append(element.getId());
         }
         --indentLevel;
-        result += '\n';
-        result += tab.repeat(indentLevel);
-        result += "</button>\n";
-        return result;
+        result.append('\n');
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("</button>\n");
+        return result.toString();
     }
 
     private String generateDiv(Element element) {
         StringBuilder result = new StringBuilder();
-        result.append(tab.repeat(indentLevel));
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
         result.append("<div ");
         result.append("id = \"");
         result.append(element.getId());
@@ -121,40 +129,48 @@ public class WebUiPylon implements GUIPylonProxy {
             }
         }
         indentLevel--;
-        result.append(tab.repeat(indentLevel));
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
         result.append("</div>\n");
         return result.toString();
     }
 
     private String generateLabel(Element element) {
-        String result = "";
-        result += tab.repeat(indentLevel);
-        result += "<label ";
-        result += "id = \"";
-        result += element.getId();
-        result += "\"";
-        result += ">\n";
-        return result;
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("<label ");
+        result.append("id = \"");
+        result.append(element.getId());
+        result.append("\"");
+        result.append(">\n");
+        return result.toString();
     }
 
     private String generateSpinner(Element element) {
-        String result = "";
-        result += tab.repeat(indentLevel);
-        result += "<input type = \"number\" ";
-        result += "id = ";
-        result += element.getId();
-        result += ">\n";
-        return result;
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("<input type = \"number\" ");
+        result.append("id = ");
+        result.append(element.getId());
+        result.append(">\n");
+        return result.toString();
     }
 
     private String generateForm(Element element) {
-        String result = "";
-        result += tab.repeat(indentLevel);
-        result += "<input type = \"text\" ";
-        result += "id = ";
-        result += element.getId();
-        result += ">\n";
-        return result;
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("<input type = \"text\" ");
+        result.append("id = ");
+        result.append(element.getId());
+        result.append(">\n");
+        return result.toString();
     }
 
     @Override

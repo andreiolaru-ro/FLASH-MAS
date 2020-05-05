@@ -220,15 +220,28 @@ public class Element {
         return null;
     }
 
+    private String repeat(String str, int count) {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            res.append(res);
+        }
+        return res.toString();
+    }
+
     @Override
     public String toString() {
         String tab = "\t";
         StringBuilder result = new StringBuilder();
-        result.append(tab.repeat(counter)).append("id: ").append(id).append('\n');
-        result.append(tab.repeat(counter)).append("type: ").append(type).append('\n');
-        result.append(tab.repeat(counter)).append("port: ").append(port).append('\n');
-        result.append(tab.repeat(counter)).append("role: ").append(role).append('\n');
-        result.append(tab.repeat(counter)).append("children: ");
+        result.append(repeat(tab, counter));
+        result.append("id: ").append(id).append('\n');
+        result.append(repeat(tab, counter));
+        result.append("type: ").append(type).append('\n');
+        result.append(repeat(tab, counter));
+        result.append("port: ").append(port).append('\n');
+        result.append(repeat(tab, counter));
+        result.append("role: ").append(role).append('\n');
+        result.append(repeat(tab, counter));
+        result.append("children: ");
         if (children != null) {
             if (children.isEmpty()) {
                 result.append("[]").append('\n');
