@@ -176,4 +176,8 @@ public class FlashManager {
 
         return null;
     }
+
+    public Context getAppContext() {
+        return appContext;
+    }
 }
