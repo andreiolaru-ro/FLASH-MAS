@@ -16,6 +16,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
+import com.flashmas.lib.CompositeAgentBuilder;
 import com.flashmas.lib.gui.AndroidGuiShard;
 import com.flashmas.lib.FlashManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -45,8 +46,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     private BottomNavigationView bottomNavigationView;
     private NavController navController;
     private ViewGroup navFragment;
-    private ViewGroup mainViewGroup;
-    int n = 1;
 
     private boolean fabOpen = false;
 
@@ -78,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         toggleStateTextView = findViewById(R.id.toggle_state_text_view);
         toolbar = findViewById(R.id.toolbar);
         navFragment = findViewById(R.id.nav_host_fragment);
-        mainViewGroup = findViewById(R.id.parent_layout);
 
         mainFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,33 +110,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     }
 
     private Agent getCompositeAgent() {
-        MultiTreeMap configuration = new MultiTreeMap();
-        configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,"CompositeAgent" + n);
-        n++;
-
-
-        MultiTreeMap shardsTree = new MultiTreeMap();
-        MultiTreeMap guiShardConfig = new MultiTreeMap();
-        guiShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
-        shardsTree.addOneTree("guiShard", guiShardConfig);
-        configuration.addSingleTree("shard", shardsTree);
-        CompositeAgentLoader loader = new CompositeAgentLoader();
-        MultiTreeMap loaderConfig = new MultiTreeMap();
-        loaderConfig.add(CategoryName.PACKAGE.s(), "nothingfornow");
-        loader.configure(loaderConfig, new BaseLogger() {
-            @Override
-            public Object lr(Object o, String s, Object... objects) {
-                return null;
-            }
-
-            @Override
-            protected void l(Level level, String s, Object... objects) {
-                for (Object o : objects) {
-                    Log.d("Composite agents", o.toString());
-                }
-            }
-        }, new AndroidClassFactory());
-        return loader.load(configuration);
+        return new CompositeAgentBuilder()
+                .addSensorShard(null)
+                .addGuiShard()
+                .build();
     }
 
     @Override
