@@ -1,9 +1,13 @@
 package com.flashmas.lib.gui.generator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class Element {
-    private String id;
+    private Integer id;
     private List<Element> children = new ArrayList<>();
     private String type = ElementType.BLOCK.type;
     private Map<String, String> properties = new HashMap<>();
@@ -19,11 +23,11 @@ public class Element {
         this.children = children;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

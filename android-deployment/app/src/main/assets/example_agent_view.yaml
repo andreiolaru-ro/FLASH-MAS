@@ -1,18 +1,25 @@
 platformType: android
 node:
-  id: root
-  properties:
-    orientation: vertical
   children:
-    - id: child1
-      type: label
-      text: __agent_name__
-      children: []
-      properties:
-        align: center
-    - id: child2
-      type: button
-      text: "The button"
-      children: []
-      properties:
-        action: disable
+    - type: form
+      port: main
+      text: "Default content"
+    - type: form
+      port: main
+      text: "Default target"
+    - type: button
+      port: main
+      role: send
+      text: "Send"
+    - type: button
+      port: movement
+      role: move
+      text: "Move agent"
+    - type: button
+      port: quick_send
+      role: quick_send
+      text: "Quick Send"
+    - type: label
+      port: logs
+      role: logging
+      text: "LOGS:"

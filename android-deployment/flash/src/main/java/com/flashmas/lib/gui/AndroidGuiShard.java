@@ -2,7 +2,6 @@ package com.flashmas.lib.gui;
 
 import android.content.Context;
 import android.util.Log;
-import android.util.Pair;
 import android.view.View;
 
 import com.flashmas.lib.gui.generator.UiViewFactory;
@@ -11,16 +10,13 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 // TODO must extend abstract class GuiShard, from @florinrm
 public class AndroidGuiShard extends AgentShardCore {
@@ -51,7 +47,7 @@ public class AndroidGuiShard extends AgentShardCore {
             // TODO get yaml from configuration
         } else {
             try {
-                InputStream inputStream = context.getAssets().open("agent_view2.yaml");
+                InputStream inputStream = context.getAssets().open("example_agent_view.yaml");
                 agentView = UiViewFactory.parseAndCreateView(inputStream, context, this);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -114,7 +110,7 @@ public class AndroidGuiShard extends AgentShardCore {
         }
     }
 
-    public void onActiveInput(String id, String role, String port) {
+    public void onActiveInput(int id, String role, String port) {
         Log.d(TAG, "received active input from id=" + id + " with action=" + role + " and port=" + port);
 
         // Depending on the role of the input, make an event
@@ -130,11 +126,11 @@ public class AndroidGuiShard extends AgentShardCore {
 
     private AgentWave buildAgentWave(String port) {
         AgentWave wave = new AgentWave(null, "/");
-        wave.addSourceElementFirst("/gui/port");
+        wave.addSourceElementFirst("/gui/" + port);
 
-        Map<String, String> formMap = IdResourceManager.getPortValues(agentView, port);
-        for (String formName : formMap.keySet()) {
-            wave.add(formName, formMap.get(formName));
+        Map<Integer, String> formMap = IdResourceManager.getPortValues(agentView, port);
+        for (Integer elementId : formMap.keySet()) {
+            wave.add(String.valueOf(elementId), formMap.get(elementId));
         }
 
         Log.d(TAG, "Built the wave: " + wave);
