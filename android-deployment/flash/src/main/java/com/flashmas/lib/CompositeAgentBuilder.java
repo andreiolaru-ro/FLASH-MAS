@@ -15,7 +15,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.BaseLogger;
 import net.xqhs.util.logging.Logger;
 
+import java.util.LinkedList;
 import java.util.List;
+
+import static com.flashmas.lib.sensors.SensorsAgentShard.SENSOR_TYPES_ARRAY_KEY;
 
 public class CompositeAgentBuilder {
     private MultiTreeMap shardsTree = new MultiTreeMap();
@@ -34,12 +37,23 @@ public class CompositeAgentBuilder {
         this.name = name;
     }
 
-    public CompositeAgentBuilder addSensorShard(List<String> sensorTypes) {
+    public CompositeAgentBuilder addSensorShard(List<Integer> sensorTypes) {
         MultiTreeMap sensorShardConfig = new MultiTreeMap();
-        // TODO add sensor types to config
+        if (sensorTypes != null) {
+            sensorShardConfig.addAll(SENSOR_TYPES_ARRAY_KEY, listToStringList(sensorTypes));
+        }
         sensorShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsAgentShard.class.getName());
         shardsTree.addOneTree("sensorShard", sensorShardConfig);
         return this;
+    }
+
+    private List<String> listToStringList(List<Integer> integerList) {
+        List<String> stringList = new LinkedList<>();
+        for (Integer myInt : integerList) {
+            stringList.add(String.valueOf(myInt));
+        }
+
+        return stringList;
     }
 
     public CompositeAgentBuilder addGuiShard() {

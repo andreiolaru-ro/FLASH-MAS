@@ -1,8 +1,8 @@
 package com.flashmas.app;
 
 import android.content.res.ColorStateList;
+import android.hardware.Sensor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -17,21 +17,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.CompositeAgentBuilder;
-import com.flashmas.lib.gui.AndroidGuiShard;
 import com.flashmas.lib.FlashManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import net.xqhs.flash.android.AndroidClassFactory;
-import net.xqhs.flash.core.CategoryName;
-import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.composite.CompositeAgentLoader;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
-import net.xqhs.util.logging.BaseLogger;
+
+import java.util.Arrays;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -111,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     private Agent getCompositeAgent() {
         return new CompositeAgentBuilder()
-                .addSensorShard(null)
+                .addSensorShard(Arrays.asList(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_PROXIMITY))
                 .addGuiShard()
                 .build();
     }
