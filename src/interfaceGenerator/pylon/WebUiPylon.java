@@ -41,7 +41,7 @@ public class WebUiPylon implements GUIPylonProxy {
                 case FORM:
                     result.append(generateForm(element));
                     break;
-                case LABEL:
+                case OUTPUT:
                     result.append(generateLabel(element));
                     break;
                 case BUTTON:
@@ -112,7 +112,7 @@ public class WebUiPylon implements GUIPylonProxy {
                         case BUTTON:
                             result.append(generateButton(child));
                             break;
-                        case LABEL:
+                        case OUTPUT:
                             result.append(generateLabel(child));
                             break;
                         case FORM:
@@ -146,6 +146,18 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append(element.getId());
         result.append("\"");
         result.append(">\n");
+        ++indentLevel;
+        if (element.getValue() != null) {
+            for (int i = 0; i < indentLevel; i++) {
+                result.append(tab);
+            }
+            result.append(element.getValue()).append('\n');
+        }
+        --indentLevel;
+        for (int i = 0; i < indentLevel; i++) {
+            result.append(tab);
+        }
+        result.append("</label>\n");
         return result.toString();
     }
 

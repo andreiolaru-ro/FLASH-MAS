@@ -31,7 +31,7 @@ node:
     - type: form
       port: port3
       role: chicken
-    - type: form
+    - type: output
       port: port3
       role: nuggets
     - type: spinner

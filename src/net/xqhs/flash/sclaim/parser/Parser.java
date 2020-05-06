@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.sclaim.parser;
 
+import interfaceGenerator.Element;
+import interfaceGenerator.Utils;
 import net.xqhs.flash.sclaim.constructs.ClaimAgentDefinition;
 import net.xqhs.flash.sclaim.parser.generation.ParserSClaim;
 
@@ -43,30 +45,26 @@ public class Parser {
 	/** a way to use the parser - inside the code, static
 	 * @throws FileNotFoundException */
 	public static ClaimAgentDefinition parseFile(String filePathAndName) {
-	  Parser parser = new Parser(filePathAndName);
-
-	  return parser.parse();
+		Parser parser = new Parser(filePathAndName);
+		return parser.parse();
 	}
 
 	/** a way to use the parser - main function 
 	 * @throws FileNotFoundException */
 	public static void main(String[] args) {
+		Parser parser;
 
-		args = new String[]{"src-testing/sclaim/AgentA.adf2"};
-		
-	  Parser parser;
-	  System.out.println(args[0]);
-	  
-	  if(args.length>0)
-	  {
-		parser = new Parser(args[0]);
-		  ClaimAgentDefinition agent = parser.parse();
-		  System.out.println(agent);
-	  }
-	  else
-	  {
-		System.out.println("No argument was specified. The file name to be parsed together with its path are needed.");
-	  }
+		if (args.length > 0) {
+			System.out.println(args[0]);
+			parser = new Parser(args[0]);
+			ClaimAgentDefinition agent = parser.parse();
+			System.out.println(agent);
+
+			Element element = Utils.convertClaimAgentDefinitionToElement(agent);
+		} else {
+			System.out.println("No argument was specified. The file name to be parsed together with its path are needed.");
+		}
+
 	}
 	
 	/**

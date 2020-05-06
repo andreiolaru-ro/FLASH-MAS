@@ -1,8 +1,15 @@
 (agent AgentA
 	(behavior
-		(initial register
-			(input theinput check ?value)
-			(output theoutput the_value_is ?value the_end)
-		)
+
+    	(initial startclock
+    		(output @messageSend target/?favoriteAgent)
+    	)
+
+    	(reactive sendMessage
+    		(input @messageSend ?messageContent target/?targetAgent)				// the agent is notified that there is a message to send
+    																				// port: <messageSend>
+    																				// no role specified for first value -> ?messsageContent will be taken from <content> role
+    																				// value for ?targetAgent will be taken from <target> role
+    	)
 	)
 )

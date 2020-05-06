@@ -29,7 +29,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                 case BUTTON:
                     panel = generateButton(element);
                     break;
-                case LABEL:
+                case OUTPUT:
                     panel = generateLabel(element);
                     break;
                 case FORM:
@@ -233,8 +233,17 @@ public class SwingUiPylon implements GUIPylonProxy {
                 Object obj = panel.getClientProperty(id);
                 if (obj != null) {
                     if (obj instanceof Component) {
-                        //map.put(id, (Component) obj);
                         if (id.equals(idElement)) {
+                            if (obj instanceof JLabel) {
+                                JLabel label = (JLabel) obj;
+                                pair.setKey((Component) obj);
+                                label.setText(value);
+                                pair.setValue(label);
+                                componentMap.put(id, label);
+                                panel.putClientProperty(id, label);
+                            }
+
+                            /*
                             if (obj instanceof JTextArea) {
                                 JTextArea form = (JTextArea) obj;
                                 pair.setKey((Component) obj);
@@ -251,6 +260,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                                 componentMap.put(id, spinner);
                                 panel.putClientProperty(id, spinner);
                             }
+                             */
                         }
                     }
                 }

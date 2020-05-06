@@ -2,7 +2,7 @@ package interfaceGenerator;
 
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
-import net.xqhs.flash.sclaim.constructs.ClaimAgentDefinition;
+import net.xqhs.flash.sclaim.constructs.*;
 
 import java.util.*;
 
@@ -177,6 +177,30 @@ public class Utils {
 
     public static Element convertClaimAgentDefinitionToElement(ClaimAgentDefinition claimAgentDefinition) {
         // TODO: convert S-CLAIM (input and output) to Element
-        return null;
+        Element element = new Element();
+        for (ClaimBehaviorDefinition def : claimAgentDefinition.getBehaviors()) {
+            System.out.println(def);
+            Vector<ClaimConstruct> statements = def.getStatements();
+            for (ClaimConstruct statement : statements) {
+                if (statement instanceof ClaimFunctionCall) {
+                    ClaimFunctionCall functionCall = (ClaimFunctionCall) statement;
+                    Vector<ClaimConstruct> arguments = functionCall.getArguments();
+                    if (functionCall.getFunctionType().equals(ClaimFunctionType.INPUT)) {
+                        Element button = new Element();
+                        button.setType(ElementType.BUTTON.type);
+                        String port;
+
+                        for (ClaimConstruct arg : arguments) {
+                            System.out.println(arg.getClass() + " " + arg);
+                        }
+                    } else if (functionCall.getFunctionType().equals(ClaimFunctionType.OUTPUT)) {
+                        for (ClaimConstruct arg : arguments) {
+                            System.out.println(arg.getClass() + " " + arg);
+                        }
+                    }
+                }
+            }
+        }
+        return element;
     }
 }

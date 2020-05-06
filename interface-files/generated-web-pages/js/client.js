@@ -48,12 +48,16 @@ function init() {
                 for (let key in ids) {
                     if (ids.hasOwnProperty(key)) {
                         let val = ids[key];
+                        /*
                         if (document.getElementById(key).getAttribute("type") === 'text') {
                             document.getElementById(key).value = val;
                         } else {
                             if (!isNaN(val)) {
                                 document.getElementById(key).value = Number(val);
                             }
+                        } */
+                        if (document.getElementById(key).tagName.toLowerCase() === 'label') {
+                            document.getElementById(key).innerHTML = val;
                         }
                     }
                 }
