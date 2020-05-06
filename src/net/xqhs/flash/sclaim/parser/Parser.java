@@ -52,7 +52,7 @@ public class Parser {
 	 * @throws FileNotFoundException */
 	public static void main(String args[]) {
 		
-		args = new String[] { "src-testing/sclaim/ChatAgent.adf2" };
+		args = new String[] { "src-testing/sclaim/BaseScenario.adf2" };
 		
 	  Parser parser;
 	  System.out.println(args[0]);

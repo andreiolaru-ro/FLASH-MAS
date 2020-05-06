@@ -2,7 +2,7 @@
 
 
 * **Agents** -- there are several agents
-* **Communication** -- each agent periodically sends a message to another agent given in its configuration (the *other agent*)
+* **Communication** -- each agent periodically sends a message to another agent given in its configuration (the *favorite* agent)
 * **Platforms** -- agents can be deployed on other platforms
 
     * all features are available on all platforms
