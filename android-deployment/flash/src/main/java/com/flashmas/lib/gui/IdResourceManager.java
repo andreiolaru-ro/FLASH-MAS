@@ -9,17 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 public class IdResourceManager {
-    private static HashMap<String, Integer> idMap = new HashMap<>();
-    private static HashMap<Integer, String> nameMap = new HashMap<>();
+    private static HashMap<Integer, String> idMap = new HashMap<>();
     private static HashMap<String, List<Integer>> portMap = new HashMap<>();
-    private static int n = 123421;  // TODO replace with unique id generator
 
-    public static Integer addId(String name, String port) {
-        int id = n;
-        idMap.put(name, id);
-        nameMap.put(id, name);
+    public static int getNewId(String port) {
+        int id = View.generateViewId();
         addIdToPortMap(port, id);
-        n++;
         return id;
     }
 
@@ -34,23 +29,23 @@ public class IdResourceManager {
         }
     }
 
-    public static Integer getId(String name) {
-        if (idMap.containsKey(name)) {
-            return idMap.get(name);
+    public static String getPort(int id) {
+        if (idMap.containsKey(id)) {
+            return idMap.get(id);
         }
 
         return null;
     }
 
-    public static Map<String, String> getPortValues(View view, String port) {
-        HashMap<String, String> map = new HashMap<>();
+    public static Map<Integer, String> getPortValues(View view, String port) {
+        HashMap<Integer, String> map = new HashMap<>();
         if (!portMap.containsKey(port)) {
             return map;
         }
         for (Integer id: portMap.get(port)) {
             View v = view.findViewById(id);
             if (v instanceof EditText) {
-                map.put(nameMap.get(id), ((EditText) v).getText().toString());
+                map.put(id, ((EditText) v).getText().toString());
             }
         }
 

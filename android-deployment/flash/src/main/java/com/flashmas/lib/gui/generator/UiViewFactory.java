@@ -97,10 +97,11 @@ public class UiViewFactory {
     private static View createForm(Element element, Context context, AndroidGuiShard guiShard) {
         EditText view = new EditText(context);
 
-        if (element.getId() != null) {
-            view.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        if (element.getPort() != null) {
+            view.setId(IdResourceManager.getNewId(element.getPort()));
+            element.setId(view.getId());
         } else {
-            Log.e(TAG, "Form element doesn't have id");
+            Log.e(TAG, "Form element doesn't have port set");
         }
 
         if (element.getText() != null) {
@@ -113,10 +114,11 @@ public class UiViewFactory {
     private static View createLabel(Element element, Context context, AndroidGuiShard guiShard) {
         TextView view = new TextView(context);
 
-        if (element.getId() != null) {
-            view.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        if (element.getPort() != null) {
+            view.setId(IdResourceManager.getNewId(element.getPort()));
+            element.setId(view.getId());
         } else {
-            Log.e(TAG, "Label element doesn't have id");
+            Log.e(TAG, "Label element doesn't have port set");
         }
 
         if (element.getText() != null && element.getText().equals("__agent_name__")) {
@@ -148,10 +150,11 @@ public class UiViewFactory {
     private static View createButton(Element element, Context context, AndroidGuiShard guiShard) {
         Button button = new Button(context);
         button.setText(element.getText());
-        if (element.getId() != null) {
-            button.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        if (element.getPort() != null) {
+            button.setId(IdResourceManager.getNewId(element.getPort()));
+            element.setId(button.getId());
         } else {
-            Log.e(TAG, "Button element doesn't have id");
+            Log.e(TAG, "Button element doesn't have port set");
         }
 
         button.setOnClickListener(v -> {
@@ -167,10 +170,11 @@ public class UiViewFactory {
     private static View createLinearLayout(Element element, Context context) {
         LinearLayout linearLayout = new LinearLayout(context);
 
-        if (element.getId() != null) {
-            linearLayout.setId(IdResourceManager.addId(element.getId(), element.getPort()));
+        if (element.getPort() != null) {
+            linearLayout.setId(IdResourceManager.getNewId(element.getPort()));
+            element.setId(linearLayout.getId());
         } else {
-            Log.e(TAG, "BLOCK element doesn't have id");
+            Log.e(TAG, "BLOCK element doesn't have port set");
         }
 
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
