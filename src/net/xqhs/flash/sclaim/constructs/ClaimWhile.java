@@ -55,4 +55,11 @@ public class ClaimWhile extends ClaimConstruct
 		this.condition = condition;
 	}
 
+    @Override
+    public String toString() {
+        return "ClaimWhile{" +
+                "condition=" + condition +
+                ", statements=" + statements +
+                '}';
+    }
 }

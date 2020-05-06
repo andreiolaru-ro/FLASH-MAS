@@ -97,4 +97,14 @@ public class ClaimAgentDefinition extends ClaimConstruct implements Serializable
 		
 		return copy;
 	}*/
+
+    @Override
+    public String toString() {
+        return "ClaimAgentDefinition{" +
+                "parameters=" + parameters +
+                ", behaviors=" + behaviors +
+                ", codeAttachements=" + codeAttachements +
+                ", agentClassName='" + agentClassName + '\'' +
+                '}';
+    }
 }

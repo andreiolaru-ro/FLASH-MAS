@@ -62,7 +62,6 @@ public class Parser {
 		parser = new Parser(args[0]);
 		  ClaimAgentDefinition agent = parser.parse();
 		  System.out.println(agent);
-		  System.out.println(agent.getBehaviors());
 	  }
 	  else
 	  {

@@ -2,6 +2,7 @@ package interfaceGenerator;
 
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
+import net.xqhs.flash.sclaim.constructs.ClaimAgentDefinition;
 
 import java.util.*;
 
@@ -166,11 +167,16 @@ public class Utils {
                 .findFirst();
     }
 
-    private String repeat(String str, int count) {
+    public static String repeat(String str, int count) {
         StringBuilder res = new StringBuilder();
         for (int i = 0; i < count; i++) {
             res.append(res);
         }
         return res.toString();
+    }
+
+    public static Element convertClaimAgentDefinitionToElement(ClaimAgentDefinition claimAgentDefinition) {
+        // TODO: convert S-CLAIM (input and output) to Element
+        return null;
     }
 }

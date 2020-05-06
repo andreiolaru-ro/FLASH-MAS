@@ -1,4 +1,4 @@
-(agent AgentCA
+(agent AgentA
 	(behavior
 		(initial register
 			(input theinput check ?value)

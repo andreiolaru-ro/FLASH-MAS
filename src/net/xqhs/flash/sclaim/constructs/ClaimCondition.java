@@ -38,4 +38,10 @@ public class ClaimCondition extends ClaimConstruct
 		return condition;
 	}
 
+    @Override
+    public String toString() {
+        return "ClaimCondition{" +
+                "condition=" + condition +
+                '}';
+    }
 }

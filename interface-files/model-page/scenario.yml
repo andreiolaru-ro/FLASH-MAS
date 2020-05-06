@@ -1,0 +1,14 @@
+node:
+  children:
+    - type: form
+      port: input-port
+      role: content
+    - type: form
+      port: input-port
+      role: target
+    - type: button
+      port: input-port
+      role: activate
+    - type: form
+      port: output-port
+      role: output

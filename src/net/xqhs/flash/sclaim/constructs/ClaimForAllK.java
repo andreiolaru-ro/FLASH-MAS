@@ -56,4 +56,11 @@ public class ClaimForAllK extends ClaimConstruct
 		return statements;
 	}
 
+    @Override
+    public String toString() {
+        return "ClaimForAllK{" +
+                "structure=" + structure +
+                ", statements=" + statements +
+                '}';
+    }
 }
