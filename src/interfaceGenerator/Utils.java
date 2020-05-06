@@ -170,7 +170,7 @@ public class Utils {
     public static String repeat(String str, int count) {
         StringBuilder res = new StringBuilder();
         for (int i = 0; i < count; i++) {
-            res.append(res);
+            res.append(str);
         }
         return res.toString();
     }
@@ -179,7 +179,7 @@ public class Utils {
         // TODO: convert S-CLAIM (input and output) to Element
         Element element = new Element();
         for (ClaimBehaviorDefinition def : claimAgentDefinition.getBehaviors()) {
-            System.out.println(def);
+            // System.out.println(def);
             Vector<ClaimConstruct> statements = def.getStatements();
             for (ClaimConstruct statement : statements) {
                 if (statement instanceof ClaimFunctionCall) {
@@ -188,19 +188,75 @@ public class Utils {
                     if (functionCall.getFunctionType().equals(ClaimFunctionType.INPUT)) {
                         Element button = new Element();
                         button.setType(ElementType.BUTTON.type);
-                        String port;
+                        String port = null, role = null;
 
                         for (ClaimConstruct arg : arguments) {
-                            System.out.println(arg.getClass() + " " + arg);
+                            // System.out.println(arg.getClass() + " " + arg);
+                            if (arg instanceof ClaimValue) {
+                                ClaimValue claimValue = (ClaimValue) arg;
+                                String value = claimValue.getValue().toString();
+                                // System.out.println(value);
+                                if (value.charAt(0) == '@') {
+                                    // port
+                                    port = value.replace("@", "");
+                                    button.setPort(port);
+                                    button.setRole("activate");
+                                } else {
+                                    role = value.replace("/", "");
+                                }
+                            } else if (arg instanceof ClaimVariable) {
+                                ClaimVariable claimVariable = (ClaimVariable) arg;
+                                String variable = claimVariable.getName();
+                                // System.out.println(variable);
+                                Element elem = new Element();
+                                elem.setType(ElementType.FORM.type);
+                                if (role != null) {
+                                    elem.setRole(role);
+                                    role = null;
+                                } else {
+                                    elem.setRole("content");
+                                }
+                                elem.setPort(port);
+                                elem.setValue(variable);
+                                element.addChild(elem);
+                            }
                         }
+                        element.addChild(button);
                     } else if (functionCall.getFunctionType().equals(ClaimFunctionType.OUTPUT)) {
+                        String port = null, role = null;
                         for (ClaimConstruct arg : arguments) {
                             System.out.println(arg.getClass() + " " + arg);
+                            if (arg instanceof ClaimValue) {
+                                ClaimValue claimValue = (ClaimValue) arg;
+                                String value = claimValue.getValue().toString();
+                                System.err.println(value);
+                                if (value.charAt(0) == '@') {
+                                    port = value.replace("@", "");
+                                } else {
+                                    role = value.replace("/", "");
+                                }
+
+                                System.err.println(port + " " + role);
+                            } else if (arg instanceof ClaimVariable) {
+                                ClaimVariable claimVariable = (ClaimVariable) arg;
+                                String variable = claimVariable.getName();
+                                Element elem = new Element();
+                                elem.setType(ElementType.OUTPUT.type);
+                                if (role != null) {
+                                    elem.setRole(role);
+                                }
+                                if (port != null) {
+                                    elem.setPort(port);
+                                }
+                                elem.setValue(variable);
+                                element.addChild(elem);
+                            }
                         }
                     }
                 }
             }
         }
+        System.out.println(element);
         return element;
     }
 }

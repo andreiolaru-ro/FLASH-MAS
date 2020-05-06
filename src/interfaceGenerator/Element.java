@@ -25,6 +25,10 @@ public class Element {
         this.children = children;
     }
 
+    public void addChild(Element element) {
+        this.children.add(element);
+    }
+
     public String getId() {
         return id;
     }

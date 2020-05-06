@@ -34,8 +34,12 @@ public class PageBuilder {
     }
 
     public Object buildPage(Configuration data) throws Exception {
+        return buildPage(data.getNode());
+    }
+
+    public Object buildPage(Element data) throws Exception {
         // generating ids for every element in configuration
-        page = IdGenerator.attributeIds(data.getNode());
+        page = IdGenerator.attributeIds(data);
         // System.out.println(configuration);
 
         // checking the active ports, with their elements
@@ -46,7 +50,7 @@ public class PageBuilder {
             switch (platformType) {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
-                    String html = (String) guiPylonProxy.generate(data.getNode());
+                    String html = (String) guiPylonProxy.generate(data);
                     FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
@@ -58,7 +62,7 @@ public class PageBuilder {
                     createdWebPage = true;
                     return null;
                 case ANDROID:
-                    Object android = AndroidUiPylon.generate(data.getNode());
+                    Object android = AndroidUiPylon.generate(data);
                     System.out.println(android);
                     return null;
                 case DESKTOP:
@@ -71,7 +75,7 @@ public class PageBuilder {
                             | UnsupportedLookAndFeelException ex) {
                         ex.printStackTrace();
                     }
-                    JFrame frame = (JFrame) guiPylonProxy.generate(data.getNode());
+                    JFrame frame = (JFrame) guiPylonProxy.generate(data);
                     frame.setVisible(true);
                     if (window == null) {
                         window = frame;

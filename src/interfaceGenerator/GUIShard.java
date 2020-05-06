@@ -37,10 +37,13 @@ public abstract class GUIShard extends AgentShardCore {
         PageBuilder.getInstance().guiShard = this;
 
         this.parameters[1] = configuration;
-        if (configuration.indexOf('{') == -1) {
+        if (configuration.indexOf('{') != -1) {
+            this.parameters[0] = BuildPageTest.INLINE;
+        } else if (configuration.endsWith(".yml") || configuration.endsWith(".yaml")) {
             this.parameters[0] = BuildPageTest.FILE;
         } else {
-            this.parameters[0] = BuildPageTest.INLINE;
+            System.out.println("pklfafafas");
+            this.parameters[0] = BuildPageTest.CLAIM;
         }
 
         try {

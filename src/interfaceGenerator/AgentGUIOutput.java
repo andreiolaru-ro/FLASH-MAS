@@ -22,6 +22,7 @@ public class AgentGUIOutput extends AgentGUI {
             public void run() {
                 AgentWave agentWave = new AgentWave();
                 // some rubbish values for testing
+                agentWave.add("target", TestUtils.getAlphaNumericString(10));
                 agentWave.add("chicken", TestUtils.getAlphaNumericString(10));
                 agentWave.add("nuggets", TestUtils.getAlphaNumericString(10));
                 agentWave.add("kfc", String.valueOf(new Random().nextInt(30)));
