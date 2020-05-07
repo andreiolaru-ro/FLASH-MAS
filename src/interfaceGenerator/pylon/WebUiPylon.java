@@ -68,6 +68,10 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append(element.getId());
         result.append("\"");
 
+        if (indentLevel == 2) {
+            result.append(" style = \"display: block;\"");
+        }
+
         if (element.getRole().equals(PortType.ACTIVE.type)) {
             // TODO: add callback
             result.append(" type = \"submit\" ");
@@ -145,6 +149,9 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append("id = \"");
         result.append(element.getId());
         result.append("\"");
+        if (indentLevel == 2) {
+            result.append(" style = \"display: block;\"");
+        }
         result.append(">\n");
         ++indentLevel;
         if (element.getValue() != null) {
@@ -169,6 +176,9 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append("<input type = \"number\" ");
         result.append("id = ");
         result.append(element.getId());
+        if (indentLevel == 2) {
+            result.append(" style = \"display: block;\"");
+        }
         result.append(">\n");
         return result.toString();
     }
@@ -181,6 +191,9 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append("<input type = \"text\" ");
         result.append("id = ");
         result.append(element.getId());
+        if (indentLevel == 2) {
+            result.append(" style = \"display: block;\"");
+        }
         result.append(">\n");
         return result.toString();
     }

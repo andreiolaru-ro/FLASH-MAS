@@ -1,14 +1,15 @@
 node:
   children:
+    - type: output
+      port: messageSend
+      role: target
     - type: form
-      port: input-port
+      port: messageSend
       role: content
     - type: form
-      port: input-port
+      port: messageSend
       role: target
     - type: button
-      port: input-port
+      port: messageSend
       role: activate
-    - type: form
-      port: output-port
-      role: output
+
