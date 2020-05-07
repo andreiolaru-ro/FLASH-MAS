@@ -56,7 +56,8 @@ public class SwingUiPylon implements GUIPylonProxy {
 
     private static JPanel generateButton(Element element) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         JButton button = new JButton();
 
         if (element.getValue() != null) {
@@ -123,7 +124,8 @@ public class SwingUiPylon implements GUIPylonProxy {
 
     private static JPanel generateLabel(Element element) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         JLabel label = new JLabel();
         if (element.getValue() != null) {
             label.setText(element.getValue());
@@ -135,7 +137,8 @@ public class SwingUiPylon implements GUIPylonProxy {
 
     private static JPanel generateForm(Element element) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         JTextArea form = new JTextArea();
         if (element.getValue() != null) {
             form.setText(element.getValue());
@@ -156,7 +159,8 @@ public class SwingUiPylon implements GUIPylonProxy {
 
     private static JPanel generateSpinner(Element element) {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         JSpinner spinner = new JSpinner();
         spinner.setValue(0);
         spinner.setMaximumSize(new Dimension(100, 40));
@@ -295,6 +299,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         window.setSize(new Dimension(600, 600));
         JPanel windowPanel = new JPanel();
         windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        windowPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
         componentMap.put(element.getId(), windowPanel);
         ids.add(element.getId());
         if (element.getChildren() != null) {
