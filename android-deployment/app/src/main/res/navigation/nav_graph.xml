@@ -24,6 +24,5 @@
     <fragment
         android:id="@+id/agentDetailsFragment"
         android:name="com.flashmas.app.ui.agents.AgentDetailsFragment"
-        android:label="Agent details"
         tools:layout="@layout/fragment_agent_details"/>
 </navigation>

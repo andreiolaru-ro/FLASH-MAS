@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
+import com.flashmas.lib.gui.generator.Element;
 import com.flashmas.lib.gui.generator.UiViewFactory;
 
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -47,7 +48,7 @@ public class AndroidGuiShard extends AgentShardCore {
             // TODO get yaml from configuration
         } else {
             try {
-                InputStream inputStream = context.getAssets().open("example_agent_view.yaml");
+                InputStream inputStream = context.getAssets().open("agent_view2.yaml");
                 agentView = UiViewFactory.parseAndCreateView(inputStream, context, this);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -116,21 +117,21 @@ public class AndroidGuiShard extends AgentShardCore {
         // Depending on the role of the input, make an event
         switch (role) {
             case "send":
-                AgentWave wave = buildAgentWave(port);
-                super.getAgent().postAgentEvent(wave);
-                break;
             case "move":
             default:
+                AgentWave wave = buildAgentWave(IdResourceManager.getElement(id));
+                super.getAgent().postAgentEvent(wave);
+                break;
         }
     }
 
-    private AgentWave buildAgentWave(String port) {
+    private AgentWave buildAgentWave(Element element) {
         AgentWave wave = new AgentWave(null, "/");
-        wave.addSourceElementFirst("/gui/" + port);
+        wave.addSourceElementFirst("/gui/" + element.getPort());
 
-        Map<Integer, String> formMap = IdResourceManager.getPortValues(agentView, port);
+        Map<Integer, String> formMap = IdResourceManager.getPortValues(agentView, element.getPort());
         for (Integer elementId : formMap.keySet()) {
-            wave.add(String.valueOf(elementId), formMap.get(elementId));
+            wave.add(IdResourceManager.getElement(elementId).getRole(), formMap.get(elementId));
         }
 
         Log.d(TAG, "Built the wave: " + wave);

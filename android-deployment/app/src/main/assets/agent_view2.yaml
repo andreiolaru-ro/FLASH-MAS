@@ -1,38 +1,15 @@
-platformType: android
 node:
-  id: root
-  properties:
-    orientation: vertical
   children:
-    - id: child1
-      type: label
-      text: __agent_name__
-      properties:
-        align: center
-    - id: content-form
-      type: form
-      text: "Default content"
-      port: main
-    - id: target
-      type: form
-      port: main
-      text: "Default target"  # TODO
-    - id: send_button
-      type: button
-      port: main
+    - type: form
+      port: messageSend
+      role: content
+    - type: form
+      port: messageSend
+      role: target
+    - type: button
+      port: messageSend
+      role: activate
       text: "Send"
-      role: send
-    - id: move_button
-      type: button
-      text: "Move agent"
-      role: move
-    - id: send_button
-      type: button
-      port: quick_send
-      text: "Quick Send"
-      role: quick_send
-    - id: log_view
-      type: label
-      text: "LOGS:"
-      port: logs
+    - type: label
+      port: messageSend
       role: logging

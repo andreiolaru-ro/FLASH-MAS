@@ -41,6 +41,15 @@ public class AgentDetailsFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (agentName != null) {
+            (getActivity()).setTitle(agentName);
+        }
+    }
+
+    @Override
     public void onDestroyView() {
 //        FlashGuiUtils.onDestroyView(agentName);
         super.onDestroyView();
