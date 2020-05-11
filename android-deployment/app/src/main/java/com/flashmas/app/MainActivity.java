@@ -1,7 +1,6 @@
 package com.flashmas.app;
 
 import android.content.res.ColorStateList;
-import android.hardware.Sensor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +21,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.xqhs.flash.core.agent.Agent;
-
-import java.util.Arrays;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -69,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         toggleStateTextView = findViewById(R.id.toggle_state_text_view);
         toolbar = findViewById(R.id.toolbar);
         navFragment = findViewById(R.id.nav_host_fragment);
+        setSupportActionBar(toolbar);
 
         mainFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     private Agent getCompositeAgent() {
         return new CompositeAgentBuilder()
-                .addSensorShard(Arrays.asList(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_PROXIMITY))
+//                .addSensorShard(Arrays.asList(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_PROXIMITY))
                 .addGuiShard()
                 .build();
     }

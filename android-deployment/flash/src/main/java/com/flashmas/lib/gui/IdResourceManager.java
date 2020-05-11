@@ -3,6 +3,8 @@ package com.flashmas.lib.gui;
 import android.view.View;
 import android.widget.EditText;
 
+import com.flashmas.lib.gui.generator.Element;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,11 +13,21 @@ import java.util.Map;
 public class IdResourceManager {
     private static HashMap<Integer, String> idMap = new HashMap<>();
     private static HashMap<String, List<Integer>> portMap = new HashMap<>();
+    private static HashMap<Integer, Element> elementMap = new HashMap<>();
 
-    public static int getNewId(String port) {
+    public static int getNewId(Element element) {
         int id = View.generateViewId();
-        addIdToPortMap(port, id);
+        addIdToPortMap(element.getPort(), id);
+        elementMap.put(id, element);
         return id;
+    }
+
+    public static Element getElement(Integer id) {
+        if (elementMap.containsKey(id)) {
+            return elementMap.get(id);
+        }
+
+        return null;
     }
 
     private static void addIdToPortMap(String port, int id) {

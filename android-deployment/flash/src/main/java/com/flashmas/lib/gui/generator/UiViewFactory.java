@@ -1,5 +1,6 @@
 package com.flashmas.lib.gui.generator;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -37,7 +38,8 @@ public class UiViewFactory {
             return null;
         }
 
-        if (PlatformType.valueOfLabel(config.getPlatformType()) != PlatformType.ANDROID) {
+        if (PlatformType.valueOfLabel(config.getPlatformType()) != null &&
+                PlatformType.valueOfLabel(config.getPlatformType()) != PlatformType.ANDROID) {
             Log.e(TAG, "Platform type is not android!!!");
             return null;
         }
@@ -98,7 +100,7 @@ public class UiViewFactory {
         EditText view = new EditText(context);
 
         if (element.getPort() != null) {
-            view.setId(IdResourceManager.getNewId(element.getPort()));
+            view.setId(IdResourceManager.getNewId(element));
             element.setId(view.getId());
         } else {
             Log.e(TAG, "Form element doesn't have port set");
@@ -106,6 +108,8 @@ public class UiViewFactory {
 
         if (element.getText() != null) {
             view.setText(element.getText());
+        } else {
+            view.setHint("Enter " + (element.getRole() != null ? element.getRole() : "value"));
         }
 
         return view;
@@ -115,7 +119,7 @@ public class UiViewFactory {
         TextView view = new TextView(context);
 
         if (element.getPort() != null) {
-            view.setId(IdResourceManager.getNewId(element.getPort()));
+            view.setId(IdResourceManager.getNewId(element));
             element.setId(view.getId());
         } else {
             Log.e(TAG, "Label element doesn't have port set");
@@ -147,11 +151,11 @@ public class UiViewFactory {
         return view;
     }
 
+    @SuppressLint("SetTextI18n")
     private static View createButton(Element element, Context context, AndroidGuiShard guiShard) {
         Button button = new Button(context);
-        button.setText(element.getText());
         if (element.getPort() != null) {
-            button.setId(IdResourceManager.getNewId(element.getPort()));
+            button.setId(IdResourceManager.getNewId(element));
             element.setId(button.getId());
         } else {
             Log.e(TAG, "Button element doesn't have port set");
@@ -164,6 +168,12 @@ public class UiViewFactory {
             );
         });
 
+        if (element.getText() != null) {
+            button.setText(element.getText());
+        } else {
+            button.setText(element.getRole() + " port " + element.getPort());
+        }
+
         return button;
     }
 
@@ -171,7 +181,7 @@ public class UiViewFactory {
         LinearLayout linearLayout = new LinearLayout(context);
 
         if (element.getPort() != null) {
-            linearLayout.setId(IdResourceManager.getNewId(element.getPort()));
+            linearLayout.setId(IdResourceManager.getNewId(element));
             element.setId(linearLayout.getId());
         } else {
             Log.e(TAG, "BLOCK element doesn't have port set");
