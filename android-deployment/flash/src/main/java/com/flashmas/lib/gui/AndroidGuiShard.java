@@ -11,6 +11,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.io.IOException;
@@ -22,8 +23,9 @@ import java.util.Map;
 // TODO must extend abstract class GuiShard, from @florinrm
 public class AndroidGuiShard extends AgentShardCore {
     private static final String TAG = AndroidGuiShard.class.getSimpleName();
+    public static final String DESIGNATION = "gui";
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();
-    private String configuration;
+    private MultiTreeMap configuration;
     private View agentView = null;
 
     protected AndroidGuiShard(AgentShardDesignation designation) {
@@ -31,12 +33,12 @@ public class AndroidGuiShard extends AgentShardCore {
     }
 
     public AndroidGuiShard() {
-        this(AgentShardDesignation.autoDesignation("gui"));
+        this(AgentShardDesignation.autoDesignation(DESIGNATION));
     }
 
     public AndroidGuiShard(MultiTreeMap configuration) {
         this();
-        this.configuration = configuration.getSingleTree("config").getTreeKeys().get(0);
+        this.configuration = configuration;
     }
 
     public View getAgentView(Context context) {
@@ -44,7 +46,7 @@ public class AndroidGuiShard extends AgentShardCore {
             return agentView;
         }
 
-        if (configuration != null && !configuration.isEmpty()) {
+        if (configuration != null) {
             // TODO get yaml from configuration
         } else {
             try {
@@ -126,6 +128,9 @@ public class AndroidGuiShard extends AgentShardCore {
     }
 
     private AgentWave buildAgentWave(Element element) {
+        if (element == null) {
+            return null;
+        }
         AgentWave wave = new AgentWave(null, "/");
         wave.addSourceElementFirst("/gui/" + element.getPort());
 
@@ -137,5 +142,9 @@ public class AndroidGuiShard extends AgentShardCore {
         Log.d(TAG, "Built the wave: " + wave);
 
         return wave;
+    }
+
+    public ShardContainer getShardContainer() {
+        return getAgent();
     }
 }

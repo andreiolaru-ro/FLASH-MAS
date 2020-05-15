@@ -1,6 +1,7 @@
 package com.flashmas.app;
 
 import android.content.res.ColorStateList;
+import android.hardware.Sensor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +18,13 @@ import androidx.navigation.ui.NavigationUI;
 import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.CompositeAgentBuilder;
 import com.flashmas.lib.FlashManager;
+import com.flashmas.lib.sensors.SensorsAgentShard;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.xqhs.flash.core.agent.Agent;
+
+import java.util.Arrays;
 
 import static com.flashmas.app.Utils.enableDisableViewGroup;
 
@@ -101,8 +105,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
     private Agent getCompositeAgent() {
         return new CompositeAgentBuilder()
-//                .addSensorShard(Arrays.asList(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_PROXIMITY))
                 .addGuiShard()
+                .addSensorShard(Arrays.asList(Sensor.TYPE_PROXIMITY, Sensor.TYPE_GYROSCOPE))
+                .addGuiLinkShard(Arrays.asList(SensorsAgentShard.DESIGNATION))
                 .build();
     }
 
