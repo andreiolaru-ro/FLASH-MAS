@@ -15,9 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.flashmas.lib.gui.AndroidGuiShard;
+import com.flashmas.lib.gui.GuiLinkShard;
 import com.flashmas.lib.gui.IdResourceManager;
 
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -53,6 +56,15 @@ public class UiViewFactory {
             scrollView.addView(rootView);
         }
 
+        AgentShard shard = guiShard.getShardContainer()
+                .getAgentShard(AgentShardDesignation.autoDesignation(GuiLinkShard.DESIGNATION));
+        if (shard instanceof GuiLinkShard && rootView instanceof LinearLayout) {
+            View v = ((GuiLinkShard) shard).getView(context);
+            if (v != null) {
+                ((LinearLayout) rootView).addView(v);
+            }
+        }
+
         return scrollView;
     }
 
@@ -70,7 +82,7 @@ public class UiViewFactory {
 
         switch (type) {
             case BLOCK:
-                currentView = createLinearLayout(element, context);
+                currentView = createLinearLayout(element, context, guiShard);
                 for (Element childElement: element.getChildren()) {
                     childView = createView(childElement, context, guiShard);
                     if (childView == null)
@@ -177,7 +189,7 @@ public class UiViewFactory {
         return button;
     }
 
-    private static View createLinearLayout(Element element, Context context) {
+    private static View createLinearLayout(Element element, Context context, AndroidGuiShard guiShard) {
         LinearLayout linearLayout = new LinearLayout(context);
 
         if (element.getPort() != null) {
