@@ -1,8 +1,8 @@
-package net.xqhs.flash.core.ros.msgs.sensor_msgs;
-
-import net.xqhs.flash.core.ros.msgs.std_msgs.Header;
+package net.xqhs.flash.ros.rosBridge.msgs.sensor_msgs;
 
 import java.awt.image.BufferedImage;
+
+import net.xqhs.flash.ros.rosBridge.msgs.std_msgs.Header;
 
 /**
  * Implementation of ROS sensor_msgs/Image.msg:

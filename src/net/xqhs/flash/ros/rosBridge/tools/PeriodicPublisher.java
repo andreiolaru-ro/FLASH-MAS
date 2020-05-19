@@ -1,10 +1,10 @@
-package net.xqhs.flash.core.ros.tools;
-
-import net.xqhs.flash.core.ros.Publisher;
-import net.xqhs.flash.core.ros.RosBridge;
+package net.xqhs.flash.ros.rosBridge.tools;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import net.xqhs.flash.ros.rosBridge.Publisher;
+import net.xqhs.flash.ros.rosBridge.RosBridge;
 
 /**
  * This class is a tool for causing a ROS message to be periodically published at a given rate. To start periodic publishing

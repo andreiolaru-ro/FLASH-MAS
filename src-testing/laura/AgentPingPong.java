@@ -13,7 +13,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.RosSupport;
+import net.xqhs.flash.ros.RosSupport;
 import net.xqhs.util.logging.Unit;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros.tools;
+package net.xqhs.flash.ros.rosBridge.tools;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

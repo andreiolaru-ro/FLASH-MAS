@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros;
+package net.xqhs.flash.ros.rosBridge;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;

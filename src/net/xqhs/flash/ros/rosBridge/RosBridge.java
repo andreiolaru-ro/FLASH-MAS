@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros;
+package net.xqhs.flash.ros.rosBridge;
 
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -33,7 +33,7 @@ import java.util.concurrent.*;
  * of a subscription as arguments to the method.
  * <p>
  * Publishing is also supported with the {@link #publish(String, String, Object)} method, but you should
- * consider using the {@link net.xqhs.flash.core.ros.Publisher} class wrapper for streamlining publishing.
+ * consider using the {@link net.xqhs.flash.ros.rosBridge.Publisher} class wrapper for streamlining publishing.
  * <p>
  * To create and connect to rosbridge, you can either instantiate with the default constructor
  * and then call {@link #connect(String)} or use the static method {@link #createConnection(String)} which

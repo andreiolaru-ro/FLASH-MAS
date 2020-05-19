@@ -9,7 +9,7 @@
  *
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.local;
+package net.xqhs.flash.ros;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,14 +18,9 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.ros.Publisher;
-import net.xqhs.flash.core.ros.RosBridge;
-import net.xqhs.flash.core.ros.RosListenDelegate;
-import net.xqhs.flash.core.ros.SubscriptionRequestMsg;
-import net.xqhs.flash.core.ros.msgs.std_msgs.PrimitiveMsg;
-import net.xqhs.flash.core.ros.tools.MessageUnpacker;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
@@ -34,6 +29,13 @@ import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ros.rosBridge.Publisher;
+import net.xqhs.flash.ros.rosBridge.RosBridge;
+import net.xqhs.flash.ros.rosBridge.RosListenDelegate;
+import net.xqhs.flash.ros.rosBridge.SubscriptionRequestMsg;
+import net.xqhs.flash.ros.rosBridge.msgs.std_msgs.PrimitiveMsg;
+import net.xqhs.flash.ros.rosBridge.tools.MessageUnpacker;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -45,9 +47,11 @@ public class RosSupport extends DefaultPylonImplementation {
     /**
      * The type of this support infrastructure (its 'kind')
      */
-    public static final String LOCAL_SUPPORT_NAME = "Local pylon";
+	public static final String	LOCAL_SUPPORT_NAME	= "ROS";
 
-    public static final String ROSBRIDGE_URI = "ws://localhost:9090";
+	public static final String	CONNECTTO_ATTRIBUTE_NAME	= "connect-to";
+	
+	// public static final String ROSBRIDGE_URI = "ws://localhost:9090";
 
     RosBridge bridge;
 
@@ -215,6 +219,22 @@ public class RosSupport extends DefaultPylonImplementation {
      */
     protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>	messageQueue		= null;
 
+	@Override
+	public boolean configure(MultiTreeMap configuration)
+	{
+		if(!super.configure(configuration))
+			return false;
+		if(!configuration.isSimple(CONNECTTO_ATTRIBUTE_NAME))
+		{
+			System.out.println("No URI specified");
+			return false;
+		}
+		bridge = new RosBridge();
+		bridge.connect(configuration.getAValue(CONNECTTO_ATTRIBUTE_NAME), true);
+		System.out.println("Connected.");
+		return true;
+	}
+	
     @Override
     public boolean start() {
         if(!super.start())
@@ -224,8 +244,6 @@ public class RosSupport extends DefaultPylonImplementation {
             messageThread = new Thread(new MessageThread());
             messageThread.start();
         }
-        bridge = new RosBridge();
-        bridge.connect(ROSBRIDGE_URI, true);
         return true;
     }
 

@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros.msgs.std_msgs;
+package net.xqhs.flash.ros.rosBridge.msgs.std_msgs;
 
 /**
  * A generic specified Java Bean for capturing many of the primitive data-type messages used by ROS in the std_msgs

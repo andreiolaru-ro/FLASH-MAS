@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros.msgs.std_msgs;
+package net.xqhs.flash.ros.rosBridge.msgs.std_msgs;
 
 /**
  * @author James MacGlashan.

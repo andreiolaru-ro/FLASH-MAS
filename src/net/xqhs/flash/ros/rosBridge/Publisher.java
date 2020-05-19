@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.ros;
+package net.xqhs.flash.ros.rosBridge;
 
 /**
  * A wrapper class for streamlining ROS Topic publishing. Note that the {@link #advertise()} never *needs* to be explicitly
