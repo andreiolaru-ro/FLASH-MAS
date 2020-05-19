@@ -1,4 +1,4 @@
-<!-- ---------------------------------------------
+---------------------------------------------
 Copyright (C) 2018 Andrei Olaru.
 
 This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
@@ -8,16 +8,24 @@ Flash-MAS is free software: you can redistribute it and/or modify it under the t
 Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
---------------------------------------------- -->
+
+---------------------------------------------
 
 
 FLASH-MAS contributors:
 
-	* Project coordination, architecture and coding if not otherwise specified:
-		* Andrei Olaru <cs@andreiolaru.ro>
-	
-	* Websockets support
-		* initial implementation: Vlad Tălmaciu
+  * Project coordination, architecture and coding if not otherwise specified:
+    * Andrei Olaru <cs@andreiolaru.ro>
+  
+  * Websockets support
+    * Florina Nastasoiu <florina.nastasoiu@gmail.com>
+    * past modeling and implementations:
+      * Vlad Tălmaciu <vlad.talmaciu@gmail.com>
+      * Cosmin Mihai <yonutix.mc@gmail.com>
+    
+  * S-CLAIM parser and interpreter
+    * Marius-Tudor Benea <tudorbenea@gmail.com>
+    * Andrei Olaru
 	
 
 
