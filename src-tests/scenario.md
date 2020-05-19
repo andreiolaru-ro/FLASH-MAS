@@ -42,3 +42,26 @@
     * the agents are generated as an agent array, randomly distributed over the set of nodes. 
 
 
+
+
+
+Web App spec:
+
+layout: horizontal
+global
+  children:
+    - type: label
+      port: node-name
+    - type: button
+      port: node-start
+      role: activate
+      value: Start
+    - ....
+    - type: container
+      port: entities
+      size: 10 --> height pentru fiecare element, ce nu intră facem scroll; width maxim pentru elementele care intră direct sub acest container
+interfaces
+  type: container
+  port: extended-interfaces
+  size: 6
+  columns: 3 --> calculează width pentru elemente
