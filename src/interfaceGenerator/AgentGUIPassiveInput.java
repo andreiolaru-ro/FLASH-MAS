@@ -26,7 +26,7 @@ public class AgentGUIPassiveInput extends AgentGUI {
                 if (port.isPresent()) {
                     AgentWave passiveInput = null;
                     try {
-                        passiveInput = guiShard.getInput(port.get());
+                        passiveInput = ioShard.getInput(port.get());
                         if (passiveInput != null) {
                             Set<String> contentKeys = passiveInput.getKeys();
                             contentKeys.remove("EVENT_TYPE");

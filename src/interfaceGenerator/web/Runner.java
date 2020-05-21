@@ -3,10 +3,10 @@ package interfaceGenerator.web;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import interfaceGenerator.GUIShardWeb;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import interfaceGenerator.Utils;
+import interfaceGenerator.io.IOShardWeb;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -85,7 +85,7 @@ public class Runner extends AbstractVerticle {
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             try {
-                                PageBuilder.getInstance().guiShard.getActiveInput(data);
+                                PageBuilder.getInstance().ioShard.getActiveInput(data);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -101,7 +101,7 @@ public class Runner extends AbstractVerticle {
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             System.out.println(data);
-                            GUIShardWeb.sendPassiveInputToShard(data);
+                            IOShardWeb.sendPassiveInputToShard(data);
                         }
                     });
                 } else if (be.type() == BridgeEventType.UNREGISTER) {

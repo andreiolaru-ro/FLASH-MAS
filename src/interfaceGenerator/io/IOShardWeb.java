@@ -1,7 +1,11 @@
-package interfaceGenerator;
+package interfaceGenerator.io;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import interfaceGenerator.Element;
+import interfaceGenerator.PageBuilder;
+import interfaceGenerator.Pair;
+import interfaceGenerator.Utils;
 import interfaceGenerator.types.PlatformType;
 import interfaceGenerator.web.Input;
 import interfaceGenerator.web.Runner;
@@ -13,14 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class GUIShardWeb extends GUIShard {
+public class IOShardWeb extends IOShard {
     private static List<Pair<String, String>> passiveDataInput;
 
-    public GUIShardWeb() {
+    public IOShardWeb() {
         super();
     }
 
-    public GUIShardWeb(MultiTreeMap configuration) {
+    public IOShardWeb(MultiTreeMap configuration) {
         super(configuration);
     }
 
@@ -98,6 +102,6 @@ public class GUIShardWeb extends GUIShard {
 
     @Override
     public String getName() {
-        return "GUIShardWeb";
+        return "IOShardWeb";
     }
 }

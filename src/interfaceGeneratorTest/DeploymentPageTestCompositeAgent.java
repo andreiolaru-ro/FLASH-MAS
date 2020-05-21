@@ -29,14 +29,7 @@ public class DeploymentPageTestCompositeAgent {
 
         test_args += " -package interfaceGenerator -loader agent:composite";
         test_args += " -agent composite:AgentA";
-        switch (platformType) {
-            case WEB:
-                test_args += " -shard GUIShardWeb";
-                break;
-            case DESKTOP:
-                test_args += " -shard GUIShardSwing";
-                break;
-        }
+        test_args += " -shard gui.GUIShard";
         test_args += " -config";
 
         List<String> args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));

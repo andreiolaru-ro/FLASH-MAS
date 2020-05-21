@@ -3,6 +3,7 @@ node:
     - type: output
       port: messageSend
       role: target
+      value: favoriteAgent
     - type: form
       port: messageSend
       role: content
@@ -12,4 +13,5 @@ node:
     - type: button
       port: messageSend
       role: activate
+      value: Send message
 

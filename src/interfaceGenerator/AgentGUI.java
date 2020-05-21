@@ -1,5 +1,8 @@
 package interfaceGenerator;
 
+import interfaceGenerator.gui.GUIShard;
+import interfaceGenerator.io.IOShard;
+import interfaceGenerator.io.IOShardFactory;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -15,28 +18,33 @@ public abstract class AgentGUI implements Agent {
     protected final static long delay = 0;
     protected final static long period = 10000;
     protected GUIShard guiShard;
+    protected IOShard ioShard;
     protected Timer timer;
+    protected String agentName;
 
     protected AgentGUI(MultiTreeMap configuration) {
-        guiShard = GUIShardFactory.factoryGuiShard(configuration);
-        if (guiShard != null) {
-            guiShard.addContext(new ShardContainer() {
-                @Override
-                public void postAgentEvent(AgentEvent event) {
-                    guiShard.signalAgentEvent(event);
-                }
+        agentName = configuration.get("name");
+        guiShard = new GUIShard(configuration);
+        guiShard.addContext(new ShardContainer() {
+            @Override
+            public void postAgentEvent(AgentEvent event) {
+                guiShard.signalAgentEvent(event);
+            }
 
-                @Override
-                public AgentShard getAgentShard(AgentShardDesignation designation) {
-                    return null;
-                }
+            @Override
+            public AgentShard getAgentShard(AgentShardDesignation designation) {
+                return null;
+            }
 
-                @Override
-                public String getEntityName() {
-                    return getName();
-                }
-            });
-        }
+            @Override
+            public String getEntityName() {
+                return getName();
+            }
+        });
+
+        ioShard = IOShardFactory.factoryIOShard(configuration);
+        PageBuilder.getInstance().ioShard = ioShard;
+
     }
 
     @Override
@@ -54,7 +62,7 @@ public abstract class AgentGUI implements Agent {
 
     @Override
     public String getName() {
-        return "AgentGUI";
+        return agentName;
     }
 
     @Override

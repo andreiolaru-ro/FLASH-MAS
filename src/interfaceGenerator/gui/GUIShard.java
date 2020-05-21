@@ -1,27 +1,25 @@
-package interfaceGenerator;
+package interfaceGenerator.gui;
 
+import interfaceGenerator.PageBuilder;
 import interfaceGeneratorTest.BuildPageTest;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-import java.util.ArrayList;
-
-public abstract class GUIShard extends AgentShardCore {
+public class GUIShard extends AgentShardCore {
     private String[] parameters = new String[2];
     private String configuration;
 
-    protected GUIShard(AgentShardDesignation designation) {
+    public GUIShard(AgentShardDesignation designation) {
         super(designation);
     }
 
-    protected GUIShard() {
+    public GUIShard() {
         super(AgentShardDesignation.autoDesignation("GUI"));
     }
 
-    protected GUIShard(MultiTreeMap configuration) {
+    public GUIShard(MultiTreeMap configuration) {
         this();
         this.configuration = configuration.getSingleTree("config").getTreeKeys().get(0);
     }
@@ -54,20 +52,6 @@ public abstract class GUIShard extends AgentShardCore {
             e.printStackTrace();
         }
     }
-
-    public void getActiveInput(ArrayList<Pair<String, String>> values) throws Exception {
-        System.out.println("Generating AgentWave for active input...");
-        AgentWave activeInput = new AgentWave(null, "/");
-        activeInput.addSourceElementFirst("/gui/port");
-        for (Pair<String, String> value : values) {
-            activeInput.add(value.getKey(), value.getValue());
-        }
-        super.getAgent().postAgentEvent(activeInput);
-    }
-
-    public abstract AgentWave getInput(String portName);
-
-    public abstract void sendOutput(AgentWave agentWave);
 
     @Override
     public String getName() {

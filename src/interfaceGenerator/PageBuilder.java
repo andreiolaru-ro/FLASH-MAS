@@ -1,5 +1,7 @@
 package interfaceGenerator;
 
+import interfaceGenerator.gui.GUIShard;
+import interfaceGenerator.io.IOShard;
 import interfaceGenerator.pylon.AndroidUiPylon;
 import interfaceGenerator.pylon.GUIPylonProxy;
 import interfaceGenerator.pylon.SwingUiPylon;
@@ -19,6 +21,7 @@ public class PageBuilder {
     public boolean createdSwingPage = false;
     public boolean createdWebPage = false;
     public GUIShard guiShard = null;
+    public IOShard ioShard = null;
     private Element page = null;
     public static JFrame window = null;
 

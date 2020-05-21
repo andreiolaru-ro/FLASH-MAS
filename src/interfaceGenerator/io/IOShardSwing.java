@@ -1,5 +1,8 @@
-package interfaceGenerator;
+package interfaceGenerator.io;
 
+import interfaceGenerator.Element;
+import interfaceGenerator.PageBuilder;
+import interfaceGenerator.Utils;
 import interfaceGenerator.pylon.SwingUiPylon;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -10,12 +13,12 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
-public class GUIShardSwing extends GUIShard {
-    public GUIShardSwing() {
+public class IOShardSwing extends IOShard {
+    public IOShardSwing() {
         super();
     }
 
-    public GUIShardSwing(MultiTreeMap configuration) {
+    public IOShardSwing(MultiTreeMap configuration) {
         super(configuration);
     }
 
@@ -67,6 +70,6 @@ public class GUIShardSwing extends GUIShard {
 
     @Override
     public String getName() {
-        return "GUIShardSwing";
+        return "IOShardSwing";
     }
 }

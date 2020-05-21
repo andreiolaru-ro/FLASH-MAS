@@ -26,7 +26,7 @@ public class AgentGUIOutput extends AgentGUI {
                 agentWave.add("chicken", TestUtils.getAlphaNumericString(10));
                 agentWave.add("nuggets", TestUtils.getAlphaNumericString(10));
                 agentWave.add("kfc", String.valueOf(new Random().nextInt(30)));
-                guiShard.sendOutput(agentWave);
+                ioShard.sendOutput(agentWave);
             }
         }, delay, period);
         return true;
