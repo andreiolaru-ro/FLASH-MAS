@@ -11,15 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
-import java.io.Serializable;
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.RunnableEntity;
@@ -35,6 +26,11 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
+
+import java.io.Serializable;
+import java.security.InvalidParameterException;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
@@ -53,7 +49,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	class CompositeAgentShardContainer implements ShardContainer
+	class CompositeAgentShardContainer implements ShardContainer, Serializable
 	{
 		/**
 		 * The agent
@@ -220,7 +216,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
 	 * the {@link #log(String, Object...)} method.
 	 */
-	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
+	transient protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 	/**
 	 * This switch activates the use of the {@link #localLog}.
@@ -797,4 +793,27 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			localLog.li(message, arguments);
 		}
 	}
+
+
+//	//	Custom serialization and deserialization methods
+//	/**
+//	 * Deserialization method of a CompositeAgent object
+//	 * @param in the stream in which the object will be serialized to
+//	 * @throws ClassNotFoundException
+//	 * @throws IOException
+//	 */
+//	private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
+//		agentName = in.readUTF();
+//		System.out.println(in.readUTF());
+//	}
+//
+//	/**
+//	 * Serialization method of a CompositeAgent object
+//	 * @param out
+//	 * @throws IOException
+//	 */
+//	private void writeObject(ObjectOutputStream out) throws IOException {
+//		out.writeUTF(agentName);
+//		out.writeUTF(agentState.toString());
+//	}
 }
