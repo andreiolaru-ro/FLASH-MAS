@@ -1,0 +1,9 @@
+(agent AgentClassA
+	(behavior
+		(initial register
+			(input @testing theinput check ?value)
+			(print received ?value)
+			(output @testing theoutput the_value_is ?value the_end)
+		)
+	)
+)

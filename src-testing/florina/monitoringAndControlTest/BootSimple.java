@@ -17,6 +17,7 @@ public class BootSimple {
         test_args += " -package  florina.monitoringAndControlTest";
 
         test_args += " -node node1";
+        //test_args += " -node node1 -support local:main use-thread";
         test_args += " -agent AgentA classpath:AgentTest";
         test_args += " -agent AgentB classpath:AgentTest sendTo:AgentA";
 

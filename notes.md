@@ -19,12 +19,14 @@ Current targets
 
 ### Deployment / loading
 * document portability in CategoryName
+* creating a "null" entity is not the same with the entity with a null (Java null) name
+* CLI does not allow for entities with no name
 * move deployment loading from NodeLoader to a new DeploymentLoader class?
 
 ### Communication
-* local messaging -- document and check the work of Vlad Talmaciu
-* implement AgentWave
-* split implementation between AbstractMessagingShard and NameBasedMessagingShard, specify MessagingShard interface.
+* move message queue management to a AbstractMessagingPylonImplementation
+* rename DefaultPylonImplementation to AbstractPylonImplementation
+* think whether to use AgentWave in send() instead of source-destination-content
 
 ### Utilities
 * implement getAppropriateTree / addAppropriateTree methods
