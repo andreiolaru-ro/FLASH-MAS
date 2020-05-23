@@ -6,6 +6,8 @@ import interfaceGenerator.pylon.AndroidUiPylon;
 import interfaceGenerator.pylon.GUIPylonProxy;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.pylon.WebUiPylon;
+import interfaceGenerator.types.BlockType;
+import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PlatformType;
 import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
@@ -14,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.util.ArrayList;
 
 public class PageBuilder {
     private static PageBuilder instance = null;
@@ -37,13 +40,53 @@ public class PageBuilder {
     }
 
     public Object buildPage(Configuration data) throws Exception {
-        return buildPage(data.getNode());
+        if (data.getNode() != null) {
+            return buildPage(data.getNode());
+        } else {
+            // TODO with global and interfaces
+            Element node = new Element();
+            node.setType(ElementType.BLOCK.type);
+            node.setRole("page-root");
+            ArrayList<Element> globals = (ArrayList<Element>) data.getGlobal();
+            ArrayList<Element> interfaces = (ArrayList<Element>) data.getInterfaces();
+
+            ArrayList<Element> globalsWithType = new ArrayList<>();
+            ArrayList<Element> interfacesWithType = new ArrayList<>();
+
+            for (Element elem : globals) {
+                globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
+            }
+
+            for (Element elem : interfaces) {
+                interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
+            }
+
+            Element globalContainer = new Element();
+            globalContainer.setType(ElementType.BLOCK.type);
+            globalContainer.setRole("global");
+            globalContainer.setChildren(globalsWithType);
+
+            Element interfacesContainer = new Element();
+            interfacesContainer.setType(ElementType.BLOCK.type);
+            interfacesContainer.setRole("interfaces");
+            interfacesContainer.setChildren(interfacesWithType);
+
+            ArrayList<Element> nodeChildren = new ArrayList<>();
+            nodeChildren.add(globalContainer);
+            nodeChildren.add(interfacesContainer);
+
+            node.setChildren(nodeChildren);
+
+            System.out.println(node);
+            return buildPage(node);
+        }
     }
 
     public Object buildPage(Element data) throws Exception {
         // generating ids for every element in configuration
+        // System.out.println(data);
         page = IdGenerator.attributeIds(data);
-        // System.out.println(configuration);
+        //System.out.println(configuration);
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
@@ -98,7 +141,8 @@ public class PageBuilder {
             e.printStackTrace();
         }
         Yaml yaml = new Yaml();
-        return yaml.loadAs(input, Configuration.class);
+        Configuration conf = yaml.loadAs(input, Configuration.class);
+        return conf;
     }
 
     public Configuration buildPageInline(String inline) {

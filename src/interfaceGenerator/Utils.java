@@ -1,5 +1,6 @@
 package interfaceGenerator;
 
+import interfaceGenerator.types.BlockType;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.sclaim.constructs.*;
@@ -17,7 +18,7 @@ public class Utils {
     public static void checkActivePorts(Element element) {
         if (element.getPort() != null) {
             ports.add(element.getPort());
-            if (element.getRole().equals(PortType.ACTIVE.type)) {
+            if (element.getRole() != null && element.getRole().equals(PortType.ACTIVE.type)) {
                 activePorts.add(element.getPort());
             }
         }
@@ -257,6 +258,18 @@ public class Utils {
             }
         }
         System.out.println(element);
+        return element;
+    }
+
+    public static Element attributeBlockType(Element element, BlockType type) {
+        element.setBlockType(type.type);
+        if (element.getChildren() != null) {
+            List<Element> children = new ArrayList<>();
+            for (Element child : element.getChildren()) {
+                children.add(attributeBlockType(child, type));
+            }
+            element.setChildren(children);
+        }
         return element;
     }
 }

@@ -4,7 +4,9 @@ public enum PortType {
     ACTIVE("activate"),
     PASSIVE("passive"),
     CONTENT("content"),
-    OUTPUT("output");
+    OUTPUT("output"),
+    EXTENDED_INTERFACES("extended-interfaces"),
+    ENTITIES("entities");
 
     public final String type;
 

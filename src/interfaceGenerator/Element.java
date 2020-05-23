@@ -15,6 +15,7 @@ public class Element {
     private String port;
     private String role;
     private String value;
+    private String blockType;
     private static int counter = 0;
 
     public List<Element> getChildren() {
@@ -77,6 +78,14 @@ public class Element {
         this.value = value;
     }
 
+    public String getBlockType() {
+        return blockType;
+    }
+
+    public void setBlockType(String blockType) {
+        this.blockType = blockType;
+    }
+
     @Override
     public String toString() {
         String tab = "\t";
@@ -90,6 +99,10 @@ public class Element {
         result.append(Utils.repeat(tab, counter));
         result.append("role: ").append(role).append('\n');
         result.append(Utils.repeat(tab, counter));
+        if (blockType != null) {
+            result.append("blockType: ").append(blockType).append('\n');
+            result.append(Utils.repeat(tab, counter));
+        }
         result.append("children: ");
         if (children != null) {
             if (children.isEmpty()) {

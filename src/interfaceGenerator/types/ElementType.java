@@ -3,7 +3,7 @@ package interfaceGenerator.types;
 public enum ElementType {
     BUTTON("button"),
     FORM("form"),
-    BLOCK("block"),
+    BLOCK("container"),
     OUTPUT("output"),
     SPINNER("spinner");
 

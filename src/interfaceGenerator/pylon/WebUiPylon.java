@@ -1,6 +1,7 @@
 package interfaceGenerator.pylon;
 
 import interfaceGenerator.Element;
+import interfaceGenerator.types.BlockType;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -15,6 +16,7 @@ public class WebUiPylon implements GUIPylonProxy {
             "    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js\"></script>\n" +
             "    <script src=\"js/vertx-eventbus.js\"></script>\n" +
             "    <script src=\"js/client.js\"></script>\n" +
+            "    <link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n" +
             "</head>\n" +
             "<body onload=\"init()\">";
     private static int indentLevel = 0;
@@ -68,12 +70,11 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append(element.getId());
         result.append("\"");
 
-        if (indentLevel == 2) {
+        if (indentLevel == 2 || element.getBlockType().equals(BlockType.GLOBAL.type)) {
             result.append(" style = \"display: block;\"");
         }
 
         if (element.getRole().equals(PortType.ACTIVE.type)) {
-            // TODO: add callback
             result.append(" type = \"submit\" ");
             result.append("onclick=\"send_data(this.id)\"");
         }
@@ -106,6 +107,28 @@ public class WebUiPylon implements GUIPylonProxy {
         result.append("id = \"");
         result.append(element.getId());
         result.append("\"");
+        if (element.getRole() != null) {
+            switch (element.getRole()) {
+                case "global":
+                    result.append(" class = \"global\"");
+                    break;
+                case "interfaces":
+                    result.append(" class = \"interfaces\"");
+                    break;
+                case "page-root":
+                    result.append(" class = \"root\"");
+                    break;
+            }
+        }
+
+        if (element.getPort() != null) {
+            if (element.getPort().equals(PortType.ENTITIES.name())) {
+                result.append(" class = \"entities\"");
+            } else if (element.getPort().equals(PortType.EXTENDED_INTERFACES.name())) {
+                result.append(" class = \"extended-interfaces\"");
+            }
+        }
+
         result.append(">\n");
         indentLevel++;
         if (element.getChildren() != null) {

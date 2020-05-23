@@ -1,0 +1,29 @@
+layout: horizontal
+global:
+  - type: label
+    port: node-name
+  - type: button
+    port: node-start
+    role: activate
+    value: Start
+  - type: button
+    port: node-stop
+    role: activate
+    value: Stop
+  - type: button
+    port: pause-simulation
+    role: activate
+    value: Pause simulation
+  - type: button
+    port: start-simulation
+    role: activate
+    value: Start simulation
+  - type: button
+    port: stop-simulation
+    role: activate
+    value: Stop simulation
+  - type: container
+    port: entities
+interfaces:
+  - type: container
+    port: extended-interfaces
