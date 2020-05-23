@@ -92,7 +92,7 @@ public class AgentTest extends Unit implements Agent
 		li("received: " + event.toString());
 		if(event.getType().equals(AgentEventType.AGENT_WAVE)) {
 			String content = ((AgentWave) event).getContent();
-			if(content.equals("simulation"))
+			if(content.equals("start_simulation"))
 				lf("[] started simulation.", getName());
 			else if(content.equals("stop"))
 				stop();

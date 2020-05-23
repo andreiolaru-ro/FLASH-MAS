@@ -50,10 +50,12 @@ public class GUIBoard extends JFrame {
         JButton startSimulation = newButton("Start simulation");
         JButton startAgentsBtn  = newButton("Start agents");
         JButton stopAgentsBtn   = newButton("Stop agents");
+        JButton pauseSimulatin  = newButton("Pause simulation");
+        JButton stopSimulation  = newButton("Stop simulation");
         JButton exitBtn         = newButton("Exit");
 
         startSimulation.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("simulation"));
+                centralEntityProxy.sendToAll("start_simulation"));
         startAgentsBtn.addActionListener(actionEvent ->
                 centralEntityProxy.sendToAll("start"));
         stopAgentsBtn.addActionListener(actionEvent ->
@@ -68,6 +70,8 @@ public class GUIBoard extends JFrame {
         buttonsPanel.add(startSimulation);
         buttonsPanel.add(startAgentsBtn);
         buttonsPanel.add(stopAgentsBtn);
+        buttonsPanel.add(pauseSimulatin);
+        buttonsPanel.add(stopSimulation);
         buttonsPanel.add(exitBtn);
 
         contentPane.add(buttonsPanel, BorderLayout.SOUTH);

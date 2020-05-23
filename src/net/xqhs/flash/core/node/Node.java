@@ -58,8 +58,7 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT                  = "control";
 
-    // operations that entities in the context of the node can perform themselves
-	List<String> operations = new LinkedList<>();
+	String[] supportedOperations = {"start", "stop", "pause_simulation", "start_simulation", "stop_simulation"};
 
 	protected ShardContainer proxy = new ShardContainer() {
 
@@ -141,6 +140,29 @@ public class Node extends Unit implements Entity<Node>
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
 
+    /**
+     * @return
+     *          - a json array indicating all details about each operation.
+     */
+	protected JSONArray configureOperations() {
+	    // if the message should be sent via proxy or through the entity itself
+	    String[] modelAccess = {"proxy", "self"};
+        JSONArray conf = new JSONArray();
+
+        for(String operation : supportedOperations) {
+            JSONObject op = new JSONObject();
+            op.put("name", operation);
+            op.put("params", "");
+            op.put("proxy", getName());
+            if(operation.equals("start"))
+                op.put("access", modelAccess[0]);
+            else
+                op.put("access", modelAccess[1]);
+            conf.add(op);
+        }
+        return conf;
+    }
+
 	/**
 	 * Method used to send monitoring message to central entity: the message covers necessary information
 	 * about all entities registered and started in the context of current node.
@@ -149,11 +171,7 @@ public class Node extends Unit implements Entity<Node>
 	 * 				- an indication of success.
 	 */
 	protected boolean registerEntitiesToControlEntity() {
-		if(operations.isEmpty()) {
-			operations.add("stop");
-			operations.add("simulation");
-		}
-
+	    JSONArray operations = configureOperations();
 		JSONArray entities = new JSONArray();
 		registeredEntities.entrySet().forEach(entry-> {
 			String category = entry.getKey();

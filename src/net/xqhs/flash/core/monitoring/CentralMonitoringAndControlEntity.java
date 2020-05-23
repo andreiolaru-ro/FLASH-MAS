@@ -45,9 +45,14 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     private static boolean          isRunning;
 
     /**
-     * Keeps track of all agents deployed in the system and operations which can be done by agents themselves.
+     * Keeps track of all agents deployed in the system and operations.
      */
     private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
+
+    /*
+    * Keeps track of all entities deployed in the system and supported operations along with their inner details.
+    * */
+    private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
 
     /**
      * Keeps track of all nodes deployed in the system, along with their entities,
@@ -91,13 +96,20 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                     String node         = (String)entity.get("node");
                     String category     = (String)entity.get("category");
                     String name         = (String)entity.get("name");
-                    List<String> operations = (List<String>) entity.get("operations");
+
+                    JSONArray operationDetails = (JSONArray) entity.get("operations");
                     if(category.equals("agent"))
                     {
                         if(!allAgents.containsKey(name))
                             allAgents.put(name, new LinkedList<>());
-                        allAgents.get(name).addAll(operations);
+                        for(Object oo : operationDetails) {
+                            JSONObject op   = (JSONObject) oo;
+                            String operation = (String) op.get("name");
+                            allAgents.get(name).add(operation);
+                        }
                     }
+                    entitiesToOp.put(name, operationDetails);
+
                     if(!allNodeEntities.containsKey(node))
                         allNodeEntities.put(node, new LinkedHashMap<>());
                     if(!allNodeEntities.get(node).containsKey(category))
@@ -254,33 +266,57 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         }
 
         /**
-         * Check if agents are able to perform the operation. If so, send the command.
          *
          * @param command
          *                  - command to be sent to all agents running in the system.
          */
         public void sendToAll(String command) {
             allAgents.entrySet().forEach(entry -> {
-                if(entry.getValue().contains(command)) {
-                    if(!centralMessagingShard.sendMessage(
-                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(entry.getKey(), OTHER_CONTROL_SHARD_ENDPOINT),
-                            command))
-                        le("Message from [] to [] failed.", getName(), entry.getKey());
-                }
-                else {
-                    String parent = getParentNode(entry.getKey());
-                    JSONObject routedCommand = new JSONObject();
-                    routedCommand.put("child", entry.getKey());
-                    routedCommand.put("command", command);
-                    if(!centralMessagingShard.sendMessage(
-                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(parent, OTHER_CONTROL_SHARD_ENDPOINT),
-                            routedCommand.toString()))
-                        le("Message from [] to parent [] of [] failed.", getName(), parent, entry.getKey());
-                }
+                if(!sendTo(entry.getKey(), command)) return;
             });
-            return;
+        }
+
+        public boolean sendTo(String destination, String command) {
+            JSONObject cmdJson = getCommandJson(destination, command);
+            if(cmdJson == null) {
+                le("Entity [] does not support [] command.", destination, command);
+                return false;
+            }
+            String access = (String) cmdJson.get("access");
+            if(access.equals("self")) {
+                if(!sendControlCommand(destination, command)) {
+                    le("Message from [] to [] failed.", getName(), destination);
+                    return false;
+                }
+            } else {
+                String proxy = (String) cmdJson.get("proxy");
+                JSONObject routedCommand = new JSONObject();
+                routedCommand.put("child", destination);
+                routedCommand.put("command", command);
+                if(!sendControlCommand(proxy, routedCommand.toString())) {
+                    le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private JSONObject getCommandJson(String name, String command) {
+            JSONArray ja = entitiesToOp.get(name);
+            for(Object o : ja) {
+                JSONObject op   = (JSONObject) o;
+                String cmd = (String) op.get("name");
+                if(cmd.equals(command))
+                    return op;
+            }
+            return null;
+        }
+
+        private boolean sendControlCommand(String destination, String content) {
+            return centralMessagingShard.sendMessage(
+                    AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                    AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT),
+                    content);
         }
     }
 }
