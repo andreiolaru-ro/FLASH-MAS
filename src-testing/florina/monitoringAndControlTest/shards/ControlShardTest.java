@@ -1,4 +1,4 @@
-package florina.monitoringAndControlTest;
+package florina.monitoringAndControlTest.shards;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -57,6 +57,8 @@ public class ControlShardTest extends AgentShardGeneral
         switch(event.getType())
         {
             case AGENT_WAVE:
+                if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+                    break;
                 parseAgentWave(event);
                 break;
             case AGENT_START:
