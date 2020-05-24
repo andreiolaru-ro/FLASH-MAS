@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import interfaceGenerator.Utils;
+import interfaceGenerator.io.IOShard;
 import interfaceGenerator.io.IOShardWeb;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -30,6 +31,7 @@ public class Runner extends AbstractVerticle {
     private Type inputType = new TypeToken<HashMap<String, Map<String, String>>>() {
     }.getType();
     public static boolean connectionInit = false;
+    private static String activePort;
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -59,6 +61,7 @@ public class Runner extends AbstractVerticle {
                             String buttonId = ((String) objectMessage.body()).split(" ")[1];
                             String port = Utils.identifyActivePortOfElement(buttonId);
                             if (port != null) {
+                                activePort = port;
                                 List<String> ids = Utils.findActiveInputIdsFromPort(port);
                                 Map<String, List<String>> data = new HashMap<>();
                                 data.put("data", ids);
@@ -85,7 +88,19 @@ public class Runner extends AbstractVerticle {
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             try {
-                                PageBuilder.getInstance().ioShard.getActiveInput(data);
+                                if (data.isEmpty()) {
+                                    // especially for reduced interface
+                                    String value = IOShard.reducedInterfacesValues.get(activePort);
+                                    if (value != null) {
+                                        data.add(new Pair<>("message", value));
+                                    }
+                                }
+                                System.out.println(data);
+                                if (!data.isEmpty()) {
+                                    PageBuilder.getInstance().ioShard.getActiveInput(data);
+                                } else {
+                                    System.out.println("No active input available");
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

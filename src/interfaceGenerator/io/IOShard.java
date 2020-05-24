@@ -7,6 +7,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public abstract class IOShard extends AgentShardCore {
     /**
@@ -45,4 +46,6 @@ public abstract class IOShard extends AgentShardCore {
     public abstract AgentWave getInput(String portName);
 
     public abstract void sendOutput(AgentWave agentWave);
+
+    public static HashMap<String, String> reducedInterfacesValues = new HashMap<>();
 }
