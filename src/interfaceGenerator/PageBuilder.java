@@ -97,7 +97,7 @@ public class PageBuilder {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
                     String html = (String) guiPylonProxy.generate(data);
-                    FileWriter fileWriter = new FileWriter("interface-files\\generated-web-pages\\page.html");
+                    FileWriter fileWriter = new FileWriter("src\\web\\page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
