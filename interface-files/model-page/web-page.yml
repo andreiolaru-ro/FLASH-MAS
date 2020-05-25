@@ -23,7 +23,31 @@ global:
     role: activate
     value: Stop simulation
   - type: container
-    port: entities
+    port: entities # special port
+    # to do add specs for one entity (reduced interface)
+    # what is default: select, entity name, these 3 buttons
+    children: # to be added from JS in web page, skipped from generator
+      - type: button
+        value: check
+        port: check-simulation
 interfaces:
   - type: container
-    port: extended-interfaces
+    port: extended-interfaces # special port
+    children:
+      - type: container
+        port: interface-a
+        children:
+          - type: button
+            value: press
+            role: activate
+            port: container-interface-a
+          - type: form
+            role: info
+            port: container-interface-a
+      - type: container
+        port: interface-b
+        children:
+          - type: label
+            value: don't be messin around
+            role: some-message
+            port: message-info

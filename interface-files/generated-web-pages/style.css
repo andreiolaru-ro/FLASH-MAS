@@ -35,6 +35,7 @@ div {
 }
 
 .extended-interfaces {
+    border: 3px solid black;
     height: fit-content;
     width: fit-content;
     margin-left: 10px;

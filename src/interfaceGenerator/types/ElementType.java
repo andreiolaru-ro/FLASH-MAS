@@ -4,7 +4,7 @@ public enum ElementType {
     BUTTON("button"),
     FORM("form"),
     BLOCK("container"),
-    OUTPUT("output"),
+    OUTPUT("label"),
     SPINNER("spinner");
 
     public final String type;

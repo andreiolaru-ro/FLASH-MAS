@@ -87,6 +87,7 @@ public class PageBuilder {
         // System.out.println(data);
         page = IdGenerator.attributeIds(data);
         //System.out.println(configuration);
+        platformType = PlatformType.WEB;
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
@@ -98,6 +99,7 @@ public class PageBuilder {
                     guiPylonProxy = new WebUiPylon();
                     String html = (String) guiPylonProxy.generate(data);
                     FileWriter fileWriter = new FileWriter("src\\web\\page.html");
+                    //FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();

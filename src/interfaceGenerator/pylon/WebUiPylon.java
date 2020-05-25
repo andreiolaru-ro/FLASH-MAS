@@ -21,6 +21,7 @@ public class WebUiPylon implements GUIPylonProxy {
             "<body onload=\"init()\">";
     private static int indentLevel = 0;
     private final static String tab = "\t";
+    private static boolean addInterfaceClassToDiv = false;
 
     public Object generate(Element element) {
         StringBuilder result = new StringBuilder();
@@ -74,7 +75,7 @@ public class WebUiPylon implements GUIPylonProxy {
             result.append(" style = \"display: block;\"");
         }
 
-        if (element.getRole().equals(PortType.ACTIVE.type)) {
+        if (element.getRole() != null && element.getRole().equals(PortType.ACTIVE.type)) {
             result.append(" type = \"submit\" ");
             result.append("onclick=\"send_data(this.id)\"");
         }
@@ -121,40 +122,59 @@ public class WebUiPylon implements GUIPylonProxy {
             }
         }
 
+        if (addInterfaceClassToDiv) {
+            result.append(" class = \"interface\"");
+        }
+
         if (element.getPort() != null) {
-            if (element.getPort().equals(PortType.ENTITIES.name())) {
+            if (element.getPort().equals("entities")) {
                 result.append(" class = \"entities\"");
-            } else if (element.getPort().equals(PortType.EXTENDED_INTERFACES.name())) {
+            } else if (element.getPort().equals("extended-interfaces")) {
                 result.append(" class = \"extended-interfaces\"");
+                addInterfaceClassToDiv = true;
             }
         }
 
         result.append(">\n");
         indentLevel++;
-        if (element.getChildren() != null) {
-            for (Element child : element.getChildren()) {
-                ElementType type = ElementType.valueOfLabel(child.getType());
-                if (type != null) {
-                    switch (type) {
-                        case BUTTON:
-                            result.append(generateButton(child));
-                            break;
-                        case OUTPUT:
-                            result.append(generateLabel(child));
-                            break;
-                        case FORM:
-                            result.append(generateForm(child));
-                            break;
-                        case SPINNER:
-                            result.append(generateSpinner(child));
-                            break;
-                        case BLOCK:
-                            result.append(generateDiv(child));
-                            break;
+
+        boolean generateChildren = true;
+        if (element.getPort() != null && element.getPort().equals("entities")) {
+            // entities boxes not to be added from Java generator, but from JavaScript -> Mihu
+            generateChildren = false;
+        }
+
+        if (generateChildren) {
+            if (element.getChildren() != null) {
+                for (Element child : element.getChildren()) {
+                    ElementType type = ElementType.valueOfLabel(child.getType());
+                    if (type != null) {
+                        switch (type) {
+                            case BUTTON:
+                                result.append(generateButton(child));
+                                break;
+                            case OUTPUT:
+                                result.append(generateLabel(child));
+                                break;
+                            case FORM:
+                                result.append(generateForm(child));
+                                break;
+                            case SPINNER:
+                                result.append(generateSpinner(child));
+                                break;
+                            case BLOCK:
+                                result.append(generateDiv(child));
+                                break;
+                        }
                     }
                 }
             }
         }
+
+        if (element.getPort() != null && element.getPort().equals("extended-interfaces")) {
+            addInterfaceClassToDiv = false;
+        }
+
         indentLevel--;
         for (int i = 0; i < indentLevel; i++) {
             result.append(tab);
