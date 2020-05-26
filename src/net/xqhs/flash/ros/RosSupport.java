@@ -59,16 +59,44 @@ public class RosSupport extends DefaultPylonImplementation {
      * The proxy to this entity.
      */
     public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-
+        /**
+         * @param source
+         *                        - the source endpoint.
+         * @param destination
+         *                        - the destination endpoint.
+         * @param content
+         *                        - the content of the message.
+         *
+         * New publisher instance.
+         * Publishes to topic with name: /agentName, where agentName is destination agent's name.
+         * The message sent is formatted as follows: source: @param source destination: @param destination
+         * content: @param content.
+         *
+         * @return
+         */
         @Override
         public boolean send(String source, String destination, String content) {
             String agentName = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
             Publisher pub = new Publisher("/" + agentName, "std_msgs/String", bridge);
-            // publish content
-            pub.publish(new PrimitiveMsg<String>(content));
+            String formatMessage = "source: " + source;
+            formatMessage += " destination: " + destination;
+            formatMessage += " content: " + content;
+            pub.publish(new PrimitiveMsg<String>(formatMessage));
             return true;
         }
 
+        /**
+         * @param agentName
+         *                      - the name of the agent.
+         * @param receiver
+         *                      - the {@link MessageReceiver} instance to receive messages.
+         *
+         * New subscriber to topic with name: /@param agentName.
+         * The message received is formatted as follows: source: @param source destination: @param destination
+         * content: @param content.
+         *
+         * @return
+         */
         @Override
         public boolean register(String agentName, MessageReceiver receiver) {
             messageReceivers.put(agentName, receiver);
@@ -82,9 +110,12 @@ public class RosSupport extends DefaultPylonImplementation {
                         public void receive(JsonNode data, String stringRep) {
                             MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(PrimitiveMsg.class);
                             PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
-                            System.out.println(msg.data);
-                            // params: sender, receiver, data
-                            receiver.receive("", "", "");
+                            String[] parsedData = msg.data.split(" ");
+                            String receiverSource = parsedData[1];
+                            String receiverDestination = parsedData[3];
+                            String[] receiverContentList = msg.data.split(": ");
+                            String receiverContent = receiverContentList[3];
+                            receiver.receive(receiverSource, receiverDestination, receiverContent);
                         }
                     }
             );
