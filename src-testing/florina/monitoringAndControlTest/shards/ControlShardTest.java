@@ -45,9 +45,7 @@ public class ControlShardTest extends AgentShardGeneral
     @Override
     public boolean configure(MultiTreeMap configuration)
     {
-        if(!super.configure(configuration))
-            return false;
-        return true;
+        return super.configure(configuration);
     }
 
     @Override
@@ -62,13 +60,16 @@ public class ControlShardTest extends AgentShardGeneral
                 parseAgentWave(event);
                 break;
             case AGENT_START:
-                li("Shard of agent [] started.", thisAgent);
-                break;
-            case SIMULATION_START:
-                li("Shard of agent [] started simulation.", thisAgent);
+                li("Shard []/[] started.", thisAgent, SHARD_ENDPOINT);
                 break;
             case AGENT_STOP:
-                li("Shard of agent [] stopped.", thisAgent);
+                li("Shard []/[] stopped.", thisAgent, SHARD_ENDPOINT);
+                break;
+            case SIMULATION_START:
+                li("Shard []/[] started simulation.", thisAgent, SHARD_ENDPOINT);
+                break;
+            case SIMULATION_PAUSE:
+                li("Shard []/[] paused simulation.", thisAgent, SHARD_ENDPOINT);
                 break;
             default:
                 break;
