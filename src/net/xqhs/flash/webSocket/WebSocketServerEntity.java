@@ -41,6 +41,36 @@ public class WebSocketServerEntity extends Unit implements Entity
 	private String controlEntity;
 	private WebSocket controlEntityWebSocket;
 
+	private boolean sendFurther(JSONObject jsonObject) {
+		// raw message from one entity to another
+			String destination = (String) jsonObject.get("destination");
+			String destEntity = destination.split(
+					AgentWave.ADDRESS_SEPARATOR)[0];
+			if(destEntity.equals(controlEntity))
+			{
+				controlEntityWebSocket.send(jsonObject.toString());
+				li("Sent to central entity: []. ", jsonObject.toString());
+				return true;
+			}
+
+			WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
+			if(destinationWebSocket != null) {
+				destinationWebSocket.send(jsonObject.toString());
+				li("Sent to agent: []. ", jsonObject.toString());
+				return true;
+			}
+
+			destinationWebSocket = nodeToWebSocket.get(destEntity);
+			if(destinationWebSocket != null) {
+				destinationWebSocket.send(jsonObject.toString());
+				li("Sent to node: []. ", jsonObject.toString());
+				return true;
+			}
+
+			le("Filed to find the entity [] websocket.", destEntity);
+			return false;
+	}
+
 
 	public WebSocketServerEntity(int serverAddress)
 	{
@@ -80,6 +110,10 @@ public class WebSocketServerEntity extends Unit implements Entity
 				Object obj = JSONValue.parse(s);
 				if(obj == null) return;
 				JSONObject jsonObject = (JSONObject) obj;
+
+				// message in transit through the server
+				if(jsonObject.get("destination") != null && sendFurther(jsonObject))
+					return;
 
 				// control and monitoring entity registration
 				if(jsonObject.get("controlEntity") != null)
@@ -125,37 +159,6 @@ public class WebSocketServerEntity extends Unit implements Entity
 					}
 					printState();
 					return;
-				}
-
-				// raw message from one entity to another
-				if(jsonObject.get("destination") != null) {
-					String destination = (String) jsonObject.get("destination");
-					String destEntity = destination.split(
-							AgentWave.ADDRESS_SEPARATOR)[0];
-					if(destEntity.equals(controlEntity))
-					{
-						controlEntityWebSocket.send(s);
-						li("Sent to central entity: []. ", s);
-						printState();
-						return;
-					}
-
-					WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
-					if(destinationWebSocket != null) {
-						destinationWebSocket.send(s);
-						li("Sent to agent: []. ", s);
-						return;
-					}
-
-					destinationWebSocket = nodeToWebSocket.get(destEntity);
-					if(destinationWebSocket != null) {
-						destinationWebSocket.send(s);
-						li("Sent to node: []. ", s);
-						return;
-					}
-
-					le("Filed to find the entity [] websocket.", destEntity);
-					printState();
 				}
 			}
 			

@@ -65,21 +65,29 @@ public class Node extends Unit implements Entity<Node>
 		private boolean parseJSON(Object obj) {
 			if(obj instanceof JSONObject) {
 				JSONObject jo = (JSONObject) obj;
-				String child   = (String)jo.get("child");
-				String command = (String)jo.get("command");
-				Entity<?> entity = entityOrder.stream()
-						.filter(en -> en.getName().equals(child))
-						.findFirst().orElse(null);
-				if(entity == null) {
-					le("[] child not found in the context of [].", child, name);
-					return false;
+				if(jo.get("operation") != null) {
+					String op = (String)jo.get("operation");
+					if(op.equals("state-update")) {
+						return messagingShard.sendMessage(
+								AgentWave.makePath(getName(), SHARD_ENDPOINT),
+								AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
+								jo.toString());
+					} else {
+						String child   = (String)jo.get("child");
+						Entity<?> entity = entityOrder.stream()
+								.filter(en -> en.getName().equals(child))
+								.findFirst().orElse(null);
+						if(entity == null) {
+							le("[] child not found in the context of [].", child, name);
+							return false;
+						}
+						if(op.equals("start"))
+							if(entity.start())
+								lf("[] was started by parent [].", child, name);
+					}
 				}
-				if(command.equals("start"))
-					if(entity.start())
-						lf("[] was started by parent [].", child, name);
-
 			}
-			return true;
+			return false;
 		}
 
 		@Override
@@ -87,7 +95,9 @@ public class Node extends Unit implements Entity<Node>
 			switch (event.getType())
 			{
 				case AGENT_WAVE:
-					if(!((AgentWave)event).getFirstDestinationElement().equals(SHARD_ENDPOINT)) break;
+					String localAddr = ((AgentWave)event).getCompleteDestination();
+					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
+						break;
 					Object obj = JSONValue.parse(((AgentWave)event).getContent());
 					if(obj == null) break;
 					parseJSON(obj);
@@ -170,7 +180,7 @@ public class Node extends Unit implements Entity<Node>
 	 * @return
 	 * 				- an indication of success.
 	 */
-	protected boolean registerEntitiesToControlEntity() {
+	protected boolean registerEntitiesToCentralEntity() {
 	    JSONArray operations = configureOperations();
 		JSONArray entities = new JSONArray();
 		registeredEntities.entrySet().forEach(entry-> {
@@ -211,7 +221,7 @@ public class Node extends Unit implements Entity<Node>
 		isRunning = true;
 		li("Node [] started.", name);
 
-		if(getName() != null && registerEntitiesToControlEntity())
+		if(getName() != null && registerEntitiesToCentralEntity())
 			lf("Entities successfully registered to control entity.");
 		return true;
 	}

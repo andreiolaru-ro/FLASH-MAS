@@ -55,6 +55,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
 
     /**
+     * Keeps track of entities state.
+     * */
+    private HashMap<String, String> entitiesState = new LinkedHashMap<>();
+
+    /**
      * Keeps track of all nodes deployed in the system, along with their entities,
      * indexed by their names.
      */
@@ -86,39 +91,57 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
         public boolean parseJSON(Object obj)
         {
-            // Here comes the entities registered in the context of a node. Being a bunch of entities,
-            // they always come in json array format.
-            if(obj instanceof JSONArray)
-            {
+            if(obj instanceof JSONObject) {
+                JSONObject jsonObj = (JSONObject) obj;
+                if(jsonObj.get("operation") != null)
+                    return  manageOperation(jsonObj);
+            }
+            if(obj instanceof JSONArray) {
                 JSONArray ja = (JSONArray)obj;
-                for (Object o : ja) {
-                    JSONObject entity   = (JSONObject) o;
-                    String node         = (String)entity.get("node");
-                    String category     = (String)entity.get("category");
-                    String name         = (String)entity.get("name");
+                return registerEntities(ja);
+            }
+            return false;
+        }
 
-                    JSONArray operationDetails = (JSONArray) entity.get("operations");
-                    if(category.equals("agent"))
-                    {
-                        if(!allAgents.containsKey(name))
-                            allAgents.put(name, new LinkedList<>());
-                        for(Object oo : operationDetails) {
-                            JSONObject op   = (JSONObject) oo;
-                            String operation = (String) op.get("name");
-                            allAgents.get(name).add(operation);
-                        }
-                    }
-                    entitiesToOp.put(name, operationDetails);
-
-                    if(!allNodeEntities.containsKey(node))
-                        allNodeEntities.put(node, new LinkedHashMap<>());
-                    if(!allNodeEntities.get(node).containsKey(category))
-                        allNodeEntities.get(node).put(category, new LinkedList<>());
-                    allNodeEntities.get(node).get(category).add(name);
-                }
+        private boolean manageOperation(JSONObject jsonObj) {
+            String op = (String) jsonObj.get("operation");
+            if(op.equals("state-update")) {
+                String params = (String) jsonObj.get("params");
+                String value  = (String) jsonObj.get("value");
+                System.out.println(params + " ### " + value);
+                entitiesState.put(params, value);
                 return true;
             }
             return false;
+        }
+
+        private boolean registerEntities(JSONArray ja) {
+            for (Object o : ja) {
+                JSONObject entity   = (JSONObject) o;
+                String node         = (String)entity.get("node");
+                String category     = (String)entity.get("category");
+                String name         = (String)entity.get("name");
+
+                JSONArray operationDetails = (JSONArray) entity.get("operations");
+                if(category.equals("agent"))
+                {
+                    if(!allAgents.containsKey(name))
+                        allAgents.put(name, new LinkedList<>());
+                    for(Object oo : operationDetails) {
+                        JSONObject op   = (JSONObject) oo;
+                        String operation = (String) op.get("name");
+                        allAgents.get(name).add(operation);
+                    }
+                }
+                entitiesToOp.put(name, operationDetails);
+
+                if(!allNodeEntities.containsKey(node))
+                    allNodeEntities.put(node, new LinkedHashMap<>());
+                if(!allNodeEntities.get(node).containsKey(category))
+                    allNodeEntities.get(node).put(category, new LinkedList<>());
+                allNodeEntities.get(node).get(category).add(name);
+            }
+            return true;
         }
 
         @Override
@@ -292,7 +315,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                 String proxy = (String) cmdJson.get("proxy");
                 JSONObject routedCommand = new JSONObject();
                 routedCommand.put("child", destination);
-                routedCommand.put("command", command);
+                routedCommand.put("operation", command);
                 if(!sendControlCommand(proxy, routedCommand.toString())) {
                     le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
                     return false;

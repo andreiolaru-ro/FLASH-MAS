@@ -27,14 +27,17 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
+import org.json.simple.JSONObject;
 
 /**
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
@@ -508,6 +511,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			{
 				agentState = AgentState.RUNNING;
 				log("state is now ", agentState);
+				postStateUpdate(agentState);
 			}
 			break;
 		case AGENT_STOP:
@@ -523,6 +527,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 				else
 					agentState = AgentState.STOPPED;
 				log("state is now ", agentState);
+				postStateUpdate(agentState);
 			}
 			eventQueue = null;
 			localLog.doExit();
@@ -531,6 +536,15 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			// do nothing
 		}
 		return false;
+	}
+
+	protected void postStateUpdate(AgentState state) {
+		for(EntityProxy<? extends Entity<?>> context : agentContext) {
+			if(!(context instanceof MessagingPylonProxy))
+				throw new IllegalStateException("Pylon Context is not of expected type.");
+			MessagingPylonProxy pylon = (MessagingPylonProxy) context;
+			pylon.sendToParentNode(state.toString(), getName());
+		}
 	}
 	
 	/**
