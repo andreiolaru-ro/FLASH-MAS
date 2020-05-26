@@ -86,13 +86,16 @@ public class PingTestComponent extends AgentShardGeneral
 	 * Cache for the name of the other agent.
 	 */
 	String							otherAgent					= null;
-	
+
+	public static final String	FUNCTIONALITY	                = "PING_TESTING";
+
+
 	/**
 	 * Default constructor
 	 */
 	public PingTestComponent()
 	{
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(FUNCTIONALITY));
 	}
 	
 	@Override
@@ -110,17 +113,19 @@ public class PingTestComponent extends AgentShardGeneral
 		super.signalAgentEvent(event);
 		switch(event.getType())
 		{
-		case AGENT_START:
-			pingTimer = new Timer();
-			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
-			break;
-		case SIMULATION_START:
-			break;
-		case AGENT_STOP:
-			pingTimer.cancel();
-			break;
-		default:
-			break;
+			case AGENT_START:
+				pingTimer = new Timer();
+				pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
+				break;
+			case AGENT_STOP:
+				pingTimer.cancel();
+				break;
+			case SIMULATION_START:
+				break;
+			case SIMULATION_PAUSE:
+				break;
+			default:
+				break;
 		}
 	}
 	

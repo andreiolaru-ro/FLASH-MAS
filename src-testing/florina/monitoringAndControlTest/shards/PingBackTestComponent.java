@@ -16,6 +16,8 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.PlatformUtils;
 import test.compositePingPong.Boot;
 
 /**
@@ -36,13 +38,24 @@ public class PingBackTestComponent extends AgentShardGeneral
 	 * Endpoint element for this shard.
 	 */
 	public static final String	SHARD_ENDPOINT		= "pong";
-	
+
+	public static final String	FUNCTIONALITY	    = "PONG_TESTING";
+
+	/**
+	 * Cache for the name of this agent.
+	 */
+	String						thisAgent		    = null;
+
+	{
+		setUnitName("pong-shard").setLoggerType(PlatformUtils.platformLogType());
+	}
+
 	/**
 	 * Default constructor
 	 */
 	public PingBackTestComponent()
 	{
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(FUNCTIONALITY));
 	}
 	
 	@Override
@@ -51,14 +64,29 @@ public class PingBackTestComponent extends AgentShardGeneral
 		super.signalAgentEvent(event);
 		switch(event.getType())
 		{
-		case AGENT_WAVE:
-			if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+			case AGENT_WAVE:
+				if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+					break;
+				String replyContent = ((AgentWave) event).getContent() + " reply";
+				sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
 				break;
-			String replyContent = ((AgentWave) event).getContent() + " reply";
-			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
-			break;
-		default:
-			break;
+			case AGENT_START:
+				break;
+			case AGENT_STOP:
+				break;
+			case SIMULATION_START:
+				break;
+			case SIMULATION_PAUSE:
+				break;
+			default:
+				break;
 		}
+	}
+
+	@Override
+	protected void parentChangeNotifier(ShardContainer oldParent) {
+		super.parentChangeNotifier(oldParent);
+		if(getAgent() != null)
+			thisAgent = getAgent().getEntityName();
 	}
 }
