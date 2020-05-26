@@ -181,6 +181,11 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
+		public boolean sendToParentNode(String state, String agent) {
+			return false;
+		}
+
+		@Override
 		public boolean register(String agentName, MessageReceiver receiver) {
 			messageReceivers.put(agentName, receiver);
 			return true;

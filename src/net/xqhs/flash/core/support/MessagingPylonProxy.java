@@ -59,4 +59,13 @@ public interface MessagingPylonProxy extends PylonProxy
 	 * 						- an indication of success.
 	 */
 	boolean unregister(String agentName);
+
+	/**
+	 * @param content
+	 * 					- the content of the message
+	 * @return
+	 * 					- an indication of success
+	 */
+	boolean sendToParentNode(String state, String agent);
 }
+
