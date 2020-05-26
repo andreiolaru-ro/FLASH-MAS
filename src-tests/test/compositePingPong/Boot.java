@@ -17,7 +17,7 @@ public class Boot
 	public static final String	MONITORING		= "MONITORING";
 	
 	/**
-	 * Performs test.
+	 * Performs test
 	 * 
 	 * @param args
 	 *                 - not used.
@@ -27,6 +27,7 @@ public class Boot
 		String test_args = "";
 		
 		test_args += " -package test.compositePingPong -loader agent:composite";
+		test_args += " -node node1";
 		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		

@@ -78,13 +78,4 @@ public class ClaimFunctionCall extends ClaimConstruct {
 	public ClaimFunctionType getFunctionType() {
 		return functionType;
 	}
-
-    @Override
-    public String toString() {
-        return "ClaimFunctionCall{" +
-                "functionName='" + functionName + '\'' +
-                ", functionType=" + functionType +
-                ", arguments=" + arguments +
-                '}';
-    }
 }

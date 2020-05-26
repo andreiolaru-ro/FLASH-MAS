@@ -130,7 +130,20 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * Local IDs of default created entities.
 	 */
 	public static final List<String>	autoCreated						= new LinkedList<>();
-	
+
+
+	/**
+	 *  Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 */
+	public static       boolean         isCentralNode                   = true;
+
+	/**
+	 * Type for net.xqhs.flash.core.monitoring and control entity.
+	 * */
+	public static final String MONITORING_TYPE                          = "net/xqhs/flash/core/monitoring";
+
+	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "Monitoring&Control_Entity";
+
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
 	 * tree while parsing CLI arguments.
@@ -190,7 +203,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// default schema
 		deployment.addSingleValue(CategoryName.SCHEMA.s(), "src-schema/deployment-schema.xsd");
 		// default load order
-		deployment.addSingleValue(CategoryName.LOAD_ORDER.s(), "support agent");
+		deployment.addSingleValue(CategoryName.LOAD_ORDER.s(), "pylon agent");
 		// automatically integrate the composite agent loader
 		// MultiTreeMap compositeLoader = new MultiTreeMap();
 		// compositeLoader.addOneValue(CategoryName.LOADER.nameParts()[0], CategoryName.AGENT.s());
@@ -201,9 +214,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// default node
 		integrateName(new MultiTreeMap(), CategoryName.NODE.s(),
 				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, new DumbLogger());
-		// default support (local support)
-		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.SUPPORT.s(),
-				deployment.addSingleTreeGet(CategoryName.SUPPORT.s(), new MultiTreeMap()), this, new DumbLogger());
+		// default pylon (local support)
+		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.PYLON.s(),
+				deployment.addSingleTreeGet(CategoryName.PYLON.s(), new MultiTreeMap()), this, new DumbLogger());
 		autoCreated.addAll(this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys());
 	}
 	

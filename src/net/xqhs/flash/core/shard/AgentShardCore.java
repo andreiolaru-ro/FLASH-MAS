@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.core.shard;
 
+import java.io.Serializable;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -19,8 +21,6 @@ import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.util.logging.Unit;
-
-import java.io.Serializable;
 
 /**
  * This class serves as base for the implementation of agent shards.
@@ -294,10 +294,6 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	{
 		return parentAgent;
 	}
-
-    public void setAgent(ShardContainer agent) {
-        parentAgent = agent;
-    }
 	
 	@SuppressWarnings("unchecked")
 	@Override

@@ -66,12 +66,4 @@ public class ClaimIf extends ClaimConstruct
 		return falseBranch;
 	}
 
-    @Override
-    public String toString() {
-        return "ClaimIf{" +
-                "condition=" + condition +
-                ", trueBranch=" + trueBranch +
-                ", falseBranch=" + falseBranch +
-                '}';
-    }
 }

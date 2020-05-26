@@ -1,5 +1,9 @@
 package web;
 
+import interfaceGenerator.Element;
+import interfaceGenerator.PageBuilder;
+import interfaceGenerator.types.PlatformType;
+import interfaceGeneratorTest.BuildPageTest;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -22,6 +26,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 
 class ServerVerticle extends AbstractVerticle {
     protected GuiEntity entity;
@@ -93,9 +98,31 @@ class ServerVerticle extends AbstractVerticle {
 }
 
 public class GuiEntity implements Entity<Node> {
+    public static CentralMonitoringAndControlEntity.CentralEntityProxy cep;
+
+    protected Element specification;
+
     protected Vertx web;
+
     protected boolean running = false;
+
+    //stubs
     protected JsonObject agents = new JsonObject();
+    protected static boolean generated = false;
+
+    public GuiEntity() {
+        if(!generated) {
+            PageBuilder.getInstance().platformType = PlatformType.WEB;
+            try {
+                BuildPageTest.main(new String[] {"file", "interface-files/model-page/web-page.yml"});
+                generated = true;
+                specification = PageBuilder.getInstance().getPage();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        start();
+    }
 
     @Override
     public boolean start() {
@@ -104,15 +131,6 @@ public class GuiEntity implements Entity<Node> {
             web = Vertx.vertx(options);
             web.deployVerticle(new ServerVerticle(this));
             running = true;
-        }
-        Scanner scanner = new Scanner(System.in);
-        while(running) {
-            String command = scanner.nextLine();
-            String tokens[] = command.split(" ");
-            if(tokens[0].equals("add"))
-                agents.put(tokens[1], "stopped");
-            if(tokens[0].equals("del"))
-                agents.remove(tokens[1]);
         }
         return running;
     }

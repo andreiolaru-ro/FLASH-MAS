@@ -140,11 +140,11 @@ public class Runner extends AbstractVerticle {
                 .handler(StaticHandler.create("interface-files/generated-web-pages")
                         .setIndexPage("page.html"));
 
-        vertx.createHttpServer().requestHandler(router).listen(8080, http -> {
+        vertx.createHttpServer().requestHandler(router).listen(8081, http -> {
             if (http.succeeded())
-                System.out.println("HTTP server started on port 8080");
+                System.out.println("HTTP server started on port 8081");
             else
-                System.out.println("HTTP server failed to start on port 8080");
+                System.out.println("HTTP server failed to start on port 8081");
         });
 
     }

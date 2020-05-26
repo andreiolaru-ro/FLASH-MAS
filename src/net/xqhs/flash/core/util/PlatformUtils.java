@@ -68,6 +68,7 @@ public class PlatformUtils
 	 */
 	public static LoggerType platformLogType()
 	{
+		//return LoggerType.GLOBAL;
 		return LoggerType.CONSOLE;
 	}
 	

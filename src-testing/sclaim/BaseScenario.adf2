@@ -17,7 +17,7 @@
 		(increment ?sequence ?newsequence)										// increment the sequence
 		(addK (struct knowledge sequence ?newsequence))							// store the sequence
 
-		(addK (struct knowledge msg sent ?target ?sequence ?messageContent))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		(addK (struct knoweldge msg sent ?target ?sequence ?messageContent))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
 		
 		(if (empty ?targetAgent)
 		then
@@ -42,7 +42,7 @@
 		(increment ?sequence ?newsequence)								// increment the sequence
 		(addK (struct knowledge sequence ?newsequence))					// store the sequence
 		
-		(addK (struct knowledge msg rcvd ?from ?sequence ?rcvMessage))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		(addK (struct knoweldge msg rcvd ?from ?sequence ?rcvMessage))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
 		
 		(send this (struct message update))								// send an update indication to itself
 	)

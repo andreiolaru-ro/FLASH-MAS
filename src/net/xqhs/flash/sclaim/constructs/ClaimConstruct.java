@@ -39,11 +39,4 @@ public class ClaimConstruct implements Serializable{
 	public ClaimConstructType getType() {
 		return type;
 	}
-
-    @Override
-    public String toString() {
-        return "ClaimConstruct{" +
-                "type=" + type +
-                '}';
-    }
 }

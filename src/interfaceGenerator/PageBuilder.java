@@ -92,20 +92,20 @@ public class PageBuilder {
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
         GUIPylonProxy guiPylonProxy;
-
         if (platformType != null) {
             switch (platformType) {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
                     String html = (String) guiPylonProxy.generate(data);
-                    FileWriter fileWriter = new FileWriter("src\\web\\page.html");
+                    FileWriter fileWriter = new FileWriter("src/web/page.html");
                     //FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
+                    System.out.println(platformType);
                     Input.main(new String[]{});
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                        Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+                        Desktop.getDesktop().browse(new URI("http://localhost:8081/"));
                     }
                     createdWebPage = true;
                     return null;

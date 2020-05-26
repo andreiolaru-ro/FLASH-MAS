@@ -1,9 +1,8 @@
 package net.xqhs.flash.core.agent;
 
-import net.xqhs.flash.core.util.MultiValueMap;
-
 import java.util.Arrays;
-import java.util.List;
+
+import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
  * The <i>wave</i> is a type of event that conveys information between two entities, whether these entities are agents,
@@ -69,10 +68,10 @@ public class AgentWave extends AgentEvent
 	public final String			DESTINATION_ELEMENT		= "destination-element";
 
 	/**
-     * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
+	 * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
      *
 	 */
-    public AgentWave()
+	public AgentWave()
 	{
 		super(AgentEventType.AGENT_WAVE);
 	}
@@ -81,30 +80,20 @@ public class AgentWave extends AgentEvent
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
 	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
-	 *
-	 * @param content             - the content of the wave.
-	 * @param destinationRoot     - the first element of the destination endpoint.
-	 * @param destinationElements - other elements of the destination endpoint.
+	 * 
+	 * @param content
+	 *                                - the content of the wave.
+	 * @param destinationRoot
+	 *                                - the first element of the destination endpoint.
+	 * @param destinationElements
+	 *                                - other elements of the destination endpoint.
 	 */
-	public AgentWave(String content, String destinationRoot, String... destinationElements) {
+	public AgentWave(String content, String destinationRoot, String... destinationElements)
+	{
 		super(AgentEventType.AGENT_WAVE);
-        if (content != null) {
-            add(CONTENT, content);
-        }
+		add(CONTENT, content);
 		resetDestination(destinationRoot, destinationElements);
 	}
-
-    /**
-     * Creates an agent wave with <b>no</b> destination.
-     * <p>
-     * A <i>complete</i> destination will be added by assembling the elements of the destination..
-     *
-     * @param content - the content of the wave.
-     */
-    public AgentWave(String content) {
-        super(AgentEventType.AGENT_WAVE);
-        add(CONTENT, content);
-    }
 	
 	/**
 	 * Appends elements to the list of source endpoint elements.
@@ -193,18 +182,10 @@ public class AgentWave extends AgentEvent
 	/**
 	 * Removes the first element in the list of destination endpoint elements.
 	 */
-	public void removeFirstDestinationElement() {
-        removeFirst(DESTINATION_ELEMENT);
-    }
-
-    /**
-     * Adds content to wave.
-     *
-     * @param content - content to be added.
-     */
-    public void addContent(String content) {
-        add(CONTENT, content);
-    }
+	public void removeFirstDestinationElement()
+	{
+		removeFirst(DESTINATION_ELEMENT);
+	}
 	
 	/**
 	 * @return the content of the wave.
@@ -212,13 +193,6 @@ public class AgentWave extends AgentEvent
 	public String getContent()
 	{
 		return getValue(CONTENT);
-	}
-
-	/**
-	 * @return the contents of the wave.
-	 */
-	public List<String> getContents() {
-		return getValues(CONTENT);
 	}
 	
 	/**

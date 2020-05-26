@@ -77,13 +77,4 @@ public class ClaimBehaviorDefinition extends ClaimConstruct implements Serializa
 	public ClaimBehaviorType getBehaviorType() {
 		return behaviorType;
 	}
-
-    @Override
-    public String toString() {
-        return "ClaimBehaviorDefinition{" +
-                ", name='" + name + '\'' +
-                ", behaviorType=" + behaviorType +
-                ", statements=" + statements +
-                '}';
-    }
 }
