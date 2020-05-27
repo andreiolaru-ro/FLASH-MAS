@@ -16,6 +16,7 @@ public class Element {
     private String role;
     private String value;
     private String blockType;
+    private boolean defaultSpecification;
     private static int counter = 0;
 
     public List<Element> getChildren() {
@@ -28,6 +29,10 @@ public class Element {
 
     public void addChild(Element element) {
         this.children.add(element);
+    }
+
+    public void addAllChildren(List<Element> children) {
+        this.children.addAll(children);
     }
 
     public String getId() {

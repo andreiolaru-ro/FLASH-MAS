@@ -9,6 +9,7 @@ import interfaceGenerator.pylon.WebUiPylon;
 import interfaceGenerator.types.BlockType;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PlatformType;
+import interfaceGenerator.types.PortType;
 import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
 
@@ -27,6 +28,7 @@ public class PageBuilder {
     public IOShard ioShard = null;
     private Element page = null;
     public static JFrame window = null;
+    public ArrayList<Element> defaultEntitiesElements = new ArrayList<>();
 
     public static PageBuilder getInstance() {
         if (instance == null) {
@@ -53,7 +55,32 @@ public class PageBuilder {
             ArrayList<Element> globalsWithType = new ArrayList<>();
             ArrayList<Element> interfacesWithType = new ArrayList<>();
 
+            Element startButton = new Element();
+            startButton.setType(ElementType.BUTTON.type);
+            startButton.setRole(PortType.ACTIVE.type);
+            startButton.setPort("start-entity");
+            startButton.setBlockType(BlockType.GLOBAL.type);
+
+            Element stopButton = new Element();
+            stopButton.setType(ElementType.BUTTON.type);
+            stopButton.setRole(PortType.ACTIVE.type);
+            stopButton.setPort("stop-entity");
+            stopButton.setBlockType(BlockType.GLOBAL.type);
+
+            Element pauseButton = new Element();
+            pauseButton.setType(ElementType.BUTTON.type);
+            pauseButton.setRole(PortType.ACTIVE.type);
+            pauseButton.setPort("pause-entity");
+            pauseButton.setBlockType(BlockType.GLOBAL.type);
+
+            defaultEntitiesElements.add(startButton);
+            defaultEntitiesElements.add(stopButton);
+            defaultEntitiesElements.add(pauseButton);
+
             for (Element elem : globals) {
+                if (elem.getPort() != null && elem.getPort().equals("entities")) {
+                    elem.addAllChildren(defaultEntitiesElements);
+                }
                 globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
             }
 
@@ -77,7 +104,6 @@ public class PageBuilder {
 
             node.setChildren(nodeChildren);
 
-            System.out.println(node);
             return buildPage(node);
         }
     }
@@ -86,6 +112,7 @@ public class PageBuilder {
         // generating ids for every element in configuration
         // System.out.println(data);
         page = IdGenerator.attributeIds(data);
+        System.out.println(page);
         //System.out.println(configuration);
         platformType = PlatformType.WEB;
 
