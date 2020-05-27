@@ -6,7 +6,10 @@ public enum PortType {
     CONTENT("content"),
     OUTPUT("output"),
     EXTENDED_INTERFACES("extended-interfaces"),
-    ENTITIES("entities");
+    ENTITIES("entities"),
+    START_ENTITY("start-entity"),
+    STOP_ENTITY("stop-entity"),
+    PAUSE("pause-entity");
 
     public final String type;
 

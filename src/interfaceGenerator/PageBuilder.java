@@ -79,7 +79,9 @@ public class PageBuilder {
 
             for (Element elem : globals) {
                 if (elem.getPort() != null && elem.getPort().equals("entities")) {
-                    elem.addAllChildren(defaultEntitiesElements);
+                    if (elem.getChildren() == null || elem.getChildren().isEmpty()) {
+                        elem.addAllChildren(defaultEntitiesElements);
+                    }
                 }
                 globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
             }
