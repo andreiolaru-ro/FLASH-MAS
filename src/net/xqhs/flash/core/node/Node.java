@@ -32,6 +32,13 @@ import net.xqhs.util.logging.Unit;
  */
 public class Node extends Unit implements Entity<Node>
 {
+	public class NodeProxy implements EntityProxy<Node> {
+		@Override
+		public String getEntityName() {
+			return name;
+		}
+	}
+	
 	/**
 	 * The name of the node.
 	 */
@@ -155,11 +162,10 @@ public class Node extends Unit implements Entity<Node>
 		return false;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public <C extends Entity<Node>> EntityProxy<C> asContext()
-	{
-		// no functionality offered
-		return null;
+	public EntityProxy<Node> asContext() {
+		return new NodeProxy();
 	}
 	
 }
