@@ -78,6 +78,7 @@ public class AgentPingPong extends Unit implements Agent {
 		if(msgShard == null)
 			throw new IllegalStateException("No messaging shard present");
 		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+		li("Agent started");
 		if(otherAgents != null) {
 			pingTimer = new Timer();
 			pingTimer.schedule(new TimerTask() {
@@ -116,7 +117,9 @@ public class AgentPingPong extends Unit implements Agent {
 
 	@Override
 	public boolean stop() {
-		return false;
+		pingTimer.cancel();
+		li("Agent stopped");
+		return true;
 	}
 	
 	@Override
@@ -172,7 +175,9 @@ public class AgentPingPong extends Unit implements Agent {
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return addContext((MessagingPylonProxy) context);
+		if(context instanceof MessagingPylonProxy)
+			return addContext((MessagingPylonProxy) context);
+		return false;
 	}
 	
 	@Override
