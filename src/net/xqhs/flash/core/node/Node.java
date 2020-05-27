@@ -200,7 +200,22 @@ public class Node extends Unit implements Entity<Node>
 				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
 				entities.toString());
 	}
-	
+
+	private boolean sendStatusUpdate() {
+		if(getName() == null) return false;
+		JSONObject content = new JSONObject();
+		content.put("operation", "state-update");
+		content.put("params", getName());
+		if(isRunning)
+			content.put("value", "RUNNING");
+		else
+			content.put("value", "STOPPED");
+		return messagingShard.sendMessage(
+				AgentWave.makePath(getName(), SHARD_ENDPOINT),
+				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
+				content.toString());
+	}
+
 	@Override
 	public boolean start()
 	{
@@ -219,6 +234,7 @@ public class Node extends Unit implements Entity<Node>
 				le("failed to start entity [].", entityName);
 		}
 		isRunning = true;
+		sendStatusUpdate();
 		li("Node [] started.", name);
 
 		if(getName() != null && registerEntitiesToCentralEntity())
@@ -232,7 +248,7 @@ public class Node extends Unit implements Entity<Node>
 		li("Stopping node [].", name);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
-		for(Entity<?> entity : reversed)
+		for(Entity<?> entity : reversed) {
 			if(entity.isRunning())
 			{
 				lf("stopping an entity...");
@@ -241,7 +257,9 @@ public class Node extends Unit implements Entity<Node>
 				else
 					le("failed to stop entity.");
 			}
+		}
 		isRunning = false;
+		sendStatusUpdate();
 		li("Node [] stopped.", name);
 		return true;
 	}
