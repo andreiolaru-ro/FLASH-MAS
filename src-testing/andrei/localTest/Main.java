@@ -10,96 +10,78 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.local.LocalSupport;
-import net.xqhs.flash.local.LocalSupport.SimpleLocalMessaging;
+import net.xqhs.flash.local.LocalPylon;
+import net.xqhs.flash.local.LocalPylon.SimpleLocalMessaging;
 
 @SuppressWarnings("javadoc")
-class TestAgent implements Agent
-{
+class TestAgent implements Agent {
 	
 	private String					name;
 	private AbstractMessagingShard	messagingShard;
 	private MessagingPylonProxy		pylon;
-	public ShardContainer			proxy	= new ShardContainer() {
-												@Override
-												public void postAgentEvent(AgentEvent event)
-												{
-													if(event instanceof AgentWave)
-														System.out.println(((AgentWave) event).getContent() + " de la "
-																+ ((AgentWave) event).getCompleteSource() + " la "
-																+ ((AgentWave) event).getCompleteDestination());
-													int message = Integer.parseInt(((AgentWave) event).getContent());
-													if(message < 5)
-													{
-														Thread eventThread = new Thread() {
-																									@Override
-																									public void run()
-																									{
-																										getMessagingShard()
-																												.sendMessage(
-																														getMessagingShard()
-																																.getAgentAddress(),
-																														((AgentWave) event)
-																																.getCompleteSource(),
-																														Integer.toString(
-																																message + 1));
-																									}
-																								};
-														eventThread.run();
-													}
-												}
-												
-												@Override
-												public String getEntityName()
-												{
-													return getName();
-												}
-												
-												@Override
-												public AgentShard getAgentShard(AgentShardDesignation designation)
-												{
-													// not supported
-													return null;
-												}
-												
-											};
 	
-	public TestAgent(String name)
-	{
+	public ShardContainer proxy = new ShardContainer() {
+		@Override
+		public void postAgentEvent(AgentEvent event) {
+			if(event instanceof AgentWave)
+				System.out
+						.println(((AgentWave) event).getContent() + " de la " + ((AgentWave) event).getCompleteSource()
+								+ " la " + ((AgentWave) event).getCompleteDestination());
+			int message = Integer.parseInt(((AgentWave) event).getContent());
+			if(message < 5) {
+				Thread eventThread = new Thread() {
+					@Override
+					public void run() {
+						getMessagingShard().sendMessage(getMessagingShard().getAgentAddress(),
+								((AgentWave) event).getCompleteSource(), Integer.toString(message + 1));
+					}
+				};
+				eventThread.run();
+			}
+		}
+		
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+		
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation) {
+			// not supported
+			return null;
+		}
+		
+	};
+	
+	public TestAgent(String name) {
 		this.name = name;
 	}
 	
 	@Override
-	public boolean start()
-	{
-		if(name.equals("Two"))
-		{
+	public boolean start() {
+		if(name.equals("Two")) {
 			messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "1");
 		}
 		return true;
 	}
 	
 	@Override
-	public boolean stop()
-	{
+	public boolean stop() {
 		return true;
 	}
 	
 	@Override
-	public boolean isRunning()
-	{
+	public boolean isRunning() {
 		return true;
 	}
 	
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
 	
 	@Override
-	public boolean addContext(EntityProxy<Pylon> context)
-	{
+	public boolean addContext(EntityProxy<Pylon> context) {
 		pylon = (MessagingPylonProxy) context;
 		if(messagingShard != null)
 			messagingShard.addGeneralContext(pylon);
@@ -107,33 +89,28 @@ class TestAgent implements Agent
 	}
 	
 	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return true;
 	}
 	
 	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return true;
 	}
 	
 	@Override
-	public boolean removeContext(EntityProxy<Pylon> context)
-	{
+	public boolean removeContext(EntityProxy<Pylon> context) {
 		pylon = null;
 		return true;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public EntityProxy<Agent> asContext()
-	{
+	public EntityProxy<Agent> asContext() {
 		return proxy;
 	}
 	
-	public boolean addMessagingShard(AbstractMessagingShard shard)
-	{
+	public boolean addMessagingShard(AbstractMessagingShard shard) {
 		messagingShard = shard;
 		shard.addContext(proxy);
 		if(pylon != null)
@@ -141,19 +118,16 @@ class TestAgent implements Agent
 		return true;
 	}
 	
-	protected AbstractMessagingShard getMessagingShard()
-	{
+	protected AbstractMessagingShard getMessagingShard() {
 		return messagingShard;
 	}
 }
 
 @SuppressWarnings("javadoc")
-public class Main
-{
+public class Main {
 	
-	public static void main(String[] args)
-	{
-		LocalSupport pylon = new LocalSupport();
+	public static void main(String[] args) {
+		LocalPylon pylon = new LocalPylon();
 		
 		TestAgent one = new TestAgent("One");
 		one.addContext(pylon.asContext());

@@ -1,5 +1,6 @@
 package test.simplePingPong;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -12,12 +13,14 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -35,11 +38,14 @@ public class AgentPingPong extends Unit implements Agent {
 	/**
 	 * Initial delay before the first ping message.
 	 */
-	protected static final long		PING_INITIAL_DELAY			= 0;
+
+	// For websockets we need to wait until all agents are started and registerd to the server.
+	protected static final long		PING_INITIAL_DELAY			= 5000;
 	/**
 	 * Time between ping messages.
 	 */
 	protected static final long		PING_PERIOD					= 2000;
+	
 	/**
 	 * Timer for pinging.
 	 */
@@ -65,28 +71,13 @@ public class AgentPingPong extends Unit implements Agent {
 		setUnitName(agentName);// .setLogLevel(Level.ALL);
 		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
 			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
-		msgShard = new LocalSupport.SimpleLocalMessaging();
-		msgShard.addContext(new ShardContainer() {
-			@Override
-			public String getEntityName() {
-				return getName();
-			}
-			
-			@Override
-			public void postAgentEvent(AgentEvent event) {
-				AgentPingPong.this.postAgentEvent(event);
-			}
-			
-			@Override
-			public AgentShard getAgentShard(AgentShardDesignation designation) {
-				return null;
-			}
-		});
-		lf("Agent started.");
 	}
 	
 	@Override
 	public boolean start() {
+		if(msgShard == null)
+			throw new IllegalStateException("No messaging shard present");
+		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 		if(otherAgents != null) {
 			pingTimer = new Timer();
 			pingTimer.schedule(new TimerTask() {
@@ -122,7 +113,7 @@ public class AgentPingPong extends Unit implements Agent {
 					replyContent);
 		}
 	}
-	
+
 	@Override
 	public boolean stop() {
 		return false;
@@ -140,6 +131,36 @@ public class AgentPingPong extends Unit implements Agent {
 	
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context) {
+		PylonProxy proxy = (PylonProxy) context;
+		String recommendedShard = proxy
+				.getRecommendedShardImplementation(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING));
+		try
+		{
+			msgShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null, true);
+		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+				| InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		msgShard.addContext(new ShardContainer() {
+			@Override
+			public String getEntityName()
+			{
+				return getName();
+			}
+
+			@Override
+			public void postAgentEvent(AgentEvent event)
+			{
+				AgentPingPong.this.postAgentEvent(event);
+			}
+
+			@Override
+			public AgentShard getAgentShard(AgentShardDesignation designation)
+			{
+				return null;
+			}
+		});
 		lf("Context added: ", context.getEntityName());
 		return msgShard.addGeneralContext(context);
 	}
