@@ -59,18 +59,21 @@ public class PageBuilder {
             startButton.setType(ElementType.BUTTON.type);
             startButton.setRole(PortType.ACTIVE.type);
             startButton.setPort("start-entity");
+            startButton.setValue("Start");
             startButton.setBlockType(BlockType.GLOBAL.type);
 
             Element stopButton = new Element();
             stopButton.setType(ElementType.BUTTON.type);
             stopButton.setRole(PortType.ACTIVE.type);
             stopButton.setPort("stop-entity");
+            stopButton.setValue("Stop");
             stopButton.setBlockType(BlockType.GLOBAL.type);
 
             Element pauseButton = new Element();
             pauseButton.setType(ElementType.BUTTON.type);
             pauseButton.setRole(PortType.ACTIVE.type);
             pauseButton.setPort("pause-entity");
+            pauseButton.setValue("Pause");
             pauseButton.setBlockType(BlockType.GLOBAL.type);
 
             defaultEntitiesElements.add(startButton);
