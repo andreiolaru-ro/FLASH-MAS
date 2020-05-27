@@ -5,15 +5,16 @@ import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralE
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 public class GUIBoard extends JFrame {
     private JPanel contentPane;
     private CentralEntityProxy centralEntityProxy;
-    //private ArrayList<JLabel> agents
+    private HashMap<JLabel, JLabel> stateOfEntities = new LinkedHashMap<>();
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -90,7 +91,8 @@ public class GUIBoard extends JFrame {
         else
             entityLabel.setFont(new Font("TimesRoman", Font.BOLD | Font.PLAIN, 12));
         statusLabel.setForeground(Color.decode("#1C7C54"));
-        statusLabel.setFont(new Font("Serif", Font.PLAIN | Font.ITALIC, 12));
+        statusLabel.setFont(new Font("Serif", Font.PLAIN, 12));
+        stateOfEntities.put(entityLabel, statusLabel);
 
         JPanel p = new JPanel();
         p.setLayout(new FlowLayout());
@@ -102,11 +104,11 @@ public class GUIBoard extends JFrame {
     }
 
     private void createControlPanelForEntities() {
-        JPanel node1  = createEntityPanel("node1",  "RUNNING");
-        JPanel node2  = createEntityPanel("node2",  "RUNNING");
-        JPanel agent1 = createEntityPanel("agent1", "RUNNING");
-        JPanel agent2 = createEntityPanel("agent2", "RUNNING");
-        JPanel agent3 = createEntityPanel("agent3", "RUNNING");
+        JPanel node1  = createEntityPanel("node1",  "");
+        JPanel node2  = createEntityPanel("node2",  "");
+        JPanel agent1 = createEntityPanel("AgentA", "");
+        JPanel agent2 = createEntityPanel("AgentB", "");
+        JPanel agent3 = createEntityPanel("AgentC", "");
         JPanel panel  = new JPanel();
         panel.setLayout(new GridLayout(5, 1));
         panel.add(node1);
@@ -144,6 +146,14 @@ public class GUIBoard extends JFrame {
         setLocationRelativeTo(null);
 
         setVisible(false);
+    }
+
+    public void updateStateOfEntity(String name, String status) {
+        for (Map.Entry<JLabel, JLabel> entry : stateOfEntities.entrySet()) {
+            if(entry.getKey().getText().equals(name)){
+                entry.getValue().setText(status);
+            }
+        }
     }
 
 }

@@ -67,6 +67,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
+        if(canStartGuiBoard())
+            li("[] launched.", gui.getName());
     }
 
     public ShardContainer          proxy = new ShardContainer() {
@@ -108,8 +110,14 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             if(op.equals("state-update")) {
                 String params = (String) jsonObj.get("params");
                 String value  = (String) jsonObj.get("value");
-                System.out.println(params + " ### " + value);
                 entitiesState.put(params, value);
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        gui.updateStateOfEntity(params, value);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                    }
+                });
                 return true;
             }
             return false;
@@ -193,9 +201,6 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         centralMessagingShard.registerCentralEntity(name);
         isRunning = true;
         li("[] started successfully.", getName());
-
-        if(canStartGuiBoard())
-            li("[] launched.", gui.getName());
         return true;
     }
 
