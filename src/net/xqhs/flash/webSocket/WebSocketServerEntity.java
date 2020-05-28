@@ -34,26 +34,17 @@ public class WebSocketServerEntity extends Unit implements Entity
 	private WebSocketServer			webSocketServer;
 	private boolean					running				= false;
 
-	private HashMap<String, WebSocket> agentToWebSocket = new HashMap<>();
+	private HashMap<String, WebSocket> entityToWebSocket = new HashMap<>();
 	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
-	private HashMap<String, List<String>> nodeToAgents = new LinkedHashMap<>();
-
-	private String controlEntity;
-	private WebSocket controlEntityWebSocket;
+	private HashMap<String, List<String>> nodeToEntities = new LinkedHashMap<>();
 
 	private boolean sendFurther(JSONObject jsonObject) {
 		// raw message from one entity to another
 			String destination = (String) jsonObject.get("destination");
 			String destEntity = destination.split(
 					AgentWave.ADDRESS_SEPARATOR)[0];
-			if(destEntity.equals(controlEntity))
-			{
-				controlEntityWebSocket.send(jsonObject.toString());
-				li("Sent to central entity: []. ", jsonObject.toString());
-				return true;
-			}
 
-			WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
+			WebSocket destinationWebSocket = entityToWebSocket.get(destEntity);
 			if(destinationWebSocket != null) {
 				destinationWebSocket.send(jsonObject.toString());
 				li("Sent to agent: []. ", jsonObject.toString());
@@ -115,16 +106,6 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("destination") != null && sendFurther(jsonObject))
 					return;
 
-				// control and monitoring entity registration
-				if(jsonObject.get("controlEntity") != null)
-				{
-					controlEntity = (String)jsonObject.get("controlEntity");
-					controlEntityWebSocket = webSocket;
-					li("Registered: []. ", controlEntity);
-					printState();
-					return;
-				}
-
 				// specify if the entity will be registered or unregistered
 				boolean toRegister = false;
 				if(jsonObject.get("register") != null)
@@ -137,25 +118,25 @@ public class WebSocketServerEntity extends Unit implements Entity
                 if(jsonObject.size() == 1)
 				{
 					nodeToWebSocket.put(nodeName, webSocket);
-					nodeToAgents.put(nodeName, new ArrayList<>());
+					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
 					printState();
 					return;
 				}
 
 				// agent registration message
-				String newAgent;
-				if(jsonObject.get("agentName") != null)
+				String newEntity;
+				if(jsonObject.get("entityName") != null)
 				{
-					newAgent = (String)jsonObject.get("agentName");
+					newEntity = (String)jsonObject.get("entityName");
 					if(toRegister) {
-						agentToWebSocket.put(newAgent, webSocket);
-						nodeToAgents.get(nodeName).add(newAgent);
-						li("Registered agent []. ", newAgent);
+						entityToWebSocket.put(newEntity, webSocket);
+						nodeToEntities.get(nodeName).add(newEntity);
+						li("Registered entity []. ", newEntity);
 					} else {
-						agentToWebSocket.remove(newAgent);
-						nodeToAgents.get(nodeName).remove(newAgent);
-						li("Unregistered agent []. ", newAgent);
+						entityToWebSocket.remove(newEntity);
+						nodeToEntities.get(nodeName).remove(newEntity);
+						li("Unregistered entity []. ", newEntity);
 					}
 					printState();
 					return;
@@ -175,9 +156,9 @@ public class WebSocketServerEntity extends Unit implements Entity
 			}
 
 			private void printState() {
-				li("###agent:  " + agentToWebSocket.keySet());
-				li("###nodes: " + nodeToAgents.keySet());
-				li("###agents: " + nodeToAgents.values());
+				li("###agent:  " + entityToWebSocket.keySet());
+				li("###nodes: " + nodeToEntities.keySet());
+				li("###agents: " + nodeToEntities.values());
 			}
 		};
 	}

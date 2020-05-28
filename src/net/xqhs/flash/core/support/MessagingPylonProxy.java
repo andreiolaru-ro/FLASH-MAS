@@ -42,15 +42,6 @@ public interface MessagingPylonProxy extends PylonProxy
 	void registerNode(String nodeName, MessageReceiver inbox);
 
 	/**
-	 * Register the entity for monitoring and control within the context of local pylon.
-	 * @param name
-	 * 				- the name of node.
-	 * @param inbox
-	 * 				- the receiver of the registered entity
-	 */
-	void registerCentralEntity(String name, MessageReceiver inbox);
-
-	/**
 	 * Unregisters an agent with the specified name and associated {@link MessageReceiver} instance.
 	 *
 	 * @param agentName

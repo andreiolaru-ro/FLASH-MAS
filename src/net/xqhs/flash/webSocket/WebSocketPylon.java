@@ -73,7 +73,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("register", true);
 			messageToServer.put("nodeName", nodeName);
-			messageToServer.put("agentName", agentName);
+			messageToServer.put("entityName", agentName);
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
@@ -121,25 +121,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 
 		/**
-		 * The central entity for monitoring and control is both:
-		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
-		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
-		 * 				  which is sent by the local {@link WebSocketClientProxy} client
-		 * @param name
-		 * 				- the name of node.
-		 * @param inbox
-		 * 				- the receiver instance
-		 */
-		@Override
-		public void registerCentralEntity(String name, MessageReceiver inbox) {
-			webSocketClient.addReceiverAgent(name, inbox);
-			centralEntityName = name;
-			JSONObject msg = new JSONObject();
-			msg.put("controlEntity", name);
-			webSocketClient.send(msg.toString());
-		}
-
-		/**
 		 * This node is both:
 		 *			- unregistered from the {@link WebSocketClientProxy} local instance
 		 * 		    - unregistered from the {@link WebSocketServerEntity} using an agent unregistering format message
@@ -154,7 +135,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			JSONObject msg = new JSONObject();
 			msg.put("register", false);
 			msg.put("nodeName", nodeName);
-			msg.put("agentName", agentName);
+			msg.put("entityName", agentName);
 			webSocketClient.send(msg.toString());
 			return true;
 		}
@@ -185,8 +166,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 	protected String                nodeName;
 
-	protected String                centralEntityName;
-	
 	/**
 	 * The server address itself.
 	 */

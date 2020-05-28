@@ -198,7 +198,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             le("[] unable to start. No messaging shard found.", getName());
             return false;
         }
-        centralMessagingShard.registerCentralEntity(name);
+        centralMessagingShard.register(name);
         isRunning = true;
         li("[] started successfully.", getName());
         return true;

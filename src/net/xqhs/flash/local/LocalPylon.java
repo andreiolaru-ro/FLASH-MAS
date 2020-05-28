@@ -122,8 +122,8 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public void registerCentralEntity(String name) {
-			pylon.registerCentralEntity(name, inbox);
+		public void register(String name) {
+			pylon.register(name, inbox);
 		}
 
 		@Override
@@ -150,8 +150,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 
 	protected String nodeName;
 
-	protected String centralEntityName;
-
 	/**
 	 * The proxy to this entity.
 	 */
@@ -166,12 +164,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		public void registerNode(String id, MessageReceiver inbox) {
 			messageReceivers.put(id, inbox);
 			nodeName = id;
-		}
-
-		@Override
-		public void registerCentralEntity(String name, MessageReceiver inbox) {
-			messageReceivers.put(name, inbox);
-			centralEntityName = name;
 		}
 
 		@Override

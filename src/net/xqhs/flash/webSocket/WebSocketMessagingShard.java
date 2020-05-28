@@ -66,7 +66,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
     }
 
     @Override
-    public void registerCentralEntity(String name) {
-        pylon.registerCentralEntity(name, inbox);
+    public void register(String name) {
+        pylon.register(name, inbox);
     }
 }
