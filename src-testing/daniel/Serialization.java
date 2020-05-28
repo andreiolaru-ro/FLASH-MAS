@@ -42,5 +42,8 @@ public class Serialization {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        // TODO 2 noduri, 2 agenti, fiecare 1 shard care numara secundele
+        // mutam un agent pe celalalt nod
     }
 }
