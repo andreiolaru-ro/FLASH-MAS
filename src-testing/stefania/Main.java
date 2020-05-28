@@ -6,17 +6,19 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 
 import mpi.* ;
-import net.xqhs.flash.mpi.MPIMessagingPylonProxy;
 import net.xqhs.flash.mpi.MPISupport;
+//import net.xqhs.flash.mpi.MPIMessagingPylonProxy;
+//import net.xqhs.flash.mpi.MPISupportDeprecated;
 
 @SuppressWarnings("javadoc")
 class TestMPIAgent implements Agent {
     private String					name;
     private MPISupport.MPIMessaging messagingShard;
-    private MPIMessagingPylonProxy pylon;
+    private MessagingPylonProxy pylon;
     private int myRank;
     private int size;
 
@@ -52,14 +54,11 @@ class TestMPIAgent implements Agent {
 
         if (myRank != 0) {
             String message = "Hello from " + this.myRank;
-            String response = "";
-            int responseLength = 0;
+            String response;
 
-            this.messagingShard.sendMessage("0", message.length(), 0);
-            this.messagingShard.sendMessage("0", message, 0);
-
-            responseLength = this.messagingShard.receiveMessage("0", 0);
-            response = this.messagingShard.receiveMessage("0", responseLength, MPI.CHAR, 0);
+            this.messagingShard.sendMessage("" + this.myRank, "0", message);
+            this.messagingShard.receiveMessage("0", "" + this.myRank, "");
+            response = this.messagingShard.getMessage();
 
             System.out.println("[" + this.myRank + "] " + response);
         } else {
@@ -68,13 +67,12 @@ class TestMPIAgent implements Agent {
             int messageLength = 0;
 
             for (int i = 1; i < this.size; i++) {
-                messageLength = this.messagingShard.receiveMessage("" + i, 0);
-                message = this.messagingShard.receiveMessage("" + i, messageLength,  MPI.CHAR, 0);
+                this.messagingShard.receiveMessage("" + i, "0",  "");
+                message = this.messagingShard.getMessage();
 
                 System.out.println("Master received: " + message);
 
-                this.messagingShard.sendMessage("" + i, ack.length(), 0);
-                this.messagingShard.sendMessage("" + i, ack, 0);
+                this.messagingShard.sendMessage("0", "" + i, ack);
             }
         }
 
@@ -102,7 +100,7 @@ class TestMPIAgent implements Agent {
     @Override
     public boolean addContext(EntityProxy<Pylon> context)
     {
-        pylon = (MPIMessagingPylonProxy) context;
+        pylon = (MessagingPylonProxy) context;
         if(messagingShard != null)
             messagingShard.addGeneralContext(pylon);
         return true;

@@ -2,10 +2,11 @@ package stefania.TreasureHuntTest;
 
 import mpi.*;
 import net.xqhs.flash.mpi.MPISupport;
-import net.xqhs.flash.mpi.TreasureHunt.agents.MasterAgent;
-import net.xqhs.flash.mpi.TreasureHunt.agents.PlayerAgent;
+import stefania.TreasureHunt.agents.MasterAgent;
+import stefania.TreasureHunt.agents.PlayerAgent;
 
 public class GameLauncher {
+
     public static void main(String[] args) throws MPIException {
         MPI.Init(args) ;
 

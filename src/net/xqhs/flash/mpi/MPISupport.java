@@ -5,62 +5,30 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.*;
 
 import mpi.*;
+import java.util.HashMap;
+import static stefania.TreasureHunt.util.Constants.*;
 
 public class MPISupport extends DefaultPylonImplementation {
     public static final String					MPI_SUPPORT_NAME	= "MPI pylon";
+    protected HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
 
-    public MPIMessagingPylonProxy messagingProxy		= new MPIMessagingPylonProxy() {
+    public MessagingPylonProxy messagingProxy		= new MessagingPylonProxy() {
 
         @Override
-        public boolean send(String destination, String content, int tag)
-        {
+        public boolean register(String agentName, MessageReceiver receiver) {
+            messageReceivers.put(agentName, receiver);
+            return true;
+        }
+
+        @Override
+        public boolean send(String source, String destination, String content) {
             try {
-                MPI.COMM_WORLD.send(content.toCharArray(), content.length(), MPI.CHAR, Integer.parseInt(destination), tag);
+                MPI.COMM_WORLD.send(content.toCharArray(), content.length(), MPI.CHAR, Integer.parseInt(destination), 0);
             } catch (MPIException e) {
                 e.printStackTrace();
             }
 
             return true;
-        }
-
-        @Override
-        public boolean send(String destination, int content, int tag) {
-            int[] message = new int[1];
-            message[0] = content;
-
-            try {
-                MPI.COMM_WORLD.send(message, 1, MPI.INT, Integer.parseInt(destination), tag);
-            } catch (MPIException e) {
-                e.printStackTrace();
-            }
-
-            return true;
-        }
-
-        @Override
-        public String receive(String source, int messageLength, mpi.Datatype datatype, int tag) {
-            char[] message = new char[messageLength];
-
-            try {
-                MPI.COMM_WORLD.recv(message, messageLength, MPI.CHAR, Integer.parseInt(source), tag);
-            } catch (mpi.MPIException e) {
-                System.out.println("MPI couldn't receive message");
-            }
-
-            return new String(message);
-        }
-
-        @Override
-        public int receive(String source, int tag) {
-            int[] value = new int[1];
-
-            try {
-                MPI.COMM_WORLD.recv(value, 1, MPI.INT, Integer.parseInt(source), tag);
-            } catch (mpi.MPIException e) {
-                System.out.println("MPI couldn't receive message");
-            }
-
-            return value[0];
         }
 
         @Override
@@ -82,43 +50,54 @@ public class MPISupport extends DefaultPylonImplementation {
     public static class MPIMessaging extends AbstractNameBasedMessagingShard {
 
         private static final long	serialVersionUID	= 1L;
-        private MPIMessagingPylonProxy pylon;
+        private MessagingPylonProxy pylon;
+        private String message;
 
         public MPIMessaging()
         {
             super();
+            this.message = "";
         }
 
-        @Override
-        public boolean sendMessage(String source, String target, String content) {
-            return false;
+        public String getMessage() {
+            return this.message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
 
         @Override
         public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
         {
-            if(!(context instanceof MPIMessagingPylonProxy))
+            if(!(context instanceof MessagingPylonProxy))
                 throw new IllegalStateException("Pylon Context is not of expected type.");
-            pylon = (MPIMessagingPylonProxy) context;
+            pylon = (MessagingPylonProxy) context;
             return true;
         }
 
-        public boolean sendMessage(String target, String content, int tag) {
-            pylon.send(target, content, tag);
+        @Override
+        public boolean sendMessage(String source, String destination, String content) {
+            if(pylon == null) { // FIXME: use logging
+                System.out.println("No pylon added as context.");
+                return false;
+            }
+
+            pylon.send(source, destination, content);
             return true;
         }
 
-        public boolean sendMessage(String target, int content, int tag) {
-            pylon.send(target, content, tag);
-            return true;
-        }
-
-        public String receiveMessage(String source, int messageLength, mpi.Datatype datatype, int tag) {
-            return pylon.receive(source, messageLength, datatype, tag);
-        }
-
-        public int receiveMessage(String source, int tag) {
-            return pylon.receive(source, tag);
+        @Override
+        public void receiveMessage(String source, String destination, String content) {
+            try {
+                Status status = MPI.COMM_WORLD.probe(Integer.parseInt(source), MPITagValue);
+                int length = status.getCount(MPI.CHAR);
+                char[] rawMessage = new char[length];
+                MPI.COMM_WORLD.recv(rawMessage, length, MPI.CHAR, Integer.parseInt(source), MPITagValue);
+                setMessage(String.valueOf(rawMessage));
+            } catch (MPIException e) {
+                e.printStackTrace();
+            }
         }
     }
 

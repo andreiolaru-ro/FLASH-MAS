@@ -1,16 +1,16 @@
-package net.xqhs.flash.mpi.TreasureHunt.agents;
+package stefania.TreasureHunt.agents;
 
-import mpi.MPI;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.mpi.MPIMessagingPylonProxy;
 import net.xqhs.flash.mpi.MPISupport;
-import net.xqhs.flash.mpi.TreasureHunt.util.Coord;
+import stefania.TreasureHunt.util.Coord;
+import static stefania.TreasureHunt.util.Constants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 public class PlayerAgent implements Agent {
     private String					name;
     private MPISupport.MPIMessaging messagingShard;
-    private MPIMessagingPylonProxy pylon;
+    private MessagingPylonProxy pylon;
     private int myRank;
     private int size;
     private Coord oldPos;
@@ -152,7 +152,7 @@ public class PlayerAgent implements Agent {
     @Override
     public boolean addContext(EntityProxy<Pylon> context)
     {
-        pylon = (MPIMessagingPylonProxy) context;
+        pylon = (MessagingPylonProxy) context;
         if(messagingShard != null)
             messagingShard.addGeneralContext(pylon);
         return true;
@@ -198,18 +198,15 @@ public class PlayerAgent implements Agent {
         }
 
         public void action() {
-            String message = "";
             String hintRequest = "up";
-            int messageLength = 0;
 
-            messageLength = playerAgent.messagingShard.receiveMessage("0", 0);
-            message = playerAgent.messagingShard.receiveMessage("0", messageLength, MPI.CHAR, 0);
+            // Wait tp receive 'START GAME' signal
+            playerAgent.messagingShard.receiveMessage(MASTER, PLAYER, "");
 
             playerAgent.initGame();
             playerAgent.move("up");
 
-            playerAgent.messagingShard.sendMessage("0", hintRequest.length(), 0);
-            playerAgent.messagingShard.sendMessage("0", hintRequest, 0);
+            playerAgent.messagingShard.sendMessage(PLAYER, MASTER, hintRequest);
         }
     }
 
@@ -223,13 +220,11 @@ public class PlayerAgent implements Agent {
         }
 
         public void action() {
-            String moveDirection = "";
-            String hint = "";
-            int hintLength = 0;
+            String moveDirection;
+            String hint;
 
-            hintLength = playerAgent.messagingShard.receiveMessage("0", 0);
-            System.out.println("Player received length : " + hintLength);
-            hint = playerAgent.messagingShard.receiveMessage("0", hintLength, MPI.CHAR, 0);
+            playerAgent.messagingShard.receiveMessage(MASTER, PLAYER, "");
+            hint = playerAgent.messagingShard.getMessage();
 
             System.out.println(playerAgent.getName() + " pos: " + playerAgent.getPos());
 
@@ -240,8 +235,7 @@ public class PlayerAgent implements Agent {
 
             playerAgent.move(moveDirection);
 
-            playerAgent.messagingShard.sendMessage("0", moveDirection.length(), 0);
-            playerAgent.messagingShard.sendMessage("0", moveDirection, 0);
+            playerAgent.messagingShard.sendMessage(PLAYER, MASTER, moveDirection);
         }
 
         public int onEnd() {

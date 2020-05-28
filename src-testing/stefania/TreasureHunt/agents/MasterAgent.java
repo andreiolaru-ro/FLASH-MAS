@@ -1,23 +1,23 @@
-package net.xqhs.flash.mpi.TreasureHunt.agents;
+package stefania.TreasureHunt.agents;
 
-import mpi.MPI;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.mpi.MPIMessagingPylonProxy;
 import net.xqhs.flash.mpi.MPISupport;
-import net.xqhs.flash.mpi.TreasureHunt.util.Coord;
+import stefania.TreasureHunt.util.Coord;
+import static stefania.TreasureHunt.util.Constants.*;
 
 import java.util.Random;
 
 public class MasterAgent implements Agent {
     private String					name;
     private MPISupport.MPIMessaging messagingShard;
-    private MPIMessagingPylonProxy pylon;
+    private MessagingPylonProxy pylon;
     private Coord treasure;
     private Coord playerPos;
     public int myRank;
@@ -114,7 +114,7 @@ public class MasterAgent implements Agent {
     @Override
     public boolean addContext(EntityProxy<Pylon> context)
     {
-        pylon = (MPIMessagingPylonProxy) context;
+        pylon = (MessagingPylonProxy) context;
         if(messagingShard != null)
             messagingShard.addGeneralContext(pylon);
         return true;
@@ -164,8 +164,7 @@ public class MasterAgent implements Agent {
 
              masterAgent.initGame();
 
-             masterAgent.messagingShard.sendMessage("1", message.length(), 0);
-             masterAgent.messagingShard.sendMessage("1", message, 0);
+             masterAgent.messagingShard.sendMessage(MASTER, PLAYER,  message);
          }
     }
 
@@ -179,20 +178,19 @@ public class MasterAgent implements Agent {
         }
 
         public void action() {
-            String playerMoveDirection = "";
-            String hint = "";
-            int hintRequestLength = 0;
+            String playerMoveDirection;
+            String hint;
 
-            hintRequestLength = masterAgent.messagingShard.receiveMessage("1", 0);
-            playerMoveDirection = masterAgent.messagingShard.receiveMessage("1", hintRequestLength, MPI.CHAR, 0);
+            masterAgent.messagingShard.receiveMessage(PLAYER, MASTER, "");
+            playerMoveDirection = masterAgent.messagingShard.getMessage();
+            System.out.println("Master received: " + playerMoveDirection);
 
             hint = masterAgent.evaluateProximity(playerMoveDirection);
 
             if(hint.equals("win"))
                 nextState = 0;
 
-            masterAgent.messagingShard.sendMessage("1", hint.length(), 0);
-            masterAgent.messagingShard.sendMessage("1", hint, 0);
+            masterAgent.messagingShard.sendMessage(MASTER, PLAYER,  hint);
         }
 
         public int onEnd() {

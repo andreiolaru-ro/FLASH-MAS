@@ -1,4 +1,4 @@
-package net.xqhs.flash.mpi.TreasureHunt.util;
+package stefania.TreasureHunt.util;
 
 public class Coord{
     public int x;
