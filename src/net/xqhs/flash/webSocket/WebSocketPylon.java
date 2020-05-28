@@ -9,6 +9,8 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.Node.NodeProxy;
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.agent.AgentWave;
@@ -298,6 +300,22 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
 		}
 		return true;
+	}
+
+	@Override
+	public boolean addContext(EntityProxy<Node> context) {
+		if(!super.addContext(context))
+			return false;
+		nodeName = context.getEntityName();
+		lf("Added node context", nodeName);
+		return true;
+	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		if(context instanceof NodeProxy)
+			return addContext((NodeProxy) context);
+		return false;
 	}
 	
 	@Override

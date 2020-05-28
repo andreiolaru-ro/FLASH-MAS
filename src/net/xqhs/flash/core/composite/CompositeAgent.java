@@ -511,7 +511,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			{
 				agentState = AgentState.RUNNING;
 				log("state is now ", agentState);
-				postStateUpdate(agentState);
+				//postStateUpdate(agentState);
 			}
 			break;
 		case AGENT_STOP:
@@ -527,7 +527,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 				else
 					agentState = AgentState.STOPPED;
 				log("state is now ", agentState);
-				postStateUpdate(agentState);
+				//postStateUpdate(agentState);
 			}
 			eventQueue = null;
 			localLog.doExit();

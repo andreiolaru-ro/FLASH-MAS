@@ -342,9 +342,9 @@ public class NodeLoader extends Unit implements Loader<Node> {
 				}
 			}
 
+			contextAllCat.removeIf(ctx -> !(ctx instanceof PylonProxy));
 			if(contextAllCat.isEmpty()) return node;
 
-			// add a proper messaging shard to any node
 			PylonProxy pylon = (PylonProxy)contextAllCat.stream().findFirst().get();
 			node.addGeneralContext(pylon);
 

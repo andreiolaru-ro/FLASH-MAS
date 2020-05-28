@@ -332,17 +332,9 @@ public class Node extends Unit implements Entity<Node>
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <C extends Entity<Node>> EntityProxy<C> asContext()
-	{
-		// no functionality offered
-		return null;
+	public EntityProxy<Node> asContext() {
+		return new NodeProxy();
 	}
-
-//	@SuppressWarnings("unchecked")
-//	@Override
-//	public EntityProxy<Node> asContext() {
-//		return new NodeProxy();
-//	}
 
 	public List<Entity<?>> getEntities() {
 		return entityOrder;
