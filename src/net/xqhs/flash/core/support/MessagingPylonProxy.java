@@ -32,16 +32,6 @@ public interface MessagingPylonProxy extends PylonProxy
 	boolean send(String source, String destination, String content);
 
 	/**
-	 * Register the local node.
-	 *
-	 * @param nodeName
-	 *                        - the name of node.
-	 * @param inbox
-	 * 						  - the receiver of the registered node
-	 */
-	void registerNode(String nodeName, MessageReceiver inbox);
-
-	/**
 	 * Unregisters an agent with the specified name and associated {@link MessageReceiver} instance.
 	 *
 	 * @param agentName

@@ -60,10 +60,6 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
         super.receiveMessage(source, destination, content);
     }
 
-    @Override
-    public void registerNode(String name) {
-        pylon.registerNode(name, inbox);
-    }
 
     @Override
     public void register(String name) {

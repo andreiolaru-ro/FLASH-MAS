@@ -231,7 +231,7 @@ public class Node extends Unit implements Entity<Node>
 			{
 				lf("entity [] started successfully.", entityName);
 				if(getName() != null && (entity instanceof DefaultPylonImplementation))
-					messagingShard.registerNode(getName());
+					messagingShard.register(getName());
 			}
 			else
 				le("failed to start entity [].", entityName);

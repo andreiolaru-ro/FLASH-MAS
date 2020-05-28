@@ -117,11 +117,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public void registerNode(String name) {
-			pylon.registerNode(name, inbox);
-		}
-
-		@Override
 		public void register(String name) {
 			pylon.register(name, inbox);
 		}
@@ -158,12 +153,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		@Override
 		public boolean send(String source, String destination, String content) {
 			return LocalPylon.this.send(source, destination, content);
-		}
-
-		@Override
-		public void registerNode(String id, MessageReceiver inbox) {
-			messageReceivers.put(id, inbox);
-			nodeName = id;
 		}
 
 		@Override
@@ -374,6 +363,22 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 				deliver(message.get(0), message.get(1), message.get(2));
 			}
 		}
+	}
+
+	@Override
+	public boolean addContext(EntityProxy<Node> context) {
+		if(!super.addContext(context))
+			return false;
+		nodeName = context.getEntityName();
+		lf("Added node context", nodeName);
+		return true;
+	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		if(context instanceof Node.NodeProxy)
+			return addContext((Node.NodeProxy) context);
+		return false;
 	}
 
 	@Override

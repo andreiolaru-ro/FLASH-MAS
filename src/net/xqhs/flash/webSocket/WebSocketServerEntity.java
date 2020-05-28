@@ -114,13 +114,10 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("nodeName") == null) return;
 				String nodeName = (String)jsonObject.get("nodeName");
 
-				// node registration message
-                if(jsonObject.size() == 1)
-				{
+                if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					printState();
 					return;
 				}
 

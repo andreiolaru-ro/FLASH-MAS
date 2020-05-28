@@ -102,25 +102,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 
 		/**
-		 * The node is both:
-		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
-		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
-		 * 				  which is sent by the local {@link WebSocketClientProxy} client
-		 * @param id
-		 * 				- the name of the node in the context of which the pylon is located
-		 * @param inbox
-		 * 				- the receiver instance
-		 */
-		@Override
-		public void registerNode(String id, MessageReceiver inbox) {
-			webSocketClient.addReceiverAgent(id, inbox);
-			nodeName = id;
-			JSONObject messageToServer = new JSONObject();
-			messageToServer.put("nodeName", nodeName);
-			webSocketClient.send(messageToServer.toString());
-		}
-
-		/**
 		 * This node is both:
 		 *			- unregistered from the {@link WebSocketClientProxy} local instance
 		 * 		    - unregistered from the {@link WebSocketServerEntity} using an agent unregistering format message
@@ -270,7 +251,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		if(!super.addContext(context))
 			return false;
 		nodeName = context.getEntityName();
-		lf("Added node context", nodeName);
+		lf("Added node context ", nodeName);
 		return true;
 	}
 
