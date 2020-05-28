@@ -40,7 +40,17 @@ import org.json.simple.JSONValue;
  */
 public class Node extends Unit implements Entity<Node>
 {
-	protected String						 name;
+	public class NodeProxy implements EntityProxy<Node> {
+		@Override
+		public String getEntityName() {
+			return name;
+		}
+	}
+
+	/**
+	 * The name of the node.
+	 */
+	protected String						name				= null;
 
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
@@ -117,7 +127,7 @@ public class Node extends Unit implements Entity<Node>
 			return getName();
 		}
 	};
-	
+
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
@@ -320,12 +330,19 @@ public class Node extends Unit implements Entity<Node>
 		return false;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext()
 	{
 		// no functionality offered
 		return null;
 	}
+
+//	@SuppressWarnings("unchecked")
+//	@Override
+//	public EntityProxy<Node> asContext() {
+//		return new NodeProxy();
+//	}
 
 	public List<Entity<?>> getEntities() {
 		return entityOrder;

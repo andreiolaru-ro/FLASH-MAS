@@ -19,7 +19,7 @@ public class BootSimple {
 		
 		// ce merge acum:
 		test_args += " -node nodeA";
-		test_args += " -support local classpath:net.xqhs.flash.local.LocalSupport";
+		test_args += " -pylon local:";
 		test_args += " -agent agentA1 classpath:AgentPingPong sendTo:agentA2 sendTo:agentB2";
 		test_args += " -agent agentA2 classpath:AgentPingPong";
 		test_args += " -agent agentB1 classpath:AgentPingPong sendTo:agentB2";
