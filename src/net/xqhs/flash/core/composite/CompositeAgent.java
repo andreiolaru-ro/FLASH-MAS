@@ -511,7 +511,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			{
 				agentState = AgentState.RUNNING;
 				log("state is now ", agentState);
-				//postStateUpdate(agentState);
 			}
 			break;
 		case AGENT_STOP:
@@ -527,7 +526,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 				else
 					agentState = AgentState.STOPPED;
 				log("state is now ", agentState);
-				//postStateUpdate(agentState);
 			}
 			eventQueue = null;
 			localLog.doExit();
@@ -536,15 +534,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			// do nothing
 		}
 		return false;
-	}
-
-	protected void postStateUpdate(AgentState state) {
-		for(EntityProxy<? extends Entity<?>> context : agentContext) {
-			if(!(context instanceof MessagingPylonProxy))
-				throw new IllegalStateException("Pylon Context is not of expected type.");
-			MessagingPylonProxy pylon = (MessagingPylonProxy) context;
-			pylon.sendToParentNode(state.toString(), getName());
-		}
 	}
 	
 	/**

@@ -77,24 +77,17 @@ public class Node extends Unit implements Entity<Node>
 				JSONObject jo = (JSONObject) obj;
 				if(jo.get("operation") != null) {
 					String op = (String)jo.get("operation");
-					if(op.equals("state-update")) {
-						return messagingShard.sendMessage(
-								AgentWave.makePath(getName(), SHARD_ENDPOINT),
-								AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
-								jo.toString());
-					} else {
-						String child   = (String)jo.get("child");
-						Entity<?> entity = entityOrder.stream()
-								.filter(en -> en.getName().equals(child))
-								.findFirst().orElse(null);
-						if(entity == null) {
-							le("[] child not found in the context of [].", child, name);
-							return false;
-						}
-						if(op.equals("start"))
-							if(entity.start())
-								lf("[] was started by parent [].", child, name);
+					String child   = (String)jo.get("child");
+					Entity<?> entity = entityOrder.stream()
+							.filter(en -> en.getName().equals(child))
+							.findFirst().orElse(null);
+					if(entity == null) {
+						le("[] child not found in the context of [].", child, name);
+						return false;
 					}
+					if(op.equals("start"))
+						if(entity.start())
+							lf("[] was started by parent [].", child, name);
 				}
 			}
 			return false;

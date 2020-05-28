@@ -277,23 +277,6 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
     public class CentralEntityProxy {
         /**
-         * @param entityName
-         *                  - the name of destination entity
-         * @param command
-         *                  - control command
-         * @return
-         *                  - an indication of success
-         */
-        public boolean isGuiCommandSent(String entityName, String command) {
-            //TODO: Change this if necessary
-            return centralMessagingShard
-                    .sendMessage(
-                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(entityName, OTHER_CONTROL_SHARD_ENDPOINT),
-                            command);
-        }
-
-        /**
          *
          * @param command
          *                  - command to be sent to all agents running in the system.

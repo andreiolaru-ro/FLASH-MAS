@@ -34,7 +34,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
     {
         if(!(context instanceof MessagingPylonProxy))
-            throw new IllegalStateException("Pylon Context is not of expected type.");
+            return false;
         pylon = (MessagingPylonProxy) context;
         return true;
     }

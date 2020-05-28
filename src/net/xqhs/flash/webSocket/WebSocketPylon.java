@@ -160,22 +160,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 
 		@Override
-		public boolean sendToParentNode(String state, String agent) {
-			JSONObject content = new JSONObject();
-			content.put("operation", "state-update");
-			content.put("params", agent);
-			content.put("value", state);
-
-
-			JSONObject messageToServer = new JSONObject();
-			messageToServer.put("content", content.toString());
-			messageToServer.put("source", agent);
-			messageToServer.put("destination", nodeName);
-			webSocketClient.send(messageToServer.toString());
-			return true;
-		}
-
-		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
 			return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
 		}

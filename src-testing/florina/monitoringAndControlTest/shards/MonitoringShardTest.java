@@ -55,15 +55,19 @@ public class MonitoringShardTest extends AgentShardGeneral {
                 break;
             case AGENT_START:
                 li("Shard []/[] started.", thisAgent, SHARD_ENDPOINT);
+                sendStatusUpdate(event.getType().toString());
                 break;
             case AGENT_STOP:
                 li("Shard []/[] stopped.", thisAgent, SHARD_ENDPOINT);
+                sendStatusUpdate(event.getType().toString());
                 break;
             case SIMULATION_START:
                 li("Shard []/[] started simulation.", thisAgent, SHARD_ENDPOINT);
+                sendStatusUpdate(event.getType().toString());
                 break;
             case SIMULATION_PAUSE:
                 li("Shard []/[] paused simulation.", thisAgent, SHARD_ENDPOINT);
+                sendStatusUpdate(event.getType().toString());
                 break;
             default:
                 break;
@@ -74,11 +78,6 @@ public class MonitoringShardTest extends AgentShardGeneral {
         JSONObject jsonObject = (JSONObject) JSONValue.parse(content);
         if(jsonObject == null)
             le("null jsonObject received at []/[]", thisAgent, SHARD_ENDPOINT);
-
-        if(jsonObject.get("state") != null) {
-            //String state = (String) jsonObject.get("state");
-            sendMessage(content, SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, "");
-        }
     }
 
     @Override
@@ -86,6 +85,14 @@ public class MonitoringShardTest extends AgentShardGeneral {
         super.parentChangeNotifier(oldParent);
         if(getAgent() != null)
             thisAgent = getAgent().getEntityName();
+    }
+
+    private void sendStatusUpdate(String status) {
+        JSONObject content = new JSONObject();
+        content.put("operation", "state-update");
+        content.put("params", getAgent().getEntityName());
+        content.put("value", status);
+        sendMessage(content.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
     }
 
     @Override
