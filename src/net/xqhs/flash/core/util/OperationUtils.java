@@ -5,6 +5,55 @@ import org.json.simple.JSONObject;
 
 public class OperationUtils {
 
+    public static enum ControlOperations {
+        /*
+        * Operation for starting an agent.
+        * */
+        START("start"),
+        /*
+        * Operation for stopping an agent.
+        * */
+        STOP("stop"),
+        /*
+        * Operation for pausing the simulation.
+        * */
+        PAUSE_SIMULATION("pause_simulation"),
+        /*
+        * Operation for starting simulation.
+        * */
+        START_SIMULATION("start_simulation"),
+        /*
+        * Operation for stopping the simulation.
+        * */
+        STOP_SIMULATION("stop_simulation");
+
+        private String operation;
+
+        ControlOperations(String operation) {
+            this.operation = operation;
+        }
+
+        public String getOperation() {
+            return operation;
+        }
+    }
+
+    public static enum MonitoringOperations {
+        /*
+         * Operation for updating the status of an entity.
+         * */
+        STATUS_UPDATE("state-update");
+        private String operation;
+
+        MonitoringOperations(String operation) {
+            this.operation = operation;
+        }
+
+        public String getOperation() {
+            return operation;
+        }
+    }
+
     /*
     * Possible access when performing an operation.
     * `proxy` refers to an intermediate entity which is able to perform the operation;
