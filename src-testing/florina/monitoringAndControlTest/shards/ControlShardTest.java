@@ -6,9 +6,12 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class ControlShardTest extends AgentShardGeneral
 {
@@ -28,7 +31,7 @@ public class ControlShardTest extends AgentShardGeneral
     String							thisAgent					= null;
 
 
-    public static final String	FUNCTIONALITY	                = "CONTROL";
+    public static final String	    FUNCTIONALITY	            = "CONTROL";
 
     {
         setUnitName("control-shard").setLoggerType(PlatformUtils.platformLogType());
@@ -79,16 +82,23 @@ public class ControlShardTest extends AgentShardGeneral
     protected void parseAgentWave(AgentEvent event)
     {
         if(!((AgentWave)event).getFirstDestinationElement().equals(SHARD_ENDPOINT)) return;
-
-        switch (((AgentWave)event).getContent())
-        {
-            case "stop":
-                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
-                break;
-            case "start_simulation":
-                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
-            default:
-                break;
+        Object obj = JSONValue.parse(((AgentWave)event).getContent());
+        if(obj == null) return;
+        if(obj instanceof JSONObject) {
+            JSONObject jo = (JSONObject) obj;
+            if(jo.get(OperationUtils.NAME) != null) {
+                String operation = (String) jo.get(OperationUtils.NAME);
+                switch (operation)
+                {
+                    case "stop":
+                        getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
+                        break;
+                    case "start_simulation":
+                        getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
+                    default:
+                        break;
+                }
+            }
         }
     }
 

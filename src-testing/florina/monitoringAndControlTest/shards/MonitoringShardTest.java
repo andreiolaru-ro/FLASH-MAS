@@ -7,6 +7,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -88,11 +89,10 @@ public class MonitoringShardTest extends AgentShardGeneral {
     }
 
     private void sendStatusUpdate(String status) {
-        JSONObject content = new JSONObject();
-        content.put("operation", "state-update");
-        content.put("params", getAgent().getEntityName());
-        content.put("value", status);
-        sendMessage(content.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+        JSONObject update = OperationUtils.operationToJSON(
+                OperationUtils.MonitoringOperations.STATUS_UPDATE.getOperation(),
+                "", status, getAgent().getEntityName());
+        sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
     }
 
     @Override

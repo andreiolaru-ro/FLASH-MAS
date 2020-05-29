@@ -11,6 +11,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONArray;
@@ -75,38 +76,44 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
         @Override
         public void postAgentEvent(AgentEvent event) {
-            switch (event.getType())
-            {
+            switch (event.getType()) {
                 case AGENT_WAVE:
                     String source = ((AgentWave) event).getFirstSource();
                     String content = ((AgentWave) event).getContent();
                     Object obj = JSONValue.parse(content);
-                    if(obj == null)
+                    if(obj == null) {
                         le("null message from [].", source);
-                    if(parseJSON(obj))
-                        li("Registered entities from [].", source);
+                        break;
+                    }
+                    if(parseJSON(obj, source))
+                        li("Parsed message from [].", source);
                     break;
                 default:
                     break;
             }
         }
 
-        public boolean parseJSON(Object obj)
+        public boolean parseJSON(Object obj, String source)
         {
             if(obj instanceof JSONObject) {
-                JSONObject jsonObj = (JSONObject) obj;
-                if(jsonObj.get("operation") != null)
-                    return  manageOperation(jsonObj);
+                JSONObject jo = (JSONObject) obj;
+                if(manageOperation(jo)) {
+                    li("Parsed operation from [].", source);
+                    return true;
+                }
             }
             if(obj instanceof JSONArray) {
                 JSONArray ja = (JSONArray)obj;
-                return registerEntities(ja);
+                if(registerEntities(ja)) {
+                    li("Registered entities from [].", source);
+                    return true;
+                }
             }
             return false;
         }
 
         private boolean manageOperation(JSONObject jsonObj) {
-            String op = (String) jsonObj.get("operation");
+            String op = (String) jsonObj.get(OperationUtils.NAME);
             if(op.equals("state-update")) {
                 String params = (String) jsonObj.get("params");
                 String value  = (String) jsonObj.get("value");
@@ -283,28 +290,27 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
          */
         public void sendToAll(String command) {
             allAgents.entrySet().forEach(entry -> {
-                if(!sendTo(entry.getKey(), command)) return;
+                if(!sendToEntity(entry.getKey(), command)) return;
             });
         }
 
-        public boolean sendTo(String destination, String command) {
-            JSONObject cmdJson = getCommandJson(destination, command);
+        public boolean sendToEntity(String destination, String command) {
+            JSONObject cmdJson = getOperationFromEntity(destination, command);
             if(cmdJson == null) {
                 le("Entity [] does not support [] command.", destination, command);
                 return false;
             }
             String access = (String) cmdJson.get("access");
             if(access.equals("self")) {
-                if(!sendControlCommand(destination, command)) {
+                JSONObject msg = OperationUtils.operationToJSON(command, destination, "", destination);
+                if(!sendControlOperation(destination, msg.toString())) {
                     le("Message from [] to [] failed.", getName(), destination);
                     return false;
                 }
             } else {
                 String proxy = (String) cmdJson.get("proxy");
-                JSONObject routedCommand = new JSONObject();
-                routedCommand.put("child", destination);
-                routedCommand.put("operation", command);
-                if(!sendControlCommand(proxy, routedCommand.toString())) {
+                JSONObject msg = OperationUtils.operationToJSON(command, proxy, "", destination);
+                if(!sendControlOperation(proxy, msg.toString())) {
                     le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
                     return false;
                 }
@@ -312,8 +318,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return true;
         }
 
-        private JSONObject getCommandJson(String name, String command) {
-            JSONArray ja = entitiesToOp.get(name);
+        private JSONObject getOperationFromEntity(String entity, String command) {
+            JSONArray ja = entitiesToOp.get(entity);
             for(Object o : ja) {
                 JSONObject op   = (JSONObject) o;
                 String cmd = (String) op.get("name");
@@ -323,7 +329,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return null;
         }
 
-        private boolean sendControlCommand(String destination, String content) {
+        private boolean sendControlOperation(String destination, String content) {
             return centralMessagingShard.sendMessage(
                     AgentWave.makePath(getName(), SHARD_ENDPOINT),
                     AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT),

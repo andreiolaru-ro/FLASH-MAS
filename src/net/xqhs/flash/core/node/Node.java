@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import net.xqhs.flash.core.support.*;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -66,29 +67,30 @@ public class Node extends Unit implements Entity<Node>
 
     private boolean isRunning;
 
-    private static final String             SHARD_ENDPOINT                  = "control";
-
-	String[] supportedOperations = {"start", "stop", "pause_simulation", "start_simulation", "stop_simulation"};
+    private static final String             SHARD_ENDPOINT      = "control";
 
 	protected ShardContainer proxy = new ShardContainer() {
 
 		private boolean parseJSON(Object obj) {
 			if(obj instanceof JSONObject) {
 				JSONObject jo = (JSONObject) obj;
-				if(jo.get("operation") != null) {
-					String op = (String)jo.get("operation");
-					String child   = (String)jo.get("child");
+				if(jo.get(OperationUtils.NAME) != null && jo.get(OperationUtils.PARAMETERS) != null) {
+					String op      = (String)jo.get(OperationUtils.NAME);
+					String param   = (String)jo.get(OperationUtils.PARAMETERS);
 					Entity<?> entity = entityOrder.stream()
-							.filter(en -> en.getName().equals(child))
+							.filter(en -> en.getName().equals(param))
 							.findFirst().orElse(null);
 					if(entity == null) {
-						le("[] child not found in the context of [].", child, name);
+						le("[] entity not found in the context of [].", param, name);
 						return false;
 					}
-					if(op.equals("start"))
-						if(entity.start())
-							lf("[] was started by parent [].", child, name);
+					if(op.equals(OperationUtils.ControlOperations.START.getOperation()))
+						if(entity.start()) {
+							lf("[] was started by parent [].", param, name);
+							return true;
+						}
 				}
+				le("[] cannot properly parse received message.", name);
 			}
 			return false;
 		}
@@ -158,22 +160,12 @@ public class Node extends Unit implements Entity<Node>
      *          - a json array indicating all details about each operation.
      */
 	protected JSONArray configureOperations() {
-	    // if the message should be sent via proxy or through the entity itself
-	    String[] modelAccess = {"proxy", "self"};
-        JSONArray conf = new JSONArray();
-
-        for(String operation : supportedOperations) {
-            JSONObject op = new JSONObject();
-            op.put("name", operation);
-            op.put("params", "");
-            op.put("proxy", getName());
-            if(operation.equals("start"))
-                op.put("access", modelAccess[0]);
-            else
-                op.put("access", modelAccess[1]);
-            conf.add(op);
-        }
-        return conf;
+        JSONArray operations = new JSONArray();
+        for(OperationUtils.ControlOperations op : OperationUtils.ControlOperations.values()) {
+			JSONObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
+			operations.add(o);
+		}
+        return operations;
     }
 
 	/**
@@ -188,35 +180,21 @@ public class Node extends Unit implements Entity<Node>
 		JSONArray entities = new JSONArray();
 		registeredEntities.entrySet().forEach(entry-> {
 			String category = entry.getKey();
-			for(Entity<?> entity : entry.getValue())
-			{
-				JSONObject ent = new JSONObject();
-				ent.put("node", getName());
-				ent.put("category", category);
-				ent.put("name", entity.getName());
-				ent.put("operations", operations);
+			for(Entity<?> entity : entry.getValue()) {
+				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
 				entities.add(ent);
 			}
 		});
-		return messagingShard.sendMessage(
-				AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
-				entities.toString());
+		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
 
 	private boolean sendStatusUpdate() {
 		if(getName() == null) return false;
-		JSONObject content = new JSONObject();
-		content.put("operation", "state-update");
-		content.put("params", getName());
-		if(isRunning)
-			content.put("value", "RUNNING");
-		else
-			content.put("value", "STOPPED");
-		return messagingShard.sendMessage(
-				AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
-				content.toString());
+		String status = isRunning ? "RUNNING" : "STOPPED";
+		JSONObject update = OperationUtils.operationToJSON(
+				OperationUtils.MonitoringOperations.STATUS_UPDATE.getOperation(),
+				"", status, getName());
+		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
 	}
 
 	@Override
@@ -329,7 +307,10 @@ public class Node extends Unit implements Entity<Node>
 		return new NodeProxy();
 	}
 
-	public List<Entity<?>> getEntities() {
-		return entityOrder;
+	public boolean sendMessage(String destination, String content) {
+		return messagingShard.sendMessage(
+				AgentWave.makePath(getName(), SHARD_ENDPOINT),
+				AgentWave.makePath(destination, SHARD_ENDPOINT),
+				content);
 	}
 }
