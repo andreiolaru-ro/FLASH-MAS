@@ -106,11 +106,6 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("destination") != null && sendFurther(jsonObject))
 					return;
 
-				// specify if the entity will be registered or unregistered
-				boolean toRegister = false;
-				if(jsonObject.get("register") != null)
-					toRegister = (boolean)jsonObject.get("register");
-
 				if(jsonObject.get("nodeName") == null) return;
 				String nodeName = (String)jsonObject.get("nodeName");
 
@@ -126,15 +121,11 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(jsonObject.get("entityName") != null)
 				{
 					newEntity = (String)jsonObject.get("entityName");
-					if(toRegister) {
+					if(!entityToWebSocket.containsKey(newEntity)) {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);
-						li("Registered entity []. ", newEntity);
-					} else {
-						entityToWebSocket.remove(newEntity);
-						nodeToEntities.get(nodeName).remove(newEntity);
-						li("Unregistered entity []. ", newEntity);
 					}
+					li("Registered entity []. ", newEntity);
 					printState();
 					return;
 				}

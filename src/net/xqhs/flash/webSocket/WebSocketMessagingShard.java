@@ -45,8 +45,6 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 		super.signalAgentEvent(event);
 		if(event.getType().equals(AgentEventType.AGENT_START))
 			pylon.register(getAgent().getEntityName(), inbox);
-		if(event.getType().equals(AgentEventType.AGENT_STOP))
-		    pylon.unregister(getAgent().getEntityName());
 	}
 
     @Override

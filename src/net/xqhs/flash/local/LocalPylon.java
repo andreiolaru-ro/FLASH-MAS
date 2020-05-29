@@ -126,8 +126,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			super.signalAgentEvent(event);
 			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
 				pylon.register(getAgent().getEntityName(), inbox);
-			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP))
-				pylon.unregister(getAgent().getEntityName());
 		}
 	}
 	
@@ -153,12 +151,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		@Override
 		public boolean send(String source, String destination, String content) {
 			return LocalPylon.this.send(source, destination, content);
-		}
-
-		@Override
-		public boolean unregister(String agentName) {
-			messageReceivers.remove(agentName);
-			return true;
 		}
 
 		@Override
