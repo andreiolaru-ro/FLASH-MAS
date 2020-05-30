@@ -46,6 +46,10 @@ public interface MessagingShard extends AgentShard
 	 */
 	public String getAgentAddress();
 
-	public void register(String name);
+	/**
+	 * @param entityName
+	 * 					- the name of entity to be registered
+	 */
+	public void register(String entityName);
 
 }

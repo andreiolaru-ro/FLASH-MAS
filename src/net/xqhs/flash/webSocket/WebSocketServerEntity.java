@@ -32,29 +32,44 @@ public class WebSocketServerEntity extends Unit implements Entity
 	
 	private static final int		SERVER_STOP_TIME	= 10;
 	private WebSocketServer			webSocketServer;
-	private boolean					running				= false;
+	private boolean					running;
 
+	/**
+	 * Map all entities to their {@link WebSocket}.
+	 */
 	private HashMap<String, WebSocket> entityToWebSocket = new HashMap<>();
+	/**
+	 * Map all nodes to their {@link WebSocket}.
+	 * */
 	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
+	/**
+	 * Keep track of all entities within a node context.
+	 * */
 	private HashMap<String, List<String>> nodeToEntities = new LinkedHashMap<>();
 
-	private boolean sendFurther(JSONObject jsonObject) {
-		// raw message from one entity to another
-			String destination = (String) jsonObject.get("destination");
+	/**
+	 * @param message
+	 * 					- the message to be sent
+	 * @return
+	 * 					- an indication of success
+	 */
+	private boolean routeTheMessage(JSONObject message) {
+			String destination = (String) message.get("destination");
 			String destEntity = destination.split(
 					AgentWave.ADDRESS_SEPARATOR)[0];
 
-			WebSocket destinationWebSocket = entityToWebSocket.get(destEntity);
+			WebSocket destinationWebSocket;
+			destinationWebSocket = entityToWebSocket.get(destEntity);
 			if(destinationWebSocket != null) {
-				destinationWebSocket.send(jsonObject.toString());
-				li("Sent to agent: []. ", jsonObject.toString());
+				destinationWebSocket.send(message.toString());
+				li("Sent to agent: []. ", message.toString());
 				return true;
 			}
 
 			destinationWebSocket = nodeToWebSocket.get(destEntity);
 			if(destinationWebSocket != null) {
-				destinationWebSocket.send(jsonObject.toString());
-				li("Sent to node: []. ", jsonObject.toString());
+				destinationWebSocket.send(message.toString());
+				li("Sent to node: []. ", message.toString());
 				return true;
 			}
 
@@ -85,13 +100,11 @@ public class WebSocketServerEntity extends Unit implements Entity
 			/**
 			 * Receives message from a {@link WebSocketClient}.
 			 * Messages can be:
-			 * 					- node registration message
-			 * 					- agent registration message
-			 * 					- central entity for monitoring and control message
-			 * 					- raw message from one entity to another
+			 * 					- entity registration message
+			 * 					- message from one entity to another
 			 *
 			 * @param webSocket
-			 * 					- the sender websocket client
+			 * 					- the sender {@link WebSocket} client
 			 * @param s
 			 * 					- the JSON string containing a message and routing information
 			 */
@@ -100,15 +113,16 @@ public class WebSocketServerEntity extends Unit implements Entity
 			{
 				Object obj = JSONValue.parse(s);
 				if(obj == null) return;
-				JSONObject jsonObject = (JSONObject) obj;
+				JSONObject message = (JSONObject) obj;
 
 				// message in transit through the server
-				if(jsonObject.get("destination") != null && sendFurther(jsonObject))
+				if(message.get("destination") != null && routeTheMessage(message))
 					return;
 
-				if(jsonObject.get("nodeName") == null) return;
-				String nodeName = (String)jsonObject.get("nodeName");
+				if(message.get("nodeName") == null) return;
+				String nodeName = (String)message.get("nodeName");
 
+				//node registration message
                 if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
@@ -116,11 +130,11 @@ public class WebSocketServerEntity extends Unit implements Entity
 					return;
 				}
 
-				// agent registration message
+				// entity registration message
 				String newEntity;
-				if(jsonObject.get("entityName") != null)
+				if(message.get("entityName") != null)
 				{
-					newEntity = (String)jsonObject.get("entityName");
+					newEntity = (String)message.get("entityName");
 					if(!entityToWebSocket.containsKey(newEntity)) {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);

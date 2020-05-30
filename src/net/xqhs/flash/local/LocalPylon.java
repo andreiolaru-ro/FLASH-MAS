@@ -102,7 +102,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
-			//pylon.register(getAgent().getEntityName(), inbox);
 			return true;
 		}
 		
@@ -117,8 +116,8 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public void register(String name) {
-			pylon.register(name, inbox);
+		public void register(String entityName) {
+			pylon.register(entityName, inbox);
 		}
 
 		@Override
@@ -154,8 +153,8 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public boolean register(String agentName, MessageReceiver receiver) {
-			messageReceivers.put(agentName, receiver);
+		public boolean register(String entityName, MessageReceiver receiver) {
+			messageReceivers.put(entityName, receiver);
 			return true;
 		}
 

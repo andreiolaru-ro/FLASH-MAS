@@ -32,10 +32,6 @@ public class WebSocketClientProxy extends Unit {
         messageReceivers.put(name, receiver);
     }
 
-    void removeReceiverAgent(String name) {
-        messageReceivers.remove(name);
-    }
-
     public WebSocketClientProxy(URI serverURI) {
         client = new WebSocketClient(serverURI) {
 
@@ -46,7 +42,7 @@ public class WebSocketClientProxy extends Unit {
 
             /**
              * Receives a message from the server. The message was previously routed to this websocket client address
-             * and it is further routed to a specific agent using the {@link MessageReceiver} instance. The agent is
+             * and it is further routed to a specific entity using the {@link MessageReceiver} instance. The entity is
              * searched within the context of this support.
              *
              * @param s
@@ -55,21 +51,26 @@ public class WebSocketClientProxy extends Unit {
             @Override
             public void onMessage(String s) {
                 Object obj = JSONValue.parse(s);
-                if(obj == null) return;
+                if(obj == null) {
+                    le("null message received");
+                    return;
+                }
                 JSONObject jsonObject = (JSONObject) obj;
 
-                if(jsonObject.get("destination") == null) return;
-                String destination = (String) jsonObject.get("destination");
-                String destAgent = destination.split(
-                        AgentWave.ADDRESS_SEPARATOR)[0];
-                if(!messageReceivers.containsKey(destAgent) || messageReceivers.get(destAgent) == null)
-                    le("Entity [] does not exist.", destAgent);
-                else {
-                    String source = (String) jsonObject.get("source");
-                    String content = (String) jsonObject.get("content");
-                    messageReceivers.get(destAgent).receive(source, destination, content);
+                if(jsonObject.get("destination") == null) {
+                    le("No destination entity received.");
+                    return;
                 }
-
+                String destination = (String) jsonObject.get("destination");
+                String localAddr = destination.split(
+                        AgentWave.ADDRESS_SEPARATOR)[0];
+                if(!messageReceivers.containsKey(localAddr) || messageReceivers.get(localAddr) == null)
+                    le("Entity [] does not exist.", localAddr);
+                else {
+                    String source  = (String) jsonObject.get("source");
+                    String content = (String) jsonObject.get("content");
+                    messageReceivers.get(localAddr).receive(source, destination, content);
+                }
             }
 
             @Override
