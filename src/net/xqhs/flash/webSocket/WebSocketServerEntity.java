@@ -144,9 +144,9 @@ public class WebSocketServerEntity extends Unit implements Entity
 			}
 
 			private void printState() {
-				li("###agent:  " + entityToWebSocket.keySet());
+				li("###entities:  " + entityToWebSocket.keySet());
 				li("###nodes: " + nodeToEntities.keySet());
-				li("###agents: " + nodeToEntities.values());
+				li("###entities: " + nodeToEntities.values());
 			}
 		};
 	}

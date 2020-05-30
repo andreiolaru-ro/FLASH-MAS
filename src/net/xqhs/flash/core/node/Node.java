@@ -63,36 +63,46 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
+	/**
+	 *  A {@link MessagingShard} of this node for message communication.
+	 */
 	protected MessagingShard                messagingShard;
 
+	/**
+	 *  An indication if this entity is running.
+	 */
     private boolean isRunning;
 
     private static final String             SHARD_ENDPOINT      = "control";
 
 	protected ShardContainer proxy = new ShardContainer() {
 
-		private boolean parseJSON(Object obj) {
+		/**
+		 * This method parses the content received and takes further control/monitoring decisions.
+		 * @param obj
+		 * 				- an object representing the content received with an {@link AgentEvent}
+		 */
+		private void parseReceivedMsg(Object obj) {
 			if(obj instanceof JSONObject) {
 				JSONObject jo = (JSONObject) obj;
 				if(jo.get(OperationUtils.NAME) != null && jo.get(OperationUtils.PARAMETERS) != null) {
-					String op      = (String)jo.get(OperationUtils.NAME);
-					String param   = (String)jo.get(OperationUtils.PARAMETERS);
+					String operation  = (String)jo.get(OperationUtils.NAME);
+					String param      = (String)jo.get(OperationUtils.PARAMETERS);
 					Entity<?> entity = entityOrder.stream()
 							.filter(en -> en.getName().equals(param))
 							.findFirst().orElse(null);
 					if(entity == null) {
 						le("[] entity not found in the context of [].", param, name);
-						return false;
+						return;
 					}
-					if(op.equals(OperationUtils.ControlOperations.START.getOperation()))
+					if(operation.equals(OperationUtils.ControlOperations.START.getOperation()))
 						if(entity.start()) {
 							lf("[] was started by parent [].", param, name);
-							return true;
+							return;
 						}
 				}
 				le("[] cannot properly parse received message.", name);
 			}
-			return false;
 		}
 
 		@Override
@@ -103,9 +113,9 @@ public class Node extends Unit implements Entity<Node>
 					String localAddr = ((AgentWave)event).getCompleteDestination();
 					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
 						break;
-					Object obj = JSONValue.parse(((AgentWave)event).getContent());
-					if(obj == null) break;
-					parseJSON(obj);
+					Object msg = JSONValue.parse(((AgentWave)event).getContent());
+					if(msg == null) break;
+					parseReceivedMsg(msg);
 					break;
 				default:
 					break;
@@ -156,6 +166,8 @@ public class Node extends Unit implements Entity<Node>
 	}
 
     /**
+	 * It takes all available {@link OperationUtils.ControlOperations} and build up for each of them
+	 * a {@link JSONObject} containing relevant information.
      * @return
      *          - a json array indicating all details about each operation.
      */
@@ -169,8 +181,10 @@ public class Node extends Unit implements Entity<Node>
     }
 
 	/**
-	 * Method used to send monitoring message to central entity: the message covers necessary information
-	 * about all entities registered and started in the context of current node.
+	 * Method used to send registration messages to
+	 * {@link net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity}
+	 * This lets it know what entities are in the content of current node and what
+	 * operations can be performed on them.
 	 *
 	 * @return
 	 * 				- an indication of success.
@@ -188,6 +202,11 @@ public class Node extends Unit implements Entity<Node>
 		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
 
+	/**
+	 * Build a {@link JSONObject} to send updates about the new status of the node.
+	 * @return
+	 * 			- an indication of success
+	 */
 	private boolean sendStatusUpdate() {
 		if(getName() == null) return false;
 		String status = isRunning ? "RUNNING" : "STOPPED";
@@ -307,6 +326,15 @@ public class Node extends Unit implements Entity<Node>
 		return new NodeProxy();
 	}
 
+	/**
+	 * Send a message via {@link MessagingShard}.
+	 * @param destination
+	 * 						- the name of the destination entity
+	 * @param content
+	 * 						- the content to be sent
+	 * @return
+	 * 						- an indication of success
+	 */
 	public boolean sendMessage(String destination, String content) {
 		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),

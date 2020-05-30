@@ -46,13 +46,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     private static boolean          isRunning;
 
     /**
-     * Keeps track of all agents deployed in the system and operations.
+     * Keeps track of all agents deployed in the system and their {@link List} of operations.
      */
     private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
 
-    /*
-    * Keeps track of all entities deployed in the system and supported operations along with their inner details.
-    * */
+    /**
+     * Keeps track of all entities deployed in the system and their {@link JSONArray} of operations.
+     */
     private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
 
     /**
@@ -61,8 +61,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     private HashMap<String, String> entitiesState = new LinkedHashMap<>();
 
     /**
-     * Keeps track of all nodes deployed in the system, along with their entities,
-     * indexed by their names.
+     * Keeps track of all nodes deployed in the system, along with their {@link List} of entities,
+     * indexed by their categories and names.
      */
     private HashMap<String, HashMap<String, List<String>>> allNodeEntities = new LinkedHashMap<>();
 
@@ -85,7 +85,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                         le("null message from [].", source);
                         break;
                     }
-                    if(parseJSON(obj, source))
+                    if(parseReceivedMsg(obj, source))
                         li("Parsed message from [].", source);
                     break;
                 default:
@@ -93,7 +93,15 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             }
         }
 
-        public boolean parseJSON(Object obj, String source)
+        /**
+         * @param obj
+         *              - the object received as content through the {@link ShardContainer}
+         * @param source
+         *              - the source of the message
+         * @return
+         *              - an indication of success
+         */
+        public boolean parseReceivedMsg(Object obj, String source)
         {
             if(obj instanceof JSONObject) {
                 JSONObject jo = (JSONObject) obj;
@@ -112,6 +120,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return false;
         }
 
+        /**
+         * This analysis the operation received and performs it.
+         * @param jsonObj
+         *                  - the object received as content through the {@link ShardContainer}
+         * @return
+         *                  - an indication of success
+         */
         private boolean manageOperation(JSONObject jsonObj) {
             String op = (String) jsonObj.get(OperationUtils.NAME);
             if(op.equals("state-update")) {
@@ -133,18 +148,18 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         private boolean registerEntities(JSONArray ja) {
             for (Object o : ja) {
                 JSONObject entity   = (JSONObject) o;
-                String node         = (String)entity.get("node");
-                String category     = (String)entity.get("category");
-                String name         = (String)entity.get("name");
+                String node         = (String)entity.get(OperationUtils.NODE);
+                String category     = (String)entity.get(OperationUtils.CATEGORY);
+                String name         = (String)entity.get(OperationUtils.NAME);
 
-                JSONArray operationDetails = (JSONArray) entity.get("operations");
+                JSONArray operationDetails = (JSONArray) entity.get(OperationUtils.OPERATIONS);
                 if(category.equals("agent"))
                 {
                     if(!allAgents.containsKey(name))
                         allAgents.put(name, new LinkedList<>());
                     for(Object oo : operationDetails) {
                         JSONObject op   = (JSONObject) oo;
-                        String operation = (String) op.get("name");
+                        String operation = (String) op.get(OperationUtils.NAME);
                         allAgents.get(name).add(operation);
                     }
                 }
@@ -285,32 +300,41 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     public class CentralEntityProxy {
         /**
          *
-         * @param command
-         *                  - command to be sent to all agents running in the system.
+         * @param operation
+         *                  - command to be sent to all agents registered
          */
-        public void sendToAll(String command) {
+        public void sendToAllAgents(String operation) {
             allAgents.entrySet().forEach(entry -> {
-                if(!sendToEntity(entry.getKey(), command)) return;
+                if(!sendToEntity(entry.getKey(), operation)) return;
             });
         }
 
-        public boolean sendToEntity(String destination, String command) {
-            JSONObject cmdJson = getOperationFromEntity(destination, command);
-            if(cmdJson == null) {
-                le("Entity [] does not support [] command.", destination, command);
+        /**
+         * Sends a control message to a specific entity which will further perform the operation.
+         * @param destination
+         *                      - the name of destination entity
+         * @param operation
+         *                      - operation to be performed on this entity
+         * @return
+         *                      - an indication of success
+         */
+        public boolean sendToEntity(String destination, String operation) {
+            JSONObject jsonOperation = getOperationFromEntity(destination, operation);
+            if(jsonOperation == null) {
+                le("Entity [] does not support [] command.", destination, operation);
                 return false;
             }
-            String access = (String) cmdJson.get("access");
+            String access = (String) jsonOperation.get("access");
             if(access.equals("self")) {
-                JSONObject msg = OperationUtils.operationToJSON(command, destination, "", destination);
-                if(!sendControlOperation(destination, msg.toString())) {
+                JSONObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
+                if(!sendMessage(destination, msg.toString())) {
                     le("Message from [] to [] failed.", getName(), destination);
                     return false;
                 }
             } else {
-                String proxy = (String) cmdJson.get("proxy");
-                JSONObject msg = OperationUtils.operationToJSON(command, proxy, "", destination);
-                if(!sendControlOperation(proxy, msg.toString())) {
+                String proxy = (String) jsonOperation.get("proxy");
+                JSONObject msg = OperationUtils.operationToJSON(operation, proxy, "", destination);
+                if(!sendMessage(proxy, msg.toString())) {
                     le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
                     return false;
                 }
@@ -329,7 +353,15 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return null;
         }
 
-        private boolean sendControlOperation(String destination, String content) {
+        /**
+         * @param destination
+         *                      - the name of the destination entity
+         * @param content
+         *                      - the content to be sent
+         * @return
+         *                      - an indication of success
+         */
+        private boolean sendMessage(String destination, String content) {
             return centralMessagingShard.sendMessage(
                     AgentWave.makePath(getName(), SHARD_ENDPOINT),
                     AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT),
