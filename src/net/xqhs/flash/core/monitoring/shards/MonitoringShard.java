@@ -1,4 +1,4 @@
-package florina.monitoringAndControlTest.shards;
+package net.xqhs.flash.core.monitoring.shards;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -12,9 +12,9 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class MonitoringShardTest extends AgentShardGeneral {
+public class MonitoringShard extends AgentShardGeneral {
 
-    public MonitoringShardTest() {
+    public MonitoringShard() {
         super(AgentShardDesignation.customShard(FUNCTIONALITY));
     }
 

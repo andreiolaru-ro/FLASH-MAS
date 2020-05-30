@@ -1,4 +1,4 @@
-package florina.monitoringAndControlTest.shards;
+package net.xqhs.flash.core.monitoring.shards;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -13,7 +13,7 @@ import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class ControlShardTest extends AgentShardGeneral
+public class ControlShard extends AgentShardGeneral
 {
     /**
      * The UID.
@@ -40,7 +40,7 @@ public class ControlShardTest extends AgentShardGeneral
     /**
      * Default constructor
      */
-    public ControlShardTest()
+    public ControlShard()
     {
         super(AgentShardDesignation.customShard(FUNCTIONALITY));
     }
