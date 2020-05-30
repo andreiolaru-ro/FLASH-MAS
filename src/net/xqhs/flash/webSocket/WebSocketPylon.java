@@ -187,6 +187,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
+		li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
 	
@@ -214,6 +215,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
 		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddressName = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
