@@ -102,6 +102,8 @@ public class Element {
         result.append(Utils.repeat(tab, counter));
         result.append("port: ").append(port).append('\n');
         result.append(Utils.repeat(tab, counter));
+        result.append("value: ").append(value).append('\n');
+        result.append(Utils.repeat(tab, counter));
         result.append("role: ").append(role).append('\n');
         result.append(Utils.repeat(tab, counter));
         if (blockType != null) {

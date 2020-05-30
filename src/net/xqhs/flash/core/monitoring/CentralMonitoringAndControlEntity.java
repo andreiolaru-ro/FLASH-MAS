@@ -21,7 +21,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import web.GuiEntity;
+import web.WebEntity;
 
 public class CentralMonitoringAndControlEntity extends Unit implements  Entity<Pylon> {
 
@@ -180,7 +180,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
     public boolean canStartGuiBoard() {
         gui = new GUIBoard(new CentralEntityProxy());
-        GuiEntity.cep = new CentralEntityProxy();
+        WebEntity.cep = new CentralEntityProxy();
+        new WebEntity().start();
         SwingUtilities.invokeLater(() -> {
             try {
                 gui.setVisible(true);
@@ -302,6 +303,23 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                 }
             }
             return true;
+        }
+
+        public String getEntities() {
+            JSONObject entities = new JSONObject();
+            allNodeEntities.entrySet().forEach(consumer -> {
+                entities.put(consumer.getKey(), "node");
+                consumer.getValue().entrySet().forEach(entry -> {
+                    String category = entry.getKey();
+                    entry.getValue().forEach(entity -> {
+                        entities.put(entity, category);
+                        entitiesToOp.get(entity).forEach(operation -> {
+                            entities.put(entity, entities.get(entity) + " " + operation);
+                        });
+                    });
+                });
+            });
+            return entities.toString();
         }
 
         private JSONObject getCommandJson(String name, String command) {

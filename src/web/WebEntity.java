@@ -8,8 +8,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
@@ -22,16 +20,14 @@ import net.xqhs.flash.core.node.Node;
 
 import java.text.DateFormat;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import java.util.*;
+
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 class ServerVerticle extends AbstractVerticle {
-    protected GuiEntity entity;
+    protected WebEntity entity;
 
-    public ServerVerticle(GuiEntity entity) {
+    public ServerVerticle(WebEntity entity) {
         this.entity = entity;
     }
 
@@ -49,8 +45,10 @@ class ServerVerticle extends AbstractVerticle {
                 else if(be.type() == BridgeEventType.REGISTER) {
                     System.out.println("register");
                     vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
-                        if(objectMessage.body().equals("init"))
-                            vertx.eventBus().send("server-to-client", entity.getAgents(3));
+                        if(objectMessage.body().equals("init")) {
+                            vertx.eventBus().send("server-to-client", entity.getSpecification());
+                            vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
+                        }
                         else if(objectMessage.body().equals("stop"))
                             entity.stop();
                         else {
@@ -60,7 +58,7 @@ class ServerVerticle extends AbstractVerticle {
                         }
                     });
                     vertx.setPeriodic(10000l, t -> {
-                        vertx.eventBus().send("server-to-client", entity.getAgents(6));
+                        vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
                     });
                 }
                 else if(be.type() == BridgeEventType.UNREGISTER) {
@@ -82,7 +80,7 @@ class ServerVerticle extends AbstractVerticle {
                 be.complete(true);
             }
         }));
-        router.route().handler(StaticHandler.create("src/web").setIndexPage("index.html"));
+        router.route().handler(StaticHandler.create("src/web").setIndexPage("page.html"));
         vertx.createHttpServer().requestHandler(router).listen(8080, http -> {
             if (http.succeeded())
                 System.out.println("HTTP server started on port 8080");
@@ -97,8 +95,8 @@ class ServerVerticle extends AbstractVerticle {
     }
 }
 
-public class GuiEntity implements Entity<Node> {
-    public static CentralMonitoringAndControlEntity.CentralEntityProxy cep;
+public class WebEntity implements Entity<Node> {
+    public static CentralEntityProxy cep;
 
     protected Element specification;
 
@@ -110,7 +108,7 @@ public class GuiEntity implements Entity<Node> {
     protected JsonObject agents = new JsonObject();
     protected static boolean generated = false;
 
-    public GuiEntity() {
+    public WebEntity() {
         if(!generated) {
             PageBuilder.getInstance().platformType = PlatformType.WEB;
             try {
@@ -179,8 +177,23 @@ public class GuiEntity implements Entity<Node> {
         return null;
     }
 
-    public String getAgents(int number) {
-        return agents.toString();
+    public String getSpecification() {
+        JsonObject specification = new JsonObject();
+        Element entities_specification = this.specification.getChildren().get(0).getChildren().get(6);
+        Element interfaces_specification = this.specification.getChildren().get(1);
+
+        specification.put("entities", entities_specification.getId());
+        specification.put("interfaces", interfaces_specification.getId());
+
+        entities_specification.getChildren().forEach(element -> {
+            specification.put("entity " + element.getValue(), element.getType() + " " + element.getRole());
+        });
+
+        interfaces_specification.getChildren().forEach(element -> {
+            //specification.put("entity " + element.getValue(), element.getType());
+        });
+
+        return specification.toString();
     }
 
     public void commandAgent(String name, String command) {

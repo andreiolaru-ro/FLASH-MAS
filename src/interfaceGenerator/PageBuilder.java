@@ -117,7 +117,7 @@ public class PageBuilder {
         // generating ids for every element in configuration
         // System.out.println(data);
         page = IdGenerator.attributeIds(data);
-        System.out.println(page);
+        //System.out.println(page);
         //System.out.println(configuration);
         platformType = PlatformType.WEB;
 
@@ -134,10 +134,9 @@ public class PageBuilder {
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
-                    System.out.println(platformType);
                     Input.main(new String[]{});
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                        Desktop.getDesktop().browse(new URI("http://localhost:8081/"));
+                        //Desktop.getDesktop().browse(new URI("http://localhost:8081/"));
                     }
                     createdWebPage = true;
                     return null;
