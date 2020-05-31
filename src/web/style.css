@@ -10,10 +10,17 @@ div {
     padding: 30px;
 }
 
+.entity-element {
+    margin: 5px;
+}
+
 .entity {
     border: 3px solid black;
-    width: fit-content;
     margin: 5px;
+}
+.entities {
+    max-height: 700px;
+    overflow-y: scroll;
 }
 
 .global {

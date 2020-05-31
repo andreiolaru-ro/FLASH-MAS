@@ -1,6 +1,10 @@
 var eb;
-var agents_number = 0;
-var agents_index = {};
+var data;
+var entities;
+var interfaces;
+var specification = false;
+var entity_elements = {};
+var interface_elements = {};
 
 function init() {
     eb = new EventBus("/eventbus");
@@ -8,54 +12,73 @@ function init() {
     eb.onopen = () => {
         console.log('Eventbus opened');
         eb.registerHandler('server-to-client', (error, message) => {
-            var agents_info = JSON.parse(message.body);
-            var header = document.getElementById('header');
-            var body = document.getElementById('body');
-            
-            if(agents_number === 0) {
-                if(jQuery.isEmptyObject(agents_info))
-                    header.innerText = 'No agents Found';
-                else {
-                    header.innerText = 'Agents:';
-                    index = 1;
-                    for(var agent_name in agents_info) {
-                        agent_entry(body, agent_name, agents_info[agent_name], index);
-                        index += 1;
-                    }
-                    agents_number = index - 1;
+           data = JSON.parse(message.body);
+            if(!specification) {
+                entities = document.getElementById(data['entities']);
+                interfaces = document.getElementById(data['interfaces']);
+
+                for(var element in data) {
+                    var elements = element.split(' ');
+
+                    if(elements[0] === 'entity')
+                        entity_elements[elements[1]] = data[element];
+                    if(elements[0] === 'interface')
+                        interface_elements[elements[1]] = data[element];
+
+                    //console.log('wrong specification')
                 }
-            } else if(jQuery.isEmptyObject(agents_info)) {
-                header.innerText = 'No agents Found';
-                body.innerHTML = '';
-            } else {
-                console.log(agents_number);
-                for(var index = 1; index <= agents_number; index += 1) {
-                    agent_name = agents_index[index];
-                    if(agents_info.hasOwnProperty(agent_name)) {
-                        document.getElementById('status_' + index).innerText = agents_info[agent_name];
-                        delete agents_info[agent_name];
-                    }
-                    else {
-                        if(index == agents_number)
-                            body.removeChild(document.getElementById(agent_name));
-                        else {
-                            document.getElementById('status_' + index).innerText = document.getElementById('status_' + agents_number).innerText;
-                            document.getElementById(agents_index[agents_number]).remove();
-                            document.getElementById(agent_name).children[0].innerText = 'Agent ' + agents_index[agents_number] + ' is ';
-                            document.getElementById(agent_name).setAttribute('id', agents_index[agents_number]);
-                            agents_index[index] = agents_index[agents_number];
-                            index -= 1;
+                specification = true;
+            }
+            else {
+                var empty = jQuery.isEmptyObject(data);
+
+                for (var index = 0; index < entities.children.length; index++) {
+                    var entity = entities.children[index];
+                    var checked = entity.children[0].checked;
+
+                    if (empty || !data.hasOwnProperty(entity.id)) {
+
+                        if (checked) {
+
+                            // TODO: remove coresponding interface
+
                         }
-                        delete agents_index[agents_number];
-                        agents_number -= 1;
+                        entities.removeChild(entity);
+                    } else if (!empty) {
+                        for (var element in entity_elements) {
+
+                            var type = entity_elements[element].split(" ");
+
+                            if (type[0] === 'label') {
+
+                                // TODO: modify coresponding label for entity
+
+                            }
+
+                            if (type[0] === 'spinner') {
+
+                                // TODO: modify coresponding spinner for entity
+
+                            }
+                        }
+
+                        if (checked) {
+
+                            // TODO: modify coresponding interface
+
+                        }
                     }
                 }
-                index = agents_number + 1;
-                for(var agent_name in agents_info) {
-                    agent_entry(body, agent_name, agents_info[agent_name], index);
-                    index += 1;
+                if (empty) {
+                    entities.innerText = "No entities found";
+                } else {
+                    for (var entity in data) {
+                        //console.log(data[entity]);
+                        if (document.getElementById('checkbox_' + entity) === null) {
+                            new_entity(entity);
+                        }
+                    }
                 }
-                agents_number = index - 1;
             }
         });
         eb.send('client-to-server', "init");
@@ -65,59 +88,81 @@ function init() {
     }
 };
 
-function agent_entry(body, agent_name, agent_status, index) {
+function new_entity(entity) {
     var div = document.createElement('div');
-    div.setAttribute('id', agent_name);
+    div.setAttribute('class', 'entity');
+    div.setAttribute('id', entity);
+
+    var checkbox =  document.createElement('input');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox.setAttribute('id', 'checkbox_' + entity);
+    checkbox.setAttribute('onclick', 'checkbox(\'' + entity + '\')');
+
+    var select = document.createElement('label');
+    select.setAttribute('for', 'checkbox_' + entity);
+    select.innerText = 'Select';
 
     var name = document.createElement('label');
-    name.innerText = 'Agent ' + agent_name + ' is ';
+    name.setAttribute('class', 'entity-name');
+    name.innerText = entity;
 
-    var status = document.createElement('label');
-    status.setAttribute('id', 'status_' + index);
-    status.innerText = agent_status;
-
-    var command = document.createElement('label');
-    command.setAttribute('for', 'select_' + index);
-    command.innerText = '. Command ';
-
-    var select = document.createElement('select');
-    select.setAttribute('id','select_' + index);
-
-    var start = document.createElement('option');
-    start.innerText = 'start';
-
-    var stop = document.createElement('option');
-    stop.innerText = 'stop';
-
-    var send = document.createElement('input');
-    send.setAttribute('type', 'button');
-    send.setAttribute('value', 'send');
-    send.setAttribute('onclick', 'send(' + index + ')');
-
-    div.appendChild(name);
-    div.appendChild(status);
-    div.appendChild(command);
-    select.appendChild(stop);
-    select.appendChild(start);
+    div.appendChild(checkbox);
     div.appendChild(select);
-    div.appendChild(send);
-    body.appendChild(div);
-    agents_index[index] = agent_name;
+    div.appendChild(name);
+
+    for(var element in entity_elements) {
+        var type = entity_elements[element].split(' ');
+
+        if(type[0] === 'button') {
+
+            var button = document.createElement('input');
+            button.setAttribute('type', 'button');
+            button.setAttribute('class', 'entity-element');
+            button.setAttribute('onclick', 'button(\'' + entity + ', ' + element + '\')');
+            button.setAttribute('value', element);
+            div.appendChild(button);
+
+        }
+
+        if(type[0] === 'label') {
+
+            var label = document.createElement('label');
+            label.setAttribute('id', 'label_' + entity + '_' + type[1]);
+            label.setAttribute('class', 'entity-element');
+            label.setAttribute('value', element);
+            div.appendChild(label);
+
+        }
+
+        if(type[0] === 'spinner') {
+
+            var number = document.createElement('input');
+            button.setAttribute('type', 'number');
+            number.setAttribute('id', 'number_' + entity + '_' + type[1]);
+            button.setAttribute('class', 'entity-element');
+            button.setAttribute('value', element);
+            div.appendChild(number);
+
+        }
+    }
+
+    entities.appendChild(div);
 }
 
-function send(index) {
-    var status = document.getElementById('status_' + index).innerText;
-    var command = document.getElementById('select_' + index).value;
-    if(status === 'running' && command === 'start' || status === 'stopped' && command === 'stop')
-        alert('Agnet ' + agents_index[index] + ' is allready ' + status);
-    else
-        eb.send('client-to-server', '{\"' + agents_index[index] + '\":\"' + command + '\"}');
+function button(entity, element) {
+        eb.send('client-to-server', '{\"' + entity + '\":\"' + element + '\"}');
 };
 
-function check_for_reload() {
-    document.getElementById('check_for_reload').style.display = 'none';
-}
+function checkbox(entity) {
+
+    if(document.getElementById('checkbox_' + entity).checked) {
+        // TODO: add coresponding interface
+    }
+    else {
+        // TODO: remove coresponding interface
+    }
+};
 
 function stop() {
     eb.send('client-to-server', 'stop');
-}
+};
