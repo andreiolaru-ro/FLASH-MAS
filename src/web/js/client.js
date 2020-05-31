@@ -17,7 +17,6 @@ function init() {
             if(!specification) {
                 entities = document.getElementById(data['entities']);
                 interfaces = document.getElementById(data['interfaces']);
-                interfaces.removeChild(interfaces.children[0]);
 
                 for(var element in data) {
                     var elements = element.split(' ');
@@ -124,7 +123,7 @@ function new_entity(entity) {
         if(type[0] === 'button') {
 
             var button = document.createElement('input');
-            button.setAttribute('type', 'button');
+            button.setAttribute('type', 'text');
             button.setAttribute('class', 'entity-element');
             button.setAttribute('onclick', 'button(\'' + entity + ', ' + element + '\')');
             button.setAttribute('value', element);
@@ -139,6 +138,17 @@ function new_entity(entity) {
             label.setAttribute('class', 'entity-element');
             label.setAttribute('value', element);
             div.appendChild(label);
+
+        }
+
+        if(type[0] === 'form') {
+
+            var text = document.createElement('input');
+            text.setAttribute('type', 'text');
+            text.setAttribute('id', 'text_' + entity + '_' + type[1]);
+            text.setAttribute('class', 'entity-element');
+            text.setAttribute('value', element);
+            div.appendChild(text);
 
         }
 

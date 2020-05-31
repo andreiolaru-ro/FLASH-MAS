@@ -189,7 +189,7 @@ public class WebEntity implements Entity<Node> {
         });
 
         interfaces_specification.getChildren().forEach(element -> {
-            //specification.put("entity " + element.getValue(), element.getType());
+            specification.put("entity " + element.getValue(), element.getType() + " " + element.getRole());
         });
 
         return specification.toString();
