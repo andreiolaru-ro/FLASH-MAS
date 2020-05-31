@@ -32,9 +32,3 @@ global:
     #    value: check
     #    port: check-simulation
 interfaces:
-  - type: container
-    port: extended-interfaces # special port
-    children:
-      - type: label
-        port: entity-info
-        role: entity-name

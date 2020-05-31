@@ -146,13 +146,11 @@ public class PageBuilder {
                 globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
             }
 
-            for (Element elem : interfaces) {
-                if (elem.getPort() != null && elem.getPort().equals("extended-interfaces")) {
-                    if (elem.getChildren() == null || elem.getChildren().isEmpty()) {
-                        elem.addAllChildren(defaultExtendedInterfacesElement);
-                    }
+            // "interfaces" key from specification can have no value
+            if (interfaces != null) {
+                for (Element elem : interfaces) {
+                    interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
                 }
-                interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
             }
 
             Element globalContainer = new Element();
