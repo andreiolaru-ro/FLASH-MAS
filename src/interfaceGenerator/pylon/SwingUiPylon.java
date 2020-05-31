@@ -5,10 +5,12 @@ import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import interfaceGenerator.Utils;
 import interfaceGenerator.types.ElementType;
+import interfaceGenerator.types.LayoutType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -17,11 +19,12 @@ import java.util.HashSet;
 
 public class SwingUiPylon implements GUIPylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
-    public static HashSet<String> ids = new HashSet<>();
+    private static HashSet<String> ids = new HashSet<>();
 
     private static JPanel generatePanel(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         ElementType type = ElementType.valueOfLabel(element.getType());
         if (type != null) {
             ids.add(element.getId());
@@ -37,10 +40,29 @@ public class SwingUiPylon implements GUIPylonProxy {
                     break;
                 case BLOCK:
                     JPanel subPanel = new JPanel();
-                    subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
-                    if (element.getChildren() != null) {
-                        for (Element child : element.getChildren()) {
-                            subPanel.add(generatePanel(child));
+                    if (element.getRole() != null) {
+                        if (element.getRole().equals("global")) {
+                            subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.Y_AXIS));
+                            subPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+                            subPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                        }
+                    } else {
+                        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
+                    }
+
+                    boolean generateChildren = true;
+                    if (element.getPort() != null) {
+                        if (element.getPort().equals("entities")
+                        ) {
+                            generateChildren = false;
+                        }
+                    }
+
+                    if (generateChildren) {
+                        if (element.getChildren() != null) {
+                            for (Element child : element.getChildren()) {
+                                subPanel.add(generatePanel(child));
+                            }
                         }
                     }
                     panel.add(subPanel);
@@ -51,6 +73,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                     break;
             }
         }
+        System.out.println(panel);
         return panel;
     }
 
@@ -58,6 +81,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JButton button = new JButton();
 
         if (element.getValue() != null) {
@@ -126,6 +150,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JLabel label = new JLabel();
         if (element.getValue() != null) {
             label.setText(element.getValue());
@@ -139,6 +164,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JTextArea form = new JTextArea();
         if (element.getValue() != null) {
             form.setText(element.getValue());
@@ -161,6 +187,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JSpinner spinner = new JSpinner();
         spinner.setValue(0);
         spinner.setMaximumSize(new Dimension(100, 40));
@@ -294,11 +321,47 @@ public class SwingUiPylon implements GUIPylonProxy {
         return component;
     }
 
+    public static void addEntity(Element element) {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = addEntity(PageBuilder.window, element);
+        PageBuilder.window.setVisible(true);
+    }
+
+    @Override
+    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
+        return null;
+    }
+
+    @Override
+    public String getEntityName() {
+        return null;
+    }
+
+    public static JFrame addEntity(JFrame frame, Element element) {
+        return frame;
+    }
+
+    public static void addExtendedInterface(Element element) {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = addExtendedInterface(PageBuilder.window, element);
+        PageBuilder.window.setVisible(true);
+    }
+
+    public static JFrame addExtendedInterface(JFrame frame, Element element) {
+        return frame;
+    }
+
     public Object generate(Element element) {
         JFrame window = new JFrame();
         window.setSize(new Dimension(600, 600));
         JPanel windowPanel = new JPanel();
-        windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        if (PageBuilder.getInstance().layoutType.equals(LayoutType.HORIZONTAL)) {
+            windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.X_AXIS));
+        } else if (PageBuilder.getInstance().layoutType.equals(LayoutType.VERTICAL)) {
+            windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        }
         windowPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
         componentMap.put(element.getId(), windowPanel);
         ids.add(element.getId());
@@ -311,15 +374,5 @@ public class SwingUiPylon implements GUIPylonProxy {
         window.add(windowPanel);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return window;
-    }
-
-    @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-        return null;
-    }
-
-    @Override
-    public String getEntityName() {
-        return null;
     }
 }

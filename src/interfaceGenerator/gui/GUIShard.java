@@ -63,7 +63,6 @@ public class GUIShard extends AgentShardCore {
         } else if (configuration.endsWith(".yml") || configuration.endsWith(".yaml")) {
             this.parameters[0] = BuildPageTest.FILE;
         } else {
-            System.out.println("pklfafafas");
             this.parameters[0] = BuildPageTest.CLAIM;
         }
 

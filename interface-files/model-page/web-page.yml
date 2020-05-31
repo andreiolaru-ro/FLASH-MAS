@@ -2,6 +2,7 @@ layout: horizontal
 global:
   - type: label
     port: node-name
+    value: Node
   - type: button
     port: node-start
     role: activate

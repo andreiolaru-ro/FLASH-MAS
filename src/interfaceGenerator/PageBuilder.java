@@ -6,10 +6,7 @@ import interfaceGenerator.pylon.AndroidUiPylon;
 import interfaceGenerator.pylon.GUIPylonProxy;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.pylon.WebUiPylon;
-import interfaceGenerator.types.BlockType;
-import interfaceGenerator.types.ElementType;
-import interfaceGenerator.types.PlatformType;
-import interfaceGenerator.types.PortType;
+import interfaceGenerator.types.*;
 import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
 
@@ -28,6 +25,7 @@ public class PageBuilder {
     public IOShard ioShard = null;
     private Element page = null;
     public static JFrame window = null;
+    public LayoutType layoutType;
     public ArrayList<Element> defaultEntitiesElements = new ArrayList<>();
 
     public static PageBuilder getInstance() {
@@ -42,6 +40,7 @@ public class PageBuilder {
     }
 
     public Object buildPage(Configuration data) throws Exception {
+        layoutType = LayoutType.valueOfLabel(data.getLayout());
         if (data.getNode() != null) {
             return buildPage(data.getNode());
         } else {
@@ -119,7 +118,7 @@ public class PageBuilder {
         page = IdGenerator.attributeIds(data);
         System.out.println(page);
         //System.out.println(configuration);
-        platformType = PlatformType.WEB;
+        platformType = PlatformType.DESKTOP;
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);

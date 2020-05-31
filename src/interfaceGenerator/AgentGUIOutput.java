@@ -31,4 +31,9 @@ public class AgentGUIOutput extends AgentGUI {
         }, delay, period);
         return true;
     }
+
+    @Override
+    public String getName() {
+        return "AgentGUI_Output";
+    }
 }
