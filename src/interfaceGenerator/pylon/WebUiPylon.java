@@ -132,10 +132,6 @@ public class WebUiPylon implements GUIPylonProxy {
             if (element.getPort().equals("entities")) {
                 result.append(" class = \"entities\"");
                 generateChildren = false;
-            } else if (element.getPort().equals("extended-interfaces")) {
-                result.append(" class = \"extended-interfaces\"");
-                addInterfaceClassToDiv = true;
-                generateChildren = false;
             }
         }
 
@@ -161,16 +157,16 @@ public class WebUiPylon implements GUIPylonProxy {
                                 result.append(generateSpinner(child));
                                 break;
                             case BLOCK:
-                                result.append(generateDiv(child));
-                                break;
+                                if (child.getPort() != null && child.getPort().equals("extended-interfaces")) {
+                                    break;
+                                } else {
+                                    result.append(generateDiv(child));
+                                    break;
+                                }
                         }
                     }
                 }
             }
-        }
-
-        if (element.getPort() != null && element.getPort().equals("extended-interfaces")) {
-            addInterfaceClassToDiv = false;
         }
 
         indentLevel--;

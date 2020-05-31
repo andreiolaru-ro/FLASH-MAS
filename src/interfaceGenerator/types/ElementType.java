@@ -5,7 +5,8 @@ public enum ElementType {
     FORM("form"),
     BLOCK("container"),
     OUTPUT("label"),
-    SPINNER("spinner");
+    SPINNER("spinner"),
+    LIST("list");
 
     public final String type;
 

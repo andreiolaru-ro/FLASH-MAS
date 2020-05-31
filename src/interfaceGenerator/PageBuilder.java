@@ -13,7 +13,6 @@ import org.yaml.snakeyaml.Yaml;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.util.ArrayList;
 
 public class PageBuilder {
@@ -27,6 +26,7 @@ public class PageBuilder {
     public static JFrame window = null;
     public LayoutType layoutType;
     public ArrayList<Element> defaultEntitiesElements = new ArrayList<>();
+    public ArrayList<Element> defaultExtendedInterfacesElement = new ArrayList<>();
 
     public static PageBuilder getInstance() {
         if (instance == null) {
@@ -37,6 +37,86 @@ public class PageBuilder {
 
     public Element getPage() {
         return page;
+    }
+
+    private void createDefaultEntitiesElements() {
+        // predefined elements for entities
+        Element startButton = new Element();
+        startButton.setType(ElementType.BUTTON.type);
+        startButton.setRole(PortType.ACTIVE.type);
+        startButton.setPort("start-entity");
+        startButton.setValue("Start");
+        startButton.setBlockType(BlockType.GLOBAL.type);
+
+        Element stopButton = new Element();
+        stopButton.setType(ElementType.BUTTON.type);
+        stopButton.setRole(PortType.ACTIVE.type);
+        stopButton.setPort("stop-entity");
+        stopButton.setValue("Stop");
+        stopButton.setBlockType(BlockType.GLOBAL.type);
+
+        Element pauseButton = new Element();
+        pauseButton.setType(ElementType.BUTTON.type);
+        pauseButton.setRole(PortType.ACTIVE.type);
+        pauseButton.setPort("pause-entity");
+        pauseButton.setValue("Pause");
+        pauseButton.setBlockType(BlockType.GLOBAL.type);
+
+        defaultEntitiesElements.add(startButton);
+        defaultEntitiesElements.add(stopButton);
+        defaultEntitiesElements.add(pauseButton);
+    }
+
+    private void createDefaultExtendedInterfacesElements() {
+        Element entityType = new Element();
+        entityType.setType(ElementType.OUTPUT.type);
+        entityType.setBlockType(BlockType.INTERFACES.type);
+        entityType.setRole("entity-type");
+        entityType.setPort("interface-entity-info");
+
+        Element entityStatus = new Element();
+        entityStatus.setType(ElementType.OUTPUT.type);
+        entityStatus.setBlockType(BlockType.INTERFACES.type);
+        entityStatus.setRole("entity-status");
+        entityStatus.setPort("interface-entity-info");
+
+        Element startButton = new Element();
+        startButton.setType(ElementType.BUTTON.type);
+        startButton.setBlockType(BlockType.INTERFACES.type);
+        startButton.setRole("interface-entity-start");
+        startButton.setPort("interface-entity-control");
+
+        Element stopButton = new Element();
+        stopButton.setType(ElementType.BUTTON.type);
+        stopButton.setBlockType(BlockType.INTERFACES.type);
+        stopButton.setRole("interface-entity-stop");
+        stopButton.setPort("interface-entity-control");
+
+        Element actionList = new Element();
+        actionList.setType(ElementType.LIST.type);
+        actionList.setBlockType(BlockType.INTERFACES.type);
+        actionList.setRole("interface-entity-action");
+        actionList.setPort("interface-entity-operations");
+
+        Element executeAction = new Element();
+        executeAction.setType(ElementType.BUTTON.type);
+        executeAction.setBlockType(BlockType.INTERFACES.type);
+        executeAction.setRole("interface-entity-action");
+        executeAction.setPort("interface-entity-operations");
+
+        Element inputAction = new Element();
+        inputAction.setType(ElementType.FORM.type);
+        inputAction.setBlockType(BlockType.INTERFACES.type);
+        inputAction.setRole("interface-entity-action");
+        inputAction.setPort("interface-entity-operations");
+
+        defaultExtendedInterfacesElement.add(entityType);
+        defaultExtendedInterfacesElement.add(entityStatus);
+        defaultExtendedInterfacesElement.add(startButton);
+        defaultExtendedInterfacesElement.add(stopButton);
+        defaultExtendedInterfacesElement.add(actionList);
+        defaultExtendedInterfacesElement.add(executeAction);
+        defaultExtendedInterfacesElement.add(inputAction);
     }
 
     public Object buildPage(Configuration data) throws Exception {
@@ -54,30 +134,8 @@ public class PageBuilder {
             ArrayList<Element> globalsWithType = new ArrayList<>();
             ArrayList<Element> interfacesWithType = new ArrayList<>();
 
-            Element startButton = new Element();
-            startButton.setType(ElementType.BUTTON.type);
-            startButton.setRole(PortType.ACTIVE.type);
-            startButton.setPort("start-entity");
-            startButton.setValue("Start");
-            startButton.setBlockType(BlockType.GLOBAL.type);
-
-            Element stopButton = new Element();
-            stopButton.setType(ElementType.BUTTON.type);
-            stopButton.setRole(PortType.ACTIVE.type);
-            stopButton.setPort("stop-entity");
-            stopButton.setValue("Stop");
-            stopButton.setBlockType(BlockType.GLOBAL.type);
-
-            Element pauseButton = new Element();
-            pauseButton.setType(ElementType.BUTTON.type);
-            pauseButton.setRole(PortType.ACTIVE.type);
-            pauseButton.setPort("pause-entity");
-            pauseButton.setValue("Pause");
-            pauseButton.setBlockType(BlockType.GLOBAL.type);
-
-            defaultEntitiesElements.add(startButton);
-            defaultEntitiesElements.add(stopButton);
-            defaultEntitiesElements.add(pauseButton);
+            createDefaultEntitiesElements();
+            createDefaultExtendedInterfacesElements();
 
             for (Element elem : globals) {
                 if (elem.getPort() != null && elem.getPort().equals("entities")) {
@@ -89,6 +147,11 @@ public class PageBuilder {
             }
 
             for (Element elem : interfaces) {
+                if (elem.getPort() != null && elem.getPort().equals("extended-interfaces")) {
+                    if (elem.getChildren() == null || elem.getChildren().isEmpty()) {
+                        elem.addAllChildren(defaultExtendedInterfacesElement);
+                    }
+                }
                 interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
             }
 
@@ -118,7 +181,7 @@ public class PageBuilder {
         page = IdGenerator.attributeIds(data);
         //System.out.println(page);
         //System.out.println(configuration);
-        platformType = PlatformType.DESKTOP;
+        platformType = PlatformType.WEB;
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
