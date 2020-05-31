@@ -5,23 +5,27 @@ import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import interfaceGenerator.Utils;
 import interfaceGenerator.types.ElementType;
+import interfaceGenerator.types.LayoutType;
 import interfaceGenerator.types.PortType;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class SwingUiPylon implements GUIPylonProxy {
     private static HashMap<String, Component> componentMap = new HashMap<>();
-    public static HashSet<String> ids = new HashSet<>();
+    private static HashSet<String> ids = new HashSet<>();
 
     private static JPanel generatePanel(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentY(Component.CENTER_ALIGNMENT);
         ElementType type = ElementType.valueOfLabel(element.getType());
         if (type != null) {
             ids.add(element.getId());
@@ -37,10 +41,29 @@ public class SwingUiPylon implements GUIPylonProxy {
                     break;
                 case BLOCK:
                     JPanel subPanel = new JPanel();
-                    subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
-                    if (element.getChildren() != null) {
-                        for (Element child : element.getChildren()) {
-                            subPanel.add(generatePanel(child));
+                    if (element.getRole() != null) {
+                        if (element.getRole().equals("global")) {
+                            subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.Y_AXIS));
+                            subPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+                            subPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                        }
+                    } else {
+                        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
+                    }
+
+                    boolean generateChildren = true;
+                    if (element.getPort() != null) {
+                        if (element.getPort().equals("entities")
+                        ) {
+                            generateChildren = false;
+                        }
+                    }
+
+                    if (generateChildren) {
+                        if (element.getChildren() != null) {
+                            for (Element child : element.getChildren()) {
+                                subPanel.add(generatePanel(child));
+                            }
                         }
                     }
                     panel.add(subPanel);
@@ -51,6 +74,7 @@ public class SwingUiPylon implements GUIPylonProxy {
                     break;
             }
         }
+        System.out.println(panel);
         return panel;
     }
 
@@ -58,6 +82,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JButton button = new JButton();
 
         if (element.getValue() != null) {
@@ -126,6 +151,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JLabel label = new JLabel();
         if (element.getValue() != null) {
             label.setText(element.getValue());
@@ -139,6 +165,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JTextArea form = new JTextArea();
         if (element.getValue() != null) {
             form.setText(element.getValue());
@@ -161,6 +188,7 @@ public class SwingUiPylon implements GUIPylonProxy {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         JSpinner spinner = new JSpinner();
         spinner.setValue(0);
         spinner.setMaximumSize(new Dimension(100, 40));
@@ -294,11 +322,182 @@ public class SwingUiPylon implements GUIPylonProxy {
         return component;
     }
 
+    public static void addEntity(Element element) {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = addEntity(PageBuilder.window, element);
+        PageBuilder.window.setVisible(true);
+    }
+
+    private static JFrame addEntity(JFrame frame, Element element) {
+        Container contentPane = frame.getRootPane().getContentPane();
+        if (contentPane instanceof JPanel) {
+            JPanel windowsPanel = (JPanel) contentPane;
+            Component mainComponent = windowsPanel.getComponents()[0];
+            if (mainComponent instanceof JPanel) {
+                windowsPanel.remove(mainComponent);
+                mainComponent = addEntity(mainComponent, element);
+                windowsPanel.add(mainComponent);
+            }
+            JFrame temp = new JFrame();
+            temp.setSize(new Dimension(600, 600));
+            temp.add(windowsPanel);
+            frame.dispose();
+            return temp;
+        }
+        return frame;
+    }
+
+    private static Component addEntity(Component component, Element element) {
+        if (component instanceof JPanel) {
+            // the root container
+            JPanel panel = (JPanel) component;
+            System.out.println("root " + Arrays.toString(panel.getComponents()));
+            if (panel.getComponents().length > 0) {
+                Component subComponent = panel.getComponents()[0];
+                if (subComponent instanceof JPanel) {
+                    JPanel subPanel = (JPanel) subComponent;
+                    System.out.println("comp " + Arrays.toString(subPanel.getComponents()));
+                    if (subPanel.getComponents().length > 0) {
+                        Component globalComponent = subPanel.getComponents()[0];
+                        if (globalComponent instanceof JPanel) {
+                            JPanel global = (JPanel) globalComponent;
+                            System.out.println("global " + Arrays.toString(global.getComponents()));
+                            Component entitiesComponent = global.getComponent(global.getComponentCount() - 1);
+                            if (entitiesComponent instanceof JPanel) {
+                                JPanel entities = (JPanel) entitiesComponent;
+                                ElementType elementType = ElementType.valueOfLabel(element.getType());
+                                if (elementType != null) {
+                                    switch (elementType) {
+                                        case BUTTON:
+                                            entities.add(generateButton(element));
+                                            break;
+                                        case BLOCK:
+                                            entities.add(generatePanel(element));
+                                            break;
+                                        case FORM:
+                                            entities.add(generateForm(element));
+                                            break;
+                                        case OUTPUT:
+                                            entities.add(generateLabel(element));
+                                            break;
+                                        case SPINNER:
+                                            entities.add(generateSpinner(element));
+                                            break;
+                                    }
+                                }
+                                global.remove(global.getComponentCount() - 1);
+                                global.add(entities);
+                            }
+
+                            Component[] components = subPanel.getComponents();
+                            for (int i = components.length - 1; i >= 0; i--) {
+                                subPanel.remove(i);
+                            }
+                            subPanel.add(global);
+                            for (int i = 1; i < components.length; i++) {
+                                subPanel.add(components[i]);
+                            }
+                        }
+                    }
+                    panel.remove(0);
+                    panel.add(subPanel);
+                    return panel;
+                }
+            }
+        }
+        return component;
+    }
+
+    public static void addExtendedInterface(Element element) {
+        PageBuilder.window.setVisible(false);
+        PageBuilder.window.dispose();
+        PageBuilder.window = addExtendedInterface(PageBuilder.window, element);
+        PageBuilder.window.setVisible(true);
+    }
+
+    private static JFrame addExtendedInterface(JFrame frame, Element element) {
+        Container contentPane = frame.getRootPane().getContentPane();
+        if (contentPane instanceof JPanel) {
+            JPanel windowsPanel = (JPanel) contentPane;
+            Component mainComponent = windowsPanel.getComponents()[0];
+            if (mainComponent instanceof JPanel) {
+                windowsPanel.remove(mainComponent);
+                mainComponent = addExtendedInterface(mainComponent, element);
+                windowsPanel.add(mainComponent);
+            }
+            JFrame temp = new JFrame();
+            temp.setSize(new Dimension(600, 600));
+            temp.add(windowsPanel);
+            frame.dispose();
+            return temp;
+        }
+        return frame;
+    }
+
+    public static Component addExtendedInterface(Component component, Element element) {
+        if (component instanceof JPanel) {
+            // the root container
+            JPanel panel = (JPanel) component;
+            System.out.println("root " + Arrays.toString(panel.getComponents()));
+            if (panel.getComponents().length > 0) {
+                Component subComponent = panel.getComponents()[0];
+                if (subComponent instanceof JPanel) {
+                    JPanel subPanel = (JPanel) subComponent;
+                    System.out.println("comp " + Arrays.toString(subPanel.getComponents()));
+                    if (subPanel.getComponents().length > 1) {
+                        Component interfacesComponent = subPanel.getComponents()[1];
+                        if (interfacesComponent instanceof JPanel) {
+                            JPanel interfaces = (JPanel) interfacesComponent;
+                            ElementType elementType = ElementType.valueOfLabel(element.getType());
+                            if (elementType != null) {
+                                switch (elementType) {
+                                    case BUTTON:
+                                        interfaces.add(generateButton(element));
+                                        break;
+                                    case BLOCK:
+                                        interfaces.add(generatePanel(element));
+                                        break;
+                                    case FORM:
+                                        interfaces.add(generateForm(element));
+                                        break;
+                                    case OUTPUT:
+                                        interfaces.add(generateLabel(element));
+                                        break;
+                                    case SPINNER:
+                                        interfaces.add(generateSpinner(element));
+                                        break;
+                                }
+                            }
+                            Component[] components = subPanel.getComponents();
+                            for (int i = components.length - 1; i >= 0; i--) {
+                                subPanel.remove(i);
+                            }
+                            for (int i = 0; i < components.length - 1; i++) {
+                                subPanel.add(components[i]);
+                            }
+                            subPanel.add(interfaces);
+                        }
+
+                    }
+                    panel.remove(0);
+                    panel.add(subPanel);
+                    return panel;
+                }
+            }
+        }
+        return component;
+    }
+
     public Object generate(Element element) {
         JFrame window = new JFrame();
         window.setSize(new Dimension(600, 600));
         JPanel windowPanel = new JPanel();
-        windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        if (PageBuilder.getInstance().layoutType.equals(LayoutType.HORIZONTAL)) {
+            windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.X_AXIS));
+        } else if (PageBuilder.getInstance().layoutType.equals(LayoutType.VERTICAL)) {
+            windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
+        }
         windowPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
         componentMap.put(element.getId(), windowPanel);
         ids.add(element.getId());

@@ -6,16 +6,13 @@ import interfaceGenerator.pylon.AndroidUiPylon;
 import interfaceGenerator.pylon.GUIPylonProxy;
 import interfaceGenerator.pylon.SwingUiPylon;
 import interfaceGenerator.pylon.WebUiPylon;
-import interfaceGenerator.types.BlockType;
-import interfaceGenerator.types.ElementType;
-import interfaceGenerator.types.PlatformType;
+import interfaceGenerator.types.*;
 import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.util.ArrayList;
 
 public class PageBuilder {
@@ -27,6 +24,8 @@ public class PageBuilder {
     public IOShard ioShard = null;
     private Element page = null;
     public static JFrame window = null;
+    public LayoutType layoutType;
+    public ArrayList<Element> defaultEntitiesElements = new ArrayList<>();
 
     public static PageBuilder getInstance() {
         if (instance == null) {
@@ -40,6 +39,7 @@ public class PageBuilder {
     }
 
     public Object buildPage(Configuration data) throws Exception {
+        layoutType = LayoutType.valueOfLabel(data.getLayout());
         if (data.getNode() != null) {
             return buildPage(data.getNode());
         } else {
@@ -53,7 +53,37 @@ public class PageBuilder {
             ArrayList<Element> globalsWithType = new ArrayList<>();
             ArrayList<Element> interfacesWithType = new ArrayList<>();
 
+            Element startButton = new Element();
+            startButton.setType(ElementType.BUTTON.type);
+            startButton.setRole(PortType.ACTIVE.type);
+            startButton.setPort("start-entity");
+            startButton.setValue("Start");
+            startButton.setBlockType(BlockType.GLOBAL.type);
+
+            Element stopButton = new Element();
+            stopButton.setType(ElementType.BUTTON.type);
+            stopButton.setRole(PortType.ACTIVE.type);
+            stopButton.setPort("stop-entity");
+            stopButton.setValue("Stop");
+            stopButton.setBlockType(BlockType.GLOBAL.type);
+
+            Element pauseButton = new Element();
+            pauseButton.setType(ElementType.BUTTON.type);
+            pauseButton.setRole(PortType.ACTIVE.type);
+            pauseButton.setPort("pause-entity");
+            pauseButton.setValue("Pause");
+            pauseButton.setBlockType(BlockType.GLOBAL.type);
+
+            defaultEntitiesElements.add(startButton);
+            defaultEntitiesElements.add(stopButton);
+            defaultEntitiesElements.add(pauseButton);
+
             for (Element elem : globals) {
+                if (elem.getPort() != null && elem.getPort().equals("entities")) {
+                    if (elem.getChildren() == null || elem.getChildren().isEmpty()) {
+                        elem.addAllChildren(defaultEntitiesElements);
+                    }
+                }
                 globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
             }
 
@@ -77,7 +107,6 @@ public class PageBuilder {
 
             node.setChildren(nodeChildren);
 
-            System.out.println(node);
             return buildPage(node);
         }
     }
@@ -86,26 +115,26 @@ public class PageBuilder {
         // generating ids for every element in configuration
         // System.out.println(data);
         page = IdGenerator.attributeIds(data);
+        //System.out.println(page);
         //System.out.println(configuration);
-        platformType = PlatformType.WEB;
+        platformType = PlatformType.DESKTOP;
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
         GUIPylonProxy guiPylonProxy;
-
         if (platformType != null) {
             switch (platformType) {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
                     String html = (String) guiPylonProxy.generate(data);
-                    FileWriter fileWriter = new FileWriter("src\\web\\page.html");
+                    FileWriter fileWriter = new FileWriter("src/web/page.html");
                     //FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
                     Input.main(new String[]{});
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                        Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
+                        //Desktop.getDesktop().browse(new URI("http://localhost:8081/"));
                     }
                     createdWebPage = true;
                     return null;

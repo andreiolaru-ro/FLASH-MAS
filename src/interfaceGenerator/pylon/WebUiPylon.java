@@ -126,23 +126,21 @@ public class WebUiPylon implements GUIPylonProxy {
             result.append(" class = \"interface\"");
         }
 
+        boolean generateChildren = true;
+
         if (element.getPort() != null) {
             if (element.getPort().equals("entities")) {
                 result.append(" class = \"entities\"");
+                generateChildren = false;
             } else if (element.getPort().equals("extended-interfaces")) {
                 result.append(" class = \"extended-interfaces\"");
                 addInterfaceClassToDiv = true;
+                generateChildren = false;
             }
         }
 
         result.append(">\n");
         indentLevel++;
-
-        boolean generateChildren = true;
-        if (element.getPort() != null && element.getPort().equals("entities")) {
-            // entities boxes not to be added from Java generator, but from JavaScript -> Mihu
-            generateChildren = false;
-        }
 
         if (generateChildren) {
             if (element.getChildren() != null) {

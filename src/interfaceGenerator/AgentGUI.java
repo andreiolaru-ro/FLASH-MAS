@@ -16,7 +16,7 @@ import java.util.Timer;
 
 public abstract class AgentGUI implements Agent {
     protected final static long delay = 0;
-    protected final static long period = 10000;
+    protected final static long period = 3000;
     protected GUIShard guiShard;
     protected IOShard ioShard;
     protected Timer timer;

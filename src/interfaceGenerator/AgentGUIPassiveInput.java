@@ -1,5 +1,6 @@
 package interfaceGenerator;
 
+import interfaceGenerator.pylon.SwingUiPylon;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -23,6 +24,7 @@ public class AgentGUIPassiveInput extends AgentGUI {
             @Override
             public void run() {
                 Optional<String> port = Utils.randomPort();
+                SwingUiPylon.addExtendedInterface(PageBuilder.getInstance().defaultEntitiesElements.get(0));
                 if (port.isPresent()) {
                     AgentWave passiveInput = null;
                     try {
