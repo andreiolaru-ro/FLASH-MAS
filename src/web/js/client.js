@@ -5,6 +5,7 @@ var interfaces;
 var specification = false;
 var entity_elements = {};
 var interface_elements = {};
+var selected_entities = 0;
 
 function init() {
     eb = new EventBus("/eventbus");
@@ -16,6 +17,7 @@ function init() {
             if(!specification) {
                 entities = document.getElementById(data['entities']);
                 interfaces = document.getElementById(data['interfaces']);
+                interfaces.removeChild(interfaces.children[0]);
 
                 for(var element in data) {
                     var elements = element.split(' ');
@@ -70,8 +72,14 @@ function init() {
                     }
                 }
                 if (empty) {
-                    entities.innerText = "No entities found";
+                    entities.innerText = "No entities";
+                    interfaces.innerText = "No entities selected";
                 } else {
+                    entities.innerText = "Entities";
+                    if(selected_entities === 0)
+                        interfaces.innerText = "No entities selected";
+                    else
+                        interfaces.innerText = "Selected entities";
                     for (var entity in data) {
                         //console.log(data[entity]);
                         if (document.getElementById('checkbox_' + entity) === null) {
@@ -163,6 +171,6 @@ function checkbox(entity) {
     }
 };
 
-function stop() {
-    eb.send('client-to-server', 'stop');
+function send_data(id) {
+    eb.send('client-to-server', document.getElementById(id).nodeValue);
 };

@@ -49,12 +49,11 @@ class ServerVerticle extends AbstractVerticle {
                             vertx.eventBus().send("server-to-client", entity.getSpecification());
                             vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
                         }
-                        else if(objectMessage.body().equals("stop"))
-                            entity.stop();
                         else {
-                            JsonObject command = new JsonObject((String) objectMessage.body());
-                            Map.Entry<String, Object> entryIterator = command.iterator().next();
-                            entity.commandAgent(entryIterator.getKey(), (String) entryIterator.getValue());
+                            //JsonObject command = new JsonObject((String) objectMessage.body());
+                            //Map.Entry<String, Object> entryIterator = command.iterator().next();
+                            //entity.commandAgent(entryIterator.getKey(), (String) entryIterator.getValue());
+                            System.out.println(objectMessage.body());
                         }
                     });
                     vertx.setPeriodic(10000l, t -> {

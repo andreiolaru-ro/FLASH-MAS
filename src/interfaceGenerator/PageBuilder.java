@@ -179,8 +179,7 @@ public class PageBuilder {
         // generating ids for every element in configuration
         // System.out.println(data);
         page = IdGenerator.attributeIds(data);
-        //System.out.println(page);
-        //System.out.println(configuration);
+        System.out.println(page);
         platformType = PlatformType.WEB;
 
         // checking the active ports, with their elements
