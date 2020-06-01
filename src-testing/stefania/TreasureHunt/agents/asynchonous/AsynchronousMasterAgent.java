@@ -1,4 +1,4 @@
-package stefania.TreasureHunt.agents;
+package stefania.TreasureHunt.agents.asynchonous;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
@@ -8,15 +8,16 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.mpi.MPISupport;
+import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
 import stefania.TreasureHunt.util.Coord;
-import static stefania.TreasureHunt.util.Constants.*;
 
 import java.util.Random;
 
-public class MasterAgent implements Agent {
+import static stefania.TreasureHunt.util.Constants.*;
+
+public class AsynchronousMasterAgent implements Agent {
     private String					name;
-    private MPISupport.MPIMessaging messagingShard;
+    public AsynchronousMPIMessaging messagingShard;
     private MessagingPylonProxy pylon;
     private Coord treasure;
     private Coord playerPos;
@@ -42,7 +43,7 @@ public class MasterAgent implements Agent {
 
     };
 
-    public MasterAgent(String name, int rank, int size) {
+    public AsynchronousMasterAgent(String name, int rank, int size) {
         this.name = name;
         this.myRank = rank;
         this.size = size;
@@ -81,9 +82,9 @@ public class MasterAgent implements Agent {
 
     @Override
     public boolean start() {
-        MasterInitBehaviour initBehaviour = new MasterInitBehaviour(this);
-        MasterPlayBehaviour playBehaviour = new MasterPlayBehaviour(this);
-        MasterEndBehaviour endBehaviour = new MasterEndBehaviour(this);
+        AsynchronousMasterInitBehaviour initBehaviour = new AsynchronousMasterInitBehaviour(this);
+        AsynchronousMasterPlayBehaviour playBehaviour = new AsynchronousMasterPlayBehaviour(this);
+        AsynchronousMasterEndBehaviour endBehaviour = new AsynchronousMasterEndBehaviour(this);
 
         initBehaviour.action();
 
@@ -143,7 +144,7 @@ public class MasterAgent implements Agent {
         return proxy;
     }
 
-    public boolean addMessagingShard(MPISupport.MPIMessaging shard)
+    public boolean addMessagingShard(AsynchronousMPIMessaging shard)
     {
         messagingShard = shard;
         shard.addContext(proxy);
@@ -152,27 +153,27 @@ public class MasterAgent implements Agent {
         return true;
     }
 
-    public static class MasterInitBehaviour {
-         MasterAgent masterAgent;
+    public static class AsynchronousMasterInitBehaviour {
+        AsynchronousMasterAgent masterAgent;
 
-         public MasterInitBehaviour(MasterAgent masterAgent) {
-             this.masterAgent = masterAgent;
-         }
+        public AsynchronousMasterInitBehaviour(AsynchronousMasterAgent masterAgent) {
+            this.masterAgent = masterAgent;
+        }
 
-         public void action() {
-             String message = "START GAME";
+        public void action() {
+            String message = "START GAME";
 
-             masterAgent.initGame();
-
-             masterAgent.messagingShard.sendMessage(MASTER, PLAYER,  message);
-         }
+            masterAgent.initGame();
+            masterAgent.messagingShard.start();
+            masterAgent.messagingShard.sendMessage(MASTER, PLAYER,  message);
+        }
     }
 
-    public static class MasterPlayBehaviour {
-        MasterAgent masterAgent;
+    public static class AsynchronousMasterPlayBehaviour {
+        AsynchronousMasterAgent masterAgent;
         int nextState;
 
-        public MasterPlayBehaviour(MasterAgent masterAgent) {
+        public AsynchronousMasterPlayBehaviour(AsynchronousMasterAgent masterAgent) {
             this.masterAgent = masterAgent;
             this.nextState = 1;
         }
@@ -181,8 +182,7 @@ public class MasterAgent implements Agent {
             String playerMoveDirection;
             String hint;
 
-            masterAgent.messagingShard.receiveMessage(PLAYER, MASTER, "");
-            playerMoveDirection = masterAgent.messagingShard.getMessage();
+            playerMoveDirection = masterAgent.messagingShard.getMessage().getContent();
             System.out.println("Master received: " + playerMoveDirection);
 
             hint = masterAgent.evaluateProximity(playerMoveDirection);
@@ -198,15 +198,18 @@ public class MasterAgent implements Agent {
         }
     }
 
-    public static class MasterEndBehaviour {
-        MasterAgent masterAgent;
+    public static class AsynchronousMasterEndBehaviour {
+        AsynchronousMasterAgent masterAgent;
 
-        public MasterEndBehaviour(MasterAgent masterAgent) {
+        public AsynchronousMasterEndBehaviour(AsynchronousMasterAgent masterAgent) {
             this.masterAgent = masterAgent;
         }
 
         public void action() {
             System.out.println(masterAgent.getName() + "> The player found the treasure at " + masterAgent.getTreasure() + "!");
+            masterAgent.messagingShard.sendMessage(MASTER, PLAYER, END_GAME);
+            masterAgent.messagingShard.getMessage();
+            masterAgent.messagingShard.stop();
         }
     }
 }

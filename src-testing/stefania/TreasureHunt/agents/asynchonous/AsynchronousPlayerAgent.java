@@ -1,4 +1,4 @@
-package stefania.TreasureHunt.agents;
+package stefania.TreasureHunt.agents.asynchonous;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
@@ -8,16 +8,17 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.mpi.MPISupport;
+import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
 import stefania.TreasureHunt.util.Coord;
-import static stefania.TreasureHunt.util.Constants.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerAgent implements Agent {
+import static stefania.TreasureHunt.util.Constants.*;
+
+public class AsynchronousPlayerAgent implements Agent {
     private String					name;
-    private MPISupport.MPIMessaging messagingShard;
+    private AsynchronousMPIMessaging messagingShard;
     private MessagingPylonProxy pylon;
     private int myRank;
     private int size;
@@ -44,7 +45,7 @@ public class PlayerAgent implements Agent {
 
     };
 
-    public PlayerAgent(String name, int rank, int size) {
+    public AsynchronousPlayerAgent(String name, int rank, int size) {
         this.name = name;
         this.myRank = rank;
         this.size = size;
@@ -119,9 +120,9 @@ public class PlayerAgent implements Agent {
 
     @Override
     public boolean start() {
-        PlayerInitBehaviour initBehaviour = new PlayerInitBehaviour(this);
-        PlayerPlayBehaviour playBehaviour = new PlayerPlayBehaviour(this);
-        PlayerEndBehaviour endBehaviour = new PlayerEndBehaviour(this);
+        AsynchronousPlayerInitBehaviour initBehaviour = new AsynchronousPlayerInitBehaviour(this);
+        AsynchronousPlayerPlayBehaviour playBehaviour = new AsynchronousPlayerPlayBehaviour(this);
+        AsynchronousPlayerEndBehaviour endBehaviour = new AsynchronousPlayerEndBehaviour(this);
 
         initBehaviour.action();
 
@@ -181,7 +182,7 @@ public class PlayerAgent implements Agent {
         return proxy;
     }
 
-    public boolean addMessagingShard(MPISupport.MPIMessaging shard)
+    public boolean addMessagingShard(AsynchronousMPIMessaging shard)
     {
         messagingShard = shard;
         shard.addContext(proxy);
@@ -190,18 +191,18 @@ public class PlayerAgent implements Agent {
         return true;
     }
 
-    public static class PlayerInitBehaviour {
-        PlayerAgent playerAgent;
+    public static class AsynchronousPlayerInitBehaviour {
+        AsynchronousPlayerAgent playerAgent;
 
-        public PlayerInitBehaviour(PlayerAgent playerAgent) {
+        public AsynchronousPlayerInitBehaviour(AsynchronousPlayerAgent playerAgent) {
             this.playerAgent = playerAgent;
         }
 
         public void action() {
             String hintRequest = "up";
 
-            // Wait tp receive 'START GAME' signal
-            playerAgent.messagingShard.receiveMessage(MASTER, PLAYER, "");
+            playerAgent.messagingShard.start();
+            playerAgent.messagingShard.getMessage();
 
             playerAgent.initGame();
             playerAgent.move("up");
@@ -210,11 +211,11 @@ public class PlayerAgent implements Agent {
         }
     }
 
-    public static class PlayerPlayBehaviour {
-        PlayerAgent playerAgent;
+    public static class AsynchronousPlayerPlayBehaviour {
+        AsynchronousPlayerAgent playerAgent;
         int nextState;
 
-        public PlayerPlayBehaviour(PlayerAgent playerAgent) {
+        public AsynchronousPlayerPlayBehaviour(AsynchronousPlayerAgent playerAgent) {
             this.playerAgent = playerAgent;
             this.nextState = 1;
         }
@@ -223,8 +224,7 @@ public class PlayerAgent implements Agent {
             String moveDirection;
             String hint;
 
-            playerAgent.messagingShard.receiveMessage(MASTER, PLAYER, "");
-            hint = playerAgent.messagingShard.getMessage();
+            hint = playerAgent.messagingShard.getMessage().getContent();
 
             System.out.println(playerAgent.getName() + " pos: " + playerAgent.getPos());
 
@@ -243,15 +243,18 @@ public class PlayerAgent implements Agent {
         }
     }
 
-    public static class PlayerEndBehaviour {
-        PlayerAgent playerAgent;
+    public static class AsynchronousPlayerEndBehaviour {
+        AsynchronousPlayerAgent playerAgent;
 
-        public PlayerEndBehaviour(PlayerAgent playerAgent) {
+        public AsynchronousPlayerEndBehaviour(AsynchronousPlayerAgent playerAgent) {
             this.playerAgent = playerAgent;
         }
 
         public void action() {
             System.out.println(playerAgent.getName() + "> I found the treasure at " + playerAgent.getPos() + "!");
+            playerAgent.messagingShard.sendMessage(PLAYER, MASTER, END_GAME);
+            playerAgent.messagingShard.getMessage();
+            playerAgent.messagingShard.stop();
         }
     }
 }

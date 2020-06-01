@@ -93,7 +93,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		
 		shardInitializer();
 	}
-	
+
 	/**
 	 * Extending <b>anonymous</b> classes can override this method to perform actions when the shard is created. The
 	 * method is called at the end of the constructor.
