@@ -151,6 +151,9 @@ public class PageBuilder {
                 for (Element elem : interfaces) {
                     interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
                 }
+            } else {
+                interfaces = new ArrayList<>(defaultExtendedInterfacesElement);
+                interfacesWithType.addAll(interfaces);
             }
 
             Element globalContainer = new Element();
