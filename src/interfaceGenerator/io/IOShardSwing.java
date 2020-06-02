@@ -48,16 +48,16 @@ public class IOShardSwing extends IOShard {
         roles.remove("EVENT_TYPE");
 
         for (String role : roles) {
-            List<Element> elementsFromPort = Utils.findElementsByRole(PageBuilder.getInstance().getPage(), role);
+            List<Element> elementsWithRole = Utils.findElementsByRole(PageBuilder.getInstance().getPage(), role);
 
-            if (elementsFromPort.size() == 0) {
+            if (elementsWithRole.size() == 0) {
                 continue;
             }
 
             List<String> values = agentWave.getValues(role);
-            int size = Math.min(elementsFromPort.size(), values.size());
+            int size = Math.min(elementsWithRole.size(), values.size());
             for (int i = 0; i < size; i++) {
-                String elementId = elementsFromPort.get(i).getId();
+                String elementId = elementsWithRole.get(i).getId();
                 String value = values.get(i);
                 try {
                     SwingUiPylon.changeValueElement(elementId, value);

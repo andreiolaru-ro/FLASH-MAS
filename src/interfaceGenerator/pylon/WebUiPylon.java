@@ -135,6 +135,13 @@ public class WebUiPylon implements GUIPylonProxy {
             }
         }
 
+        if (element.getRole() != null) {
+            if (element.getRole().equals("interfaces")) {
+                generateChildren = false;
+            }
+        }
+
+
         result.append(">\n");
         indentLevel++;
 
