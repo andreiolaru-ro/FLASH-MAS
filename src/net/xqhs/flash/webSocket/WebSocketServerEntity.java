@@ -4,9 +4,11 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -15,9 +17,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 
 /**
  *  The {@link WebSocketServerEntity} class manages the routing of messages between different entities. It knows the
@@ -30,53 +29,59 @@ public class WebSocketServerEntity extends Unit implements Entity
 	{
 		setUnitName("websocket-server").setLoggerType(PlatformUtils.platformLogType());
 	}
-	
+
 	private static final int		SERVER_STOP_TIME	= 10;
 	private WebSocketServer			webSocketServer;
-	private boolean					running				= false;
+	private boolean					running;
 
-	private HashMap<String, WebSocket> agentToWebSocket = new HashMap<>();
+	/**
+	 * Map all entities to their {@link WebSocket}.
+	 */
+	private HashMap<String, WebSocket> entityToWebSocket = new HashMap<>();
+	/**
+	 * Map all nodes to their {@link WebSocket}.
+	 * */
 	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
-	private HashMap<String, List<String>> nodeToAgents = new LinkedHashMap<>();
+	/**
+	 * Keep track of all entities within a node context.
+	 * */
+	private HashMap<String, List<String>> nodeToEntities = new LinkedHashMap<>();
 
-	private String controlEntity;
-	private WebSocket controlEntityWebSocket;
+	/**
+	 * @param message
+	 * 					- the message to be sent
+	 * @return
+	 * 					- an indication of success
+	 */
+	private boolean routeTheMessage(JSONObject message) {
+		String destination = (String) message.get("destination");
+		String destEntity = destination.split(
+				AgentWave.ADDRESS_SEPARATOR)[0];
 
-	private boolean sendFurther(JSONObject jsonObject) {
-		// raw message from one entity to another
-			String destination = (String) jsonObject.get("destination");
-			String destEntity = destination.split(
-					AgentWave.ADDRESS_SEPARATOR)[0];
-			if(destEntity.equals(controlEntity))
-			{
-				controlEntityWebSocket.send(jsonObject.toString());
-				li("Sent to central entity: []. ", jsonObject.toString());
-				return true;
-			}
+		WebSocket destinationWebSocket;
+		destinationWebSocket = entityToWebSocket.get(destEntity);
+		if(destinationWebSocket != null) {
+			destinationWebSocket.send(message.toString());
+			li("Sent to agent: []. ", message.toString());
+			return true;
+		}
 
-			WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
-			if(destinationWebSocket != null) {
-				destinationWebSocket.send(jsonObject.toString());
-				li("Sent to agent: []. ", jsonObject.toString());
-				return true;
-			}
+		destinationWebSocket = nodeToWebSocket.get(destEntity);
+		if(destinationWebSocket != null) {
+			destinationWebSocket.send(message.toString());
+			li("Sent to node: []. ", message.toString());
+			return true;
+		}
 
-			destinationWebSocket = nodeToWebSocket.get(destEntity);
-			if(destinationWebSocket != null) {
-				destinationWebSocket.send(jsonObject.toString());
-				li("Sent to node: []. ", jsonObject.toString());
-				return true;
-			}
-
-			le("Filed to find the entity [] websocket.", destEntity);
-			return false;
+		le("Filed to find the entity [] websocket.", destEntity);
+		return false;
 	}
 
 
 	public WebSocketServerEntity(int serverAddress)
 	{
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverAddress)) {
-			
+
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake)
 			{
@@ -85,7 +90,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 				 */
 				li("new client connected []", webSocket);
 			}
-			
+
 			@Override
 			public void onClose(WebSocket webSocket, int i, String s, boolean b)
 			{
@@ -95,13 +100,11 @@ public class WebSocketServerEntity extends Unit implements Entity
 			/**
 			 * Receives message from a {@link WebSocketClient}.
 			 * Messages can be:
-			 * 					- node registration message
-			 * 					- agent registration message
-			 * 					- central entity for monitoring and control message
-			 * 					- raw message from one entity to another
+			 * 					- entity registration message
+			 * 					- message from one entity to another
 			 *
 			 * @param webSocket
-			 * 					- the sender websocket client
+			 * 					- the sender {@link WebSocket} client
 			 * @param s
 			 * 					- the JSON string containing a message and routing information
 			 */
@@ -110,70 +113,44 @@ public class WebSocketServerEntity extends Unit implements Entity
 			{
 				Object obj = JSONValue.parse(s);
 				if(obj == null) return;
-				JSONObject jsonObject = (JSONObject) obj;
-				
-				li("Message: ", jsonObject);
+				JSONObject message = (JSONObject) obj;
 
 				// message in transit through the server
-				if(jsonObject.get("destination") != null && sendFurther(jsonObject))
+				if(message.get("destination") != null && routeTheMessage(message))
 					return;
 
-				// control and monitoring entity registration
-				if(jsonObject.get("controlEntity") != null)
-				{
-					controlEntity = (String)jsonObject.get("controlEntity");
-					controlEntityWebSocket = webSocket;
-					li("Registered: []. ", controlEntity);
-					printState();
-					return;
-				}
+				if(message.get("nodeName") == null) return;
+				String nodeName = (String)message.get("nodeName");
 
-				// specify if the entity will be registered or unregistered
-				boolean toRegister = false;
-				if(jsonObject.get("register") != null)
-					toRegister = (boolean)jsonObject.get("register");
-
-				if(jsonObject.get("nodeName") == null)
-					return;
-				String nodeName = (String)jsonObject.get("nodeName");
-
-				// node registration message
-                if(jsonObject.size() == 1)
-				{
+				//node registration message
+				if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
-					nodeToAgents.put(nodeName, new ArrayList<>());
+					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					printState();
-					return;
+					//return;
 				}
 
-				// agent registration message
-				String newAgent;
-				if(jsonObject.get("agentName") != null)
+				// entity registration message
+				String newEntity;
+				if(message.get("entityName") != null)
 				{
-					newAgent = (String)jsonObject.get("agentName");
-					if(toRegister) {
-						agentToWebSocket.put(newAgent, webSocket);
-						if(!nodeToAgents.containsKey(nodeName))
-							nodeToAgents.put(nodeName, new LinkedList<String>());
-						nodeToAgents.get(nodeName).add(newAgent);
-						li("Registered agent []. ", newAgent);
-					} else {
-						agentToWebSocket.remove(newAgent);
-						nodeToAgents.get(nodeName).remove(newAgent);
-						li("Unregistered agent []. ", newAgent);
+					newEntity = (String)message.get("entityName");
+					if(!entityToWebSocket.containsKey(newEntity)) {
+						entityToWebSocket.put(newEntity, webSocket);
+						nodeToEntities.get(nodeName).add(newEntity);
 					}
+					li("Registered entity []. ", newEntity);
 					printState();
 					return;
 				}
 			}
-			
+
 			@Override
 			public void onError(WebSocket webSocket, Exception e)
 			{
 				e.printStackTrace();
 			}
-			
+
 			@Override
 			public void onStart()
 			{
@@ -181,13 +158,13 @@ public class WebSocketServerEntity extends Unit implements Entity
 			}
 
 			private void printState() {
-				li("###agent:  " + agentToWebSocket.keySet());
-				li("###nodes: " + nodeToAgents.keySet());
-				li("###agents: " + nodeToAgents.values());
+				li("###entities:  " + entityToWebSocket.keySet());
+				li("###nodes: " + nodeToEntities.keySet());
+				li("###entities: " + nodeToEntities.values());
 			}
 		};
 	}
-	
+
 	@Override
 	public boolean start()
 	{
@@ -213,13 +190,13 @@ public class WebSocketServerEntity extends Unit implements Entity
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean isRunning()
 	{
 		return running;
 	}
-	
+
 	@Override
 	public String getName()
 	{

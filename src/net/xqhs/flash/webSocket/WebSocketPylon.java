@@ -8,11 +8,12 @@ import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.json.simple.JSONObject;
-
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.Node.NodeProxy;
+import org.json.simple.JSONObject;
+
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
@@ -28,11 +29,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  *  @author Florina Nastasoiu
  */
 public class WebSocketPylon extends DefaultPylonImplementation {
-	
+
 	class MessageThread implements Runnable {
 		@Override
 		public void run() {
-			// System.out.println("oops");
 			while(useThread) {
 				if(messageQueue.isEmpty())
 					try {
@@ -50,52 +50,54 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			}
 		}
 	}
-	
+
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
 		/**
-		 * The agent is both:
+		 * The entity is both:
 		 * 					- registered within the {@link WebSocketClientProxy} local instance which is useful for
 		 * 					  routing a message back to the the {@link MessageReceiver} instance when it arrives from
 		 * 					  the server
-		 * 					- registered to the {@link WebSocketServerEntity} using an agent registration format message
+		 * 					- registered to the {@link WebSocketServerEntity} using an entity registration format message
 		 * 				      which is sent by the local {@link WebSocketClientProxy} client
 		 *
-		 * @param agentName
-		 * 					- the name of the agent.
+		 * @param entityName
+		 * 					- the name of the entity
 		 * @param receiver
-		 * 					- the {@link MessageReceiver} instance to receive messages.
-		 * @return an indication of success.
+		 * 					- the {@link MessageReceiver} instance to receive messages
+		 * @return
+		 * 					- an indication of success
 		 */
 		@Override
-		public boolean register(String agentName, MessageReceiver receiver) {
-			webSocketClient.addReceiverAgent(agentName, receiver);
+		//@SuppressWarnings("unchecked")
+		public boolean register(String entityName, MessageReceiver receiver) {
+			webSocketClient.addReceiverAgent(entityName, receiver);
 			JSONObject messageToServer = new JSONObject();
-			messageToServer.put("register", true);
 			messageToServer.put("nodeName", nodeName);
-			messageToServer.put("agentName", agentName);
+			messageToServer.put("entityName", entityName);
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
 
 		/**
-		 * Send a raw message to the server.
+		 * Send a message to the server.
 		 *
 		 * @param source
-		 * 					- the source endpoint.
+		 * 					- the source endpoint
 		 * @param destination
-		 * 					- the destination endpoint.
+		 * 					- the destination endpoint
 		 * @param content
-		 * 					- the content of the message.
-		 * @return an indication of success.
+		 * 					- the content of the message
+		 * @return
+		 * 					- an indication of success
 		 */
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean send(String source, String destination, String content) {
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("nodeName", nodeName);
 			messageToServer.put("source", source);
 			messageToServer.put("destination", destination);
 			messageToServer.put("content", content);
-			
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
@@ -104,7 +106,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
 			return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
 		}
-		
+
 		@Override
 		public String getEntityName() {
 			return getName();
@@ -119,32 +121,28 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The attribute name for the server port.
 	 */
 	public static final String		WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
-	
-	protected boolean				hasServer		= false;
+
+	protected boolean				hasServer;
 	protected int					serverPort		= -1;
-	protected WebSocketServerEntity	serverEntity	= null;
+	protected WebSocketServerEntity	serverEntity;
 
 	protected String                nodeName;
 
-	protected String                centralEntityName;
-	
 	/**
 	 * The server address itself.
 	 */
 	protected String                webSocketServerAddressName;
-	
+
 	/**
 	 * The proxy to the {@link WebSocketServerEntity} which has a webSocket client.
 	 */
 	protected WebSocketClientProxy  webSocketClient;
-	
-	protected Map<String, WebSocketMessagingShard> registry = new HashMap<>();
-	
+
 	protected boolean useThread = true;
-	
-	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>> messageQueue = null;
-	
-	protected Thread messageThread = null;
+
+	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>> messageQueue;
+
+	protected Thread messageThread;
 
 	/**
 	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment and instantiates its
@@ -159,7 +157,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			serverEntity = new WebSocketServerEntity(serverPort);
 			serverEntity.start();
 		}
-		
+
 		try {
 			int tries = 10;
 			long space = 1000;
@@ -176,12 +174,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				tries--;
 				System.out.println("Tries:" + tries);
 			}
-			// Thread.sleep(1000);
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
+
 		if(!super.start())
 			return false;
 		if(useThread) {
@@ -192,7 +189,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
-	
+
 	@Override
 	public boolean stop() {
 		super.stop();
@@ -214,7 +211,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			serverEntity.stop();
 		return true;
 	}
-	
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
@@ -229,30 +226,30 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
 		if(!super.addContext(context))
 			return false;
 		nodeName = context.getEntityName();
-		lf("Added node context", nodeName);
+		lf("Added node context ", nodeName);
 		return true;
 	}
-	
+
 	@Override
 	public boolean addGeneralContext(EntityProxy<?> context) {
 		if(context instanceof NodeProxy)
 			return addContext((NodeProxy) context);
 		return false;
 	}
-	
+
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
 		if(shardName.equals(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)))
 			return WebSocketMessagingShard.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<Pylon> asContext() {

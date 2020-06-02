@@ -132,6 +132,11 @@ public class LocalPylon extends DefaultPylonImplementation {
 			}
 			return pylon.send(source, destination, content);
 		}
+
+		@Override
+		public void register(String entityName) {
+			pylon.register(entityName, inbox);
+		}
 	}
 	
 	/**
