@@ -1,10 +1,10 @@
-package com.flashmas.lib;
+package com.flashmas.lib.agents;
 
 import android.util.Log;
 
-import com.flashmas.lib.gui.AndroidGuiShard;
-import com.flashmas.lib.gui.GuiLinkShard;
-import com.flashmas.lib.sensors.SensorsAgentShard;
+import com.flashmas.lib.agents.gui.AndroidGuiShard;
+import com.flashmas.lib.agents.gui.GuiLinkShard;
+import com.flashmas.lib.agents.sensors.SensorsAgentShard;
 
 import net.xqhs.flash.android.AndroidClassFactory;
 import net.xqhs.flash.core.CategoryName;
@@ -19,7 +19,7 @@ import net.xqhs.util.logging.Logger;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.flashmas.lib.sensors.SensorsAgentShard.SENSOR_TYPES_ARRAY_KEY;
+import static com.flashmas.lib.agents.sensors.SensorsAgentShard.SENSOR_TYPES_ARRAY_KEY;
 
 public class CompositeAgentBuilder {
     private MultiTreeMap shardsTree = new MultiTreeMap();

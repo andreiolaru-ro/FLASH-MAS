@@ -1,4 +1,4 @@
-package com.flashmas.lib.sensors;
+package com.flashmas.lib.agents.sensors;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.flashmas.lib.FlashManager;
+import com.flashmas.lib.agents.gui.AddGuiElement;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SensorsAgentShard extends AgentShardCore implements SensorEventListener, AddGuiElement{
+public class SensorsAgentShard extends AgentShardCore implements SensorEventListener, AddGuiElement {
     private static final String TAG = SensorsAgentShard.class.getSimpleName();
     public static final String DESIGNATION = "sensors";
     public static final String SENSOR_TYPES_ARRAY_KEY = "SENSOR_TYPES_ARRAY_KEY";

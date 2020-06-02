@@ -1,4 +1,4 @@
-package com.flashmas.app.ui.agents;
+package com.flashmas.lib.ui.agents;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,9 +13,9 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.flashmas.app.R;
-import com.flashmas.app.ui.OnFragmentInteractionListener;
 import com.flashmas.lib.FlashManager;
+import com.flashmas.lib.R;
+import com.flashmas.lib.ui.OnFragmentInteractionListener;
 
 import net.xqhs.flash.core.agent.Agent;
 

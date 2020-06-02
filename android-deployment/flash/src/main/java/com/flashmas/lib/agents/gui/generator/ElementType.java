@@ -1,4 +1,4 @@
-package com.flashmas.lib.gui.generator;
+package com.flashmas.lib.agents.gui.generator;
 
 public enum ElementType {
     BUTTON("button"),

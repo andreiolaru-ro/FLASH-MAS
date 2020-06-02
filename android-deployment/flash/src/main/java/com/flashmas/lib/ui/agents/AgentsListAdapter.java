@@ -1,4 +1,4 @@
-package com.flashmas.app.ui.agents;
+package com.flashmas.lib.ui.agents;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.flashmas.app.R;
+import com.flashmas.lib.R;
 
 import net.xqhs.flash.core.agent.Agent;
 

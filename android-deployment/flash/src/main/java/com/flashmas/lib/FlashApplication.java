@@ -1,8 +1,6 @@
-package com.flashmas.app;
+package com.flashmas.lib;
 
 import android.app.Application;
-
-import com.flashmas.lib.FlashManager;
 
 public class FlashApplication extends Application {
     @Override

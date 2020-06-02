@@ -1,9 +1,9 @@
-package com.flashmas.lib.gui;
+package com.flashmas.lib.agents.gui;
 
 import android.view.View;
 import android.widget.EditText;
 
-import com.flashmas.lib.gui.generator.Element;
+import com.flashmas.lib.agents.gui.generator.Element;
 
 import java.util.HashMap;
 import java.util.LinkedList;

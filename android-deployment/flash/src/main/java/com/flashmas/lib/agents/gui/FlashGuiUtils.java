@@ -1,11 +1,10 @@
-package com.flashmas.lib.gui;
+package com.flashmas.lib.agents.gui;
 
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
 import com.flashmas.lib.FlashManager;
-import com.flashmas.lib.gui.AndroidGuiShard;
 
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;

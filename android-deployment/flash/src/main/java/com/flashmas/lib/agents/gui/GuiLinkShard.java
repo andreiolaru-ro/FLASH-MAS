@@ -1,10 +1,8 @@
-package com.flashmas.lib.gui;
+package com.flashmas.lib.agents.gui;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
-
-import com.flashmas.lib.sensors.AddGuiElement;
 
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;

@@ -1,4 +1,4 @@
-package com.flashmas.lib.gui.generator;
+package com.flashmas.lib.agents.gui.generator;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -14,9 +14,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.flashmas.lib.gui.AndroidGuiShard;
-import com.flashmas.lib.gui.GuiLinkShard;
-import com.flashmas.lib.gui.IdResourceManager;
+import com.flashmas.lib.agents.gui.AndroidGuiShard;
+import com.flashmas.lib.agents.gui.GuiLinkShard;
+import com.flashmas.lib.agents.gui.IdResourceManager;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
