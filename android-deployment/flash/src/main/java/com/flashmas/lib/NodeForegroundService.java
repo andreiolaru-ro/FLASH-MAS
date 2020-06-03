@@ -16,14 +16,55 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+
+import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.util.logging.LoggerSimple;
+import net.xqhs.util.logging.logging.Logging;
+import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import java.io.ByteArrayOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
+import static com.flashmas.lib.Globals.NODE_NAME;
 
 public class NodeForegroundService extends Service {
     private static boolean running = false;
     private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
+    private Node node;
+    private List<Pylon> pylonsList = new LinkedList<>();
+    private String deviceNodeName = NODE_NAME;  // init deviceNodeName with default
+    static ByteArrayOutputStream logsOutputStream = new ByteArrayOutputStream();
+
+    Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
+        @Override
+        public void onChanged(List<Agent> agents) {
+            for (Agent agent: agents) {
+                // Don't add agent if already registered
+                if (node.getEntitiesList().contains(agent)) {
+                    continue;
+                }
+
+                // Add agent in context of pylons
+                for (Pylon pylon: pylonsList) {
+                    agent.addContext(pylon.asContext());
+                }
+
+                node.registerEntity("agent", agent, agent.getName());
+
+                if (running) {
+                    agent.start();
+                }
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -32,8 +73,23 @@ public class NodeForegroundService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate() {
+        super.onCreate();
+        // TODO send list of pylons with the intent (or configuration)
+        MultiTreeMap nodeConfig = new MultiTreeMap();
+        nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
+        node = new Node(nodeConfig);
+        node.setLogLevel(LoggerSimple.Level.ALL);
+        Pylon localPylon = new LocalSupport();
+        pylonsList.add(localPylon);
+        node.registerEntity("pylon", localPylon, localPylon.getName());
+        GlobalLogWrapper.setLogStream(logsOutputStream);
+        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
+        FlashManager.getInstance().getAgentsLiveData().observeForever(agentsObserver);
+    }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(Globals.NODE_FOREGROUND_ID, buildForegroundNotification());
 
         startNode();
@@ -46,11 +102,9 @@ public class NodeForegroundService extends Service {
             return;
         }
 
-        if (FlashManager.getLogOutputStream() instanceof ByteArrayOutputStream) {
-            ((ByteArrayOutputStream) FlashManager.getLogOutputStream()).reset();
-        }
+        logsOutputStream.reset();
 
-        running = FlashManager.getInstance().getDeviceNode().start();
+        running = node.start();
         runningLiveData.postValue(running);
 
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
@@ -60,8 +114,9 @@ public class NodeForegroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        running = !FlashManager.getInstance().getDeviceNode().stop();
+        running = !node.stop();
         runningLiveData.postValue(running);
+        FlashManager.getInstance().getAgentsLiveData().removeObserver(agentsObserver);
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
 

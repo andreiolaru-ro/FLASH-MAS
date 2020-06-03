@@ -56,7 +56,7 @@ public class LogsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         logTextView = view.findViewById(R.id.logs_textview);
 
-        OutputStream s = FlashManager.getLogOutputStream();
+        OutputStream s = FlashManager.getInstance().getLogOutputStream();
         logTextView.setText(s.toString());
         ScrollView scroll = view.findViewById(R.id.scroll_view);
         scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
