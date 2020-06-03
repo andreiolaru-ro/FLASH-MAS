@@ -3,15 +3,22 @@ package com.flashmas.lib;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
+import android.view.View;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.flashmas.lib.agents.gui.AndroidGuiShard;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.local.LocalSupport;
@@ -30,6 +37,7 @@ import static com.flashmas.lib.Globals.NODE_NAME;
  * Singleton class for usage of Flash Framework on Android platform
  */
 public class FlashManager {
+    public static final String TAG = FlashManager.class.getSimpleName();
     private static FlashManager instance;
     private static Context appContext;
     private Node deviceNode;
@@ -50,7 +58,7 @@ public class FlashManager {
 
     private FlashManager() throws IllegalStateException {
         if (appContext == null) {
-            throw new IllegalStateException("Flash Manager not initialized with application context");
+            throw new IllegalStateException("FlashManager not initialized with application context");
         }
         NodeForegroundService.isRunningLiveData().observeForever(stateObserver);
 
@@ -179,5 +187,43 @@ public class FlashManager {
 
     public Context getAppContext() {
         return appContext;
+    }
+
+    public View getAgentView(CompositeAgent agent) {
+        View agentView = null;
+
+        if (agent == null) {
+            Log.e(TAG, "Agent is null");
+            return agentView;
+        }
+
+        if (agent.asContext() instanceof ShardContainer) {
+            AgentShard shard = ((ShardContainer) agent.asContext())
+                    .getAgentShard(AgentShardDesignation.autoDesignation(AndroidGuiShard.DESIGNATION));
+            if (shard instanceof AndroidGuiShard) {
+                agentView = ((AndroidGuiShard) shard).getAgentView(appContext);
+            } else {
+                Log.e(TAG, "Shard container is not an " + AndroidGuiShard.class.getSimpleName());
+            }
+        } else {
+            Log.e(TAG, "Agent context is not a shard container");
+        }
+
+        return agentView;
+    }
+
+    public View getAgentView(String agentName) {
+        View agentView = null;
+
+        if (agentName == null) {
+            Log.e(TAG, "Agent is null");
+            return null;
+        }
+
+        Agent agent = FlashManager.getInstance().getAgent(agentName);
+        if (agent instanceof CompositeAgent) {
+            agentView = getAgentView((CompositeAgent) agent);
+        }
+        return agentView;
     }
 }

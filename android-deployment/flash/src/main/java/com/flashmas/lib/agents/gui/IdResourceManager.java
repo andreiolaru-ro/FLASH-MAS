@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class IdResourceManager {
-    private static HashMap<Integer, String> idMap = new HashMap<>();
     private static HashMap<String, List<Integer>> portMap = new HashMap<>();
     private static HashMap<Integer, Element> elementMap = new HashMap<>();
 
@@ -39,14 +38,6 @@ public class IdResourceManager {
         if (!idsList.contains(id)) {
             idsList.add(id);
         }
-    }
-
-    public static String getPort(int id) {
-        if (idMap.containsKey(id)) {
-            return idMap.get(id);
-        }
-
-        return null;
     }
 
     public static Map<Integer, String> getPortValues(View view, String port) {
