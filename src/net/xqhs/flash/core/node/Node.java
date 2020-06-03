@@ -52,7 +52,7 @@ public class Node extends Unit implements Entity<Node>
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	public List<Entity<?>>				entityOrder			= new LinkedList<>();
 	
 	/**
 	 * Creates a new {@link Node} instance.

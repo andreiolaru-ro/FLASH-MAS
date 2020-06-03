@@ -24,10 +24,11 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.webSocket.WebSocketMessagingShard;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
-import java.io.Serializable;
+import java.io.*;
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,6 +47,42 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
 {
+	public boolean prepareForMove() {
+		AgentEvent prepareMoveEvent = new AgentEvent(AgentEventType.AGENT_STOP);
+		prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, "move") ;
+		postAgentEvent(prepareMoveEvent);
+
+		return true;
+	}
+
+	public void moveTo(String destination) {
+		String agentData = serialize();
+//		AgentEvent moveEvent = new AgentEvent(AgentEventType.BEFORE_MOVE);
+//		moveEvent.add("content", agentData);
+//		moveEvent.add("destination", destination);
+		AgentShard shard = getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+//		shard.signalAgentEvent(moveEvent);
+
+		if (shard instanceof WebSocketMessagingShard) {
+			((WebSocketMessagingShard) shard).sendMessage(getName(), destination, agentData);
+		}
+	}
+
+	public String serialize() {
+		ByteArrayOutputStream fos = null;
+		ObjectOutputStream out = null;
+		try {
+			fos = new ByteArrayOutputStream();
+			out = new ObjectOutputStream(fos);
+			out.writeObject(this);
+			out.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return Base64.getEncoder().encodeToString(fos.toByteArray());
+	}
+
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
@@ -191,7 +228,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	/**
 	 * The list of all contexts this agent is placed in, in the order in which they were added.
 	 */
-	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext				= new ArrayList<>();
+	protected transient ArrayList<EntityProxy<? extends Entity<?>>>	agentContext				= new ArrayList<>();
 	
 	/**
 	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
@@ -200,7 +237,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	/**
 	 * The thread managing the agent's life-cycle (managing events).
 	 */
-	protected Thread										agentThread					= null;
+	protected transient Thread										agentThread					= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
@@ -364,7 +401,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		
 		if(!canPostEvent(event))
 			return false;
-		
+
+		System.out.println("Agent " + getName() + " received event " + event);
 		AgentState futureState = FSMEventIn(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER),
 				!event.isSet(NO_CREATE_THREAD));
 		
@@ -388,6 +426,24 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		{
 			e.printStackTrace();
 			return false;
+		}
+
+		if (event.getType().equals(AgentEventType.AGENT_WAVE)) {
+			CompositeAgent agent;
+			ByteArrayInputStream fis;
+			ObjectInputStream in;
+			try {
+				fis = new ByteArrayInputStream(Base64.getDecoder().decode(event.get("content")));
+				in = new ObjectInputStream(fis);
+				agent = (CompositeAgent) in.readObject();
+				agent.toggleTransient();
+				agent.start();
+				in.close();
+				System.out.println("Deserialized agent obj from string:");
+				System.out.println(agent);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		if(event.getType().equals(AgentEventType.AGENT_START) && futureState != null
 				&& futureState.equals(AgentState.STARTING) && event.isSet(NO_CREATE_THREAD))
@@ -547,6 +603,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			agentState = AgentState.TRANSIENT;
 			break;
 		case TRANSIENT:
+			localLog = (UnitComponent) new UnitComponent()
+					.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 			agentState = AgentState.STOPPED;
 			break;
 		default:
