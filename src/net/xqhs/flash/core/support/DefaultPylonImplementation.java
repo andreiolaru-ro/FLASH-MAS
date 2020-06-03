@@ -57,7 +57,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	
 	@Override
 	public String getName() {
-		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.SUPPORT.s();
+		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.PYLON.s();
 	}
 	
 	@Override

@@ -91,7 +91,7 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	public PingTestComponent()
 	{
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(test.compositePingPong.Boot.FUNCTIONALITY));
 	}
 	
 	@Override
@@ -139,7 +139,7 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	protected boolean sendMessage(String content)
 	{
-		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
+		return sendMessage(content, SHARD_ENDPOINT, otherAgent, test.compositePingPong.PingBackTestComponent.SHARD_ENDPOINT);
 	}
 	
 	@Override

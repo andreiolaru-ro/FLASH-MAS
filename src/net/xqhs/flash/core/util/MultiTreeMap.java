@@ -991,9 +991,15 @@ public class MultiTreeMap extends MultiValueMap
 				boolean first = true;
 				for(Object o : backingMap.get(name))
 				{
-					ret += (first ? "" : (indent + baseIndent + (shorter ? "" : "]>")))
-							+ ((MultiTreeMap) o).toString(indent + baseIndent, baseIndent, depth - 1, shorter);
-					first = false;
+					/*
+					 *  Avoid "ClassCastException because net.xqhs.flash.core.util.MultiTreeMap.toString() cannot be evaluate"
+					 */
+					if (o instanceof MultiTreeMap) {
+						MultiTreeMap mtm = (MultiTreeMap) o;
+						ret += (first ? "" : (indent + baseIndent + (shorter ? "" : "]>")))
+								+ mtm.toString(indent + baseIndent, baseIndent, depth - 1, shorter);
+						first = false;
+					}
 				}
 			}
 		// if(ret.length() > 0)
