@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.flashmas.lib.FlashManager;
-import com.flashmas.lib.agents.gui.AddGuiElement;
+import com.flashmas.lib.agents.gui.AgentGuiElement;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SensorsAgentShard extends AgentShardCore implements SensorEventListener, AddGuiElement {
-    private static final String TAG = SensorsAgentShard.class.getSimpleName();
+public class SensorsShard extends AgentShardCore implements SensorEventListener, AgentGuiElement {
+    private static final String TAG = SensorsShard.class.getSimpleName();
     public static final String DESIGNATION = "sensors";
     public static final String SENSOR_TYPES_ARRAY_KEY = "SENSOR_TYPES_ARRAY_KEY";
     private SensorManager sensorManager;
@@ -36,14 +36,14 @@ public class SensorsAgentShard extends AgentShardCore implements SensorEventList
     private boolean hasGui = false;
     private static Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    protected SensorsAgentShard(AgentShardDesignation designation) {
+    protected SensorsShard(AgentShardDesignation designation) {
         super(designation);
         sensorManager = (SensorManager) FlashManager.getInstance()
                 .getAppContext()
                 .getSystemService(Context.SENSOR_SERVICE);
     }
 
-    public SensorsAgentShard() {
+    public SensorsShard() {
         this(AgentShardDesignation.autoDesignation(DESIGNATION));
     }
 

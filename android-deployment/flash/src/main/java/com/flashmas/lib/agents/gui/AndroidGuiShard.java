@@ -4,8 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
+import com.flashmas.lib.agents.gui.generator.AgentViewFactory;
 import com.flashmas.lib.agents.gui.generator.Element;
-import com.flashmas.lib.agents.gui.generator.UiViewFactory;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -51,32 +51,13 @@ public class AndroidGuiShard extends AgentShardCore {
         } else {
             try {
                 InputStream inputStream = context.getAssets().open("agent_view2.yaml");
-                agentView = UiViewFactory.parseAndCreateView(inputStream, context, this);
+                agentView = AgentViewFactory.parseAndCreateView(inputStream, context, this);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
         return agentView;
-    }
-
-    public void onAgentWave(AgentWave agentWave) {
-        Log.d(TAG, "Received agentWave: " + agentWave);
-
-//        String port = agentWave.getCompleteDestination();
-//        Set<String> roles = agentWave.getKeys();
-//        roles.remove("EVENT_TYPE");
-
-//        Log.d(TAG, "Roles are: " + roles);
-//        for (String role : roles) {
-////            List<String> elementsFromPort = IdResourceManager.findElementsByRole(PageBuilder.getInstance().getPage(), role);
-//            List<String> values = agentWave.getValues(role);
-//
-////            if (elementsFromPort.size() == 0) {
-////                continue;
-////            }
-//        }
-
     }
 
     @Override
@@ -98,19 +79,6 @@ public class AndroidGuiShard extends AgentShardCore {
             return;
 
         handlerList.add(handler);
-    }
-
-    public void unregisterEventHandler(AgentEvent.AgentEventHandler handler) {
-        if (handler == null)
-            return;
-
-        handlerList.remove(handler);
-    }
-
-    public void unregisterAllEventHandlers() {
-        for (AgentEvent.AgentEventHandler handler: handlerList) {
-            unregisterEventHandler(handler);
-        }
     }
 
     public void onActiveInput(int id, String role, String port) {

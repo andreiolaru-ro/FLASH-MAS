@@ -31,7 +31,6 @@ public class FlashManager {
     private MutableLiveData<List<Agent>> agentsLiveData = new MutableLiveData<>();
     private List<Agent> agentsList = new ArrayList<>(0);
 
-
     private FlashManager() throws IllegalStateException {
         if (appContext == null) {
             throw new IllegalStateException("FlashManager not initialized with application context");
@@ -74,13 +73,6 @@ public class FlashManager {
     public void stopNode() {
         Intent intent = new Intent(appContext, NodeForegroundService.class);
         appContext.stopService(intent);
-        stopAgents();
-    }
-
-    private void stopAgents() {
-        for (Agent agent: agentsList) {
-            agent.stop();
-        }
     }
 
     public void addAgent(Agent agent) {

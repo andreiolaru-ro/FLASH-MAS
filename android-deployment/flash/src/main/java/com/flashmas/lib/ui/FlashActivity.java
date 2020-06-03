@@ -18,7 +18,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.R;
 import com.flashmas.lib.agents.CompositeAgentBuilder;
-import com.flashmas.lib.agents.sensors.SensorsAgentShard;
+import com.flashmas.lib.agents.sensors.SensorsShard;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -107,7 +107,7 @@ public class FlashActivity extends AppCompatActivity implements OnFragmentIntera
         return new CompositeAgentBuilder()
                 .addGuiShard()
                 .addSensorShard(Arrays.asList(Sensor.TYPE_PROXIMITY, Sensor.TYPE_GYROSCOPE))
-                .addGuiLinkShard(Arrays.asList(SensorsAgentShard.DESIGNATION))
+                .addGuiLinkShard(Arrays.asList(SensorsShard.DESIGNATION))
                 .build();
     }
 
