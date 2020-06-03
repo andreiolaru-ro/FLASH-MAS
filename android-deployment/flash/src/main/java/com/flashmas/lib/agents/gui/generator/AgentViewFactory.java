@@ -26,8 +26,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 
-public class UiViewFactory {
-    private static final String TAG = UiViewFactory.class.getSimpleName();
+public class AgentViewFactory {
+    private static final String TAG = AgentViewFactory.class.getSimpleName();
     private static Yaml yamlParser = new Yaml();
     private static Handler uiHandler = new Handler(Looper.getMainLooper());
     private static Handler backendHandler = new Handler();
@@ -137,12 +137,7 @@ public class UiViewFactory {
             Log.e(TAG, "Label element doesn't have port set");
         }
 
-        if (element.getText() != null && element.getText().equals("__agent_name__")) {
-            view.setText("Waiting agent event..."); // Default text maybe?
-            guiShard.registerEventHandler(agentEvent ->
-                    uiHandler.post(() -> view.setText(agentEvent.getType().toString()))
-            );
-        } else {
+        if (element.getText() != null) {
             view.setText(element.getText());
         }
 

@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
 import com.flashmas.lib.agents.gui.GuiLinkShard;
-import com.flashmas.lib.agents.sensors.SensorsAgentShard;
+import com.flashmas.lib.agents.sensors.SensorsShard;
 
 import net.xqhs.flash.android.AndroidClassFactory;
 import net.xqhs.flash.core.CategoryName;
@@ -19,7 +19,7 @@ import net.xqhs.util.logging.Logger;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.flashmas.lib.agents.sensors.SensorsAgentShard.SENSOR_TYPES_ARRAY_KEY;
+import static com.flashmas.lib.agents.sensors.SensorsShard.SENSOR_TYPES_ARRAY_KEY;
 
 public class CompositeAgentBuilder {
     private MultiTreeMap shardsTree = new MultiTreeMap();
@@ -43,7 +43,7 @@ public class CompositeAgentBuilder {
         if (sensorTypes != null) {
             sensorShardConfig.addAll(SENSOR_TYPES_ARRAY_KEY, listToStringList(sensorTypes));
         }
-        sensorShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsAgentShard.class.getName());
+        sensorShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsShard.class.getName());
         shardsTree.addOneTree("sensorShard", sensorShardConfig);
         return this;
     }
