@@ -153,7 +153,7 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     }
 
     @Override
-    public Element getViewElement() {
+    public Element getAgentGuiElement() {
         Element container = new Element();
         container.setType(ElementType.BLOCK.type);
         List<Element> children = new LinkedList<>();
