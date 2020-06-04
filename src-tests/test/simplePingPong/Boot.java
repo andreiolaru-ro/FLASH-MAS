@@ -18,6 +18,7 @@ public class Boot
 		String test_args = "";
 		
 		test_args += " -package test.simplePingPong";
+		test_args += " -node node1";
 		// test_args += " -node main -support local:main use-thread";
 		test_args += " -agent AgentA classpath:test.simplePingPong.AgentPingPong sendTo:AgentB";
 		test_args += " -agent AgentB classpath:test.simplePingPong.AgentPingPong";

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Input</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
+    <script src="js/vertx-eventbus.js"></script>
+    <script src="js/client.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body onload="init()">
+	<div id = "null_page-root_0" class = "root">
+		<div id = "null_global_0" class = "global">
+			<label id = "node-name_null_0">
+				Node
+			</label>
+			<button id = "node-start_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Start
+			</button>
+			<button id = "node-stop_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Stop
+			</button>
+			<button id = "pause-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Pause simulation
+			</button>
+			<button id = "start-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Start simulation
+			</button>
+			<button id = "stop-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Stop simulation
+			</button>
+			<div id = "entities_null_0" class = "entities">
+			</div>
+		</div>
+		<div id = "null_interfaces_0" class = "interfaces">
+		</div>
+	</div>
+</body>

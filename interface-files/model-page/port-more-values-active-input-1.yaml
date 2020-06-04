@@ -1,0 +1,39 @@
+node:
+  children:
+    # rubbish role names for testing
+    - type: form
+      port: port1
+      role: abc
+    - type: spinner
+      port: port1
+      role: ascas
+    - type: form
+      port: port1
+      role: fasfsafsa
+    - type: form
+      port: port1
+      role: gsdgsdgdg
+    - type: form
+      port: port1
+      role: faasgfagasgatga
+    - type: button
+      port: port1
+      role: activate
+    - type: form
+      port: port2
+      role: asfacxxad
+    - type: form
+      port: port2
+      role: t3w4t
+    - type: spinner
+      port: port2
+      role: name
+    - type: form
+      port: port3
+      role: chicken
+    - type: output
+      port: port3
+      role: nuggets
+    - type: spinner
+      port: port3
+      role: kfc

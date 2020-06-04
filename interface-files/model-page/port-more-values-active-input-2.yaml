@@ -1,0 +1,20 @@
+node:
+  children:
+    - type: form
+      port: port1
+      role: ggaga
+    - type: spinner
+      port: port1
+      role: shsahdsh
+    - type: form
+      port: port2
+      role: hsdhsdh
+    - type: button
+      port: port2
+      role: activate
+    - type: form
+      port: port1
+      role: fsafasfasf
+    - type: button
+      port: port1
+      role: activate

@@ -1,0 +1,8 @@
+node:
+  children:
+    - type: form
+      port: port1
+      role: sdgsdg
+    - type: form
+      port: port1
+      role: hsfbsfdv

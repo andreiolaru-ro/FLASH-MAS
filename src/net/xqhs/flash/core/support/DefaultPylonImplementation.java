@@ -14,6 +14,7 @@ package net.xqhs.flash.core.support;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -42,7 +43,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	 * Indicates whether the implementation is currently running.
 	 */
 	protected boolean isRunning = false;
-	
+
 	/**
 	 * The name of this instance.
 	 */
@@ -57,7 +58,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	
 	@Override
 	public String getName() {
-		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.SUPPORT.s();
+		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.PYLON.s();
 	}
 	
 	@Override
@@ -90,7 +91,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public boolean removeContext(EntityProxy<Node> context) {
 		return true;
 	}
-	
+
 	@Override
 	public boolean addGeneralContext(EntityProxy<?> context) {
 		return true;
@@ -100,7 +101,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return true;
 	}
-	
+
 	/**
 	 * The loader recommends no particular implementation for any shard.
 	 */
@@ -113,7 +114,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public Set<String> getSupportedServices() {
 		return new HashSet<>();
 	}
-	
+
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;

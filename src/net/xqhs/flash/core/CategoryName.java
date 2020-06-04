@@ -55,12 +55,12 @@ public enum CategoryName {
 	 * Each hierarchical key in this subtree has a name that may have one part or two parts; a one-part name is the kind
 	 * of the support infrastructure, a two-part name is the kind and an identifier.
 	 */
-	SUPPORT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(NODE)
+	PYLON(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(NODE)
 			.isPortableFrom(DEPLOYMENT)),
 	/**
 	 * Agents to create in the deployment, potentially inside particular support infrastructures (hierarchical key).
 	 */
-	AGENT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(SUPPORT, CatPar.CAN_ADD_AUTO)),
+	AGENT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(PYLON, CatPar.CAN_ADD_AUTO)),
 	/**
 	 * Shards to be deployed in agents (hierarchical key).
 	 */

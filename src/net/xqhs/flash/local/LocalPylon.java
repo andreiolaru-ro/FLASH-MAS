@@ -12,11 +12,14 @@
 package net.xqhs.flash.local;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.RunnableEntity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -50,10 +53,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * <p>
  * TODO: implement keeping undeliverable messages (see {@link #KEEP_UNDELIVERABLE_PARAM_NAME} and
  * {@link #RETRY_EVERY_PARAM_NAME}).
- * 
+ *
  * @author Andrei Olaru
  */
-public class LocalSupport extends DefaultPylonImplementation implements RunnableEntity<Node> {
+public class LocalPylon extends DefaultPylonImplementation implements RunnableEntity<Node> {
 	/**
 	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
 	 * 
@@ -99,7 +102,7 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
-			pylon.register(getAgent().getEntityName(), inbox);
+			//pylon.register(getAgent().getEntityName(), inbox);
 			return true;
 		}
 		
@@ -111,6 +114,25 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 			}
 			pylon.send(source, destination, content);
 			return true;
+		}
+
+		@Override
+		public void registerNode(String name) {
+			pylon.registerNode(name, inbox);
+		}
+
+		@Override
+		public void registerCentralEntity(String name) {
+			pylon.registerCentralEntity(name, inbox);
+		}
+
+		@Override
+		public void signalAgentEvent(AgentEvent event) {
+			super.signalAgentEvent(event);
+			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
+				pylon.register(getAgent().getEntityName(), inbox);
+			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP))
+				pylon.unregister(getAgent().getEntityName());
 		}
 	}
 	
@@ -125,34 +147,56 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 			processQueue();
 		}
 	}
-	
+
+	protected String nodeName;
+
+	protected String centralEntityName;
+
 	/**
 	 * The proxy to this entity.
 	 */
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-		
+
 		@Override
 		public boolean send(String source, String destination, String content) {
-			return LocalSupport.this.send(source, destination, content);
+			return LocalPylon.this.send(source, destination, content);
 		}
-		
+
+		@Override
+		public void registerNode(String id, MessageReceiver inbox) {
+			messageReceivers.put(id, inbox);
+			nodeName = id;
+		}
+
+		@Override
+		public void registerCentralEntity(String name, MessageReceiver inbox) {
+			messageReceivers.put(name, inbox);
+			centralEntityName = name;
+		}
+
+		@Override
+		public boolean unregister(String agentName) {
+			messageReceivers.remove(agentName);
+			return true;
+		}
+
 		@Override
 		public boolean register(String agentName, MessageReceiver receiver) {
 			messageReceivers.put(agentName, receiver);
 			return true;
 		}
-		
+
 		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-			return LocalSupport.this.getRecommendedShardImplementation(shardType);
+			return LocalPylon.this.getRecommendedShardImplementation(shardType);
 		}
-		
+
 		@Override
 		public String getEntityName() {
 			return getName();
 		}
 	};
-	
+
 	/**
 	 * The type of this support infrastructure (its 'kind')
 	 */
@@ -170,7 +214,7 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 	 * Indicates how often delivery should be retried for messages.
 	 */
 	public static final String	RETRY_EVERY_PARAM_NAME			= "retry-every";
-	
+
 	/**
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
 	 * used.
@@ -190,12 +234,12 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 	 * Indicates how often delivery should be retried for messages.
 	 */
 	protected int		retryEvery			= 5;
-	
+
 	/**
 	 * The receivers for each agent.
 	 */
 	protected HashMap<String, MessageReceiver> messageReceivers = new HashMap<>();
-	
+
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this is a reference to that
 	 * thread.
@@ -206,7 +250,7 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 	 * messages.
 	 */
 	protected LinkedBlockingQueue<Vector<String>>	messageQueue	= null;
-	
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
@@ -271,11 +315,11 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 	public void run() {
 		processQueue();
 	}
-	
+
 	/**
 	 * Registered that a message must be sent. If a thread and a queue are not used, this method directly calls
 	 * {@link #deliver(String, String, String)}.
-	 * 
+	 *
 	 * @param source
 	 *            - the source (complete) endpoint of the message.
 	 * @param destination
@@ -298,10 +342,10 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 		}
 		return deliver(source, destination, content);
 	}
-	
+
 	/**
 	 * Attempts the actual delivery of a message.
-	 * 
+	 *
 	 * @param source
 	 *            - the source (complete) endpoint of the message.
 	 * @param destination
@@ -318,7 +362,7 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 		messageReceivers.get(agentName).receive(source, destination, content);
 		return true;
 	}
-	
+
 	/**
 	 * When using a thread, process (or wait for) messages in the message queue.
 	 */
@@ -339,14 +383,14 @@ public class LocalSupport extends DefaultPylonImplementation implements Runnable
 			}
 		}
 	}
-	
+
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
 		if(shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
 			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<Pylon> asContext() {

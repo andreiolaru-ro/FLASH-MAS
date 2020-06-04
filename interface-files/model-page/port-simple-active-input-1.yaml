@@ -1,0 +1,8 @@
+node:
+  children:
+    - type: form
+      port: port1
+      role: gdsgsdg
+    - type: button
+      port: port1
+      role: activate

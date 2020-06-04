@@ -66,7 +66,16 @@ public class AgentWave extends AgentEvent
 	 * The name associated with the elements of one of the destinations.
 	 */
 	public final String			DESTINATION_ELEMENT		= "destination-element";
-	
+
+	/**
+	 * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
+     *
+	 */
+	public AgentWave()
+	{
+		super(AgentEventType.AGENT_WAVE);
+	}
+
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>

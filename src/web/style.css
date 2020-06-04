@@ -1,0 +1,50 @@
+div {
+    padding: 10px;
+}
+
+.root {
+    font-family: Helvetica, serif;
+    display: inline-flex;
+}
+
+.global {
+    border: 3px solid black;
+    height: fit-content;
+    width: fit-content;
+}
+
+.entities {
+    max-height: 700px;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+.entity {
+    border: 3px solid black;
+    margin: 5px;
+    text-align: left;
+}
+
+.entity-name {
+    padding: 30px;
+}
+
+.entity-element {
+    margin: 5px;
+}
+
+.interfaces {
+    border: 3px solid black;
+    max-height: 700px;
+    max-width: 1100px;
+    margin-left: 10px;
+    text-align: center;
+}
+
+.interface {
+    border: 3px solid black;
+    height: fit-content;
+    width: fit-content;
+    margin-left: 3px;
+    margin-right: 3px;
+}

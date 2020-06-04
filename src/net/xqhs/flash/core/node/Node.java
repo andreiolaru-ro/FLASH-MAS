@@ -11,18 +11,26 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+
+import net.xqhs.flash.core.support.*;
+import net.xqhs.flash.core.util.PlatformUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONValue;
 import net.xqhs.util.logging.logging.LogWrapper;
 
 /**
@@ -35,11 +43,8 @@ import net.xqhs.util.logging.logging.LogWrapper;
  */
 public class Node extends Unit implements Entity<Node>
 {
-	/**
-	 * The name of the node.
-	 */
-	protected String						name				= null;
-	
+	protected String						 name;
+
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
 	 */
@@ -50,12 +55,69 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
+	protected MessagingShard                messagingShard;
+
+    private boolean isRunning;
+
+    private static final String             SHARD_ENDPOINT                  = "control";
+
+	String[] supportedOperations = {"start", "stop", "pause_simulation", "start_simulation", "stop_simulation"};
+
+	protected ShardContainer proxy = new ShardContainer() {
+
+		private boolean parseJSON(Object obj) {
+			if(obj instanceof JSONObject) {
+				JSONObject jo = (JSONObject) obj;
+				String child   = (String)jo.get("child");
+				String command = (String)jo.get("command");
+				Entity<?> entity = entityOrder.stream()
+						.filter(en -> en.getName().equals(child))
+						.findFirst().orElse(null);
+				if(entity == null) {
+					le("[] child not found in the context of [].", child, name);
+					return false;
+				}
+				if(command.equals("start"))
+					if(entity.start())
+						lf("[] was started by parent [].", child, name);
+
+			}
+			return true;
+		}
+
+		@Override
+		public void postAgentEvent(AgentEvent event) {
+			switch (event.getType())
+			{
+				case AGENT_WAVE:
+					if(!((AgentWave)event).getFirstDestinationElement().equals(SHARD_ENDPOINT)) break;
+					Object obj = JSONValue.parse(((AgentWave)event).getContent());
+					if(obj == null) break;
+					parseJSON(obj);
+					break;
+				default:
+					break;
+			}
+		}
+
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation) {
+			return null;
+		}
+
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+	};
+
+
 
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
 	 * @param nodeConfiguration
-	 *                              the configuration of the node. Can be <code>null</code>.
+	 *            the configuration of the node. Can be <code>null</code>.
 	 */
 	public Node(MultiTreeMap nodeConfiguration)
 	{
@@ -84,7 +146,58 @@ public class Node extends Unit implements Entity<Node>
 		registeredEntities.get(entityType).add(entity);
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
-	
+
+    /**
+     * @return
+     *          - a json array indicating all details about each operation.
+     */
+	protected JSONArray configureOperations() {
+	    // if the message should be sent via proxy or through the entity itself
+	    String[] modelAccess = {"proxy", "self"};
+        JSONArray conf = new JSONArray();
+
+        for(String operation : supportedOperations) {
+            JSONObject op = new JSONObject();
+            op.put("name", operation);
+            op.put("params", "");
+            op.put("proxy", getName());
+            if(operation.equals("start"))
+                op.put("access", modelAccess[0]);
+            else
+                op.put("access", modelAccess[1]);
+            conf.add(op);
+        }
+        return conf;
+    }
+
+	/**
+	 * Method used to send monitoring message to central entity: the message covers necessary information
+	 * about all entities registered and started in the context of current node.
+	 *
+	 * @return
+	 * 				- an indication of success.
+	 */
+	protected boolean registerEntitiesToControlEntity() {
+	    JSONArray operations = configureOperations();
+		JSONArray entities = new JSONArray();
+		registeredEntities.entrySet().forEach(entry-> {
+			String category = entry.getKey();
+			for(Entity<?> entity : entry.getValue())
+			{
+				JSONObject ent = new JSONObject();
+				ent.put("node", getName());
+				ent.put("category", category);
+				ent.put("name", entity.getName());
+				ent.put("operations", operations);
+				entities.add(ent);
+			}
+		});
+		return messagingShard.sendMessage(
+				AgentWave.makePath(getName(), SHARD_ENDPOINT),
+				AgentWave.makePath(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, SHARD_ENDPOINT),
+				entities.toString());
+	}
+
 	@Override
 	public boolean start()
 	{
@@ -94,11 +207,19 @@ public class Node extends Unit implements Entity<Node>
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
 			if(entity.start())
+			{
 				lf("entity [] started successfully.", entityName);
+				if(getName() != null && (entity instanceof DefaultPylonImplementation))
+					messagingShard.registerNode(getName());
+			}
 			else
 				le("failed to start entity [].", entityName);
 		}
+		isRunning = true;
 		li("Node [] started.", name);
+
+		if(getName() != null && registerEntitiesToControlEntity())
+			lf("Entities successfully registered to control entity.");
 		return true;
 	}
 	
@@ -117,6 +238,7 @@ public class Node extends Unit implements Entity<Node>
 				else
 					le("failed to stop entity.");
 			}
+		isRunning = false;
 		li("Node [] stopped.", name);
 		return true;
 	}
@@ -124,8 +246,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean isRunning()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return isRunning;
 	}
 	
 	@Override
@@ -144,8 +265,24 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		// unsupported
-		return false;
+		PylonProxy pylonProxy = (PylonProxy)context;
+		String recommendedShard = pylonProxy
+				.getRecommendedShardImplementation(
+						AgentShardDesignation.standardShard(
+								AgentShardDesignation.StandardAgentShard.MESSAGING));
+		try
+		{
+			messagingShard = (MessagingShard) PlatformUtils
+					.getClassFactory()
+					.loadClassInstance(recommendedShard, null, true);
+		} catch(ClassNotFoundException
+				| InstantiationException | NoSuchMethodException
+				| IllegalAccessException | InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		messagingShard.addContext(proxy);
+		return messagingShard.addGeneralContext(context);
 	}
 
 	@Override
@@ -183,4 +320,8 @@ public class Node extends Unit implements Entity<Node>
 		return agents;
 	}
 
+
+	public List<Entity<?>> getEntities() {
+		return entityOrder;
+	}
 }

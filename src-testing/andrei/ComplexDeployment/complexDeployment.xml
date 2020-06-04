@@ -13,7 +13,7 @@
 
 	<entity type="agentarray">
 		<entity type="agent" kind="composite">
-			<in-context-of>websocket</in-context-of>
+			<in-context-of>websockets</in-context-of>
 		</entity>
 	</entity>
 
@@ -29,7 +29,7 @@
 	<!-- <loader for="agent" kind="composite" /> -->
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
 
-	<support kind="websocket" />
+	<support kind="websockets" />
 
 	<support kind="custom">
 		<parameter name="classpath" value="custom" />

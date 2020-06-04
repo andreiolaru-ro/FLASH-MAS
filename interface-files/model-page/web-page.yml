@@ -1,0 +1,34 @@
+layout: horizontal
+global:
+  - type: label
+    port: node-name
+    value: Node
+  - type: button
+    port: node-start
+    role: activate
+    value: Start
+  - type: button
+    port: node-stop
+    role: activate
+    value: Stop
+  - type: button
+    port: pause-simulation
+    role: activate
+    value: Pause simulation
+  - type: button
+    port: start-simulation
+    role: activate
+    value: Start simulation
+  - type: button
+    port: stop-simulation
+    role: activate
+    value: Stop simulation
+  - type: container
+    port: entities # special port
+    # to do add specs for one entity (reduced interface)
+    # what is default: select, entity name, these 3 buttons
+    #children: # to be added from JS in web page, skipped from generator
+    #  - type: button
+    #    value: check
+    #    port: check-simulation
+interfaces:

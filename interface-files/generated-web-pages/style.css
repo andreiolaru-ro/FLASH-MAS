@@ -1,0 +1,51 @@
+button {
+    margin: 5px;
+}
+
+div {
+    padding: 10px;
+}
+
+.entity-name {
+    padding: 30px;
+}
+
+.entity {
+    border: 3px solid black;
+    width: fit-content;
+    margin: 5px;
+}
+
+.global {
+    border: 3px solid black;
+    height: fit-content;
+    width: fit-content;
+}
+
+.root {
+    font-family: Helvetica, serif;
+    display: inline-flex;
+}
+
+.interfaces {
+    height: fit-content;
+    width: fit-content;
+    margin-left: 10px;
+    display: inline-flex;
+}
+
+.extended-interfaces {
+    border: 3px solid black;
+    height: fit-content;
+    width: fit-content;
+    margin-left: 10px;
+    display: inline-flex;
+}
+
+.interface {
+    border: 3px solid black;
+    height: fit-content;
+    width: fit-content;
+    margin-left: 3px;
+    margin-right: 3px;
+}

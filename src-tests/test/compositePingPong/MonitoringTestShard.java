@@ -64,7 +64,7 @@ public class MonitoringTestShard extends AgentShardCore
 		
 		if(getAgent() != null)
 		{
-			locallog = (UnitComponent) new UnitComponent().setUnitName("monitoring-" + getAgent().getEntityName())
+			locallog = (UnitComponent) new UnitComponent().setUnitName("net.xqhs.flash.core.monitoring-" + getAgent().getEntityName())
 					.setLogLevel(Level.ALL).setLoggerType(PlatformUtils.platformLogType());
 			locallog.lf("testing started.");
 		}
