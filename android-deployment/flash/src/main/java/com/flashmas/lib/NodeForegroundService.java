@@ -36,12 +36,14 @@ import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
 import static com.flashmas.lib.Globals.NODE_NAME;
 
 public class NodeForegroundService extends Service {
+    public static final String KEY_CONFIG = "key_config";
     private static boolean running = false;
     private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
     private Node node;
     private List<Pylon> pylonsList = new LinkedList<>();
     private String deviceNodeName = NODE_NAME;  // init deviceNodeName with default
     static ByteArrayOutputStream logsOutputStream = new ByteArrayOutputStream();
+    private boolean hasConfig = false;
 
     Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
         @Override
@@ -73,28 +75,38 @@ public class NodeForegroundService extends Service {
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        // TODO send list of pylons with the intent (or configuration)
-        MultiTreeMap nodeConfig = new MultiTreeMap();
-        nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
-        node = new Node(nodeConfig);
-        node.setLogLevel(LoggerSimple.Level.ALL);
-        Pylon localPylon = new LocalSupport();
-        pylonsList.add(localPylon);
-        node.registerEntity("pylon", localPylon, localPylon.getName());
-        GlobalLogWrapper.setLogStream(logsOutputStream);
-        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
-        FlashManager.getInstance().getAgentsLiveData().observeForever(agentsObserver);
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(Globals.NODE_FOREGROUND_ID, buildForegroundNotification());
 
+        createNode(intent);
         startNode();
 
         return START_STICKY;
+    }
+
+    private void createNode(Intent intent) {
+        MultiTreeMap nodeConfig;
+
+        if (intent.hasExtra(KEY_CONFIG)
+                && intent.getSerializableExtra(KEY_CONFIG) instanceof MultiTreeMap) {
+            nodeConfig = (MultiTreeMap) intent.getSerializableExtra(KEY_CONFIG);
+            hasConfig = true;
+        } else {
+            nodeConfig = new MultiTreeMap();
+            nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
+        }
+
+        node = new Node(nodeConfig);
+        node.setLogLevel(LoggerSimple.Level.ALL);
+        if (!hasConfig) {
+            Pylon localPylon = new LocalSupport();
+            pylonsList.add(localPylon);
+            node.registerEntity("pylon", localPylon, localPylon.getName());
+        }
+
+        GlobalLogWrapper.setLogStream(logsOutputStream);
+        Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
+        FlashManager.getInstance().getAgentsLiveData().observeForever(agentsObserver);
     }
 
     private void startNode() {
