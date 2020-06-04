@@ -41,7 +41,7 @@ public class GuiLinkShard extends AgentShardCore {
                 AgentShard shard = getAgent()
                         .getAgentShard(AgentShardDesignation.autoDesignation(designation));
                 if (shard instanceof AgentGuiElement) {
-                    Element v = ((AgentGuiElement) shard).getViewElement();
+                    Element v = ((AgentGuiElement) shard).getAgentGuiElement();
                     children.add(v);
                 }
             }
