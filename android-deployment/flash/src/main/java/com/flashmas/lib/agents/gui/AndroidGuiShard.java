@@ -3,13 +3,14 @@ package com.flashmas.lib.agents.gui;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.flashmas.lib.agents.gui.generator.AgentViewFactory;
-import com.flashmas.lib.agents.gui.generator.Element;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -18,12 +19,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-// TODO must extend abstract class GuiShard, from @florinrm
-public class AndroidGuiShard extends AgentShardCore {
+import interfaceGenerator.io.IOShard;
+
+import static com.flashmas.lib.agents.gui.IdResourceManager.buildAgentWave;
+
+public class AndroidGuiShard extends IOShard {
     private static final String TAG = AndroidGuiShard.class.getSimpleName();
     public static final String DESIGNATION = "gui";
+    public static final String KEY_PORT = "port";   // TODO move to IOShard
+    public static final String KEY_ROLE = "role";   // TODO move to IOShard
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();
     private MultiTreeMap configuration;
     private View agentView = null;
@@ -39,6 +44,32 @@ public class AndroidGuiShard extends AgentShardCore {
     public AndroidGuiShard(MultiTreeMap configuration) {
         this();
         this.configuration = configuration;
+    }
+
+    @Override
+    public AgentWave getInput(String port) {
+        return buildAgentWave(agentView, port);
+    }
+
+    @Override
+    public void sendOutput(AgentWave agentWave) {
+        String port = agentWave.get(KEY_PORT);
+        String role = agentWave.get(KEY_ROLE);
+        Integer id = IdResourceManager.getId(port, role);
+        if (id == null) {
+            return;
+        }
+
+        View v = agentView.findViewById(id);
+        String content = agentWave.getContent();
+
+        if (v instanceof EditText) {
+            ((EditText)v).setText(content);
+        } else if (v instanceof Button) {
+            ((Button)v).setText(content);
+        } else if (v instanceof TextView) {
+            ((TextView)v).setText(content);
+        }
     }
 
     public View getAgentView(Context context) {
@@ -89,27 +120,10 @@ public class AndroidGuiShard extends AgentShardCore {
             case "send":
             case "move":
             default:
-                AgentWave wave = buildAgentWave(IdResourceManager.getElement(id));
+                AgentWave wave = buildAgentWave(agentView, IdResourceManager.getElement(id).getPort());
                 super.getAgent().postAgentEvent(wave);
                 break;
         }
-    }
-
-    private AgentWave buildAgentWave(Element element) {
-        if (element == null) {
-            return null;
-        }
-        AgentWave wave = new AgentWave(null, "/");
-        wave.addSourceElementFirst("/gui/" + element.getPort());
-
-        Map<Integer, String> formMap = IdResourceManager.getPortValues(agentView, element.getPort());
-        for (Integer elementId : formMap.keySet()) {
-            wave.add(IdResourceManager.getElement(elementId).getRole(), formMap.get(elementId));
-        }
-
-        Log.d(TAG, "Built the wave: " + wave);
-
-        return wave;
     }
 
     public ShardContainer getShardContainer() {

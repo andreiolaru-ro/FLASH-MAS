@@ -168,6 +168,11 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 	};
 
+	@Override
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		return super.addGeneralContext(context);
+	}
+
 	/**
 	 * The type of this support infrastructure (its 'kind')
 	 */

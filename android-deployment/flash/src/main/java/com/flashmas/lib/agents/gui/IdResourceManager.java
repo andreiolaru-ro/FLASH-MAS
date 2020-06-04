@@ -5,6 +5,8 @@ import android.widget.EditText;
 
 import com.flashmas.lib.agents.gui.generator.Element;
 
+import net.xqhs.flash.core.agent.AgentWave;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,18 +42,46 @@ public class IdResourceManager {
         }
     }
 
-    public static Map<Integer, String> getPortValues(View view, String port) {
-        HashMap<Integer, String> map = new HashMap<>();
+    public static Map<String, String> getPortValues(View view, String port) {
+        HashMap<String, String> map = new HashMap<>();
         if (!portMap.containsKey(port)) {
             return map;
         }
+
         for (Integer id: portMap.get(port)) {
             View v = view.findViewById(id);
             if (v instanceof EditText) {
-                map.put(id, ((EditText) v).getText().toString());
+                map.put(((Element)elementMap.get(id)).getRole(), ((EditText) v).getText().toString());
             }
         }
 
         return map;
+    }
+
+    static AgentWave buildAgentWave(View agentView, String port) {
+        if (port == null) {
+            return null;
+        }
+
+        AgentWave wave = new AgentWave();
+        wave.addSourceElementFirst("/gui/" + port);
+
+        Map<String, String> formMap = IdResourceManager.getPortValues(agentView, port);
+        for (Map.Entry<String, String> entry: formMap.entrySet()) {
+            wave.add(entry.getKey(), entry.getValue());
+        }
+
+        return wave;
+    }
+
+    public static Integer getId(String port, String role) {
+        List<Integer> portIds = portMap.get(port);
+        for (Integer id: portIds) {
+            if (elementMap.get(id).getRole().contentEquals(role)) {
+                return id;
+            }
+        }
+
+        return null;
     }
 }

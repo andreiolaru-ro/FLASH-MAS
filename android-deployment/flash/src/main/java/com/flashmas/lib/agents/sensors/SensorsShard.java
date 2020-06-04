@@ -17,7 +17,6 @@ import com.flashmas.lib.agents.gui.AgentGuiElement;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -26,12 +25,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SensorsShard extends AgentShardCore implements SensorEventListener, AgentGuiElement {
+import interfaceGenerator.io.IOShard;
+
+public class SensorsShard extends IOShard implements SensorEventListener, AgentGuiElement {
     private static final String TAG = SensorsShard.class.getSimpleName();
     public static final String DESIGNATION = "sensors";
     public static final String SENSOR_TYPES_ARRAY_KEY = "SENSOR_TYPES_ARRAY_KEY";
     private SensorManager sensorManager;
     private List<Sensor> sensorsList = new LinkedList<>();
+    private HashMap<Integer, float[]> sensorsValues = new HashMap<>();
     private HashMap<Sensor, TextView> viewMap = new HashMap<>();
     private boolean hasGui = false;
     private static Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -45,6 +47,21 @@ public class SensorsShard extends AgentShardCore implements SensorEventListener,
 
     public SensorsShard() {
         this(AgentShardDesignation.autoDesignation(DESIGNATION));
+    }
+
+    @Override
+    public AgentWave getInput(String sensorType) {
+        AgentWave wave = new AgentWave();
+
+        wave.addSourceElementFirst(DESIGNATION);
+        wave.add("Value", Arrays.toString(sensorsValues.get(Integer.valueOf(sensorType))));
+
+        return wave;
+    }
+
+    @Override
+    public void sendOutput(AgentWave agentWave) {
+        // Not necessary here
     }
 
     @Override
@@ -128,6 +145,8 @@ public class SensorsShard extends AgentShardCore implements SensorEventListener,
                     " changed. New values are: " + Arrays.toString(event.values) +
                     " from agent " + getAgent().getEntityName(), "/"));
         }
+
+        sensorsValues.put(event.sensor.getType(), event.values);
     }
 
     @Override
