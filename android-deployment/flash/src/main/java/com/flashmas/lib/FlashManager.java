@@ -16,6 +16,7 @@ import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class FlashManager {
     private static Context appContext;
     private MutableLiveData<List<Agent>> agentsLiveData = new MutableLiveData<>();
     private List<Agent> agentsList = new ArrayList<>(0);
+    private static MultiTreeMap config = null;
 
     private FlashManager() throws IllegalStateException {
         if (appContext == null) {
@@ -37,12 +39,18 @@ public class FlashManager {
         }
     }
 
-    public static void init(Context context) {
+    public static void init(Context context, MultiTreeMap config) {
         if (context == null || appContext != null) {
             return;
         }
 
         appContext = context.getApplicationContext();
+
+        FlashManager.config = config;
+    }
+
+    public static void init(Context context) {
+        init(context, null);
     }
 
     public static FlashManager getInstance() throws IllegalStateException {
@@ -63,6 +71,10 @@ public class FlashManager {
 
     public void startNode() {
         Intent intent = new Intent(appContext, NodeForegroundService.class);
+        if (config != null) {
+            intent.putExtra(NodeForegroundService.KEY_CONFIG, config);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             appContext.startForegroundService(intent);
         } else {
