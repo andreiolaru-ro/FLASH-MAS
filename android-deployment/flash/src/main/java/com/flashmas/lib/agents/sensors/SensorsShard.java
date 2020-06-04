@@ -8,12 +8,12 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.agents.gui.AgentGuiElement;
+import com.flashmas.lib.agents.gui.AndroidGuiShard;
+import com.flashmas.lib.agents.gui.generator.Element;
+import com.flashmas.lib.agents.gui.generator.ElementType;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -34,7 +34,6 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     private SensorManager sensorManager;
     private List<Sensor> sensorsList = new LinkedList<>();
     private HashMap<Integer, float[]> sensorsValues = new HashMap<>();
-    private HashMap<Sensor, TextView> viewMap = new HashMap<>();
     private boolean hasGui = false;
     private static Handler uiHandler = new Handler(Looper.getMainLooper());
 
@@ -137,14 +136,13 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     @Override
     public void onSensorChanged(SensorEvent event) {
         Log.d(TAG, "Sensor " + event.sensor.getName() + " changed. New values are: " + Arrays.toString(event.values));
-        if (hasGui && viewMap.containsKey(event.sensor)) {
-            uiHandler.post(() ->
-                    viewMap.get(event.sensor).setText(Arrays.toString(event.values)));
-        } else {
-            getAgent().postAgentEvent(new AgentWave("Sensor " + event.sensor.getName() +
-                    " changed. New values are: " + Arrays.toString(event.values) +
-                    " from agent " + getAgent().getEntityName(), "/"));
-        }
+
+        AgentWave wave = new AgentWave();
+        wave.addSourceElementFirst(DESIGNATION);
+        wave.add(AndroidGuiShard.KEY_PORT, DESIGNATION);
+        wave.add(AndroidGuiShard.KEY_ROLE, String.valueOf(event.sensor.getType()));
+        wave.add("content", Arrays.toString(event.values));
+        getAgent().postAgentEvent(wave);
 
         sensorsValues.put(event.sensor.getType(), event.values);
     }
@@ -155,19 +153,29 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     }
 
     @Override
-    public View getView(Context context) {
-        LinearLayout ll = new LinearLayout(context);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        for (Sensor s : sensorsList) {
-            TextView label = new TextView(context);
-            label.setText(s.getName() + ": ");
-            ll.addView(label);
+    public Element getViewElement() {
+        Element container = new Element();
+        container.setType(ElementType.BLOCK.type);
+        List<Element> children = new LinkedList<>();
 
-            TextView v = new TextView(context);
-            viewMap.put(s, v);
-            ll.addView(v);
+        for (Sensor s : sensorsList) {
+            Element label = new Element();
+            label.setType(ElementType.LABEL.type);
+            label.setText(s.getName() + ": ");
+            children.add(label);
+
+            Element v = new Element();
+            v.setType(ElementType.LABEL.type);
+            v.setPort(DESIGNATION);
+            v.setRole(String.valueOf(s.getType()));
+
+            children.add(v);
         }
         hasGui = true;
-        return ll;
+        container.setChildren(children);
+
+        return container;
     }
+
+
 }

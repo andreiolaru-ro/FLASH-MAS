@@ -59,9 +59,9 @@ public class AgentViewFactory {
         AgentShard shard = guiShard.getShardContainer()
                 .getAgentShard(AgentShardDesignation.autoDesignation(GuiLinkShard.DESIGNATION));
         if (shard instanceof GuiLinkShard && rootView instanceof LinearLayout) {
-            View v = ((GuiLinkShard) shard).getView(context);
+            Element v = ((GuiLinkShard) shard).getShardsView();
             if (v != null) {
-                ((LinearLayout) rootView).addView(v);
+                ((LinearLayout) rootView).addView(createView(v, context, guiShard));
             }
         }
 
