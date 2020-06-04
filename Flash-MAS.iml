@@ -4,17 +4,47 @@
     <libelement value="jar://$MODULE_DIR$/lib/Config.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/net.xqhs.XML.jar!/" />
     <libelement value="file://lib/Logging-light.jar" />
-    <src_description expected_position="0">
-      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
-      <src_folder value="file://$MODULE_DIR$/src-deployment" expected_position="1" />
-    </src_description>
-  </component>
-  <component name="FacetManager">
-    <facet type="android" name="Android">
-      <configuration />
-    </facet>
-  </component>
-    <libelement value="jar://$MODULE_DIR$/lib/Logging-light.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/attoparser-2.0.5.RELEASE.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-annotations-2.10.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-core-2.10.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-databind-2.10.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/javassist-3.20.0-GA.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-all-4.1.47.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-buffer-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-codec-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-codec-dns-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-codec-http-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-codec-http2-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-codec-socks-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-common-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-handler-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-handler-proxy-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-resolver-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-resolver-dns-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-tcnative-boringssl-static-2.0.26.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-transport-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-transport-native-epoll-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-transport-native-kqueue-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/netty-transport-native-unix-common-4.1.48.Final.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/ognl-3.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/reactive-streams-1.0.3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/rxjava-1.3.8.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/slf4j-api-2.0.0-alpha1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/slf4j-simple-2.0.0-alpha1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/snakeyaml-1.25.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/thymeleaf-3.0.11.RELEASE.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/unbescape-1.1.6.RELEASE.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-auth-common-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-bridge-common-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-codegen-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-core-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-rx-gen-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-rx-java-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-tcp-eventbus-bridge-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-web-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-web-common-3.9.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-web-templ-rocker-3.8.5.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/vertx-web-templ-thymeleaf-3.8.5.jar!/" />
     <src_description expected_position="0">
       <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
       <src_folder value="file://$MODULE_DIR$/src-examples" expected_position="1" />
@@ -27,12 +57,6 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src-deployment" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/src-deployment/android-deployment" />
-    </content>
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="jdk" jdkName="13" jdkType="JavaSDK" />
       <sourceFolder url="file://$MODULE_DIR$/src-examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-tests" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-testing" isTestSource="false" />
@@ -61,29 +85,410 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Logging-light.jar">
+      <library name="attoparser-2.0.5.RELEASE.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/Logging-light.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/attoparser-2.0.5.RELEASE.jar!/" />
         </CLASSES>
-        <JAVADOC>
-          <root url="jar://$MODULE_DIR$/lib/Logging-light.jar!/doc-Logging-light/pages/javadoc" />
-        </JAVADOC>
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/Logging-light.jar!/" />
-        </SOURCES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jackson-annotations-2.10.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-annotations-2.10.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jackson-core-2.10.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-core-2.10.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jackson-databind-2.10.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-databind-2.10.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="javassist-3.20.0-GA.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/javassist-3.20.0-GA.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-all-4.1.47.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-all-4.1.47.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-buffer-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-buffer-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-codec-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-codec-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-codec-dns-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-codec-dns-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-codec-http-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-codec-http-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-codec-http2-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-codec-http2-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-codec-socks-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-codec-socks-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-common-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-common-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-handler-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-handler-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-handler-proxy-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-handler-proxy-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-resolver-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-resolver-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-resolver-dns-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-resolver-dns-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-tcnative-boringssl-static-2.0.26.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-tcnative-boringssl-static-2.0.26.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-transport-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-transport-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-transport-native-epoll-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-transport-native-epoll-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-transport-native-kqueue-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-transport-native-kqueue-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="netty-transport-native-unix-common-4.1.48.Final.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/netty-transport-native-unix-common-4.1.48.Final.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="ognl-3.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ognl-3.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="reactive-streams-1.0.3.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/reactive-streams-1.0.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="rxjava-1.3.8.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/rxjava-1.3.8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="slf4j-api-2.0.0-alpha1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/slf4j-api-2.0.0-alpha1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="slf4j-simple-2.0.0-alpha1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/slf4j-simple-2.0.0-alpha1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="snakeyaml-1.25.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/snakeyaml-1.25.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="thymeleaf-3.0.11.RELEASE.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/thymeleaf-3.0.11.RELEASE.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="unbescape-1.1.6.RELEASE.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/unbescape-1.1.6.RELEASE.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-auth-common-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-auth-common-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-bridge-common-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-bridge-common-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-codegen-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-codegen-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-core-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-core-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-rx-gen-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-rx-gen-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-rx-java-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-rx-java-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-tcp-eventbus-bridge-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-tcp-eventbus-bridge-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-web-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-web-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-web-common-3.9.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-web-common-3.9.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-web-templ-rocker-3.8.5.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-web-templ-rocker-3.8.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="vertx-web-templ-thymeleaf-3.8.5.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/vertx-web-templ-thymeleaf-3.8.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="library" name="Java-WebSocket-1.4.0-with-dependencies" level="project" />
-    <orderEntry type="library" name="vertx-3.9.0" level="project" />
-    <orderEntry type="library" name="json-simple-1.1.1" level="project" />
-    <orderEntry type="library" name="jackson-2.10.2" level="project" />
-    <orderEntry type="library" name="gson-2.8.6" level="project" />
-    <orderEntry type="library" name="snakeyaml-1.25" level="project" />
-    <orderEntry type="library" exported="" name="netty-4.1.48.Final" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/gson-2.8.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/json-simple-1.1.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/Light-Logging.jar!/" />
+        </CLASSES>
+        <JAVADOC>
+          <root url="jar://$MODULE_DIR$/lib/Light-Logging.jar!/doc-Logging-light/pages/javadoc" />
+        </JAVADOC>
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/Light-Logging.jar!/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

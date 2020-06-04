@@ -23,7 +23,7 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalSupport;
+import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
@@ -99,9 +99,9 @@ public class NodeForegroundService extends Service {
         node = new Node(nodeConfig);
         node.setLogLevel(LoggerSimple.Level.ALL);
         if (!hasConfig) {
-            Pylon localPylon = new LocalSupport();
+            Pylon localPylon = new LocalPylon();
             pylonsList.add(localPylon);
-            node.registerEntity("pylon", localPylon, localPylon.getName());
+            node.addGeneralContext(localPylon.asContext());
         }
 
         GlobalLogWrapper.setLogStream(logsOutputStream);
