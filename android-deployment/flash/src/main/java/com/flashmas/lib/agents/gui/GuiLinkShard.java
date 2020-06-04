@@ -1,13 +1,15 @@
 package com.flashmas.lib.agents.gui;
 
-import android.content.Context;
-import android.view.View;
-import android.widget.LinearLayout;
+import com.flashmas.lib.agents.gui.generator.Element;
+import com.flashmas.lib.agents.gui.generator.ElementType;
 
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class GuiLinkShard extends AgentShardCore {
     private MultiTreeMap config;
@@ -29,20 +31,23 @@ public class GuiLinkShard extends AgentShardCore {
         return true;
     }
 
-    public View getView(Context context) {
+    public Element getShardsView() {
         if (config.containsKey(SHARD_DESIGNATIONS_KEY)) {
-            LinearLayout ll = new LinearLayout(context);
-            ll.setOrientation(LinearLayout.VERTICAL);
+            Element container = new Element();
+            container.setType(ElementType.BLOCK.type);
+            List<Element> children = new LinkedList<>();
+
             for (String designation : config.getValues(SHARD_DESIGNATIONS_KEY)) {
                 AgentShard shard = getAgent()
                         .getAgentShard(AgentShardDesignation.autoDesignation(designation));
                 if (shard instanceof AgentGuiElement) {
-                    View v = ((AgentGuiElement) shard).getView(context);
-                    ll.addView(v);
+                    Element v = ((AgentGuiElement) shard).getViewElement();
+                    children.add(v);
                 }
             }
 
-            return ll;
+            container.setChildren(children);
+            return container;
         }
 
         return null;

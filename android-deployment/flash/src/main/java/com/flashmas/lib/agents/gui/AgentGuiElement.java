@@ -1,8 +1,7 @@
 package com.flashmas.lib.agents.gui;
 
-import android.content.Context;
-import android.view.View;
+import com.flashmas.lib.agents.gui.generator.Element;
 
 public interface AgentGuiElement {
-    View getView(Context context);
+    Element getViewElement();
 }

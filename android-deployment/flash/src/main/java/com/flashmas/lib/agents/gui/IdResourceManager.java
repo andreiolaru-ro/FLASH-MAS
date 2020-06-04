@@ -75,6 +75,10 @@ public class IdResourceManager {
     }
 
     public static Integer getId(String port, String role) {
+        if (port == null || role == null) {
+            return null;
+        }
+
         List<Integer> portIds = portMap.get(port);
         for (Integer id: portIds) {
             if (elementMap.get(id).getRole().contentEquals(role)) {

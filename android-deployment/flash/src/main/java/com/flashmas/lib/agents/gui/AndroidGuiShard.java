@@ -96,6 +96,10 @@ public class AndroidGuiShard extends IOShard {
         super.signalAgentEvent(event);
 
         signalHandlers(event);
+        if (event instanceof AgentWave) {
+            sendOutput((AgentWave)event);
+        }
+
         Log.d(TAG, "signal event: " + event.toString());
     }
 
