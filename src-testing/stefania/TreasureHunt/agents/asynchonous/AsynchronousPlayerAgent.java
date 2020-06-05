@@ -3,6 +3,7 @@ package stefania.TreasureHunt.agents.asynchonous;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -13,6 +14,7 @@ import stefania.TreasureHunt.util.Coord;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static stefania.TreasureHunt.util.Constants.*;
 
@@ -20,6 +22,7 @@ public class AsynchronousPlayerAgent implements Agent {
     private String					name;
     private AsynchronousMPIMessaging messagingShard;
     private MessagingPylonProxy pylon;
+    private static LinkedBlockingQueue<AgentWave> messageQueue;
     private int myRank;
     private int size;
     private Coord oldPos;
@@ -28,7 +31,17 @@ public class AsynchronousPlayerAgent implements Agent {
 
     public ShardContainer proxy	= new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event) { }
+        public void postAgentEvent(AgentEvent event) {
+            AgentWave wave = (AgentWave) event.getObject(KEY);
+            synchronized (messageQueue) {
+                try {
+                    messageQueue.put(wave);
+                    messageQueue.notify();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         @Override
         public String getEntityName()
@@ -46,13 +59,35 @@ public class AsynchronousPlayerAgent implements Agent {
     };
 
     public AsynchronousPlayerAgent(String name, int rank, int size) {
+        messageQueue = new LinkedBlockingQueue<>();
         this.name = name;
         this.myRank = rank;
         this.size = size;
     }
 
+    public static AgentWave getMessage() {
+        AgentWave wave = null;
+
+        synchronized(messageQueue)
+        {
+            if(messageQueue.isEmpty())
+                try
+                {
+                    messageQueue.wait();
+                } catch(InterruptedException e)
+                {
+                    // do nothing
+                }
+            if(!messageQueue.isEmpty())
+                wave = messageQueue.poll();
+        }
+
+        return wave;
+    }
+
     public void initGame() {
         setPos(new Coord(5, 5));
+//        setPos(new Coord(myRank, myRank));
         candidates = new ArrayList<Coord>();
         for (int i = 1; i <= 11; i++) {
             for (int j = 1; j <= 11; j++) {
@@ -192,17 +227,19 @@ public class AsynchronousPlayerAgent implements Agent {
     }
 
     public static class AsynchronousPlayerInitBehaviour {
-        AsynchronousPlayerAgent playerAgent;
+        static AsynchronousPlayerAgent playerAgent;
 
         public AsynchronousPlayerInitBehaviour(AsynchronousPlayerAgent playerAgent) {
             this.playerAgent = playerAgent;
         }
 
-        public void action() {
+        public static void action() {
             String hintRequest = "up";
 
-            playerAgent.messagingShard.start();
-            playerAgent.messagingShard.getMessage();
+            playerAgent.messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+            playerAgent.messagingShard.setSource(Integer.parseInt(MASTER));
+//            playerAgent.messagingShard.setTag(5);
+            getMessage();
 
             playerAgent.initGame();
             playerAgent.move("up");
@@ -224,7 +261,7 @@ public class AsynchronousPlayerAgent implements Agent {
             String moveDirection;
             String hint;
 
-            hint = playerAgent.messagingShard.getMessage().getContent();
+            hint = getMessage().getContent();
 
             System.out.println(playerAgent.getName() + " pos: " + playerAgent.getPos());
 
@@ -252,9 +289,7 @@ public class AsynchronousPlayerAgent implements Agent {
 
         public void action() {
             System.out.println(playerAgent.getName() + "> I found the treasure at " + playerAgent.getPos() + "!");
-            playerAgent.messagingShard.sendMessage(PLAYER, MASTER, END_GAME);
-            playerAgent.messagingShard.getMessage();
-            playerAgent.messagingShard.stop();
+            playerAgent.messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
         }
     }
 }

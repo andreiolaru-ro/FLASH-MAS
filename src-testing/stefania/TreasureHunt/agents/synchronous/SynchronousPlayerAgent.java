@@ -201,7 +201,10 @@ public class SynchronousPlayerAgent implements Agent {
         public void action() {
             String hintRequest = "up";
 
-            playerAgent.messagingShard.blockingReceive(MASTER, PLAYER);
+            playerAgent.messagingShard.blockingReceive(MASTER);
+//            playerAgent.messagingShard.blockingReceive();
+//            playerAgent.messagingShard.blockingReceive(MPITagValue);
+//            playerAgent.messagingShard.blockingReceive(MASTER, MPITagValue);
 
             playerAgent.initGame();
             playerAgent.move("up");
@@ -223,7 +226,10 @@ public class SynchronousPlayerAgent implements Agent {
             String moveDirection;
             String hint;
 
-            AgentWave wave = playerAgent.messagingShard.blockingReceive(MASTER, PLAYER);
+            AgentWave wave = playerAgent.messagingShard.blockingReceive(MASTER);
+//            AgentWave wave = playerAgent.messagingShard.blockingReceive();
+//            AgentWave wave = playerAgent.messagingShard.blockingReceive(MPITagValue);
+//            AgentWave wave = playerAgent.messagingShard.blockingReceive(MASTER, MPITagValue);
             hint = wave.getContent();
 
             System.out.println(playerAgent.getName() + " pos: " + playerAgent.getPos());

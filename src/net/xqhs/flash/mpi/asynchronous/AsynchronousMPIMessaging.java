@@ -8,6 +8,7 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -15,24 +16,35 @@ import net.xqhs.util.config.Config;
 import net.xqhs.util.config.Configurable;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
-
-import static stefania.TreasureHunt.util.Constants.END_GAME;
-import static stefania.TreasureHunt.util.Constants.MPITagValue;
+import static stefania.TreasureHunt.util.Constants.KEY;
 
 public class AsynchronousMPIMessaging implements MessagingShard {
 
     private static final long	serialVersionUID	= 1L;
     private MessagingPylonProxy pylon;
-    private static ArrayList<AgentWave> messageQueue = new ArrayList<>();
     private Thread thread;
     private Status status;
     private ByteBuffer buffer;
     private static int source;
-    private static Semaphore semaphoreEmpty = new Semaphore(1);
-    private static Semaphore semaphoreFull = new Semaphore(0);
+    private static int tag;
     private static boolean stopFlag = false;
+    private ShardContainer parentAgent = null;
+
+    public static int getSource() {
+        return source;
+    }
+
+    public static int getTag() {
+        return tag;
+    }
+
+    public static void setSource(int source) {
+        AsynchronousMPIMessaging.source = source;
+    }
+
+    public static void setTag(int tag) {
+        AsynchronousMPIMessaging.tag = tag;
+    }
 
     private static String byteBuffer_to_String(ByteBuffer buff){
         byte[] bytes;
@@ -48,33 +60,28 @@ public class AsynchronousMPIMessaging implements MessagingShard {
     private void createMessageReceivingThread() {
         thread = new Thread() {
             private void receiveAsynchronousMessage() {
-                try {
-                    semaphoreEmpty.acquire();
 
-                    String msg = byteBuffer_to_String(buffer);
+                String msg = byteBuffer_to_String(buffer);
 
-                    if (msg.equals(END_GAME)) {
-                        stopFlag = true;
-                    }
-
-                    messageQueue.add(new AgentWave(msg));
-                    semaphoreFull.release();
-
-                } catch (InterruptedException e) {
-                    System.out.println("Exception here!");
-                    e.printStackTrace();
-                }
+                AgentWave wave = new AgentWave(msg);
+                wave.addSourceElementFirst(String.valueOf(status.getSource()));
+                AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
+                event.addObject(KEY, wave);
+                parentAgent.postAgentEvent(event);
             }
 
             @Override
             public void run() {
                 while (!stopFlag) {
                     try {
-                        status = MPI.COMM_WORLD.probe(source, MPITagValue);
-                        int length = status.getCount(MPI.BYTE);
-                        buffer = ByteBuffer.allocateDirect(length);
-                        MPI.COMM_WORLD.iRecv(buffer, length, MPI.BYTE, source, MPITagValue);
-                        receiveAsynchronousMessage();
+                        status = MPI.COMM_WORLD.iProbe(source, tag);
+                        if (status != null) {
+                            int length = status.getCount(MPI.BYTE);
+                            buffer = ByteBuffer.allocateDirect(length);
+                            MPI.COMM_WORLD.iRecv(buffer, length, MPI.BYTE, source, tag);
+                            receiveAsynchronousMessage();
+                            status = null;
+                        }
                     } catch (MPIException e) {
                         e.printStackTrace();
                     }
@@ -83,39 +90,20 @@ public class AsynchronousMPIMessaging implements MessagingShard {
         };
     }
 
-    public AsynchronousMPIMessaging(int source) {
+    public AsynchronousMPIMessaging() {
         super();
-        this.source = source;
+        source = MPI.ANY_SOURCE;
+        tag = MPI.ANY_TAG;
         createMessageReceivingThread();
-    }
-
-    public static AgentWave getMessage() {
-        AgentWave wave = null;
-
-        try {
-            semaphoreFull.acquire();
-            wave = messageQueue.remove(0);
-            semaphoreEmpty.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return wave;
     }
 
     @Override
     public boolean start() {
-        thread.start();
         return true;
     }
 
     @Override
     public boolean stop() {
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return true;
     }
 
@@ -131,7 +119,16 @@ public class AsynchronousMPIMessaging implements MessagingShard {
 
     @Override
     public boolean addContext(EntityProxy<Agent> context) {
-        return false;
+        if(parentAgent != null) {
+            System.out.println("Parent already set");
+            return false;
+        }
+        if(context == null || !(context instanceof ShardContainer)) {
+            System.out.println("Parent should be a ShardContainer instance");
+            return false;
+        }
+        parentAgent = (ShardContainer) context;
+        return true;
     }
 
     @Override
@@ -181,7 +178,17 @@ public class AsynchronousMPIMessaging implements MessagingShard {
 
     @Override
     public void signalAgentEvent(AgentEvent event) {
-
+        if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
+            createMessageReceivingThread();
+            thread.start();
+        } else if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP)) {
+            try {
+                stopFlag = true;
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

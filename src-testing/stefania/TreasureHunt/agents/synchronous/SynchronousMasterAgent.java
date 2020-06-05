@@ -182,7 +182,10 @@ public class SynchronousMasterAgent implements Agent {
             String playerMoveDirection;
             String hint;
 
-            AgentWave wave = masterAgent.messagingShard.blockingReceive(PLAYER, MASTER);
+            AgentWave wave = masterAgent.messagingShard.blockingReceive(PLAYER);
+//            AgentWave wave = masterAgent.messagingShard.blockingReceive();
+//            AgentWave wave = masterAgent.messagingShard.blockingReceive(MPITagValue);
+//            AgentWave wave = masterAgent.messagingShard.blockingReceive(PLAYER, MPITagValue);
             playerMoveDirection = wave.getContent();
             System.out.println("Master received: " + playerMoveDirection);
 

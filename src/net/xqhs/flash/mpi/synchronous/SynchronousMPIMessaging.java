@@ -12,7 +12,6 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.config.Config;
 import net.xqhs.util.config.Configurable;
-import static stefania.TreasureHunt.util.Constants.MPITagValue;
 
 public class SynchronousMPIMessaging implements SynchronousMessagingShard {
 
@@ -89,13 +88,67 @@ public class SynchronousMPIMessaging implements SynchronousMessagingShard {
     }
 
     @Override
-    public AgentWave blockingReceive(String source, String destination) {
+    public AgentWave blockingReceive(String source) {
         try {
-            Status status = MPI.COMM_WORLD.probe(Integer.parseInt(source), MPITagValue);
+            Status status = MPI.COMM_WORLD.probe(Integer.parseInt(source), MPI.ANY_TAG);
             int length = status.getCount(MPI.BYTE);
             byte[] rawMessage = new byte[length];
-            MPI.COMM_WORLD.recv(rawMessage, length, MPI.CHAR, Integer.parseInt(source), MPITagValue);
+            MPI.COMM_WORLD.recv(rawMessage, length, MPI.BYTE, Integer.parseInt(source), MPI.ANY_TAG);
+            AgentWave wave = new AgentWave(new String(rawMessage), status.getTag());
+            wave.addSourceElementFirst(source);
+            return wave;
+        } catch (MPIException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public AgentWave blockingReceive() {
+        try {
+            Status status = MPI.COMM_WORLD.probe(MPI.ANY_SOURCE, MPI.ANY_TAG);
+            int length = status.getCount(MPI.BYTE);
+            int source = status.getSource();
+            byte[] rawMessage = new byte[length];
+            MPI.COMM_WORLD.recv(rawMessage, length, MPI.BYTE, source, MPI.ANY_TAG);
+            AgentWave wave = new AgentWave(new String(rawMessage), status.getTag());
+            wave.addSourceElementFirst(String.valueOf(source));
+            return wave;
+        } catch (MPIException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public AgentWave blockingReceive(String source, int tag) {
+        try {
+            Status status = MPI.COMM_WORLD.probe(Integer.parseInt(source), tag);
+            int length = status.getCount(MPI.BYTE);
+            byte[] rawMessage = new byte[length];
+            MPI.COMM_WORLD.recv(rawMessage, length, MPI.BYTE, Integer.parseInt(source), tag);
             AgentWave wave = new AgentWave(new String(rawMessage));
+            wave.addSourceElementFirst(source);
+            return wave;
+        } catch (MPIException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public AgentWave blockingReceive(int tag) {
+        try {
+            Status status = MPI.COMM_WORLD.probe(MPI.ANY_SOURCE, tag);
+            int length = status.getCount(MPI.BYTE);
+            int source = status.getSource();
+            byte[] rawMessage = new byte[length];
+            MPI.COMM_WORLD.recv(rawMessage, length, MPI.BYTE, source, tag);
+            AgentWave wave = new AgentWave(new String(rawMessage));
+            wave.addSourceElementFirst(String.valueOf(source));
             return wave;
         } catch (MPIException e) {
             e.printStackTrace();

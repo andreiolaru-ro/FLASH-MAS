@@ -66,6 +66,10 @@ public class AgentWave extends AgentEvent
 	 * The name associated with the elements of one of the destinations.
 	 */
 	public final String			DESTINATION_ELEMENT		= "destination-element";
+	/**
+	 * The name associated with an auxiliary and optional field (e.g. MPI tag value for filtering messages).
+	 */
+	public final String 			VALUE					= "value";
 
 	/**
 	 * Creates an agent wave with <b>no</b> destination.
@@ -77,6 +81,21 @@ public class AgentWave extends AgentEvent
 	public AgentWave(String content) {
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
+	}
+
+	/**
+	 * Creates an agent wave with <b>no</b> destination.
+	 * <p>
+	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
+	 *
+	 * @param content - the content of the wave.
+	 *
+	 * @param value - the value of the wave.
+	 */
+	public AgentWave(String content, int value) {
+		super(AgentEventType.AGENT_WAVE);
+		add(CONTENT, content);
+		add(VALUE, String.valueOf(value));
 	}
 
 	/**
@@ -196,6 +215,14 @@ public class AgentWave extends AgentEvent
 	public String getContent()
 	{
 		return getValue(CONTENT);
+	}
+
+	/**
+	 * @return the value of the wave.
+	 */
+	public int getValue()
+	{
+		return Integer.parseInt(getValue(VALUE));
 	}
 	
 	/**

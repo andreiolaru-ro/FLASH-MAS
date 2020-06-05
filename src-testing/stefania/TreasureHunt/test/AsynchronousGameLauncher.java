@@ -20,12 +20,16 @@ public class AsynchronousGameLauncher {
         if (rank == 0) {
             AsynchronousMasterAgent asynchronousMasterAgent = new AsynchronousMasterAgent("Agent" + rank, rank, size);
             asynchronousMasterAgent.addContext(pylon.asContext());
-            asynchronousMasterAgent.addMessagingShard(new AsynchronousMPIMessaging(Integer.parseInt(PLAYER)));
+            AsynchronousMPIMessaging asynchronousMPIMessaging = new AsynchronousMPIMessaging();
+            asynchronousMPIMessaging.addContext(asynchronousMasterAgent.asContext());
+            asynchronousMasterAgent.addMessagingShard(asynchronousMPIMessaging);
             asynchronousMasterAgent.start();
         } else {
             AsynchronousPlayerAgent asynchronousPlayerAgent = new AsynchronousPlayerAgent("Agent" + rank, rank, size);
             asynchronousPlayerAgent.addContext(pylon.asContext());
-            asynchronousPlayerAgent.addMessagingShard(new AsynchronousMPIMessaging(Integer.parseInt(MASTER)));
+            AsynchronousMPIMessaging asynchronousMPIMessaging = new AsynchronousMPIMessaging();
+            asynchronousMPIMessaging.addContext(asynchronousPlayerAgent.asContext());
+            asynchronousPlayerAgent.addMessagingShard(asynchronousMPIMessaging);
             asynchronousPlayerAgent.start();
         }
 
