@@ -9,7 +9,6 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 
-import java.nio.ByteBuffer;
 import static stefania.TreasureHunt.util.Constants.KEY;
 
 public class AsynchronousMPIMessaging extends AbstractMessagingShard {
@@ -18,7 +17,7 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
     private MessagingPylonProxy pylon;
     private Thread thread;
     private Status status;
-    private ByteBuffer buffer;
+    private byte[] buffer;
     private static int source;
     private static int tag;
     private static boolean stopFlag = false;
@@ -39,24 +38,11 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
         AsynchronousMPIMessaging.tag = tag;
     }
 
-    private static String byteBuffer_to_String(ByteBuffer buff){
-        byte[] bytes;
-        if (buff.hasArray()) {
-            bytes = buff.array();
-        } else {
-            bytes = new byte[buff.remaining()];
-            buff.get(bytes);
-        }
-        return new String(bytes);
-    }
-
     private void createMessageReceivingThread() {
         thread = new Thread() {
             private void receiveAsynchronousMessage() {
 
-                String msg = byteBuffer_to_String(buffer);
-
-                AgentWave wave = new AgentWave(msg);
+                AgentWave wave = new AgentWave(new String(buffer));
                 wave.addSourceElementFirst(String.valueOf(status.getSource()));
                 AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
                 event.addObject(KEY, wave);
@@ -70,8 +56,8 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
                         status = MPI.COMM_WORLD.iProbe(source, tag);
                         if (status != null) {
                             int length = status.getCount(MPI.BYTE);
-                            buffer = ByteBuffer.allocateDirect(length);
-                            MPI.COMM_WORLD.iRecv(buffer, length, MPI.BYTE, source, tag);
+                            buffer = new byte[length];
+                            MPI.COMM_WORLD.recv(buffer, length, MPI.BYTE, source, tag);
                             receiveAsynchronousMessage();
                             status = null;
                         }
@@ -87,7 +73,6 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
         super();
         source = MPI.ANY_SOURCE;
         tag = MPI.ANY_TAG;
-        createMessageReceivingThread();
     }
 
     @Override
