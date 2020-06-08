@@ -5,7 +5,6 @@ import net.xqhs.flash.mpi.MPISupport;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
 import stefania.TreasureHunt.agents.asynchonous.AsynchronousMasterAgent;
 import stefania.TreasureHunt.agents.asynchonous.AsynchronousPlayerAgent;
-import static stefania.TreasureHunt.util.Constants.*;
 
 public class AsynchronousGameLauncher {
 

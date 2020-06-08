@@ -4,21 +4,15 @@ import mpi.MPI;
 import mpi.MPIException;
 import mpi.Status;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
-import net.xqhs.flash.core.support.MessagingShard;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.util.config.Config;
-import net.xqhs.util.config.Configurable;
 
 import java.nio.ByteBuffer;
 import static stefania.TreasureHunt.util.Constants.KEY;
 
-public class AsynchronousMPIMessaging implements MessagingShard {
+public class AsynchronousMPIMessaging extends AbstractMessagingShard {
 
     private static final long	serialVersionUID	= 1L;
     private MessagingPylonProxy pylon;
@@ -28,7 +22,6 @@ public class AsynchronousMPIMessaging implements MessagingShard {
     private static int source;
     private static int tag;
     private static boolean stopFlag = false;
-    private ShardContainer parentAgent = null;
 
     public static int getSource() {
         return source;
@@ -67,7 +60,7 @@ public class AsynchronousMPIMessaging implements MessagingShard {
                 wave.addSourceElementFirst(String.valueOf(status.getSource()));
                 AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
                 event.addObject(KEY, wave);
-                parentAgent.postAgentEvent(event);
+                getAgent().postAgentEvent(event);
             }
 
             @Override
@@ -98,42 +91,13 @@ public class AsynchronousMPIMessaging implements MessagingShard {
     }
 
     @Override
-    public boolean start() {
-        return true;
-    }
-
-    @Override
-    public boolean stop() {
-        return true;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return false;
-    }
-
-    @Override
-    public String getName() {
+    public String extractAgentAddress(String endpoint) {
         return null;
     }
 
     @Override
-    public boolean addContext(EntityProxy<Agent> context) {
-        if(parentAgent != null) {
-            System.out.println("Parent already set");
-            return false;
-        }
-        if(context == null || !(context instanceof ShardContainer)) {
-            System.out.println("Parent should be a ShardContainer instance");
-            return false;
-        }
-        parentAgent = (ShardContainer) context;
-        return true;
-    }
-
-    @Override
-    public boolean removeContext(EntityProxy<Agent> context) {
-        return false;
+    public String getAgentAddress() {
+        return null;
     }
 
     @Override
@@ -146,16 +110,6 @@ public class AsynchronousMPIMessaging implements MessagingShard {
     }
 
     @Override
-    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return false;
-    }
-
-    @Override
-    public <C extends Entity<Agent>> EntityProxy<C> asContext() {
-        return null;
-    }
-
-    @Override
     public boolean sendMessage(String source, String destination, String content) {
         if(pylon == null) { // FIXME: use logging
             System.out.println("No pylon added as context.");
@@ -164,16 +118,6 @@ public class AsynchronousMPIMessaging implements MessagingShard {
 
         pylon.send(source, destination, content);
         return true;
-    }
-
-    @Override
-    public String getAgentAddress() {
-        return null;
-    }
-
-    @Override
-    public AgentShardDesignation getShardDesignation() {
-        return null;
     }
 
     @Override
@@ -189,35 +133,5 @@ public class AsynchronousMPIMessaging implements MessagingShard {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public boolean configure(MultiTreeMap configuration) {
-        return false;
-    }
-
-    @Override
-    public Configurable makeDefaults() {
-        return null;
-    }
-
-    @Override
-    public Config lock() {
-        return null;
-    }
-
-    @Override
-    public Config build() {
-        return null;
-    }
-
-    @Override
-    public void ensureLocked() {
-
-    }
-
-    @Override
-    public void locked() throws Config.ConfigLockedException {
-
     }
 }
