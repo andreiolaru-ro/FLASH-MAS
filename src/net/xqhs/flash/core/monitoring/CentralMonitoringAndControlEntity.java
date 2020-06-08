@@ -312,10 +312,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                 consumer.getValue().entrySet().forEach(entry -> {
                     String category = entry.getKey();
                     entry.getValue().forEach(entity -> {
-                        entities.put(entity, category);
-                        entitiesToOp.get(entity).forEach(operation -> {
-                            entities.put(entity, entities.get(entity) + " " + operation);
-                        });
+                        entities.put(entity, category + " " + entitiesToOp.get(entity).toString());
                     });
                 });
             });

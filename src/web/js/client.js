@@ -1,11 +1,11 @@
 var eb;
 var data;
-var entities;
-var interfaces;
+var entities_id;
+var interfaces_id;
 var specification = false;
 var entity_elements = {};
 var interface_elements = {};
-var selected_entities = 0;
+var selected_entities = {};
 
 function init() {
     eb = new EventBus("/eventbus");
@@ -13,10 +13,12 @@ function init() {
     eb.onopen = () => {
         console.log('Eventbus opened');
         eb.registerHandler('server-to-client', (error, message) => {
-           data = JSON.parse(message.body);
+            data = JSON.parse(message.body);
+            //console.log(data);
             if(!specification) {
-                entities = document.getElementById(data['entities']);
-                interfaces = document.getElementById(data['interfaces']);
+                entities_id = data['entities'];
+                interfaces_id = data['interfaces'];
+                document.getElementById(data['interfaces']).appendChild(document.createElement('div'));
 
                 for(var element in data) {
                     var elements = element.split(' ');
@@ -31,28 +33,35 @@ function init() {
                 specification = true;
             }
             else {
+                console.log(data);
+                var entities = document.getElementById(entities_id);
+                var interfaces = document.getElementById(interfaces_id);
                 var empty = jQuery.isEmptyObject(data);
 
                 for (var index = 0; index < entities.children.length; index++) {
                     var entity = entities.children[index];
                     var checked = entity.children[0].checked;
+                    var contains = data.hasOwnProperty(entity.id);
 
-                    if (empty || !data.hasOwnProperty(entity.id)) {
+                    if (empty || !contains) {
 
-                        if (checked) {
+                        if (checked)
+                            remove(interfaces, entity.id);
+                        entity.remove();
 
-                            // TODO: remove coresponding interface
-
-                        }
-                        entities.removeChild(entity);
-                    } else if (!empty) {
+                    } else if (contains) {
                         for (var element in entity_elements) {
 
                             var type = entity_elements[element].split(" ");
 
                             if (type[0] === 'label') {
 
-                                // TODO: modify coresponding label for entity
+                                if(element.toLowerCase() === 'status') {
+
+                                    // TODO: needed status implementation
+
+                                }
+                            }
 
                             }
 
@@ -66,23 +75,42 @@ function init() {
                         if (checked) {
 
                             // TODO: modify coresponding interface
+                            for (var element in interface_elements) {
+
+                                var type = interface_elements[element].split(" ");
+
+                                if (type[0] === 'label') {
+
+                                    if(element.toLowerCase() === 'status') {
+
+                                        // TODO: needed status implementation
+
+                                    }
+
+                                }
+
+                                if (type[0] === 'spinner') {
+
+                                    // TODO: modify coresponding spinner for entity
+
+                                }
 
                         }
                     }
                 }
                 if (empty) {
                     entities.innerText = "No entities";
-                    interfaces.innerText = "No entities selected";
+                    interfaces.children[0].innerText = "No entities selected";
                 } else {
-                    entities.innerText = "Entities";
-                    if(selected_entities === 0)
-                        interfaces.innerText = "No entities selected";
+                    if(Object.keys(selected_entities).length === 0)
+                        interfaces.children[0].innerText = "No entities selected";
                     else
-                        interfaces.innerText = "Selected entities";
+                        interfaces.children[0].innerText = "Selected entities";
                     for (var entity in data) {
-                        //console.log(data[entity]);
-                        if (document.getElementById('checkbox_' + entity) === null) {
-                            new_entity(entity);
+                        if (document.getElementById(entity) === null) {
+                            if(entities.children.length === 0)
+                                entities.innerText = "Entities";
+                            new_entity(entities, entity);
                         }
                     }
                 }
@@ -95,10 +123,11 @@ function init() {
     }
 };
 
-function new_entity(entity) {
+function new_entity(entities, entity) {
     var div = document.createElement('div');
     div.setAttribute('class', 'entity');
     div.setAttribute('id', entity);
+
 
     var checkbox =  document.createElement('input');
     checkbox.setAttribute('type', 'checkbox');
@@ -123,9 +152,9 @@ function new_entity(entity) {
         if(type[0] === 'button') {
 
             var button = document.createElement('input');
-            button.setAttribute('type', 'text');
+            button.setAttribute('type', 'button');
             button.setAttribute('class', 'entity-element');
-            button.setAttribute('onclick', 'button(\'' + entity + ', ' + element + '\')');
+            button.setAttribute('onclick', 'button(\'' + entity + '\', \'' + element + '\')');
             button.setAttribute('value', element);
             div.appendChild(button);
 
@@ -134,9 +163,24 @@ function new_entity(entity) {
         if(type[0] === 'label') {
 
             var label = document.createElement('label');
-            label.setAttribute('id', 'label_' + entity + '_' + type[1]);
+            label.setAttribute('id', 'label_' + '_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
             label.setAttribute('class', 'entity-element');
-            label.setAttribute('value', element);
+
+            if(element.toLowerCase() === 'type')
+                label.innerText = data[entity].split(' ')[0];
+
+            if(element.toLowerCase() === 'status') {
+                // TODO: stub implementation, needed status implementation
+                label.innerText = 'running';
+            }
+
+            // TODO: implement other label options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'label_' + '_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
             div.appendChild(label);
 
         }
@@ -145,9 +189,14 @@ function new_entity(entity) {
 
             var text = document.createElement('input');
             text.setAttribute('type', 'text');
-            text.setAttribute('id', 'text_' + entity + '_' + type[1]);
+            text.setAttribute('id', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
             text.setAttribute('class', 'entity-element');
-            text.setAttribute('value', element);
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
             div.appendChild(text);
 
         }
@@ -155,32 +204,336 @@ function new_entity(entity) {
         if(type[0] === 'spinner') {
 
             var number = document.createElement('input');
-            button.setAttribute('type', 'number');
-            number.setAttribute('id', 'number_' + entity + '_' + type[1]);
-            button.setAttribute('class', 'entity-element');
-            button.setAttribute('value', element);
+            number.setAttribute('type', 'number');
+            number.setAttribute('id', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            number.setAttribute('class', 'entity-element');
+
+            // TODO: implement number options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
             div.appendChild(number);
 
+        }
+
+        if(type[0] === 'list') {
+
+            var select = document.createElement('select');
+            select.setAttribute('id', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+
+            if (element.toLowerCase() === 'operations') {
+                if(data[entity] === 'node') {
+
+                    var start = document.createElement('option');
+                    start.innerText = 'start';
+                    select.appendChild(start);
+
+                    var stop = document.createElement('option');
+                    stop.innerText = 'stop';
+                    select.appendChild(stop);
+
+                }
+                else {
+                    var operations = JSON.parse(data[entity].split(' ')[1]);
+
+                    for (var operation in operations) {
+
+                        var option = document.createElement('select');
+                        option.innerText = operations[operation]['name'].replace('_', ' ');
+                        select.appendChild(option);
+
+                    }
+                }
+            }
+
+            // TODO: implement other list options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
+            div.appendChild(select);
         }
     }
 
     entities.appendChild(div);
 }
 
-function button(entity, element) {
-        eb.send('client-to-server', '{\"' + entity + '\":\"' + element + '\"}');
-};
+function new_interface(interfaces, entity) {
+    var index = Object.keys(selected_entities).length;
+
+    var div = document.createElement('div');
+    div.setAttribute('class', 'interface');
+    div.setAttribute('id', 'interface_' + entity);
+
+    var name = document.createElement('label');
+    name.innerText = entity;
+    div.appendChild(name);
+    div.appendChild(document.createElement('br'));
+
+    for(var element in interface_elements) {
+        var type = interface_elements[element].split(' ');
+
+        if(type[0] === 'button') {
+
+            var button = document.createElement('input');
+            button.setAttribute('type', 'button');
+            button.setAttribute('class', 'entity-element');
+            button.setAttribute('onclick', 'button_interface(\'' + entity + '\', \'' + element + '\')');
+            button.setAttribute('value', element);
+            div.appendChild(button);
+
+        }
+
+        if(type[0] === 'label') {
+
+            var label = document.createElement('label');
+            label.setAttribute('id', 'label_' + '_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            label.setAttribute('class', 'entity-element');
+
+            if(element.toLowerCase() === 'type')
+                label.innerText = data[entity].split(' ')[0];
+
+            if(element.toLowerCase() === 'status') {
+                // TODO: stub implementation, needed status implementation
+                label.innerText = 'running';
+            }
+
+            // TODO: implement other label options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'label_' + '_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
+            div.appendChild(label);
+
+        }
+
+        if(type[0] === 'form') {
+
+            var text = document.createElement('input');
+            text.setAttribute('type', 'text');
+            text.setAttribute('id', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            text.setAttribute('class', 'entity-element');
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
+            div.appendChild(text);
+
+        }
+
+        if(type[0] === 'spinner') {
+
+            var number = document.createElement('input');
+            number.setAttribute('type', 'number');
+            number.setAttribute('id', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            number.setAttribute('class', 'entity-element');
+
+            // TODO: implement number options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
+            div.appendChild(number);
+
+        }
+
+        if(type[0] === 'list') {
+
+            var select = document.createElement('select');
+            select.setAttribute('id', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+
+            if (element.toLowerCase() === 'operations') {
+                if(data[entity] === 'node') {
+
+                    var start = document.createElement('option');
+                    start.innerText = 'start';
+                    select.appendChild(start);
+
+                    var stop = document.createElement('option');
+                    stop.innerText = 'stop';
+                    select.appendChild(stop);
+
+                }
+                else {
+                    var operations = JSON.parse(data[entity].split(' ')[1]);
+
+                    for (var operation in operations) {
+                        var option = document.createElement('option');
+                        option.innerText = operations[operation]['name'].replace('_', ' ');
+                        select.appendChild(option);
+
+                    }
+                }
+            }
+
+            // TODO: implement other list options
+
+            var description = document.createElement('label');
+            description.setAttribute('for', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + element);
+            description.innerText = element;
+
+            div.appendChild(description);
+            div.appendChild(select);
+        }
+
+        div.appendChild(document.createElement('br'));
+    }
+
+    if(index % 3 === 0) {
+        var line = document.createElement('div');
+
+        line.setAttribute('class', 'line');
+        line.appendChild(div);
+        interfaces.appendChild(line);
+    }
+    else
+        interfaces.children[1 + (index - (index % 3)) / 3].appendChild(div)
+
+    selected_entities[entity] = index;
+}
+
+function remove(interfaces, entity) {
+    var index = selected_entities[entity];
+    var interface = index % 3;
+    var line = 1 + (index - (interface)) / 3;
+
+    delete selected_entities[entity];
+    interfaces.children[line].children[interface].remove();
+
+    for(line; line < interfaces.children.length; line++) {
+
+        if(line === interfaces.children.length - 1) {
+            if(interfaces.children[line].children.length === 0) {
+                interfaces.children[line].remove();
+                break;
+            }
+        }
+        else
+            interfaces.children[line].appendChild(interfaces.children[line + 1].children[0]);
+
+        for(interface; interface < interfaces.children[line].children.length; interface++)
+            selected_entities[interfaces.children[line].children[interface].id.substring(10)] -= 1;
+        interface = 0;
+    }
+
+    if(Object.keys(selected_entities).length === 0)
+        interfaces.children[0].innerText = 'No selected entities'
+
+}
 
 function checkbox(entity) {
+    var interfaces = document.getElementById(interfaces_id);
 
     if(document.getElementById('checkbox_' + entity).checked) {
-        // TODO: add coresponding interface
+
+        if(Object.keys(selected_entities).length === 0)
+            interfaces.children[0].innerText = 'Selected entities';
+        new_interface(interfaces, entity);
+
+    }
+    else
+        remove(interfaces, entity);
+
+    //console.log(selected_entities);
+};
+
+function button(entity, element) {
+    var operations = {};
+    var role = entity_elements[element].split(' ')[1];
+    var select = 'select';
+    var text = 'text';
+    var number = 'number';
+
+    for(var entity_element in entity_elements) {
+        var type = entity_elements[entity_element].split(' ');
+
+        if(type[1] === role) {
+            if (type[0] === 'list')
+                select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + entity_element).value;
+            if (type[0] === 'form')
+                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + entity_element).innerText;
+            if (type[0] === 'spinner')
+                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + entity_element).innerText;
+        }
+    }
+
+    if(element.toLowerCase() === 'execute') {
+        var input = {'type' : 'operation'};
+        input['name'] = select;
+        input['parameters'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(element.toLowerCase() === 'start' || element.toLowerCase() === 'stop') {
+        var input = {'type' : 'operation'};
+        input['name'] = select + ' ' + element.toLowerCase();
+        input['parameters'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
     }
     else {
-        // TODO: remove coresponding interface
+        //TODO: implementation for other input options
+    }
+};
+
+function button_interface(entity, element) {
+    var operations = {};
+    var role = interface_elements[element].split(' ')[1];
+    var select = 'select';
+    var text = 'text';
+    var number = 'number';
+
+
+    for(var interface_element in interface_elements) {
+        var type = interface_elements[interface_element].split(' ');
+        if(type[1] === role) {
+
+            if (type[0] === 'list')
+                select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + interface_element).value;
+            if (type[0] === 'form')
+                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + interface_element).innerText;
+            if (type[0] === 'spinner')
+                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + interface_element).innerText;
+        }
+    }
+
+    if(element.toLowerCase() === 'execute') {
+        console.log(select);
+        var input = {'type' : 'operation'};
+        input['name'] = select;
+        input['parameters'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(element.toLowerCase() === 'start' || element.toLowerCase() === 'stop') {
+        var input = {'type' : 'operation'};
+        input['name'] = 'operation' + ' ' + element.toLowerCase();
+        input['parameters'] = 'parameters';
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else {
+        //TODO: implementation for other input options
     }
 };
 
 function send_data(id) {
-    eb.send('client-to-server', document.getElementById(id).nodeValue);
+    var operations = {};
+    var input = {'type' : 'operation'};
+    input['name'] = 'operation' + ' ' + document.getElementById(id).innerText.toLowerCase().replace(' ', '_');
+    input['parameters'] = 'parameters';
+    operation['all'] = input;
+    eb.send('client-to-server', JSON.stringify(operations));
 };
+

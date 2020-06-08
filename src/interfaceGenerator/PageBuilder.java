@@ -73,14 +73,14 @@ public class PageBuilder {
         entityType.setBlockType(BlockType.INTERFACES.type);
         entityType.setRole("entity-type");
         entityType.setPort("interface-entity-info");
-        entityType.setValue("type");
+        entityType.setValue("Type");
 
         Element entityStatus = new Element();
         entityStatus.setType(ElementType.OUTPUT.type);
         entityStatus.setBlockType(BlockType.INTERFACES.type);
         entityStatus.setRole("entity-status");
         entityStatus.setPort("interface-entity-info");
-        entityStatus.setValue("status");
+        entityStatus.setValue("Status");
 
         Element startButton = new Element();
         startButton.setType(ElementType.BUTTON.type);
@@ -96,34 +96,34 @@ public class PageBuilder {
         stopButton.setPort("interface-entity-control");
         stopButton.setValue("Stop");
 
-        Element actionList = new Element();
-        actionList.setType(ElementType.LIST.type);
-        actionList.setBlockType(BlockType.INTERFACES.type);
-        actionList.setRole("interface-entity-action");
-        actionList.setPort("interface-entity-operations");
-        actionList.setValue("actions");
+        Element operationsList = new Element();
+        operationsList.setType(ElementType.LIST.type);
+        operationsList.setBlockType(BlockType.INTERFACES.type);
+        operationsList.setRole("interface-entity-operation");
+        operationsList.setPort("interface-entity-operations");
+        operationsList.setValue("Operations");
 
-        Element inputAction = new Element();
-        inputAction.setType(ElementType.FORM.type);
-        inputAction.setBlockType(BlockType.INTERFACES.type);
-        inputAction.setRole("interface-entity-action");
-        inputAction.setPort("interface-entity-operations");
-        inputAction.setValue("values");
+        Element inputOperation = new Element();
+        inputOperation.setType(ElementType.FORM.type);
+        inputOperation.setBlockType(BlockType.INTERFACES.type);
+        inputOperation.setRole("interface-entity-operation");
+        inputOperation.setPort("interface-entity-operations");
+        inputOperation.setValue("Parameters");
 
-        Element executeAction = new Element();
-        executeAction.setType(ElementType.BUTTON.type);
-        executeAction.setBlockType(BlockType.INTERFACES.type);
-        executeAction.setRole("interface-entity-action");
-        executeAction.setPort("interface-entity-operations");
-        executeAction.setValue("Execute");
+        Element executeOperation = new Element();
+        executeOperation.setType(ElementType.BUTTON.type);
+        executeOperation.setBlockType(BlockType.INTERFACES.type);
+        executeOperation.setRole("interface-entity-operation");
+        executeOperation.setPort("interface-entity-operations");
+        executeOperation.setValue("Execute");
 
         defaultExtendedInterfacesElement.add(entityType);
         defaultExtendedInterfacesElement.add(entityStatus);
         defaultExtendedInterfacesElement.add(startButton);
         defaultExtendedInterfacesElement.add(stopButton);
-        defaultExtendedInterfacesElement.add(actionList);
-        defaultExtendedInterfacesElement.add(executeAction);
-        defaultExtendedInterfacesElement.add(inputAction);
+        defaultExtendedInterfacesElement.add(operationsList);
+        defaultExtendedInterfacesElement.add(inputOperation);
+        defaultExtendedInterfacesElement.add(executeOperation);
     }
 
     public Object buildPage(Configuration data) throws Exception {

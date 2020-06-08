@@ -50,14 +50,35 @@ class ServerVerticle extends AbstractVerticle {
                             vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
                         }
                         else {
-                            //JsonObject command = new JsonObject((String) objectMessage.body());
-                            //Map.Entry<String, Object> entryIterator = command.iterator().next();
-                            //entity.commandAgent(entryIterator.getKey(), (String) entryIterator.getValue());
+
                             System.out.println(objectMessage.body());
+                            JsonObject message = new JsonObject((String) objectMessage.body());
+                            Iterator<Map.Entry<String, Object>> entryIterator = message.iterator();
+
+                            while(entryIterator.hasNext()) {
+                                Map.Entry<String, Object> entry = entryIterator.next();
+
+                                String entity = entry.getKey();
+                                JsonObject input = (JsonObject) entry.getValue();
+                                if(input.getString("type").equals("operation")) {
+                                    //TODO: opertaions for entities do not have parameters yet
+                                    String name = input.getString("name").split(" ")[1];
+                                    String[] parameters = input.getString("name").split(" ");
+                                    if(entity.equals("all"))
+                                        WebEntity.cep.sendToAll(name);
+                                    else
+                                        WebEntity.cep.sendTo(entity, name);
+                                }
+                                else {
+                                    //TODO: needed for other input options
+                                }
+                            }
                         }
                     });
                     vertx.setPeriodic(10000l, t -> {
-                        vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
+                        JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
+                        entities.remove("AgentA");
+                        vertx.eventBus().send("server-to-client", entities.toString());
                     });
                 }
                 else if(be.type() == BridgeEventType.UNREGISTER) {
@@ -189,7 +210,7 @@ public class WebEntity implements Entity<Node> {
         });
 
         interfaces_specification.getChildren().forEach(element -> {
-            specification.put("entity " + element.getValue(), element.getType() + " " + element.getRole());
+            specification.put("interface " + element.getValue(), element.getType() + " " + element.getRole());
         });
 
         return specification.toString();
