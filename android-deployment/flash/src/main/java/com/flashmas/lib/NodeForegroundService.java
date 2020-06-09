@@ -87,7 +87,7 @@ public class NodeForegroundService extends Service {
     private void createNode(Intent intent) {
         MultiTreeMap nodeConfig;
 
-        if (intent.hasExtra(KEY_CONFIG)
+        if (intent != null && intent.hasExtra(KEY_CONFIG)
                 && intent.getSerializableExtra(KEY_CONFIG) instanceof MultiTreeMap) {
             nodeConfig = (MultiTreeMap) intent.getSerializableExtra(KEY_CONFIG);
             hasConfig = true;

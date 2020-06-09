@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.flashmas.lib.agents.CompositeAgentBuilder;
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
 
 import net.xqhs.flash.core.agent.Agent;
@@ -183,5 +184,9 @@ public class FlashManager {
             agentView = getAgentView((CompositeAgent) agent);
         }
         return agentView;
+    }
+
+    public static CompositeAgentBuilder getCompositeAgentBuilder() {
+        return new CompositeAgentBuilder();
     }
 }

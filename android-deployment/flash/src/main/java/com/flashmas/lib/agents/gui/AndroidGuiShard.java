@@ -17,12 +17,12 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import interfaceGenerator.Pair;
 import interfaceGenerator.io.IOShard;
-
-import static com.flashmas.lib.agents.gui.IdResourceManager.buildAgentWave;
 
 public class AndroidGuiShard extends IOShard {
     private static final String TAG = AndroidGuiShard.class.getSimpleName();
@@ -32,6 +32,7 @@ public class AndroidGuiShard extends IOShard {
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();
     private MultiTreeMap configuration;
     private View agentView = null;
+    private IdResourceManager idResourceManager = new IdResourceManager();
 
     protected AndroidGuiShard(AgentShardDesignation designation) {
         super(designation);
@@ -48,15 +49,15 @@ public class AndroidGuiShard extends IOShard {
 
     @Override
     public AgentWave getInput(String port) {
-        return buildAgentWave(agentView, port);
+        return idResourceManager.buildAgentWave(agentView, port);
     }
 
     @Override
     public void sendOutput(AgentWave agentWave) {
         String port = agentWave.get(KEY_PORT);
         String role = agentWave.get(KEY_ROLE);
-        Integer id = IdResourceManager.getId(port, role);
-        if (id == null) {
+        Integer id = idResourceManager.getId(port, role);
+        if (id == null || agentView == null) {
             return;
         }
 
@@ -70,6 +71,11 @@ public class AndroidGuiShard extends IOShard {
         } else if (v instanceof TextView) {
             ((TextView)v).setText(content);
         }
+    }
+
+    @Override
+    public void getActiveInput(ArrayList<Pair<String, String>> values) throws Exception {
+        super.getActiveInput(values);
     }
 
     public View getAgentView(Context context) {
@@ -124,7 +130,10 @@ public class AndroidGuiShard extends IOShard {
             case "send":
             case "move":
             default:
-                AgentWave wave = buildAgentWave(agentView, IdResourceManager.getElement(id).getPort());
+                AgentWave wave = idResourceManager.buildAgentWave(
+                        agentView,
+                        idResourceManager.getElement(id).getPort()
+                );
                 super.getAgent().postAgentEvent(wave);
                 break;
         }
@@ -132,5 +141,9 @@ public class AndroidGuiShard extends IOShard {
 
     public ShardContainer getShardContainer() {
         return getAgent();
+    }
+
+    public IdResourceManager getIdResourceManager() {
+        return idResourceManager;
     }
 }
