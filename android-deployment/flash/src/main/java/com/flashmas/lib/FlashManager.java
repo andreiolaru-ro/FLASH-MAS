@@ -19,7 +19,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +66,7 @@ public class FlashManager {
         return instance;
     }
 
-    public OutputStream getLogOutputStream() {
+    public ByteArrayOutputStream getLogOutputStream() {
         return NodeForegroundService.logsOutputStream;
     }
 
