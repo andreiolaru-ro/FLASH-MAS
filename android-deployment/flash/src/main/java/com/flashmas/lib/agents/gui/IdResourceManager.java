@@ -13,17 +13,17 @@ import java.util.List;
 import java.util.Map;
 
 public class IdResourceManager {
-    private static HashMap<String, List<Integer>> portMap = new HashMap<>();
-    private static HashMap<Integer, Element> elementMap = new HashMap<>();
+    private HashMap<String, List<Integer>> portMap = new HashMap<>();
+    private HashMap<Integer, Element> elementMap = new HashMap<>();
 
-    public static int getNewId(Element element) {
+    public int getNewId(Element element) {
         int id = View.generateViewId();
         addIdToPortMap(element.getPort(), id);
         elementMap.put(id, element);
         return id;
     }
 
-    public static Element getElement(Integer id) {
+    public Element getElement(Integer id) {
         if (elementMap.containsKey(id)) {
             return elementMap.get(id);
         }
@@ -31,7 +31,7 @@ public class IdResourceManager {
         return null;
     }
 
-    private static void addIdToPortMap(String port, int id) {
+    private void addIdToPortMap(String port, int id) {
         if (!portMap.containsKey(port)) {
             portMap.put(port, new LinkedList<>());
         }
@@ -42,7 +42,7 @@ public class IdResourceManager {
         }
     }
 
-    public static Map<String, String> getPortValues(View view, String port) {
+    public Map<String, String> getPortValues(View view, String port) {
         HashMap<String, String> map = new HashMap<>();
         if (!portMap.containsKey(port)) {
             return map;
@@ -58,7 +58,7 @@ public class IdResourceManager {
         return map;
     }
 
-    static AgentWave buildAgentWave(View agentView, String port) {
+    AgentWave buildAgentWave(View agentView, String port) {
         if (port == null) {
             return null;
         }
@@ -66,7 +66,7 @@ public class IdResourceManager {
         AgentWave wave = new AgentWave();
         wave.addSourceElementFirst("/gui/" + port);
 
-        Map<String, String> formMap = IdResourceManager.getPortValues(agentView, port);
+        Map<String, String> formMap = getPortValues(agentView, port);
         for (Map.Entry<String, String> entry: formMap.entrySet()) {
             wave.add(entry.getKey(), entry.getValue());
         }
@@ -74,12 +74,16 @@ public class IdResourceManager {
         return wave;
     }
 
-    public static Integer getId(String port, String role) {
+    public Integer getId(String port, String role) {
         if (port == null || role == null) {
             return null;
         }
 
         List<Integer> portIds = portMap.get(port);
+        if (portIds == null) {
+            return null;
+        }
+
         for (Integer id: portIds) {
             if (elementMap.get(id).getRole().contentEquals(role)) {
                 return id;
