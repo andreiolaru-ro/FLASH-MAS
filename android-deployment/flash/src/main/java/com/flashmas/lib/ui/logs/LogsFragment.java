@@ -1,6 +1,10 @@
 package com.flashmas.lib.ui.logs;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.R;
 
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 
 
 /**
@@ -24,6 +28,7 @@ import java.io.OutputStream;
  */
 public class LogsFragment extends Fragment {
     TextView logTextView;
+    Thread updater;
 
     public LogsFragment() {
         // Required empty public constructor
@@ -56,9 +61,39 @@ public class LogsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         logTextView = view.findViewById(R.id.logs_textview);
 
-        OutputStream s = FlashManager.getInstance().getLogOutputStream();
-        logTextView.setText(s.toString());
+        updater = new Thread() {
+            @Override
+            public void run() {
+                ByteArrayOutputStream s = FlashManager.getInstance().getLogOutputStream();
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                while (true) {
+                    if (logTextView.getText().length() != s.size()) {
+                        mainHandler.post(() -> logTextView.setText(s.toString()));
+                    }
+                    try {
+                        sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        updater.start();
         ScrollView scroll = view.findViewById(R.id.scroll_view);
-        scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
+        logTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
+            }
+        });
     }
 }
