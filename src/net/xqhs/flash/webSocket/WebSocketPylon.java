@@ -93,6 +93,10 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		@Override
 		@SuppressWarnings("unchecked")
 		public boolean send(String source, String destination, String content) {
+			if(webSocketClient.messageReceivers.containsKey(destination)) {
+				webSocketClient.messageReceivers.get(destination).receive(source, destination, content);
+				return true;
+			}
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("nodeName", nodeName);
 			messageToServer.put("source", source);

@@ -26,7 +26,7 @@ public class WebSocketClientProxy extends Unit {
 
     protected WebSocketClient client;
 
-    private HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
+    protected HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
 
     void addReceiverAgent(String name, MessageReceiver receiver) {
         messageReceivers.put(name, receiver);
