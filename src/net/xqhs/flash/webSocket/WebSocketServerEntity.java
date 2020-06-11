@@ -163,6 +163,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 				li("###entities: " + nodeToEntities.values());
 			}
 		};
+		webSocketServer.setReuseAddr(true);
 	}
 	
 	@Override
