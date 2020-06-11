@@ -51,7 +51,7 @@ public class IdResourceManager {
         for (Integer id: portMap.get(port)) {
             View v = view.findViewById(id);
             if (v instanceof EditText) {
-                map.put(((Element)elementMap.get(id)).getRole(), ((EditText) v).getText().toString());
+                map.put((elementMap.get(id)).getRole(), ((EditText) v).getText().toString());
             }
         }
 
@@ -65,6 +65,7 @@ public class IdResourceManager {
 
         AgentWave wave = new AgentWave();
         wave.addSourceElementFirst("/gui/" + port);
+        wave.add("port", port);
 
         Map<String, String> formMap = getPortValues(agentView, port);
         for (Map.Entry<String, String> entry: formMap.entrySet()) {
@@ -91,5 +92,19 @@ public class IdResourceManager {
         }
 
         return null;
+    }
+
+    public void mapElement(Element element) {
+        if (element == null) {
+            return;
+        }
+
+        element.setId(getNewId(element));
+
+        if (element.getChildren() != null) {
+            for (Element child : element.getChildren()) {
+                mapElement(child);
+            }
+        }
     }
 }

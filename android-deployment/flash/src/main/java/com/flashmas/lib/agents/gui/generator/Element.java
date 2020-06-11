@@ -102,4 +102,12 @@ public class Element {
     public int hashCode() {
         return Objects.hash(id, children, type, properties, text, port, role);
     }
+
+    public void addChild(Element element) {
+        if (element == null || children == null) {
+            return;
+        }
+
+        children.add(element);
+    }
 }

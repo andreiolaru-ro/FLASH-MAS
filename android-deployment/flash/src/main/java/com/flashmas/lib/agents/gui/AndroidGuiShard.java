@@ -7,12 +7,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.agents.gui.generator.AgentViewFactory;
+import com.flashmas.lib.agents.gui.generator.Configuration;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.io.IOException;
@@ -29,10 +33,12 @@ public class AndroidGuiShard extends IOShard {
     public static final String DESIGNATION = "gui";
     public static final String KEY_PORT = "port";   // TODO move to IOShard
     public static final String KEY_ROLE = "role";   // TODO move to IOShard
+    private static final String KEY_FILEPATH = "filepath";
     private List<AgentEvent.AgentEventHandler> handlerList = new LinkedList<>();
-    private MultiTreeMap configuration;
+    private MultiTreeMap configuration = null;
     private View agentView = null;
     private IdResourceManager idResourceManager = new IdResourceManager();
+    private Configuration uiConfig = null;
 
     protected AndroidGuiShard(AgentShardDesignation designation) {
         super(designation);
@@ -48,21 +54,64 @@ public class AndroidGuiShard extends IOShard {
     }
 
     @Override
+    public boolean configure(MultiTreeMap configuration) {
+        super.configure(configuration);
+        String filename = null; // TODO switch to filepath
+
+        if (configuration != null && configuration.containsKey(KEY_FILEPATH)) {
+            // TODO get yaml from configuration
+        } else {
+            filename = "agent_view2.yaml";  // Use basic config
+        }
+
+        InputStream inputStream = null;
+        try {
+            inputStream = FlashManager.getInstance().getAppContext()
+                    .getAssets().open(filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        uiConfig = AgentViewFactory.parseYaml(inputStream);
+        idResourceManager.mapElement(uiConfig.getNode());
+        return true;
+    }
+
+    @Override
     public AgentWave getInput(String port) {
+        if (idResourceManager == null) {
+            return null;
+        }
         return idResourceManager.buildAgentWave(agentView, port);
     }
 
     @Override
     public void sendOutput(AgentWave agentWave) {
+        if (!isRunning()) {
+            return;
+        }
         String port = agentWave.get(KEY_PORT);
+        if (port == null) {
+            String[] destinationElements = agentWave.getCompleteDestination().split("/");
+            port = destinationElements[destinationElements.length - 1];
+        }
         String role = agentWave.get(KEY_ROLE);
         Integer id = idResourceManager.getId(port, role);
-        if (id == null || agentView == null) {
+        if (id == null) {
+            id = idResourceManager.getId(port, "logging");
+        }
+
+        if (id == null) {
             return;
         }
 
-        View v = agentView.findViewById(id);
         String content = agentWave.getContent();
+        idResourceManager.getElement(id).setText(content);
+
+        if (agentView == null) {
+            return;
+        }
+        View v = agentView.findViewById(id);
 
         if (v instanceof EditText) {
             ((EditText)v).setText(content);
@@ -79,19 +128,8 @@ public class AndroidGuiShard extends IOShard {
     }
 
     public View getAgentView(Context context) {
-        if (agentView != null) {
-            return agentView;
-        }
-
-        if (configuration != null) {
-            // TODO get yaml from configuration
-        } else {
-            try {
-                InputStream inputStream = context.getAssets().open("agent_view2.yaml");
-                agentView = AgentViewFactory.parseAndCreateView(inputStream, context, this);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (agentView == null) {
+            agentView = AgentViewFactory.createView(uiConfig, context, this);
         }
 
         return agentView;
@@ -101,6 +139,11 @@ public class AndroidGuiShard extends IOShard {
     public void signalAgentEvent(AgentEvent event) {
         super.signalAgentEvent(event);
 
+        if (event.getType().compareTo(AgentEvent.AgentEventType.AGENT_START) == 0) {
+            start();
+        } else if (event.getType().compareTo(AgentEvent.AgentEventType.AGENT_STOP) == 0) {
+            stop();
+        }
         signalHandlers(event);
         if (event instanceof AgentWave) {
             sendOutput((AgentWave)event);
@@ -110,6 +153,9 @@ public class AndroidGuiShard extends IOShard {
     }
 
     private void signalHandlers(AgentEvent event) {
+        if (!isRunning()) {
+            return;
+        }
         for (AgentEvent.AgentEventHandler handler: handlerList) {
             handler.handleEvent(event);
         }
@@ -124,7 +170,8 @@ public class AndroidGuiShard extends IOShard {
 
     public void onActiveInput(int id, String role, String port) {
         Log.d(TAG, "received active input from id=" + id + " with action=" + role + " and port=" + port);
-
+        String shardPath = DESIGNATION + "/" + port;
+        String source = getAgent().getEntityName() + "/" + shardPath;
         // Depending on the role of the input, make an event
         switch (role) {
             case "send":
@@ -134,7 +181,10 @@ public class AndroidGuiShard extends IOShard {
                         agentView,
                         idResourceManager.getElement(id).getPort()
                 );
-                super.getAgent().postAgentEvent(wave);
+                AgentShard s = super.getAgent().getAgentShard(AgentShardDesignation.autoDesignation("messaging"));
+                if (s instanceof MessagingShard) {
+                    ((MessagingShard) s).sendMessage(source, wave.get("target") + "/" + shardPath, wave.get(wave.CONTENT));
+                }
                 break;
         }
     }
@@ -145,5 +195,9 @@ public class AndroidGuiShard extends IOShard {
 
     public IdResourceManager getIdResourceManager() {
         return idResourceManager;
+    }
+
+    public void removeAgentView() {
+        agentView = null;
     }
 }
