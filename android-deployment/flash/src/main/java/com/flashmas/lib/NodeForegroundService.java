@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -18,17 +19,21 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.local.LocalPylon;
+import net.xqhs.util.config.Config;
 import net.xqhs.util.logging.LoggerSimple;
 import net.xqhs.util.logging.logging.Logging;
 import net.xqhs.util.logging.wrappers.GlobalLogWrapper;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,13 +42,15 @@ import static com.flashmas.lib.Globals.NODE_NAME;
 
 public class NodeForegroundService extends Service {
     public static final String KEY_CONFIG = "key_config";
+    public static final String TAG = NodeForegroundService.class.getSimpleName();
     private static boolean running = false;
     private static MutableLiveData<Boolean> runningLiveData = new MutableLiveData<>();
     private Node node;
-    private List<Pylon> pylonsList = new LinkedList<>();
+    private List<Pylon> pylonsList = null;
     private String deviceNodeName = NODE_NAME;  // init deviceNodeName with default
     static ByteArrayOutputStream logsOutputStream = new ByteArrayOutputStream();
     private boolean hasConfig = false;
+    private Thread nodeThread = null;
 
     Observer<List<Agent>> agentsObserver = new Observer<List<Agent>>() {
         @Override
@@ -85,28 +92,58 @@ public class NodeForegroundService extends Service {
     }
 
     private void createNode(Intent intent) {
-        MultiTreeMap nodeConfig;
+        DeploymentConfiguration nodeConfig;
 
         if (intent != null && intent.hasExtra(KEY_CONFIG)
-                && intent.getSerializableExtra(KEY_CONFIG) instanceof MultiTreeMap) {
-            nodeConfig = (MultiTreeMap) intent.getSerializableExtra(KEY_CONFIG);
+                && intent.getSerializableExtra(KEY_CONFIG) instanceof DeploymentConfiguration) {
+            nodeConfig = (DeploymentConfiguration) intent.getSerializableExtra(KEY_CONFIG);
             hasConfig = true;
         } else {
-            nodeConfig = new MultiTreeMap();
-            nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
+            nodeConfig = new DeploymentConfiguration();
+            try {
+                nodeConfig.loadConfiguration(Arrays.asList(""), false, null);
+            } catch (Config.ConfigLockedException e) {
+                e.printStackTrace();
+            }
+//            nodeConfig.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, deviceNodeName);
         }
 
-        node = new Node(nodeConfig);
+        DeploymentConfiguration.isCentralNode = false;
+        List<MultiTreeMap> allEntities = nodeConfig.getEntityList();
+        List<MultiTreeMap> nodesTrees = DeploymentConfiguration.filterCategoryInContext(allEntities,
+                CategoryName.NODE.s(), null);
+        if(nodesTrees == null || nodesTrees.isEmpty()) { // the DeploymentConfiguration should have created at least an
+            // empty node.
+            Log.e(TAG, "No nodes present in config");
+            return;
+        }
+
+        Log.d(TAG, nodesTrees.get(nodesTrees.size() - 1).toString());
+
+        node = new NodeLoader().load(nodesTrees.get(nodesTrees.size() - 1), DeploymentConfiguration.filterContext(allEntities,
+                nodesTrees.get(nodesTrees.size() - 1).getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)));
+        pylonsList = new LinkedList<>();
+        for (Entity e: node.getEntitiesList()) {
+            if (e instanceof Pylon) {
+                pylonsList.add((Pylon)e);
+            }
+            if (e instanceof Agent) {
+                FlashManager.getInstance().addAgent((Agent)e);
+            }
+        }
+
         node.setLogLevel(LoggerSimple.Level.ALL);
-        if (!hasConfig) {
-            Pylon localPylon = new LocalPylon();
-            pylonsList.add(localPylon);
-            node.addGeneralContext(localPylon.asContext());
-        }
-
         GlobalLogWrapper.setLogStream(logsOutputStream);
         Logging.getMasterLogging().setLogLevel(LoggerSimple.Level.ALL);
         FlashManager.getInstance().getAgentsLiveData().observeForever(agentsObserver);
+
+        nodeThread = new Thread() {
+            @Override
+            public void run() {
+                running = node.start();
+                runningLiveData.postValue(running);
+            }
+        };
     }
 
     private void startNode() {
@@ -116,8 +153,7 @@ public class NodeForegroundService extends Service {
 
         logsOutputStream.reset();
 
-        running = node.start();
-        runningLiveData.postValue(running);
+        nodeThread.start();
 
         Toast.makeText(this, "Service started",Toast.LENGTH_LONG).show();
     }
@@ -126,8 +162,17 @@ public class NodeForegroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        running = !node.stop();
+        node.stop();
+        try {
+            nodeThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        running = node.isRunning();
         runningLiveData.postValue(running);
+        node = null;
+        pylonsList = null;
+        nodeThread = null;
         FlashManager.getInstance().getAgentsLiveData().removeObserver(agentsObserver);
         Toast.makeText(this, "Service stopped",Toast.LENGTH_LONG).show();
     }
