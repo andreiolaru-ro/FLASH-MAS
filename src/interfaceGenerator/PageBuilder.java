@@ -96,6 +96,7 @@ public class PageBuilder {
         stopButton.setPort("interface-entity-control");
         stopButton.setValue("Stop");
 
+        /*
         Element operationsList = new Element();
         operationsList.setType(ElementType.LIST.type);
         operationsList.setBlockType(BlockType.INTERFACES.type);
@@ -116,14 +117,17 @@ public class PageBuilder {
         executeOperation.setRole("interface-entity-operation");
         executeOperation.setPort("interface-entity-operations");
         executeOperation.setValue("Execute");
+        */
 
         defaultExtendedInterfacesElement.add(entityType);
         defaultExtendedInterfacesElement.add(entityStatus);
         defaultExtendedInterfacesElement.add(startButton);
         defaultExtendedInterfacesElement.add(stopButton);
+        /*
         defaultExtendedInterfacesElement.add(operationsList);
         defaultExtendedInterfacesElement.add(inputOperation);
         defaultExtendedInterfacesElement.add(executeOperation);
+         */
     }
 
     public Object buildPage(Configuration data) throws Exception {
