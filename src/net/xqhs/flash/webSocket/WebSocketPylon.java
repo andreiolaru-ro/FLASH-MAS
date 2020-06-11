@@ -209,6 +209,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 		if(hasServer)
 			serverEntity.stop();
+		try {
+			webSocketClient.close();
+		} catch (InterruptedException x) {
+			x.printStackTrace();
+		}
 		return true;
 	}
 	

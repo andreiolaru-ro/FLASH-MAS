@@ -94,4 +94,8 @@ public class WebSocketClientProxy extends Unit {
         return client.connectBlocking();
     }
 
+    public void close() throws InterruptedException {
+        client.closeBlocking();
+    }
+
 }
