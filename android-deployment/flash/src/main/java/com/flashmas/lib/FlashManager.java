@@ -12,15 +12,17 @@ import androidx.lifecycle.MutableLiveData;
 import com.flashmas.lib.agents.CompositeAgentBuilder;
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.util.config.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,7 +34,7 @@ public class FlashManager {
     private static Context appContext;
     private MutableLiveData<List<Agent>> agentsLiveData = new MutableLiveData<>();
     private List<Agent> agentsList = new ArrayList<>(0);
-    private static MultiTreeMap config = null;
+    private static DeploymentConfiguration config = null;
 
     private FlashManager() throws IllegalStateException {
         if (appContext == null) {
@@ -40,7 +42,24 @@ public class FlashManager {
         }
     }
 
-    public static void init(Context context, MultiTreeMap config) {
+    public static void init(Context context, String args) {
+        if (context == null || appContext != null) {
+            return;
+        }
+
+        try {
+            DeploymentConfiguration config = new DeploymentConfiguration().loadConfiguration(
+                    Arrays.asList(args.split(" ")),
+                    true,
+                    null
+            );
+            init(context, config);
+        } catch (Config.ConfigLockedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void init(Context context, DeploymentConfiguration config) {
         if (context == null || appContext != null) {
             return;
         }
@@ -51,7 +70,7 @@ public class FlashManager {
     }
 
     public static void init(Context context) {
-        init(context, null);
+        init(context, (DeploymentConfiguration) null);
     }
 
     public static FlashManager getInstance() throws IllegalStateException {
@@ -169,6 +188,27 @@ public class FlashManager {
         }
 
         return agentView;
+    }
+
+    public void removeAgentView(String agentName) {
+        if (agentName == null) {
+            Log.e(TAG, "Agent is null");
+            return;
+        }
+
+        Agent agent = FlashManager.getInstance().getAgent(agentName);
+        if (agent instanceof CompositeAgent && ((CompositeAgent)agent).asContext() instanceof ShardContainer) {
+
+            AgentShard shard = ((ShardContainer) ((CompositeAgent)agent).asContext())
+                    .getAgentShard(AgentShardDesignation.autoDesignation(AndroidGuiShard.DESIGNATION));
+            if (shard instanceof AndroidGuiShard) {
+                ((AndroidGuiShard) shard).removeAgentView();
+            } else {
+                Log.e(TAG, "Shard container is not an " + AndroidGuiShard.class.getSimpleName());
+            }
+        } else {
+            Log.e(TAG, "Agent context is not a shard container");
+        }
     }
 
     public View getAgentView(String agentName) {
