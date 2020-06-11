@@ -1,19 +1,44 @@
 package net.xqhs.flash.core.monitoring.gui;
 
+import florina.monitoringAndControlTest.shards.PingTestComponent;
+import net.xqhs.flash.FlashBoot;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class GUIBoard extends JFrame {
+    protected static final long		PING_INITIAL_DELAY			= 0;
+    protected static final long		PING_PERIOD					= 300;
+
     private JPanel contentPane;
     private CentralEntityProxy centralEntityProxy;
     private HashMap<JLabel, JLabel> stateOfEntities = new LinkedHashMap<>();
+    private JTextArea textArea = null;
+    private JScrollPane scrollPane;
+    Timer pingTimer = null;
+
+    class Pinger extends TimerTask
+    {
+        int	tick	= 0;
+
+        @Override
+        public void run()
+        {
+            textArea.setText(FlashBoot.stream.toString());
+            JScrollBar vertical = scrollPane.getVerticalScrollBar();
+            vertical.setValue(vertical.getMaximum());
+        }
+
+    }
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -70,11 +95,11 @@ public class GUIBoard extends JFrame {
     }
 
     private void createCentralLogArea() {
-        JTextArea textArea = new JTextArea();
+        textArea = new JTextArea();
         textArea.setRows(30);
         textArea.setColumns(50);
 
-        JScrollPane scrollPane = new JScrollPane(textArea,
+        scrollPane = new JScrollPane(textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         contentPane.add(scrollPane, BorderLayout.CENTER);
@@ -84,7 +109,9 @@ public class GUIBoard extends JFrame {
         JLabel  entityLabel  = new JLabel(name);
         JLabel  statusLabel  = new JLabel(status);
         JButton start = newButton("start");
+        start.addActionListener(actionEvent -> centralEntityProxy.sendToEntity(name, "start"));
         JButton stop  = newButton("stop");
+        stop.addActionListener(actionEvent -> centralEntityProxy.sendToEntity(name, "stop"));
         if(name.contains("agent"))
             entityLabel.setFont(new Font("TimesRoman", Font.PLAIN, 12));
         else
@@ -112,9 +139,9 @@ public class GUIBoard extends JFrame {
         panel.setLayout(new GridLayout(5, 1));
         panel.add(node1);
         panel.add(agent1);
-        panel.add(agent3);
-        panel.add(node2);
         panel.add(agent2);
+        panel.add(node2);
+        panel.add(agent3);
         panel.setBorder(new EmptyBorder(5,5,5,5));
         contentPane.add(panel, BorderLayout.EAST);
     }
@@ -135,13 +162,15 @@ public class GUIBoard extends JFrame {
         createSouthButtonsArea();
         createCentralLogArea();
         createControlPanelForEntities();
+        pingTimer = new Timer();
+        pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
 
         pack();
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int height = screenSize.height;
         int width = screenSize.width;
-        setSize(width / 2, height / 2);
+        setSize(width, height);
         setLocationRelativeTo(null);
 
         setVisible(false);

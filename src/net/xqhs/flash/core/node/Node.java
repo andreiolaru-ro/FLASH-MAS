@@ -143,7 +143,7 @@ public class Node extends Unit implements Entity<Node>
 	{
 		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		//setLoggerType(PlatformUtils.platformLogType());
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	/**

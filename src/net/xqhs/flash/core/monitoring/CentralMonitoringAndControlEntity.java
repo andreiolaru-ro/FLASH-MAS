@@ -321,7 +321,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         public boolean sendToEntity(String destination, String operation) {
             JSONObject jsonOperation = getOperationFromEntity(destination, operation);
             if(jsonOperation == null) {
-                le("Entity [] does not support [] command.", destination, operation);
+                le("Entity [] does not exist or does not support [] command.", destination, operation);
                 return false;
             }
             String access = (String) jsonOperation.get("access");
@@ -344,6 +344,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
         private JSONObject getOperationFromEntity(String entity, String command) {
             JSONArray ja = entitiesToOp.get(entity);
+            if(ja == null) return null;
             for(Object o : ja) {
                 JSONObject op   = (JSONObject) o;
                 String cmd = (String) op.get("name");
