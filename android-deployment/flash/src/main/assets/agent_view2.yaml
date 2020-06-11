@@ -10,6 +10,6 @@ node:
       port: messageSend
       role: activate
       text: "Send"
-#    - type: label
-#      port: messageSend
-#      role: logging
+    - type: label
+      port: messageSend
+      role: logging

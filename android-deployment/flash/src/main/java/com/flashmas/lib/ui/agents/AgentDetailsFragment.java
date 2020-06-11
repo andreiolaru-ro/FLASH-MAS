@@ -46,4 +46,10 @@ public class AgentDetailsFragment extends Fragment {
             getActivity().setTitle(agentName);
         }
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        FlashManager.getInstance().removeAgentView(agentName);
+    }
 }

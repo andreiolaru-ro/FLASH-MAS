@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
 import com.flashmas.lib.agents.gui.GuiLinkShard;
 
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 
@@ -32,6 +31,10 @@ public class AgentViewFactory {
     private static Handler backendHandler = new Handler();
 
     public static Configuration parseYaml(InputStream inputStream) {
+        if (inputStream == null) {
+            return null;
+        }
+
         return yamlParser.loadAs(inputStream, Configuration.class);
     }
 
@@ -60,6 +63,7 @@ public class AgentViewFactory {
         if (shard instanceof GuiLinkShard && rootView instanceof LinearLayout) {
             Element v = ((GuiLinkShard) shard).getShardsView();
             if (v != null) {
+                config.getNode().addChild(v);
                 ((LinearLayout) rootView).addView(createView(v, context, guiShard));
             }
         }
@@ -111,8 +115,7 @@ public class AgentViewFactory {
         EditText view = new EditText(context);
 
         if (element.getPort() != null) {
-            view.setId(guiShard.getIdResourceManager().getNewId(element));
-            element.setId(view.getId());
+            view.setId(element.getId());
         } else {
             Log.e(TAG, "Form element doesn't have port set");
         }
@@ -130,8 +133,7 @@ public class AgentViewFactory {
         TextView view = new TextView(context);
 
         if (element.getPort() != null) {
-            view.setId(guiShard.getIdResourceManager().getNewId(element));
-            element.setId(view.getId());
+            view.setId(element.getId());
         } else {
             Log.e(TAG, "Label element doesn't have port set");
         }
@@ -140,15 +142,16 @@ public class AgentViewFactory {
             view.setText(element.getText());
         }
 
-        if (element.getRole() != null && element.getRole().equals("logging")) {
-            guiShard.registerEventHandler(agentEvent -> {
-                if (agentEvent instanceof AgentWave) {
-                    uiHandler.post(() ->
-                        view.append("\nReceived agent wave: " + agentEvent.toString())
-                    );
-                }
-            });
-        }
+//        if (element.getRole() != null && element.getRole().equals("logging")) {
+//            guiShard.registerEventHandler(agentEvent -> {
+//                if (agentEvent instanceof AgentWave) {
+////                    if (((AgentWave)agentEvent).get("port"))
+//                    uiHandler.post(() ->
+//                        view.append("\nReceived agent wave: " + agentEvent.toString())
+//                    );
+//                }
+//            });
+//        }
 
         if (element.getProperties().containsKey("align") &&
                 element.getProperties().get("align").equals("center")) {
@@ -161,8 +164,7 @@ public class AgentViewFactory {
     private static View createButton(Element element, Context context, AndroidGuiShard guiShard) {
         Button button = new Button(context);
         if (element.getPort() != null) {
-            button.setId(guiShard.getIdResourceManager().getNewId(element));
-            element.setId(button.getId());
+            button.setId(element.getId());
         } else {
             Log.e(TAG, "Button element doesn't have port set");
         }
