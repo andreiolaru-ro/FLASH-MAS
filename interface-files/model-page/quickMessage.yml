@@ -1,0 +1,6 @@
+layout: horizontal
+global:
+  - type: button
+    port: quick-send
+    role: activate
+    value: Quick send message

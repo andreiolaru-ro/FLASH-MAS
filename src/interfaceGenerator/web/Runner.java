@@ -88,18 +88,20 @@ public class Runner extends AbstractVerticle {
                                 data.add(new Pair<>(role, entry.getValue()));
                             }
                             try {
+                                /*
                                 if (data.isEmpty()) {
                                     // especially for reduced interface
                                     String value = IOShard.reducedInterfacesValues.get(activePort);
                                     if (value != null) {
                                         data.add(new Pair<>("message", value));
                                     }
-                                }
+                                } */
                                 System.out.println(data);
-                                if (!data.isEmpty()) {
-                                    PageBuilder.getInstance().ioShard.getActiveInput(data);
+                                if (data == null || data.isEmpty()) {
+                                    PageBuilder.getInstance().ioShard
+                                            .getActiveInputQuickMessage(IOShard.favoriteAgent, IOShard.favoriteAgentMessage);
                                 } else {
-                                    System.out.println("No active input available");
+                                    PageBuilder.getInstance().ioShard.getActiveInput(data);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

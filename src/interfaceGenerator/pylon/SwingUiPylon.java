@@ -4,6 +4,7 @@ import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Pair;
 import interfaceGenerator.Utils;
+import interfaceGenerator.io.IOShard;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.LayoutType;
 import interfaceGenerator.types.PortType;
@@ -123,7 +124,12 @@ public class SwingUiPylon implements GUIPylonProxy {
                 }
                 System.out.println(values);
                 try {
-                    PageBuilder.getInstance().ioShard.getActiveInput(values);
+                    if (values == null || values.isEmpty()) {
+                        PageBuilder.getInstance().ioShard.getActiveInput(values);
+                    } else {
+                        PageBuilder.getInstance().ioShard
+                                .getActiveInputQuickMessage(IOShard.favoriteAgent, IOShard.favoriteAgentMessage);
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

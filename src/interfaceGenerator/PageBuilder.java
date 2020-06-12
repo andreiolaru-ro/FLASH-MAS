@@ -13,6 +13,7 @@ import org.yaml.snakeyaml.Yaml;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class PageBuilder {
@@ -87,8 +88,10 @@ public class PageBuilder {
                 globalsWithType.add(Utils.attributeBlockType(elem, BlockType.GLOBAL));
             }
 
-            for (Element elem : interfaces) {
-                interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
+            if (interfaces != null) {
+                for (Element elem : interfaces) {
+                    interfacesWithType.add(Utils.attributeBlockType(elem, BlockType.INTERFACES));
+                }
             }
 
             Element globalContainer = new Element();
@@ -117,7 +120,7 @@ public class PageBuilder {
         page = IdGenerator.attributeIds(data);
         //System.out.println(page);
         //System.out.println(configuration);
-        platformType = PlatformType.DESKTOP;
+        platformType = PlatformType.WEB;
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
@@ -127,14 +130,14 @@ public class PageBuilder {
                 case WEB:
                     guiPylonProxy = new WebUiPylon();
                     String html = (String) guiPylonProxy.generate(data);
-                    FileWriter fileWriter = new FileWriter("src/web/page.html");
-                    //FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
+                    //FileWriter fileWriter = new FileWriter("src/web/page.html");
+                    FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.print(html);
                     printWriter.close();
                     Input.main(new String[]{});
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                        //Desktop.getDesktop().browse(new URI("http://localhost:8081/"));
+                        Desktop.getDesktop().browse(new URI("http://localhost:8080/"));
                     }
                     createdWebPage = true;
                     return null;

@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class IOShard extends AgentShardCore {
+    public static String favoriteAgent;
+    public static String favoriteAgentMessage;
+
     /**
      * The constructor assigns the designation to the shard.
      * <p>
@@ -40,6 +43,14 @@ public abstract class IOShard extends AgentShardCore {
         for (Pair<String, String> value : values) {
             activeInput.add(value.getKey(), value.getValue());
         }
+        super.getAgent().postAgentEvent(activeInput);
+    }
+
+    public void getActiveInputQuickMessage(String favoriteAgent, String message) {
+        System.out.println("Generating AgentWave for active input...");
+        AgentWave activeInput = new AgentWave(null, favoriteAgent);
+        activeInput.addSourceElementFirst("/gui/port");
+        activeInput.add("content", message);
         super.getAgent().postAgentEvent(activeInput);
     }
 

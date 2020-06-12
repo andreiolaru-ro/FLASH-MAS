@@ -43,8 +43,25 @@ public abstract class AgentGUI implements Agent {
         });
 
         ioShard = IOShardFactory.factoryIOShard(configuration);
-        PageBuilder.getInstance().ioShard = ioShard;
+        if (ioShard != null) {
+            ioShard.addContext(new ShardContainer() {
+                @Override
+                public void postAgentEvent(AgentEvent event) {
+                    ioShard.signalAgentEvent(event);
+                }
 
+                @Override
+                public AgentShard getAgentShard(AgentShardDesignation designation) {
+                    return null;
+                }
+
+                @Override
+                public String getEntityName() {
+                    return getName();
+                }
+            });
+            PageBuilder.getInstance().ioShard = ioShard;
+        }
     }
 
     @Override

@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DeploymentPageTestAgentWebPage {
+public class DeploymentQuickMessage {
     public static void main(String[] args) {
-
         if (args.length == 0) {
             // YAML configuration provided in command line args
             System.err.println("No args provided");
@@ -27,10 +26,10 @@ public class DeploymentPageTestAgentWebPage {
         }
         PageBuilder.getInstance().platformType = platformType;
 
-        test_args += " -package interfaceGenerator -loader agent:composite";
-        test_args += " -agent composite:AgentA";
-        test_args += " -shard gui.GUIShard";
-        // test_args += " -quickMessageContent {node-start:start,node-stop:stop,pause-simulation:pause}";
+        test_args += " -package interfaceGenerator";
+        test_args += " -agent AgentA classpath:interfaceGenerator.AgentQuickMessage";
+        test_args += " -quickMessageContent message";
+        test_args += " -favoriteAgent malone";
         test_args += " -config";
 
         List<String> args_list = new ArrayList<>(Arrays.asList(test_args.split(" ")));
@@ -42,8 +41,6 @@ public class DeploymentPageTestAgentWebPage {
                 configuration.append(" ");
             }
         }
-
-        // configuration.append(" -quickMessageContent {node-start: start, node-stop: stop, pause-simulation: pause}");
 
         args_list.add(configuration.toString());
 
