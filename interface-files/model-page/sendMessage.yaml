@@ -1,0 +1,17 @@
+layout: horizontal
+global:
+  - type: form
+    role: context
+    port: messageAgent
+  - type: form
+    role: content
+    port: messageAgent
+  - type: button
+    role: activate
+    value: Send message
+    port: messageAgent
+  - type: button
+    role: activate
+    value: Quick send message
+    port: quickSend
+interfaces:

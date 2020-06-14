@@ -47,7 +47,7 @@ public abstract class IOShard extends AgentShardCore {
     }
 
     public void getActiveInputQuickMessage(String favoriteAgent, String message) {
-        System.out.println("Generating AgentWave for active input...");
+        System.out.println("Generating AgentWave for active input [quick send]...");
         AgentWave activeInput = new AgentWave(null, favoriteAgent);
         activeInput.addSourceElementFirst("/gui/port");
         activeInput.add("content", message);

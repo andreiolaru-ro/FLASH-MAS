@@ -1,4 +1,4 @@
-package interfaceGenerator.pylon;
+package interfaceGenerator.generator;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
@@ -8,7 +8,6 @@ import interfaceGenerator.io.IOShard;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.LayoutType;
 import interfaceGenerator.types.PortType;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,7 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class SwingUiPylon implements GUIPylonProxy {
+public class SwingUiGenerator implements UIGenerator {
     private static HashMap<String, Component> componentMap = new HashMap<>();
     private static HashSet<String> ids = new HashSet<>();
 
@@ -122,13 +121,12 @@ public class SwingUiPylon implements GUIPylonProxy {
                         values.add(new Pair<>(value, inputId.getValue()));
                     }
                 }
-                System.out.println(values);
                 try {
                     if (values == null || values.isEmpty()) {
-                        PageBuilder.getInstance().ioShard.getActiveInput(values);
-                    } else {
                         PageBuilder.getInstance().ioShard
                                 .getActiveInputQuickMessage(IOShard.favoriteAgent, IOShard.favoriteAgentMessage);
+                    } else {
+                        PageBuilder.getInstance().ioShard.getActiveInput(values);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -516,15 +514,5 @@ public class SwingUiPylon implements GUIPylonProxy {
         window.add(windowPanel);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return window;
-    }
-
-    @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-        return null;
-    }
-
-    @Override
-    public String getEntityName() {
-        return null;
     }
 }
