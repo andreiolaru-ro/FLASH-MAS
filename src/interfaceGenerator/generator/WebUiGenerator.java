@@ -1,12 +1,11 @@
-package interfaceGenerator.pylon;
+package interfaceGenerator.generator;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.types.BlockType;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.PortType;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
 
-public class WebUiPylon implements GUIPylonProxy {
+public class WebUiGenerator implements UIGenerator {
     private final static String head = "<!DOCTYPE html>\n" +
             "<html>\n" +
             "<head>\n" +
@@ -240,15 +239,5 @@ public class WebUiPylon implements GUIPylonProxy {
         }
         result.append(">\n");
         return result.toString();
-    }
-
-    @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-        return null;
-    }
-
-    @Override
-    public String getEntityName() {
-        return null;
     }
 }

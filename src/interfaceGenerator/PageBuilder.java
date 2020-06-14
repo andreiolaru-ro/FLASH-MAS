@@ -1,11 +1,10 @@
 package interfaceGenerator;
 
+import interfaceGenerator.generator.SwingUiGenerator;
+import interfaceGenerator.generator.UIGenerator;
+import interfaceGenerator.generator.WebUiGenerator;
 import interfaceGenerator.gui.GUIShard;
 import interfaceGenerator.io.IOShard;
-import interfaceGenerator.pylon.AndroidUiPylon;
-import interfaceGenerator.pylon.GUIPylonProxy;
-import interfaceGenerator.pylon.SwingUiPylon;
-import interfaceGenerator.pylon.WebUiPylon;
 import interfaceGenerator.types.*;
 import interfaceGenerator.web.Input;
 import org.yaml.snakeyaml.Yaml;
@@ -196,11 +195,11 @@ public class PageBuilder {
 
         // checking the active ports, with their elements
         Utils.checkActivePortsWithElement(page);
-        GUIPylonProxy guiPylonProxy;
+        UIGenerator guiPylonProxy;
         if (platformType != null) {
             switch (platformType) {
                 case WEB:
-                    guiPylonProxy = new WebUiPylon();
+                    guiPylonProxy = new WebUiGenerator();
                     String html = (String) guiPylonProxy.generate(data);
                     FileWriter fileWriter = new FileWriter("src/web/page.html");
                     //FileWriter fileWriter = new FileWriter("interface-files/generated-web-pages/page.html");
@@ -214,11 +213,9 @@ public class PageBuilder {
                     createdWebPage = true;
                     return null;
                 case ANDROID:
-                    Object android = AndroidUiPylon.generate(data);
-                    System.out.println(android);
-                    return null;
+                    break;
                 case DESKTOP:
-                    guiPylonProxy = new SwingUiPylon();
+                    guiPylonProxy = new SwingUiGenerator();
                     try {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     } catch (ClassNotFoundException

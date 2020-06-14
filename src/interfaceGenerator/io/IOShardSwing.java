@@ -3,7 +3,7 @@ package interfaceGenerator.io;
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
 import interfaceGenerator.Utils;
-import interfaceGenerator.pylon.SwingUiPylon;
+import interfaceGenerator.generator.SwingUiGenerator;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -27,7 +27,7 @@ public class IOShardSwing extends IOShard {
         AgentWave event = new AgentWave();
 
         for (Element element : elements) {
-            Component input = SwingUiPylon.getComponentById(element.getId());
+            Component input = SwingUiGenerator.getComponentById(element.getId());
             if (input instanceof JTextArea) {
                 JTextArea form = (JTextArea) input;
                 String value = form.getText();
@@ -60,7 +60,7 @@ public class IOShardSwing extends IOShard {
                 String elementId = elementsWithRole.get(i).getId();
                 String value = values.get(i);
                 try {
-                    SwingUiPylon.changeValueElement(elementId, value);
+                    SwingUiGenerator.changeValueElement(elementId, value);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }

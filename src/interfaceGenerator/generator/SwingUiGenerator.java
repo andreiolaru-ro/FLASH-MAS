@@ -1,4 +1,4 @@
-package interfaceGenerator.pylon;
+package interfaceGenerator.generator;
 
 import interfaceGenerator.Element;
 import interfaceGenerator.PageBuilder;
@@ -7,7 +7,6 @@ import interfaceGenerator.Utils;
 import interfaceGenerator.types.ElementType;
 import interfaceGenerator.types.LayoutType;
 import interfaceGenerator.types.PortType;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class SwingUiPylon implements GUIPylonProxy {
+public class SwingUiGenerator implements UIGenerator {
     private static HashMap<String, Component> componentMap = new HashMap<>();
     private static HashSet<String> ids = new HashSet<>();
 
@@ -326,16 +325,6 @@ public class SwingUiPylon implements GUIPylonProxy {
         PageBuilder.window.dispose();
         PageBuilder.window = addEntity(PageBuilder.window, element);
         PageBuilder.window.setVisible(true);
-    }
-
-    @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-        return null;
-    }
-
-    @Override
-    public String getEntityName() {
-        return null;
     }
 
     public static JFrame addEntity(JFrame frame, Element element) {
