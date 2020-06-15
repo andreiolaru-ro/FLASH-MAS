@@ -115,6 +115,9 @@ public class AgentViewFactory {
         EditText view = new EditText(context);
 
         if (element.getPort() != null) {
+            if (element.getId() == null) {
+                element.setId(guiShard.getIdResourceManager().getNewId(element));
+            }
             view.setId(element.getId());
         } else {
             Log.e(TAG, "Form element doesn't have port set");
@@ -133,6 +136,9 @@ public class AgentViewFactory {
         TextView view = new TextView(context);
 
         if (element.getPort() != null) {
+            if (element.getId() == null) {
+                element.setId(guiShard.getIdResourceManager().getNewId(element));
+            }
             view.setId(element.getId());
         } else {
             Log.e(TAG, "Label element doesn't have port set");
@@ -164,6 +170,9 @@ public class AgentViewFactory {
     private static View createButton(Element element, Context context, AndroidGuiShard guiShard) {
         Button button = new Button(context);
         if (element.getPort() != null) {
+            if (element.getId() == null) {
+                element.setId(guiShard.getIdResourceManager().getNewId(element));
+            }
             button.setId(element.getId());
         } else {
             Log.e(TAG, "Button element doesn't have port set");
@@ -189,7 +198,9 @@ public class AgentViewFactory {
         LinearLayout linearLayout = new LinearLayout(context);
 
         if (element.getPort() != null) {
-            linearLayout.setId(guiShard.getIdResourceManager().getNewId(element));
+            if (element.getId() == null) {
+                element.setId(guiShard.getIdResourceManager().getNewId(element));
+            }
             element.setId(linearLayout.getId());
         } else {
             Log.e(TAG, "BLOCK element doesn't have port set");
