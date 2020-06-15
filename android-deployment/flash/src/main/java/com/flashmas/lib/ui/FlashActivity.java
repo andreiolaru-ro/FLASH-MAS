@@ -103,7 +103,7 @@ public class FlashActivity extends AppCompatActivity implements OnFragmentIntera
         NavigationUI.setupWithNavController(toolbar, navController);
     }
 
-    private Agent getCompositeAgent() {
+    protected Agent getCompositeAgent() {
         return new CompositeAgentBuilder()
                 .addGuiShard()
                 .addSensorShard(Arrays.asList(Sensor.TYPE_PROXIMITY, Sensor.TYPE_GYROSCOPE))
