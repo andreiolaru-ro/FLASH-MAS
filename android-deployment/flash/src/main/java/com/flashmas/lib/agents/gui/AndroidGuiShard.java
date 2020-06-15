@@ -1,6 +1,8 @@
 package com.flashmas.lib.agents.gui;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,6 +41,7 @@ public class AndroidGuiShard extends IOShard {
     private View agentView = null;
     private IdResourceManager idResourceManager = new IdResourceManager();
     private Configuration uiConfig = null;
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     protected AndroidGuiShard(AgentShardDesignation designation) {
         super(designation);
@@ -113,13 +116,15 @@ public class AndroidGuiShard extends IOShard {
         }
         View v = agentView.findViewById(id);
 
-        if (v instanceof EditText) {
-            ((EditText)v).setText(content);
-        } else if (v instanceof Button) {
-            ((Button)v).setText(content);
-        } else if (v instanceof TextView) {
-            ((TextView)v).setText(content);
-        }
+        uiHandler.post(() -> {
+            if (v instanceof EditText) {
+                ((EditText)v).setText(content);
+            } else if (v instanceof Button) {
+                ((Button)v).setText(content);
+            } else if (v instanceof TextView) {
+                ((TextView)v).setText(content);
+            }
+        });
     }
 
     @Override
