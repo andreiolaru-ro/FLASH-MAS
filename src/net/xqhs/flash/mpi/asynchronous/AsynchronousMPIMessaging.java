@@ -18,24 +18,24 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
     private Thread thread;
     private Status status;
     private byte[] buffer;
-    private static int source;
-    private static int tag;
+    private int source;
+    private int tag;
     private static boolean stopFlag = false;
 
-    public static int getSource() {
+    public int getSource() {
         return source;
     }
 
-    public static int getTag() {
+    public int getTag() {
         return tag;
     }
 
-    public static void setSource(int source) {
-        AsynchronousMPIMessaging.source = source;
+    public void setSource(int source) {
+        this.source = source;
     }
 
-    public static void setTag(int tag) {
-        AsynchronousMPIMessaging.tag = tag;
+    public void setTag(int tag) {
+        this.tag = tag;
     }
 
     private void createMessageReceivingThread() {
@@ -44,9 +44,10 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
 
                 AgentWave wave = new AgentWave(new String(buffer));
                 wave.addSourceElementFirst(String.valueOf(status.getSource()));
-                AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
-                event.addObject(KEY, wave);
-                getAgent().postAgentEvent(event);
+//                AgentEvent event = new AgentEvent(AgentEvent.AgentEventType.AGENT_WAVE);
+//                event.addObject(KEY, wave);
+//                getAgent().postAgentEvent(event);
+                getAgent().postAgentEvent(wave);
             }
 
             @Override

@@ -32,13 +32,16 @@ public class AsynchronousPlayerAgent implements Agent {
     public ShardContainer proxy	= new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-            AgentWave wave = (AgentWave) event.getObject(KEY);
-            synchronized (messageQueue) {
-                try {
-                    messageQueue.put(wave);
-                    messageQueue.notify();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+//            AgentWave wave = (AgentWave) event.getObject(KEY);
+            if (event instanceof AgentWave) {
+                AgentWave wave = (AgentWave) event;
+                synchronized (messageQueue) {
+                    try {
+                        messageQueue.put(wave);
+                        messageQueue.notify();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

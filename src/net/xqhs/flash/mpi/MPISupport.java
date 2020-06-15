@@ -23,6 +23,7 @@ public class MPISupport extends DefaultPylonImplementation {
         public boolean send(String source, String destination, String content) {
             try {
                 byte[] msg = content.getBytes();
+//                char[] msg = content.toCharArray();
                 MPI.COMM_WORLD.send(msg, msg.length, MPI.BYTE, Integer.parseInt(destination), MPITagValue);
             } catch (MPIException e) {
                 e.printStackTrace();

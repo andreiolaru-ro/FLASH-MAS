@@ -42,7 +42,6 @@ public class SynchronousPlayerAgent implements Agent {
             // not supported
             return null;
         }
-
     };
 
     public SynchronousPlayerAgent(String name, int rank, int size) {

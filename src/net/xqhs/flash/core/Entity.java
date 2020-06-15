@@ -77,7 +77,13 @@ public interface Entity<P extends Entity<?>>
 	 * @return <code>true</code> if the entity was stopped without error. <code>false</code> otherwise.
 	 */
 	public boolean stop();
-	
+
+//	/**
+//	 * Contains the actions that are performed by the agent. Is used to control the agent execution flow
+//	 * with threads.
+//	 */
+//	public void run();
+
 	/**
 	 * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after
 	 * it has fully {@link #start}ed and until it is {@link #stop}ed.

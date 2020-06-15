@@ -31,15 +31,18 @@ public class AsynchronousMasterAgent implements Agent {
     public ShardContainer proxy	= new ShardContainer() {
         @Override
         public void postAgentEvent(AgentEvent event) {
-            AgentWave wave = (AgentWave) event.getObject(KEY);
-            synchronized (messageQueue) {
-                try {
+            if (event instanceof AgentWave) {
+//                AgentWave wave = (AgentWave) event.getObject(KEY);
+                AgentWave wave = (AgentWave) event;
+                synchronized (messageQueue) {
+                    try {
                         messageQueue.put(wave);
                         messageQueue.notify();
-                } catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+            }
         }
 
         @Override
