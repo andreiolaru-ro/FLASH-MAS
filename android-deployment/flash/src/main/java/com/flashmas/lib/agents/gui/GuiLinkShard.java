@@ -14,7 +14,7 @@ import java.util.List;
 public class GuiLinkShard extends AgentShardCore {
     private MultiTreeMap config;
     public static final String DESIGNATION = "gui_link_shards";
-    public static final String SHARD_DESIGNATIONS_KEY = "SHARD_DESIGNATIONS_KEY";
+    public static final String SHARD_DESIGNATIONS_KEY = "shards";
 
     protected GuiLinkShard(AgentShardDesignation designation) {
         super(designation);

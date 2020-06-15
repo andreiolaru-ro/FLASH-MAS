@@ -11,13 +11,14 @@ import android.util.Log;
 
 import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.agents.gui.AgentGuiElement;
-import com.flashmas.lib.agents.gui.AndroidGuiShard;
 import com.flashmas.lib.agents.gui.generator.Element;
 import com.flashmas.lib.agents.gui.generator.ElementType;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.Arrays;
@@ -30,7 +31,8 @@ import interfaceGenerator.io.IOShard;
 public class SensorsShard extends IOShard implements SensorEventListener, AgentGuiElement {
     private static final String TAG = SensorsShard.class.getSimpleName();
     public static final String DESIGNATION = "sensors";
-    public static final String SENSOR_TYPES_ARRAY_KEY = "SENSOR_TYPES_ARRAY_KEY";
+    public static final String SENSOR_TYPES_ARRAY_KEY = "sensor_types";
+
     private SensorManager sensorManager;
     private List<Sensor> sensorsList = new LinkedList<>();
     private HashMap<Integer, float[]> sensorsValues = new HashMap<>();
@@ -75,7 +77,12 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
 
         List<String> sensorTypes = configuration.getValues(SENSOR_TYPES_ARRAY_KEY);
         for (String sensorType: sensorTypes) {
-            int sensorTypeInt = Integer.parseInt(sensorType);
+            int sensorTypeInt;
+            try {
+                sensorTypeInt = Integer.parseInt(sensorType);
+            } catch (NumberFormatException e) {
+                sensorTypeInt = 0;
+            }
 
             if (sensorTypeInt == Sensor.TYPE_ALL) {
                 sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -118,7 +125,7 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     public boolean start() {
         boolean superReturnCode = super.start();
         for (Sensor sensor: sensorsList) {
-            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, sensor, 300000);
         }
         return superReturnCode;
     }
@@ -135,16 +142,20 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.d(TAG, "Sensor " + event.sensor.getName() + " changed. New values are: " + Arrays.toString(event.values));
+//        Log.d(TAG, "Sensor " + event.sensor.getName() + " changed. New values are: " + Arrays.toString(event.values));
 
-        AgentWave wave = new AgentWave();
-        wave.addSourceElementFirst(DESIGNATION);
-        wave.add(AndroidGuiShard.KEY_PORT, DESIGNATION);
-        wave.add(AndroidGuiShard.KEY_ROLE, String.valueOf(event.sensor.getType()));
-        wave.add("content", Arrays.toString(event.values));
-        getAgent().postAgentEvent(wave);
+//        AgentWave wave = new AgentWave();
+//        wave.addSourceElementFirst(DESIGNATION);
+//        wave.add(AndroidGuiShard.KEY_PORT, DESIGNATION);
+//        wave.add(AndroidGuiShard.KEY_ROLE, String.valueOf(event.sensor.getType()));
+//        wave.add("content", Arrays.toString(event.values));
+//        getAgent().postAgentEvent(wave);
 
         sensorsValues.put(event.sensor.getType(), event.values);
+        AgentShard s = getAgent().getAgentShard(AgentShardDesignation.autoDesignation("messaging"));
+        if (s instanceof MessagingShard) {
+            ((MessagingShard)s).sendMessage(getAgent().getEntityName() + "/sensors", "node1/agentA", "Sensor " + event.sensor.getName() + " changed. ");
+        }
     }
 
     @Override
