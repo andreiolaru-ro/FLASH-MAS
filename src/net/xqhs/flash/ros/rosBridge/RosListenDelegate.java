@@ -1,14 +1,6 @@
 package net.xqhs.flash.ros.rosBridge;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is a delegate interface for handling ros topic subscriptions. The {@link #receive(com.fasterxml.jackson.databind.JsonNode, String)}
@@ -41,45 +33,4 @@ public interface RosListenDelegate {
 	 * @param stringRep the string representation of the JSON object.
 	 */
 	void receive(JsonNode data, String stringRep);
-
-
-	/**
-	 * A class for easy conversion to the legacy java_rosbridge {@link #receive(com.fasterxml.jackson.databind.JsonNode, String)}
-	 * message format that presented the JSON data
-	 * in a {@link Map} from {@link String} to {@link Object} instances
-	 * in which the values were ether primitives, {@link Map} objects themselves, or {@link java.util.List}
-	 * objects.
-	 */
-	public static class LegacyFormat{
-
-		/**
-		 * A method for easy conversion to the legacy java_rosbridge {@link #receive(com.fasterxml.jackson.databind.JsonNode, String)}
-		 * message format that presented the JSON data
-		 * in a {@link Map} from {@link String} to {@link Object} instances
-		 * in which the values were ether primitives, {@link Map} objects themselves, or {@link java.util.List}
-		 * objects.
-		 * @param jsonString the source JSON string message that was received
-		 * @return a {@link Map} data structure of the JSON data.
-		 */
-		public static Map<String, Object> legacyFormat(String jsonString){
-
-			JsonFactory jsonFactory = new JsonFactory();
-			Map<String, Object> messageData = new HashMap<String, Object>();
-			try {
-				ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
-				TypeReference<Map<String, Object>> listTypeRef =
-						new TypeReference<Map<String, Object>>() {};
-				messageData = objectMapper.readValue(jsonString, listTypeRef);
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			return messageData;
-		}
-	}
-
-
-
 }

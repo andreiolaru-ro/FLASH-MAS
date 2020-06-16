@@ -33,31 +33,10 @@ public class SubscriptionRequestMsg {
 		keyValues.put("topic", topic);
 	}
 
-	public SubscriptionRequestMsg setTopic(String topic){
-		this.setKeyValue("topic", topic);
-		return this;
-	}
-
 	public SubscriptionRequestMsg setType(String type){
 		this.setKeyValue("type", type);
 		return this;
 	}
-
-	public SubscriptionRequestMsg setThrottleRate(Integer throttleRate){
-		this.setKeyValue("throttle_rate", throttleRate);
-		return this;
-	}
-
-	public SubscriptionRequestMsg setQueueLength(Integer queueLength){
-		this.setKeyValue("queue_length", queueLength);
-		return this;
-	}
-
-	public SubscriptionRequestMsg setFragmentSize(Integer fragmentSize){
-		this.setKeyValue("fragment_size", fragmentSize);
-		return this;
-	}
-
 
 	public SubscriptionRequestMsg setId(String id){
 		this.setKeyValue("id", id);
@@ -71,19 +50,6 @@ public class SubscriptionRequestMsg {
 	public String getType(){
 		return (String)this.keyValues.get("type");
 	}
-
-	public Integer getThrottleRate(){
-		return (Integer)this.keyValues.get("throttle_rate");
-	}
-
-	public Integer getQueueLength(){
-		return (Integer)this.keyValues.get("queue_length");
-	}
-
-	public Integer getFragmentSize(){
-		return (Integer)this.keyValues.get("fragment_size");
-	}
-
 
 	public String getId(){
 		return (String)this.keyValues.get("id");

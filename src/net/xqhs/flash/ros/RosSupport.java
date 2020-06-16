@@ -50,8 +50,6 @@ public class RosSupport extends DefaultPylonImplementation {
 	public static final String	LOCAL_SUPPORT_NAME	= "ROS";
 
 	public static final String	CONNECTTO_ATTRIBUTE_NAME	= "connect-to";
-	
-	// public static final String ROSBRIDGE_URI = "ws://localhost:9090";
 
     RosBridge bridge;
 
@@ -102,9 +100,7 @@ public class RosSupport extends DefaultPylonImplementation {
             messageReceivers.put(agentName, receiver);
             // topic name: id = agentName
             bridge.subscribe(SubscriptionRequestMsg.generate("/" + agentName)
-                            .setType("std_msgs/String")
-                            .setThrottleRate(1)
-                            .setQueueLength(1),
+                            .setType("std_msgs/String"),
                     new RosListenDelegate() {
 
                         public void receive(JsonNode data, String stringRep) {
