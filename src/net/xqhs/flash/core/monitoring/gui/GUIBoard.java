@@ -17,7 +17,7 @@ import javax.swing.border.EmptyBorder;
 
 public class GUIBoard extends JFrame {
     protected static final long		PING_INITIAL_DELAY			= 0;
-    protected static final long		PING_PERIOD					= 300;
+    protected static final long		PING_PERIOD					= 50;
 
     private JPanel contentPane;
     private CentralEntityProxy centralEntityProxy;
@@ -132,15 +132,19 @@ public class GUIBoard extends JFrame {
     private void createControlPanelForEntities() {
         JPanel node1  = createEntityPanel("node1",  "");
         JPanel node2  = createEntityPanel("node2",  "");
+        JPanel node3  = createEntityPanel("node3",  "");
         JPanel agent1 = createEntityPanel("AgentA", "");
         JPanel agent2 = createEntityPanel("AgentB", "");
         JPanel agent3 = createEntityPanel("AgentC", "");
         JPanel panel  = new JPanel();
-        panel.setLayout(new GridLayout(5, 1));
+        panel.setLayout(new GridLayout(6, 1));
         panel.add(node1);
         panel.add(agent1);
-        panel.add(agent2);
+
         panel.add(node2);
+        panel.add(agent2);
+
+        panel.add(node3);
         panel.add(agent3);
         panel.setBorder(new EmptyBorder(5,5,5,5));
         contentPane.add(panel, BorderLayout.EAST);
