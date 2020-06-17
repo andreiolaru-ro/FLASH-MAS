@@ -3,7 +3,6 @@ package com.flashmas.lib.agents.gui.generator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -15,10 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
-import com.flashmas.lib.agents.gui.GuiLinkShard;
-
-import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -27,7 +22,6 @@ import java.io.InputStream;
 public class AgentViewFactory {
     private static final String TAG = AgentViewFactory.class.getSimpleName();
     private static Yaml yamlParser = new Yaml();
-    private static Handler uiHandler = new Handler(Looper.getMainLooper());
     private static Handler backendHandler = new Handler();
 
     public static Configuration parseYaml(InputStream inputStream) {
@@ -56,16 +50,6 @@ public class AgentViewFactory {
             scrollView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             scrollView.addView(rootView);
-        }
-
-        AgentShard shard = guiShard.getShardContainer()
-                .getAgentShard(AgentShardDesignation.autoDesignation(GuiLinkShard.DESIGNATION));
-        if (shard instanceof GuiLinkShard && rootView instanceof LinearLayout) {
-            Element v = ((GuiLinkShard) shard).getShardsView();
-            if (v != null) {
-                config.getNode().addChild(v);
-                ((LinearLayout) rootView).addView(createView(v, context, guiShard));
-            }
         }
 
         return scrollView;
@@ -147,17 +131,6 @@ public class AgentViewFactory {
         if (element.getText() != null) {
             view.setText(element.getText());
         }
-
-//        if (element.getRole() != null && element.getRole().equals("logging")) {
-//            guiShard.registerEventHandler(agentEvent -> {
-//                if (agentEvent instanceof AgentWave) {
-////                    if (((AgentWave)agentEvent).get("port"))
-//                    uiHandler.post(() ->
-//                        view.append("\nReceived agent wave: " + agentEvent.toString())
-//                    );
-//                }
-//            });
-//        }
 
         if (element.getProperties().containsKey("align") &&
                 element.getProperties().get("align").equals("center")) {
