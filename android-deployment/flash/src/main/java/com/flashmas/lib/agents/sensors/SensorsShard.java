@@ -10,25 +10,21 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.flashmas.lib.FlashManager;
-import com.flashmas.lib.agents.gui.AgentGuiElement;
-import com.flashmas.lib.agents.gui.generator.Element;
-import com.flashmas.lib.agents.gui.generator.ElementType;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import interfaceGenerator.io.IOShard;
 
-public class SensorsShard extends IOShard implements SensorEventListener, AgentGuiElement {
+public class SensorsShard extends IOShard implements SensorEventListener {
     private static final String TAG = SensorsShard.class.getSimpleName();
     public static final String DESIGNATION = "sensors";
     public static final String SENSOR_TYPES_ARRAY_KEY = "sensor_types";
@@ -53,9 +49,26 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     @Override
     public AgentWave getInput(String sensorType) {
         AgentWave wave = new AgentWave();
+        int sensorTypeInt;
+        try {
+            sensorTypeInt = Integer.parseInt(sensorType);
+        } catch (NumberFormatException e) {
+            return wave;
+        }
 
         wave.addSourceElementFirst(DESIGNATION);
-        wave.add("Value", Arrays.toString(sensorsValues.get(Integer.valueOf(sensorType))));
+        StringBuilder allvalues = new StringBuilder();
+        if (sensorTypeInt == Sensor.TYPE_ALL) {
+            for (Map.Entry<Integer, float[]> entry: sensorsValues.entrySet()) {
+                allvalues.append(sensorManager.getDefaultSensor(entry.getKey()).getName())
+                        .append(": ")
+                        .append(Arrays.toString(entry.getValue()))
+                        .append("\n");
+            }
+        } else {
+            allvalues.append(Arrays.toString(sensorsValues.get(sensorTypeInt)));
+        }
+        wave.addFirst("content", allvalues.toString());
 
         return wave;
     }
@@ -71,7 +84,7 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
         boolean returnCode = false;
 
         if (!superReturnCode || !configuration.containsSimpleName(SENSOR_TYPES_ARRAY_KEY)) {
-            Log.d(TAG, "No sensor provided to shard " + this.getClass().getSimpleName());
+            Log.d(TAG, "No sensor provided to shard " + getClass().getSimpleName());
             return false;
         }
 
@@ -143,50 +156,11 @@ public class SensorsShard extends IOShard implements SensorEventListener, AgentG
     @Override
     public void onSensorChanged(SensorEvent event) {
 //        Log.d(TAG, "Sensor " + event.sensor.getName() + " changed. New values are: " + Arrays.toString(event.values));
-
-//        AgentWave wave = new AgentWave();
-//        wave.addSourceElementFirst(DESIGNATION);
-//        wave.add(AndroidGuiShard.KEY_PORT, DESIGNATION);
-//        wave.add(AndroidGuiShard.KEY_ROLE, String.valueOf(event.sensor.getType()));
-//        wave.add("content", Arrays.toString(event.values));
-//        getAgent().postAgentEvent(wave);
-
         sensorsValues.put(event.sensor.getType(), event.values);
-        AgentShard s = getAgent().getAgentShard(AgentShardDesignation.autoDesignation("messaging"));
-        if (s instanceof MessagingShard) {
-            ((MessagingShard)s).sendMessage(getAgent().getEntityName() + "/sensors", "node1/agentA", "Sensor " + event.sensor.getName() + " changed. ");
-        }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Nothing for now
     }
-
-    @Override
-    public Element getAgentGuiElement() {
-        Element container = new Element();
-        container.setType(ElementType.BLOCK.type);
-        List<Element> children = new LinkedList<>();
-
-        for (Sensor s : sensorsList) {
-            Element label = new Element();
-            label.setType(ElementType.LABEL.type);
-            label.setText(s.getName() + ": ");
-            children.add(label);
-
-            Element v = new Element();
-            v.setType(ElementType.LABEL.type);
-            v.setPort(DESIGNATION);
-            v.setRole(String.valueOf(s.getType()));
-
-            children.add(v);
-        }
-        hasGui = true;
-        container.setChildren(children);
-
-        return container;
-    }
-
-
 }

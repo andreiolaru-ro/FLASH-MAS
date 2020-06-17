@@ -3,7 +3,7 @@ package com.flashmas.lib.agents;
 import android.util.Log;
 
 import com.flashmas.lib.agents.gui.AndroidGuiShard;
-import com.flashmas.lib.agents.gui.GuiLinkShard;
+import com.flashmas.lib.agents.gui.SensorsGuiLinkShard;
 import com.flashmas.lib.agents.sensors.SensorsShard;
 
 import net.xqhs.flash.android.AndroidClassFactory;
@@ -93,11 +93,11 @@ public class CompositeAgentBuilder {
     }
 
 
-    public CompositeAgentBuilder addGuiLinkShard(List<String> designations) {
+    public CompositeAgentBuilder addGuiLinkShard(List<String> sensorTypes) {
         MultiTreeMap guiLinkShardConfig = new MultiTreeMap();
-        guiLinkShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, GuiLinkShard.class.getName());
-        if (designations != null) {
-            guiLinkShardConfig.addAll(GuiLinkShard.SHARD_DESIGNATIONS_KEY, designations);
+        guiLinkShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsGuiLinkShard.class.getName());
+        if (sensorTypes != null) {
+            guiLinkShardConfig.addAll(SensorsGuiLinkShard.SHARD_SENSORS_KEY, sensorTypes);
         }
         shardsTree.addOneTree("guiLinkShard", guiLinkShardConfig);
         return this;

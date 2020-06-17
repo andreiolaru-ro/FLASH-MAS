@@ -4,7 +4,6 @@ import android.hardware.Sensor;
 import android.os.Bundle;
 
 import com.flashmas.lib.FlashManager;
-import com.flashmas.lib.agents.sensors.SensorsShard;
 import com.flashmas.lib.ui.FlashActivity;
 
 import net.xqhs.flash.core.agent.Agent;
@@ -22,7 +21,7 @@ public class MainActivity extends FlashActivity {
         return FlashManager.getCompositeAgentBuilder()
                 .addGuiShard()
                 .addSensorShard(Arrays.asList(Sensor.TYPE_ALL))
-                .addGuiLinkShard(Arrays.asList(SensorsShard.DESIGNATION))
+                .addGuiLinkShard(Arrays.asList(String.valueOf(Sensor.TYPE_GYROSCOPE)))
                 .build();
     }
 }
