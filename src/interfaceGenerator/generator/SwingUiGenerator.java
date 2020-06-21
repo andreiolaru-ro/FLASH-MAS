@@ -16,10 +16,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * class for Swing UI generation
+ */
 public class SwingUiGenerator implements UIGenerator {
+    /**
+     * componentMap is a HashMap, where id is associated with tis corresponding Swing element
+     */
     private static HashMap<String, Component> componentMap = new HashMap<>();
+    /**
+     * ids represents a HashSet with elements' ids, used for mapping Swing elements with ids
+     */
     private static HashSet<String> ids = new HashSet<>();
 
+    /**
+     * @param element represents a label element
+     * @return JPanel which contains a JLabel
+     */
     private static JPanel generatePanel(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -76,6 +89,10 @@ public class SwingUiGenerator implements UIGenerator {
         return panel;
     }
 
+    /**
+     * @param element represents a button element
+     * @return JPanel which contains a JButton
+     */
     private static JPanel generateButton(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -133,6 +150,11 @@ public class SwingUiGenerator implements UIGenerator {
         return panel;
     }
 
+    /**
+     * @param frame represents the Swing generated page
+     *              this method maps the ids with the corresponding Swing element,
+     *              which is useful for searching an element by its id
+     */
     private static void mapElements(JFrame frame) {
         Container contentPane = frame.getRootPane().getContentPane();
         if (contentPane instanceof JPanel) {
@@ -145,6 +167,10 @@ public class SwingUiGenerator implements UIGenerator {
         }
     }
 
+    /**
+     * @param element represents a label element
+     * @return JPanel which contains a JLabel
+     */
     private static JPanel generateLabel(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -159,6 +185,10 @@ public class SwingUiGenerator implements UIGenerator {
         return panel;
     }
 
+    /**
+     * @param element represents a text box element
+     * @return JPanel which contains a JTextArea
+     */
     private static JPanel generateForm(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -182,6 +212,10 @@ public class SwingUiGenerator implements UIGenerator {
         return panel;
     }
 
+    /**
+     * @param element represents a spinner element
+     * @return JPanel which contains a JSpinner
+     */
     private static JPanel generateSpinner(Element element) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -196,10 +230,19 @@ public class SwingUiGenerator implements UIGenerator {
         return panel;
     }
 
+    /**
+     * @param id represents the id of the element to be searched in page
+     * @return the component with the respective id, if found, otherwise returns null
+     */
     public static Component getComponentById(String id) {
         return getComponentById(id, PageBuilder.window);
     }
 
+    /**
+     * @param id    represents the id of the element to be searched in given page
+     * @param frame represents the page where the element is searched
+     * @return the component with the respective id, if found, otherwise returns null
+     */
     public static Component getComponentById(String id, JFrame frame) {
         componentMap.clear();
         mapElements(frame);

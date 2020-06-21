@@ -7,17 +7,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Element class represents an element from GUI interface (e.g. button, label, container, text box, spinner)
+ */
 public class Element {
-    private String id;
-    private List<Element> children = new ArrayList<>();
-    private String type = ElementType.BLOCK.type;
-    private Map<String, String> properties = new HashMap<>();
-    private String port;
-    private String role;
-    private String value;
-    private String blockType;
-    private boolean defaultSpecification;
+    /**
+     * counter of tabs, used in toString
+     */
     private static int counter = 0;
+    /**
+     * id of the element
+     */
+    private String id;
+    /**
+     * the list of child elements (applicable to block elements)
+     */
+    private List<Element> children = new ArrayList<>();
+    private Map<String, String> properties = new HashMap<>();
+    /**
+     * type of element
+     */
+    private String type = ElementType.BLOCK.type;
+    /**
+     * port where is the element
+     */
+    private String port;
+    /**
+     * the role of the element in its port
+     */
+    private String role;
+    /**
+     * value of the element (e.g. the text of a button / label)
+     */
+    private String value;
+    /**
+     * the type of the block where the element is (global, agent interfaces)
+     */
+    private String blockType;
+    /**
+     * favoriteAgent represents the name of the target agent in quick send message scenario
+     */
+    private String favoriteAgent;
+    /**
+     * messageContent represents the content of the default message sent to the favoriteAgent in quick send scenario
+     */
+    private String messageContent;
 
     public List<Element> getChildren() {
         return children;
@@ -89,6 +123,22 @@ public class Element {
 
     public void setBlockType(String blockType) {
         this.blockType = blockType;
+    }
+
+    public String getFavoriteAgent() {
+        return favoriteAgent;
+    }
+
+    public void setFavoriteAgent(String favoriteAgent) {
+        this.favoriteAgent = favoriteAgent;
+    }
+
+    public String getMessageContent() {
+        return messageContent;
+    }
+
+    public void setMessageContent(String messageContent) {
+        this.messageContent = messageContent;
     }
 
     @Override
