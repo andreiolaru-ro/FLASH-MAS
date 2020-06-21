@@ -27,11 +27,11 @@ public class BootCompositeWebSocket
 
 		test_args += " -node node2";
 		test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8881";
-		test_args += " -agent composite:AgentB -shard messaging -shard ControlShard -shard MonitoringShard";
+		test_args += " -agent composite:AgentB -shard messaging -shard ControlShard -shard MonitoringShard -shard PingBackTestComponent";
 
 		test_args += " -node node3";
 		test_args += " -pylon webSocket:slave3 connectTo:ws://localhost:8881";
-		test_args += " -agent composite:AgentC -shard messaging -shard ControlShard -shard MonitoringShard -shard PingTestComponent otherAgent:AgentA";
+		test_args += " -agent composite:AgentC -shard messaging -shard ControlShard -shard MonitoringShard -shard PingTestComponent otherAgent:AgentA otherAgent:AgentB";
 
 		FlashBoot.main(test_args.split(" "));
 	}
