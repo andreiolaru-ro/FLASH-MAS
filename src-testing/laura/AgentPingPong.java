@@ -13,6 +13,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.local.LocalSupport;
 import net.xqhs.flash.ros.RosSupport;
 import net.xqhs.util.logging.Unit;
 
@@ -94,15 +95,25 @@ public class AgentPingPong extends Unit implements Agent {
 				 * The index of the message sent.
 				 */
 				int tick = 0;
+				long startTime = System.nanoTime();
+				long stopTime;
 				
 				@Override
 				public void run() {
-					tick++;
-					for(String otherAgent : otherAgents) {
-						lf("Sending the message to ", otherAgent);
-						if(!msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
-								AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick))
-							le("Message sending failed");
+					if (tick < 1000) {
+						tick++;
+						for (String otherAgent : otherAgents) {
+							System.out.println("Sending the message to " + otherAgent);
+							if (!msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
+									AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick))
+								le("Message sending failed");
+						}
+						stopTime = System.nanoTime();
+						long totalTime = stopTime - startTime;
+						System.out.println("Time since first message: " + totalTime);
+					}
+					else {
+						return;
 					}
 				}
 			}, PING_INITIAL_DELAY, PING_PERIOD);
