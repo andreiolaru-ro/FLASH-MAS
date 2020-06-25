@@ -19,6 +19,7 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import test.compositePingPong.Boot;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -86,13 +87,19 @@ public class PingTestComponent extends AgentShardGeneral
 	 * Cache for the name of the other agent.
 	 */
 	String							otherAgent					= null;
-	
+
+	List<String> otherAgents					= null;
+
+
+	public static final String	FUNCTIONALITY	                = "PING_TESTING";
+
+
 	/**
 	 * Default constructor
 	 */
 	public PingTestComponent()
 	{
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(FUNCTIONALITY));
 	}
 	
 	@Override
@@ -100,7 +107,8 @@ public class PingTestComponent extends AgentShardGeneral
 	{
 		if(!super.configure(configuration))
 			return false;
-		otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
+		//otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
+		otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
 		return true;
 	}
 	
@@ -110,17 +118,19 @@ public class PingTestComponent extends AgentShardGeneral
 		super.signalAgentEvent(event);
 		switch(event.getType())
 		{
-		case AGENT_START:
-			pingTimer = new Timer();
-			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
-			break;
-		case SIMULATION_START:
-			break;
-		case AGENT_STOP:
-			pingTimer.cancel();
-			break;
-		default:
-			break;
+			case AGENT_START:
+				pingTimer = new Timer();
+				pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
+				break;
+			case AGENT_STOP:
+				pingTimer.cancel();
+				break;
+			case SIMULATION_START:
+				break;
+			case SIMULATION_PAUSE:
+				break;
+			default:
+				break;
 		}
 	}
 	
@@ -140,7 +150,12 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	protected boolean sendMessage(String content)
 	{
-		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
+		//return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
+		if(otherAgents == null) return false;
+		for(String a : otherAgents) {
+			sendMessage(content, SHARD_ENDPOINT, a, PingBackTestComponent.SHARD_ENDPOINT);
+		}
+		return true;
 	}
 	
 	@Override

@@ -171,6 +171,8 @@ public class AgentTest extends Unit implements Agent
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
+		if(!(context instanceof MessagingPylonProxy))
+			return false;
 		return addContext((MessagingPylonProxy) context);
 	}
 	

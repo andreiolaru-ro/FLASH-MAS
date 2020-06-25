@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/FLASH-MAS.iml" filepath="$PROJECT_DIR$/.idea/FLASH-MAS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Flash-MAS.iml" filepath="$PROJECT_DIR$/Flash-MAS.iml" />
     </modules>
   </component>
 </project>
