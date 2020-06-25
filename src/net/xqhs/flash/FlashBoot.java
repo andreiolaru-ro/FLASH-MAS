@@ -34,18 +34,16 @@ public class FlashBoot
 	 * @param args
 	 *            - the arguments received by the program.
 	 */
+	public static ByteArrayOutputStream stream = null;
 	public static void main(String[] args)
 	{
 		Logging.getMasterLogging().setLogLevel(Level.ALL);
 
-//		ByteArrayOutputStream s = new ByteArrayOutputStream();
-//		GlobalLogWrapper.setLogStream(s);
+		stream = new ByteArrayOutputStream();
+		GlobalLogWrapper.setLogStream(stream);
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
 		for(Node node : nodes)
 			node.start();
-
-
-		//System.out.println(s.toString());
 	}
 	
 }

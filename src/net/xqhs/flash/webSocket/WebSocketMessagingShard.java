@@ -34,7 +34,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
     {
         if(!(context instanceof MessagingPylonProxy))
-            throw new IllegalStateException("Pylon Context is not of expected type.");
+            return false;
         pylon = (MessagingPylonProxy) context;
         return true;
     }
@@ -45,8 +45,6 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 		super.signalAgentEvent(event);
 		if(event.getType().equals(AgentEventType.AGENT_START))
 			pylon.register(getAgent().getEntityName(), inbox);
-		if(event.getType().equals(AgentEventType.AGENT_STOP))
-		    pylon.unregister(getAgent().getEntityName());
 	}
 
     @Override
@@ -60,13 +58,9 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
         super.receiveMessage(source, destination, content);
     }
 
-    @Override
-    public void registerNode(String name) {
-        pylon.registerNode(name, inbox);
-    }
 
     @Override
-    public void registerCentralEntity(String name) {
-        pylon.registerCentralEntity(name, inbox);
+    public void register(String entityName) {
+        pylon.register(entityName, inbox);
     }
 }

@@ -22,16 +22,16 @@ input {
 
 .global {
     border: 3px solid white;
-    padding: 15px;
+    padding: 10px;
     background-color: tan;
     margin: 10px;
-    margin-right: 30px;
+    margin-right: 20px;
     color: white;
 }
 
 button {
     font-family: Century Gothic;
-    margin: 7px;
+    margin: 5px;
 }
 
 .entities {
@@ -50,7 +50,6 @@ button {
 }
 
 .entity-name {
-    padding: 30px;
 }
 
 .entity-element {
@@ -60,12 +59,12 @@ button {
 
 .interfaces {
     border: 3px solid white;
-    max-width: 1100px;
+    max-width: 1000px;
     max-height: 900px;
     overflow-y: scroll;
     margin-left: 10px;
     text-align: center;
-    padding: 15px;
+    padding: 5px;
     background-color: lightslategrey;
     color: white;
 }
@@ -77,7 +76,7 @@ button {
     margin: 2px;
     background-color: steelblue;
     color: white;
-    padding: 15px;
+    padding: 5px;
 }
 
 .line {

@@ -102,7 +102,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			if(!(context instanceof MessagingPylonProxy))
 				throw new IllegalStateException("Pylon Context is not of expected type.");
 			pylon = (MessagingPylonProxy) context;
-			//pylon.register(getAgent().getEntityName(), inbox);
 			return true;
 		}
 		
@@ -117,13 +116,8 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public void registerNode(String name) {
-			pylon.registerNode(name, inbox);
-		}
-
-		@Override
-		public void registerCentralEntity(String name) {
-			pylon.registerCentralEntity(name, inbox);
+		public void register(String entityName) {
+			pylon.register(entityName, inbox);
 		}
 
 		@Override
@@ -131,8 +125,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			super.signalAgentEvent(event);
 			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
 				pylon.register(getAgent().getEntityName(), inbox);
-			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP))
-				pylon.unregister(getAgent().getEntityName());
 		}
 	}
 	
@@ -150,8 +142,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 
 	protected String nodeName;
 
-	protected String centralEntityName;
-
 	/**
 	 * The proxy to this entity.
 	 */
@@ -163,26 +153,8 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 
 		@Override
-		public void registerNode(String id, MessageReceiver inbox) {
-			messageReceivers.put(id, inbox);
-			nodeName = id;
-		}
-
-		@Override
-		public void registerCentralEntity(String name, MessageReceiver inbox) {
-			messageReceivers.put(name, inbox);
-			centralEntityName = name;
-		}
-
-		@Override
-		public boolean unregister(String agentName) {
-			messageReceivers.remove(agentName);
-			return true;
-		}
-
-		@Override
-		public boolean register(String agentName, MessageReceiver receiver) {
-			messageReceivers.put(agentName, receiver);
+		public boolean register(String entityName, MessageReceiver receiver) {
+			messageReceivers.put(entityName, receiver);
 			return true;
 		}
 
@@ -382,6 +354,22 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 				deliver(message.get(0), message.get(1), message.get(2));
 			}
 		}
+	}
+
+	@Override
+	public boolean addContext(EntityProxy<Node> context) {
+		if(!super.addContext(context))
+			return false;
+		nodeName = context.getEntityName();
+		lf("Added node context", nodeName);
+		return true;
+	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		if(context instanceof Node.NodeProxy)
+			return addContext((Node.NodeProxy) context);
+		return false;
 	}
 
 	@Override

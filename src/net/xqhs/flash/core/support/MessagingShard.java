@@ -47,19 +47,9 @@ public interface MessagingShard extends AgentShard
 	public String getAgentAddress();
 
 	/**
-	 * Registers the node within its pylon context.
-	 *
-	 * @param nodeName
-	 * 					- name of the node to be registered
+	 * @param entityName
+	 * 					- the name of entity to be registered
 	 */
-	public void registerNode(String nodeName);
-
-	/**
-	 * Registers the central entity for monitoring and control within its pylon context.
-	 *
-	 * @param name
-	 * 					- the name of entity for monitoring and control
-	 */
-	public void registerCentralEntity(String name);
+	public void register(String entityName);
 
 }

@@ -32,14 +32,50 @@ public class WebSocketServerEntity extends Unit implements Entity
 	
 	private static final int		SERVER_STOP_TIME	= 10;
 	private WebSocketServer			webSocketServer;
-	private boolean					running				= false;
+	private boolean					running;
 
-	private HashMap<String, WebSocket> agentToWebSocket = new HashMap<>();
+	/**
+	 * Map all entities to their {@link WebSocket}.
+	 */
+	private HashMap<String, WebSocket> entityToWebSocket = new HashMap<>();
+	/**
+	 * Map all nodes to their {@link WebSocket}.
+	 * */
 	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
-	private HashMap<String, List<String>> nodeToAgents = new LinkedHashMap<>();
+	/**
+	 * Keep track of all entities within a node context.
+	 * */
+	private HashMap<String, List<String>> nodeToEntities = new LinkedHashMap<>();
 
-	private String controlEntity;
-	private WebSocket controlEntityWebSocket;
+	/**
+	 * @param message
+	 * 					- the message to be sent
+	 * @return
+	 * 					- an indication of success
+	 */
+	private boolean routeTheMessage(JSONObject message) {
+			String destination = (String) message.get("destination");
+			String destEntity = destination.split(
+					AgentWave.ADDRESS_SEPARATOR)[0];
+
+			WebSocket destinationWebSocket;
+			destinationWebSocket = entityToWebSocket.get(destEntity);
+			if(destinationWebSocket != null) {
+				destinationWebSocket.send(message.toString());
+				li("Sent to agent: []. ", message.toString());
+				return true;
+			}
+
+			destinationWebSocket = nodeToWebSocket.get(destEntity);
+			if(destinationWebSocket != null) {
+				destinationWebSocket.send(message.toString());
+				li("Sent to node: []. ", message.toString());
+				return true;
+			}
+
+			le("Filed to find the entity [] websocket.", destEntity);
+			return false;
+	}
 
 
 	public WebSocketServerEntity(int serverAddress)
@@ -64,13 +100,11 @@ public class WebSocketServerEntity extends Unit implements Entity
 			/**
 			 * Receives message from a {@link WebSocketClient}.
 			 * Messages can be:
-			 * 					- node registration message
-			 * 					- agent registration message
-			 * 					- central entity for monitoring and control message
-			 * 					- raw message from one entity to another
+			 * 					- entity registration message
+			 * 					- message from one entity to another
 			 *
 			 * @param webSocket
-			 * 					- the sender websocket client
+			 * 					- the sender {@link WebSocket} client
 			 * @param s
 			 * 					- the JSON string containing a message and routing information
 			 */
@@ -79,83 +113,35 @@ public class WebSocketServerEntity extends Unit implements Entity
 			{
 				Object obj = JSONValue.parse(s);
 				if(obj == null) return;
-				JSONObject jsonObject = (JSONObject) obj;
+				JSONObject message = (JSONObject) obj;
 
-				// control and monitoring entity registration
-				if(jsonObject.get("controlEntity") != null)
-				{
-					controlEntity = (String)jsonObject.get("controlEntity");
-					controlEntityWebSocket = webSocket;
-					li("Registered: []. ", controlEntity);
-					printState();
+				// message in transit through the server
+				if(message.get("destination") != null && routeTheMessage(message))
 					return;
-				}
 
-				// specify if the entity will be registered or unregistered
-				boolean toRegister = false;
-				if(jsonObject.get("register") != null)
-					toRegister = (boolean)jsonObject.get("register");
+				if(message.get("nodeName") == null) return;
+				String nodeName = (String)message.get("nodeName");
 
-				if(jsonObject.get("nodeName") == null) return;
-				String nodeName = (String)jsonObject.get("nodeName");
-
-				// node registration message
-                if(jsonObject.size() == 1)
-				{
+				//node registration message
+                if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
-					nodeToAgents.put(nodeName, new ArrayList<>());
+					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					printState();
 					return;
 				}
 
-				// agent registration message
-				String newAgent;
-				if(jsonObject.get("agentName") != null)
+				// entity registration message
+				String newEntity;
+				if(message.get("entityName") != null)
 				{
-					newAgent = (String)jsonObject.get("agentName");
-					if(toRegister) {
-						agentToWebSocket.put(newAgent, webSocket);
-						nodeToAgents.get(nodeName).add(newAgent);
-						li("Registered agent []. ", newAgent);
-					} else {
-						agentToWebSocket.remove(newAgent);
-						nodeToAgents.get(nodeName).remove(newAgent);
-						li("Unregistered agent []. ", newAgent);
+					newEntity = (String)message.get("entityName");
+					if(!entityToWebSocket.containsKey(newEntity)) {
+						entityToWebSocket.put(newEntity, webSocket);
+						nodeToEntities.get(nodeName).add(newEntity);
 					}
+					li("Registered entity []. ", newEntity);
 					printState();
 					return;
-				}
-
-				// raw message from one entity to another
-				if(jsonObject.get("destination") != null) {
-					String destination = (String) jsonObject.get("destination");
-					String destEntity = destination.split(
-							AgentWave.ADDRESS_SEPARATOR)[0];
-					if(destEntity.equals(controlEntity))
-					{
-						controlEntityWebSocket.send(s);
-						li("Sent to central entity: []. ", s);
-						printState();
-						return;
-					}
-
-					WebSocket destinationWebSocket = agentToWebSocket.get(destEntity);
-					if(destinationWebSocket != null) {
-						destinationWebSocket.send(s);
-						li("Sent to agent: []. ", s);
-						return;
-					}
-
-					destinationWebSocket = nodeToWebSocket.get(destEntity);
-					if(destinationWebSocket != null) {
-						destinationWebSocket.send(s);
-						li("Sent to node: []. ", s);
-						return;
-					}
-
-					le("Filed to find the entity [] websocket.", destEntity);
-					printState();
 				}
 			}
 			
@@ -172,11 +158,12 @@ public class WebSocketServerEntity extends Unit implements Entity
 			}
 
 			private void printState() {
-				li("###agent:  " + agentToWebSocket.keySet());
-				li("###nodes: " + nodeToAgents.keySet());
-				li("###agents: " + nodeToAgents.values());
+				li("###entities:  " + entityToWebSocket.keySet());
+				li("###nodes: " + nodeToEntities.keySet());
+				li("###entities: " + nodeToEntities.values());
 			}
 		};
+		webSocketServer.setReuseAddr(true);
 	}
 	
 	@Override

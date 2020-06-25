@@ -65,9 +65,9 @@ class ServerVerticle extends AbstractVerticle {
                                     String name = input.getString("name").split(" ")[1];
                                     String[] parameters = input.getString("name").split(" ");
                                     if(entity.equals("all"))
-                                        WebEntity.cep.sendToAll(name);
+                                        WebEntity.cep.sendToAllAgents(name);
                                     else
-                                        WebEntity.cep.sendTo(entity, name);
+                                        WebEntity.cep.sendToEntity(entity, name);
                                 }
                                 else {
                                     //TODO: needed for other input options
@@ -77,8 +77,8 @@ class ServerVerticle extends AbstractVerticle {
                     });
                     vertx.setPeriodic(10000l, t -> {
                         JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
-                        entities.remove("AgentA");
-                        vertx.eventBus().send("server-to-client", entities.toString());
+                        //entities.remove("AgentA");
+                        //vertx.eventBus().send("server-to-client", entities.toString());
                     });
                 }
                 else if(be.type() == BridgeEventType.UNREGISTER) {
@@ -206,11 +206,11 @@ public class WebEntity implements Entity<Node> {
         specification.put("interfaces", interfaces_specification.getId());
 
         entities_specification.getChildren().forEach(element -> {
-            specification.put("entity " + element.getValue(), element.getType() + " " + element.getRole());
+            specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
         });
 
         interfaces_specification.getChildren().forEach(element -> {
-            specification.put("interface " + element.getValue(), element.getType() + " " + element.getRole());
+            specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
         });
 
         return specification.toString();

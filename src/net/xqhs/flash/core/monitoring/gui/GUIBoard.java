@@ -1,15 +1,44 @@
 package net.xqhs.flash.core.monitoring.gui;
 
+import florina.monitoringAndControlTest.shards.PingTestComponent;
+import net.xqhs.flash.FlashBoot;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class GUIBoard extends JFrame {
+    protected static final long		PING_INITIAL_DELAY			= 0;
+    protected static final long		PING_PERIOD					= 50;
+
     private JPanel contentPane;
     private CentralEntityProxy centralEntityProxy;
+    private HashMap<JLabel, JLabel> stateOfEntities = new LinkedHashMap<>();
+    private JTextArea textArea = null;
+    private JScrollPane scrollPane;
+    Timer pingTimer = null;
+
+    class Pinger extends TimerTask
+    {
+        int	tick	= 0;
+
+        @Override
+        public void run()
+        {
+            textArea.setText(FlashBoot.stream.toString());
+            JScrollBar vertical = scrollPane.getVerticalScrollBar();
+            vertical.setValue(vertical.getMaximum());
+        }
+
+    }
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -30,23 +59,11 @@ public class GUIBoard extends JFrame {
         btn.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.decode("#34495E"), 1),
                 BorderFactory.createLineBorder(Color.decode("#41B880"), 5)));
-        btn.setFont(new Font(Font.DIALOG, Font.PLAIN|Font.BOLD, 12));
+        btn.setFont(new Font("TimesRoman", Font.BOLD | Font.ITALIC, 11));
         return btn;
     }
 
-
-    public GUIBoard(CentralEntityProxy entity) {
-        centralEntityProxy = entity;
-        setName("MainGuiBoard");
-
-        setTitle("Monitoring and control");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new BorderLayout(0, 0));
-        setContentPane(contentPane);
-
+    private void createSouthButtonsArea() {
         JButton startSimulation = newButton("Start simulation");
         JButton startAgentsBtn  = newButton("Start agents");
         JButton stopAgentsBtn   = newButton("Stop agents");
@@ -55,11 +72,11 @@ public class GUIBoard extends JFrame {
         JButton exitBtn         = newButton("Exit");
 
         startSimulation.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("start_simulation"));
+                centralEntityProxy.sendToAllAgents("start_simulation"));
         startAgentsBtn.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("start"));
+                centralEntityProxy.sendToAllAgents("start"));
         stopAgentsBtn.addActionListener(actionEvent ->
-                centralEntityProxy.sendToAll("stop"));
+                centralEntityProxy.sendToAllAgents("stop"));
         exitBtn.addActionListener(actionEvent ->
                 dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
@@ -75,25 +92,100 @@ public class GUIBoard extends JFrame {
         buttonsPanel.add(exitBtn);
 
         contentPane.add(buttonsPanel, BorderLayout.SOUTH);
+    }
 
-        JTextArea textArea = new JTextArea();
+    private void createCentralLogArea() {
+        textArea = new JTextArea();
         textArea.setRows(30);
         textArea.setColumns(50);
 
-        JScrollPane scrollPane = new JScrollPane(textArea,
+        scrollPane = new JScrollPane(textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         contentPane.add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createEntityPanel(String name, String status) {
+        JLabel  entityLabel  = new JLabel(name);
+        JLabel  statusLabel  = new JLabel(status);
+        JButton start = newButton("start");
+        start.addActionListener(actionEvent -> centralEntityProxy.sendToEntity(name, "start"));
+        JButton stop  = newButton("stop");
+        stop.addActionListener(actionEvent -> centralEntityProxy.sendToEntity(name, "stop"));
+        if(name.contains("agent"))
+            entityLabel.setFont(new Font("TimesRoman", Font.PLAIN, 12));
+        else
+            entityLabel.setFont(new Font("TimesRoman", Font.BOLD | Font.PLAIN, 12));
+        statusLabel.setForeground(Color.decode("#1C7C54"));
+        statusLabel.setFont(new Font("Serif", Font.PLAIN, 12));
+        stateOfEntities.put(entityLabel, statusLabel);
+
+        JPanel p = new JPanel();
+        p.setLayout(new FlowLayout());
+        p.add(entityLabel);
+        p.add(statusLabel);
+        p.add(start);
+        p.add(stop);
+        return  p;
+    }
+
+    private void createControlPanelForEntities() {
+        JPanel node1  = createEntityPanel("node1",  "");
+        JPanel node2  = createEntityPanel("node2",  "");
+        JPanel node3  = createEntityPanel("node3",  "");
+        JPanel agent1 = createEntityPanel("AgentA", "");
+        JPanel agent2 = createEntityPanel("AgentB", "");
+        JPanel agent3 = createEntityPanel("AgentC", "");
+        JPanel panel  = new JPanel();
+        panel.setLayout(new GridLayout(6, 1));
+        panel.add(node1);
+        panel.add(agent1);
+
+        panel.add(node2);
+        panel.add(agent2);
+
+        panel.add(node3);
+        panel.add(agent3);
+        panel.setBorder(new EmptyBorder(5,5,5,5));
+        contentPane.add(panel, BorderLayout.EAST);
+    }
+
+
+    public GUIBoard(CentralEntityProxy entity) {
+        centralEntityProxy = entity;
+        setName("MainGuiBoard");
+
+        setTitle("Monitoring and control");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(new BorderLayout(0, 0));
+        setContentPane(contentPane);
+
+        createSouthButtonsArea();
+        createCentralLogArea();
+        createControlPanelForEntities();
+        pingTimer = new Timer();
+        pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
 
         pack();
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int height = screenSize.height;
         int width = screenSize.width;
-        setSize(width / 2, height / 2);
+        setSize(width, height);
         setLocationRelativeTo(null);
 
         setVisible(false);
+    }
+
+    public void updateStateOfEntity(String name, String status) {
+        for (Map.Entry<JLabel, JLabel> entry : stateOfEntities.entrySet()) {
+            if(entry.getKey().getText().equals(name)){
+                entry.getValue().setText(status);
+            }
+        }
     }
 
 }

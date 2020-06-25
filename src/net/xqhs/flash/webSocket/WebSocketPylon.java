@@ -9,6 +9,8 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.Node.NodeProxy;
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.agent.AgentWave;
@@ -31,7 +33,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	class MessageThread implements Runnable {
 		@Override
 		public void run() {
-			// System.out.println("oops");
 			while(useThread) {
 				if(messageQueue.isEmpty())
 					try {
@@ -52,108 +53,56 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
 		/**
-		 * The agent is both:
+		 * The entity is both:
 		 * 					- registered within the {@link WebSocketClientProxy} local instance which is useful for
 		 * 					  routing a message back to the the {@link MessageReceiver} instance when it arrives from
 		 * 					  the server
-		 * 					- registered to the {@link WebSocketServerEntity} using an agent registration format message
+		 * 					- registered to the {@link WebSocketServerEntity} using an entity registration format message
 		 * 				      which is sent by the local {@link WebSocketClientProxy} client
 		 *
-		 * @param agentName
-		 * 					- the name of the agent.
+		 * @param entityName
+		 * 					- the name of the entity
 		 * @param receiver
-		 * 					- the {@link MessageReceiver} instance to receive messages.
-		 * @return an indication of success.
+		 * 					- the {@link MessageReceiver} instance to receive messages
+		 * @return
+		 * 					- an indication of success
 		 */
 		@Override
-		public boolean register(String agentName, MessageReceiver receiver) {
-			webSocketClient.addReceiverAgent(agentName, receiver);
+		@SuppressWarnings("unchecked")
+		public boolean register(String entityName, MessageReceiver receiver) {
+			webSocketClient.addReceiverAgent(entityName, receiver);
 			JSONObject messageToServer = new JSONObject();
-			messageToServer.put("register", true);
 			messageToServer.put("nodeName", nodeName);
-			messageToServer.put("agentName", agentName);
+			messageToServer.put("entityName", entityName);
 			webSocketClient.send(messageToServer.toString());
 			return true;
 		}
 
 		/**
-		 * Send a raw message to the server.
+		 * Send a message to the server.
 		 *
 		 * @param source
-		 * 					- the source endpoint.
+		 * 					- the source endpoint
 		 * @param destination
-		 * 					- the destination endpoint.
+		 * 					- the destination endpoint
 		 * @param content
-		 * 					- the content of the message.
-		 * @return an indication of success.
+		 * 					- the content of the message
+		 * @return
+		 * 					- an indication of success
 		 */
 		@Override
+		@SuppressWarnings("unchecked")
 		public boolean send(String source, String destination, String content) {
+			if(webSocketClient.messageReceivers.containsKey(destination)) {
+				webSocketClient.messageReceivers.get(destination).receive(source, destination, content);
+				return true;
+			}
 			JSONObject messageToServer = new JSONObject();
 			messageToServer.put("nodeName", nodeName);
 			messageToServer.put("source", source);
 			messageToServer.put("destination", destination);
 			messageToServer.put("content", content);
-			
 			webSocketClient.send(messageToServer.toString());
-			return true;
-		}
-
-		/**
-		 * The node is both:
-		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
-		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
-		 * 				  which is sent by the local {@link WebSocketClientProxy} client
-		 * @param id
-		 * 				- the name of the node in the context of which the pylon is located
-		 * @param inbox
-		 * 				- the receiver instance
-		 */
-		@Override
-		public void registerNode(String id, MessageReceiver inbox) {
-			webSocketClient.addReceiverAgent(id, inbox);
-			nodeName = id;
-			JSONObject messageToServer = new JSONObject();
-			messageToServer.put("nodeName", nodeName);
-			webSocketClient.send(messageToServer.toString());
-		}
-
-		/**
-		 * The central entity for monitoring and control is both:
-		 * 				- registered in the current support and within the {@link WebSocketClientProxy} local instance
-		 * 				- registered to the {@link WebSocketServerEntity} using a node registration format message
-		 * 				  which is sent by the local {@link WebSocketClientProxy} client
-		 * @param name
-		 * 				- the name of node.
-		 * @param inbox
-		 * 				- the receiver instance
-		 */
-		@Override
-		public void registerCentralEntity(String name, MessageReceiver inbox) {
-			webSocketClient.addReceiverAgent(name, inbox);
-			centralEntityName = name;
-			JSONObject msg = new JSONObject();
-			msg.put("controlEntity", name);
-			webSocketClient.send(msg.toString());
-		}
-
-		/**
-		 * This node is both:
-		 *			- unregistered from the {@link WebSocketClientProxy} local instance
-		 * 		    - unregistered from the {@link WebSocketServerEntity} using an agent unregistering format message
-		 * 		      which is sent by the local {@link WebSocketClientProxy} client
-		 * @param agentName
-		 * 					- the name of the agent
-		 * @return
-		 */
-		@Override
-		public boolean unregister(String agentName) {
-			webSocketClient.removeReceiverAgent(agentName);
-			JSONObject msg = new JSONObject();
-			msg.put("register", false);
-			msg.put("nodeName", nodeName);
-			msg.put("agentName", agentName);
-			webSocketClient.send(msg.toString());
 			return true;
 		}
 
@@ -177,14 +126,12 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	public static final String		WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
 	
-	protected boolean				hasServer		= false;
+	protected boolean				hasServer;
 	protected int					serverPort		= -1;
-	protected WebSocketServerEntity	serverEntity	= null;
+	protected WebSocketServerEntity	serverEntity;
 
 	protected String                nodeName;
 
-	protected String                centralEntityName;
-	
 	/**
 	 * The server address itself.
 	 */
@@ -194,14 +141,12 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The proxy to the {@link WebSocketServerEntity} which has a webSocket client.
 	 */
 	protected WebSocketClientProxy  webSocketClient;
-	
-	protected Map<String, WebSocketMessagingShard> registry = new HashMap<>();
-	
+
 	protected boolean useThread = true;
 	
-	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>> messageQueue = null;
+	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>> messageQueue;
 	
-	protected Thread messageThread = null;
+	protected Thread messageThread;
 
 	/**
 	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment and instantiates its
@@ -233,7 +178,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				tries--;
 				System.out.println("Tries:" + tries);
 			}
-			// Thread.sleep(1000);
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -246,6 +190,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
+		li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
 	
@@ -268,11 +213,18 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 		if(hasServer)
 			serverEntity.stop();
+		try {
+			webSocketClient.close();
+		} catch (InterruptedException x) {
+			x.printStackTrace();
+		}
 		return true;
 	}
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
 		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddressName = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
@@ -282,6 +234,22 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
 		}
 		return true;
+	}
+
+	@Override
+	public boolean addContext(EntityProxy<Node> context) {
+		if(!super.addContext(context))
+			return false;
+		nodeName = context.getEntityName();
+		lf("Added node context ", nodeName);
+		return true;
+	}
+
+	@Override
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		if(context instanceof NodeProxy)
+			return addContext((NodeProxy) context);
+		return false;
 	}
 	
 	@Override

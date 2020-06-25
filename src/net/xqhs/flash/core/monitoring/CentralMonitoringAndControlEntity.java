@@ -11,17 +11,17 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import web.WebEntity;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-
-import web.WebEntity;
 
 public class CentralMonitoringAndControlEntity extends Unit implements  Entity<Pylon> {
 
@@ -47,80 +47,132 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
     private static boolean          isRunning;
 
     /**
-     * Keeps track of all agents deployed in the system and operations.
+     * Keeps track of all agents deployed in the system and their {@link List} of operations.
      */
     private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
 
-    /*
-    * Keeps track of all entities deployed in the system and supported operations along with their inner details.
-    * */
+    /**
+     * Keeps track of all entities deployed in the system and their {@link JSONArray} of operations.
+     */
     private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
 
     /**
-     * Keeps track of all nodes deployed in the system, along with their entities,
-     * indexed by their names.
+     * Keeps track of entities state.
+     * */
+    private HashMap<String, String> entitiesState = new LinkedHashMap<>();
+
+    /**
+     * Keeps track of all nodes deployed in the system, along with their {@link List} of entities,
+     * indexed by their categories and names.
      */
     private HashMap<String, HashMap<String, List<String>>> allNodeEntities = new LinkedHashMap<>();
 
     public CentralMonitoringAndControlEntity(String name) {
         this.name = name;
+        if(canStartGuiBoard())
+            li("[] launched.", gui.getName());
     }
 
     public ShardContainer          proxy = new ShardContainer() {
 
         @Override
         public void postAgentEvent(AgentEvent event) {
-            switch (event.getType())
-            {
+            switch (event.getType()) {
                 case AGENT_WAVE:
                     String source = ((AgentWave) event).getFirstSource();
                     String content = ((AgentWave) event).getContent();
                     Object obj = JSONValue.parse(content);
-                    if(obj == null)
+                    if(obj == null) {
                         le("null message from [].", source);
-                    if(parseJSON(obj))
-                        li("Registered entities from [].", source);
+                        break;
+                    }
+                    if(parseReceivedMsg(obj, source))
+                        li("Parsed message from [].", source);
                     break;
                 default:
                     break;
             }
         }
 
-        public boolean parseJSON(Object obj)
+        /**
+         * @param obj
+         *              - the object received as content through the {@link ShardContainer}
+         * @param source
+         *              - the source of the message
+         * @return
+         *              - an indication of success
+         */
+        public boolean parseReceivedMsg(Object obj, String source)
         {
-            // Here comes the entities registered in the context of a node. Being a bunch of entities,
-            // they always come in json array format.
-            if(obj instanceof JSONArray)
-            {
-                JSONArray ja = (JSONArray)obj;
-                for (Object o : ja) {
-                    JSONObject entity   = (JSONObject) o;
-                    String node         = (String)entity.get("node");
-                    String category     = (String)entity.get("category");
-                    String name         = (String)entity.get("name");
-
-                    JSONArray operationDetails = (JSONArray) entity.get("operations");
-                    if(category.equals("agent"))
-                    {
-                        if(!allAgents.containsKey(name))
-                            allAgents.put(name, new LinkedList<>());
-                        for(Object oo : operationDetails) {
-                            JSONObject op   = (JSONObject) oo;
-                            String operation = (String) op.get("name");
-                            allAgents.get(name).add(operation);
-                        }
-                    }
-                    entitiesToOp.put(name, operationDetails);
-
-                    if(!allNodeEntities.containsKey(node))
-                        allNodeEntities.put(node, new LinkedHashMap<>());
-                    if(!allNodeEntities.get(node).containsKey(category))
-                        allNodeEntities.get(node).put(category, new LinkedList<>());
-                    allNodeEntities.get(node).get(category).add(name);
+            if(obj instanceof JSONObject) {
+                JSONObject jo = (JSONObject) obj;
+                if(manageOperation(jo)) {
+                    li("Parsed operation from [].", source);
+                    return true;
                 }
+            }
+            if(obj instanceof JSONArray) {
+                JSONArray ja = (JSONArray)obj;
+                if(registerEntities(ja)) {
+                    li("Registered entities from [].", source);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * This analysis the operation received and performs it.
+         * @param jsonObj
+         *                  - the object received as content through the {@link ShardContainer}
+         * @return
+         *                  - an indication of success
+         */
+        private boolean manageOperation(JSONObject jsonObj) {
+            String op = (String) jsonObj.get(OperationUtils.NAME);
+            if(op.equals("state-update")) {
+                String params = (String) jsonObj.get("params");
+                String value  = (String) jsonObj.get("value");
+                entitiesState.put(params, value);
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        gui.updateStateOfEntity(params, value);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                    }
+                });
                 return true;
             }
             return false;
+        }
+
+        private boolean registerEntities(JSONArray ja) {
+            for (Object o : ja) {
+                JSONObject entity   = (JSONObject) o;
+                String node         = (String)entity.get(OperationUtils.NODE);
+                String category     = (String)entity.get(OperationUtils.CATEGORY);
+                String name         = (String)entity.get(OperationUtils.NAME);
+
+                JSONArray operationDetails = (JSONArray) entity.get(OperationUtils.OPERATIONS);
+                if(category.equals("agent"))
+                {
+                    if(!allAgents.containsKey(name))
+                        allAgents.put(name, new LinkedList<>());
+                    for(Object oo : operationDetails) {
+                        JSONObject op   = (JSONObject) oo;
+                        String operation = (String) op.get(OperationUtils.NAME);
+                        allAgents.get(name).add(operation);
+                    }
+                }
+                entitiesToOp.put(name, operationDetails);
+
+                if(!allNodeEntities.containsKey(node))
+                    allNodeEntities.put(node, new LinkedHashMap<>());
+                if(!allNodeEntities.get(node).containsKey(category))
+                    allNodeEntities.get(node).put(category, new LinkedList<>());
+                allNodeEntities.get(node).get(category).add(name);
+            }
+            return true;
         }
 
         @Override
@@ -169,12 +221,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             le("[] unable to start. No messaging shard found.", getName());
             return false;
         }
-        centralMessagingShard.registerCentralEntity(name);
+        centralMessagingShard.register(name);
         isRunning = true;
         li("[] started successfully.", getName());
-
-        if(canStartGuiBoard())
-            li("[] launched.", gui.getName());
         return true;
     }
 
@@ -253,51 +302,42 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
     public class CentralEntityProxy {
         /**
-         * @param entityName
-         *                  - the name of destination entity
-         * @param command
-         *                  - control command
-         * @return
-         *                  - an indication of success
-         */
-        public boolean isGuiCommandSent(String entityName, String command) {
-            //TODO: Change this if necessary
-            return centralMessagingShard
-                    .sendMessage(
-                            AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                            AgentWave.makePath(entityName, OTHER_CONTROL_SHARD_ENDPOINT),
-                            command);
-        }
-
-        /**
          *
-         * @param command
-         *                  - command to be sent to all agents running in the system.
+         * @param operation
+         *                  - command to be sent to all agents registered
          */
-        public void sendToAll(String command) {
+        public void sendToAllAgents(String operation) {
             allAgents.entrySet().forEach(entry -> {
-                if(!sendTo(entry.getKey(), command)) return;
+                if(!sendToEntity(entry.getKey(), operation)) return;
             });
         }
 
-        public boolean sendTo(String destination, String command) {
-            JSONObject cmdJson = getCommandJson(destination, command);
-            if(cmdJson == null) {
-                le("Entity [] does not support [] command.", destination, command);
+        /**
+         * Sends a control message to a specific entity which will further perform the operation.
+         * @param destination
+         *                      - the name of destination entity
+         * @param operation
+         *                      - operation to be performed on this entity
+         * @return
+         *                      - an indication of success
+         */
+        public boolean sendToEntity(String destination, String operation) {
+            JSONObject jsonOperation = getOperationFromEntity(destination, operation);
+            if(jsonOperation == null) {
+                le("Entity [] does not exist or does not support [] command.", destination, operation);
                 return false;
             }
-            String access = (String) cmdJson.get("access");
+            String access = (String) jsonOperation.get("access");
             if(access.equals("self")) {
-                if(!sendControlCommand(destination, command)) {
+                JSONObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
+                if(!sendMessage(destination, msg.toString())) {
                     le("Message from [] to [] failed.", getName(), destination);
                     return false;
                 }
             } else {
-                String proxy = (String) cmdJson.get("proxy");
-                JSONObject routedCommand = new JSONObject();
-                routedCommand.put("child", destination);
-                routedCommand.put("command", command);
-                if(!sendControlCommand(proxy, routedCommand.toString())) {
+                String proxy = (String) jsonOperation.get("proxy");
+                JSONObject msg = OperationUtils.operationToJSON(operation, proxy, "", destination);
+                if(!sendMessage(proxy, msg.toString())) {
                     le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
                     return false;
                 }
@@ -305,22 +345,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return true;
         }
 
-        public String getEntities() {
-            JSONObject entities = new JSONObject();
-            allNodeEntities.entrySet().forEach(consumer -> {
-                entities.put(consumer.getKey(), "node");
-                consumer.getValue().entrySet().forEach(entry -> {
-                    String category = entry.getKey();
-                    entry.getValue().forEach(entity -> {
-                        entities.put(entity, category + " " + entitiesToOp.get(entity).toString());
-                    });
-                });
-            });
-            return entities.toString();
-        }
-
-        private JSONObject getCommandJson(String name, String command) {
-            JSONArray ja = entitiesToOp.get(name);
+        private JSONObject getOperationFromEntity(String entity, String command) {
+            JSONArray ja = entitiesToOp.get(entity);
+            if(ja == null) return null;
             for(Object o : ja) {
                 JSONObject op   = (JSONObject) o;
                 String cmd = (String) op.get("name");
@@ -330,11 +357,34 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return null;
         }
 
-        private boolean sendControlCommand(String destination, String content) {
+        /**
+         * @param destination
+         *                      - the name of the destination entity
+         * @param content
+         *                      - the content to be sent
+         * @return
+         *                      - an indication of success
+         */
+        private boolean sendMessage(String destination, String content) {
             return centralMessagingShard.sendMessage(
                     AgentWave.makePath(getName(), SHARD_ENDPOINT),
                     AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT),
                     content);
+        }
+
+        public String getEntities() {
+            JSONObject entities = new JSONObject();
+            allNodeEntities.entrySet().forEach(consumer -> {
+                String node = consumer.getKey();
+                entities.put(node, "node " + entitiesState.get(node));
+                consumer.getValue().entrySet().forEach(entry -> {
+                    String category = entry.getKey();
+                    entry.getValue().forEach(entity -> {
+                        entities.put(entity, category + " " + entitiesState.get(entity) + " " + entitiesToOp.get(entity).toString());
+                    });
+                });
+            });
+            return entities.toString();
         }
     }
 }

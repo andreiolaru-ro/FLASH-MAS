@@ -8,15 +8,15 @@ package net.xqhs.flash.core.support;
 public interface MessagingPylonProxy extends PylonProxy
 {
 	/**
-	 * Registers an agent with the specified name, associating with it a {@link MessageReceiver} instance.
+	 * Registers an entity with the specified name, associating with it a {@link MessageReceiver} instance.
 	 * 
-	 * @param agentName
-	 *                      - the name of the agent.
+	 * @param entityName
+	 *                      - the name of the entity
 	 * @param receiver
 	 *                      - the {@link MessageReceiver} instance to receive messages.
 	 * @return an indication of success.
 	 */
-	boolean register(String agentName, MessageReceiver receiver);
+	boolean register(String entityName, MessageReceiver receiver);
 	
 	/**
 	 * Requests to the pylon to send a message.
@@ -30,33 +30,5 @@ public interface MessagingPylonProxy extends PylonProxy
 	 * @return an indication of success.
 	 */
 	boolean send(String source, String destination, String content);
-
-	/**
-	 * Register the local node.
-	 *
-	 * @param nodeName
-	 *                        - the name of node.
-	 * @param inbox
-	 * 						  - the receiver of the registered node
-	 */
-	void registerNode(String nodeName, MessageReceiver inbox);
-
-	/**
-	 * Register the entity for monitoring and control within the context of local pylon.
-	 * @param name
-	 * 				- the name of node.
-	 * @param inbox
-	 * 				- the receiver of the registered entity
-	 */
-	void registerCentralEntity(String name, MessageReceiver inbox);
-
-	/**
-	 * Unregisters an agent with the specified name and associated {@link MessageReceiver} instance.
-	 *
-	 * @param agentName
-	 * 						- the name of the agent
-	 * @return
-	 * 						- an indication of success.
-	 */
-	boolean unregister(String agentName);
 }
+
