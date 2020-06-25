@@ -51,9 +51,11 @@ interfaces:
   - type: form
     role: content
     port: message-agent
+    value: Write the message
   - type: form
     role: target
     port: message-agent
+    value: Write the name of agent
   - type: button
     role: activate
     value: send
@@ -61,6 +63,7 @@ interfaces:
   - type: label
     role: show-messages
     port: message-agent
+    value: No messages from agent
   - type: button
     role: activate
     port: quick-send
