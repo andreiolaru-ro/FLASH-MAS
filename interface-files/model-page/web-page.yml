@@ -58,7 +58,7 @@ interfaces:
     value: Write the name of agent
   - type: button
     role: activate
-    value: send
+    value: Send
     port: message-agent
   - type: label
     role: show-messages
