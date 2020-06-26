@@ -384,6 +384,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
                     });
                 });
             });
+            //System.out.println(entities.toString());
             return entities.toString();
         }
     }

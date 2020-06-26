@@ -31,6 +31,7 @@ function init() {
                 specification = true;
             }
             else {
+                console.log(data);
                 var entities = document.getElementById(entities_id);
                 var interfaces = document.getElementById(interfaces_id);
                 var empty = jQuery.isEmptyObject(data);
@@ -49,13 +50,13 @@ function init() {
                     } else if (contains) {
                         for (var element in entity_elements) {
 
-                            var type = element.split(' ');
+                            var type = entity_elements[element].split(' ');
 
                             if (type[2] === 'label') {
 
-                                if(element.toLowerCase() === 'status') {
+                                if(entity_elements[element].toLowerCase() === 'status') {
 
-                                    // TODO: needed status implementation
+                                    document.getElementById('label_' + entity.id + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText = data[entity.id].split(' ')[1];
 
                                 }
                             }
@@ -74,13 +75,13 @@ function init() {
                             // TODO: modify coresponding interface
                             for (var element in interface_elements) {
 
-                                var type = element.split(' ');
+                                var type = interface_elements[element].split(' ');
 
                                 if (type[2] === 'label') {
 
-                                    if(element.toLowerCase() === 'status') {
+                                    if(interface_elements[element].toLowerCase() === 'status') {
 
-                                        // TODO: needed status implementation
+                                        document.getElementById('label_' + entity.id + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText = data[entity.id].split(' ')[1];
 
                                     }
 
@@ -510,6 +511,12 @@ function button_interface(entity, element) {
         var input = {'type' : 'operation'};
         input['name'] = select;
         input['parameters'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(interface_elements[element].toLowerCase() === 'send') {
+        var input = {'type' : 'message'};
+        input['message_destination'] = text;
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
     }

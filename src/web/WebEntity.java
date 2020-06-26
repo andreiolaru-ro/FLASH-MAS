@@ -78,7 +78,7 @@ class ServerVerticle extends AbstractVerticle {
                     vertx.setPeriodic(10000l, t -> {
                         JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
                         //entities.remove("AgentA");
-                        //vertx.eventBus().send("server-to-client", entities.toString());
+                        vertx.eventBus().send("server-to-client", entities.toString());
                     });
                 }
                 else if(be.type() == BridgeEventType.UNREGISTER) {
