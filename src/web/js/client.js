@@ -211,14 +211,14 @@ function new_entity(entities, entity) {
             if(entity_elements[element].toLowerCase() === 'status')
                 label.innerText = info[1];
 
-            //if(entity_elements[element].toLowerCase() === 'messages')
-                //label.innerText = 'No';
-
             // TODO: implement other label options
 
             var description = document.createElement('label');
             description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-            description.innerText = entity_elements[element];
+            if(entity_elements[element].toLowerCase() === 'messages')
+                description.innerText = 'No';
+            else
+                description.innerText = entity_elements[element];
 
             div.appendChild(description);
             div.appendChild(label);
@@ -347,14 +347,14 @@ function new_interface(interfaces, entity) {
             if(interface_elements[element].toLowerCase() === 'status')
                 label.innerText = info[1];
 
-            //if(interface_elements[element].toLowerCase() === 'messages')
-                //label.innerText = 'No';
-
             // TODO: implement other label options
 
             var description = document.createElement('label');
             description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-            description.innerText = interface_elements[element];
+            if(interface_elements[element].toLowerCase() === 'messages')
+                description.innerText = 'No';
+            else
+                description.innerText = interface_elements[element];
 
             div.appendChild(description);
             div.appendChild(label);
