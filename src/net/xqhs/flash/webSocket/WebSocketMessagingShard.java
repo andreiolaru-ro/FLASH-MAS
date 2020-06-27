@@ -1,11 +1,15 @@
 package net.xqhs.flash.webSocket;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.util.OperationUtils;
+import org.json.simple.JSONObject;
 
 /**
  * The {@link WebSocketMessagingShard} class manages the link between agent's messaging service and its pylon.
@@ -15,6 +19,8 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 
     private static final long serialVersionUID = 2L;
+
+    protected static final String	SHARD_ENDPOINT				= "messagingShard";
 
     private MessagingPylonProxy pylon;
 
@@ -43,6 +49,11 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	public void signalAgentEvent(AgentEvent event)
 	{
 		super.signalAgentEvent(event);
+        if(event.getType().equals(AgentEventType.AGENT_WAVE))
+            if((((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT)) {
+                JSONObject msg = OperationUtils.operationToJSON("returnmessage", "", ((AgentWave) event).getContent(), DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+                sendMessage(msg.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+            }
 		if(event.getType().equals(AgentEventType.AGENT_START))
 			pylon.register(getAgent().getEntityName(), inbox);
 	}

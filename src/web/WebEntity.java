@@ -25,7 +25,7 @@ import java.util.*;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 class ServerVerticle extends AbstractVerticle {
-    protected WebEntity entity;
+    private WebEntity entity;
 
     public ServerVerticle(WebEntity entity) {
         this.entity = entity;
@@ -47,11 +47,12 @@ class ServerVerticle extends AbstractVerticle {
                     vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
                         if(objectMessage.body().equals("init")) {
                             vertx.eventBus().send("server-to-client", entity.getSpecification());
-                            vertx.eventBus().send("server-to-client", WebEntity.cep.getEntities());
+                            vertx.eventBus().send("server-to-client", entity.cep.getEntities());
                         }
                         else {
 
                             System.out.println(objectMessage.body());
+                            CentralEntityProxy cep = entity.cep;
                             JsonObject message = new JsonObject((String) objectMessage.body());
                             Iterator<Map.Entry<String, Object>> entryIterator = message.iterator();
 
@@ -65,9 +66,14 @@ class ServerVerticle extends AbstractVerticle {
                                     String name = input.getString("name").split(" ")[1];
                                     String[] parameters = input.getString("name").split(" ");
                                     if(entity.equals("all"))
-                                        WebEntity.cep.sendToAllAgents(name);
+                                        cep.sendToAllAgents(name);
                                     else
-                                        WebEntity.cep.sendToEntity(entity, name);
+                                        cep.sendToEntity(entity, name);
+                                }
+                                else if(input.getString("type").equals("message")) {
+                                    System.out.println("CHECK!!!");
+                                    String[] content_destination = input.getString("content_destination").split(" ");
+                                    cep.sendAgentMessage(content_destination[2], "From " + entity + ": " + content_destination[1]);
                                 }
                                 else {
                                     //TODO: needed for other input options
@@ -116,25 +122,27 @@ class ServerVerticle extends AbstractVerticle {
 }
 
 public class WebEntity implements Entity<Node> {
-    public static CentralEntityProxy cep;
+    static CentralEntityProxy cep;
 
-    protected Element specification;
+    private Element specification;
 
-    protected Vertx web;
+    private Vertx web;
 
-    protected boolean running = false;
+    private boolean running = false;
+
+    private static boolean generated = false;
 
     //stubs
-    protected JsonObject agents = new JsonObject();
-    protected static boolean generated = false;
+    private JsonObject agents = new JsonObject();
 
-    public WebEntity() {
+    public WebEntity(CentralEntityProxy cep) {
         if(!generated) {
             PageBuilder.getInstance().platformType = PlatformType.WEB;
             try {
+                this.cep = cep;
                 BuildPageTest.main(new String[] {"file", "interface-files/model-page/web-page.yml"});
-                generated = true;
                 specification = PageBuilder.getInstance().getPage();
+                generated = true;
             } catch (Exception e) {
                 e.printStackTrace();
             }

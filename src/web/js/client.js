@@ -29,9 +29,10 @@ function init() {
                     //console.log('wrong specification')
                 }
                 specification = true;
+                console.log(interface_elements);
             }
             else {
-                console.log(data);
+                //console.log(data);
                 var entities = document.getElementById(entities_id);
                 var interfaces = document.getElementById(interfaces_id);
                 var empty = jQuery.isEmptyObject(data);
@@ -450,7 +451,7 @@ function checkbox(entity) {
 
 function button(entity, element) {
     var operations = {};
-    var role = element.split(' ')[0];
+    var port = element.split(' ')[0];
     var select = 'select';
     var text = 'text';
     var number = 'number';
@@ -458,17 +459,23 @@ function button(entity, element) {
     for(var entity_element in entity_elements) {
         var type = entity_element.split(' ');
 
-        if(type[0] === role) {
+        if(type[0] === port) {
             if (type[2] === 'list')
                 select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'form')
-                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText;
+                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'spinner')
-                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText;
+                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
         }
     }
 
-    if(entity_elements[element].toLowerCase() === 'execute') {
+    if(entity_elements[element].toLowerCase() === 'send') {
+        var input = {'type' : 'message'};
+        input['message_destination'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(entity_elements[element].toLowerCase() === 'execute') {
         var input = {'type' : 'operation'};
         input['name'] = select;
         input['parameters'] = text;
@@ -489,7 +496,7 @@ function button(entity, element) {
 
 function button_interface(entity, element) {
     var operations = {};
-    var role = element.split(' ')[0];
+    var port = element.split(' ')[0];
     var select = 'select';
     var text = 'text';
     var number = 'number';
@@ -497,26 +504,26 @@ function button_interface(entity, element) {
     for(var interface_element in interface_elements) {
         var type = interface_element.split(' ');
 
-        if(type[0] === role) {
+        if(type[0] === port) {
             if (type[2] === 'list')
                 select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'form')
-                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText;
+                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'spinner')
-                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText;
+                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
         }
     }
 
-    if(interface_elements[element].toLowerCase() === 'execute') {
-        var input = {'type' : 'operation'};
-        input['name'] = select;
-        input['parameters'] = text;
+    if(interface_elements[element].toLowerCase() === 'send') {
+        var input = {'type' : 'message'};
+        input['content_destination'] = text;
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
     }
-    else if(interface_elements[element].toLowerCase() === 'send') {
-        var input = {'type' : 'message'};
-        input['message_destination'] = text;
+    else if(interface_elements[element].toLowerCase() === 'execute') {
+        var input = {'type': 'operation'};
+        input['name'] = select;
+        input['parameters'] = text;
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
     }

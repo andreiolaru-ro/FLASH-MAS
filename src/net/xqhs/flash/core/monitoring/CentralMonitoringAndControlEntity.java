@@ -104,6 +104,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
          */
         public boolean parseReceivedMsg(Object obj, String source)
         {
+            System.out.println("#test" + obj);
             if(obj instanceof JSONObject) {
                 JSONObject jo = (JSONObject) obj;
                 if(manageOperation(jo)) {
@@ -229,8 +230,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
 
     public boolean canStartGuiBoard() {
         gui = new GUIBoard(new CentralEntityProxy());
-        WebEntity.cep = new CentralEntityProxy();
-        new WebEntity().start();
+        new WebEntity(new CentralEntityProxy()).start();
         SwingUtilities.invokeLater(() -> {
             try {
                 gui.setVisible(true);
@@ -369,6 +369,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
             return centralMessagingShard.sendMessage(
                     AgentWave.makePath(getName(), SHARD_ENDPOINT),
                     AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT),
+                    content);
+        }
+
+        public boolean sendAgentMessage(String agent, String content) {
+            return centralMessagingShard.sendMessage(
+                    AgentWave.makePath(getName(), SHARD_ENDPOINT),
+                    AgentWave.makePath(agent, "messagingShard"),
                     content);
         }
 
