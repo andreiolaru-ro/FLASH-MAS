@@ -63,7 +63,7 @@ interfaces:
   - type: label
     role: show-messages
     port: message-agent
-    value: No messages from agent
+    value: Messages
   - type: button
     role: activate
     port: quick-send
