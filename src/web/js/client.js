@@ -32,7 +32,7 @@ function init() {
                 console.log(interface_elements);
             }
             else {
-                console.log(data);
+                //console.log(data);
                 var entities = document.getElementById(entities_id);
                 var interfaces = document.getElementById(interfaces_id);
                 var empty = jQuery.isEmptyObject(data);
@@ -532,7 +532,7 @@ function button(entity, element) {
     }
     else if(entity_elements[element].toLowerCase() === 'start' || entity_elements[element].toLowerCase() === 'stop') {
         var input = {'type' : 'operation'};
-        input['name'] = select + ' ' + element.toLowerCase();
+        input['name'] = select + ' ' + entity_elements[element].toLowerCase();
         input['parameters'] = text;
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
@@ -582,7 +582,7 @@ function button_interface(entity, element) {
     }
     else if(interface_elements[element].toLowerCase() === 'start' || interface_elements[element].toLowerCase() === 'stop') {
         var input = {'type' : 'operation'};
-        input['name'] = select + ' ' + element.toLowerCase();
+        input['name'] = select + ' ' + interface_elements[element].toLowerCase();
         input['parameters'] = text;
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
