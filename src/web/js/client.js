@@ -32,7 +32,7 @@ function init() {
                 console.log(interface_elements);
             }
             else {
-                //console.log(data);
+                console.log(data);
                 var entities = document.getElementById(entities_id);
                 var interfaces = document.getElementById(interfaces_id);
                 var empty = jQuery.isEmptyObject(data);
@@ -115,7 +115,42 @@ function init() {
                 }
             }
         });
-        eb.send('client-to-server', "init");
+        eb.send('client-to-server', 'init');
+        eb.registerHandler('server-to-client-agent-message', (error, message) => {
+            var messages = JSON.parse(message.body);
+            for(var agent in messages) {
+                messages[agent] = JSON.parse(messages[agent]);
+                var n = 3;
+                for(var element in entity_elements) {
+                    var type = element.split(' ');
+                    if(type[0] === 'message-agent' && type[1] === 'show-messages') {
+                        document.getElementById('entity_' + agent + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText = messages[agent]['agent'] + ':' + messages[agent]['content'];
+                        document.getElementById(agent).children[n].innerText = 'Last message from';
+                        eb.send('client-to-server-agent-message', agent);
+                    }
+                    if(type[2] === 'button')
+                        n += 1;
+                    else
+                        n += 2;
+                }
+                n = 2;
+                if(document.getElementById(agent).children[0].checked) {
+                    console.log(messages);
+                    for(var element in interface_elements) {
+                        var type = element.split(' ');
+                        if(type[0] === 'message-agent' && type[1] === 'show-messages') {
+                            document.getElementById('interface_' + agent + '_' + type[0] + '_' + type[1] + '_' + type[2]).innerText = messages[agent]['agent'] + ': ' + messages[agent]['content'];
+                            document.getElementById('interface_' + agent).children[n].innerText = 'Last message from';
+                            eb.send('client-to-server-agent-message', agent);
+                        }
+                        if(type[2] === 'button')
+                            n += 2;
+                        else
+                            n += 3;
+                    }
+                }
+            }
+        });
     }
     eb.onclose = () => {
         console.log('Eventbus closed')
@@ -123,6 +158,8 @@ function init() {
 };
 
 function new_entity(entities, entity) {
+    var info = data[entity].split(' ');
+
     var div = document.createElement('div');
     div.setAttribute('class', 'entity');
     div.setAttribute('id', entity);
@@ -148,6 +185,9 @@ function new_entity(entities, entity) {
     for(var element in entity_elements) {
         var type = element.split(' ');
 
+        if((type[0] === 'message-agent' || type[0] === 'quick-send') && info[0] !== 'agent')
+            continue;
+
         if(type[2] === 'button') {
 
             var button = document.createElement('input');
@@ -162,20 +202,22 @@ function new_entity(entities, entity) {
         if(type[2] === 'label') {
 
             var label = document.createElement('label');
-            label.setAttribute('id', 'label_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            label.setAttribute('id', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             label.setAttribute('class', 'entity-element');
 
             if(entity_elements[element].toLowerCase() === 'type')
-                label.innerText = data[entity].split(' ')[0];
+                label.innerText = info[0];
 
-            if(entity_elements[element].toLowerCase() === 'status') {
-                label.innerText = data[entity].split(' ')[1];
-            }
+            if(entity_elements[element].toLowerCase() === 'status')
+                label.innerText = info[1];
+
+            //if(entity_elements[element].toLowerCase() === 'messages')
+                //label.innerText = 'No';
 
             // TODO: implement other label options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'label_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = entity_elements[element];
 
             div.appendChild(description);
@@ -187,11 +229,11 @@ function new_entity(entities, entity) {
 
             var text = document.createElement('input');
             text.setAttribute('type', 'text');
-            text.setAttribute('id', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            text.setAttribute('id', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             text.setAttribute('class', 'entity-element');
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = entity_elements[element];
 
             div.appendChild(description);
@@ -203,13 +245,13 @@ function new_entity(entities, entity) {
 
             var number = document.createElement('input');
             number.setAttribute('type', 'number');
-            number.setAttribute('id', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            number.setAttribute('id', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             number.setAttribute('class', 'entity-element');
 
             // TODO: implement number options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = entity_elements[element];
 
             div.appendChild(description);
@@ -220,11 +262,11 @@ function new_entity(entities, entity) {
         if(type[2] === 'list') {
 
             var select = document.createElement('select');
-            select.setAttribute('id', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            select.setAttribute('id', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
 
             if (entity_elements[element].toLowerCase() === 'operations') {
 
-                if(data[entity] === 'node') {
+                if(info[0] === 'node') {
 
                     var start = document.createElement('option');
                     start.innerText = 'start';
@@ -236,7 +278,7 @@ function new_entity(entities, entity) {
 
                 }
                 else {
-                    var operations = JSON.parse(data[entity].split(' ')[2]);
+                    var operations = JSON.parse(info[2]);
 
                     for (var operation in operations) {
 
@@ -252,7 +294,7 @@ function new_entity(entities, entity) {
             // TODO: implement other list options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = entity_elements[element];
 
             div.appendChild(description);
@@ -265,6 +307,7 @@ function new_entity(entities, entity) {
 
 function new_interface(interfaces, entity) {
     var index = Object.keys(selected_entities).length;
+    var info = data[entity].split(' ');
 
     var div = document.createElement('div');
     div.setAttribute('class', 'interface');
@@ -277,6 +320,9 @@ function new_interface(interfaces, entity) {
 
     for(var element in interface_elements) {
         var type = element.split(' ');
+
+        if((type[0] === 'message-agent' || type[0] === 'quick-send') && info[0] !== 'agent')
+            continue;
 
         if(type[2] === 'button') {
 
@@ -292,20 +338,22 @@ function new_interface(interfaces, entity) {
         if(type[2] === 'label') {
 
             var label = document.createElement('label');
-            label.setAttribute('id', 'label_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            label.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             label.setAttribute('class', 'entity-element');
 
             if(interface_elements[element].toLowerCase() === 'type')
-                label.innerText = data[entity].split(' ')[0];
+                label.innerText = info[0];
 
-            if(interface_elements[element].toLowerCase() === 'status') {
-                label.innerText = data[entity].split(' ')[1];
-            }
+            if(interface_elements[element].toLowerCase() === 'status')
+                label.innerText = info[1];
+
+            //if(interface_elements[element].toLowerCase() === 'messages')
+                //label.innerText = 'No';
 
             // TODO: implement other label options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'label_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = interface_elements[element];
 
             div.appendChild(description);
@@ -317,11 +365,11 @@ function new_interface(interfaces, entity) {
 
             var text = document.createElement('input');
             text.setAttribute('type', 'text');
-            text.setAttribute('id', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            text.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             text.setAttribute('class', 'entity-element');
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = interface_elements[element];
 
             div.appendChild(description);
@@ -333,13 +381,13 @@ function new_interface(interfaces, entity) {
 
             var number = document.createElement('input');
             number.setAttribute('type', 'number');
-            number.setAttribute('id', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            number.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             number.setAttribute('class', 'entity-element');
 
             // TODO: implement number options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = interface_elements[element];
 
             div.appendChild(description);
@@ -350,11 +398,11 @@ function new_interface(interfaces, entity) {
         if(type[2] === 'list') {
 
             var select = document.createElement('select');
-            select.setAttribute('id', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            select.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
 
             if (interface_elements[element].toLowerCase() === 'operations') {
 
-                if(data[entity] === 'node') {
+                if(info[0] === 'node') {
 
                     var start = document.createElement('option');
                     start.innerText = 'start';
@@ -366,7 +414,7 @@ function new_interface(interfaces, entity) {
 
                 }
                 else {
-                    var operations = JSON.parse(data[entity].split(' ')[2]);
+                    var operations = JSON.parse(info[2]);
 
                     for (var operation in operations) {
                         var option = document.createElement('option');
@@ -381,7 +429,7 @@ function new_interface(interfaces, entity) {
             // TODO: implement other list options
 
             var description = document.createElement('label');
-            description.setAttribute('for', 'select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+            description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             description.innerText = interface_elements[element];
 
             div.appendChild(description);
@@ -461,11 +509,11 @@ function button(entity, element) {
 
         if(type[0] === port) {
             if (type[2] === 'list')
-                select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                select += ' ' + document.getElementById('entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'form')
-                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                text += ' ' + document.getElementById('entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'spinner')
-                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                number += ' ' + document.getElementById('entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
         }
     }
 
@@ -506,11 +554,11 @@ function button_interface(entity, element) {
 
         if(type[0] === port) {
             if (type[2] === 'list')
-                select += ' ' + document.getElementById('select_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                select += ' ' + document.getElementById('interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'form')
-                text += ' ' + document.getElementById('text_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                text += ' ' + document.getElementById('interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
             if (type[2] === 'spinner')
-                number += ' ' + document.getElementById('number_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
+                number += ' ' + document.getElementById('interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]).value;
         }
     }
 
@@ -518,7 +566,12 @@ function button_interface(entity, element) {
         var input = {'type' : 'message'};
         input['content_destination'] = text;
         operations[entity] = input;
-        eb.send('client-to-server', JSON.stringify(operations));
+        var message = text.split(" ");
+        var n = message.length;
+        if(message[n - 1] === entity)
+            alert("An agent can not send a message to himself");
+        else if(n > 2)
+            eb.send('client-to-server', JSON.stringify(operations));
     }
     else if(interface_elements[element].toLowerCase() === 'execute') {
         var input = {'type': 'operation'};

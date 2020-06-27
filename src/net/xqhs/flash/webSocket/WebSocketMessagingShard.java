@@ -20,7 +20,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 
     private static final long serialVersionUID = 2L;
 
-    protected static final String	SHARD_ENDPOINT				= "messagingShard";
+    protected static final String	SHARD_ENDPOINT				= "messaging";
 
     private MessagingPylonProxy pylon;
 
@@ -51,8 +51,8 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 		super.signalAgentEvent(event);
         if(event.getType().equals(AgentEventType.AGENT_WAVE))
             if((((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT)) {
-                JSONObject msg = OperationUtils.operationToJSON("returnmessage", "", ((AgentWave) event).getContent(), DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-                sendMessage(msg.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+                JSONObject msg = OperationUtils.operationToJSON("message", "", ((AgentWave) event).getContent(), DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+                sendMessage(getAgent().getEntityName() + "/" + SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME + "/control", msg.toString());
             }
 		if(event.getType().equals(AgentEventType.AGENT_START))
 			pylon.register(getAgent().getEntityName(), inbox);

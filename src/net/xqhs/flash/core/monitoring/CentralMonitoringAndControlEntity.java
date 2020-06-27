@@ -104,11 +104,14 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
          */
         public boolean parseReceivedMsg(Object obj, String source)
         {
-            System.out.println("#test" + obj);
             if(obj instanceof JSONObject) {
                 JSONObject jo = (JSONObject) obj;
                 if(manageOperation(jo)) {
                     li("Parsed operation from [].", source);
+                    return true;
+                } else if(((String) jo.get("name")).equals("message")) {
+                    WebEntity.agentMessages.put(source, ((String) jo.get("value")));
+                    li("Parsed message from [].", source);
                     return true;
                 }
             }
@@ -375,7 +378,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements  Entity<P
         public boolean sendAgentMessage(String agent, String content) {
             return centralMessagingShard.sendMessage(
                     AgentWave.makePath(getName(), SHARD_ENDPOINT),
-                    AgentWave.makePath(agent, "messagingShard"),
+                    AgentWave.makePath(agent, "messaging"),
                     content);
         }
 

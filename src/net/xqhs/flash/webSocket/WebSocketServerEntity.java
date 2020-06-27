@@ -55,10 +55,9 @@ public class WebSocketServerEntity extends Unit implements Entity
 	 */
 	private boolean routeTheMessage(JSONObject message) {
 			String destination = (String) message.get("destination");
-			System.out.println("# #" + destination);
 			String destEntity = destination.split(
 					AgentWave.ADDRESS_SEPARATOR)[0];
-			System.out.println("# " + destEntity);
+
 			WebSocket destinationWebSocket;
 			destinationWebSocket = entityToWebSocket.get(destEntity);
 			if(destinationWebSocket != null) {

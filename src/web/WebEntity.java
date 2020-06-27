@@ -27,6 +27,8 @@ import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralE
 class ServerVerticle extends AbstractVerticle {
     private WebEntity entity;
 
+    private boolean handler = false;
+
     public ServerVerticle(WebEntity entity) {
         this.entity = entity;
     }
@@ -35,7 +37,7 @@ class ServerVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         Router router = Router.router(vertx);
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
-        BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("server-to-client")).addInboundPermitted(new PermittedOptions().setAddress("client-to-server"));
+        BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("server-to-client")).addInboundPermitted(new PermittedOptions().setAddress("client-to-server")).addOutboundPermitted(new PermittedOptions().setAddress("server-to-client-agent-message")).addInboundPermitted(new PermittedOptions().setAddress("client-to-server-agent-message"));
         // mount the bridge on the router
         router.mountSubRouter("/eventbus", sockJSHandler.bridge(options, be -> {
             try {
@@ -44,48 +46,63 @@ class ServerVerticle extends AbstractVerticle {
                 }
                 else if(be.type() == BridgeEventType.REGISTER) {
                     System.out.println("register");
-                    vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
-                        if(objectMessage.body().equals("init")) {
-                            vertx.eventBus().send("server-to-client", entity.getSpecification());
-                            vertx.eventBus().send("server-to-client", entity.cep.getEntities());
-                        }
-                        else {
+                    if(!handler) {
+                        vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
+                            if(objectMessage.body().equals("init")) {
+                                vertx.eventBus().send("server-to-client", entity.getSpecification());
+                                vertx.eventBus().send("server-to-client", entity.cep.getEntities());
+                            }
+                            else {
+                                System.out.println(objectMessage.body());
+                                CentralEntityProxy cep = entity.cep;
+                                JsonObject data = new JsonObject((String) objectMessage.body());
+                                Iterator<Map.Entry<String, Object>> entryIterator = data.iterator();
 
-                            System.out.println(objectMessage.body());
-                            CentralEntityProxy cep = entity.cep;
-                            JsonObject message = new JsonObject((String) objectMessage.body());
-                            Iterator<Map.Entry<String, Object>> entryIterator = message.iterator();
+                                while(entryIterator.hasNext()) {
+                                    Map.Entry<String, Object> entry = entryIterator.next();
 
-                            while(entryIterator.hasNext()) {
-                                Map.Entry<String, Object> entry = entryIterator.next();
-
-                                String entity = entry.getKey();
-                                JsonObject input = (JsonObject) entry.getValue();
-                                if(input.getString("type").equals("operation")) {
-                                    //TODO: opertaions for entities do not have parameters yet
-                                    String name = input.getString("name").split(" ")[1];
-                                    String[] parameters = input.getString("name").split(" ");
-                                    if(entity.equals("all"))
-                                        cep.sendToAllAgents(name);
-                                    else
-                                        cep.sendToEntity(entity, name);
-                                }
-                                else if(input.getString("type").equals("message")) {
-                                    System.out.println("CHECK!!!");
-                                    String[] content_destination = input.getString("content_destination").split(" ");
-                                    cep.sendAgentMessage(content_destination[2], "From " + entity + ": " + content_destination[1]);
-                                }
-                                else {
-                                    //TODO: needed for other input options
+                                    String entity = entry.getKey();
+                                    JsonObject input = (JsonObject) entry.getValue();
+                                    if(input.getString("type").equals("operation")) {
+                                        //TODO: opertaions for entities do not have parameters yet
+                                        String name = input.getString("name").split(" ")[1];
+                                        String[] parameters = input.getString("name").split(" ");
+                                        if(entity.equals("all"))
+                                            cep.sendToAllAgents(name);
+                                        else
+                                            cep.sendToEntity(entity, name);
+                                    }
+                                    else if(input.getString("type").equals("message")) {
+                                        String[] content_destination = input.getString("content_destination").split(" ");
+                                        int n = content_destination.length - 1;
+                                        JsonObject message = new JsonObject();
+                                        String destination = content_destination[n];
+                                        message.put("agent", entity);
+                                        message.put("content", content_destination[1]);
+                                        for(int m = 2; m < n; m++)
+                                            message.put("content", message.getString("content") + " " + content_destination[m]);
+                                        cep.sendAgentMessage(destination, message.toString());
+                                    }
+                                    else {
+                                        //TODO: needed for other input options
+                                    }
                                 }
                             }
-                        }
-                    });
-                    vertx.setPeriodic(10000l, t -> {
-                        JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
-                        //entities.remove("AgentA");
-                        vertx.eventBus().send("server-to-client", entities.toString());
-                    });
+                        });
+                        vertx.setPeriodic(10000l, t -> {
+                            JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
+                            vertx.eventBus().send("server-to-client", entities.toString());
+                        });
+                        handler = true;
+                    }
+                    else {
+                        vertx.eventBus().consumer("client-to-server-agent-message").handler(objectMessage -> {
+                            System.out.println("Message seen for agent " + objectMessage.body());
+                        });
+                        vertx.setPeriodic(5000l, t -> {
+                            vertx.eventBus().send("server-to-client-agent-message", WebEntity.agentMessages.toString());
+                        });
+                    }
                 }
                 else if(be.type() == BridgeEventType.UNREGISTER) {
                     System.out.println("unregister");
@@ -124,6 +141,8 @@ class ServerVerticle extends AbstractVerticle {
 public class WebEntity implements Entity<Node> {
     static CentralEntityProxy cep;
 
+    public static JsonObject agentMessages;
+
     private Element specification;
 
     private Vertx web;
@@ -132,14 +151,12 @@ public class WebEntity implements Entity<Node> {
 
     private static boolean generated = false;
 
-    //stubs
-    private JsonObject agents = new JsonObject();
-
     public WebEntity(CentralEntityProxy cep) {
         if(!generated) {
             PageBuilder.getInstance().platformType = PlatformType.WEB;
             try {
                 this.cep = cep;
+                agentMessages = new JsonObject();
                 BuildPageTest.main(new String[] {"file", "interface-files/model-page/web-page.yml"});
                 specification = PageBuilder.getInstance().getPage();
                 generated = true;
@@ -223,12 +240,4 @@ public class WebEntity implements Entity<Node> {
 
         return specification.toString();
     }
-
-    public void commandAgent(String name, String command) {
-        if(command.equals("start"))
-            agents.put(name, "running");
-        if(command.equals("stop"))
-            agents.put(name, "stopped");
-    }
-
 }
