@@ -1,5 +1,5 @@
 body {
-    background-color: darkslategrey;
+    background-color: #6495ED;
 }
 
 div {
@@ -22,7 +22,7 @@ input {
 .global {
     border: 3px solid white;
     padding: 10px;
-    background-color: tan;
+    background-color: #E95D30;
     margin: 10px;
     margin-right: 20px;
     color: white;
@@ -64,7 +64,7 @@ button {
     margin-left: 10px;
     text-align: center;
     padding: 5px;
-    background-color: lightslategrey;
+    background-color: #E95D30;
     color: white;
 }
 
