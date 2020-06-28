@@ -6,6 +6,8 @@ var specification = false;
 var entity_elements = {};
 var interface_elements = {};
 var selected_entities = {};
+var favoriteAgent = null;
+var content = null;
 
 function init() {
     eb = new EventBus("/eventbus");
@@ -22,18 +24,17 @@ function init() {
                 for(var element in data) {
                     var elements = element.split(' ');
 
-                    if(elements[0] === 'entity') {
-                        if (data[element].toLowerCase() === 'quick send message')
-                            entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3] + ' ' + elements[4] + ' ' + elements[5]] = data[element];
-                        else
-                            entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+                    if (data[element].toLowerCase() === 'quick send message') {
+                        content = elements[4];
+                        favoriteAgent = elements[5];
                     }
-                    if(elements[0] === 'interface') {
-                        if (data[element].toLowerCase() === 'quick send message')
-                            interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3] + ' ' + elements[4] + ' ' + elements[5]] = data[element];
-                        else
-                            interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
-                    }
+
+                    if(elements[0] === 'entity')
+                        entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+
+                    if(elements[0] === 'interface')
+                        interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+
                     //console.log('wrong specification')
                 }
                 specification = true;
@@ -537,9 +538,12 @@ function button(entity, element) {
     }
     else if(entity_elements[element].toLowerCase() === 'quick send message') {
         var input = {'type' : 'message'};
-        input['content_destination'] = text + ' ' + type[3] + ' ' + type[4];
+        input['content_destination'] = text + ' ' + content + ' ' + favoriteAgent;
         operations[entity] = input;
-        eb.send('client-to-server', JSON.stringify(operations));
+        if(favoriteAgent === entity)
+            alert('Favourite agent is ' + favoriteAgent + ' and can not send a message to himself');
+        else
+            eb.send('client-to-server', JSON.stringify(operations));
     }
     else if(entity_elements[element].toLowerCase() === 'execute') {
         var input = {'type' : 'operation'};
@@ -587,15 +591,18 @@ function button_interface(entity, element) {
         var message = text.split(" ");
         var n = message.length;
         if(message[n - 1] === entity)
-            alert("An agent can not send a message to himself");
+            alert('An agent can not send a message to himself');
         else if(n > 2)
             eb.send('client-to-server', JSON.stringify(operations));
     }
     else if(interface_elements[element].toLowerCase() === 'quick send message') {
         var input = {'type' : 'message'};
-        input['content_destination'] = text + ' ' + type[3] + ' ' + type[4];
+        input['content_destination'] = text + ' ' + content + ' ' + favoriteAgent;
         operations[entity] = input;
-        eb.send('client-to-server', JSON.stringify(operations));
+        if(favoriteAgent === entity)
+            alert('Favourite agent is ' + favoriteAgent + ' and can not send a message to himself');
+        else
+            eb.send('client-to-server', JSON.stringify(operations));
     }
     else if(interface_elements[element].toLowerCase() === 'execute') {
         var input = {'type': 'operation'};
