@@ -601,7 +601,7 @@ function send_data(id) {
     var input = {'type' : 'operation'};
     input['name'] = 'operation' + ' ' + document.getElementById(id).innerText.toLowerCase().replace(' ', '_');
     input['parameters'] = 'parameters';
-    operation['all'] = input;
+    operations['all'] = input;
     eb.send('client-to-server', JSON.stringify(operations));
 };
 
