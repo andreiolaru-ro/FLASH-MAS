@@ -231,12 +231,18 @@ public class WebEntity implements Entity<Node> {
         specification.put("interfaces", interfaces_specification.getId());
 
         entities_specification.getChildren().forEach(element -> {
-            specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
+            if(element.getValue().equals("Quick send message"))
+                specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType() + " " + element.getMessageContent() + " " + element.getFavoriteAgent(), element.getValue());
+            else
+                specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
         });
 
         interfaces_specification.getChildren().forEach(element -> {
-            specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
-        });
+            if(element.getValue().equals("Quick send message"))
+                specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType() + " " + element.getMessageContent() + " " + element.getFavoriteAgent(), element.getValue());
+            else
+                specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType(), element.getValue());
+            });
 
         return specification.toString();
     }

@@ -22,10 +22,18 @@ function init() {
                 for(var element in data) {
                     var elements = element.split(' ');
 
-                    if(elements[0] === 'entity')
-                        entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
-                    if(elements[0] === 'interface')
-                        interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+                    if(elements[0] === 'entity') {
+                        if (data[element].toLowerCase() === 'quick send message')
+                            entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3] + ' ' + elements[4] + ' ' + elements[5]] = data[element];
+                        else
+                            entity_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+                    }
+                    if(elements[0] === 'interface') {
+                        if (data[element].toLowerCase() === 'quick send message')
+                            interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3] + ' ' + elements[4] + ' ' + elements[5]] = data[element];
+                        else
+                            interface_elements[elements[1] + ' ' + elements[2] + ' ' + elements[3]] = data[element];
+                    }
                     //console.log('wrong specification')
                 }
                 specification = true;
@@ -523,7 +531,13 @@ function button(entity, element) {
 
     if(entity_elements[element].toLowerCase() === 'send') {
         var input = {'type' : 'message'};
-        input['message_destination'] = text;
+        input['content_destination'] = text;
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(entity_elements[element].toLowerCase() === 'quick send message') {
+        var input = {'type' : 'message'};
+        input['content_destination'] = text + ' ' + type[3] + ' ' + type[4];
         operations[entity] = input;
         eb.send('client-to-server', JSON.stringify(operations));
     }
@@ -576,6 +590,12 @@ function button_interface(entity, element) {
             alert("An agent can not send a message to himself");
         else if(n > 2)
             eb.send('client-to-server', JSON.stringify(operations));
+    }
+    else if(interface_elements[element].toLowerCase() === 'quick send message') {
+        var input = {'type' : 'message'};
+        input['content_destination'] = text + ' ' + type[3] + ' ' + type[4];
+        operations[entity] = input;
+        eb.send('client-to-server', JSON.stringify(operations));
     }
     else if(interface_elements[element].toLowerCase() === 'execute') {
         var input = {'type': 'operation'};
