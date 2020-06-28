@@ -205,18 +205,20 @@ function new_entity(entities, entity) {
             label.setAttribute('id', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
             label.setAttribute('class', 'entity-element');
 
-            if(entity_elements[element].toLowerCase() === 'type')
+            if (entity_elements[element].toLowerCase() === 'type')
                 label.innerText = info[0];
 
-            if(entity_elements[element].toLowerCase() === 'status')
+            if (entity_elements[element].toLowerCase() === 'status')
                 label.innerText = info[1];
 
             // TODO: implement other label options
 
             var description = document.createElement('label');
             description.setAttribute('for', 'entity_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-            if(entity_elements[element].toLowerCase() === 'messages')
+            if (entity_elements[element].toLowerCase() === 'messages') {
                 description.innerText = 'No';
+                label.innerText = entity_elements[element].toLowerCase();
+            }
             else
                 description.innerText = entity_elements[element];
 
@@ -351,8 +353,10 @@ function new_interface(interfaces, entity) {
 
             var description = document.createElement('label');
             description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-            if(interface_elements[element].toLowerCase() === 'messages')
+            if(interface_elements[element].toLowerCase() === 'messages') {
                 description.innerText = 'No';
+                label.innerText = interface_elements[element].toLowerCase();
+            }
             else
                 description.innerText = interface_elements[element];
 

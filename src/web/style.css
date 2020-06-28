@@ -34,7 +34,7 @@ button {
 }
 
 .entities {
-    max-height: 700px;
+    max-height: 590px;
     overflow-y: scroll;
     text-align: center;
 }
@@ -79,6 +79,6 @@ button {
 }
 
 .line {
-    height: 360px;
+    height: 400px;
     display: inline-flex;
 }

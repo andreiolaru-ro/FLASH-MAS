@@ -99,7 +99,7 @@ class ServerVerticle extends AbstractVerticle {
                         vertx.eventBus().consumer("client-to-server-agent-message").handler(objectMessage -> {
                             System.out.println("Message seen for agent " + objectMessage.body());
                         });
-                        vertx.setPeriodic(5000l, t -> {
+                        vertx.setPeriodic(1000l, t -> {
                             vertx.eventBus().send("server-to-client-agent-message", WebEntity.agentMessages.toString());
                         });
                     }
