@@ -313,7 +313,10 @@ function new_entity(entities, entity) {
         }
     }
 
-    entities.appendChild(div);
+    if(info[0] === 'agent')
+        entities.insertBefore(div, entities.children[0]);
+    else
+        entities.appendChild(div);
 }
 
 function new_interface(interfaces, entity) {
