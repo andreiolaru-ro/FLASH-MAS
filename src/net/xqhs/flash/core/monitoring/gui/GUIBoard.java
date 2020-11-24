@@ -34,6 +34,13 @@ public class GUIBoard extends JFrame {
         return btn;
     }
 
+    public void stopAllAndCloseWindow(Window w) {
+        // force stop everything
+        // TODO should check if entity is running but the info not accessible from here
+        centralEntityProxy.sendToAll("stop");
+        
+        dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
+    }
 
     public GUIBoard(CentralEntityProxy entity) {
         centralEntityProxy = entity;
@@ -61,7 +68,7 @@ public class GUIBoard extends JFrame {
         stopAgentsBtn.addActionListener(actionEvent ->
                 centralEntityProxy.sendToAll("stop"));
         exitBtn.addActionListener(actionEvent ->
-                dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
+                stopAllAndCloseWindow(this));
 
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setBorder(new EmptyBorder(5,5,5,5));
