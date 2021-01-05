@@ -1,19 +1,31 @@
 package net.xqhs.flash.core.monitoring.gui;
 
-import florina.monitoringAndControlTest.shards.PingTestComponent;
-import net.xqhs.flash.FlashBoot;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 public class GUIBoard extends JFrame {
     protected static final long		PING_INITIAL_DELAY			= 0;
@@ -33,7 +45,7 @@ public class GUIBoard extends JFrame {
         @Override
         public void run()
         {
-            textArea.setText(FlashBoot.stream.toString());
+			// textArea.setText(FlashBoot.stream.toString());
             JScrollBar vertical = scrollPane.getVerticalScrollBar();
             vertical.setValue(vertical.getMaximum());
         }
