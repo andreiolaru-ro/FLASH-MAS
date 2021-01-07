@@ -1,0 +1,7 @@
+children:
+ - type: form
+   port: port1
+   role: content
+ - type: button
+   port: port1
+   role: activate
