@@ -18,8 +18,7 @@ import java.io.Serializable;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardDesignation implements Serializable
-{
+public class AgentShardDesignation implements Serializable {
 	/**
 	 * The serial UID.
 	 */
@@ -35,32 +34,46 @@ public class AgentShardDesignation implements Serializable
 	 * @author andreiolaru
 	 */
 	public enum StandardAgentShard {
-		
 		/**
 		 * The designation of a shard offering messaging services.
 		 */
 		MESSAGING,
+		/**
+		 * The designation of a shard offering interfacing with the exterior in a general manner.
+		 */
+		IO,
+		/**
+		 * The designation of a shard offering interfacing with the exterior using a graphical interface.
+		 */
+		GUI,
+		/**
+		 * The designation of a shard used for monitoring by a central monitoring entity.
+		 */
+		MONITORING,
+		/**
+		 * The designation of a shard used for control by a central control entity.
+		 */
+		CONTROL,
 		
 		;
 		
 		/**
 		 * The fully qualified class name of the default shard implementation.
 		 */
-		String						shardClass;
+		String shardClass;
 		
 		/**
 		 * The name of the shard, as appearing in the deployment file.
 		 */
-		String						shardName;
+		String shardName;
 		
 		/**
 		 * Specifies the fully qualified class name of the shard implementation.
 		 * 
 		 * @param classname
-		 *                      - the fully qualified class name.
+		 *            - the fully qualified class name.
 		 */
-		private StandardAgentShard(String classname)
-		{
+		private StandardAgentShard(String classname) {
 			// FIXME: check that package and class exist
 			shardClass = classname;
 			shardName = this.name().toLowerCase();
@@ -69,8 +82,7 @@ public class AgentShardDesignation implements Serializable
 		/**
 		 * Infers the class of the shard implementation based on the name of the shard and constants in this class.
 		 */
-		private StandardAgentShard()
-		{
+		private StandardAgentShard() {
 			this(null);
 		}
 		
@@ -79,33 +91,28 @@ public class AgentShardDesignation implements Serializable
 		 * 
 		 * @return the name of the shard.
 		 */
-		public String shardName()
-		{
+		public String shardName() {
 			return shardName;
 		}
 		
 		/**
 		 * @return the {@link AgentShardDesignation} corresponding to this standard shard.
 		 */
-		public AgentShardDesignation toAgentShardDesignation()
-		{
+		public AgentShardDesignation toAgentShardDesignation() {
 			return AgentShardDesignation.standardShard(this);
 		}
-
+		
 		/**
 		 * Returns the {@link StandardAgentShard} instance that corresponds to the specified name.
 		 * 
 		 * @param shardName
-		 *                      - the name of the shard, as appearing in the deployment file.
+		 *            - the name of the shard, as appearing in the deployment file.
 		 * @return the corresponding {@link StandardAgentShard} instance.
 		 */
-		public static StandardAgentShard toStandardAgentShard(String shardName)
-		{
-			try
-			{
+		public static StandardAgentShard toStandardAgentShard(String shardName) {
+			try {
 				return StandardAgentShard.valueOf(shardName.toUpperCase());
-			} catch(Exception e)
-			{
+			} catch(Exception e) {
 				return null;
 			}
 		}
@@ -116,12 +123,11 @@ public class AgentShardDesignation implements Serializable
 		 * <code>null</code> is returned.
 		 * 
 		 * @param shardName
-		 *                      - the name of the shard, as appearing in the deployment file.
+		 *            - the name of the shard, as appearing in the deployment file.
 		 * @return the {@link AgentShardDesignation} corresponding to this standard shard with the name;
 		 *         <code>null</code> if none found.
 		 */
-		public static AgentShardDesignation toStandardAgentShardDesignation(String shardName)
-		{
+		public static AgentShardDesignation toStandardAgentShardDesignation(String shardName) {
 			StandardAgentShard std = toStandardAgentShard(shardName);
 			return std != null ? std.toAgentShardDesignation() : null;
 		}
@@ -130,23 +136,22 @@ public class AgentShardDesignation implements Serializable
 	/**
 	 * This field is used if the designation designates a standard shard.
 	 */
-	protected StandardAgentShard	standardShard;
+	protected StandardAgentShard standardShard;
 	
 	/**
 	 * This field is used if the designation designates a custom shard.
 	 */
-	protected String				customShard;
+	protected String customShard;
 	
 	/**
 	 * Private constructor. One and only one argument must be non-<code>null</code> at a time.
 	 * 
 	 * @param standardsName
-	 *                          - the standard shard.
+	 *            - the standard shard.
 	 * @param customName
-	 *                          - the custom shard name.
+	 *            - the custom shard name.
 	 */
-	private AgentShardDesignation(StandardAgentShard standardsName, String customName)
-	{
+	private AgentShardDesignation(StandardAgentShard standardsName, String customName) {
 		if(standardsName != null && customName != null)
 			throw new IllegalArgumentException("Both arguments cannot be non-null.");
 		if(standardsName == null && customName == null)
@@ -161,11 +166,10 @@ public class AgentShardDesignation implements Serializable
 	 * The name must not be the same as an existing {@link StandardAgentShard}.
 	 * 
 	 * @param shardName
-	 *                      - the custom name.
+	 *            - the custom name.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation customShard(String shardName)
-	{
+	public static AgentShardDesignation customShard(String shardName) {
 		if(StandardAgentShard.toStandardAgentShard(shardName) != null)
 			throw new IllegalArgumentException("There already is a standard shard with the name " + shardName);
 		return new AgentShardDesignation(null, shardName);
@@ -177,11 +181,10 @@ public class AgentShardDesignation implements Serializable
 	 * An easier way to do this is to call {@link StandardAgentShard#toAgentShardDesignation()}.
 	 * 
 	 * @param standardShard
-	 *                          - the standard shard.
+	 *            - the standard shard.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation standardShard(StandardAgentShard standardShard)
-	{
+	public static AgentShardDesignation standardShard(StandardAgentShard standardShard) {
 		return new AgentShardDesignation(standardShard, null);
 	}
 	
@@ -190,11 +193,10 @@ public class AgentShardDesignation implements Serializable
 	 * designation, otherwise.
 	 * 
 	 * @param shardName
-	 *                      - the name of the desired shard.
+	 *            - the name of the desired shard.
 	 * @return the designation.
 	 */
-	public static AgentShardDesignation autoDesignation(String shardName)
-	{
+	public static AgentShardDesignation autoDesignation(String shardName) {
 		StandardAgentShard std = StandardAgentShard.toStandardAgentShard(shardName);
 		if(std != null)
 			return standardShard(std);
@@ -202,8 +204,7 @@ public class AgentShardDesignation implements Serializable
 	}
 	
 	@Override
-	public boolean equals(Object obj)
-	{
+	public boolean equals(Object obj) {
 		if(!(obj instanceof AgentShardDesignation))
 			return false;
 		if(customShard != null)
@@ -212,16 +213,14 @@ public class AgentShardDesignation implements Serializable
 	}
 	
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		if(customShard != null)
 			return customShard.hashCode();
 		return standardShard.hashCode();
 	}
 	
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		// TODO: decide if there should be different rendering for the two cases.
 		if(customShard != null)
 			return customShard;

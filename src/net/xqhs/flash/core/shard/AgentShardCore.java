@@ -91,6 +91,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		shardConfiguration = new MultiTreeMap();
 		shardConfiguration.ensureLocked();
 		
+		setUnitName("/." + shardDesignation.toString());
 		shardInitializer();
 	}
 	
@@ -193,7 +194,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 */
 	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
-		// this class does not do anything here.
+		if(parentAgent.getEntityName() != null)
+			setUnitName(parentAgent.getEntityName() + "." + shardDesignation.toString());
+		// li("parent shift");
 	}
 	
 	/**

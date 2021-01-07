@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import net.xqhs.flash.core.CategoryName;
@@ -60,7 +61,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	/**
 	 * The {@link ClassFactory} instance to use for loading classes.
 	 */
-	ClassFactory					classLoader;
+	ClassFactory	classLoader;
 	/**
 	 * The packages configured in the deployment.
 	 */
@@ -106,9 +107,10 @@ public class CompositeAgentLoader implements Loader<Agent>
 				{
 					// get shard class
 					String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+					List<String> checked = new LinkedList<>();
 					// test given class, if any
 					if(shardClass != null)
-						shardClass = Loader.autoFind(classLoader, packages, shardClass, null, null, null, null);
+						shardClass = Loader.autoFind(classLoader, packages, shardClass, null, null, null, checked);
 					if(shardClass == null)
 					{
 						if(shardName == null)
@@ -137,15 +139,16 @@ public class CompositeAgentLoader implements Loader<Agent>
 								}
 						if(shardClass == null)
 							shardClass = Loader.autoFind(classLoader, packages, null, shardName, null,
-									CategoryName.SHARD.s(), null);
+									CategoryName.SHARD.s(), checked);
 					}
 					if(shardClass == null)
 						shardClass = Loader.autoFind(classLoader, packages, shardName, shardName, null,
-								CategoryName.SHARD.s(), null);
+								CategoryName.SHARD.s(), checked);
 					if(shardClass == null)
 					{
-						log.error(logPre + "Shard class not specified / not found for shard [" + shardName
-								+ "]. Shard will not be available.");
+						log.error(logPre
+								+ "Shard class not specified / not found for shard []. Shard will not be available. Checked paths: ",
+								shardName, checked);
 						continue;
 					}
 					
@@ -203,6 +206,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 				for(MultiTreeMap shardConfig : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTrees(shardName))
 				{
 					String shardClass = shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
+					shardConfig.addAll(CategoryName.PACKAGE.s(), packages);
 					if(shardClass != null)
 						try
 						{

@@ -125,6 +125,10 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * The default directory for deployment files.
 	 */
 	public static final String			DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
+	/**
+	 * Directories containing source files (especially for looking up various files).
+	 */
+	public static final String[]	SOURCE_FILE_DIRECTORIES	= { "src", "src-testing", "src-tests", "src-examples" };
 	
 	/**
 	 * Local IDs of default created entities.

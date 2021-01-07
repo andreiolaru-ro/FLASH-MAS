@@ -1,6 +1,8 @@
 package net.xqhs.flash.core.agent;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.xqhs.flash.core.util.MultiValueMap;
 
@@ -53,20 +55,24 @@ public class AgentWave extends AgentEvent
 	/**
 	 * The name associated with the content.
 	 */
-	public final String			CONTENT					= "content";
+	public static final String	CONTENT					= "content";
 	/**
 	 * The name associated with the elements of the source endpoint.
 	 */
-	public final String			SOURCE_ELEMENT			= "source-element";
+	public static final String	SOURCE_ELEMENT			= "source-element";
 	/**
 	 * The name associated with the complete destination(s), in its(their) original form.
 	 */
-	public final String			COMPLETE_DESTINATION	= "destination-complete";
+	public static final String	COMPLETE_DESTINATION	= "destination-complete";
 	/**
 	 * The name associated with the elements of one of the destinations.
 	 */
-	public final String			DESTINATION_ELEMENT		= "destination-element";
+	public static final String	DESTINATION_ELEMENT		= "destination-element";
 
+	@SuppressWarnings("hiding")
+	protected static final String[] specialKeys = { EVENT_TYPE_PARAMETER_NAME, SOURCE_ELEMENT, COMPLETE_DESTINATION,
+			DESTINATION_ELEMENT };
+	
 	/**
 	 * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
      *
@@ -181,10 +187,13 @@ public class AgentWave extends AgentEvent
 	
 	/**
 	 * Removes the first element in the list of destination endpoint elements.
+	 * 
+	 * @return the wave itself.
 	 */
-	public void removeFirstDestinationElement()
+	public AgentWave removeFirstDestinationElement()
 	{
 		removeFirst(DESTINATION_ELEMENT);
+		return this;
 	}
 	
 	/**
@@ -193,6 +202,20 @@ public class AgentWave extends AgentEvent
 	public String getContent()
 	{
 		return getValue(CONTENT);
+	}
+	
+	/**
+	 * @return all the keys in this {@link MultiValueMap} which are not realted to routing or agent event type. The
+	 *         {@value #CONTENT} key is added as the first key.
+	 */
+	public List<String> getContentElements()
+	{
+		List<String> result = new LinkedList<>(getKeys());
+		for(String k : specialKeys)
+			result.remove(k);
+		result.remove(CONTENT);
+		result.add(0, CONTENT);
+		return result;
 	}
 	
 	/**

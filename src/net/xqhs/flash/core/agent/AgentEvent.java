@@ -149,7 +149,9 @@ public class AgentEvent extends MultiValueMap
 	/**
 	 * The name of the parameter in the parameter set, storing the type of the event.
 	 */
-	protected static final String EVENT_TYPE_PARAMETER_NAME = "EVENT_TYPE";
+	public static final String EVENT_TYPE_PARAMETER_NAME = "EVENT_TYPE";
+	
+	protected static final String[] specialKeys = { EVENT_TYPE_PARAMETER_NAME };
 	
 	/**
 	 * Creates a new agent event.

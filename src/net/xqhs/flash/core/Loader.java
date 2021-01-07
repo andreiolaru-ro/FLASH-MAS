@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -270,6 +271,22 @@ public interface Loader<T extends Entity<?>>
 	}
 	
 	/**
+	 * Type of item to be searched for by <code>autoFind</code> methods.
+	 * 
+	 * @author Andrei Olaru
+	 */
+	public enum SearchItemType {
+		/**
+		 * File.
+		 */
+		FILE,
+		/**
+		 * Class.
+		 */
+		CLASS
+	}
+	
+	/**
 	 * Attempts to find a specific class given some known information about it. Among this information there are 3
 	 * conceptual elements:
 	 * <ul>
@@ -309,39 +326,121 @@ public interface Loader<T extends Entity<?>>
 	 * TODO: example
 	 * 
 	 * @param factory
-	 *                         - the {@link ClassFactory} that can test if the class exists / can be loaded.
+	 *            - the {@link ClassFactory} that can test if the class exists / can be loaded.
 	 * @param packages
-	 *                         - a list of java packages in which to search.
+	 *            - a list of java packages in which to search.
 	 * @param given_cp
-	 *                         - a classpath or a class name that may be given directly, saving the effort of searching
-	 *                         for the class. This classpath will also be searched in the list of packages.
+	 *            - a classpath or a class name that may be given directly, saving the effort of searching for the
+	 *            class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
-	 *                         - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if
-	 *                         the <code> is <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if the
+	 *            <code>given_cp</code> is <code>null</code>).
 	 * @param lower_name
-	 *                         - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
 	 * @param entity
-	 *                         - the name of the entity for which a class is searched (should not be <code>null</code>).
+	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
-	 *                         - a {@link List} in which all checked paths will be added (checked paths are classpaths
-	 *                         where the class have been searched).
+	 *            - a {@link List} in which all checked paths will be added (checked paths are classpaths where the
+	 *            class have been searched).
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
 			String lower_name, String entity, List<String> checkedPaths)
 	{
-		String D = ".";
+		return autoFind(packages, given_cp, upper_name, lower_name, entity, checkedPaths, SearchItemType.CLASS,
+				factory);
+	}
+	
+	/**
+	 * Same as {@link #autoFind(ClassFactory, List, String, String, String, String, List)}, but searching for files
+	 * instead of classes. The workings are the same, except that in the package names dots are substituted by slashes.
+	 * The <code>checkedPaths</code> and the method return value also use slashes.
+	 * 
+	 * @see #autoFind(ClassFactory, List, String, String, String, String, List)
+	 * 
+	 *      TODO: upper_name, lower_name and entity don't work in a meaningful way and are assambled by capitalization
+	 *      of the names. The Todo is to change the manner of assembly when searching for files and assemble via
+	 *      underscores.
+	 * 
+	 * @param packages
+	 * @param given_cp
+	 * @param upper_name
+	 * @param lower_name
+	 * @param entity
+	 * @param checkedPaths
+	 * @return the path to the first file found, if any; <code>null</code> otherwise.
+	 */
+	static String autoFind(List<String> packages, String given_cp, String upper_name, String lower_name, String entity,
+			List<String> checkedPaths) {
+		return autoFind(packages, given_cp, upper_name, lower_name, entity, checkedPaths, SearchItemType.FILE);
+	}
+	
+	/**
+	 * Checks if a {@link SearchItemType} item can be found.
+	 * 
+	 * @param path
+	 *            - the path to check.
+	 * @param searchType
+	 *            - the type of item.
+	 * @param objects
+	 *            - other relevant objects. Currently in use is the {@link ClassFactory} instance to use for searching
+	 *            for classes.
+	 * @return <code>true</code> if the item is found / can be loaded.
+	 */
+	private static boolean loadCheck(String path, SearchItemType searchType, Object... objects) {
+		ClassFactory factory;
+		switch(searchType) {
+		case CLASS:
+			factory = (ClassFactory) objects[0];
+			return factory.canLoadClass(path);
+		case FILE:
+			return new File(path).isFile();
+		default:
+			return false;
+		}
+	}
+	
+	/**
+	 * Reunites the functionality of {@link #autoFind(ClassFactory, List, String, String, String, String, List)} and
+	 * {@link #autoFind(ClassFactory, List, String, String, String, String, List)}.
+	 * 
+	 * @param given_packages
+	 * @param given_cp
+	 * @param upper_name
+	 * @param lower_name
+	 * @param entity
+	 * @param checkedPaths
+	 * @param searchType
+	 * @param others
+	 * @return the found path.
+	 */
+	private static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
+			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
+		String D = searchType == SearchItemType.CLASS ? "." : "/";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();
 		paths.clear();
 		paths.add(given_cp);
-		if(given_cp != null && factory.canLoadClass(given_cp))
+		if(given_cp != null && loadCheck(given_cp, searchType, others))
 			return given_cp;
+		List<String> packages = null;
+		if(given_packages != null)
+			if(searchType == SearchItemType.CLASS)
+				packages = new ArrayList<>(given_packages);
+			else {
+				packages = new ArrayList<>(given_packages.size());
+				for(String pack : given_packages)
+					packages.add(pack.replace('.', '/'));
+			}
 		if(packages != null)
 			for(String p : packages)
 			{
 				paths.add(p + D + given_cp);
-				if(factory.canLoadClass(p + D + given_cp))
+				if(loadCheck(p + D + given_cp, searchType, others))
 					return p + D + given_cp;
+				if(searchType == SearchItemType.FILE)
+					for(String dir : DeploymentConfiguration.SOURCE_FILE_DIRECTORIES)
+						if(loadCheck(dir + D + p + D + given_cp, searchType, others))
+							return dir + D + p + D + given_cp;
 			}
 		List<String> clsNames = new LinkedList<>();
 		if(given_cp != null)
@@ -355,7 +454,8 @@ public interface Loader<T extends Entity<?>>
 			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 		}
 		List<String> roots = new ArrayList<>();
-		roots.addAll(packages);
+		if(packages != null)
+			roots.addAll(packages);
 		roots.add(DeploymentConfiguration.ROOT_PACKAGE);
 		roots.add(DeploymentConfiguration.CORE_PACKAGE);
 		for(String cls : clsNames)
@@ -371,7 +471,7 @@ public interface Loader<T extends Entity<?>>
 				paths.add(r + D + cls);
 			}
 		for(String p : paths)
-			if(factory.canLoadClass(p))
+			if(loadCheck(p, searchType, others))
 				return p;
 		return null;
 	}

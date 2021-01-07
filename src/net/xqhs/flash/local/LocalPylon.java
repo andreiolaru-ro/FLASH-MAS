@@ -12,8 +12,6 @@
 package net.xqhs.flash.local;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -100,7 +98,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		@Override
 		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 			if(!(context instanceof MessagingPylonProxy))
-				throw new IllegalStateException("Pylon Context is not of expected type.");
+				return false;
 			pylon = (MessagingPylonProxy) context;
 			return true;
 		}

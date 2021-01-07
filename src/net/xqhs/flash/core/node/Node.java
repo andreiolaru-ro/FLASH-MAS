@@ -12,13 +12,15 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import net.xqhs.flash.core.support.*;
-import net.xqhs.flash.core.util.OperationUtils;
-import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -27,9 +29,13 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.OperationUtils;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
-import org.json.simple.JSONValue;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -220,12 +226,10 @@ public class Node extends Unit implements Entity<Node>
 	public boolean start()
 	{
 		li("Starting node [].", name);
-		for(Entity<?> entity : entityOrder)
-		{
+		for(Entity<?> entity : entityOrder) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
-			if(entity.start())
-			{
+			if(entity.start()) {
 				lf("entity [] started successfully.", entityName);
 				if(getName() != null && (entity instanceof DefaultPylonImplementation))
 					messagingShard.register(getName());
@@ -236,7 +240,7 @@ public class Node extends Unit implements Entity<Node>
 		isRunning = true;
 		sendStatusUpdate();
 		li("Node [] started.", name);
-
+		
 		if(getName() != null && registerEntitiesToCentralEntity())
 			lf("Entities successfully registered to control entity.");
 		return true;
