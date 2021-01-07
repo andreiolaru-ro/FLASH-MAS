@@ -25,9 +25,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
-public class GUIBoard extends JFrame {
+public class GUIBoard extends JFrame implements CentralGUI {
     protected static final long		PING_INITIAL_DELAY			= 0;
     protected static final long		PING_PERIOD					= 50;
 
@@ -200,4 +202,52 @@ public class GUIBoard extends JFrame {
         }
     }
 
+	@Override
+	public boolean start() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean stop() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean isRunning() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean addContext(EntityProxy<CentralMonitoringAndControlEntity> context) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean removeContext(EntityProxy<CentralMonitoringAndControlEntity> context) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public <C extends Entity<CentralMonitoringAndControlEntity>> EntityProxy<C> asContext() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 }
