@@ -11,8 +11,14 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,32 +52,30 @@ import net.xqhs.util.config.Config;
  * 
  * @author Andrei Olaru
  */
-public class MultiValueMap extends Config implements Serializable
-{
+public class MultiValueMap extends Config implements Serializable {
 	/**
 	 * The class UID.
 	 */
-	private static final long					serialVersionUID	= -8204648145896154271L;
+	private static final long serialVersionUID = -8204648145896154271L;
 	
 	/**
 	 * A map simulating a set of entries String &rarr; Object.
 	 */
-	protected final Map<String, List<Object>>	backingMap			= new LinkedHashMap<>();
+	protected final Map<String, List<Object>> backingMap = new LinkedHashMap<>();
 	
 	/**
 	 * Internal method that actually performs insertion.
 	 * 
 	 * @param name
-	 *                        - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                        - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @param insertFirst
-	 *                        - <code>true</code> if this new value should be inserted at the head of the list;
-	 *                        <code>false</code> for the tail of the list.
+	 *            - <code>true</code> if this new value should be inserted at the head of the list; <code>false</code>
+	 *            for the tail of the list.
 	 * @return the instance itself.
 	 */
-	protected MultiValueMap addItem(String name, Object value, boolean insertFirst)
-	{
+	protected MultiValueMap addItem(String name, Object value, boolean insertFirst) {
 		locked();
 		if(!backingMap.containsKey(name))
 			backingMap.put(name, new ArrayList<>());
@@ -89,13 +93,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *                  - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                  - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
-	public MultiValueMap add(String name, String value)
-	{
+	public MultiValueMap add(String name, String value) {
 		return addObject(name, value);
 	}
 	
@@ -107,13 +110,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * The value is added as the first value associated with the name.
 	 * 
 	 * @param name
-	 *                  - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                  - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
-	public MultiValueMap addFirst(String name, String value)
-	{
+	public MultiValueMap addFirst(String name, String value) {
 		return addFirstObject(name, value);
 	}
 	
@@ -123,13 +125,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *                   - the name (key) of the entries.
+	 *            - the name (key) of the entries.
 	 * @param values
-	 *                   - the values to be associated with the name.
+	 *            - the values to be associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
-	public MultiValueMap addAll(String name, List<String> values)
-	{
+	public MultiValueMap addAll(String name, List<String> values) {
 		for(String v : values)
 			add(name, v);
 		return this;
@@ -141,13 +142,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *                  - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                  - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
-	public MultiValueMap addObject(String name, Object value)
-	{
+	public MultiValueMap addObject(String name, Object value) {
 		return addItem(name, value, false);
 	}
 	
@@ -159,13 +159,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the collection has been previously {@link #locked()}.
 	 * 
 	 * @param name
-	 *                  - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                  - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 */
-	public MultiValueMap addFirstObject(String name, Object value)
-	{
+	public MultiValueMap addFirstObject(String name, Object value) {
 		return addItem(name, value, true);
 	}
 	
@@ -174,8 +173,7 @@ public class MultiValueMap extends Config implements Serializable
 	 * 
 	 * @return the key set.
 	 */
-	public Set<String> getKeys()
-	{
+	public Set<String> getKeys() {
 		return backingMap.keySet();
 	}
 	
@@ -186,13 +184,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * The {@link #getValue(String)} method is an alias of this method.
 	 * 
 	 * @param name
-	 *                 - the name of the searched entry.
+	 *            - the name of the searched entry.
 	 * @return the value of an entry with the given name, or <code>null</code> if the name is not found.
 	 * @throws IllegalStateException
-	 *                                   if the value is not a String.
+	 *             if the value is not a String.
 	 */
-	public String get(String name)
-	{
+	public String get(String name) {
 		Object value = getObject(name);
 		if(value == null)
 			return null;
@@ -205,11 +202,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Alias for the {@link #get} method.
 	 * 
 	 * @param name
-	 *                 - the name of the searched entry.
+	 *            - the name of the searched entry.
 	 * @return the value of the entry with the given name.
 	 */
-	public String getValue(String name)
-	{
+	public String getValue(String name) {
 		return get(name);
 	}
 	
@@ -218,11 +214,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * {@link String}, an exception will be thrown.
 	 * 
 	 * @param name
-	 *                 - the name to search for.
+	 *            - the name to search for.
 	 * @return a {@link List} of values associated with the name. The list is empty if no values exist.
 	 */
-	public List<String> getValues(String name)
-	{
+	public List<String> getValues(String name) {
 		List<String> ret = new ArrayList<>();
 		for(Object value : getObjects(name))
 			if(value instanceof String)
@@ -236,11 +231,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Retrieves the (first) value associated with a name, as an {@link Object} instance.
 	 * 
 	 * @param name
-	 *                 - the name of the searched entry.
+	 *            - the name of the searched entry.
 	 * @return the value associated with the name, or <code>null</code> if the name is not found.
 	 */
-	public Object getObject(String name)
-	{
+	public Object getObject(String name) {
 		if(!backingMap.containsKey(name))
 			return null;
 		return backingMap.get(name).get(0);
@@ -250,11 +244,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Retrieves all objects matching the given name, as a new {@link List}.
 	 * 
 	 * @param name
-	 *                 - the name to search for.
+	 *            - the name to search for.
 	 * @return a {@link List} of objects associated with the name. The list is empty if no values exist.
 	 */
-	public List<Object> getObjects(String name)
-	{
+	public List<Object> getObjects(String name) {
 		if(!backingMap.containsKey(name))
 			return new ArrayList<>();
 		return new ArrayList<>(backingMap.get(name));
@@ -266,11 +259,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Same with {@link #containsKey(String)}.
 	 * 
 	 * @param name
-	 *                 - the name of the searched entry.
+	 *            - the name of the searched entry.
 	 * @return - <code>true</code> if an entry with the specified name exists.
 	 */
-	public boolean isSet(String name)
-	{
+	public boolean isSet(String name) {
 		return backingMap.containsKey(name);
 	}
 	
@@ -280,11 +272,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Same with {@link #isSet(String)}.
 	 * 
 	 * @param name
-	 *                 - the name of the searched entry.
+	 *            - the name of the searched entry.
 	 * @return - <code>true</code> if an entry with the specified name exists.
 	 */
-	public boolean containsKey(String name)
-	{
+	public boolean containsKey(String name) {
 		return backingMap.containsKey(name);
 	}
 	
@@ -294,11 +285,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the name does not exist.
 	 * 
 	 * @param name
-	 *                 - the name (key) to remove.
+	 *            - the name (key) to remove.
 	 * @return the map itself.
 	 */
-	public MultiValueMap removeKey(String name)
-	{
+	public MultiValueMap removeKey(String name) {
 		if(!backingMap.containsKey(name))
 			throw new IllegalArgumentException("Key [" + name + "] does not exist in the map.");
 		backingMap.remove(name);
@@ -312,11 +302,10 @@ public class MultiValueMap extends Config implements Serializable
 	 * Throws an exception if the name does not exist.
 	 * 
 	 * @param name
-	 *                 - the name (key) to remove the first value from.
+	 *            - the name (key) to remove the first value from.
 	 * @return the map itself.
 	 */
-	public MultiValueMap removeFirst(String name)
-	{
+	public MultiValueMap removeFirst(String name) {
 		if(!backingMap.containsKey(name))
 			throw new IllegalArgumentException("Key [" + name + "] does not exist in the map.");
 		backingMap.get(name).remove(0);
@@ -334,13 +323,12 @@ public class MultiValueMap extends Config implements Serializable
 	 * The {@link Object#equals} method must be correctly implemented for the given value.
 	 * 
 	 * @param name
-	 *                  - the name (key) to remove the value from.
+	 *            - the name (key) to remove the value from.
 	 * @param value
-	 *                  - the value to remove.
+	 *            - the value to remove.
 	 * @return the map itself.
 	 */
-	public MultiValueMap remove(String name, Object value)
-	{
+	public MultiValueMap remove(String name, Object value) {
 		if(!backingMap.containsKey(name))
 			throw new IllegalArgumentException("Key [" + name + "] does not exist in the map.");
 		if(!backingMap.get(name).contains(value))
@@ -354,8 +342,7 @@ public class MultiValueMap extends Config implements Serializable
 	}
 	
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return backingMap.toString();
 	}
 	
@@ -364,17 +351,32 @@ public class MultiValueMap extends Config implements Serializable
 	 * into an {@link IllegalStateException}.
 	 * 
 	 * @throws RuntimeException
-	 *                              if the set has been {@link #lock()}-ed.
+	 *             if the set has been {@link #lock()}-ed.
 	 */
 	@Override
-	public void locked() throws RuntimeException
-	{
-		try
-		{
+	public void locked() throws RuntimeException {
+		try {
 			super.locked();
-		} catch(ConfigLockedException e)
-		{
+		} catch(ConfigLockedException e) {
 			throw new IllegalStateException(e.getMessage());
+		}
+	}
+	
+	public String toSerializedString() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+			oos.writeObject(this);
+			oos.close();
+		}
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+	
+	public static MultiValueMap fromSerializedString(String s) throws IOException, ClassNotFoundException {
+		byte[] data = Base64.getDecoder().decode(s);
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
+			MultiValueMap o = (MultiValueMap) ois.readObject();
+			ois.close();
+			return o;
 		}
 	}
 }
