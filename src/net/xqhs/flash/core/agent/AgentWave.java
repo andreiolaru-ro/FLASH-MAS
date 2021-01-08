@@ -108,11 +108,27 @@ public class AgentWave extends AgentEvent
 	 *                           - endpoint elements to add.
 	 * @return the wave itself.
 	 */
-	public AgentWave setSourceElements(String... sourceElements)
+	public AgentWave addSourceElements(String... sourceElements)
 	{
 		for(String elem : sourceElements)
 			if(elem.length() > 0)
 				add(SOURCE_ELEMENT, elem);
+		return this;
+	}
+	
+	public AgentWave prependDestination(String destinationElement) {
+		addFirst(DESTINATION_ELEMENT, destinationElement);
+		String dest = get(COMPLETE_DESTINATION);
+		removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
+		return this;
+	}
+	
+	public AgentWave appendDestination(String destinationElement) {
+		add(DESTINATION_ELEMENT, destinationElement);
+		String dest = get(COMPLETE_DESTINATION);
+		removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + destinationElement);
 		return this;
 	}
 	
