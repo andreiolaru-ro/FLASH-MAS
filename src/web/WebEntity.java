@@ -1,25 +1,26 @@
 package web;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.monitoring.CentralGUI;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
-import net.xqhs.flash.core.monitoring.gui.CentralGUI;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
-import net.xqhs.util.config.Config;
 
-public class WebEntity extends Config implements CentralGUI {
+public class WebEntity extends CentralGUI {
 	
 	class ServerVerticle extends AbstractVerticle {
 		private WebEntity entity;
@@ -48,7 +49,8 @@ public class WebEntity extends Config implements CentralGUI {
 					else if(be.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
 						verticleReady = true;
-						vertx.eventBus().send("server-to-client", cep.getEntities().toString());
+						String tosend = cep.getEntities().toString();
+						vertx.eventBus().send("server-to-client", tosend);
 						
 						// if(!handler) {
 						// vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
@@ -146,10 +148,10 @@ public class WebEntity extends Config implements CentralGUI {
 			System.out.println("HTTP server stoped");
 		}
 	}
-
+	
 	static CentralEntityProxy cep;
 	
-	public static JsonObject agentMessages;
+	// public static JsonObject agentMessages;
 	
 	private Element specification;
 	
@@ -200,73 +202,34 @@ public class WebEntity extends Config implements CentralGUI {
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return false;
+	protected void parentChangeNotifier(ShardContainer oldParent) {
+		super.parentChangeNotifier(oldParent);
+		cep = (CentralEntityProxy) getAgent();
 	}
 	
 	@Override
-	public String getName() {
-		return null;
-	}
-	
-	@Override
-	public boolean addContext(EntityProxy<CentralMonitoringAndControlEntity> context) {
-		try {
-			locked();
-		} catch(ConfigLockedException e) {
-			e.printStackTrace();
-			return false;
-		}
-		cep = (CentralEntityProxy) context;
+	public boolean updateGui(String entity, Element guiSpecification) {
+		JSONObject tosend = new JSONObject();
+		tosend.put("scope", "entity");
+		tosend.put("subject", "update");
+		tosend.put("content", guiSpecification.toJSON());
+		web.eventBus().send("server-to-client", tosend.toString());
 		return true;
 	}
 	
 	@Override
-	public boolean removeContext(EntityProxy<CentralMonitoringAndControlEntity> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
-	}
-	
-	@Override
-	public <C extends Entity<CentralMonitoringAndControlEntity>> EntityProxy<C> asContext() {
-		return null;
-	}
-	
-	public String getSpecification() {
-		JsonObject specification = new JsonObject();
-		Element entities_specification = this.specification.getChildren().get(0).getChildren().get(6);
-		Element interfaces_specification = this.specification.getChildren().get(1);
-		
-		specification.put("entities", entities_specification.getId());
-		specification.put("interfaces", interfaces_specification.getId());
-		
-		entities_specification.getChildren().forEach(element -> {
-			if(element.getValue().equals("Quick send message"))
-				specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType()
-						+ " " + element.getMessageContent() + " " + element.getFavoriteAgent(), element.getValue());
-			else
-				specification.put("entity " + element.getPort() + " " + element.getRole() + " " + element.getType(),
-						element.getValue());
-		});
-		
-		interfaces_specification.getChildren().forEach(element -> {
-			if(element.getValue().equals("Quick send message"))
-				specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType()
-						+ " " + element.getMessageContent() + " " + element.getFavoriteAgent(), element.getValue());
-			else
-				specification.put("interface " + element.getPort() + " " + element.getRole() + " " + element.getType(),
-						element.getValue());
-		});
-		
-		return specification.toString();
+	public void sendOutput(AgentWave wave) {
+		super.sendOutput(wave);
+		JSONObject tosend = new JSONObject();
+		tosend.put("scope", "port");
+		tosend.put("subject", wave.getFirstDestinationElement());
+		JSONObject allValues = new JSONObject();
+		for(String role : wave.getContentElements()) {
+			JSONArray values = new JSONArray();
+			values.addAll(wave.getValues(role));
+			allValues.put(role, values);
+		}
+		tosend.put("content", allValues);
+		web.eventBus().send("server-to-client", tosend.toString());
 	}
 }

@@ -1,19 +1,37 @@
 package net.xqhs.flash.gui;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.yaml.snakeyaml.Yaml;
+
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.monitoring.MonitoringShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
 
 public class GuiShard extends IOShard {
+	protected interface ComponentConnect {
+		void sendOutput(String value);
+		
+		String getInput();
+	}
+	
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -2769555908800271606L;
 	
 	protected Element interfaceStructure;
+	
+	protected Map<String, Map<String, List<ComponentConnect>>> portRoleComponents = new HashMap<>();
+	
+	protected MonitoringShard monitor = null;
 	
 	public GuiShard() {
 		super(StandardAgentShard.GUI.toAgentShardDesignation());
@@ -33,20 +51,53 @@ public class GuiShard extends IOShard {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		// if(event.getType() == AgentEventType.AGENT_START)
-		// ((MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()))
-		// .sendGuiUpdate(new Yaml().dump(interfaceStructure));
+		if(event.getType() == AgentEventType.AGENT_START)
+			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
+				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
+				monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
+			}
 	}
 	
 	@Override
-	public AgentWave getInput(String portName) {
-		// TODO Auto-generated method stub
-		return null;
+	public AgentWave getInput(String sourcePort) {
+		// TODO check for multiple sources (e.g. remote interfaces) ?
+		if(!portRoleComponents.containsKey(sourcePort)) {
+			le("Input source port [] not found.", sourcePort);
+			return null;
+		}
+		AgentWave result = new AgentWave().addSourceElementFirst(sourcePort);
+		for(String role : portRoleComponents.get(sourcePort).keySet())
+			for(ComponentConnect comp : portRoleComponents.get(sourcePort).get(role))
+				result.add(role, comp.getInput());
+		return result;
 	}
 	
 	@Override
-	public void sendOutput(AgentWave agentWave) {
-		// TODO Auto-generated method stub
+	public void sendOutput(AgentWave wave) {
+		String targetport = wave.getFirstDestinationElement();
+		if(targetport.equals(getShardDesignation().toString()))
+			targetport = wave.removeFirstDestinationElement().getFirstDestinationElement();
 		
+		if(!portRoleComponents.containsKey(targetport)) {
+			le("Output target port [] not found for content [].", targetport, wave.getContent());
+			return;
+		}
+		
+		Map<String, List<ComponentConnect>> roleMap = portRoleComponents.get(targetport);
+		
+		for(String role : wave.getContentElements())
+			if(roleMap.containsKey(role)) {
+				List<ComponentConnect> targetList = roleMap.get(role);
+				if(targetList.size() != wave.getValues(role).size())
+					lw("Wave number of values for role []/[] and number of available components differ: [] / [].",
+							targetport, role, Integer.valueOf(wave.getValues(role).size()),
+							Integer.valueOf(targetList.size()));
+				for(int i = 0; i < Math.min(targetList.size(), wave.getValues(role).size()); i++)
+					targetList.get(i).sendOutput(wave.getValues(role).get(i));
+			}
+			else
+				le("Output role []/[] cannot be found.", targetport, role);
+		if(monitor != null)
+			monitor.sendOutput(wave);
 	}
 }

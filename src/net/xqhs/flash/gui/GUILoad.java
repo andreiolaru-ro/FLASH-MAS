@@ -28,7 +28,7 @@ public class GUILoad {
 				log.le("Cannot find file []. Check paths: ", config, checked);
 			else
 				try (FileInputStream input = new FileInputStream(new File(path))) {
-					return new Yaml().loadAs(input, Element.class);
+					return fromYaml(input);
 				} catch(FileNotFoundException e) {
 					log.le("Cannot load file [].", config);
 				} catch(IOException e1) {
@@ -40,11 +40,19 @@ public class GUILoad {
 		}
 		else // inline
 			try {
-				return new Yaml().loadAs(config, Element.class);
+				return fromYaml(config);
 			} catch(Exception e) {
 				log.le("Interface load failed from [] with []", config, e);
 				e.printStackTrace();
 			}
 		return null;
+	}
+	
+	public static Element fromYaml(FileInputStream input) {
+		return new Yaml().loadAs(input, Element.class);
+	}
+	
+	public static Element fromYaml(String input) {
+		return new Yaml().loadAs(input, Element.class);
 	}
 }

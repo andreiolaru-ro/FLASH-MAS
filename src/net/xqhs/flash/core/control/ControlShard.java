@@ -49,7 +49,7 @@ public class ControlShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
-			if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			parseAgentWave(event);
 			break;

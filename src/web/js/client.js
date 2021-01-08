@@ -1,5 +1,6 @@
 var eb;
 var data;
+var types;
 var entities_id = 'entities_list';
 var interfaces_id = 'interfaces';
 var specification = false;
@@ -15,7 +16,7 @@ function init() {
 	eb.onopen = () => {
 		console.log('Eventbus opened');
 		eb.registerHandler('server-to-client', (_, message) => {
-			console.log('message here');
+//			console.log('message here');
 			message = JSON.parse(message.body);
 
 			switch (message['scope']) {
@@ -23,13 +24,26 @@ function init() {
 					switch (message['subject']) {
 						case 'entities list':
 							data = message['content'];
+							types = {};
 							console.log('new data:', data);
 
 							for (var entity in data) {
 								new_entity(document.getElementById(entities_id), entity);
 							}
-
+							console.log("Types: ", types);
 							break;
+					}
+					break;
+				case 'port':
+					console.log("Port output to: ", message['content']);
+					for (var role in message['content']) {
+						var i = 0;
+						for (var value of message['content'][role])
+						{
+							var id = role + i++;
+							if(document.getElementById(id))
+								outputTo(document.getElementById(id), types[id], value);
+						}
 					}
 					break;
 			}
@@ -207,6 +221,10 @@ function new_entity(entities, entity) {
 	div.appendChild(checkbox);
 	div.appendChild(select);
 	div.appendChild(name);
+	
+	for (var idx in data[entity]['gui']['children'])
+//		console.log("register type: " + data[entity]['gui']['children'][idx]['type'] + " for " + data[entity]['gui']['children'][idx]['id'])
+		types[data[entity]['gui']['children'][idx]['id']] = data[entity]['gui']['children'][idx]['type'];
 
 	//	for (var element in entity_elements) {
 	//		var type = element.split(' ');
@@ -336,6 +354,28 @@ function new_entity(entities, entity) {
 	entities.appendChild(div);
 }
 
+function outputTo(element, type, value) {
+	console.log("output: " + element + " | " + type + " | " + value);
+	switch (type) {
+		case 'label':
+			element.innerText = value;
+			break;
+		case 'button':
+			element.setAttribute('type', 'button');
+			if (value)
+				element.setAttribute('value', value);
+			else
+				element.setAttribute('value', element.getAttribute('id'));
+			break;
+		case 'form':
+			if (value)
+				element.setAttribute('value', value);
+			break;
+		default:
+			console.log("Unknown element type: ", element['type']);
+	}
+}
+
 function new_interface(interfaces, entity) {
 	var index = Object.keys(selected_entities).length;
 
@@ -354,14 +394,19 @@ function new_interface(interfaces, entity) {
 			case 'label':
 				item = document.createElement('label');
 				item.setAttribute('id', element['id']);
-				item.innerText = element['value'];
+				outputTo(item, element['type'], element['value']);
 				break;
 			case 'button':
 				item = document.createElement('input');
 				item.setAttribute('id', element['id']);
 				item.setAttribute('type', 'button');
-				item.setAttribute('value', element['value']);
+				outputTo(item, element['type'], element['value']);
 				break;
+			case 'form':
+				item = document.createElement('input');
+				item.setAttribute('id', element['id']);
+				item.setAttribute('type', 'text');
+				outputTo(item, element['type'], element['value']);
 			default:
 				console.log("Unknown element type: ", element['type']);
 		}

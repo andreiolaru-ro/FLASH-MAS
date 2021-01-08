@@ -47,7 +47,11 @@ public class OperationUtils {
 		/**
 		 * Operation for updating the GUI of an entity.
 		 */
-		GUI_UPDATE("gui_update");
+		GUI_UPDATE("gui_update"),
+		
+		GUI_OUTPUT("gui_output"),
+		
+		;
 		
 		private String operation;
 		

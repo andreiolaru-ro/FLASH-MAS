@@ -1,5 +1,6 @@
 package net.xqhs.flash.core.monitoring;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,7 +17,6 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.control.ControlShard;
-import net.xqhs.flash.core.monitoring.gui.CentralGUI;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -25,6 +25,7 @@ import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -82,11 +83,140 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			return this;
 		}
 		
-		public EntityData insertGuiElements(List<Element> elements) {
+		public EntityData insertNewGuiElements(List<Element> elements) {
 			int i = 0;
-			for(Element e : elements)
-				guiSpecification.getChildren().add(i++, e);
+			List<Element> interfaceElements = guiSpecification.getChildren();
+			for(Element e : elements) {
+				boolean found = false;
+				for(Element ie : interfaceElements)
+					if(e.getPort().equals(ie.getPort()))
+						found = true;
+				if(!found)
+					interfaceElements.add(i++, e);
+			}
 			return this;
+		}
+	}
+	
+	public class CentralEntityProxy implements ShardContainer {
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation) {
+			return null;
+		}
+		
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+		
+		@Override
+		public void postAgentEvent(AgentEvent event) {
+			switch(event.getType()) {
+			case AGENT_WAVE:
+				if(parseReceivedMsg((AgentWave) event))
+					break;
+			default:
+				break;
+			}
+		}
+		
+		/**
+		 *
+		 * @param operation
+		 *            - command to be sent to all agents registered
+		 */
+		public void sendToAllAgents(String operation) {
+			allAgents.entrySet().forEach(entry -> {
+				if(!sendToEntity(entry.getKey(), operation))
+					return;
+			});
+		}
+		
+		/**
+		 * Sends a control message to a specific entity which will further perform the operation.
+		 * 
+		 * @param destination
+		 *            - the name of destination entity
+		 * @param operation
+		 *            - operation to be performed on this entity
+		 * @return - an indication of success
+		 */
+		public boolean sendToEntity(String destination, String operation) {
+			JSONObject jsonOperation = getOperationFromEntity(destination, operation);
+			if(jsonOperation == null) {
+				le("Entity [] does not exist or does not support [] command.", destination, operation);
+				return false;
+			}
+			String access = (String) jsonOperation.get("access");
+			if(access.equals("self")) {
+				JSONObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
+				if(!sendMessage(destination, msg.toString())) {
+					le("Message from [] to [] failed.", getName(), destination);
+					return false;
+				}
+			}
+			else {
+				String proxy = (String) jsonOperation.get("proxy");
+				JSONObject msg = OperationUtils.operationToJSON(operation, proxy, "", destination);
+				if(!sendMessage(proxy, msg.toString())) {
+					le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		private JSONObject getOperationFromEntity(String entity, String command) {
+			JSONArray ja = entitiesToOp.get(entity);
+			if(ja == null)
+				return null;
+			for(Object o : ja) {
+				JSONObject op = (JSONObject) o;
+				String cmd = (String) op.get("name");
+				if(cmd.equals(command))
+					return op;
+			}
+			return null;
+		}
+		
+		/**
+		 * @param destination
+		 *            - the name of the destination entity
+		 * @param content
+		 *            - the content to be sent
+		 * @return - an indication of success
+		 */
+		private boolean sendMessage(String destination, String content) {
+			return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+					AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
+		}
+		
+		public boolean sendAgentMessage(String agent, String content) {
+			return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+					AgentWave.makePath(agent, "messaging"), content);
+		}
+		
+		@SuppressWarnings("unchecked")
+		public JSONObject getEntities() {
+			// TODO simplify this;
+			System.out.println("entities get.");
+			JSONObject resultMap = new JSONObject();
+			entitiesData.keySet().forEach(name -> {
+				EntityData entity = entitiesData.get(name);
+				JSONObject entityContent = new JSONObject();
+				resultMap.put(entity.getName(), entityContent);
+				
+				entityContent.put("id", entity.getName());
+				entityContent.put("status", entity.getStatus());
+				entityContent.put("operations", entity.getOperations());
+				entityContent.put("gui", entity.getGuiSpecification().toJSON());
+			});
+			JSONObject result = new JSONObject();
+			result.put("scope", "global");
+			result.put("subject", "entities list");
+			result.put("content", resultMap);
+			System.out.println("entities get: " + resultMap.toString());
+			return result;
 		}
 	}
 	
@@ -140,37 +270,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	private HashMap<String, HashMap<String, List<String>>> allNodeEntities = new LinkedHashMap<>();
 	
-	public ShardContainer proxy = new ShardContainer() {
-		
-		@Override
-		public void postAgentEvent(AgentEvent event) {
-			switch(event.getType()) {
-			case AGENT_WAVE:
-				String source = ((AgentWave) event).getFirstSource();
-				String content = ((AgentWave) event).getContent();
-				Object obj = JSONValue.parse(content);
-				if(obj == null) {
-					le("null message from [].", source);
-					break;
-				}
-				if(parseReceivedMsg(obj, source))
-					li("Parsed message from [].", source);
-				break;
-			default:
-				break;
-			}
-		}
-		
-		@Override
-		public AgentShard getAgentShard(AgentShardDesignation designation) {
-			return null;
-		}
-		
-		@Override
-		public String getEntityName() {
-			return getName();
-		}
-	};
+	public ShardContainer proxy;
 	
 	public CentralMonitoringAndControlEntity(String name) {
 		this.name = name;
@@ -179,8 +279,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		MultiTreeMap config = new MultiTreeMap().addOneValue("file", "interface-files/model-page/web-page.yml");
 		GlobalConfiguration representation = null; // GUILoad.loadGlobalRepresentation(config);
 		
+		proxy = new CentralEntityProxy();
 		gui = new WebEntity(representation);
-		gui.addContext(new CentralEntityProxy());
+		gui.addContext(proxy);
 		if(gui.start()) // starts now in order to be available before starting entities
 			li("web gui started");
 		
@@ -205,7 +306,14 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 *            - the source of the message
 	 * @return - an indication of success
 	 */
-	public boolean parseReceivedMsg(Object obj, String source) {
+	public boolean parseReceivedMsg(AgentWave wave) {
+		String source = wave.getFirstSource();
+		String content = wave.getContent();
+		Object obj = JSONValue.parse(content);
+		if(obj == null) {
+			le("null/unparsable message content from []: ", source, content);
+			return false;
+		}
 		if(obj instanceof JSONObject) {
 			JSONObject jo = (JSONObject) obj;
 			if(manageOperation(jo)) {
@@ -213,7 +321,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return true;
 			}
 			else if(((String) jo.get("name")).equals("message")) {
-				WebEntity.agentMessages.put(source, ((String) jo.get("value")));
+				// WebEntity.agentMessages.put(source, ((String) jo.get("value")));
 				lf("Parsed message from []: ", source, jo);
 				return true;
 			}
@@ -225,6 +333,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return true;
 			}
 		}
+		le("unknown message content from []: ", source, obj);
 		return false;
 	}
 	
@@ -242,7 +351,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			String value = (String) jsonObj.get(OperationUtils.VALUE);
 			entitiesState.put(params, value);
 			lf("Entity [] status is now [].", params, value);
-			entitiesData.get(params).setStatus(value);
+			// entitiesData.get(params).setStatus(value);
 			// TODO
 			// SwingUtilities.invokeLater(() -> {
 			// try {
@@ -251,6 +360,41 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			// e.printStackTrace();
 			// }
 			// });
+			return true;
+		}
+		if(op.equals(MonitoringOperations.GUI_UPDATE.getOperation())) {
+			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+			Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
+			// lf("Update for []: ", entity, interfaceStructure);
+			idManager.removeWithPrefix(entity);
+			entitiesData.get(entity).setGuiSpecification(interfaceStructure);
+			try {
+				entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
+			} catch(CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
+			idManager.insertIdsInto(interfaceStructure, entity);
+			
+			// lf("Update processed for []: ", entity, interfaceStructure);
+			return gui.updateGui(entity, interfaceStructure);
+		}
+		if(op.equals(MonitoringOperations.GUI_OUTPUT.getOperation())) {
+			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+			AgentWave wave;
+			try {
+				wave = (AgentWave) MultiValueMap
+						.fromSerializedString((String) jsonObj.get(OperationUtils.VALUE));
+			} catch(ClassNotFoundException | IOException e) {
+				le("Unable to unpack AgentWave from ", entity);
+				return false;
+			}
+			wave.resetDestination(String.join("_", wave.getValues(AgentWave.DESTINATION_ELEMENT)));
+			for(String role : wave.getContentElements()) {
+				wave.addAll(idManager.makeID(null, wave.getFirstDestinationElement(), role), wave.getValues(role));
+				wave.removeKey(role);
+			}
+			lf("The wave: ", wave);
+			gui.sendOutput(wave);
 			return true;
 		}
 		return false;
@@ -381,110 +525,5 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	@Override
 	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
 		return null;
-	}
-	
-	public class CentralEntityProxy implements EntityProxy<CentralMonitoringAndControlEntity> {
-		
-		/**
-		 *
-		 * @param operation
-		 *            - command to be sent to all agents registered
-		 */
-		public void sendToAllAgents(String operation) {
-			allAgents.entrySet().forEach(entry -> {
-				if(!sendToEntity(entry.getKey(), operation))
-					return;
-			});
-		}
-		
-		/**
-		 * Sends a control message to a specific entity which will further perform the operation.
-		 * 
-		 * @param destination
-		 *            - the name of destination entity
-		 * @param operation
-		 *            - operation to be performed on this entity
-		 * @return - an indication of success
-		 */
-		public boolean sendToEntity(String destination, String operation) {
-			JSONObject jsonOperation = getOperationFromEntity(destination, operation);
-			if(jsonOperation == null) {
-				le("Entity [] does not exist or does not support [] command.", destination, operation);
-				return false;
-			}
-			String access = (String) jsonOperation.get("access");
-			if(access.equals("self")) {
-				JSONObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
-				if(!sendMessage(destination, msg.toString())) {
-					le("Message from [] to [] failed.", getName(), destination);
-					return false;
-				}
-			}
-			else {
-				String proxy = (String) jsonOperation.get("proxy");
-				JSONObject msg = OperationUtils.operationToJSON(operation, proxy, "", destination);
-				if(!sendMessage(proxy, msg.toString())) {
-					le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
-					return false;
-				}
-			}
-			return true;
-		}
-		
-		private JSONObject getOperationFromEntity(String entity, String command) {
-			JSONArray ja = entitiesToOp.get(entity);
-			if(ja == null)
-				return null;
-			for(Object o : ja) {
-				JSONObject op = (JSONObject) o;
-				String cmd = (String) op.get("name");
-				if(cmd.equals(command))
-					return op;
-			}
-			return null;
-		}
-		
-		/**
-		 * @param destination
-		 *            - the name of the destination entity
-		 * @param content
-		 *            - the content to be sent
-		 * @return - an indication of success
-		 */
-		private boolean sendMessage(String destination, String content) {
-			return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-					AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
-		}
-		
-		public boolean sendAgentMessage(String agent, String content) {
-			return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-					AgentWave.makePath(agent, "messaging"), content);
-		}
-		
-		@SuppressWarnings("unchecked")
-		public JSONObject getEntities() {
-			JSONObject resultMap = new JSONObject();
-			entitiesData.keySet().forEach(name -> {
-				EntityData entity = entitiesData.get(name);
-				JSONObject entityContent = new JSONObject();
-				resultMap.put(entity.getName(), entityContent);
-				
-				entityContent.put("id", entity.getName());
-				entityContent.put("status", entity.getStatus());
-				entityContent.put("operations", entity.getOperations());
-				entityContent.put("gui", entity.getGuiSpecification().toJSON());
-			});
-			JSONObject result = new JSONObject();
-			result.put("scope", "global");
-			result.put("subject", "entities list");
-			result.put("content", resultMap);
-			System.out.println("entities get: " + resultMap.toString());
-			return result;
-		}
-		
-		@Override
-		public String getEntityName() {
-			return getName();
-		}
 	}
 }

@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.monitoring.gui;
+package net.xqhs.flash.swingGui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

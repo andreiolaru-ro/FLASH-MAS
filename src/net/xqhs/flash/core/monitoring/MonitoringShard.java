@@ -1,5 +1,7 @@
 package net.xqhs.flash.core.monitoring;
 
+import java.io.IOException;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -47,7 +49,7 @@ public class MonitoringShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
-			if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			parseAgentWaveEvent(((AgentWave) event).getContent());
 			break;
@@ -96,6 +98,20 @@ public class MonitoringShard extends AgentShardGeneral {
 		JSONObject update = OperationUtils.operationToJSON(
 				OperationUtils.MonitoringOperations.GUI_UPDATE.getOperation(), "", interfaceSpecification,
 				getAgent().getEntityName());
+		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+	}
+	
+	public void sendOutput(AgentWave output) {
+		JSONObject update = new JSONObject();
+		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperations.GUI_OUTPUT.getOperation());
+		update.put(OperationUtils.PARAMETERS, getAgent().getEntityName());
+		output.prependDestination(thisAgent);
+		try {
+			update.put(OperationUtils.VALUE, output.toSerializedString());
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		update.put(OperationUtils.PROXY, "");
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
 	

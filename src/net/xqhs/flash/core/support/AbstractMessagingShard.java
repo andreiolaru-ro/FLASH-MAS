@@ -121,7 +121,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 			// FIXME use log
 			throw new IllegalStateException("Source endpoint (" + source
 					+ ") does not start with the address of this agent (" + senderAddr + ")");
-		wave.setSourceElements(AgentWave.pathToElementsWith(source, senderAddr));
+		wave.addSourceElements(AgentWave.pathToElementsWith(source, senderAddr));
 		
 		/**
 		 * TODO: logging

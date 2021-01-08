@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -18,28 +16,18 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.ElementType;
 
 public class SwingGuiShard extends GuiShard {
-	
-	interface ComponentConnect {
-		void sendOutput(String value);
-		
-		String getInput();
-	}
-	
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -3741974077986177703L;
 	
 	JFrame window = null;
-	
-	protected Map<String, Map<String, List<ComponentConnect>>> portRoleComponents = new HashMap<>();
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
@@ -55,48 +43,6 @@ public class SwingGuiShard extends GuiShard {
 		default:
 			break;
 		}
-	}
-	
-	@Override
-	public AgentWave getInput(String sourcePort) {
-		// TODO check for multiple sources (e.g. remote interfaces) ?
-		if(!portRoleComponents.containsKey(sourcePort)) {
-			le("Input source port [] not found.", sourcePort);
-			return null;
-		}
-		AgentWave result = new AgentWave().addSourceElementFirst(sourcePort);
-		for(String role : portRoleComponents.get(sourcePort).keySet())
-			for(ComponentConnect comp : portRoleComponents.get(sourcePort).get(role))
-				result.add(role, comp.getInput());
-		return result;
-	}
-	
-	@Override
-	public void sendOutput(AgentWave wave) {
-		super.sendOutput(wave);
-		String targetport = wave.getFirstDestinationElement();
-		if(targetport.equals(getShardDesignation().toString()))
-			targetport = wave.removeFirstDestinationElement().getFirstDestinationElement();
-		
-		if(!portRoleComponents.containsKey(targetport)) {
-			le("Output target port [] not found for content [].", targetport, wave.getContent());
-			return;
-		}
-		
-		Map<String, List<ComponentConnect>> roleMap = portRoleComponents.get(targetport);
-		
-		for(String role : wave.getContentElements())
-			if(roleMap.containsKey(role)) {
-				List<ComponentConnect> targetList = roleMap.get(role);
-				if(targetList.size() != wave.getValues(role).size())
-					lw("Wave number of values for role []/[] and number of available components differ: [] / [].",
-							targetport, role, Integer.valueOf(wave.getValues(role).size()),
-							Integer.valueOf(targetList.size()));
-				for(int i = 0; i < Math.min(targetList.size(), wave.getValues(role).size()); i++)
-					targetList.get(i).sendOutput(wave.getValues(role).get(i));
-			}
-			else
-				le("Output role []/[] cannot be found.", targetport, role);
 	}
 	
 	protected void generate(Element element, JPanel parent) {
