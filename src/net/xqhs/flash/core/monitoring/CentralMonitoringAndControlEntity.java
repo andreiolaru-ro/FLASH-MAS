@@ -11,6 +11,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -27,12 +28,67 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.gui.GUIGeneration;
+import net.xqhs.flash.gui.GUILoad;
+import net.xqhs.flash.gui.structure.Element;
+import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
 import net.xqhs.util.logging.Unit;
 import web.WebEntity;
 
 public class CentralMonitoringAndControlEntity extends Unit implements Entity<Pylon> {
+	
+	protected class EntityData {
+		String		name;
+		String		status;
+		JSONArray	operations;
+		Element		guiSpecification;
+		
+		public String getName() {
+			return name;
+		}
+		
+		public String getStatus() {
+			return status;
+		}
+		
+		public JSONArray getOperations() {
+			return operations;
+		}
+		
+		public Element getGuiSpecification() {
+			return guiSpecification;
+		}
+		
+		public EntityData setName(String name) {
+			this.name = name;
+			return this;
+		}
+		
+		public EntityData setStatus(String status) {
+			this.status = status;
+			return this;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public EntityData addOperations(JSONArray ops) {
+			if(operations == null)
+				operations = new JSONArray();
+			operations.addAll(ops);
+			return this;
+		}
+		
+		public EntityData setGuiSpecification(Element guiSpecification) {
+			this.guiSpecification = guiSpecification;
+			return this;
+		}
+		
+		public EntityData insertGuiElements(List<Element> elements) {
+			int i = 0;
+			for(Element e : elements)
+				guiSpecification.getChildren().add(i++, e);
+			return this;
+		}
+	}
 	
 	{
 		setUnitName("M&C").setLoggerType(PlatformUtils.platformLogType());
@@ -46,6 +102,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * Endpoint element for shards of control.
 	 */
 	protected static final String OTHER_CONTROL_SHARD_ENDPOINT = ControlShard.SHARD_ENDPOINT;
+	
+	public static final String UNKNOWN = "none";
 	
 	private MessagingShard centralMessagingShard;
 	
@@ -69,6 +127,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * Keeps track of entities state.
 	 */
 	private HashMap<String, String> entitiesState = new LinkedHashMap<>();
+	
+	protected Map<String, EntityData> entitiesData = new HashMap<>();
+	
+	protected Element standardCtrls;
+	
+	protected ElementIdManager idManager;
 	
 	/**
 	 * Keeps track of all nodes deployed in the system, along with their {@link List} of entities, indexed by their
@@ -113,13 +177,17 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		
 		// TODO mock config -- to be added in deployment configuration?
 		MultiTreeMap config = new MultiTreeMap().addOneValue("file", "interface-files/model-page/web-page.yml");
-		GlobalConfiguration representation = GUIGeneration.loadGlobalRepresentation(config);
+		GlobalConfiguration representation = null; // GUILoad.loadGlobalRepresentation(config);
 		
 		gui = new WebEntity(representation);
 		gui.addContext(new CentralEntityProxy());
 		if(gui.start()) // starts now in order to be available before starting entities
 			li("web gui started");
-			
+		
+		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue("from", "controls.yml")
+				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackageName()), getLogger());
+		
+		idManager = new ElementIdManager();
 		// gui = new GUIBoard(new CentralEntityProxy());
 		// SwingUtilities.invokeLater(() -> {
 		// try {
@@ -174,6 +242,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			String value = (String) jsonObj.get(OperationUtils.VALUE);
 			entitiesState.put(params, value);
 			lf("Entity [] status is now [].", params, value);
+			entitiesData.get(params).setStatus(value);
 			// TODO
 			// SwingUtilities.invokeLater(() -> {
 			// try {
@@ -190,6 +259,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	private boolean registerEntities(JSONArray ja) {
 		for(Object o : ja) {
 			JSONObject entity = (JSONObject) o;
+			
 			String node = (String) entity.get(OperationUtils.NODE);
 			String category = (String) entity.get(OperationUtils.CATEGORY);
 			String name = (String) entity.get(OperationUtils.NAME);
@@ -211,6 +281,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			if(!allNodeEntities.get(node).containsKey(category))
 				allNodeEntities.get(node).put(category, new LinkedList<>());
 			allNodeEntities.get(node).get(category).add(name);
+			
+			try {
+				entitiesData.put(name, new EntityData().setName(name).setStatus(UNKNOWN).addOperations(operationDetails)
+						.setGuiSpecification(idManager.insertIdsInto((Element) standardCtrls.clone(), name)));
+			} catch(CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
@@ -387,13 +464,15 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		@SuppressWarnings("unchecked")
 		public JSONObject getEntities() {
 			JSONObject resultMap = new JSONObject();
-			entitiesToOp.entrySet().forEach(entry -> {
-				String entity = entry.getKey();
+			entitiesData.keySet().forEach(name -> {
+				EntityData entity = entitiesData.get(name);
 				JSONObject entityContent = new JSONObject();
-				resultMap.put(entity, entityContent);
-				entityContent.put("id", entity);
-				entityContent.put("status", entitiesState.get(entity));
-				entityContent.put("operations", entry.getValue());
+				resultMap.put(entity.getName(), entityContent);
+				
+				entityContent.put("id", entity.getName());
+				entityContent.put("status", entity.getStatus());
+				entityContent.put("operations", entity.getOperations());
+				entityContent.put("gui", entity.getGuiSpecification().toJSON());
 			});
 			JSONObject result = new JSONObject();
 			result.put("scope", "global");

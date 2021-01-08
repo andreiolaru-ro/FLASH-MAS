@@ -343,134 +343,154 @@ function new_interface(interfaces, entity) {
 	div.setAttribute('class', 'interface');
 	div.setAttribute('id', 'interface_' + entity);
 
-	var name = document.createElement('label');
-	name.innerText = entity;
-	div.appendChild(name);
-	div.appendChild(document.createElement('br'));
-
 	var info = data[entity];
-//	for (var element in interface_elements) {
-//		var type = element.split(' ');
-//
-//		if ((type[0] === 'message-agent' || type[0] === 'quick-send') && info[0] !== 'agent')
-//			continue;
-//
-//		if (type[2] === 'button') {
-//
-//			var button = document.createElement('input');
-//			button.setAttribute('type', 'button');
-//			button.setAttribute('class', 'entity-element');
-//			button.setAttribute('onclick', 'button_interface(\'' + entity + '\', \'' + element + '\')');
-//			button.setAttribute('value', interface_elements[element]);
-//			div.appendChild(button);
-//
-//		}
-//
-//		if (type[2] === 'label') {
-//
-//			var label = document.createElement('label');
-//			label.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			label.setAttribute('class', 'entity-element');
-//
-//			if (interface_elements[element].toLowerCase() === 'type')
-//				label.innerText = info[0];
-//
-//			if (interface_elements[element].toLowerCase() === 'status')
-//				label.innerText = info[1];
-//
-//			// TODO: implement other label options
-//
-//			var description = document.createElement('label');
-//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			if (interface_elements[element].toLowerCase() === 'messages') {
-//				description.innerText = 'No';
-//				label.innerText = interface_elements[element].toLowerCase();
-//			}
-//			else
-//				description.innerText = interface_elements[element];
-//
-//			div.appendChild(description);
-//			div.appendChild(label);
-//
-//		}
-//
-//		if (type[2] === 'form') {
-//
-//			var text = document.createElement('input');
-//			text.setAttribute('type', 'text');
-//			text.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			text.setAttribute('class', 'entity-element');
-//
-//			var description = document.createElement('label');
-//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			description.innerText = interface_elements[element];
-//
-//			div.appendChild(description);
-//			div.appendChild(text);
-//
-//		}
-//
-//		if (type[2] === 'spinner') {
-//
-//			var number = document.createElement('input');
-//			number.setAttribute('type', 'number');
-//			number.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			number.setAttribute('class', 'entity-element');
-//
-//			// TODO: implement number options
-//
-//			var description = document.createElement('label');
-//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			description.innerText = interface_elements[element];
-//
-//			div.appendChild(description);
-//			div.appendChild(number);
-//
-//		}
-//
-//		if (type[2] === 'list') {
-//
-//			var select = document.createElement('select');
-//			select.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//
-//			if (interface_elements[element].toLowerCase() === 'operations') {
-//
-//				if (info[0] === 'node') {
-//
-//					var start = document.createElement('option');
-//					start.innerText = 'start';
-//					select.appendChild(start);
-//
-//					var stop = document.createElement('option');
-//					stop.innerText = 'stop';
-//					select.appendChild(stop);
-//
-//				}
-//				else {
-//					var operations = JSON.parse(info[2]);
-//
-//					for (var operation in operations) {
-//						var option = document.createElement('option');
-//						option.innerText = operations[operation]['name'].replace('_', ' ');
-//						select.appendChild(option);
-//
-//					}
-//
-//				}
-//			}
-//
-//			// TODO: implement other list options
-//
-//			var description = document.createElement('label');
-//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
-//			description.innerText = interface_elements[element];
-//
-//			div.appendChild(description);
-//			div.appendChild(select);
-//		}
-//
-//		div.appendChild(document.createElement('br'));
-//	}
+
+	for (var idx in info['gui']['children']) {
+		var element = info['gui']['children'][idx]
+		var item = null
+		console.log("rendering: " + element)
+
+		switch (element['type']) {
+			case 'label':
+				item = document.createElement('label');
+				item.setAttribute('id', element['id']);
+				item.innerText = element['value'];
+				break;
+			case 'button':
+				item = document.createElement('input');
+				item.setAttribute('id', element['id']);
+				item.setAttribute('type', 'button');
+				item.setAttribute('value', element['value']);
+				break;
+			default:
+				console.log("Unknown element type: ", element['type']);
+		}
+		div.appendChild(item);
+		div.appendChild(document.createElement('br'));
+	}
+
+	//	for (var element in interface_elements) {
+	//		var type = element.split(' ');
+	//
+	//		if ((type[0] === 'message-agent' || type[0] === 'quick-send') && info[0] !== 'agent')
+	//			continue;
+	//
+	//		if (type[2] === 'button') {
+	//
+	//			var button = document.createElement('input');
+	//			button.setAttribute('type', 'button');
+	//			button.setAttribute('class', 'entity-element');
+	//			button.setAttribute('onclick', 'button_interface(\'' + entity + '\', \'' + element + '\')');
+	//			button.setAttribute('value', interface_elements[element]);
+	//			div.appendChild(button);
+	//
+	//		}
+	//
+	//		if (type[2] === 'label') {
+	//
+	//			var label = document.createElement('label');
+	//			label.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			label.setAttribute('class', 'entity-element');
+	//
+	//			if (interface_elements[element].toLowerCase() === 'type')
+	//				label.innerText = info[0];
+	//
+	//			if (interface_elements[element].toLowerCase() === 'status')
+	//				label.innerText = info[1];
+	//
+	//			// TODO: implement other label options
+	//
+	//			var description = document.createElement('label');
+	//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			if (interface_elements[element].toLowerCase() === 'messages') {
+	//				description.innerText = 'No';
+	//				label.innerText = interface_elements[element].toLowerCase();
+	//			}
+	//			else
+	//				description.innerText = interface_elements[element];
+	//
+	//			div.appendChild(description);
+	//			div.appendChild(label);
+	//
+	//		}
+	//
+	//		if (type[2] === 'form') {
+	//
+	//			var text = document.createElement('input');
+	//			text.setAttribute('type', 'text');
+	//			text.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			text.setAttribute('class', 'entity-element');
+	//
+	//			var description = document.createElement('label');
+	//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			description.innerText = interface_elements[element];
+	//
+	//			div.appendChild(description);
+	//			div.appendChild(text);
+	//
+	//		}
+	//
+	//		if (type[2] === 'spinner') {
+	//
+	//			var number = document.createElement('input');
+	//			number.setAttribute('type', 'number');
+	//			number.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			number.setAttribute('class', 'entity-element');
+	//
+	//			// TODO: implement number options
+	//
+	//			var description = document.createElement('label');
+	//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			description.innerText = interface_elements[element];
+	//
+	//			div.appendChild(description);
+	//			div.appendChild(number);
+	//
+	//		}
+	//
+	//		if (type[2] === 'list') {
+	//
+	//			var select = document.createElement('select');
+	//			select.setAttribute('id', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//
+	//			if (interface_elements[element].toLowerCase() === 'operations') {
+	//
+	//				if (info[0] === 'node') {
+	//
+	//					var start = document.createElement('option');
+	//					start.innerText = 'start';
+	//					select.appendChild(start);
+	//
+	//					var stop = document.createElement('option');
+	//					stop.innerText = 'stop';
+	//					select.appendChild(stop);
+	//
+	//				}
+	//				else {
+	//					var operations = JSON.parse(info[2]);
+	//
+	//					for (var operation in operations) {
+	//						var option = document.createElement('option');
+	//						option.innerText = operations[operation]['name'].replace('_', ' ');
+	//						select.appendChild(option);
+	//
+	//					}
+	//
+	//				}
+	//			}
+	//
+	//			// TODO: implement other list options
+	//
+	//			var description = document.createElement('label');
+	//			description.setAttribute('for', 'interface_' + entity + '_' + type[0] + '_' + type[1] + '_' + type[2]);
+	//			description.innerText = interface_elements[element];
+	//
+	//			div.appendChild(description);
+	//			div.appendChild(select);
+	//		}
+	//
+	//		div.appendChild(document.createElement('br'));
+	//	}
 
 	if (index % 3 === 0) {
 		var line = document.createElement('div');

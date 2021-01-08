@@ -5,7 +5,7 @@ import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementType;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
-import net.xqhs.flash.gui.structure.IdGenerator;
+import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.types.*;
 
 import org.yaml.snakeyaml.Yaml;
@@ -195,7 +195,7 @@ public class PageBuilder {
     public Object buildPage(Element data) throws Exception {
         // generating ids for every element in configuration
         // System.out.println(data);
-        page = IdGenerator.attributeIds(data);
+        page = ElementIdManager.insertIdsInto(data);
         System.out.println(page);
         platformType = PlatformType.WEB;
 

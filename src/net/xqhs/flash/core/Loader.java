@@ -439,8 +439,11 @@ public interface Loader<T extends Entity<?>>
 					return p + D + given_cp;
 				if(searchType == SearchItemType.FILE)
 					for(String dir : DeploymentConfiguration.SOURCE_FILE_DIRECTORIES)
+					{
+						paths.add(dir + D + p + D + given_cp);
 						if(loadCheck(dir + D + p + D + given_cp, searchType, others))
 							return dir + D + p + D + given_cp;
+					}
 			}
 		List<String> clsNames = new LinkedList<>();
 		if(given_cp != null)

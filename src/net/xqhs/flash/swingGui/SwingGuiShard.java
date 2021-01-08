@@ -21,8 +21,8 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
+import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.ElementType;
-import net.xqhs.flash.gui.structure.IdGenerator;
 
 public class SwingGuiShard extends GuiShard {
 	
@@ -47,7 +47,7 @@ public class SwingGuiShard extends GuiShard {
 		switch(event.getType()) {
 		case AGENT_START:
 			if(interfaceStructure != null) {
-				IdGenerator.attributeIds(interfaceStructure);
+				new ElementIdManager().insertIdsInto(interfaceStructure);
 				generate(interfaceStructure, null);
 				window.setVisible(true);
 			}

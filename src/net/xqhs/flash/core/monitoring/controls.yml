@@ -1,0 +1,15 @@
+children:
+  - type: label
+    value: "--"
+    port: name
+  - type: label
+    value: unknown
+    port: status
+  - type: button
+    value: Start
+    port: start
+    role: activate
+  - type: button
+    value: Stop
+    port: stop
+    role: activate
