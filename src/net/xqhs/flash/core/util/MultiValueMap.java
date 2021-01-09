@@ -362,21 +362,39 @@ public class MultiValueMap extends Config implements Serializable {
 		}
 	}
 	
-	public String toSerializedString() throws IOException {
+	/**
+	 * Creates a {@link String} which results from the serialization of the {@link MultiValueMap} instance.
+	 * 
+	 * @return the serialized string.
+	 */
+	public String toSerializedString() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
 			oos.writeObject(this);
 			oos.close();
+		} catch(IOException e) {
+			throw new RuntimeException("Serialization failed", e);
 		}
 		return Base64.getEncoder().encodeToString(baos.toByteArray());
 	}
 	
-	public static MultiValueMap fromSerializedString(String s) throws IOException, ClassNotFoundException {
-		byte[] data = Base64.getDecoder().decode(s);
+	/**
+	 * Attempts to de-serialize a {@link MultiValueMap} instance from a {@link String}.
+	 * 
+	 * @param serialization
+	 *            - the serialized form.
+	 * @return the {@link MultiValueMap} instance extracted from the string.
+	 * @throws ClassNotFoundException
+	 *             when the serialization fails.
+	 */
+	public static MultiValueMap fromSerializedString(String serialization) throws ClassNotFoundException {
+		byte[] data = Base64.getDecoder().decode(serialization);
 		try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
 			MultiValueMap o = (MultiValueMap) ois.readObject();
 			ois.close();
 			return o;
+		} catch(IOException e) {
+			throw new RuntimeException("Serialization failed", e);
 		}
 	}
 }
