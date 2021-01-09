@@ -146,6 +146,23 @@ public class Element implements Cloneable {
 		this.messageContent = messageContent;
 	}
 	
+	public List<Element> getChildren(String port) {
+		List<Element> result = new LinkedList<>();
+		for(Element e : children)
+			if((port == null && e.getPort() == null) || (port != null && port.equals(e.getPort())))
+				result.add(e);
+		return result;
+	}
+	
+	public List<Element> getChildren(String port, String role) {
+		List<Element> result = new LinkedList<>();
+		for(Element e : children)
+			if(((port == null && e.getPort() == null) || (port != null && port.equals(e.getPort())))
+					&& ((role == null && e.getRole() == null) || (role != null && role.equals(e.getRole()))))
+				result.add(e);
+		return result;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject result = new JSONObject();
 		result.put("id", id);
