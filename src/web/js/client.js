@@ -36,15 +36,8 @@ function init() {
 					break;
 				case 'port':
 					console.log("Port output to: ", message['content']);
-					for (var role in message['content']) {
-						var i = 0;
-						for (var value of message['content'][role])
-						{
-							var id = role + i++;
-							if(document.getElementById(id))
-								outputTo(document.getElementById(id), types[id], value);
-						}
-					}
+					for (var id in message['content'])
+						outputTo(document.getElementById(id), types[id], message['content'][id]);
 					break;
 			}
 
@@ -222,9 +215,9 @@ function new_entity(entities, entity) {
 	div.appendChild(select);
 	div.appendChild(name);
 	
-	for (var idx in data[entity]['gui']['children'])
+	for (var idx in data[entity]['children'])
 //		console.log("register type: " + data[entity]['gui']['children'][idx]['type'] + " for " + data[entity]['gui']['children'][idx]['id'])
-		types[data[entity]['gui']['children'][idx]['id']] = data[entity]['gui']['children'][idx]['type'];
+		types[data[entity]['children'][idx]['id']] = data[entity]['children'][idx]['type'];
 
 	//	for (var element in entity_elements) {
 	//		var type = element.split(' ');
@@ -385,8 +378,8 @@ function new_interface(interfaces, entity) {
 
 	var info = data[entity];
 
-	for (var idx in info['gui']['children']) {
-		var element = info['gui']['children'][idx]
+	for (var idx in info['children']) {
+		var element = info['children'][idx]
 		var item = null
 		console.log("rendering: " + element)
 
@@ -401,6 +394,8 @@ function new_interface(interfaces, entity) {
 				item.setAttribute('id', element['id']);
 				item.setAttribute('type', 'button');
 				outputTo(item, element['type'], element['value']);
+//				if(element['role'] == 'activate')
+//					item.setAttribute('onclick', 'button(' +  + ')')
 				break;
 			case 'form':
 				item = document.createElement('input');

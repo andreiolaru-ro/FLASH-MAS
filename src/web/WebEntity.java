@@ -1,6 +1,5 @@
 package web;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import io.vertx.core.AbstractVerticle;
@@ -18,6 +17,7 @@ import net.xqhs.flash.core.monitoring.CentralGUI;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.gui.structure.Element;
+import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
 
 public class WebEntity extends CentralGUI {
@@ -49,7 +49,7 @@ public class WebEntity extends CentralGUI {
 					else if(be.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
 						verticleReady = true;
-						String tosend = cep.getEntities().toString();
+						String tosend = getEntities().toString();
 						vertx.eventBus().send("server-to-client", tosend);
 						
 						// if(!handler) {
@@ -155,6 +155,8 @@ public class WebEntity extends CentralGUI {
 	
 	private Element specification;
 	
+	protected ElementIdManager idManager = new ElementIdManager();
+	
 	private Vertx web;
 	
 	private boolean running = false;
@@ -207,8 +209,25 @@ public class WebEntity extends CentralGUI {
 		cep = (CentralEntityProxy) getAgent();
 	}
 	
+	public JSONObject getEntities() {
+		System.out.println("entities get.");
+		JSONObject resultMap = new JSONObject();
+		entityGUIs.keySet().forEach(name -> resultMap.put(name, entityGUIs.get(name).toJSON()));
+		JSONObject result = new JSONObject();
+		result.put("scope", "global");
+		result.put("subject", "entities list");
+		result.put("content", resultMap);
+		System.out.println("entities get: " + resultMap.toString());
+		return result;
+	}
+	
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
+		super.updateGui(entity, guiSpecification);
+		
+		idManager.removeWithPrefix(entity);
+		idManager.insertIdsInto(guiSpecification, entity);
+		
 		JSONObject tosend = new JSONObject();
 		tosend.put("scope", "entity");
 		tosend.put("subject", "update");
@@ -219,15 +238,19 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public void sendOutput(AgentWave wave) {
-		super.sendOutput(wave);
 		JSONObject tosend = new JSONObject();
 		tosend.put("scope", "port");
-		tosend.put("subject", wave.getFirstDestinationElement());
+		
+		String entity = wave.popDestinationElement();
+		String port = wave.getFirstDestinationElement();
+		tosend.put("subject", idManager.makeID(null, entity, port)); // questionable abuse of makeID
+		
+		Element gui = entityGUIs.get(entity);
 		JSONObject allValues = new JSONObject();
 		for(String role : wave.getContentElements()) {
-			JSONArray values = new JSONArray();
-			values.addAll(wave.getValues(role));
-			allValues.put(role, values);
+			int i = 0;
+			for(Element e : gui.getChildren(port, role))
+				allValues.put(e.getId(), wave.getValues(role).get(i++));
 		}
 		tosend.put("content", allValues);
 		web.eventBus().send("server-to-client", tosend.toString());

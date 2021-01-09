@@ -22,7 +22,7 @@ import net.xqhs.flash.core.util.MultiValueMap;
  * <li>the complete source, representing the complete source endpoint as generated from the path elements.
  * <li>the destinations, as complete endpoints - values of the property {@link #COMPLETE_DESTINATION}.
  * <ul>
- * <li>The intention is that this values should remain unchanged throughout the lifetime of the wave.
+ * <li>The intention is that these values should remain unchanged throughout the lifetime of the wave.
  * <li>There may be multiple destinations for a wave.
  * </ul>
  * <li>path elements of a destination - values of the property {@link #DESTINATION_ELEMENT}.
@@ -34,23 +34,23 @@ import net.xqhs.flash.core.util.MultiValueMap;
  * </ul>
  * </ul>
  * 
- * TODO: add functionality to support multiple destinations. TODO: add functionality to support multiple content
- * elements?
+ * TODO: add functionality to support multiple destinations.
+ * 
+ * TODO: add functionality to support multiple content elements?
  * 
  * 
  * @author Andrei Olaru
  */
-public class AgentWave extends AgentEvent
-{
+public class AgentWave extends AgentEvent {
 	/**
 	 * The serial UID.
 	 */
-	private static final long	serialVersionUID		= 8405841078556036608L;
+	private static final long serialVersionUID = 8405841078556036608L;
 	
 	/**
 	 * The string separating elements of an endpoint address.
 	 */
-	public static final String	ADDRESS_SEPARATOR		= "/";
+	public static final String ADDRESS_SEPARATOR = "/";
 	
 	/**
 	 * The name associated with the content.
@@ -68,34 +68,35 @@ public class AgentWave extends AgentEvent
 	 * The name associated with the elements of one of the destinations.
 	 */
 	public static final String	DESTINATION_ELEMENT		= "destination-element";
-
+	
+	/**
+	 * The {@link MultiValueMap} keys which have special meanings in the wave and are not part of actual content.
+	 */
 	@SuppressWarnings("hiding")
 	protected static final String[] specialKeys = { EVENT_TYPE_PARAMETER_NAME, SOURCE_ELEMENT, COMPLETE_DESTINATION,
 			DESTINATION_ELEMENT };
 	
 	/**
 	 * Creates an agent wave with <b>no</b> destination, with <b>no</b> content.
-     *
+	 *
 	 */
-	public AgentWave()
-	{
+	public AgentWave() {
 		super(AgentEventType.AGENT_WAVE);
 	}
-
+	
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
 	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
 	 * 
 	 * @param content
-	 *                                - the content of the wave.
+	 *            - the content of the wave.
 	 * @param destinationRoot
-	 *                                - the first element of the destination endpoint.
+	 *            - the first element of the destination endpoint.
 	 * @param destinationElements
-	 *                                - other elements of the destination endpoint.
+	 *            - other elements of the destination endpoint.
 	 */
-	public AgentWave(String content, String destinationRoot, String... destinationElements)
-	{
+	public AgentWave(String content, String destinationRoot, String... destinationElements) {
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
 		resetDestination(destinationRoot, destinationElements);
@@ -105,17 +106,23 @@ public class AgentWave extends AgentEvent
 	 * Appends elements to the list of source endpoint elements.
 	 * 
 	 * @param sourceElements
-	 *                           - endpoint elements to add.
+	 *            - endpoint elements to add.
 	 * @return the wave itself.
 	 */
-	public AgentWave addSourceElements(String... sourceElements)
-	{
+	public AgentWave addSourceElements(String... sourceElements) {
 		for(String elem : sourceElements)
 			if(elem.length() > 0)
 				add(SOURCE_ELEMENT, elem);
 		return this;
 	}
 	
+	/**
+	 * Insert a new element of the destination endpoint, before existing elements.
+	 * 
+	 * @param destinationElement
+	 *            - the element to insert.
+	 * @return the wave itself.
+	 */
 	public AgentWave prependDestination(String destinationElement) {
 		addFirst(DESTINATION_ELEMENT, destinationElement);
 		String dest = get(COMPLETE_DESTINATION);
@@ -124,6 +131,13 @@ public class AgentWave extends AgentEvent
 		return this;
 	}
 	
+	/**
+	 * Insert a new element of the destination endpoint, after existing elements.
+	 * 
+	 * @param destinationElement
+	 *            - the element to insert.
+	 * @return the wave itself.
+	 */
 	public AgentWave appendDestination(String destinationElement) {
 		add(DESTINATION_ELEMENT, destinationElement);
 		String dest = get(COMPLETE_DESTINATION);
@@ -136,11 +150,10 @@ public class AgentWave extends AgentEvent
 	 * /** Insert an element at the beginning of the list of source endpoint elements.
 	 * 
 	 * @param sourceElement
-	 *                          - the element that will be the first source endpoint element.
+	 *            - the element that will be the first source endpoint element.
 	 * @return the wave itself.
 	 */
-	public AgentWave addSourceElementFirst(String sourceElement)
-	{
+	public AgentWave addSourceElementFirst(String sourceElement) {
 		addFirst(SOURCE_ELEMENT, sourceElement);
 		return this;
 	}
@@ -148,8 +161,7 @@ public class AgentWave extends AgentEvent
 	/**
 	 * @return the first element of the source endpoint.
 	 */
-	public String getFirstSource()
-	{
+	public String getFirstSource() {
 		return getValue(SOURCE_ELEMENT);
 	}
 	
@@ -157,25 +169,43 @@ public class AgentWave extends AgentEvent
 	 * @return the complete source endpoint, obtained by joining the individual elements with the
 	 *         {@link #ADDRESS_SEPARATOR}.
 	 */
-	public String getCompleteSource()
-	{
+	public String getCompleteSource() {
 		return String.join(ADDRESS_SEPARATOR, getValues(SOURCE_ELEMENT));
 	}
 	
 	/**
 	 * @return the first (complete) destination endpoint.
 	 */
-	public String getCompleteDestination()
-	{
+	public String getCompleteDestination() {
 		return getValue(COMPLETE_DESTINATION);
 	}
 	
 	/**
 	 * @return the next element in the list of (remaining) destination endpoint elements.
 	 */
-	public String getFirstDestinationElement()
-	{
+	public String getFirstDestinationElement() {
 		return getValue(DESTINATION_ELEMENT);
+	}
+	
+	/**
+	 * Removes the first element in the list of destination endpoint elements.
+	 * 
+	 * @return the wave itself.
+	 */
+	public AgentWave removeFirstDestinationElement() {
+		removeFirst(DESTINATION_ELEMENT);
+		return this;
+	}
+	
+	/**
+	 * Gets and removes the first element of the destination endpoint.
+	 * 
+	 * @return the next element in the list of (remaining) destination endpoint elements, which is also removed.
+	 */
+	public String popDestinationElement() {
+		String result = get(DESTINATION_ELEMENT);
+		removeFirst(DESTINATION_ELEMENT);
+		return result;
 	}
 	
 	/**
@@ -183,13 +213,12 @@ public class AgentWave extends AgentEvent
 	 * as the list of elements.
 	 * 
 	 * @param destinationRoot
-	 *                                - the first element of the destination endpoint.
+	 *            - the first element of the destination endpoint.
 	 * @param destinationElements
-	 *                                - other elements of the destination endpoint.
+	 *            - other elements of the destination endpoint.
 	 * @return the wave itself.
 	 */
-	public AgentWave resetDestination(String destinationRoot, String... destinationElements)
-	{
+	public AgentWave resetDestination(String destinationRoot, String... destinationElements) {
 		if(isSet(COMPLETE_DESTINATION))
 			removeKey(COMPLETE_DESTINATION);
 		String join = String.join(ADDRESS_SEPARATOR, destinationElements);
@@ -202,21 +231,9 @@ public class AgentWave extends AgentEvent
 	}
 	
 	/**
-	 * Removes the first element in the list of destination endpoint elements.
-	 * 
-	 * @return the wave itself.
-	 */
-	public AgentWave removeFirstDestinationElement()
-	{
-		removeFirst(DESTINATION_ELEMENT);
-		return this;
-	}
-	
-	/**
 	 * @return the content of the wave.
 	 */
-	public String getContent()
-	{
+	public String getContent() {
 		return getValue(CONTENT);
 	}
 	
@@ -224,8 +241,7 @@ public class AgentWave extends AgentEvent
 	 * @return all the keys in this {@link MultiValueMap} which are not realted to routing or agent event type. The
 	 *         {@value #CONTENT} key is added as the first key.
 	 */
-	public List<String> getContentElements()
-	{
+	public List<String> getContentElements() {
 		List<String> result = new LinkedList<>(getKeys());
 		for(String k : specialKeys)
 			result.remove(k);
@@ -243,18 +259,17 @@ public class AgentWave extends AgentEvent
 	 * If the start is <code>null</code> the result will begin with a slash.
 	 * 
 	 * @param start
-	 *                     - start of the address. Special cases:
-	 *                     <ul>
-	 *                     <li><code>null</code> - the path will start with the first element.
-	 *                     <li>{@link #ADDRESS_SEPARATOR} - the path will start with {@value #ADDRESS_SEPARATOR},
-	 *                     followed by the first element
-	 *                     </ul>
+	 *            - start of the address. Special cases:
+	 *            <ul>
+	 *            <li><code>null</code> - the path will start with the first element.
+	 *            <li>{@link #ADDRESS_SEPARATOR} - the path will start with {@value #ADDRESS_SEPARATOR}, followed by the
+	 *            first element
+	 *            </ul>
 	 * @param elements
-	 *                     - other elements in the address
+	 *            - other elements in the address
 	 * @return the resulting address.
 	 */
-	public static String makePath(String start, String... elements)
-	{
+	public static String makePath(String start, String... elements) {
 		String ret = (start != null) ? start : "";
 		for(String elem : elements)
 			if(elem != null && elem.length() > 0)
@@ -271,13 +286,12 @@ public class AgentWave extends AgentEvent
 	 * If the path does not begin with the given prefix, the prefix will be ignored.
 	 * 
 	 * @param path
-	 *                           - the endpoint description to split.
+	 *            - the endpoint description to split.
 	 * @param prefixToRemove
-	 *                           - the prefix to remove from the endpoint.
+	 *            - the prefix to remove from the endpoint.
 	 * @return the elements of the path, excluding the prefix.
 	 */
-	public static String[] pathToElements(String path, String prefixToRemove)
-	{
+	public static String[] pathToElements(String path, String prefixToRemove) {
 		String barePath = path.startsWith(prefixToRemove) ? path.substring(prefixToRemove.length()) : path;
 		return (barePath.startsWith(ADDRESS_SEPARATOR) ? barePath.substring(1) : barePath).split(ADDRESS_SEPARATOR);
 	}
@@ -291,13 +305,12 @@ public class AgentWave extends AgentEvent
 	 * If the path does not begin with the given prefix, the prefix will be ignored.
 	 * 
 	 * @param path
-	 *                   - the endpoint description to split.
+	 *            - the endpoint description to split.
 	 * @param prefix
-	 *                   - the prefix of the endpoint to consider as the first element.
+	 *            - the prefix of the endpoint to consider as the first element.
 	 * @return the elements of the path, including the prefix.
 	 */
-	public static String[] pathToElementsWith(String path, String prefix)
-	{
+	public static String[] pathToElementsWith(String path, String prefix) {
 		String[] elements = pathToElements(path, prefix);
 		if(!path.startsWith(prefix))
 			return elements;
