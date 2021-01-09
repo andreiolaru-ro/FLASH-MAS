@@ -27,17 +27,14 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
-import org.json.simple.JSONObject;
 
 /**
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
@@ -367,7 +364,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
 	{
-		event.lock();
+		// TODO: commented this because agent events may need to be processed further. Think if this is a good idea.
+		// event.lock();
 		
 		if(!canPostEvent(event))
 			return false;
