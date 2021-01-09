@@ -1,7 +1,5 @@
 package net.xqhs.flash.core.monitoring;
 
-import java.io.IOException;
-
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -13,7 +11,9 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
+import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.gui.GuiShard;
 
 public class MonitoringShard extends AgentShardGeneral {
 	/**
@@ -49,9 +49,21 @@ public class MonitoringShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
+			System.out.println(event);
 			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
-			parseAgentWaveEvent(((AgentWave) event).getContent());
+			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement();
+			if(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
+				wave.removeFirstDestinationElement();
+				wave.removeKey(AgentWave.SOURCE_ELEMENT);
+				String port = wave.getFirstDestinationElement();
+				wave.addSourceElements(port);
+				wave.resetDestination(AgentWave.ADDRESS_SEPARATOR);
+				((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation()))
+						.postActiveInput(port, wave);
+			}
+			else
+				parseAgentWaveEvent(((AgentWave) event).getContent());
 			break;
 		case AGENT_START:
 			li("Shard []/[] started.", thisAgent, SHARD_ENDPOINT);
@@ -106,11 +118,7 @@ public class MonitoringShard extends AgentShardGeneral {
 		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperations.GUI_OUTPUT.getOperation());
 		update.put(OperationUtils.PARAMETERS, getAgent().getEntityName());
 		output.prependDestination(thisAgent);
-		try {
-			update.put(OperationUtils.VALUE, output.toSerializedString());
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
+		update.put(OperationUtils.VALUE, output.toSerializedString());
 		update.put(OperationUtils.PROXY, "");
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}

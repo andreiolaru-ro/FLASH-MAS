@@ -1,6 +1,5 @@
 package net.xqhs.flash.core.monitoring;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -213,6 +212,17 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	public boolean parseReceivedMsg(AgentWave wave) {
 		String source = wave.getFirstSource();
 		String content = wave.getContent();
+		if(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
+			wave.removeFirstDestinationElement();
+			String entity = wave.popDestinationElement();
+			wave.removeFirstDestinationElement().recomputeCompleteDestination()
+					.prependDestination(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation())
+					.prependDestination(MonitoringShard.SHARD_ENDPOINT).prependDestination(entity);
+			wave.addSourceElementFirst(getName());
+			centralMessagingShard.sendMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
+					wave.serializeContent());
+			return true;
+		}
 		Object obj = JSONValue.parse(content);
 		if(obj == null) {
 			le("null/unparsable message content from []: ", source, content);
@@ -282,7 +292,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			AgentWave wave;
 			try {
 				wave = (AgentWave) MultiValueMap.fromSerializedString((String) jsonObj.get(OperationUtils.VALUE));
-			} catch(ClassNotFoundException | IOException e) {
+			} catch(ClassNotFoundException e) {
 				le("Unable to unpack AgentWave from ", entity);
 				return false;
 			}

@@ -24,19 +24,21 @@ public class TestShard extends AgentShardGeneral {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		if(event.getType() == AgentEventType.AGENT_START)
+		if(event.getType() == AgentEventType.AGENT_START) {
 			((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
 					.sendOutput(new AgentWave(Integer.valueOf(0).toString(), "port1"));
-		new Timer().schedule(new TimerTask() {
-			@SuppressWarnings("synthetic-access")
-			@Override
-			public void run() {
-				int value = Integer.parseInt(((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-						.getInput("port1").get(AgentWave.CONTENT));
-				((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-						.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), "port1"));
-			}
-		}, 0, 1000);
+			new Timer().schedule(new TimerTask() {
+				@SuppressWarnings("synthetic-access")
+				@Override
+				public void run() {
+					int value = Integer
+							.parseInt(((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
+									.getInput("port1").get(AgentWave.CONTENT));
+					((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
+							.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), "port1"));
+				}
+			}, 0, 10000);
+		}
 		if(event.getType() == AgentEventType.AGENT_WAVE)
 			li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
 	}

@@ -42,25 +42,20 @@ public class OperationUtils {
 		/**
 		 * Operation for updating the status of an entity.
 		 */
-		STATUS_UPDATE("status_update"),
-		
+		STATUS_UPDATE,
 		/**
 		 * Operation for updating the GUI of an entity.
 		 */
-		GUI_UPDATE("gui_update"),
+		GUI_UPDATE,
 		
-		GUI_OUTPUT("gui_output"),
+		GUI_OUTPUT,
+		
+		GUI_INPUT_TO_ENTITY,
 		
 		;
 		
-		private String operation;
-		
-		MonitoringOperations(String operation) {
-			this.operation = operation;
-		}
-		
 		public String getOperation() {
-			return operation;
+			return name().toLowerCase();
 		}
 	}
 	

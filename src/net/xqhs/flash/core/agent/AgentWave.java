@@ -98,7 +98,16 @@ public class AgentWave extends AgentEvent {
 	 */
 	public AgentWave(String content, String destinationRoot, String... destinationElements) {
 		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
+		try {
+			// is this a serialized content?
+			MultiValueMap contentMap = MultiValueMap.fromSerializedString(content);
+			for(String key : contentMap.getKeys())
+				addAll(key, contentMap.getValues(key));
+		} catch(Exception e) {
+			// not a serialized content
+			add(CONTENT, content);
+		}
+		// if the serialization already contained destination data, it will be lost.
 		resetDestination(destinationRoot, destinationElements);
 	}
 	
@@ -113,36 +122,6 @@ public class AgentWave extends AgentEvent {
 		for(String elem : sourceElements)
 			if(elem.length() > 0)
 				add(SOURCE_ELEMENT, elem);
-		return this;
-	}
-	
-	/**
-	 * Insert a new element of the destination endpoint, before existing elements.
-	 * 
-	 * @param destinationElement
-	 *            - the element to insert.
-	 * @return the wave itself.
-	 */
-	public AgentWave prependDestination(String destinationElement) {
-		addFirst(DESTINATION_ELEMENT, destinationElement);
-		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
-		return this;
-	}
-	
-	/**
-	 * Insert a new element of the destination endpoint, after existing elements.
-	 * 
-	 * @param destinationElement
-	 *            - the element to insert.
-	 * @return the wave itself.
-	 */
-	public AgentWave appendDestination(String destinationElement) {
-		add(DESTINATION_ELEMENT, destinationElement);
-		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + destinationElement);
 		return this;
 	}
 	
@@ -188,26 +167,35 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Removes the first element in the list of destination endpoint elements.
+	 * Insert new elements of the destination endpoint, after existing elements.
 	 * 
+	 * @param destinationElements
+	 *            - the elements to insert.
 	 * @return the wave itself.
 	 */
-	public AgentWave removeFirstDestinationElement() {
-		removeFirst(DESTINATION_ELEMENT);
+	public AgentWave appendDestination(String... destinationElements) {
+		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
+		String dest = get(COMPLETE_DESTINATION);
+		removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + String.join(ADDRESS_SEPARATOR, destinationElements));
 		return this;
 	}
-	
+
 	/**
-	 * Gets and removes the first element of the destination endpoint.
+	 * Insert a new element of the destination endpoint, before existing elements.
 	 * 
-	 * @return the next element in the list of (remaining) destination endpoint elements, which is also removed.
+	 * @param destinationElement
+	 *            - the element to insert.
+	 * @return the wave itself.
 	 */
-	public String popDestinationElement() {
-		String result = get(DESTINATION_ELEMENT);
-		removeFirst(DESTINATION_ELEMENT);
-		return result;
+	public AgentWave prependDestination(String destinationElement) {
+		addFirst(DESTINATION_ELEMENT, destinationElement);
+		String dest = get(COMPLETE_DESTINATION);
+		removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
+		return this;
 	}
-	
+
 	/**
 	 * Clears all destinations and destinations elements, and sets a new destination, both in <i>complete</i> form and
 	 * as the list of elements.
@@ -219,14 +207,50 @@ public class AgentWave extends AgentEvent {
 	 * @return the wave itself.
 	 */
 	public AgentWave resetDestination(String destinationRoot, String... destinationElements) {
-		if(isSet(COMPLETE_DESTINATION))
-			removeKey(COMPLETE_DESTINATION);
-		String join = String.join(ADDRESS_SEPARATOR, destinationElements);
-		add(COMPLETE_DESTINATION, destinationRoot + (join.length() > 0 ? ADDRESS_SEPARATOR + join : ""));
 		if(isSet(DESTINATION_ELEMENT))
 			removeKey(DESTINATION_ELEMENT);
 		add(DESTINATION_ELEMENT, destinationRoot);
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
+		return recomputeCompleteDestination();
+	}
+	
+	/**
+	 * Completely rewrites the {@link #COMPLETE_DESTINATION} element with the assembly of {@link #DESTINATION_ELEMENT}
+	 * values.
+	 * 
+	 * @return the wave itself.
+	 */
+	public AgentWave recomputeCompleteDestination() {
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, String.join(ADDRESS_SEPARATOR, getValues(DESTINATION_ELEMENT)));
+		return this;
+	}
+
+	/**
+	 * Gets and removes the first element of the destination endpoint.
+	 * 
+	 * WARNING: the complete destination of the wave is not changed by this method, such as to preserve the original
+	 * destination of the wave.
+	 * 
+	 * @return the next element in the list of (remaining) destination endpoint elements, which is also removed.
+	 */
+	public String popDestinationElement() {
+		String result = get(DESTINATION_ELEMENT);
+		removeFirst(DESTINATION_ELEMENT);
+		return result;
+	}
+
+	/**
+	 * Removes the first element in the list of destination endpoint elements.
+	 * 
+	 * WARNING: the complete destination of the wave is not changed by this method, such as to preserve the original
+	 * destination of the wave.
+	 * 
+	 * @return the wave itself.
+	 */
+	public AgentWave removeFirstDestinationElement() {
+		removeFirst(DESTINATION_ELEMENT);
 		return this;
 	}
 	
@@ -248,6 +272,22 @@ public class AgentWave extends AgentEvent {
 		result.remove(CONTENT);
 		result.add(0, CONTENT);
 		return result;
+	}
+	
+	public String serializeContent() {
+		List<String> keys = getContentElements();
+		if(keys.size() <= 1 && CONTENT.equals(keys.get(0)) && getValues(CONTENT).size() == 1)
+			// there is only one content element
+			return get(CONTENT);
+		MultiValueMap contentMap = new MultiValueMap();
+		for(String key : getContentElements())
+			contentMap.addAll(key, getValues(key));
+		return contentMap.toSerializedString();
+	}
+	
+	@SuppressWarnings({ "static-method", "unused" })
+	public AgentWave fromSerializedContent(String serializedContent) {
+		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**

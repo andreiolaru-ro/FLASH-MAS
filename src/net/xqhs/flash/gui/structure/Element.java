@@ -163,6 +163,13 @@ public class Element implements Cloneable {
 		return result;
 	}
 	
+	public Element getChildWithId(String id) {
+		for(Element e : children)
+			if(id.equals(e.getId()))
+				return e;
+		return null;
+	}
+	
 	public JSONObject toJSON() {
 		JSONObject result = new JSONObject();
 		result.put("id", id);

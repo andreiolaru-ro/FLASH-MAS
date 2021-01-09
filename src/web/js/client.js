@@ -1,12 +1,13 @@
 var eb;
-var data;
-var types;
-var entities_id = 'entities_list';
-var interfaces_id = 'interfaces';
+var specification_data; // id -> Element, as JSON
+var types; // id -> Element type
+var active_ports; // activator id -> list of ids in the port
+var entities_id = 'entities_list'; // id for the entities list div
+var interfaces_id = 'interfaces'; // id for the interfaces space div
 var specification = false;
 var entity_elements = {};
 var interface_elements = {};
-var selected_entities = {};
+var selected_entities = {}; // entities whose checkboxes are checked
 var favoriteAgent = null;
 var content = null;
 
@@ -16,28 +17,31 @@ function init() {
 	eb.onopen = () => {
 		console.log('Eventbus opened');
 		eb.registerHandler('server-to-client', (_, message) => {
-//			console.log('message here');
+			//			console.log('message here');
 			message = JSON.parse(message.body);
 
 			switch (message['scope']) {
 				case 'global':
 					switch (message['subject']) {
 						case 'entities list':
-							data = message['content'];
-							types = {};
-							console.log('new data:', data);
+							specification_data = message['content']['specification'];
+							types = message['content']['types'];
+							active_ports = message['content']['activators'];
+							console.log('new data:', specification_data);
+							console.log("new types: ", types);
+							console.log("new activators: ", active_ports);
 
-							for (var entity in data) {
+							for (var entity in specification_data) {
 								new_entity(document.getElementById(entities_id), entity);
 							}
-							console.log("Types: ", types);
 							break;
 					}
 					break;
 				case 'port':
 					console.log("Port output to: ", message['content']);
 					for (var id in message['content'])
-						outputTo(document.getElementById(id), types[id], message['content'][id]);
+						if (document.getElementById(id))
+							outputTo(document.getElementById(id), types[id], message['content'][id]);
 					break;
 			}
 
@@ -149,7 +153,7 @@ function init() {
                 }
             }
 */        });
-		eb.send('client-to-server', 'init');
+//		eb.send('client-to-server', 'init');
 		eb.registerHandler('server-to-client-agent-message', (error, message) => {
 			var messages = JSON.parse(message.body);
 			for (var agent in messages) {
@@ -214,10 +218,10 @@ function new_entity(entities, entity) {
 	div.appendChild(checkbox);
 	div.appendChild(select);
 	div.appendChild(name);
-	
-	for (var idx in data[entity]['children'])
-//		console.log("register type: " + data[entity]['gui']['children'][idx]['type'] + " for " + data[entity]['gui']['children'][idx]['id'])
-		types[data[entity]['children'][idx]['id']] = data[entity]['children'][idx]['type'];
+
+	//	for (var idx in specification_data[entity]['children'])
+	////		console.log("register type: " + data[entity]['gui']['children'][idx]['type'] + " for " + data[entity]['gui']['children'][idx]['id'])
+	//		types[specification_data[entity]['children'][idx]['id']] = specification_data[entity]['children'][idx]['type'];
 
 	//	for (var element in entity_elements) {
 	//		var type = element.split(' ');
@@ -369,6 +373,25 @@ function outputTo(element, type, value) {
 	}
 }
 
+function inputFrom(element_id) {
+	var element = document.getElementById(element_id)
+	if (!element) {
+		console.log("Element not found:", element_id)
+		return null
+	}
+	switch (types[element_id]) {
+		case 'label':
+			return element.innerText
+		case 'button':
+			return element.getAttribute('value')
+		case 'form':
+			return element.value
+		default:
+			console.log("Unknown element type: ", types[element_id]);
+			return null
+	}
+}
+
 function new_interface(interfaces, entity) {
 	var index = Object.keys(selected_entities).length;
 
@@ -376,7 +399,7 @@ function new_interface(interfaces, entity) {
 	div.setAttribute('class', 'interface');
 	div.setAttribute('id', 'interface_' + entity);
 
-	var info = data[entity];
+	var info = specification_data[entity];
 
 	for (var idx in info['children']) {
 		var element = info['children'][idx]
@@ -394,8 +417,8 @@ function new_interface(interfaces, entity) {
 				item.setAttribute('id', element['id']);
 				item.setAttribute('type', 'button');
 				outputTo(item, element['type'], element['value']);
-//				if(element['role'] == 'activate')
-//					item.setAttribute('onclick', 'button(' +  + ')')
+				if (element['role'] == 'activate')
+					item.setAttribute('onclick', 'activate(\'' + element['id'] + '\')');
 				break;
 			case 'form':
 				item = document.createElement('input');
@@ -588,6 +611,19 @@ function checkbox(entity) {
 
 	//console.log(selected_entities);
 };
+
+function activate(element_id) {
+	if (!(element_id in active_ports)) {
+		console.log("Activated element not in active ports:", element_id)
+		return
+	}
+	var result = {}
+	for (var id of active_ports[element_id])
+		result[id] = inputFrom(id)
+	console.log("Input result: ", result)
+	msg = {"scope": "port", "subject": element_id, "content": result}
+	eb.send('client-to-server', JSON.stringify(msg));
+}
 
 function button(entity, element) {
 	var operations = {};
