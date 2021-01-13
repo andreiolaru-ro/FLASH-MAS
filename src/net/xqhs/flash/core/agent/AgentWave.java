@@ -87,10 +87,13 @@ public class AgentWave extends AgentEvent {
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
-	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
+	 * A <i>complete</i> destination will be added by assembling the elements of the destination.
+	 * <p>
+	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if so,
+	 * the content will be unpacked accordingly.
 	 * 
 	 * @param content
-	 *            - the content of the wave.
+	 *            - the content of the wave, that can be the result of previous serialization.
 	 * @param destinationRoot
 	 *            - the first element of the destination endpoint.
 	 * @param destinationElements
@@ -98,17 +101,19 @@ public class AgentWave extends AgentEvent {
 	 */
 	public AgentWave(String content, String destinationRoot, String... destinationElements) {
 		super(AgentEventType.AGENT_WAVE);
-		try {
-			// is this a serialized content?
-			MultiValueMap contentMap = MultiValueMap.fromSerializedString(content);
-			for(String key : contentMap.getKeys())
-				addAll(key, contentMap.getValues(key));
-		} catch(Exception e) {
-			// not a serialized content
-			add(CONTENT, content);
-		}
+		if(content != null)
+			try {
+				// is this a serialized content?
+				MultiValueMap contentMap = MultiValueMap.fromSerializedString(content);
+				for(String key : contentMap.getKeys())
+					addAll(key, contentMap.getValues(key));
+			} catch(Exception e) {
+				// not a serialized content
+				add(CONTENT, content);
+			}
+		
 		// if the serialization already contained destination data, it will be lost.
-		resetDestination(destinationRoot, destinationElements);
+		resetDestination(destinationRoot, destinationElements != null ? destinationElements : new String[] {});
 	}
 	
 	/**
@@ -119,6 +124,8 @@ public class AgentWave extends AgentEvent {
 	 * @return the wave itself.
 	 */
 	public AgentWave addSourceElements(String... sourceElements) {
+		if(sourceElements == null)
+			throw new IllegalArgumentException("Argument is null");
 		for(String elem : sourceElements)
 			if(elem.length() > 0)
 				add(SOURCE_ELEMENT, elem);
@@ -133,6 +140,8 @@ public class AgentWave extends AgentEvent {
 	 * @return the wave itself.
 	 */
 	public AgentWave addSourceElementFirst(String sourceElement) {
+		if(sourceElement == null)
+			throw new IllegalArgumentException("Argument is null");
 		addFirst(SOURCE_ELEMENT, sourceElement);
 		return this;
 	}
@@ -174,13 +183,15 @@ public class AgentWave extends AgentEvent {
 	 * @return the wave itself.
 	 */
 	public AgentWave appendDestination(String... destinationElements) {
+		if(destinationElements == null)
+			throw new IllegalArgumentException("Argument is null");
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		String dest = get(COMPLETE_DESTINATION);
 		removeKey(COMPLETE_DESTINATION);
 		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + String.join(ADDRESS_SEPARATOR, destinationElements));
 		return this;
 	}
-
+	
 	/**
 	 * Insert a new element of the destination endpoint, before existing elements.
 	 * 
@@ -195,7 +206,7 @@ public class AgentWave extends AgentEvent {
 		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
 		return this;
 	}
-
+	
 	/**
 	 * Clears all destinations and destinations elements, and sets a new destination, both in <i>complete</i> form and
 	 * as the list of elements.
@@ -226,7 +237,7 @@ public class AgentWave extends AgentEvent {
 		add(COMPLETE_DESTINATION, String.join(ADDRESS_SEPARATOR, getValues(DESTINATION_ELEMENT)));
 		return this;
 	}
-
+	
 	/**
 	 * Gets and removes the first element of the destination endpoint.
 	 * 
@@ -240,7 +251,7 @@ public class AgentWave extends AgentEvent {
 		removeFirst(DESTINATION_ELEMENT);
 		return result;
 	}
-
+	
 	/**
 	 * Removes the first element in the list of destination endpoint elements.
 	 * 
@@ -274,7 +285,14 @@ public class AgentWave extends AgentEvent {
 		return result;
 	}
 	
-	public String serializeContent() {
+	/**
+	 * Creates a {@link String} that represents the serialization of all of the waves <b>content</b> (the keys returned
+	 * by {@link #getContentElements()}). This string can be given to {@link #fromSerializedContent(String)} or to the
+	 * {@link #AgentWave(String, String, String...)} constructor.
+	 * 
+	 * @return the {@link String} form of the content in this wave.
+	 */
+	public String getSerializedContent() {
 		List<String> keys = getContentElements();
 		if(keys.size() <= 1 && CONTENT.equals(keys.get(0)) && getValues(CONTENT).size() == 1)
 			// there is only one content element
@@ -285,7 +303,13 @@ public class AgentWave extends AgentEvent {
 		return contentMap.toSerializedString();
 	}
 	
-	@SuppressWarnings({ "static-method", "unused" })
+	/**
+	 * Unimplemented.
+	 * 
+	 * @param serializedContent
+	 * @return the wave itself.
+	 */
+	@SuppressWarnings({ "static-method" })
 	public AgentWave fromSerializedContent(String serializedContent) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
