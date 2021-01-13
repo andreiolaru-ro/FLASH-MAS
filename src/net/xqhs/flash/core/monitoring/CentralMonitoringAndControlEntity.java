@@ -26,7 +26,8 @@ import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.core.util.OperationUtils;
-import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
+import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
+import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
@@ -136,6 +137,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	protected static final String OTHER_CONTROL_SHARD_ENDPOINT = ControlShard.SHARD_ENDPOINT;
 	
 	/**
+	 * Prefix to names of ports inserted by the central entity.
+	 */
+	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
+	
+	/**
 	 * Used for unknown entity names, statuses, etc.
 	 */
 	public static final String UNKNOWN = "none";
@@ -212,15 +218,31 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	public boolean parseReceivedMsg(AgentWave wave) {
 		String source = wave.getFirstSource();
 		String content = wave.getContent();
-		if(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
+		if(MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
+			// the first destination is removed
+			// destinations is changed from: gui_input_to_entity / entity / gui / port
+			// to: entity / monitoring / gui_input_to_entity / gui / port
 			wave.removeFirstDestinationElement();
 			String entity = wave.popDestinationElement();
-			wave.removeFirstDestinationElement().recomputeCompleteDestination()
-					.prependDestination(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation())
-					.prependDestination(MonitoringShard.SHARD_ENDPOINT).prependDestination(entity);
-			wave.addSourceElementFirst(getName());
+			
+			String port = wave.getValues(AgentWave.DESTINATION_ELEMENT)
+					.get(wave.getValues(AgentWave.DESTINATION_ELEMENT).size() - 1);
+			if(port.startsWith(CONTROL_OPERATIONS_PREFIX)) { // actually a control operation
+				ControlOperation op = ControlOperation
+						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));
+				AgentWave ctrlWave = new AgentWave(null, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
+						.addSourceElements(SHARD_ENDPOINT);
+				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
+						ctrlWave.getSerializedContent());
+			}
+			else { // normal input
+				wave.removeFirstDestinationElement().recomputeCompleteDestination()
+						.prependDestination(MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation())
+						.prependDestination(MonitoringShard.SHARD_ENDPOINT).prependDestination(entity);
+				wave.addSourceElementFirst(getName());
+			}
 			centralMessagingShard.sendMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
-					wave.serializeContent());
+					wave.getSerializedContent());
 			return true;
 		}
 		Object obj = JSONValue.parse(content);
@@ -260,7 +282,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	private boolean manageOperation(JSONObject jsonObj) {
 		String op = (String) jsonObj.get(OperationUtils.NAME);
-		if(op.equals(MonitoringOperations.STATUS_UPDATE.getOperation())) {
+		if(op.equals(MonitoringOperation.STATUS_UPDATE.getOperation())) {
 			String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
 			String value = (String) jsonObj.get(OperationUtils.VALUE);
 			entitiesState.put(params, value);
@@ -276,7 +298,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			// });
 			return true;
 		}
-		if(op.equals(MonitoringOperations.GUI_UPDATE.getOperation())) {
+		if(op.equals(MonitoringOperation.GUI_UPDATE.getOperation())) {
 			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
 			Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
 			entitiesData.get(entity).setGuiSpecification(interfaceStructure);
@@ -287,7 +309,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			}
 			return gui.updateGui(entity, interfaceStructure);
 		}
-		if(op.equals(MonitoringOperations.GUI_OUTPUT.getOperation())) {
+		if(op.equals(MonitoringOperation.GUI_OUTPUT.getOperation())) {
 			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
 			AgentWave wave;
 			try {

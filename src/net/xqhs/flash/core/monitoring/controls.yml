@@ -1,15 +1,15 @@
 children:
   - type: label
     value: "--"
-    port: name
+    port: control-name
   - type: label
     value: unknown
-    port: status
+    port: control-status
   - type: button
     value: Start
-    port: start
+    port: control-start
     role: activate
   - type: button
     value: Stop
-    port: stop
+    port: control-stop
     role: activate

@@ -11,7 +11,7 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
-import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
+import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GuiShard;
 
@@ -53,7 +53,7 @@ public class MonitoringShard extends AgentShardGeneral {
 			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement();
-			if(MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
+			if(MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
 				wave.removeFirstDestinationElement();
 				wave.removeKey(AgentWave.SOURCE_ELEMENT);
 				String port = wave.getFirstDestinationElement();
@@ -101,21 +101,21 @@ public class MonitoringShard extends AgentShardGeneral {
 	
 	private void sendStatusUpdate(String status) {
 		JSONObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperations.STATUS_UPDATE.getOperation(), "", status,
+				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status,
 				getAgent().getEntityName());
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
 	
 	public void sendGuiUpdate(String interfaceSpecification) {
 		JSONObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperations.GUI_UPDATE.getOperation(), "", interfaceSpecification,
+				OperationUtils.MonitoringOperation.GUI_UPDATE.getOperation(), "", interfaceSpecification,
 				getAgent().getEntityName());
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
 	
 	public void sendOutput(AgentWave output) {
 		JSONObject update = new JSONObject();
-		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperations.GUI_OUTPUT.getOperation());
+		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperation.GUI_OUTPUT.getOperation());
 		update.put(OperationUtils.PARAMETERS, getAgent().getEntityName());
 		output.prependDestination(thisAgent);
 		update.put(OperationUtils.VALUE, output.toSerializedString());

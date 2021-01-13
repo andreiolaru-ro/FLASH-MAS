@@ -5,40 +5,42 @@ import org.json.simple.JSONObject;
 
 public class OperationUtils {
 	
-	public static enum ControlOperations {
+	public static enum ControlOperation {
 		/**
 		 * Operation for starting an agent.
 		 */
-		START("start"),
+		START,
 		/**
 		 * Operation for stopping an agent.
 		 */
-		STOP("stop"),
+		STOP,
 		/**
 		 * Operation for pausing the simulation.
 		 */
-		PAUSE_SIMULATION("pause_simulation"),
+		PAUSE_SIMULATION,
 		/**
 		 * Operation for starting simulation.
 		 */
-		START_SIMULATION("start_simulation"),
+		START_SIMULATION,
 		/**
 		 * Operation for stopping the simulation.
 		 */
-		STOP_SIMULATION("stop_simulation");
-		
-		private String operation;
-		
-		ControlOperations(String operation) {
-			this.operation = operation;
-		}
+		STOP_SIMULATION;
 		
 		public String getOperation() {
-			return operation;
+			return name().toLowerCase();
+		}
+		
+		public static ControlOperation fromOperation(String name) {
+			try {
+				return valueOf(name.toUpperCase());
+			} catch(IllegalArgumentException e) {
+				return null;
+			}
 		}
 	}
 	
-	public static enum MonitoringOperations {
+	public static enum MonitoringOperation {
 		/**
 		 * Operation for updating the status of an entity.
 		 */
@@ -56,6 +58,14 @@ public class OperationUtils {
 		
 		public String getOperation() {
 			return name().toLowerCase();
+		}
+		
+		public static MonitoringOperation fromOperation(String name) {
+			try {
+				return valueOf(name.toUpperCase());
+			} catch(IllegalArgumentException e) {
+				return null;
+			}
 		}
 	}
 	

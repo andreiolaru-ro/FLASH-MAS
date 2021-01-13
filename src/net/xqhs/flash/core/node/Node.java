@@ -101,7 +101,7 @@ public class Node extends Unit implements Entity<Node>
 						le("[] entity not found in the context of [].", param, name);
 						return;
 					}
-					if(operation.equals(OperationUtils.ControlOperations.START.getOperation()))
+					if(operation.equals(OperationUtils.ControlOperation.START.getOperation()))
 						if(entity.start()) {
 							lf("[] was started by parent [].", param, name);
 							return;
@@ -172,14 +172,14 @@ public class Node extends Unit implements Entity<Node>
 	}
 
     /**
-	 * It takes all available {@link OperationUtils.ControlOperations} and build up for each of them
+	 * It takes all available {@link OperationUtils.ControlOperation} and build up for each of them
 	 * a {@link JSONObject} containing relevant information.
      * @return
      *          - a json array indicating all details about each operation.
      */
 	protected JSONArray configureOperations() {
         JSONArray operations = new JSONArray();
-        for(OperationUtils.ControlOperations op : OperationUtils.ControlOperations.values()) {
+        for(OperationUtils.ControlOperation op : OperationUtils.ControlOperation.values()) {
 			JSONObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
 			operations.add(o);
 		}
@@ -217,7 +217,7 @@ public class Node extends Unit implements Entity<Node>
 		if(getName() == null) return false;
 		String status = isRunning ? "RUNNING" : "STOPPED";
 		JSONObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperations.STATUS_UPDATE.getOperation(),
+				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(),
 				"", status, getName());
 		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
 	}

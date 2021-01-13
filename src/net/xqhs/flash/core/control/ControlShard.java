@@ -1,15 +1,12 @@
 package net.xqhs.flash.core.control;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.OperationUtils;
+import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 
 public class ControlShard extends AgentShardGeneral {
@@ -51,46 +48,26 @@ public class ControlShard extends AgentShardGeneral {
 		case AGENT_WAVE:
 			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
-			parseAgentWave(event);
-			break;
-		case AGENT_START:
-			li("Shard []/[] started.", thisAgent, SHARD_ENDPOINT);
-			break;
-		case AGENT_STOP:
-			li("Shard []/[] stopped.", thisAgent, SHARD_ENDPOINT);
-			break;
-		case SIMULATION_START:
-			li("Shard []/[] started simulation.", thisAgent, SHARD_ENDPOINT);
-			break;
-		case SIMULATION_PAUSE:
-			li("Shard []/[] paused simulation.", thisAgent, SHARD_ENDPOINT);
-			break;
-		default:
-			break;
-		}
-	}
-	
-	protected void parseAgentWave(AgentEvent event) {
-		if(!((AgentWave) event).getFirstDestinationElement().equals(SHARD_ENDPOINT))
-			return;
-		Object obj = JSONValue.parse(((AgentWave) event).getContent());
-		if(obj == null)
-			return;
-		if(obj instanceof JSONObject) {
-			JSONObject jo = (JSONObject) obj;
-			if(jo.get(OperationUtils.NAME) != null) {
-				String operation = (String) jo.get(OperationUtils.NAME);
-				switch(operation) {
-				case "stop":
-					getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
-					break;
-				case "start_simulation":
+			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement();
+			String operation = wave.getFirstDestinationElement();
+			if(operation == null)
+				li("Unknown control operation [].", operation);
+			else
+				switch(ControlOperation.fromOperation(operation)) {
+				case START_SIMULATION:
 					getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
 					break;
+				case STOP:
+					getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
+					break;
 				default:
+					li("Unhandled control operation [].", operation);
 					break;
 				}
-			}
+			break;
+		default:
+			// nothing to do.
+			break;
 		}
 	}
 	

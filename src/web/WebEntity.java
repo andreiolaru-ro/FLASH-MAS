@@ -19,7 +19,7 @@ import net.xqhs.flash.core.monitoring.CentralGUI;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.OperationUtils.MonitoringOperations;
+import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
@@ -258,9 +258,19 @@ public class WebEntity extends CentralGUI {
 		return true;
 	}
 	
+	/**
+	 * Posts an {@link AgentWave} to the {@link CentralEntityProxy} when an active input arrives from the web client.
+	 * <ul>
+	 * <li>The source is the shard designation (gui).
+	 * <li>The destination is {@link MonitoringOperation#GUI_INPUT_TO_ENTITY} / entity / gui / port
+	 * <li>The wave contains all the values for each role in the specification.
+	 * </ul>
+	 * 
+	 * @param msg
+	 *            - the data received from the web client.
+	 */
 	protected void activeInput(JsonObject msg) {
-		AgentWave wave = new AgentWave(null, MonitoringOperations.GUI_INPUT_TO_ENTITY.getOperation());
-		wave.removeKey(AgentWave.CONTENT);
+		AgentWave wave = new AgentWave(null, MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation());
 		wave.addSourceElements(getShardDesignation().toString());
 		Element activatedElement = idManager.getElement(msg.getString("subject"));
 		if(activatedElement == null) {
