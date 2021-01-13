@@ -34,6 +34,9 @@ import net.xqhs.util.config.Config;
  * than for {@link Object} values (we call Object values those values which are of any other type than String). A name
  * can have both String and Object values associated, but some methods may fail if values are not accessed correctly.
  * <p>
+ * <code>null</code> values are allowed, but <code>get</code> methods also return <code>null</code> when names are not
+ * found.
+ * <p>
  * It is implemented as a map with {@link String} keys and with values that are a {@link List} of Objects. Using a map
  * improves finding entries. Using a list instead of a set ensures that entries with the same key stay in the same order
  * as added, which may be an advantage.
@@ -220,7 +223,9 @@ public class MultiValueMap extends Config implements Serializable {
 	public List<String> getValues(String name) {
 		List<String> ret = new ArrayList<>();
 		for(Object value : getObjects(name))
-			if(value instanceof String)
+			if(value == null)
+				ret.add(null);
+			else if(value instanceof String)
 				ret.add((String) value);
 			else
 				throw new IllegalStateException("Value for key [" + name + "] cannot be converted to String");
