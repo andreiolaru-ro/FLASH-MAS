@@ -20,3 +20,7 @@ Or, how to build an .apk and test FLASH-MAS on your Android device
 
 # Linux
 //todo
+
+
+# References
+[1] https://developer.android.com/studio/build/building-cmdline
