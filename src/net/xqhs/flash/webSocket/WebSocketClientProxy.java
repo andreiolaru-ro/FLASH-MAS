@@ -4,15 +4,15 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 
 /**
  * The {@link WebSocketClientProxy} manages communication with the server.
@@ -21,7 +21,8 @@ import net.xqhs.flash.core.support.MessageReceiver;
  */
 public class WebSocketClientProxy extends Unit {
     {
-        setUnitName("websocket-client").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("websocket-client");
+		setLoggerType(PlatformUtils.platformLogType());
     }
 
     protected WebSocketClient client;

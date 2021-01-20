@@ -124,7 +124,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	}
 	
 	{
-		setUnitName("M&C").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("M&C");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	/**
 	 * Endpoint element for this shard.
@@ -224,9 +225,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			// to: entity / monitoring / gui_input_to_entity / gui / port
 			wave.removeFirstDestinationElement();
 			String entity = wave.popDestinationElement();
-			
 			String port = wave.getValues(AgentWave.DESTINATION_ELEMENT)
 					.get(wave.getValues(AgentWave.DESTINATION_ELEMENT).size() - 1);
+			
 			if(port.startsWith(CONTROL_OPERATIONS_PREFIX)) { // actually a control operation
 				ControlOperation op = ControlOperation
 						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));

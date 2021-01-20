@@ -7,8 +7,6 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.LoggerSimple;
-import net.xqhs.util.logging.Unit;
 
 public class ControlShardTest extends AgentShardGeneral
 {
@@ -31,7 +29,8 @@ public class ControlShardTest extends AgentShardGeneral
     public static final String	FUNCTIONALITY	                = "CONTROL";
 
     {
-        setUnitName("control-shard").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("control-shard");
+		setLoggerType(PlatformUtils.platformLogType());
     }
 
     /**

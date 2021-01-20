@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import net.xqhs.flash.pc.PCClassFactory;
-import net.xqhs.util.logging.logging.LogWrapper.LoggerType;
+import net.xqhs.util.logging.LogWrapper.LoggerType;
 
 /**
  * Platform-related functionality. All functions should be static.
@@ -69,7 +69,7 @@ public class PlatformUtils
 	public static LoggerType platformLogType()
 	{
 		// return LoggerType.GLOBAL;
-		return LoggerType.CONSOLE;
+		return LoggerType.MODERN;
 	}
 	
 	/**

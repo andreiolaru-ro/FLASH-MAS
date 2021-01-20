@@ -18,7 +18,6 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.PlatformUtils;
-import test.compositePingPong.Boot;
 
 /**
  * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
@@ -47,7 +46,8 @@ public class PingBackTestComponent extends AgentShardGeneral
 	String						thisAgent		    = null;
 
 	{
-		setUnitName("pong-shard").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("pong-shard");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 
 	/**

@@ -22,6 +22,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -150,6 +151,7 @@ public class Node extends Unit implements Entity<Node>
 		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		setLoggerType(PlatformUtils.platformLogType());
+		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
 	
 	/**

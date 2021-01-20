@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -17,6 +14,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 
 /**
  *  The {@link WebSocketServerEntity} class manages the routing of messages between different entities. It knows the
@@ -27,7 +27,8 @@ import net.xqhs.flash.core.Entity;
 public class WebSocketServerEntity extends Unit implements Entity
 {
 	{
-		setUnitName("websocket-server").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("websocket-server");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	private static final int		SERVER_STOP_TIME	= 10;

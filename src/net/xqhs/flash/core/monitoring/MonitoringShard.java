@@ -32,7 +32,8 @@ public class MonitoringShard extends AgentShardGeneral {
 	protected static final String SHARD_ENDPOINT = StandardAgentShard.MONITORING.shardName();
 	
 	{
-		setUnitName("mon").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("mon");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	public MonitoringShard() {

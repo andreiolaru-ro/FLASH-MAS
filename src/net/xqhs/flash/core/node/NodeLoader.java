@@ -45,7 +45,8 @@ import net.xqhs.util.logging.Unit;
 public class NodeLoader extends Unit implements Loader<Node> {
 	{
 		// sets logging parameters: the name of the log and the type (which is given by the current platform)
-		setUnitName("boot").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("boot");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	/**
@@ -210,7 +211,6 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			le("Could not load [][].", nodeCatName, nodeName);
 			return null;
 		}
-		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
 		
 		Map<String, Entity<?>> loaded = new HashMap<>();
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);

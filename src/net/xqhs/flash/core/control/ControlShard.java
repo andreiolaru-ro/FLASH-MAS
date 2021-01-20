@@ -26,7 +26,8 @@ public class ControlShard extends AgentShardGeneral {
 	String thisAgent = null;
 	
 	{
-		setUnitName("control-shard").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("control-shard");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	/**

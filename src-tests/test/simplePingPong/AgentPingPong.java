@@ -21,7 +21,6 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.local.LocalPylon;
 import net.xqhs.util.logging.Unit;
 
 /**

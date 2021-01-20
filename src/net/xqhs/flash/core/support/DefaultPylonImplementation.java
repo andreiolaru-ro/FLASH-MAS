@@ -14,14 +14,12 @@ package net.xqhs.flash.core.support;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -52,7 +50,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		this.setUnitName(getName()).setLogLevel(Level.ALL);
+		this.setUnitName(getName());
 		return true;
 	}
 	
