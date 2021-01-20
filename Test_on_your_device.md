@@ -7,7 +7,7 @@ Or, how to build an .apk and test FLASH-MAS on your personal Android phone.
 - Android Studio
 - Java
 - Gradle wrapper
-- others
+- Git
 
 You can install all of those compoments, with a simple instalation [2] of Android Studio, by following these steps:
 1. First, be sure to download the lastest version: https://developer.android.com/studio
@@ -36,10 +36,12 @@ To see a list of all available build tasks for your project, execute tasks: <br>
 So, we will build a simple APK debug build: <br>
 `gradlew assembleDebug` <br>
 
-This creates an APK named `app-debug.apk` in `FLASH-MAS\android-deployment\app\build\outputs\apk\debug` directory. The file is already signed with the debug key and aligned with zipalign, so you can immediately install it on a device. 
+This creates an APK named `app-debug.apk` in `FLASH-MAS\android-deployment\app\build\outputs\apk\debug` directory. The file is already signed with the debug key and aligned with zipalign, so you can immediately install it on a device. [1]
 
 # Linux
 
+On Linux environment, the steps are similar. For 64-bit machines, you will need aditional libraries. More info at [2].
+You can access the FLASH-MAS repository in a similar method as described for Windows. Regarding the build of the APK, the steps are identical.
 
 
 # References
