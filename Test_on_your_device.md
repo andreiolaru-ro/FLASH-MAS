@@ -41,8 +41,12 @@ This creates an APK named `app-debug.apk` in `FLASH-MAS\android-deployment\app\b
 # Linux
 
 On Linux environment, the steps are similar. For 64-bit machines, you will need aditional libraries. More info at [2].
-You can access the FLASH-MAS repository in a similar method as described for Windows. Regarding the build of the APK, the steps are identical.
+You can access the FLASH-MAS repository in a similar method as described for Windows.
 
+## Build APK (debug)
+Regarding the build of the APK, the steps are almost identical. So, after changing directory to the `android-deployment` folder, you can run <br>
+`./gradlew assembleDebug` <br>
+to create the APK file.
 
 # References
 [1] https://developer.android.com/studio/build/building-cmdline <br>
