@@ -70,7 +70,7 @@ System model
 	* while the `Entity` interface specifies both `addContext` and `addGeneralContext`, it is **strongly recommended** that `addGeneralContext` *always works* for instances of the proper context (as some loaders, such as `SimpleLoader`, only use `addGeneralContext` to add context to entities.
 	
 **Life-cycle**
-* an entity is instance by a loader (see *Loaders* below)
+* an entity is instanced by a loader (see *Loaders* below)
 	* some pre-instantiation
 
 **Access control**
