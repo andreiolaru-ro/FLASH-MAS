@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2018 Andrei Olaru.
-  
-  This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
-  
-  Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
-  
-  Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+	Copyright (C) 2021 Andrei Olaru.
+
+	This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved 
+	with this project.
+
+	Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General 
+	Public License as published by the Free Software Foundation, either version 3 of the License, or any 
+	later version.
+
+	Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
+	the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+	License for more details.
+
+	You should have received a copy of the GNU General Public License along with Flash-MAS. If not, see 
+	<http://www.gnu.org/licenses/>.
 -->
+
 <scen:scenario xmlns:scen="http://www.example.org/scenarioSchema3"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.example.org/scenarioSchema3 ../../../../../src-schema/scenarioSchema3.xsd ">
@@ -24,8 +31,7 @@
 				<scen:component name="parametric" />
 				<scen:component name="visualizable" />
 				<scen:component name="messaging" />
-				<scen:component name="testing"
-					classpath="scenario.examples.PingTestComponent">
+				<scen:component name="testing" classpath="scenario.examples.PingTestComponent">
 					<scen:parameter name="other agent" value="AgentB" />
 				</scen:component>
 				<scen:parameter name="loader" value="composite" />
@@ -35,8 +41,7 @@
 				<scen:component name="parametric" />
 				<scen:component name="visualizable" />
 				<scen:component name="messaging" />
-				<scen:component name="testing"
-					classpath="scenario.examples.PingTestComponent">
+				<scen:component name="testing" classpath="scenario.examples.PingTestComponent">
 					<scen:parameter name="other agent" value="AgentA" />
 				</scen:component>
 				<scen:parameter name="loader" value="composite" />

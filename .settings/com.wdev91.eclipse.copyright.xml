@@ -30,7 +30,7 @@ You should have received a copy of the GNU General Public License along with ${p
 	<header contentId="org.eclipse.pde.schema" excluded="true" />
 	<header contentId="org.eclipse.pde.targetFile" excluded="true" />
 	<header contentId="org.eclipse.pde.productFile" excluded="true" />
-	<header contentId="org.eclipse.core.runtime.xml" postBlankLines="0" lineFormat="false" preserveFirstLine="true">
+	<header contentId="org.eclipse.core.runtime.xml" postBlankLines="1" lineFormat="false" preserveFirstLine="true">
 		<beginLine><![CDATA[<!--]]></beginLine>
 		<linePrefix><![CDATA[  ]]></linePrefix>
 		<endLine><![CDATA[-->]]></endLine>

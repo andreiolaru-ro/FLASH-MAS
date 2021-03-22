@@ -1,12 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2018 Andrei Olaru.
-  
-  This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
-  
-  Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
-  
-  Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+	Copyright (C) 2021 Andrei Olaru.
+
+	This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved 
+	with this project.
+
+	Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General 
+	Public License as published by the Free Software Foundation, either version 3 of the License, or any 
+	later version.
+
+	Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
+	the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
+	License for more details.
+
+	You should have received a copy of the GNU General Public License along with Flash-MAS. If not, see 
+	<http://www.gnu.org/licenses/>.
 -->
+
+<scenario xmlns="http://flash.xqhs.net/deployment-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
+
+	<config here="127.0.0.1:9002">
+		<parameter name="node" value="Central" />
+	</config>
+
+	<support kind="websocket" />
+
+	<package>ChatAgents</package>
+
+	<agent name="AgentA">
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentA" />
+
+		<component name="parametric" />
+		<component name="visualizable">
+			<parameter name="GUI" value="ChatAgentGui" />
+		</component>
+		<component name="messaging" />
+		<component name="cognitive" />
+		<component name="s_claim">
+			<parameter name="class" value="ChatAgent" />
+			<parameter name="java-code" value="ChatFunctions" />
+			<parameter name="otherAgent" value="agentB" />
+		</component>
+	</agent>
+	<agent>
+		<parameter name="loader" value="composite" />
+		<parameter name="name" value="agentB" />
+
+		<component name="parametric" />
+		<component name="visualizable">
+			<parameter name="GUI" value="ChatAgentGui" />
+		</component>
+		<component name="messaging" />
+		<component name="cognitive" />
+		<component name="s_claim">
+			<parameter name="class" value="ChatAgent" />
+			<parameter name="java-code" value="ChatFunctions" />
+			<parameter name="otherAgent" value="agentA" />
+		</component>
+	</agent>
+</scenario>
