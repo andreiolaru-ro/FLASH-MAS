@@ -13,7 +13,10 @@
    version="1.1"
    id="svg8"
    sodipodi:docname="logo.svg"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   inkscape:export-filename="/home/andreiolaru/Andrei/Dev/Workspace/Flash-MAS/identity/logo.png"
+   inkscape:export-xdpi="300.31628"
+   inkscape:export-ydpi="300.31628">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -23,13 +26,13 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="97.920547"
-     inkscape:cy="66.723347"
+     inkscape:zoom="5.6"
+     inkscape:cx="45.935989"
+     inkscape:cy="96.724888"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
-     showgrid="false"
+     showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1080"
      inkscape:window-x="1600"
@@ -40,10 +43,19 @@
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
      inkscape:snap-bbox-midpoints="true"
-     inkscape:snap-global="false">
+     inkscape:snap-global="true"
+     inkscape:lockguides="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:object-nodes="false"
+     inkscape:snap-others="false">
     <inkscape:grid
        type="xygrid"
        id="grid835" />
+    <sodipodi:guide
+       position="32.473247,301.61041"
+       orientation="1,0"
+       id="guide907" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -61,13 +73,29 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       sodipodi:type="star"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:5.33869;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path833-3-6"
+       sodipodi:sides="6"
+       sodipodi:cx="64.822914"
+       sodipodi:cy="31.75"
+       sodipodi:r1="39.709545"
+       sodipodi:r2="32.979137"
+       sodipodi:arg1="1.0475179"
+       sodipodi:arg2="1.5711167"
+       inkscape:flatsided="true"
+       inkscape:rounded="0.101"
+       inkscape:randomized="0"
+       d="M 84.666669,66.145834 C 81.19269,68.150053 48.42982,68.139557 44.957126,66.133113 41.484432,64.126668 25.112086,35.747943 25.113371,31.737279 c 0.0013,-4.010664 16.391809,-32.3788933 19.865788,-34.3831125 3.473979,-2.0042193 36.236849,-1.9937237 39.709543,0.012721 3.472695,2.00644456 19.845038,30.3851696 19.843758,34.3958336 -0.001,4.010664 -16.391812,32.378893 -19.865791,34.383113 z"
+       transform="matrix(0.14980598,0,0,0.14989287,7.7586535,26.059893)" />
     <rect
-       style="opacity:1;fill:none;stroke:#d2d2d2;stroke-width:0.1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect897"
-       width="14.552083"
-       height="14.552083"
-       x="25.135416"
-       y="3.9687507"
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
+       id="rect905"
+       width="17.595688"
+       height="17.595688"
+       x="23.656263"
+       y="2.8872292"
        rx="0.030691665"
        ry="0.030722622" />
     <path
@@ -201,6 +229,43 @@
        id="path903"
        cx="33.866562"
        cy="5.3384204"
+       rx="0.37207302"
+       ry="0.37207305" />
+    <path
+       sodipodi:nodetypes="ccccccc"
+       inkscape:connector-curvature="0"
+       id="path1244-3"
+       d="m 20.542452,23.303988 -6.319548,7.221794 c 6.289194,-5e-6 2.387738,0 4.297929,0 l -2.021617,5.616949 6.319546,-7.038564 h -4.297929 z"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.52777px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="20.905798"
+       y="26.685228"
+       id="text883-6"
+       transform="skewX(-12.497822)"><tspan
+         sodipodi:role="line"
+         id="tspan881-7"
+         x="20.905798"
+         y="26.685228"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52777px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">F</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.11667px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="23.788471"
+       y="26.128363"
+       id="text883-5-5"
+       transform="skewX(-9.0747802)"><tspan
+         sodipodi:role="line"
+         id="tspan881-3-3"
+         x="23.788471"
+         y="26.128363"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">MAS</tspan></text>
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
+       id="path903-5"
+       cx="18.835491"
+       cy="25.308865"
        rx="0.37207302"
        ry="0.37207305" />
   </g>
