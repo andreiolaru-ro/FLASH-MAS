@@ -1,5 +1,5 @@
----------------------------------------------
-Copyright (C) 2018 Andrei Olaru.
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
 
 This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
 
@@ -8,8 +8,7 @@ Flash-MAS is free software: you can redistribute it and/or modify it under the t
 Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
-
----------------------------------------------
+--------------------------------------------- -->
 
 
 FLASH-MAS contributors:
@@ -18,14 +17,34 @@ FLASH-MAS contributors:
     * Andrei Olaru <cs@andreiolaru.ro>
   
   * Websockets support
-    * Florina Nastasoiu <florina.nastasoiu@gmail.com>
+    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
     * past modeling and implementations:
       * Vlad Tălmaciu <vlad.talmaciu@gmail.com>
       * Cosmin Mihai <yonutix.mc@gmail.com>
+  
+  * Monitoring and control (currently merged into guiWork)
+    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+    
+  * Android development (currently a separate project)
+    * Daniel Berbece <daniel.berbece97@gmail.com>
+  
+  * Web application (currently merged into guiWork)
+    * Andrei Mihu <andreimihu280997@gmail.com>
+  
+  * Automatic interface generation (currently merged into guiWork)
+    * Florin Mihalache <florin.razvan.mihalache@gmail.com>
+    
+  * MPI and synchronous communication (currently unmerged)
+    * Ștefania Popescu <stefania.s.popescu@gmail.com>
+  
+  * HPC work
+    * Andrada Hristu <andrada.hristu@gmail.com>
+    
+  * ROS-based communication (currently unmerged)
+    * Laura Cucu <laurat.cucu@gmail.com>
     
   * S-CLAIM parser and interpreter
     * Marius-Tudor Benea <tudorbenea@gmail.com>
-    * Andrei Olaru
 	
 
 
