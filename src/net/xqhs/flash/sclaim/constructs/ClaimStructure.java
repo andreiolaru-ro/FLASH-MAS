@@ -14,7 +14,7 @@ package net.xqhs.flash.sclaim.constructs;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.LoggerClassic;
 import net.xqhs.util.logging.UnitComponentExt;
 
 /**
@@ -79,7 +79,7 @@ public class ClaimStructure extends ClaimConstruct
 		// TODO
 		//java.util.logging.Logger log = java.util.logging.Logger.getLogger(unitName);
 		
-		Logger log = (UnitComponentExt) new UnitComponentExt().setUnitName(unitName);
+		LoggerClassic log = new UnitComponentExt(unitName);
 		ClaimStructure structure = parseString(str, log);
 		
 		//Log.exitLogger(unitName);
@@ -95,7 +95,7 @@ public class ClaimStructure extends ClaimConstruct
 	 * @param log
 	 *            - log to be used by the method, in order to show messages
 	 */
-	public static ClaimStructure parseString(String str, Logger log)
+	public static ClaimStructure parseString(String str, LoggerClassic log)
 	{
 		Vector<ClaimConstruct> fields = new Vector<ClaimConstruct>();
 		

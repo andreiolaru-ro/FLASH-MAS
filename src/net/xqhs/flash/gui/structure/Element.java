@@ -9,8 +9,6 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import florin.Utils;
-
 /**
  * Element class represents an element from GUI interface (e.g. button, label, container, text box, spinner)
  */
@@ -189,20 +187,20 @@ public class Element implements Cloneable {
 	public String toString() {
 		String tab = "\t";
 		StringBuilder result = new StringBuilder();
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		result.append("id: ").append(id).append('\n');
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		result.append("type: ").append(type).append('\n');
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		result.append("port: ").append(port).append('\n');
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		result.append("value: ").append(value).append('\n');
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		result.append("role: ").append(role).append('\n');
-		result.append(Utils.repeat(tab, counter));
+		result.append(repeat(tab, counter));
 		if(blockType != null) {
 			result.append("blockType: ").append(blockType).append('\n');
-			result.append(Utils.repeat(tab, counter));
+			result.append(repeat(tab, counter));
 		}
 		result.append("children: ");
 		if(children != null) {
@@ -220,6 +218,14 @@ public class Element implements Cloneable {
 		}
 		result.append('\n');
 		return result.toString();
+	}
+	
+	protected static String repeat(String str, int count) {
+		StringBuilder res = new StringBuilder();
+		for(int i = 0; i < count; i++) {
+			res.append(str);
+		}
+		return res.toString();
 	}
 	
 	@Override
