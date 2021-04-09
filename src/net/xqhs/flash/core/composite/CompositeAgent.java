@@ -33,7 +33,7 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.LoggerSimple.Level;
+import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
@@ -220,7 +220,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
 	 * the {@link #log(String, Object...)} method.
 	 */
-	protected UnitComponent									localLog					= (UnitComponent) new UnitComponent()
+	@SuppressWarnings("deprecation")
+	protected UnitComponent	localLog		= new UnitComponent()
 			.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 	/**
 	 * This switch activates the use of the {@link #localLog}.
@@ -364,7 +365,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 */
 	protected boolean postAgentEvent(AgentEvent event)
 	{
-		event.lock();
+		// TODO: commented this because agent events may need to be processed further. Think if this is a good idea.
+		// event.lock();
 		
 		if(!canPostEvent(event))
 			return false;

@@ -125,12 +125,29 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * The default directory for deployment files.
 	 */
 	public static final String			DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
+	/**
+	 * Directories containing source files (especially for looking up various files).
+	 */
+	public static final String[]	SOURCE_FILE_DIRECTORIES	= { "src", "src-testing", "src-tests", "src-examples" };
 	
 	/**
 	 * Local IDs of default created entities.
 	 */
 	public static final List<String>	autoCreated						= new LinkedList<>();
-	
+
+
+	/**
+	 *  Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 */
+	public static       boolean         isCentralNode                   = true;
+
+	/**
+	 * Type for net.xqhs.flash.core.monitoring and control entity.
+	 * */
+	public static final String MONITORING_TYPE                          = "net/xqhs/flash/core/monitoring";
+
+	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "Monitoring&Control_Entity";
+
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
 	 * tree while parsing CLI arguments.

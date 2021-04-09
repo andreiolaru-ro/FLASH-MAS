@@ -10,7 +10,8 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
 
-*"Easy for beginners, powerful to experts"*
+
+**"Easy for beginners, powerful to experts"**
 
 
 Current targets
@@ -78,8 +79,8 @@ System model
 	* while the `Entity` interface specifies both `addContext` and `addGeneralContext`, it is **strongly recommended** that `addGeneralContext` *always works* for instances of the proper context (as some loaders, such as `SimpleLoader`, only use `addGeneralContext` to add context to entities.
 	
 **Life-cycle**
-* an entity is instance by a loader (see *Loaders* below)
-	* some pre-instantiation
+ * an entity is instanced by a loader (see *Loaders* below)
+  * some pre-instantiation
 
 **Access control**
 * anyone with a reference to an entity is able to control it (start / stop / add/remove context)
@@ -139,7 +140,7 @@ Yes, for the cases where instantiating a class to create an entity is not enough
 * (tATAmI-2 name -> FLASH-MAS name)
 * simulation (in terms of classes in the code) -> deployment
 * simulation (in terms of the process of running an experiment) -> simulation
-* visualization -> monitoring / control
+* visualization -> net.xqhs.flash.core.monitoring / control
 * component -> feature -> shard
 * platform -> support infrastructure + pylon
 	* the support infrastructure is the system-spanning virtual entity that offers services such as mobility

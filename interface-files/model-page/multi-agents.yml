@@ -1,0 +1,19 @@
+children:
+  - port: agentA
+    role: agent
+    children: # elemente din container-ul unui agent
+      - type: button
+        role: activate
+        port: port1
+      - type: form
+        role: name
+        port: port1
+      - type: form
+        role: value
+        port: port1
+  - port: agentB
+    role: agent
+    children:
+      - type: output
+        role: data
+        port: port2

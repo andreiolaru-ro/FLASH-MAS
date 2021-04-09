@@ -16,8 +16,8 @@ import java.util.List;
 
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
-import net.xqhs.util.logging.LoggerSimple.Level;
-import net.xqhs.util.logging.logging.Logging;
+import net.xqhs.util.logging.Logger.Level;
+import net.xqhs.util.logging.MasterLog;
 
 /**
  * Class that boots a Flash-MAS instance.
@@ -26,6 +26,7 @@ import net.xqhs.util.logging.logging.Logging;
  */
 public class FlashBoot
 {
+	// public static ByteArrayOutputStream stream = null;
 	/**
 	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
 	 * 
@@ -34,9 +35,17 @@ public class FlashBoot
 	 */
 	public static void main(String[] args)
 	{
-		Logging.getMasterLogging().setLogLevel(Level.ALL);
-		
+		MasterLog.setLogLevel(Level.ALL);
+
+		// stream = new ByteArrayOutputStream();
+		// GlobalLogWrapper.setLogStream(stream);
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+		// try {
+		// Thread.sleep(20000);
+		// } catch(InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 		for(Node node : nodes)
 			node.start();
 	}

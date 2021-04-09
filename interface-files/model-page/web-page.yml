@@ -1,0 +1,72 @@
+layout: horizontal
+global:
+  - type: label
+    port: node-name
+    value: Node
+  - type: button
+    port: node-start
+    role: activate
+    value: Start
+  - type: button
+    port: node-stop
+    role: activate
+    value: Stop
+  - type: button
+    port: pause-simulation
+    role: activate
+    value: Pause simulation
+  - type: button
+    port: start-simulation
+    role: activate
+    value: Start simulation
+  - type: button
+    port: stop-simulation
+    role: activate
+    value: Stop simulation
+  - type: container
+    port: entities # special port
+    # to do add specs for one entity (reduced interface)
+    # what is default: select, entity name, these 3 buttons
+    #children: # to be added from JS in web page, skipped from generator
+    #  - type: button
+    #    value: check
+    #    port: check-simulation
+interfaces:
+  - type: label
+    role: entity-type
+    port: interface-entity-info
+    value: Type
+  - type: label
+    role: entity-status
+    port: interface-entity-info
+    value: Status
+  - type: button
+    role: interface-entity-start
+    value: Start
+    port: interface-entity-control
+  - type: button
+    role: interface-entity-stop
+    value: Stop
+    port: interface-entity-control
+  - type: form
+    role: content
+    port: message-agent
+    value: Write the message
+  - type: form
+    role: target
+    port: message-agent
+    value: Write the name of agent
+  - type: button
+    role: activate
+    value: Send
+    port: message-agent
+  - type: label
+    role: show-messages
+    port: message-agent
+    value: Messages
+  - type: button
+    role: activate
+    port: quick-send
+    favoriteAgent: AgentA # for quick send
+    messageContent: some-message-for-agent # for quick send
+    value: Quick send message

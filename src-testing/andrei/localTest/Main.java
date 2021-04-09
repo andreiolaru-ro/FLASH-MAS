@@ -30,6 +30,7 @@ class TestAgent implements Agent {
 	private String					name;
 	private AbstractMessagingShard	messagingShard;
 	private MessagingPylonProxy		pylon;
+<<<<<<< HEAD
 	
 	public ShardContainer proxy = new ShardContainer() {
 		@Override
@@ -62,6 +63,40 @@ class TestAgent implements Agent {
 			return null;
 		}
 		
+=======
+
+	public ShardContainer proxy = new ShardContainer() {
+		@Override
+		public void postAgentEvent(AgentEvent event) {
+			if(event instanceof AgentWave)
+				System.out
+						.println(((AgentWave) event).getContent() + " de la " + ((AgentWave) event).getCompleteSource()
+								+ " la " + ((AgentWave) event).getCompleteDestination());
+			int message = Integer.parseInt(((AgentWave) event).getContent());
+			if(message < 5) {
+				Thread eventThread = new Thread() {
+					@Override
+					public void run() {
+						getMessagingShard().sendMessage(getMessagingShard().getAgentAddress(),
+								((AgentWave) event).getCompleteSource(), Integer.toString(message + 1));
+					}
+				};
+				eventThread.run();
+			}
+		}
+
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation) {
+			// not supported
+			return null;
+		}
+
+>>>>>>> refs/heads/guiWork
 	};
 	
 	public TestAgent(String name) {

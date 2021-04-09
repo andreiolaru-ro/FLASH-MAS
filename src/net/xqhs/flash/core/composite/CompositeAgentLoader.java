@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import net.xqhs.flash.core.CategoryName;
@@ -60,7 +61,7 @@ public class CompositeAgentLoader implements Loader<Agent>
 	/**
 	 * The {@link ClassFactory} instance to use for loading classes.
 	 */
-	ClassFactory					classLoader;
+	ClassFactory	classLoader;
 	/**
 	 * The packages configured in the deployment.
 	 */
@@ -106,14 +107,15 @@ public class CompositeAgentLoader implements Loader<Agent>
 				{
 					// get shard class
 					String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+					List<String> checked = new LinkedList<>();
 					// test given class, if any
 					if(shardClass != null)
-						shardClass = Loader.autoFind(classLoader, packages, shardClass, null, null, null, null);
+						shardClass = Loader.autoFind(classLoader, packages, shardClass, null, null, null, checked);
 					if(shardClass == null)
 					{
 						if(shardName == null)
 						{
-							log.error(logPre
+							log.le(logPre
 									+ "Shard has neither name nor class specified. Shard will not be available.");
 							continue;
 						}
@@ -127,38 +129,39 @@ public class CompositeAgentLoader implements Loader<Agent>
 											.getRecommendedShardImplementation(shardDesignation);
 									if(recommendedClass != null)
 									{
-										log.trace("Pylon [] recommends [] shard at classpath [].",
+										log.lf("Pylon [] recommends [] shard at classpath [].",
 												contextEntity.getEntityName(), shardName, recommendedClass);
 										shardClass = recommendedClass;
 										break;
 									}
-									log.trace("Pylon [] does not recommend a []/[] shard.",
+									log.lf("Pylon [] does not recommend a []/[] shard.",
 											contextEntity.getEntityName(), shardName, shardDesignation);
 								}
 						if(shardClass == null)
 							shardClass = Loader.autoFind(classLoader, packages, null, shardName, null,
-									CategoryName.SHARD.s(), null);
+									CategoryName.SHARD.s(), checked);
 					}
 					if(shardClass == null)
 						shardClass = Loader.autoFind(classLoader, packages, shardName, shardName, null,
-								CategoryName.SHARD.s(), null);
+								CategoryName.SHARD.s(), checked);
 					if(shardClass == null)
 					{
-						log.error(logPre + "Shard class not specified / not found for shard [" + shardName
-								+ "]. Shard will not be available.");
+						log.le(logPre
+								+ "Shard class not specified / not found for shard []. Shard will not be available. Checked paths: ",
+								shardName, checked);
 						continue;
 					}
 					
 					if(classLoader.canLoadClass(shardClass))
 					{
-						log.trace(logPre + "shard [" + shardName + "] can be loaded");
+						log.lf(logPre + "shard [" + shardName + "] can be loaded");
 						if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
 							shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
 						shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
 					}
 					else
 					{
-						log.error(logPre + "Shard class [" + shardName + " | " + shardClass
+						log.le(logPre + "Shard class [" + shardName + " | " + shardClass
 								+ "] not found; it will not be loaded.");
 						continue;
 					}
@@ -203,20 +206,21 @@ public class CompositeAgentLoader implements Loader<Agent>
 				for(MultiTreeMap shardConfig : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTrees(shardName))
 				{
 					String shardClass = shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
+					shardConfig.addAll(CategoryName.PACKAGE.s(), packages);
 					if(shardClass != null)
 						try
 						{
 							AgentShard shard = (AgentShard) classLoader.loadClassInstance(shardClass, null, true);
-							log.trace(logPre + "Shard [] created for agent [] from classpath []. now configuring.",
+							log.lf(logPre + "Shard [] created for agent [] from classpath []. now configuring.",
 									shardName, agentName, shardClass);
 							if(shard.configure(shardConfig))
-								log.trace(logPre + "Shard [] for agent [] configured.", shardName, agentName);
+								log.lf(logPre + "Shard [] for agent [] configured.", shardName, agentName);
 							else
-								log.error(logPre + "Shard [] for agent [] configuration failed.", shardName, agentName);
+								log.le(logPre + "Shard [] for agent [] configuration failed.", shardName, agentName);
 							agent.addShard(shard);
 						} catch(Exception e)
 						{
-							log.error(logPre
+							log.le(logPre
 									+ "Shard [] failed to load (from []); it will not be available for agent []:",
 									shardName, shardClass, agentName, PlatformUtils.printException(e));
 							continue;

@@ -49,9 +49,8 @@ import net.xqhs.flash.sclaim.constructs.ClaimStructure;
 import net.xqhs.flash.sclaim.constructs.ClaimValue;
 import net.xqhs.flash.sclaim.constructs.ClaimVariable;
 import net.xqhs.flash.sclaim.constructs.ClaimWhile;
-import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.LoggerClassic;
 import net.xqhs.util.logging.UnitComponentExt;
-import net.xqhs.util.logging.logging.Logging;
 
 
 
@@ -580,8 +579,8 @@ final static String yyrule[] = {
 private static String unitName = "parser";
 
 /** the logger */
-public Logger log = (UnitComponentExt) new UnitComponentExt().setUnitName(unitName).setLoggerType(
-						PlatformUtils.platformLogType());
+public LoggerClassic log = (LoggerClassic) new UnitComponentExt(unitName)
+		.setLoggerType(PlatformUtils.platformLogType());
 
 /** a reference to the agent structure returned by the parser */
 public ClaimAgentDefinition parsedAgent;
@@ -647,12 +646,12 @@ public ParserSClaim(String filePathAndName) {
 	lexer = new Yylex(new FileReader(filePathAndName), this);
   } catch (FileNotFoundException e) {
 	log.error("The file specified as argument could not be opened. Make sure that you have correctly written the name and the path!");
-	Logging.exitLogger(unitName);
+	// FIXME: need log exit.
   }
   catch (Exception e)
   {
 	log.error("The name of the file to be parsed was not specified.");
-    Logging.exitLogger(unitName);
+	// FIXME: need log exit.
   }
 }
 
@@ -679,11 +678,11 @@ public ClaimAgentDefinition parse() {
 
   if(parsingResult == 0) {
     log.info("Parsing successfully finished! The agent with the class \""+parsedAgent.getClassName()+"\" is ready to be run.");
-    Logging.exitLogger(unitName);
+	// FIXME: need log exit.
     return parsedAgent;
   }
   else {
-    Logging.exitLogger(unitName);
+		// FIXME: need log exit.
     return null;
   }
 }

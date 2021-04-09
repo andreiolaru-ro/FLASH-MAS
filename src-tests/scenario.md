@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <!-- ---------------------------------------------
+=======
+<!--- ---------------------------------------------
+>>>>>>> refs/heads/guiWork
 Copyright (C) 2021 Andrei Olaru.
 
 This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.

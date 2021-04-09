@@ -20,7 +20,6 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -42,7 +41,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	 * Indicates whether the implementation is currently running.
 	 */
 	protected boolean isRunning = false;
-	
+
 	/**
 	 * The name of this instance.
 	 */
@@ -51,7 +50,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		this.setUnitName(getName()).setLogLevel(Level.ALL);
+		this.setUnitName(getName());
 		return true;
 	}
 	
@@ -90,7 +89,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public boolean removeContext(EntityProxy<Node> context) {
 		return true;
 	}
-	
+
 	@Override
 	public boolean addGeneralContext(EntityProxy<?> context) {
 		return true;
@@ -100,7 +99,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return true;
 	}
-	
+
 	/**
 	 * The loader recommends no particular implementation for any shard.
 	 */
@@ -113,7 +112,7 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	public Set<String> getSupportedServices() {
 		return new HashSet<>();
 	}
-	
+
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;

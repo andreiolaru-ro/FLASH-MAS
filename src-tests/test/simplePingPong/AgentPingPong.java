@@ -56,7 +56,7 @@ public class AgentPingPong extends Unit implements Agent {
 	 * Time between ping messages.
 	 */
 	protected static final long		PING_PERIOD					= 2000;
-	
+
 	/**
 	 * Timer for pinging.
 	 */
@@ -205,7 +205,7 @@ public class AgentPingPong extends Unit implements Agent {
 	protected void le(String message, Object... arguments) {
 		super.le(message, arguments);
 	}
-	
+
 	@Override
 	protected void lf(String message, Object... arguments) {
 		super.lf(message, arguments);

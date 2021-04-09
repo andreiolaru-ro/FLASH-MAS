@@ -12,9 +12,11 @@
 package net.xqhs.flash.core.node;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -22,6 +24,8 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -41,7 +45,8 @@ import net.xqhs.util.logging.Unit;
 public class NodeLoader extends Unit implements Loader<Node> {
 	{
 		// sets logging parameters: the name of the log and the type (which is given by the current platform)
-		setUnitName("boot").setLoggerType(PlatformUtils.platformLogType());
+		setUnitName("boot");
+		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
 	/**
@@ -206,18 +211,19 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			le("Could not load [][].", nodeCatName, nodeName);
 			return null;
 		}
-		node.setUnitName(EntityIndex.register(CategoryName.NODE.s(), node)).lock();
 		
 		Map<String, Entity<?>> loaded = new HashMap<>();
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
-		
+
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");
 		else {
 			li("Loading: ", toLoad);
-			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR)) {
+			Set<EntityProxy<?>> contextAllCat = new HashSet<>();
+			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR))
+			{
 				CategoryName cat = CategoryName.byName(catName);
 				List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(subordinateEntities,
 						catName, null);
@@ -289,7 +295,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							else
 								lw("Context item [] for [] []/[]/[] not found as a loaded entity.", contextItem,
 										catName, name, kind, local_id);
-							
+
+					contextAllCat.addAll(context);
 					// build subordinate entities list
 					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities,
 							local_id);
@@ -338,6 +345,28 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					lf("Loaded items:", loaded.keySet());
 				}
 			}
+
+			contextAllCat.removeIf(ctx -> !(ctx instanceof PylonProxy));
+			if(contextAllCat.isEmpty()) return node;
+
+			PylonProxy pylon = (PylonProxy)contextAllCat.stream().findFirst().get();
+			node.addGeneralContext(pylon);
+
+			if(!DeploymentConfiguration.isCentralNode) return node;
+
+			// delegate the central node
+			// and register the central monitoring and control entity in its context
+			li("Node [] is central node.", node.getName());
+			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+			centralEntity.addGeneralContext(pylon);
+			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+
+			li("Entity [] of type [] registered.",
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+					DeploymentConfiguration.MONITORING_TYPE);
+			DeploymentConfiguration.isCentralNode = false;
 		}
 		return node;
 	}

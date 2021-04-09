@@ -1,0 +1,17 @@
+node:
+  children:
+    - type: output
+      port: messageSend
+      role: target
+      value: favoriteAgent
+    - type: form
+      port: messageSend
+      role: content
+    - type: form
+      port: messageSend
+      role: target
+    - type: button
+      port: messageSend
+      role: activate
+      value: Send message
+
