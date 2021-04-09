@@ -36,12 +36,8 @@ public abstract class AbstractNameBasedMessagingShard extends AbstractMessagingS
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
-<<<<<<< HEAD
-		if(getAgent() != null && getAgent().getEntityName().contains(AgentWave.ADDRESS_SEPARATOR))
-=======
 		if(getAgent() != null && getAgent().getEntityName() != null
 				&& getAgent().getEntityName().contains(AgentWave.ADDRESS_SEPARATOR))
->>>>>>> refs/heads/guiWork
 			throw new IllegalStateException(
 					"Name-based messaging cannot support agent names containing " + AgentWave.ADDRESS_SEPARATOR);
 		super.parentChangeNotifier(oldParent);
