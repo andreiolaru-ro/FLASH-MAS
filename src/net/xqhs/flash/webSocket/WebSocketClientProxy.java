@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import florina.monitoringAndControlTest.shards.PingTestComponent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
@@ -70,6 +71,15 @@ public class WebSocketClientProxy extends Unit {
                     String source  = (String) jsonObject.get("source");
                     String content = (String) jsonObject.get("content");
                     messageReceivers.get(localAddr).receive(source, destination, content);
+                    if (localAddr.equals("AgentA") && content != null && content.contains("reply") && source.contains("pong")) {
+                        int ieo = source.indexOf("/");
+                        if (ieo != -1) {
+                            int index = Integer.parseInt(source.substring(0 , ieo));
+                            PingTestComponent.lock_stopAgent.lock();
+                            PingTestComponent.stopAgentsTime[index] = System.currentTimeMillis();
+                            PingTestComponent.lock_stopAgent.unlock();
+                        }
+                    }
                 }
             }
 
@@ -97,5 +107,4 @@ public class WebSocketClientProxy extends Unit {
     public void close() throws InterruptedException {
         client.closeBlocking();
     }
-
 }
