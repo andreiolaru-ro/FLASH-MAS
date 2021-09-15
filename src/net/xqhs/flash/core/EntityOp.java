@@ -9,33 +9,36 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package andrei.guiWorks;
+package net.xqhs.flash.core;
 
-import net.xqhs.flash.FlashBoot;
+import java.util.ArrayList;
+import java.util.Set;
 
-/**
- * Deployment testing.
- */
-public class BootGuiAgent
-{
-	/**
-	 * Performs test.
-	 * 
-	 * @param args
-	 *                 - not used.
-	 */
-	public static void main(String[] args)
-	{
-		String test_args = "";
-
-		test_args += " -loader agent:composite";
-		test_args += " -package andrei.guiWorks";
-
-		test_args += " -node main";
-		test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui from:one-port.yml -shard test";
-		test_args += " -agent AgentB -gui from:one-port.yml";
-		
-		FlashBoot.main(test_args.split(" "));
+public interface EntityOp {
+	public interface Description {
 	}
 	
+	public interface Restriction {
+	}
+	
+	public interface AuthorizationToken {
+	}
+	
+	public interface Argument {
+		public String getType();
+		
+		public Description getDescription();
+	}
+	
+	public interface Operation {
+		public String getName();
+		
+		public Description getDescription();
+		
+		public ArrayList<Argument> getArguments();
+		
+		public Set<Restriction> getRestrictions();
+	}
+	
+	public boolean receiveCall(String operation, ArrayList<Object> argumentValues, Set<AuthorizationToken> tokens);
 }
