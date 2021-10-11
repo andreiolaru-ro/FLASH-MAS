@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.simplePingPong;
+package example.simplePingPong;
 
 import net.xqhs.flash.FlashBoot;
 
@@ -28,7 +28,7 @@ public class Boot
 	{
 		String test_args = "";
 		
-		test_args += " -package test.simplePingPong";
+		test_args += " -package example.simplePingPong";
 		test_args += " -node main -pylon local:main use-thread";
 		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		test_args += " -agent AgentB classpath:AgentPingPong";

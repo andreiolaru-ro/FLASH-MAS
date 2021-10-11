@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.webSocketsDeployment;
+package example.webSocketsDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
@@ -37,7 +37,7 @@ public class BootCompositeDeployment
 	{
 		String test_args = "";
 		
-		test_args += " -package test.compositePingPong -loader agent:composite";
+		test_args += " -package example.compositePingPong -loader agent:composite";
 		
 		test_args += " -node node1";
 		test_args += " -pylon webSocket:slave1 serverPort:8886 connectTo:ws://localhost:8886";

@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.webSocketsDeployment;
+package example.webSocketsDeployment;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
@@ -167,8 +167,9 @@ public class BootSimple
 	
 	/**
 	 * @param args
+	 * @throws InterruptedException
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws InterruptedException
 	{
 		WebSocketPylon pylon = new WebSocketPylon();
 		pylon.configure(
@@ -187,8 +188,12 @@ public class BootSimple
 		two.addContext(pylon2.asContext());
 		two.addMessagingShard(new WebSocketMessagingShard());
 		
+		Thread.sleep(1000);
+		
 		one.start();
 		two.start();
+		
+		Thread.sleep(1000);
 		
 		pylon2.stop();
 		pylon.stop();
