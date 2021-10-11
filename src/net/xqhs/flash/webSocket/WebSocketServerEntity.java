@@ -85,7 +85,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 				return true;
 			}
 
-			le("Filed to find the entity [] websocket.", destEntity);
+			le("Failed to find the entity [] websocket.", destEntity);
 			return false;
 	}
 
