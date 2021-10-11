@@ -231,6 +231,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					li("No [] entities defined.", catName);
 					continue;
 				}
+				li("Loading: ", catName);
 				
 				for(MultiTreeMap entityConfig : entities) {
 					// TODO add comments & notes about what names, kinds and ids really are.
@@ -345,6 +346,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					lf("Loaded items:", loaded.keySet());
 				}
 			}
+			
+			li("Other configuration:");
 
 			contextAllCat.removeIf(ctx -> !(ctx instanceof PylonProxy));
 			if(contextAllCat.isEmpty()) return node;
@@ -367,6 +370,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 					DeploymentConfiguration.MONITORING_TYPE);
 			DeploymentConfiguration.isCentralNode = false;
+			
+			li("Loading done.");
 		}
 		return node;
 	}
