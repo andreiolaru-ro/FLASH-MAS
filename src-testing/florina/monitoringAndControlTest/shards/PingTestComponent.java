@@ -17,11 +17,12 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import test.compositePingPong.Boot;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import example.compositePingPong.Boot;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.

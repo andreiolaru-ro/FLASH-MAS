@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.compositePingPong;
+package example.compositePingPong;
 
 import java.util.Timer;
 import java.util.TimerTask;
