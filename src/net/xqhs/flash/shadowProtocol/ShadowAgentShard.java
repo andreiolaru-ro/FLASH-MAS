@@ -20,7 +20,7 @@ import java.net.URISyntaxException;
  *  - creates the proxy if necessary
  */
 
-public class ShadowAgent extends AbstractNameBasedMessagingShard {
+public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
 
     /**
      * Actual value of the ttl
@@ -50,7 +50,7 @@ public class ShadowAgent extends AbstractNameBasedMessagingShard {
     /**
      * Default constructor
      */
-    public ShadowAgent(String serverURI) {
+    public ShadowAgentShard(String serverURI) {
         super();
         inbox = new MessageReceiver() {
             @Override
@@ -86,7 +86,13 @@ public class ShadowAgent extends AbstractNameBasedMessagingShard {
 
     @Override
     public boolean sendMessage(String source, String target, String content) {
-        return pylon.send(target,source, content);
+        System.out.println("Send message");
+        JSONObject messageToServer = new JSONObject();
+        messageToServer.put("nodeName", pylon.getEntityName());
+        messageToServer.put("source", source);
+        messageToServer.put("destination", target);
+        messageToServer.put("content", content);
+        return shadow.send(messageToServer.toString());
     }
 
     @Override
@@ -123,7 +129,12 @@ public class ShadowAgent extends AbstractNameBasedMessagingShard {
     public void signalAgentEvent(AgentEvent event) {
         super.signalAgentEvent(event);
 
-        if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
+        if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
             this.register(getAgent().getEntityName());
+        }
+
+        if(event.getType().equals(AgentEvent.AgentEventType.AGENT_WAVE)) {
+            System.out.println("Received message");
+        }
     }
 }

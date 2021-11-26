@@ -47,6 +47,11 @@ public class ShadowHost extends Unit {
 
             @Override
             public void onMessage(String s) {
+                Object obj = JSONValue.parse(s);
+                if(obj == null) return;
+                JSONObject message = (JSONObject) obj;
+
+                System.out.println("Message from " + message.get("source"));
             }
 
             @Override
@@ -61,8 +66,10 @@ public class ShadowHost extends Unit {
         };
     }
 
-    public void send(String message) {
+    public boolean send(String message) {
+        System.out.println("Send from shadow");
         client.send(message);
+        return true;
     }
 
     public boolean connectBlocking() throws InterruptedException{

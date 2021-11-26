@@ -1,5 +1,6 @@
 package net.xqhs.flash.shadowProtocol;
 
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
@@ -73,6 +74,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
     protected boolean useThread         = true;
     protected Thread messageThread      = null;
 
+    protected String nodeName       = null;
     /**
      * Information about agents and shadows
      */
@@ -133,6 +135,22 @@ public class ShadowPylon extends DefaultPylonImplementation {
         if(hasServer)
             serverEntity.stop();
         return true;
+    }
+
+    @Override
+    public boolean addContext(EntityProxy<Node> context) {
+        if(!super.addContext(context))
+            return false;
+        nodeName = context.getEntityName();
+        lf("Added node context ", nodeName);
+        return true;
+    }
+
+    @Override
+    public boolean addGeneralContext(EntityProxy<?> context) {
+        if(context instanceof Node.NodeProxy)
+            return addContext((Node.NodeProxy) context);
+        return false;
     }
 
     @Override

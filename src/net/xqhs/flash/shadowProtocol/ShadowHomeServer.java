@@ -12,6 +12,7 @@ import org.json.simple.JSONValue;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ public class ShadowHomeServer extends Unit implements Entity {
     /**
      * Mapping every Agent to its shadow
      */
-    Map<WebSocket, ArrayList<String>> shadowAndAgents;
+    Map<String, WebSocket> shadowAndAgents = new HashMap<>();
 
     Map<String, ArrayList<WebSocket>> pylonAndShadows;
 
@@ -53,6 +54,10 @@ public class ShadowHomeServer extends Unit implements Entity {
 
             @Override
             public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+                /**
+                 * When the connection is closed, delete the entry from map
+                 */
+                shadowAndAgents.entrySet().removeIf(entry -> webSocket.toString().equals(entry.getValue().toString()));
                 li(("[] closed with exit code " + i), webSocket);
             }
 
@@ -62,11 +67,29 @@ public class ShadowHomeServer extends Unit implements Entity {
                 if(obj == null) return;
                 JSONObject message = (JSONObject) obj;
 
+                if (message.get("destination") != null) {
+                    System.out.println("Message to send to " + message.get("destination"));
+                    String target = (String) message.get("destination");
+                    if (shadowAndAgents.containsKey(target)) {
+                        shadowAndAgents.get(target).send(s);
+                    } else {
+                        System.out.println("Host unknown");
+                    }
+                    return;
+                }
+                /**
+                 * Put new pair shadow-agent in map / Or a new agent to existing websocket
+                 */
                 if (message.get("nodeName") != null && message.get("entityName") != null) {
                     System.out.println("Received message from new agent with shadow " + webSocket);
-
+                    String new_agent = (String) message.get("entityName");
+                    if (!shadowAndAgents.containsKey(new_agent)) {
+                        shadowAndAgents.put(new_agent, webSocket);
+                    } else {
+                        System.out.println("An agent with that name already exist!");
+                    }
+                    return;
                 }
-
             }
 
             @Override
