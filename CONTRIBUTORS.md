@@ -10,58 +10,40 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
 
-
 FLASH-MAS contributors:
 
-  * Project coordination, architecture and coding if not otherwise specified:
-    * Andrei Olaru <cs@andreiolaru.ro>
-  
-  * Websockets support
-    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
-    * past modeling and implementations:
+* Project coordination, architecture and coding if not otherwise specified:
+   * Andrei Olaru <cs@andreiolaru.ro>
+* Websockets support
+   * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+   * past modeling and implementations:
       * Vlad Tălmaciu <vlad.talmaciu@gmail.com>
       * Cosmin Mihai <yonutix.mc@gmail.com>
-  
-  * Monitoring and control (currently merged into guiWork)
-    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
-    
-  * Android development (currently a separate project)
-    * Daniel Berbece <daniel.berbece97@gmail.com>
-  
-  * Web application (currently merged into guiWork)
-    * Andrei Mihu <andreimihu280997@gmail.com>
-  
-  * Automatic interface generation (currently merged into guiWork)
-    * Florin Mihalache <florin.razvan.mihalache@gmail.com>
-    
-  * MPI and synchronous communication (currently unmerged)
-    * Ștefania Popescu <stefania.s.popescu@gmail.com>
-  
-  * HPC work
-    * Andrada Hristu <andrada.hristu@gmail.com>
-    
-  * ROS-based communication (currently unmerged)
-    * Laura Cucu <laurat.cucu@gmail.com>
-    
-  * S-CLAIM parser and interpreter
-    * Marius-Tudor Benea <tudorbenea@gmail.com>
-	
-
-
-
-
-
-
+* Monitoring and control (currently merged into guiWork)
+   * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+* Android development (currently a separate project)
+   * Daniel Berbece <daniel.berbece97@gmail.com>
+* Web application (currently merged into guiWork)
+   * Andrei Mihu <andreimihu280997@gmail.com>
+* Automatic interface generation (currently merged into guiWork)
+   * Florin Mihalache <florin.razvan.mihalache@gmail.com>
+* MPI and synchronous communication (currently unmerged)
+   * Ștefania Popescu <stefania.s.popescu@gmail.com>
+* HPC work
+   * Andrada Hristu <andrada.hristu@gmail.com>
+* ROS-based communication (currently unmerged)
+   * Laura Cucu <laurat.cucu@gmail.com>
+* S-CLAIM parser and interpreter
+   * Marius-Tudor Benea <tudorbenea@gmail.com>
 
 This project is based on [tATAmI](https://github.com/tATAmI-Project tATAmI repository collection), which was developed over the years by a team consisting of:
 
 * Coordination:
-    * Andrei Olaru
-    * Amal El Fallah Seghrouchni
-    * Cedric Herpson
+   * Andrei Olaru
+   * Amal El Fallah Seghrouchni
+   * Cedric Herpson
 * Development:
-    * Andrei Olaru
-    * Marius-Tudor Benea
-    * Cosmin Mihai
-    * Nga Thi Thuy Nguyen
-
+   * Andrei Olaru
+   * Marius-Tudor Benea
+   * Cosmin Mihai
+   * Nga Thi Thuy Nguyen
