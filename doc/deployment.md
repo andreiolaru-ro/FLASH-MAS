@@ -74,6 +74,61 @@ The pre-defined items are defined in `CategoryName`. In principle, they are
 
 For the XML deployment file, the schema is described in `src-schema/deployment-schema.xsd`. The most important XML node types are `parametric` and `entitybase`, which serve as base for all other XML node types.
 
+#### CLI
+
+The CLI argument parser uses the foloowing grammar:
+
+```bnf
+CLI arguments 
+        ::= scenario-file? category-description*
+
+category-description     
+        ::= -category(:category-property)* element-name element_description
+        | -category(:category-property)* (val)*
+
+category-property        ::= [^: ]+            [no whitespace or column]
+element_description      ::= (par:val | par)* category-description*
+element                 [basically anything, but interpreted as:]
+        ::= part1:part2        [depending on category, can mean loader:id or type:id or category:type]
+        | type:                [an unnamed element with the specified type/loader]
+		| name                 [depending on category, a named element of the default type or an unnamed element with this type]
+			[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
+
+category/par/val/part1/part2/type/name     ::= [^: ]     [no whitespace or column]
+```
+
+Examples:
+
+```bash
+quick.Boot -agent myAgent mission:compute
+quick.Boot -node 1 -agent myAgent -agent otherAgent -agent thirdAgent
+quick.Boot -node 1 -agent myAgent -agent otherAgent -node X -agent thirdAgent
+```
+
+TODO: can we have -node -agent myAgent ??
+
+Remarks:
+
+* All `name:val` pairs belong in an element.
+* All elements belong in a category; all categories belong in elements or at the root level.
+* Any element name is preceded by its category
+
+The root level is the local node, which may not be specifically identified. Lacking a specific "-node name" element introduction, a name for it will be automatically generated
+
+* this way, remote nodes may be specified as well.
+* the first node is the local node
+
+There are two types of categories: simple values and not-simple-values. This cannot be distinguished in the grammar, but
+
+* predefined categories are defined as being values or not
+* not-predefined categories need to state their properties anyway, hence they will also state their property of being a simple value
+
+*Category properties* are meta-properties which describe dynamically properties like the ones in CategoryName, for categories which are not pre-defined
+
+* this should be allowed only for categories that are not predefined (maybe?)
+
+* only properties that exist in CategoryName will be allowed
+
 
 
 
