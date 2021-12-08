@@ -54,7 +54,20 @@ Deploying a FLASH-MAS system means creating a *deployment configuration* specify
 
 * older [notes file](doc/notes.md)
 
+## Source documentation
+
+[Javadoc here](doc/javadoc/index.html)
+
 ## Source organization
+
+* `src` contains sources for FLASH-MAS functionality and for the `quick` package which enables quicker writing of CLI commands (see [running](doc/running.md)).
+* `src-examples` contain sources for examples of FLASH-MAS deployments.
+* `src-tests` contains test to check the correct working of the framework.
+* `src-testing` contains sources for the ongoing work of various developers
+* `src-schema` contains the schema for XML deployment files
+* `doc` contains documentation markdown pages and javadoc
+* `identity` contains visual identity information (e.g. the logo)
+* `lib` contains necessary libraries
 
 ## License
 
