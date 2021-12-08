@@ -1,3 +1,16 @@
+<!--- ---------------------------------------------
+
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+
 ### Entities
 
 * any part of the system which is persistent and has a life-cycle should be an *Entity*.
@@ -63,3 +76,7 @@ Pre-defined *actual* (*local*) entities are
 **Do we need entities at all?**
 
 The only truly mandatory entities are nodes, pylons and agents, which are implicit in an agent system. But nodes can be automatically created and configured, and default pylon implementations are offered, so the developer may used them explicitly only when needed.
+
+### Flexibility
+
+Entities types and implementations are not fixed in any way. A developer can deploy any kind of entity, with any implementation. Moreover, the loading process of an entity is not fixed -- a loader can be provided that loads the entity in a specific manner. All this can be done without any changes to the source of FLASH-MAS, as both entities and loaders are dynamically loaded at runtime.

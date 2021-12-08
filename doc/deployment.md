@@ -1,3 +1,15 @@
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+
 The principle in FLASH-MAS is to allow complex deployments if needed, but also to make simple deployments very easy to specify.
 
 While it is possible to instantiate entities and add their relations directly, in code, the *preferred* manner is to use a *deployment configuration* which contains all the necessary information for the entities to be created at startup on a particular node (and, potentially, not only).
@@ -58,6 +70,8 @@ In principle, both the XML and the CLI arguments describe a tree-like structure 
 
 #### Structure and pre-defined items
 
+In the deployment configuration tree, there are two keys: `deployment` and `#local-id` (see above). The `deployment` key contains keys for each *category*. Each category then contains keys for the *name* of each entity (element) in that category. Each element then contains (besides its own parameters) keys for each subordinate category, and so on.
+
 All entities are described via key-value pairs (called *parameters*). Some entities have some predefined keys.
 
 The pre-defined items are defined in `CategoryName`. In principle, they are 
@@ -76,7 +90,7 @@ For the XML deployment file, the schema is described in `src-schema/deployment-s
 
 #### CLI
 
-The CLI argument parser uses the foloowing grammar:
+The CLI argument parser uses the following grammar:
 
 ```bnf
 CLI arguments 
@@ -91,8 +105,8 @@ element_description      ::= (par:val | par)* category-description*
 element                 [basically anything, but interpreted as:]
         ::= part1:part2        [depending on category, can mean loader:id or type:id or category:type]
         | type:                [an unnamed element with the specified type/loader]
-		| name                 [depending on category, a named element of the default type or an unnamed element with this type]
-			[the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
+        | name                 [depending on category, a named element of the default type or an unnamed element with this type]
+            [the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
 
 category/par/val/part1/part2/type/name     ::= [^: ]     [no whitespace or column]
 ```
@@ -105,65 +119,101 @@ quick.Boot -node 1 -agent myAgent -agent otherAgent -agent thirdAgent
 quick.Boot -node 1 -agent myAgent -agent otherAgent -node X -agent thirdAgent
 ```
 
-TODO: can we have -node -agent myAgent ??
-
 Remarks:
 
 * All `name:val` pairs belong in an element.
 * All elements belong in a category; all categories belong in elements or at the root level.
 * Any element name is preceded by its category
+* In the tree (implemented as a `MultiTreeMap`) there are two types of categories: simple values (which are strings) and not-simple-values (which are also trees). This cannot be distinguished in the grammar, but:
+   * predefined categories are defined as being values or not
+   * not-predefined categories need to state their properties anyway, hence they will also state their property of being a simple value
+* In order to correctly identify the appropriate *loader* for an entity, it is possible to specify, apart from its category (e.g. *pylon*), also its ***kind***. This is done together with the identifier. Usually, this is specified like `-pylon local:local1`, where `local` is the kind and `local1` is the identifier; or `-agent jade:agent1`, where `jade` is the kind and `agent1` is the identifier. See more in [loading](loading.md).
+   * whether this is possible for a category is specified in the appropriate `CategoryName` instance.
+   * the kind can also be specified as an individual parameter of the entity, such as `kind:jade`
+* The deployment configuration allows unnamed entities, but these cannot be referenced (such as for <in-context-of>).
 
-The root level is the local node, which may not be specifically identified. Lacking a specific "-node name" element introduction, a name for it will be automatically generated
+##### Making a linear structure into a tree structure
 
-* this way, remote nodes may be specified as well.
-* the first node is the local node
+This is done while parsing CLI arguments, by looking at the *category* of the element.
 
-There are two types of categories: simple values and not-simple-values. This cannot be distinguished in the grammar, but
+Let's start with an example: take the CLI command line:
 
-* predefined categories are defined as being values or not
-* not-predefined categories need to state their properties anyway, hence they will also state their property of being a simple value
+```bash
+quick.Boot -node central -node node6 -pylon local:comms -agent Facilitator service:directory
+ -agent MyAgent pingPeriod:5 -pylon websocket:WS -agent main1 -agent main2 -agent main3
+```
 
-*Category properties* are meta-properties which describe dynamically properties like the ones in CategoryName, for categories which are not pre-defined
+The corresponding deployment configuration looks like this (parameter values in brackets):
 
-* this should be allowed only for categories that are not predefined (maybe?)
+```
+deployment
+  node
+    central
+    node6
+      pylon
+        comms [kind:local]
+          agent
+            Facilitator [service=directory]
+            MyAgent [pingPeriod=5]
+        WS [kind:websocket]
+          agent
+            main1
+            main2
+            main3
+```
 
-* only properties that exist in CategoryName will be allowed
+At any time while parsing the arguments, there is a *current position* in the configuration tree where we "are". The initial position is at the level of the deployment. For instance, after the arguments `-node node6 -pylon local:comms -agent Facilitator service:directory -agent MyAgent pingPeriod:5`, the current position in the tree is:
 
+```
+deployment
+  node
+    node6
+      pylon
+        comms [kind:local]
+          agent
+            Facilitator [service=directory]
+            MyAgent [pingPeriod=5]
+              *here*
+```
 
+Considering the *current position*, the following rules are used to integrate a new element of category *Cat*:
 
+* if there is an ancestor of the current position of category *Cat*, the new element will be placed in that category (see how the `WS` pylon is integrated in the example above).
+* if the category is not predefined, or a predefined parent category is not specified in `CategoryName` (such as nodes for pylons, pylons for agents, etc), the new element (and its category) is added at the current position.
+* if the category is predefined or there is supposed the new element (and its category) is added at top level, in the `deployment`.
 
+### Context
 
-Assembling parts to form a name would be done *only* for entities for which this union can stand for its identifier.
+Entities exist in the context of other entities. For instance, an agent exists in the context of a pylon, of a node, and of the deployment, but also potentially in a group, an organization, etc. We say that entities "above" are added to the context of elements "below", and elements "below" are added in the context of elements"above".
 
-Unnamed entities are allowed, but cannot be referenced (such as for <in-context-of>).
+Currently, all elements in categories which are declare (in `CategoryName`) as *visible on path* are visible to all elements below and, hence, are added to the context of elements below.
 
-There is a root category, namely DEPLOYMENT. If no NODE is specified, a default one will be created for entities that need to be inside a node (e.g. agents, etc). This implicit node will be the first node among the nodes with no name. If a node with no name has already been introduced, it will be the same one.
+**Discussion on visibility**
 
-The local node is the first node not specifically designated as remote.
-
-**Future**
-
-* translate the CategoryName enum into a set of rules (could be a MultiTreeMap?) that is further adjustable in the configuration.
-
-Context
--------
-
-**Visibility**
-
+* It would be desired to be able to limit the visibility of a category to be no deeper than a specific other category.
 * Can't implement in visibility in the enum because lower level entities are not yet defined;
 * Therefore, visibility can be implemented
    * in the deployment, through an attribute (TODO)
    * ad-hoc by the implementation of each loader / each entity that loads other entities
-   * however, specifying visibility in the enum bay be useless because loaders/entities can still pass any context to their children
+   * however, specifying visibility in the enum may be useless because loaders/entities can still pass any context to their children
 
-**Porting**
+### Porting
+
+It is desired that, for instance, if there are multiple nodes declared in the deployment, and each should use a pylon with the same settings for all nodes, that the template specification of the pylon is only written once in the deployment. SImilarly, it may be desired that (some) loaders or some packages are available in all nodes, but only specified once.
+
+So, the use case is as follows:
+
+* the 'template' pylon is described before any of the nodes.
+* each node gets a separate actual pylon.
+
+This is done by means of ***porting***, which is done after all of the deployment information is read from the XML and the CLI. The following rules are applied:
 
 * an entity B can be ported from an entity A to an entity C (which is also its declared parent in hierarchy)
 * the entity B must have been declared (in the deployment) as a descendant of entity A
 * the configuration of a portable entity will be **copied** to all elements from the element where it has been declared down to its parent entity
-* actual entity instances will be created only for the copy inside the parent (entity C)
+* actual entity instances will be created only for the copy inside the parent (entity C), with new local identifiers.
 
-**Parents**
+### Parents
 
 * parents specify where an entity can be declared (inside which other entity)
 * for an entity (of type) A with parent P:
