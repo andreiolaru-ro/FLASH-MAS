@@ -110,10 +110,10 @@ Pre-defined *actual* entities are
 
 * *shards* -- entities encapsulating various functionality that may be useful o agents; the purpose of shards may be to:
   
-  * if the agent is a **Composite Agent**, the agent is composed exclusively by a set of shards which interact by means of an event queue;
-  * offer a more comfortable means for an agent to access the services offered by a pylon, when the pylon offers a **specific** implementation for a more general type of service (e.g. messaging);
-  * while it is perfectly possible for an agent of arbitrary implementation to skip using a shard and access the services offered by the pylon directly, using shards may be a more uniform manner of abstracting pylon services, since many shards may be already be implemented so that they can be used in composite agents.
-  * shards may help store information and processes that are specific to both the pylon, and to the agent (e.g. need to move with the agent, so should remain attached to it)
+   * if the agent is a **Composite Agent**, the agent is composed exclusively by a set of shards which interact by means of an event queue;
+   * offer a more comfortable means for an agent to access the services offered by a pylon, when the pylon offers a **specific** implementation for a more general type of service (e.g. messaging);
+   * while it is perfectly possible for an agent of arbitrary implementation to skip using a shard and access the services offered by the pylon directly, using shards may be a more uniform manner of abstracting pylon services, since many shards may be already be implemented so that they can be used in composite agents.
+   * shards may help store information and processes that are specific to both the pylon, and to the agent (e.g. need to move with the agent, so should remain attached to it)
 
 ** Do we need entities at all? **
 

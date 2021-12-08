@@ -42,6 +42,8 @@ Deploying a FLASH-MAS system means creating a *deployment configuration* specify
 
 * [Basic F-MAS concepts](doc/concepts.md) 
 
+* [Interaction between entities](doc/interaction.md)
+
 * [Loading entities and booting the system](doc/loading.md)
 
 * [Deployment and configuration](doc/deployment.md)
@@ -50,7 +52,7 @@ Deploying a FLASH-MAS system means creating a *deployment configuration* specify
 
 * [other remarks](doc/other.md) 
 
-* older [notes file](notes.md)
+* older [notes file](doc/notes.md)
 
 ## Source organization
 
