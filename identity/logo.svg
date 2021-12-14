@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    sodipodi:docname="logo.svg"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
    inkscape:export-filename="/home/andreiolaru/Andrei/Dev/Workspace/Flash-MAS/identity/logo.png"
    inkscape:export-xdpi="300.31628"
    inkscape:export-ydpi="300.31628">
@@ -26,16 +26,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="64.135544"
-     inkscape:cy="104.82416"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="51.687794"
+     inkscape:cy="113.14775"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
-     showgrid="true"
+     showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1080"
-     inkscape:window-x="1600"
+     inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:snap-bbox="true"
@@ -65,7 +65,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -86,12 +86,12 @@
        inkscape:export-ydpi="300.31628" />
     <path
        id="path833-3-6"
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:5.33869;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0.14980598,0,0,0.14989287,7.7586535,26.059893)"
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#0032e0;stroke-width:5.33869;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 91.0513,6.1783571 c 4.527008,7.8468199 13.4818,23.5790319 13.48116,25.5843639 -0.001,4.010664 -16.391812,32.378893 -19.865791,34.383113 C 81.19269,68.150053 48.42982,68.139557 44.957126,66.133113 41.484432,64.126668 25.112086,35.747943 25.113371,31.737279 25.114671,27.726615 41.50518,-0.6416143 44.979159,-2.6458335 l 2.49463,-1.0247024"
        sodipodi:nodetypes="ccssscc"
        inkscape:export-xdpi="300.31628"
-       inkscape:export-ydpi="300.31628" />
+       inkscape:export-ydpi="300.31628"
+       transform="matrix(0.14980598,0,0,0.14989287,7.7586535,26.059893)" />
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
        id="rect905"
@@ -234,31 +234,9 @@
        cy="5.3384204"
        rx="0.37207302"
        ry="0.37207305" />
-    <path
-       sodipodi:nodetypes="ccccccc"
-       inkscape:connector-curvature="0"
-       id="path1244-3"
-       d="m 21.179835,22.638857 -6.956931,7.886925 c 6.289194,-5e-6 2.387738,0 4.297929,0 l -2.636766,6.408341 6.934695,-7.829956 h -4.297929 z"
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       inkscape:export-xdpi="300.31628"
-       inkscape:export-ydpi="300.31628" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:3.52777px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="20.905798"
-       y="26.685228"
-       id="text883-6"
-       transform="skewX(-12.497822)"
-       inkscape:export-xdpi="300.31628"
-       inkscape:export-ydpi="300.31628"><tspan
-         sodipodi:role="line"
-         id="tspan881-7"
-         x="20.905798"
-         y="26.685228"
-         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52777px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">F</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:2.11667px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-weight:normal;font-size:2.11667px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#eb6200;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
        x="23.788471"
        y="26.128363"
        id="text883-5-5"
@@ -269,12 +247,97 @@
          id="tspan881-3-3"
          x="23.788471"
          y="26.128363"
-         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">MAS</tspan></text>
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px;fill:#eb6200;fill-opacity:1;">MAS</tspan></text>
+    <path
+       sodipodi:nodetypes="ccccccc"
+       inkscape:connector-curvature="0"
+       id="path1244-3"
+       d="m 21.179835,22.638857 -6.956931,7.886925 c 6.289194,-5e-6 2.387738,0 4.297929,0 l -2.636766,6.408341 6.934695,-7.829956 h -4.297929 z"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.52777px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#eb6200;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+       x="20.905798"
+       y="26.685228"
+       id="text883-6"
+       transform="skewX(-12.497822)"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628"><tspan
+         sodipodi:role="line"
+         id="tspan881-7"
+         x="20.905798"
+         y="26.685228"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52777px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px;fill:#eb6200;fill-opacity:1;">F</tspan></text>
     <ellipse
-       style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
+       style="fill:#eb6200;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
        id="path903-5"
        cx="18.835491"
        cy="25.308865"
+       rx="0.37207302"
+       ry="0.37207305"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.115303;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect853-3"
+       width="17.140265"
+       height="17.140265"
+       x="30.155485"
+       y="30.869579"
+       rx="0.57852203"
+       ry="0.57852209"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628" />
+    <path
+       id="path833-3-6-6"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.8;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 42.293752,36.688898 c 0.678173,1.176182 2.019654,3.534328 2.019559,3.834913 -1.5e-4,0.60117 -2.455592,4.853366 -2.976015,5.153784 -0.520423,0.300418 -5.428496,0.298845 -5.948727,-0.0019 -0.52023,-0.300752 -2.972905,-4.55452 -2.972713,-5.15569 1.95e-4,-0.60117 2.455591,-4.853365 2.976014,-5.153784 l 0.37371,-0.153595"
+       sodipodi:nodetypes="ccssscc"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628" />
+    <path
+       sodipodi:nodetypes="ccccccc"
+       inkscape:connector-curvature="0"
+       id="path1244-3-7"
+       d="m 42.074905,32.34177 -6.956931,7.886925 c 6.289194,-5e-6 2.387738,0 4.297929,0 l -2.636766,6.408341 6.934695,-7.829956 h -4.297929 z"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.52777px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="43.951572"
+       y="36.388138"
+       id="text883-6-5"
+       transform="skewX(-12.497822)"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628"><tspan
+         sodipodi:role="line"
+         id="tspan881-7-3"
+         x="43.951572"
+         y="36.388138"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52777px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">F</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.11667px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="46.233318"
+       y="35.831272"
+       id="text883-5-5-5"
+       transform="skewX(-9.0747802)"
+       inkscape:export-xdpi="300.31628"
+       inkscape:export-ydpi="300.31628"><tspan
+         sodipodi:role="line"
+         id="tspan881-3-3-6"
+         x="46.233318"
+         y="35.831272"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.11667px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic';stroke-width:0.264583px">MAS</tspan></text>
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linejoin:round"
+       id="path903-5-2"
+       cx="39.730564"
+       cy="35.011776"
        rx="0.37207302"
        ry="0.37207305"
        inkscape:export-xdpi="300.31628"
