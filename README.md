@@ -10,7 +10,7 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
 
-# FLASH-MAS
+# <img src="identity/logo-BW.png" title="" alt="" width="50">FLASH-MAS
 
 The Fast Lightweight Agent Shell MAS framework
 
