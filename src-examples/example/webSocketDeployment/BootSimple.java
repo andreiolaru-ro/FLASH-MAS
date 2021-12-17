@@ -9,12 +9,14 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.webSocketsDeployment;
+package example.webSocketDeployment;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -26,7 +28,7 @@ import net.xqhs.flash.webSocket.WebSocketMessagingShard;
 import net.xqhs.flash.webSocket.WebSocketPylon;
 
 /**
- * Tests websockets support works for a manually-constructed deployment.
+ * Tests WebSocket support works for a manually-constructed deployment.
  * 
  * @author Andrei Olaru
  */
@@ -135,8 +137,8 @@ public class BootSimple
 				{
 					if(event instanceof AgentWave)
 						System.out.println(
-								((AgentWave) event).getContent() + " de la " + ((AgentWave) event).getCompleteSource()
-										+ " la " + ((AgentWave) event).getCompleteDestination());
+								((AgentWave) event).getContent() + " from " + ((AgentWave) event).getCompleteSource()
+										+ " to " + ((AgentWave) event).getCompleteDestination());
 				}
 				
 				@Override
@@ -171,26 +173,31 @@ public class BootSimple
 	 */
 	public static void main(String[] args) throws InterruptedException
 	{
+		Node node1 = new Node(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node1"));
 		WebSocketPylon pylon = new WebSocketPylon();
 		pylon.configure(
 				new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
 						.addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_PORT_NAME, "8885"));
+		pylon.addContext(node1.asContext());
 		pylon.start();
 		AgentTest one = new AgentTest("One");
-		one.addContext(pylon.asContext());
 		one.addMessagingShard(new WebSocketMessagingShard());
+		one.addContext(pylon.asContext());
 		
+		Node node2 = new Node(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node2"));
 		WebSocketPylon pylon2 = new WebSocketPylon();
 		pylon2.configure(
 				new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885"));
+		pylon2.addContext(node2.asContext());
 		pylon2.start();
 		AgentTest two = new AgentTest("Two");
-		two.addContext(pylon2.asContext());
 		two.addMessagingShard(new WebSocketMessagingShard());
+		two.addContext(pylon2.asContext());
 		
 		Thread.sleep(1000);
 		
 		one.start();
+		Thread.sleep(1000);
 		two.start();
 		
 		Thread.sleep(1000);

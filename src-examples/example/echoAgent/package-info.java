@@ -13,11 +13,12 @@
  * 
  */
 /**
- * A simple deployment, testing the deployment of very basic scenarios. The scenario is described in an XML file.
+ * A simple deployment, testing the deployment (via XML file) of very basic scenarios. See
+ * <code>simpleDeployment.xml</code>.
  * <p>
  * An agent that outputs to its log all the events that happen, placed in a default environment.
  * <p>
- * Expected output> the agent outputs the fact that it is starting (it received the agent started event).
+ * Expected output: the agent outputs the fact that it is starting (it received the agent started event).
  * 
  * @author andreiolaru
  *

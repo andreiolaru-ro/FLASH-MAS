@@ -13,13 +13,10 @@
  * 
  */
 /**
- * The scenario of two agents which ping messages between them (one sends and one replies). The scenario is given as
- * console arguments.
- * <p>
- * Run the Boot class.
- * <p>
- * Expect to see at each 2 seconds 2 events: one from AgentB and one from AgentA.
+ * <b>Verifies:</b> correct functioning of the websockets support infrastructure, in three different loading contexts
+ * (manual deployment, with deployment configuration and simple agents, and with deployment configuration and composite
+ * agents).
  * 
  * @author Andrei Olaru
  */
-package example.simplePingPong;
+package example.webSocketDeployment;

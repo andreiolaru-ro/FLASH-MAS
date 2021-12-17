@@ -9,14 +9,36 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
+package example.webSocketDeployment;
+
+import net.xqhs.flash.FlashBoot;
+
 /**
- * 
+ * Tests WebSocket support works in a deployment of non-composite agents.
  */
-/**
- * <b>Verifies:</b> correct functioning of the websockets support infrastructure, in three different loading contexts
- * (manual deployment, with deployment configuration and simple agents, and with deployment configuration and composite
- * agents).
- * 
- * @author Andrei Olaru
- */
-package example.webSocketsDeployment;
+public class BootSimpleDeployment
+{
+	/**
+	 * Performs test.a
+	 * 
+	 * @param args
+	 *                 - not used.
+	 */
+	public static void main(String[] args)
+	{
+		String test_args = "";
+		
+		test_args += " -package example.simplePingPong";
+		
+		test_args += " -node node1";
+		test_args += " -pylon webSocket:slave1 serverPort:8885 connectTo:ws://localhost:8885";
+		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		
+		test_args += " -node node2";
+		test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8885";
+		test_args += " -agent AgentB classpath:AgentPingPong";
+		
+		FlashBoot.main(test_args.split(" "));
+	}
+	
+}
