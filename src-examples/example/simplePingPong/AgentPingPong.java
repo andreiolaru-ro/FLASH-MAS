@@ -50,7 +50,7 @@ public class AgentPingPong extends Unit implements Agent {
 	 * Initial delay before the first ping message.
 	 */
 
-	// For websockets we need to wait until all agents are started and registerd to the server.
+	// For WebSocket we need to wait until all agents are started and registered to the server.
 	protected static final long		PING_INITIAL_DELAY			= 5000;
 	/**
 	 * Time between ping messages.
