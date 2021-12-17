@@ -92,6 +92,7 @@ public class WebSocketServerEntity extends Unit implements Entity
 
 	public WebSocketServerEntity(int serverAddress)
 	{
+		li("Started");
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverAddress)) {
 			
 			@Override
@@ -131,7 +132,10 @@ public class WebSocketServerEntity extends Unit implements Entity
 				if(message.get("destination") != null && routeTheMessage(message))
 					return;
 
-				if(message.get("nodeName") == null) return;
+				if(message.get("nodeName") == null) {
+					le("No nodeName in message");
+					return;
+				}
 				String nodeName = (String)message.get("nodeName");
 
 				//node registration message
@@ -139,7 +143,6 @@ public class WebSocketServerEntity extends Unit implements Entity
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					return;
 				}
 
 				// entity registration message
