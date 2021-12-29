@@ -285,8 +285,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean addContext(EntityProxy<Node> context)
 	{
-		// unsupported
-		return false;
+		return addGeneralContext(context);
 	}
 	
 	@Override

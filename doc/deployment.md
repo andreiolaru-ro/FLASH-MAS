@@ -178,8 +178,11 @@ deployment
 
 Considering the *current position*, the following rules are used to integrate a new element of category *Cat*:
 
-* if there is an ancestor of the current position of category *Cat*, the new element will be placed in that category (see how the `WS` pylon is integrated in the example above).
+* if there is an ancestor of the current position which is of the same category *Cat*, the new element will be placed in that category
+   * Example: see how the `WS` pylon is integrated in the example above. Although it is defined immediately after an agent, since there is a `pylon` category as an ancestor of the current position, `WS` is added in that category.
 * if the category is not predefined, or a predefined parent category is not specified in `CategoryName` (such as nodes for pylons, pylons for agents, etc), the new element (and its category) is added at the current position.
+   * Example:
+* if the category is predefined and 
 * if the category is predefined or there is supposed the new element (and its category) is added at top level, in the `deployment`.
 
 ### Context
@@ -219,12 +222,10 @@ This is done by means of ***porting***, which is done after all of the deploymen
 * for an entity (of type) A with parent P:
    * the parent can be optional
       * the optional indication for parents is used to structure the entities in two ways:
-         * determine whether an entity is in the correct context even if some entity types are missing from the context (TODO: add example)
+         * determine whether an entity is in the correct context even if some entity types are missing from the context
          * establish some hierarchy of entities that helps navigation when parsing CLI arguments
       * if the parent can be auto-added, and a sibling instance P exists, entity A will be added automatically to instance P (the one with the highest priority)
    * the parent can be mandatory
       * if the parent is mandatory, entity A must be declared inside an entity of type P (additional entities may exist between A and P in more custom deployments)
-      * if the parent must be auto-added, it is;
-      * if the parent can be auto-generated (is a property of the parent), the deployment configuration will attempt to generate a parent P (this may lead to further generation of auto-generated parents)
-      * if the parent cannot be auto-generated or auto-added (or no appropriate sibling exists), it is an error;
+      * ;
    * it is allowed to have **intermediate** entities between A and P, both in the optional and mandatory cases

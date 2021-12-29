@@ -21,24 +21,24 @@ public class BootSimpleDeployment
 	/**
 	 * Performs test.a
 	 * 
-	 * @param args
+	 * @param args_
 	 *                 - not used.
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args_)
 	{
-		String test_args = "";
+		String args = "";
 		
-		test_args += " -package example.simplePingPong";
+		args += " -package example.simplePingPong";
 		
-		test_args += " -node node1";
-		test_args += " -pylon webSocket:slave1 serverPort:8885 connectTo:ws://localhost:8885";
-		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		args += " -node node1";
+		args += " -pylon webSocket:slave1 serverPort:8885 connectTo:ws://localhost:8885";
+		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		
-		test_args += " -node node2";
-		test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8885";
-		test_args += " -agent AgentB classpath:AgentPingPong";
+		args += " -node node2";
+		args += " -pylon webSocket:slave2 connectTo:ws://localhost:8885";
+		args += " -agent AgentB classpath:AgentPingPong";
 		
-		FlashBoot.main(test_args.split(" "));
+		FlashBoot.main(args.split(" "));
 	}
 	
 }
