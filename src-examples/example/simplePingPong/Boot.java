@@ -29,7 +29,7 @@ public class Boot
 		String test_args = "";
 		
 		test_args += " -package example.simplePingPong";
-		test_args += " -node main -pylon local:main use-thread";
+		test_args += " -node main";
 		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		test_args += " -agent AgentB classpath:AgentPingPong";
 		

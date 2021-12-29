@@ -30,19 +30,19 @@ public class Boot
 	/**
 	 * Performs test
 	 * 
-	 * @param args
-	 *                 - not used.
+	 * @param args_
+	 *            - not used.
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args_)
 	{
-		String test_args = "";
+		String args = "";
 		
-		test_args += " -package example.compositePingPong -loader agent:composite";
-		test_args += " -node node1";
-		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
-		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+		args += " -package example.compositePingPong -loader agent:composite";
+		args += " -node node1";
+		args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
+		args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 		
-		FlashBoot.main(test_args.split(" "));
+		FlashBoot.main(args.split(" "));
 	}
 	
 }

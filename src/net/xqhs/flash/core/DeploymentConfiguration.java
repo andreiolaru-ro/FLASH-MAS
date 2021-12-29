@@ -44,57 +44,56 @@ import net.xqhs.util.logging.UnitComponentExt;
  * 
  * @author Andrei Olaru
  */
-public class DeploymentConfiguration extends MultiTreeMap
-{
+public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * The class UID.
 	 */
-	private static final long			serialVersionUID				= 5157567185843194635L;
+	private static final long serialVersionUID = 5157567185843194635L;
 	
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String			CLI_CATEGORY_PREFIX				= "-";
+	public static final String	CLI_CATEGORY_PREFIX				= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String			NAME_SEPARATOR					= ":";
+	public static final String	NAME_SEPARATOR					= ":";
 	/**
 	 * Separator for elements in the load order setting.
 	 */
-	public static final String			LOAD_ORDER_SEPARATOR			= " ";
+	public static final String	LOAD_ORDER_SEPARATOR			= " ";
 	/**
 	 * The name of nodes containing parameters.
 	 */
-	public static final String			PARAMETER_ELEMENT_NAME			= "parameter";
+	public static final String	PARAMETER_ELEMENT_NAME			= "parameter";
 	/**
 	 * The name of the attribute which contains the kind.
 	 */
-	public static final String			KIND_ATTRIBUTE_NAME				= "kind";
+	public static final String	KIND_ATTRIBUTE_NAME				= "kind";
 	/**
 	 * The name of the attribute of a parameter node holding the name of the parameter.
 	 */
-	public static final String			PARAMETER_NAME					= "name";
+	public static final String	PARAMETER_NAME					= "name";
 	/**
 	 * The name of the attribute of a parameter node holding the value of the parameter.
 	 */
-	public static final String			PARAMETER_VALUE					= "value";
+	public static final String	PARAMETER_VALUE					= "value";
 	/**
 	 * The name of the attribute which contains the name.
 	 */
-	public static final String			NAME_ATTRIBUTE_NAME				= "name";
+	public static final String	NAME_ATTRIBUTE_NAME				= "name";
 	/**
 	 * The name of the element(s) which contain entity context.
 	 */
-	public static final String			CONTEXT_ELEMENT_NAME			= "in-context-of";
+	public static final String	CONTEXT_ELEMENT_NAME			= "in-context-of";
 	/**
 	 * Name of XML nodes for entities other than those in {@link CategoryName}.
 	 */
-	public static final String			GENERAL_ENTITY_NAME				= "entity";
+	public static final String	GENERAL_ENTITY_NAME				= "entity";
 	/**
 	 * The name of the XML attribute specifying the type of the entity.
 	 */
-	public static final String			GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
+	public static final String	GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
 	
 	/**
 	 * The name of the (singleton) entry in the configuration tree, under which all entities are listed by their name or
@@ -102,58 +101,56 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * <p>
 	 * This constant is also used as a key in entity nodes for their id (if they don't have an identifiable name.
 	 */
-	public static final String			LOCAL_ID_ATTRIBUTE				= "#local-id";
+	public static final String	LOCAL_ID_ATTRIBUTE		= "#local-id";
 	/**
 	 * The name under which the category of an element is entered in the element.
 	 */
-	public static final String			CATEGORY_ATTRIBUTE_NAME			= "#category-type";
+	public static final String	CATEGORY_ATTRIBUTE_NAME	= "#category-type";
 	/**
 	 * The name of a parameter in the configuration {@link MultiTreeMap} of an entity indicating that the entity has
 	 * already been loaded.
 	 */
-	public static final String			LOADED_ATTRIBUTE_NAME			= "#loaded";
+	public static final String	LOADED_ATTRIBUTE_NAME	= "#loaded";
 	
 	/**
 	 * Root package for FLASH classes.
 	 */
-	public static final String			ROOT_PACKAGE					= "net.xqhs.flash";
+	public static final String		ROOT_PACKAGE				= "net.xqhs.flash";
 	/**
 	 * Package for core FLASH functionality
 	 */
-	public static final String			CORE_PACKAGE					= ROOT_PACKAGE + ".core";
+	public static final String		CORE_PACKAGE				= ROOT_PACKAGE + ".core";
 	/**
 	 * The default directory for deployment files.
 	 */
-	public static final String			DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
+	public static final String		DEPLOYMENT_FILE_DIRECTORY	= "src-deployment/";
 	/**
 	 * Directories containing source files (especially for looking up various files).
 	 */
-	public static final String[]	SOURCE_FILE_DIRECTORIES	= { "src", "src-testing", "src-tests", "src-examples" };
+	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
 	
 	/**
 	 * Local IDs of default created entities.
 	 */
-	public static final List<String>	autoCreated						= new LinkedList<>();
-
-
+	public static final List<String> autoCreated = new LinkedList<>();
+	
 	/**
-	 *  Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
 	 */
-	public static       boolean         isCentralNode                   = true;
-
+	public static boolean isCentralNode = true;
+	
 	/**
 	 * Type for net.xqhs.flash.core.monitoring and control entity.
-	 * */
-	public static final String MONITORING_TYPE                          = "net/xqhs/flash/core/monitoring";
-
-	public static final String CENTRAL_MONITORING_ENTITY_NAME           = "Monitoring&Control_Entity";
-
+	 */
+	public static final String MONITORING_TYPE = "net/xqhs/flash/core/monitoring";
+	
+	public static final String CENTRAL_MONITORING_ENTITY_NAME = "Monitoring&Control_Entity";
+	
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
 	 * tree while parsing CLI arguments.
 	 */
-	static class CtxtTriple
-	{
+	static class CtxtTriple {
 		/**
 		 * The name of the current category.
 		 */
@@ -177,16 +174,14 @@ public class DeploymentConfiguration extends MultiTreeMap
 		 * @param elTree
 		 *            - current element tree (may be <code>null</code>).
 		 */
-		public CtxtTriple(String cat, MultiTreeMap categoryTree, MultiTreeMap elTree)
-		{
+		public CtxtTriple(String cat, MultiTreeMap categoryTree, MultiTreeMap elTree) {
 			category = cat;
 			catTree = categoryTree;
 			elemTree = elTree;
 		}
 		
 		@Override
-		public String toString()
-		{
+		public String toString() {
 			return "{" + category + "/" + (catTree != null ? catTree.toString(1, true) : "-") + "/"
 					+ (elemTree != null ? elemTree.toString(1, true) : "-") + "}";
 		}
@@ -195,8 +190,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	/**
 	 * The default configuration. Only single values can be added here at this time.
 	 */
-	public DeploymentConfiguration()
-	{
+	public DeploymentConfiguration() {
 		// deployment node
 		MultiTreeMap deploymentCat = this.addSingleTreeGet(CategoryName.DEPLOYMENT.s(), new MultiTreeMap());
 		MultiTreeMap deployment = new MultiTreeMap();
@@ -247,13 +241,12 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - if the deployment file is parsed and this argument is not <code>null</code>, the resulting
 	 *            {@link XMLTree} instance will be stored in this ContentHolder instance.
 	 * @return the instance itself, which is also the {@link MultiTreeMap} that contains all settings.
-	 * 
+	 * 			
 	 * @throws ConfigLockedException
 	 *             - if load() is called more than once.
 	 */
 	public DeploymentConfiguration loadConfiguration(List<String> programArguments, boolean parseDeploymentFile,
-			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException
-	{
+			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt().setUnitName("settings load")
 				.setLoggerType(PlatformUtils.platformLogType());
@@ -267,18 +260,15 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// ====================================== get deployment file and schema
 		boolean deploymentArgPresent = false;
 		if(programArguments.size() > 0 && programArguments.get(0).length() > 0
-				&& !programArguments.get(0).startsWith(CLI_CATEGORY_PREFIX) && !programArguments.get(0).contains(":"))
-		{
+				&& !programArguments.get(0).startsWith(CLI_CATEGORY_PREFIX) && !programArguments.get(0).contains(":")) {
 			deployment.setValue(CategoryName.DEPLOYMENT_FILE.s(), programArguments.get(0));
 			deploymentArgPresent = true;
 		}
 		else
-			for(Iterator<String> it = programArguments.iterator(); it.hasNext();)
-			{
+			for(Iterator<String> it = programArguments.iterator(); it.hasNext();) {
 				String arg = it.next();
 				if(isCategoryDefinition(arg) && (getCategoryName(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
-						|| getCategoryName(arg).equals(CategoryName.SCHEMA.s())))
-				{
+						|| getCategoryName(arg).equals(CategoryName.SCHEMA.s()))) {
 					String val = null;
 					if(it.hasNext() || isCategoryDefinition(val = it.next()))
 						throw new IllegalArgumentException(
@@ -288,8 +278,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 			}
 		
 		// ====================================== parse deployment file
-		if(deployment.isSet(CategoryName.DEPLOYMENT_FILE.s()))
-		{
+		if(deployment.isSet(CategoryName.DEPLOYMENT_FILE.s())) {
 			log.lf("loading deployment file [] with schema [].",
 					deployment.getSingleValue(CategoryName.DEPLOYMENT_FILE.s()),
 					deployment.getSingleValue(CategoryName.SCHEMA.s()));
@@ -303,8 +292,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 					deployment.getSingleValue(CategoryName.DEPLOYMENT_FILE.s()));
 			if(loadedXML != null)
 				loadedXML.set(XMLtree);
-			if(XMLtree != null)
-			{
+			if(XMLtree != null) {
 				context = new LinkedList<>();
 				readXML(XMLtree.getRoot(), deploymentCat, context, this, log);
 				log.lf("after XML tree parse:", this);
@@ -340,11 +328,10 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// use List.containsAll
 		
 		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
-			if(autoCreated.contains(id))
-			{
+			if(autoCreated.contains(id)) {
 				// TODO
 			}
-				
+		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
 		log.lf("final config:", this);
@@ -355,20 +342,17 @@ public class DeploymentConfiguration extends MultiTreeMap
 	}
 	
 	/**
-	 * Manages ported categories, auto-added entities and auto-generated parents (see {@link CategoryName}).
+	 * Manages ported categories (see {@link CategoryName}).
 	 * <p>
-	 * For the moment, only categories declared in {@link CategoryName} can be ported, auto-added, or their parents
-	 * auto-generated.
+	 * For the moment, only categories declared in {@link CategoryName} can be ported.
 	 * <p>
 	 * The method follows the following steps:
 	 * <ul>
-	 * <li>from the current node, pick any entities that need to be ported from the node or automatically moved from the
-	 * node to a deeper node (the latter are called 'lifted'); ported entities are only copied (in reference), lifted
-	 * entities are actually moved.
-	 * <li>any previously ported/lifted entities are placed in the current node, it the current node is a correct
+	 * <li>from the current (<i>tree node</i>, not <i>node entity</i> in the deployment) node, pick any entities that
+	 * need to be ported from the node or automatically moved from the node to a deeper node (the latter are called
+	 * 'lifted'); ported entities are only copied (in reference), lifted entities are actually moved.
+	 * <li>any previously ported/lifted entities are placed in the current node, if the current node is a correct
 	 * parent.
-	 * <li>if any of the lifted entities has an ancestor that can be auto-generated as a child of this node, it is done
-	 * so.
 	 * <li>the method is called recursively for the child elements, passing the current list of ported / lifted
 	 * entities.
 	 * </ul>
@@ -393,8 +377,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void postProcess(MultiTreeMap elemTree, String category, MultiTreeMap portableEntities,
-			MultiTreeMap liftedEntities, List<String> context, MultiTreeMap rootTree, Logger log)
-	{
+			MultiTreeMap liftedEntities, List<String> context, MultiTreeMap rootTree, Logger log) {
 		List<String> toRemove = new LinkedList<>();
 		List<String> updatedContext = new LinkedList<>(context);
 		updatedContext.add(category); // the current context, including this category
@@ -408,21 +391,19 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// pick entities to lift from here
 		toRemove.clear();
 		for(String childCatName : elemTree.getKeys())
-			if(CategoryName.byName(childCatName) != null)
-			{
+			if(CategoryName.byName(childCatName) != null) {
 				CategoryName childCat = CategoryName.byName(childCatName);
 				if(childCat != null && childCat.portableFrom() != null
-						&& updatedContext.contains(childCat.portableFrom().s()))
-				{ // port this from here; this will not be instanced here
+						&& updatedContext.contains(childCat.portableFrom().s())) {
+					// port this from here; this will not be instanced here
 					newPortables.copyNameFrom(elemTree, childCatName);
 					// toRemove.add(childCatName); // keep here too
 				}
 				else if(childCat != null && childCat.getParent() != null
-						&& !updatedContext.contains(childCat.getParent()))
-				{ // lift this from here to find the correct parent deeper into the hierarchy
-					// e.g. agents declared in deployment that actually need to get under support
-					if(CategoryName.byName(category) != null)
-					{
+						&& !updatedContext.contains(childCat.getParent())) {
+					// lift this from here to find the correct parent deeper into the hierarchy e.g. agents declared in
+					// deployment that actually need to get under support
+					if(CategoryName.byName(category) != null) {
 						liftedEntities.copyNameFrom(elemTree, childCatName);
 						toRemove.add(childCatName);
 					}
@@ -439,10 +420,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 		for(String portedCatName : portableEntities.getKeys())
 			if(!portedCatName.equals(category)) // protect against forever adding portable categories to themselves
 				if(CategoryName.byName(portedCatName).visibleOnPath()
-						|| category.equals(CategoryName.byName(portedCatName).getParent()))
-				{ // port the ported entities to this element
-					if(portableEntities.isHierarchical(portedCatName))
-					{
+						|| category.equals(CategoryName.byName(portedCatName).getParent())) {
+					// port the ported entities to this element
+					if(portableEntities.isHierarchical(portedCatName)) {
 						MultiTreeMap portedCatTree = portableEntities.getSingleTree(portedCatName);
 						MultiTreeMap targetCatTree = elemTree.getSingleTree(portedCatName, true);
 						for(String name : portedCatTree.getKeys())
@@ -450,8 +430,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 								log.le("Cannot overwrite existing singleton element [] of category [] with a ported instance.",
 										name, portedCatName);
 							else
-								for(MultiTreeMap elem : portedCatTree.getTrees(name))
-								{
+								for(MultiTreeMap elem : portedCatTree.getTrees(name)) {
 									MultiTreeMap clone = elem.copyDeep();
 									integrateName(clone, portedCatName, targetCatTree, rootTree, log);
 									if(autoCreated.contains(elem.getSingleValue(LOCAL_ID_ATTRIBUTE)))
@@ -471,39 +450,38 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// port appropriate lifted entities to this element
 		toRemove.clear();
 		for(String liftedCatName : liftedEntities.getKeys())
-			if(category.equals(CategoryName.byName(liftedCatName).getParent()))
-			{ // port the ported entities to this element
+			if(category.equals(CategoryName.byName(liftedCatName).getParent())) {
+				// port the ported entities to this element
 				elemTree.copyNameFrom(liftedEntities, liftedCatName);
 				toRemove.add(liftedCatName);
 			}
 		for(String rem : toRemove)
 			liftedEntities.removeKey(rem);
-		
-		// auto-generate entities
-		for(String liftedCatName : liftedEntities.getKeys())
-			if(CategoryName.byName(liftedCatName) != null)
-			{
-				CategoryName liftedCat = CategoryName.byName(liftedCatName);
-				for(String pName : liftedCat.getAncestors())
-				{
-					CategoryName p = CategoryName.byName(pName);
-					// check also if not already generated
-					if(p.canBeAutoGenerated() && p.getParent().equals(category) && !elemTree.isHierarchical(pName))
-					{
-						log.li("Autogenerating ancestor [] for [].", pName, liftedCatName);
-						integrateName(new MultiTreeMap(), pName, elemTree.addSingleTreeGet(pName, new MultiTreeMap()),
-								rootTree, log);
-						
-					}
-				}
-			}
+			
+		// // auto-generate entities
+		// for(String liftedCatName : liftedEntities.getKeys())
+		// if(CategoryName.byName(liftedCatName) != null)
+		// {
+		// CategoryName liftedCat = CategoryName.byName(liftedCatName);
+		// for(String pName : liftedCat.getAncestors())
+		// {
+		// CategoryName p = CategoryName.byName(pName);
+		// // check also if not already generated
+		// if(p.canBeAutoGenerated() && p.getParent().equals(category) && !elemTree.isHierarchical(pName))
+		// {
+		// log.li("Autogenerating ancestor [] for [].", pName, liftedCatName);
+		// integrateName(new MultiTreeMap(), pName, elemTree.addSingleTreeGet(pName, new MultiTreeMap()),
+		// rootTree, log);
+		//
+		// }
+		// }
+		// }
 		
 		// go deeper into child elements
-		for(String childCatName : new LinkedList<>(elemTree.getKeys()))
-		{ // go deeper
+		for(String childCatName : new LinkedList<>(elemTree.getKeys())) { // go deeper
 			if(elemTree.isHierarchical(childCatName))
-				for(String subElemName : elemTree.getSingleTree(childCatName).getHierarchicalNames())
-				{// for each element in the child category
+				for(String subElemName : elemTree.getSingleTree(childCatName).getHierarchicalNames()) {
+					// for each element in the child category
 					List<MultiTreeMap> childElemTrees = new LinkedList<>();
 					if(elemTree.getSingleTree(childCatName).isSingleton(subElemName))
 						childElemTrees.add(elemTree.getSingleTree(childCatName).getSingleTree(subElemName));
@@ -511,15 +489,15 @@ public class DeploymentConfiguration extends MultiTreeMap
 						childElemTrees.addAll(elemTree.getSingleTree(childCatName).getTrees(subElemName));
 					for(MultiTreeMap childElemTree : childElemTrees)
 						// portables need not necessarily be consumed; liftables do.
-						postProcess(childElemTree, childCatName, newPortables.copyShallow(), liftedEntities,
+						postProcess(childElemTree, childCatName, newPortables.copyDeep(), liftedEntities,
 								updatedContext, rootTree, log);
 				}
 		}
 		
 		toRemove.clear();
 		for(String liftedCatName : liftedEntities.getKeys())
-			if(CategoryName.byName(liftedCatName).getAncestorsList().contains(category))
-			{ // with nowhere to drop this, drop it here
+			if(CategoryName.byName(liftedCatName).getAncestorsList().contains(category)) {
+				// with nowhere to drop this, drop it here
 				log.li("Dropping [] entities in [].", liftedCatName, category);
 				elemTree.copyNameFrom(liftedEntities, liftedCatName);
 				toRemove.add(liftedCatName);
@@ -545,16 +523,15 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * @param contextAbove
 	 *            - the local identifiers of all the entities containing this entity.
 	 */
-	protected static void addContext(MultiTreeMap node, List<String> contextAbove)
-	{
+	protected static void addContext(MultiTreeMap node, List<String> contextAbove) {
 		for(String context : contextAbove)
 			node.addOneValue(CONTEXT_ELEMENT_NAME, context);
 		LinkedList<String> currentContext = new LinkedList<>(contextAbove);
 		currentContext.push(node.getSingleValue(LOCAL_ID_ATTRIBUTE));
 		
 		for(String childCatName : node.getHierarchicalNames())
-			for(String subElemName : node.getSingleTree(childCatName).getHierarchicalNames())
-			{// for each element in the child category
+			for(String subElemName : node.getSingleTree(childCatName).getHierarchicalNames()) {
+				// for each element in the child category
 				List<MultiTreeMap> childElemTrees = new LinkedList<>();
 				if(node.getSingleTree(childCatName).isSingleton(subElemName))
 					childElemTrees.add(node.getSingleTree(childCatName).getSingleTree(subElemName));
@@ -593,8 +570,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void readXML(XMLNode XMLnode, MultiTreeMap catTree, Deque<CtxtTriple> context,
-			MultiTreeMap rootTree, Logger log)
-	{
+			MultiTreeMap rootTree, Logger log) {
 		// String l = "Node " + node.getName() + " with attributes ";
 		// for(XMLAttribute a : node.getAttributes())
 		// l += a.getName() + ",";
@@ -625,8 +601,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// two passes, because a name must be generated (for adding context to subordinate nodes) before checking
 		// subordinate nodes.
 		ArrayList<XMLNode> childEntities = new ArrayList<>();
-		for(XMLNode child : XMLnode.getNodes())
-		{
+		for(XMLNode child : XMLnode.getNodes()) {
 			if(child.getName().equals(PARAMETER_ELEMENT_NAME))
 				// parameter nodes, add their values to the current tree
 				addParameter(nodeTree, child.getAttributeValue(PARAMETER_NAME),
@@ -647,8 +622,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 		// is here in order to be after checking subordinate parameter nodes (for name or name parts)
 		integrateName(nodeTree, catName, catTree, rootTree, log);
 		
-		for(XMLNode child : childEntities)
-		{
+		for(XMLNode child : childEntities) {
 			// node must be integrated as a different entity
 			String childCatName = getXMLNodeCategory(child);
 			MultiTreeMap childCatTree = integrateChildCat(context.getFirst().elemTree, childCatName, log);
@@ -687,23 +661,19 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
-			UnitComponentExt log)
-	{
+			UnitComponentExt log) {
 		Deque<CtxtTriple> context = new LinkedList<>();
 		context.push(baseContext);
-		while(args.hasNext())
-		{
+		while(args.hasNext()) {
 			// log.lf(context.toString());
 			String a = args.next();
 			if(a.trim().length() == 0)
 				continue;
-			if(isCategoryDefinition(a))
-			{
+			if(isCategoryDefinition(a)) {
 				// get category
 				String catName = getCategoryName(a);
 				CategoryName category = CategoryName.byName(getCategoryName(a));
-				if(!args.hasNext())
-				{ // must check this before creating any trees
+				if(!args.hasNext()) { // must check this before creating any trees
 					log.lw("Empty category [] in CLI arguments.", catName);
 					return;
 				}
@@ -712,11 +682,27 @@ public class DeploymentConfiguration extends MultiTreeMap
 				// search upwards in the current context for a parent or at least an ancestor
 				// save the current context, in case no appropriate context found upwards
 				Deque<CtxtTriple> savedContext = new LinkedList<>(context);
-				while(!context.isEmpty())
-				{
-					if(context.peek().elemTree != null && context.peek().elemTree.isHierarchical(catName)
-							|| (category != null && category.getAncestorsList().contains(context.peek().category)))
-					{ // found a level that contains the same category;
+				while(!context.isEmpty()) {
+					CategoryName cCat = CategoryName.byName(context.peek().category);
+					if(cCat != null && cCat.isNotEntity()) {
+						// cannot add inside a value; pop and this is the new saved context
+						context.pop();
+						savedContext = new LinkedList<>(context);
+						continue;
+					}
+					// if(category != null && category.getParent() != null &&
+					// category.getParent().equals(context.peek().category)) {
+					// // found the parent in the current context;
+					// // can leave the element in the initial context.
+					// if(category != null && category.getAncestorsList().contains(context.peek().category)) {
+					// // found the parent in the current context;
+					// // can leave the element in the initial context.
+					// context = new LinkedList<>(savedContext);
+					// break;
+					// }
+					// TODO: and current context is not a registered category
+					if(context.peek().elemTree != null && context.peek().elemTree.isHierarchical(catName)) {
+						// found a level that contains the same category;
 						// will insert new element in this context
 						// childCatTree = context.peek().elemTree.getSingleTree(catName);
 						break;
@@ -724,22 +710,22 @@ public class DeploymentConfiguration extends MultiTreeMap
 					// no match yet
 					context.pop();
 				}
-				if(context.isEmpty())
-				{
-					String msg = "Category [] has parent []" + (category != null && category.getParent() == null ? ""
-							: " and no instance of parent could be found") + ";";
-					if(category == null || category.getParent() == null)
-					{ // category not known a-priori or category has no parent
-						log.lw(msg + " adding in current context.", catName,
-								category == null ? "unknown" : category.getParent());
-						context = new LinkedList<>(savedContext);
-					}
-					else
-					{
-						log.lw(msg + " adding to top level.", catName, category.getParent());
-						context = new LinkedList<>();
-						context.add(baseContext);
-					}
+				if(context.isEmpty()) {
+					String msg = "Category [] not found elsewhere in the hierarcy;";
+					// String msg = "Category [] has parent []" + (category != null && category.getParent() == null ? ""
+					// : " and no instance of parent could be found") + ";";
+					// if(category == null || category.getParent() == null)
+					// { // category not known a-priori or category has no parent
+					log.lw(msg + " adding in current context.", catName);
+					// ,category == null ? "unknown" : category.getParent());
+					context = new LinkedList<>(savedContext);
+					// }
+					// else
+					// {
+					// log.lw(msg + " adding to top level.", catName, category.getParent());
+					// context = new LinkedList<>();
+					// context.add(baseContext);
+					// }
 				}
 				
 				// integrate in current context.
@@ -747,20 +733,17 @@ public class DeploymentConfiguration extends MultiTreeMap
 				if(cCtxt.elemTree == null)
 					log.le("Unable to integrate category [] in current context [] which does not support subordinate categories.",
 							catName, cCtxt.category);
-				else if(category != null && category.isValue())
-				{ // it is a simple value
+				else if(category != null && category.isValue()) { // it is a simple value
 					context.push(new CtxtTriple(catName, null, null));
 				}
-				else
-				{ // it is an entity; get entity name
+				else { // it is an entity; get entity name
 					String name = args.next();
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 					MultiTreeMap node;
 					if(subCatTree.isHierarchical(name))
 						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
 								: subCatTree.getFirstTree(name);
-					else
-					{
+					else {
 						node = new MultiTreeMap();
 						node.addOneValue(NAME_ATTRIBUTE_NAME, name);
 						integrateName(node, catName, subCatTree, rootTree, log);
@@ -768,34 +751,28 @@ public class DeploymentConfiguration extends MultiTreeMap
 					context.push(new CtxtTriple(catName, subCatTree, node));
 				}
 			}
-			else
-			{
-				if(context.size() <= 1)
-				{
+			else {
+				if(context.size() <= 1) {
 					log.le("cannot add parameters to the root context (parameter was [])", a);
 					continue;
 				}
-				if(context.peek().elemTree == null)
-				{
+				if(context.peek().elemTree == null) {
 					// could be a simple value category
 					CategoryName paramCateg = CategoryName.byName(context.peek().category);
-					if(context.size() > 1 && paramCateg != null && paramCateg.isValue())
-					{ // place as value in the higher context
+					if(context.size() > 1 && paramCateg != null && paramCateg.isValue()) {
+						// place as value in the higher context
 						CtxtTriple placeholder = context.pop();
 						addParameter(context.peek().elemTree, paramCateg.s(), a, paramCateg.isUnique(), log);
 						context.push(placeholder);
 					}
-					else
-					{
+					else {
 						log.le("incorrect context for parameter []", a);
 						continue;
 					}
 				}
-				else
-				{
+				else {
 					String parameter, value = null;
-					if(a.contains(NAME_SEPARATOR))
-					{ // parameter name & value
+					if(a.contains(NAME_SEPARATOR)) { // parameter name & value
 						String[] es = a.split(NAME_SEPARATOR, 2);
 						parameter = es[0];
 						value = es[1];
@@ -816,8 +793,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the argument.
 	 * @return <code>true</code> if it designates a category.
 	 */
-	protected static boolean isCategoryDefinition(String arg)
-	{
+	protected static boolean isCategoryDefinition(String arg) {
 		return arg.startsWith(CLI_CATEGORY_PREFIX);
 	}
 	
@@ -829,8 +805,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the argument.
 	 * @return the category name.
 	 */
-	protected static String getCategoryName(String arg)
-	{
+	protected static String getCategoryName(String arg) {
 		return isCategoryDefinition(arg) ? arg.substring(1) : null;
 	}
 	
@@ -849,8 +824,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * @param log
 	 *            - the log to use.
 	 */
-	protected static void addParameter(MultiTreeMap node, String par, String val, boolean asSingleton, Logger log)
-	{
+	protected static void addParameter(MultiTreeMap node, String par, String val, boolean asSingleton, Logger log) {
 		if(node.containsHierarchicalName(par))
 			log.le("Name [] already present as hierarchical name.", par);
 		else if(asSingleton)
@@ -874,11 +848,9 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the log to use.
 	 * @return the node associated with the category; is a new node if the category was not pre-existing.
 	 */
-	protected static MultiTreeMap integrateChildCat(MultiTreeMap parentNodeTree, String subCatName, Logger log)
-	{
+	protected static MultiTreeMap integrateChildCat(MultiTreeMap parentNodeTree, String subCatName, Logger log) {
 		CategoryName subCat = CategoryName.byName(subCatName);
-		if(parentNodeTree.containsKey(subCatName))
-		{
+		if(parentNodeTree.containsKey(subCatName)) {
 			if(parentNodeTree.isHierarchical(subCatName))
 				return parentNodeTree.getSingleTree(subCatName);
 			log.le(null, "Child node category [] is already present as a simple key. Will not process this node.",
@@ -911,17 +883,16 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the tree describing the entire deployment.
 	 * @param log
 	 *            - the {@link Logger} to use.
-	 * 
+	 * 			
 	 * @return the name of the entity that was added.
 	 */
 	protected static String integrateName(MultiTreeMap node, String categoryName, MultiTreeMap catTree,
-			MultiTreeMap rootTree, Logger log)
-	{
+			MultiTreeMap rootTree, Logger log) {
 		String name = node.getFirstValue(NAME_ATTRIBUTE_NAME);
 		boolean nameGenerated = name == null;
 		CategoryName category = CategoryName.byName(categoryName);
-		if(name == null && category != null && category.hasNameWithParts())
-		{ // node has a registered category and its elements have two-parts names
+		if(name == null && category != null && category.hasNameWithParts()) {
+			// node has a registered category and its elements have two-parts names
 			String[] partNames = category.nameParts();
 			String part1 = node.getFirstValue(partNames[0]);
 			String part2 = node.getFirstValue(partNames[1]);
@@ -937,8 +908,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 			node.addOneValue(NAME_ATTRIBUTE_NAME, name);
 		
 		// add to category containing this entity
-		if(catTree != null)
-		{
+		if(catTree != null) {
 			if(category != null && category.isUnique())
 				catTree.addSingleTree(name, node);
 			else
@@ -962,8 +932,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the node to process.
 	 * @return the name of the category of the node.
 	 */
-	protected static String getXMLNodeCategory(XMLNode XMLnode)
-	{
+	protected static String getXMLNodeCategory(XMLNode XMLnode) {
 		String catName = XMLnode.getName();
 		if(catName.equals(GENERAL_ENTITY_NAME))
 			catName = XMLnode.getAttributeValue(GENERAL_ENTITY_TYPE_ATTRIBUTE);
@@ -987,8 +956,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the name of the searched attribute / parameter / node.
 	 * @return the value associated with the searched name, or <code>null</code> if nothing found.
 	 */
-	public static String getXMLValue(XMLNode node, String searchName)
-	{
+	public static String getXMLValue(XMLNode node, String searchName) {
 		if(node.getAttributeValue(searchName) != null)
 			// from an attribute
 			return node.getAttributeValue(searchName);
@@ -1019,8 +987,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * 
 	 * @return the entity list.
 	 */
-	public List<MultiTreeMap> getEntityList()
-	{
+	public List<MultiTreeMap> getEntityList() {
 		LinkedList<MultiTreeMap> ret = new LinkedList<>();
 		for(String name : getSingleTree(LOCAL_ID_ATTRIBUTE).getHierarchicalNames())
 			ret.add(getSingleTree(LOCAL_ID_ATTRIBUTE).getSingleTree(name));
@@ -1037,8 +1004,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 *            - the context to filter for.
 	 * @return the list of entities which are in the given context.
 	 */
-	public static List<MultiTreeMap> filterContext(List<MultiTreeMap> entities, String contextLocalID)
-	{
+	public static List<MultiTreeMap> filterContext(List<MultiTreeMap> entities, String contextLocalID) {
 		return filterCategoryInContext(entities, null, contextLocalID);
 	}
 	
@@ -1055,8 +1021,7 @@ public class DeploymentConfiguration extends MultiTreeMap
 	 * @return the list of entities which are in the given context and of the specified category.
 	 */
 	public static List<MultiTreeMap> filterCategoryInContext(List<MultiTreeMap> entities, String categoryName,
-			String contextLocalID)
-	{
+			String contextLocalID) {
 		LinkedList<MultiTreeMap> ret = new LinkedList<>();
 		for(MultiTreeMap element : entities)
 			if(categoryName == null || element.getSingleValue(CATEGORY_ATTRIBUTE_NAME).equals(categoryName))
