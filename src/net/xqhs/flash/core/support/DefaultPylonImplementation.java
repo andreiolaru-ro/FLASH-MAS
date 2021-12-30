@@ -47,6 +47,11 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	 */
 	protected String name = DEFAULT_NAME;
 	
+	/**
+	 * The name of the node in the context of which this pylon is placed.
+	 */
+	protected String nodeName;
+	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
@@ -82,22 +87,32 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
+		nodeName = context.getEntityName();
+		lf("Added node context:", nodeName);
 		return true;
 	}
 	
 	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		return true;
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		if(context instanceof Node.NodeProxy)
+			return addContext((Node.NodeProxy) context);
+		return false;
 	}
 
 	@Override
-	public boolean addGeneralContext(EntityProxy<?> context) {
+	public boolean removeContext(EntityProxy<Node> context) {
+		if(nodeName == null)
+			return ler(false, "No context was present, nothing to remove.");
+		lf("Context removed:", nodeName);
+		nodeName = null;
 		return true;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return true;
+		if(context instanceof Node.NodeProxy)
+			return removeContext((Node.NodeProxy) context);
+		return false;
 	}
 
 	/**
