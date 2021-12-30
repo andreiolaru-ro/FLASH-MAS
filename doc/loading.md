@@ -44,7 +44,7 @@ Normally, a FLASH-MAS deployment is booted via the `FlashBoot` class, which load
 
 * loads the deployment configuration for all nodes declared in the deployment.
 * loads the specified loaders. Loaders are organized by category and kind.
-   * the default loader is the `SImpleLoader` or the first loader for the `null` category or the first loader for the `null` kind in the `null` category (if any).
+   * the default loader is the `SimpleLoader` or the first loader for the `null` category or the first loader for the `null` kind in the `null` category (if any).
 * for each node, loads the entities which should be started on that node, considering the ***load order*** for the categories (the order in which categories should be loaded, e.g. pylons before agents)
    * in order to compute how to load an entity, its category and kind are considered (see [deployment](deployment.md))
    * if there are loaders declared for this category, the loader for the entities kind is used
@@ -53,4 +53,5 @@ Normally, a FLASH-MAS deployment is booted via the `FlashBoot` class, which load
    * if loading fails with the chosen loader, the default loader is also tried.
    * when the default loader is used, an appropriate class must be found to instantiate. This is done using `Loader#autoFind` which looks for a `classpath` parameter in the entity or otherwise tries to locate a class in the packages, according to the category and kind of the entity (see its documentation).
    * when `Loader#load` is called, all the entities which form the context of the loaded entity are also transmitted.
+   * loaded entities which are in the *load order* or direct children of the node in the deployment configuration are `register`ed with the node
 * then, `FlashBoot` *starts* the node(s), which in turn *start* the entities which exist in their scope
