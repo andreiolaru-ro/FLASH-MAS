@@ -37,8 +37,8 @@ import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * WebSocket support implementation that allows agents to send messages whether they are inside the same JVM or not. The
- * support has a {@link WebSocketClientProxy} which is connected to the {@link WebSocketServerEntity}. Therefore any
- * agent in the context of this support is able to send messages to agents located on any other support.
+ * pylon is connected to a {@link WebSocketServerEntity}. Therefore any agent in the context of this support is able to
+ * send messages to agents located on any other pylon connected to the same Websocket server.
  *
  * @author Florina Nastasoiu
  * @author Andrei Olaru
@@ -98,10 +98,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
 		/**
-		 * The entity is both: - registered within the {@link WebSocketClientProxy} local instance which is useful for
-		 * routing a message back to the the {@link MessageReceiver} instance when it arrives from the server -
-		 * registered to the {@link WebSocketServerEntity} using an entity registration format message which is sent by
-		 * the local {@link WebSocketClientProxy} client
+		 * The entity is both: - registered within the local instance which is useful for routing a message back to the
+		 * the {@link MessageReceiver} instance when it arrives from the server - registered to the
+		 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local client
 		 *
 		 * @param entityName
 		 *            - the name of the entity
@@ -219,9 +218,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected Thread													messageThread;
 	
 	/**
-	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment and instantiates its
-	 * local {@link WebSocketClientProxy} which is further connected to the server. Now the entity is ready to send and
-	 * receive messages.
+	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment. Now the entity is ready
+	 * to send and receive messages.
 	 *
 	 * @return an indication of success.
 	 */
@@ -336,6 +334,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		} catch(InterruptedException x) {
 			x.printStackTrace();
 		}
+		li("Stopped");
 		return true;
 	}
 	
