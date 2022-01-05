@@ -24,7 +24,7 @@ public class Boot {
 	 *            - not used.
 	 */
 	public static void main(String[] args_) {
-		FlashBoot.main(new String[] { "src-examples/example/echoAgent/simpleDeployment.xml" });
+		FlashBoot.main(new String[] { "src-examples/example/echoAgent/deployment.xml" });
 	}
 	
 }
