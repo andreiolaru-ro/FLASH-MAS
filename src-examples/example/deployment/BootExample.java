@@ -16,11 +16,28 @@ public class BootExample {
 	 */
 	static String THIS_DIRECTORY = "src-examples/example/deployment/";
 	
-	static int	bitcounter		= 0;
-	static int	DEFINE_AGENT_A	= 1 << bitcounter++;
-	static int	DEFINE_AGENT_B	= 1 << bitcounter++;
-	static int	DEFINE_PYLON	= 1 << bitcounter++;
-	static int	DEFINE_NODE		= 1 << bitcounter++;
+	@SuppressWarnings("javadoc")
+	static int	bitcounter				= 0;
+	/**
+	 * Include the sending agent in version0 scenario.
+	 */
+	static int	DEFINE_AGENT_A			= 1 << bitcounter++;
+	/**
+	 * Include the receiving agent in version0 scenario.
+	 */
+	static int	DEFINE_AGENT_B			= 1 << bitcounter++;
+	/**
+	 * Include a local pylon definition in version0 scenario.
+	 */
+	static int	DEFINE_LOCAL_PYLON		= 1 << bitcounter++;
+	/**
+	 * Include a local pylon definition in version0 scenario.
+	 */
+	static int	DEFINE_WEBSOCKET_PYLON	= 1 << bitcounter++;
+	/**
+	 * Include the node definition in version0 scenario.
+	 */
+	static int	DEFINE_NODE				= 1 << bitcounter++;
 	
 	/**
 	 * Main method.
@@ -31,17 +48,16 @@ public class BootExample {
 		String args = "";
 		
 		// Uncomment one of these lines:
-		args = version0(0
-				
-				| DEFINE_AGENT_A
-				
-				| DEFINE_AGENT_B
-				
-				// | DEFINE_PYLON
-				
-				| DEFINE_NODE
-		
-		);
+		// just the agents, the node and the pylon will be automatically added.
+		args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B);
+		// // the node will be automatically added
+		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_LOCAL_PYLON);
+		// // the node will be automatically added
+		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_WEBSOCKET_PYLON);
+		// // the pylon will be automatically added
+		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_NODE);
+		// // everything is explicitely defined in the scenario
+		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_NODE | DEFINE_LOCAL_PYLON);
 		// args = version1();
 		// args = THIS_DIRECTORY + "complexDeployment.xml";
 		// args = THIS_DIRECTORY + "complexDeployment-autonode.xml";
@@ -59,8 +75,10 @@ public class BootExample {
 			args += " -package example.simplePingPong";
 		if((mask & DEFINE_NODE) > 0)
 			args += " -node node1";
-		if((mask & DEFINE_PYLON) > 0)
+		if((mask & DEFINE_LOCAL_PYLON) > 0)
 			args += " -pylon local:main";
+		if((mask & DEFINE_WEBSOCKET_PYLON) > 0)
+			args += " -pylon webSocket:ws serverPort:8886";
 		if((mask & DEFINE_AGENT_A) > 0)
 			args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		if((mask & DEFINE_AGENT_B) > 0)

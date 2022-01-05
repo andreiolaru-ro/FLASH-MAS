@@ -144,6 +144,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String MONITORING_TYPE = "net/xqhs/flash/core/monitoring";
 	
+	/**
+	 * The name of the Central M&C entity.
+	 */
 	public static final String CENTRAL_MONITORING_ENTITY_NAME = "Monitoring&Control_Entity";
 	
 	/**
