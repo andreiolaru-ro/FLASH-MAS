@@ -121,10 +121,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 					return;
 				
 				if(message.get("nodeName") == null) {
-					le("No nodeName in message");
-					return;
+					lw("nodeName is null");
 				}
 				String nodeName = (String) message.get("nodeName");
+				if(nodeName == null)
+					nodeName = "null";
 				
 				// node registration message
 				if(!nodeToWebSocket.containsKey(nodeName)) {
@@ -142,6 +143,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 						nodeToEntities.get(nodeName).add(newEntity);
 					}
 					li("Registered entity []. ", newEntity);
+					printState();
 					return;
 				}
 				printState();
@@ -195,8 +197,8 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 * between nodes and entities.
 	 */
 	private void printState() {
-		lf("entities: [] ; nodes: [] ; node-entities: " + entityToWebSocket.keySet(), nodeToEntities.keySet(),
-				nodeToEntities.values());
+		lf("entities: [] ; nodes: [] ; node-entities: ", entityToWebSocket.keySet(), nodeToEntities.keySet(),
+				nodeToEntities);
 	}
 	
 	@Override
@@ -260,6 +262,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	@Override
 	protected void li(String message, Object... arguments) {
 		super.li(message, arguments);
+	}
+	
+	@Override
+	protected void lw(String message, Object... arguments) {
+		super.lw(message, arguments);
 	}
 	
 	@Override
