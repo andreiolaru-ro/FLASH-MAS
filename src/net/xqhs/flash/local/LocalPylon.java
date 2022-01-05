@@ -228,9 +228,9 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			return false;
 		if(name == null)
 			name = LOCAL_SUPPORT_NAME;
-		li("my name is", name);
-		useThread = configuration.isSimple(USE_THREAD_PARAM_NAME)
-				&& configuration.getAValue(USE_THREAD_PARAM_NAME) != Boolean.FALSE.toString();
+		if(configuration.isSimple(USE_THREAD_PARAM_NAME)
+				&& configuration.getAValue(USE_THREAD_PARAM_NAME) == Boolean.FALSE.toString())
+			useThread = false;
 		if(configuration.isSimple(KEEP_UNDELIVERABLE_PARAM_NAME))
 			try {
 				keepUndeliverable = Integer.parseInt(configuration.getAValue(KEEP_UNDELIVERABLE_PARAM_NAME));
@@ -258,6 +258,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
+		li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
 	
@@ -279,6 +280,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			messageQueue = null;
 			messageThread = null;
 		}
+		li("Stopped");
 		return true;
 	}
 	

@@ -305,7 +305,7 @@ public class Node extends Unit implements Entity<Node>
 				| InstantiationException | NoSuchMethodException
 				| IllegalAccessException | InvocationTargetException e)
 		{
-			e.printStackTrace();
+			le("Unable to construct node messaging shard: ", PlatformUtils.printException(e));
 		}
 		messagingShard.addContext(proxy);
 		return messagingShard.addGeneralContext(context);
