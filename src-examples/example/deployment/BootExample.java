@@ -50,6 +50,7 @@ public class BootExample {
 		// Uncomment one of these lines:
 		// just the agents, the node and the pylon will be automatically added.
 		args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B);
+		// args = THIS_DIRECTORY + "simpleDeployment.xml"; // equivalent to above
 		// // the node will be automatically added
 		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_LOCAL_PYLON);
 		// // the node will be automatically added
@@ -91,15 +92,19 @@ public class BootExample {
 	 */
 	public static String version1() {
 		String args = "";
-		args += " -package test.simplePingPong";
+		args += " -package example.simplePingPong";
 		args += " -loader agent:composite";
-		args += " -pylon websocket";
+		args += " -pylon webSocket:ws connectTo:ws://localhost:8886";
 		args += " -node A";
-		args += " -agent agentA1 classpath:AgentPingPong sendTo:agentA2 sendTo:agentB2";
+		args += " -pylon webSocket:wsMain serverPort:8886";
+		args += " -agent agentA1 classpath:AgentPingPong sendTo:agentA2 sendTo:agentB2 sendTo:agentC2";
 		args += " -agent agentA2 classpath:AgentPingPong";
 		args += " -node B";
-		args += " -agent agentB1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1";
+		args += " -agent agentB1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1 sendTo:agentC2";
 		args += " -agent agentB2 classpath:AgentPingPong";
+		args += " -node C";
+		args += " -agent agentC1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1 sendTo:agentB2";
+		args += " -agent agentC2 classpath:AgentPingPong";
 		
 		return args;
 	}
