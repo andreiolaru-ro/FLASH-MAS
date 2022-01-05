@@ -394,8 +394,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(CategoryName.byName(childCatName) != null) {
 				CategoryName childCat = CategoryName.byName(childCatName);
 				if(childCat != null && childCat.portableFrom() != null
-						&& updatedContext.contains(childCat.portableFrom().s())) {
+						&& updatedContext.contains(childCat.portableFrom().s())
+						&& (!elemTree.isHierarchical(childCatName)
+								|| allPortable(elemTree.getSingleTree(childCatName), childCatName, log))) {
 					// port this from here; this will not be instanced here
+					log.lf("While in category [], picking portable [] (shallow copy).", category, childCatName);
 					newPortables.copyNameFrom(elemTree, childCatName);
 					// toRemove.add(childCatName); // keep here too
 				}
@@ -405,6 +408,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					// deployment that actually need to get under support
 					if(CategoryName.byName(category) != null) {
 						liftedEntities.copyNameFrom(elemTree, childCatName);
+						log.lf("While in category [], lifting [] (shallow copy).", category, childCatName);
 						toRemove.add(childCatName);
 					}
 					else
@@ -425,6 +429,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(portableEntities.isHierarchical(portedCatName)) {
 						MultiTreeMap portedCatTree = portableEntities.getSingleTree(portedCatName);
 						MultiTreeMap targetCatTree = elemTree.getSingleTree(portedCatName, true);
+						log.lf("While in category [], dropping portable [] (deep copy, with name integration).",
+								category, portedCatName);
 						for(String name : portedCatTree.getKeys())
 							if(portedCatTree.isSingleton(name))
 								log.le("Cannot overwrite existing singleton element [] of category [] with a ported instance.",
@@ -438,8 +444,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 										autoCreated.add(clone.getSingleValue(LOCAL_ID_ATTRIBUTE));
 								}
 					}
-					else
+					else {
+						log.lf("While in category [], dropping portable [] (deep copy, without name integration).",
+								category, portedCatName);
 						elemTree.copyNameFromDeep(portableEntities, portedCatName);
+					}
 					if(!(CategoryName.byName(portedCatName).visibleOnPath()
 							&& !category.equals(CategoryName.byName(portedCatName).getParent())))
 						toRemove.add(portedCatName);
@@ -452,6 +461,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		for(String liftedCatName : liftedEntities.getKeys())
 			if(category.equals(CategoryName.byName(liftedCatName).getParent())) {
 				// port the ported entities to this element
+				log.lf("While in category [], dropping lifted [] (shallow copy).", category, liftedCatName);
 				elemTree.copyNameFrom(liftedEntities, liftedCatName);
 				toRemove.add(liftedCatName);
 			}
@@ -489,7 +499,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						childElemTrees.addAll(elemTree.getSingleTree(childCatName).getTrees(subElemName));
 					for(MultiTreeMap childElemTree : childElemTrees)
 						// portables need not necessarily be consumed; liftables do.
-						postProcess(childElemTree, childCatName, newPortables.copyDeep(), liftedEntities,
+						// this must be copy shallow, because the lifted entities need to remain the same entities
+						// throughout the deployment tree
+						postProcess(childElemTree, childCatName, newPortables.copyShallow(), liftedEntities,
 								updatedContext, rootTree, log);
 				}
 		}
@@ -508,6 +520,37 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		if(!liftedEntities.getKeys().isEmpty())
 			log.lw("In category [] lifted categories remained with no placement: [].", category,
 					liftedEntities.getKeys());
+	}
+	
+	/**
+	 * Checks that all categories inside a category are either not declared, or are portable. This helps to know whether
+	 * a particular category should be lifted instead of ported (if this method returns <code>false</code>).
+	 * <p>
+	 * WARNING: it is assumed that all category keys are singletons.
+	 * 
+	 * @param tree
+	 *            - the tree to check.
+	 * @param caller
+	 *            - the name of the original category to be ported. Is only used for logging.
+	 * @param log
+	 *            - the log to use.
+	 * @return <code>true</code> if everything inside the category is portable.
+	 */
+	protected static boolean allPortable(MultiTreeMap tree, String caller, Logger log) {
+		// for(MultiTreeMap tree : trees)
+		for(String child : tree.getKeys()) {
+			if(CategoryName.byName(child) != null && CategoryName.byName(child).portableFrom() == null) {
+				// child is a declared category and is not portable -> return false
+				log.lf("Found non-portable category [] inside caller category; caller category [] will be lifted instead of ported. ",
+						child, caller);
+				return false;
+			}
+			if(tree.isHierarchical(child))
+				for(MultiTreeMap subTree : tree.getTrees(child))
+					if(!allPortable(subTree, caller, log))
+						return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -690,28 +733,35 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						savedContext = new LinkedList<>(context);
 						continue;
 					}
-					// if(category != null && category.getParent() != null &&
-					// category.getParent().equals(context.peek().category)) {
-					// // found the parent in the current context;
-					// // can leave the element in the initial context.
-					// if(category != null && category.getAncestorsList().contains(context.peek().category)) {
-					// // found the parent in the current context;
-					// // can leave the element in the initial context.
-					// context = new LinkedList<>(savedContext);
-					// break;
-					// }
-					// TODO: and current context is not a registered category
 					if(context.peek().elemTree != null && context.peek().elemTree.isHierarchical(catName)) {
 						// found a level that contains the same category;
 						// will insert new element in this context
 						// childCatTree = context.peek().elemTree.getSingleTree(catName);
 						break;
 					}
+					if(category != null && category.getParent() != null
+							&& category.getParent().equals(context.peek().category)) {
+						// found the parent in the current context;
+						// can leave the element in the initial context.
+						// re-added this because pylons declared inside nodes go back to the entry for the default
+						// pylon, which is in the deployment.
+						context = new LinkedList<>(savedContext);
+						break;
+					}
+					// if(category != null && category.getAncestorsList().contains(context.peek().category)) {
+					// // found the parent in the current context;
+					// // can leave the element in the initial context.
+					// // this is true for any declared category - the context contains deployment, which is in the
+					// // ancestor list.
+					// context = new LinkedList<>(savedContext);
+					// break;
+					// }
+					// TODO: and current context is not a registered category
 					// no match yet
 					context.pop();
 				}
 				if(context.isEmpty()) {
-					String msg = "Category [] not found elsewhere in the hierarcy;";
+					String msg = "Category [] not found elsewhere in the hierarchy;";
 					// String msg = "Category [] has parent []" + (category != null && category.getParent() == null ? ""
 					// : " and no instance of parent could be found") + ";";
 					// if(category == null || category.getParent() == null)
