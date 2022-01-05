@@ -40,7 +40,7 @@ public class BootCompositeDeployment
 		args += " -package example.compositePingPong -loader agent:composite";
 		
 		args += " -node node1";
-		args += " -pylon webSocket:slave1 serverPort:8886 connectTo:ws://localhost:8886";
+		args += " -pylon webSocket:slave1 serverPort:8886";
 		args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
 		
 		args += " -node node2";

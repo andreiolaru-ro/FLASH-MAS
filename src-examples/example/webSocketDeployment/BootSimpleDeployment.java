@@ -19,10 +19,10 @@ import net.xqhs.flash.FlashBoot;
 public class BootSimpleDeployment
 {
 	/**
-	 * Performs test.a
+	 * Performs test.
 	 * 
 	 * @param args_
-	 *                 - not used.
+	 *            - not used.
 	 */
 	public static void main(String[] args_)
 	{
@@ -31,7 +31,7 @@ public class BootSimpleDeployment
 		args += " -package example.simplePingPong";
 		
 		args += " -node node1";
-		args += " -pylon webSocket:slave1 serverPort:8885 connectTo:ws://localhost:8885";
+		args += " -pylon webSocket:slave1 serverPort:8885";
 		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		
 		args += " -node node2";
