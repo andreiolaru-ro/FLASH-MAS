@@ -39,10 +39,10 @@
 	<!-- <loader for="agent" kind="composite" /> -->
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
 
-	<support kind="websockets" />
-	<support kind="custom">
+	<pylon kind="websockets" />
+	<pylon kind="custom">
 		<parameter name="classpath" value="custom" />
-	</support>
+	</pylon>
 
 	<agent name="AgentA">
 		<in-context-of>local</in-context-of>
