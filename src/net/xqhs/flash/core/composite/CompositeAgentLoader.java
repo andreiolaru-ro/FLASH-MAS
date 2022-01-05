@@ -100,6 +100,10 @@ public class CompositeAgentLoader implements Loader<Agent>
 	{
 		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
 				: "<agent>") + ": ";
+		if(agentConfiguration.isSet(SimpleLoader.CLASSPATH_KEY))
+			// agent should be loaded from a class path
+			return log.ler(false, logPre + "Classpath present: []; deferring to other loader.",
+					agentConfiguration.getValue(SimpleLoader.CLASSPATH_KEY));
 		if(agentConfiguration.isSet(SHARD_NODE_NAME))
 			for(String shardName : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTreeKeys())
 			{
@@ -194,6 +198,10 @@ public class CompositeAgentLoader implements Loader<Agent>
 	{
 		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
 				: "<agent>") + ": ";
+		if(agentConfiguration.isSet(SimpleLoader.CLASSPATH_KEY))
+			// agent should be loaded from a class path
+			return (Agent) log.lr(null, logPre + "Classpath [] present; deferring to other loader.",
+					agentConfiguration.getValue(SimpleLoader.CLASSPATH_KEY));
 		CompositeAgent agent = new CompositeAgent(agentConfiguration);
 		String agentName = agentConfiguration.getValue(NAME_ATTRIBUTE_NAME);
 		
