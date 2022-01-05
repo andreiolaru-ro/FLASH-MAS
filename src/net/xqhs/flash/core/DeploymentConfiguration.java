@@ -132,7 +132,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Local IDs of default created entities.
 	 */
-	public static final List<String> autoCreated = new LinkedList<>();
+	protected List<String> autoCreated = new LinkedList<>();
 	
 	/**
 	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
@@ -197,7 +197,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		// deployment node
 		MultiTreeMap deploymentCat = this.addSingleTreeGet(CategoryName.DEPLOYMENT.s(), new MultiTreeMap());
 		MultiTreeMap deployment = new MultiTreeMap();
-		integrateName(deployment, CategoryName.DEPLOYMENT.s(), deploymentCat, this, new DumbLogger());
+		integrateName(deployment, CategoryName.DEPLOYMENT.s(), deploymentCat, this, null, new DumbLogger());
 		
 		// default settings
 		
@@ -214,10 +214,10 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		// deployment.addSingleTreeGet(CategoryName.LOADER.s(), new MultiTreeMap()), this, new DumbLogger());
 		// default node
 		integrateName(new MultiTreeMap(), CategoryName.NODE.s(),
-				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, new DumbLogger());
+				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, null, new DumbLogger());
 		// default pylon (local support)
 		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.PYLON.s(),
-				deployment.addSingleTreeGet(CategoryName.PYLON.s(), new MultiTreeMap()), this, new DumbLogger());
+				deployment.addSingleTreeGet(CategoryName.PYLON.s(), new MultiTreeMap()), this, null, new DumbLogger());
 		autoCreated.addAll(this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys());
 	}
 	
@@ -297,7 +297,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				loadedXML.set(XMLtree);
 			if(XMLtree != null) {
 				context = new LinkedList<>();
-				readXML(XMLtree.getRoot(), deploymentCat, context, this, log);
+				readXML(XMLtree.getRoot(), deploymentCat, context, this, autoCreated, log);
 				log.lf("after XML tree parse:", this);
 				log.lf(">>>>>>>>");
 			}
@@ -311,7 +311,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		Iterator<String> it = programArguments.iterator();
 		if(deploymentArgPresent) // already processed
 			it.next();
-		readCLIArgs(it, new CtxtTriple(CategoryName.DEPLOYMENT.s(), deploymentCat, deployment), this, log);
+		readCLIArgs(it, new CtxtTriple(CategoryName.DEPLOYMENT.s(), deploymentCat, deployment), this, autoCreated, log);
 		log.lf("after CLI tree parse:", this);
 		
 		// ====================================== port portables, move elements to correct parents
@@ -319,7 +319,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
 		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<String>(), this, log);
+				new LinkedList<String>(), this, autoCreated, log);
 		
 		addContext(deployment, new LinkedList<String>());
 		
@@ -376,11 +376,15 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 *            - the list of ancestor categories, above the current entity.
 	 * @param rootTree
 	 *            - the root tree (containing the entity list).
+	 * @param autoCreated
+	 *            - the list of entities that have been created automatically (that were not given in the deployment
+	 *            scenario).
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void postProcess(MultiTreeMap elemTree, String category, MultiTreeMap portableEntities,
-			MultiTreeMap liftedEntities, List<String> context, MultiTreeMap rootTree, Logger log) {
+			MultiTreeMap liftedEntities, List<String> context, MultiTreeMap rootTree, List<String> autoCreated,
+			Logger log) {
 		List<String> toRemove = new LinkedList<>();
 		List<String> updatedContext = new LinkedList<>(context);
 		updatedContext.add(category); // the current context, including this category
@@ -441,7 +445,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 							else
 								for(MultiTreeMap elem : portedCatTree.getTrees(name)) {
 									MultiTreeMap clone = elem.copyDeep();
-									integrateName(clone, portedCatName, targetCatTree, rootTree, log);
+									integrateName(clone, portedCatName, targetCatTree, rootTree, autoCreated, log);
 									if(autoCreated.contains(elem.getSingleValue(LOCAL_ID_ATTRIBUTE)))
 										// clones of default created entities are also default created
 										autoCreated.add(clone.getSingleValue(LOCAL_ID_ATTRIBUTE));
@@ -505,7 +509,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						// this must be copy shallow, because the lifted entities need to remain the same entities
 						// throughout the deployment tree
 						postProcess(childElemTree, childCatName, newPortables.copyShallow(), liftedEntities,
-								updatedContext, rootTree, log);
+								updatedContext, rootTree, autoCreated, log);
 				}
 		}
 		
@@ -612,11 +616,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 *            - the context of the current node, down to the parent entity of this node.
 	 * @param rootTree
 	 *            - the root deployment tree, where identifiable entities should be added.
+	 * @param autoCreated
+	 *            - the list of entity IDs that have been created automatically (that were not given in the deployment
+	 *            scenario).
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void readXML(XMLNode XMLnode, MultiTreeMap catTree, Deque<CtxtTriple> context,
-			MultiTreeMap rootTree, Logger log) {
+			MultiTreeMap rootTree, List<String> autoCreated, Logger log) {
 		// String l = "Node " + node.getName() + " with attributes ";
 		// for(XMLAttribute a : node.getAttributes())
 		// l += a.getName() + ",";
@@ -666,7 +673,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		// get the node's name or create it according to the child's category / entity; add to entity list
 		// is here in order to be after checking subordinate parameter nodes (for name or name parts)
-		integrateName(nodeTree, catName, catTree, rootTree, log);
+		integrateName(nodeTree, catName, catTree, rootTree, autoCreated, log);
 		
 		for(XMLNode child : childEntities) {
 			// node must be integrated as a different entity
@@ -675,7 +682,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(childCatTree == null)
 				continue;
 			// process child
-			readXML(child, childCatTree, new LinkedList<>(context), rootTree, log);
+			readXML(child, childCatTree, new LinkedList<>(context), rootTree, autoCreated, log);
 		}
 	}
 	
@@ -703,11 +710,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * @param rootTree
 	 *            - the configuration tree. The given tree is expected to already contain the data from the XML
 	 *            deployment file.
+	 * @param autoCreated
+	 *            - the list of entity IDs that have been created automatically (that were not given in the deployment
+	 *            scenario).
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
 	protected static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
-			UnitComponentExt log) {
+			List<String> autoCreated, UnitComponentExt log) {
 		Deque<CtxtTriple> context = new LinkedList<>();
 		context.push(baseContext);
 		while(args.hasNext()) {
@@ -799,7 +809,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					else {
 						node = new MultiTreeMap();
 						node.addOneValue(NAME_ATTRIBUTE_NAME, name);
-						integrateName(node, catName, subCatTree, rootTree, log);
+						integrateName(node, catName, subCatTree, rootTree, autoCreated, log);
 					}
 					context.push(new CtxtTriple(catName, subCatTree, node));
 				}
@@ -934,13 +944,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 *            - the tree describing the category of the entity.
 	 * @param rootTree
 	 *            - the tree describing the entire deployment.
+	 * @param autoCreated
+	 *            - the list of entity IDs that have been created automatically (that were not given in the deployment
+	 *            scenario).
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 * 			
 	 * @return the name of the entity that was added.
 	 */
 	protected static String integrateName(MultiTreeMap node, String categoryName, MultiTreeMap catTree,
-			MultiTreeMap rootTree, Logger log) {
+			MultiTreeMap rootTree, List<String> autoCreated, Logger log) {
 		String name = node.getFirstValue(NAME_ATTRIBUTE_NAME);
 		boolean nameGenerated = name == null;
 		CategoryName category = CategoryName.byName(categoryName);
@@ -964,8 +977,19 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		if(catTree != null) {
 			if(category != null && category.isUnique())
 				catTree.addSingleTree(name, node);
-			else
+			else {
+				if(autoCreated != null && catTree.getHierarchicalNames().size() == 1) {
+					String firstName = catTree.getHierarchicalNames().get(0);
+					if(catTree.getTrees(firstName).size() == 1
+							&& autoCreated.contains(catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE))) {
+						// the only tree is an auto-created category and it will be removed.
+						catTree.removeKey(firstName);
+						log.li("removed auto-created [] entity [] to replace with entity [].", category, firstName,
+								name);
+					}
+				}
 				catTree.addOneTree(name, node);
+			}
 		}
 		
 		// create a local id and add it to the list
