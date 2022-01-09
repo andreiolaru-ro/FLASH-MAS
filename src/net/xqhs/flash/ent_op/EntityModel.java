@@ -5,11 +5,11 @@ package net.xqhs.flash.ent_op;
  * instance, an interface called <code>AgentModel</code> extending {@link EntityModel}, can be used as interface for any
  * implementation that <i>models</i> an agent.
  * <p>
- * <b>The model is not the entity.</b> But a model of, for instance, a remote entity may be used to facilitate the
- * interaction with the remote entity by storing some known functionality of that remote entity.
+ * <b>The model is not the entity.</b> But a model of another (especially remote) entity may be used to facilitate the
+ * interaction with the other entity by storing some known functionality of that remote entity.
  * 
  * @author Andrei Olaru
  */
 public interface EntityModel {
-	handleCall()
+	void handleCall(OperationCall opCall);
 }

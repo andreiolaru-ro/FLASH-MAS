@@ -9,36 +9,39 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core;
+package net.xqhs.flash.ent_op;
 
 import java.util.ArrayList;
 import java.util.Set;
 
-public interface EntityOp {
+/**
+ * An instance of this class describes an operation that can be performed on an entity, the arguments for the operation,
+ * and the conditions under which the operation can be accessed by a caller entity.
+ * 
+ * @author Andrei Olaru
+ */
+public interface Operation {
 	public interface Description {
 	}
 	
 	public interface Restriction {
 	}
 	
-	public interface AuthorizationToken {
-	}
-	
-	public interface Argument {
+	public interface Value {
 		public String getType();
 		
 		public Description getDescription();
 	}
 	
-	public interface Operation {
-		public String getName();
-		
-		public Description getDescription();
-		
-		public ArrayList<Argument> getArguments();
-		
-		public Set<Restriction> getRestrictions();
-	}
+	public String getName();
 	
-	public boolean receiveCall(String operation, ArrayList<Object> argumentValues, Set<AuthorizationToken> tokens);
+	public Description getDescription();
+	
+	public boolean hasResult();
+	
+	public Value getResultType();
+	
+	public ArrayList<Value> getArguments();
+	
+	public Set<Restriction> getRestrictions();
 }
