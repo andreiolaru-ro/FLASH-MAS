@@ -115,5 +115,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Logging-modern (2)" level="project" />
   </component>
 </module>

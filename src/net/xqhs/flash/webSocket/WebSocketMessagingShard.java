@@ -23,12 +23,16 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.OperationUtils;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+
 /**
  * The {@link WebSocketMessagingShard} class manages the link between agent's messaging service and its pylon.
  *
  * @author Florina Nastasoiu
  */
-public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements Serializable {
 	
 	/**
 	 * The serial UID.
@@ -43,12 +47,12 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	private MessagingPylonProxy pylon;
+	private transient MessagingPylonProxy pylon;
 	
 	/**
 	 * The proxy to this shard, to be used by the pylon.
 	 */
-	public MessageReceiver inbox;
+	public transient MessageReceiver inbox;
 	
 	/**
 	 * Default constructor.
@@ -102,4 +106,13 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	public void register(String entityName) {
 		pylon.register(entityName, inbox);
 	}
+
+//	private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
+//		inbox = new MessageReceiver() {
+//			@Override
+//			public void receive(String source, String destination, String content) {
+//				receiveMessage(source, destination, content);
+//			}
+//		};
+//	}
 }

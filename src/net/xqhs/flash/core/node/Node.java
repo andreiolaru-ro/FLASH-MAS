@@ -11,13 +11,12 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import net.xqhs.flash.core.composite.CompositeAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -53,6 +52,37 @@ public class Node extends Unit implements Entity<Node>
 		public String getEntityName() {
 			return name;
 		}
+
+
+		public void moveAgent(String destination, String agentData) {
+			sendMessage(destination, agentData);
+		}
+
+		public void receiveAgent(String agentData) {
+			CompositeAgent agent = deserializeAgent(agentData);
+			agent.addGeneralContext(this); // ?
+			agent.start();
+		}
+
+		private CompositeAgent deserializeAgent(String agentData) {
+			CompositeAgent agent = null;
+			ByteArrayInputStream fis;
+			ObjectInputStream in;
+			try {
+				fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
+				in = new ObjectInputStream(fis);
+				agent = (CompositeAgent) in.readObject();
+				agent.toggleTransient();
+				agent.start();
+				in.close();
+				System.out.println("Deserialized agent obj from string:");
+				System.out.println(agent);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+
+			return agent;
+		}
 	}
 
 	/**
@@ -68,7 +98,7 @@ public class Node extends Unit implements Entity<Node>
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	public List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 	/**
 	 *  A {@link MessagingShard} of this node for message communication.
@@ -109,6 +139,9 @@ public class Node extends Unit implements Entity<Node>
 						}
 				}
 				le("[] cannot properly parse received message.", name);
+			}
+			if (obj instanceof String) {
+				System.out.println("####### Received " + obj);
 			}
 		}
 
