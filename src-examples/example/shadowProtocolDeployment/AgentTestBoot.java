@@ -1,20 +1,19 @@
 package example.shadowProtocolDeployment;
 
-import example.webSocketsDeployment.BootSimple;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.shadowProtocol.ShadowAgent;
+import net.xqhs.flash.shadowProtocol.AgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
-import net.xqhs.flash.webSocket.WebSocketPylon;
+
+import java.util.ArrayList;
 
 public class AgentTestBoot {
     /**
@@ -48,9 +47,18 @@ public class AgentTestBoot {
         public boolean start()
         {
             messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
-            if(name.equals("Two"))
-                messagingShard.sendMessage(messagingShard.getAgentAddress(), "One", "Hello from the other side!");
+            if(name.contains("Two"))
+                messagingShard.sendMessage(messagingShard.getAgentAddress(), "One-localhost:8885", "Hello from the other side!");
             return true;
+        }
+
+        public boolean moveToAnotherNode(String node_name) {
+            if (messagingShard instanceof AgentShard) {
+                ((AgentShard) messagingShard).moveToAnotherPylon(node_name);
+                messagingShard = null;
+                return true;
+            }
+            return false;
         }
 
         @Override
@@ -125,7 +133,7 @@ public class AgentTestBoot {
                 }
 
                 @Override
-                public AgentShard getAgentShard(AgentShardDesignation designation)
+                public net.xqhs.flash.core.shard.AgentShard getAgentShard(AgentShardDesignation designation)
                 {
                     return null;
                 }
@@ -156,24 +164,34 @@ public class AgentTestBoot {
      */
     public static void main(String[] args) throws InterruptedException
     {
+        ArrayList<String> servers = new ArrayList<>();
+        servers.add("ws://localhost:8885");
+        servers.add("ws://localhost:8886");
+
         ShadowPylon pylon = new ShadowPylon();
         pylon.configure(
                 new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8885")
-                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8885"));
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8885")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-One"));
 
         pylon.start();
-        AgentTest one = new AgentTest("One");
+        AgentTest one = new AgentTest("One-" + "localhost:8885");
         one.addContext(pylon.asContext());
-        one.addMessagingShard(new ShadowAgent("ws://localhost:8885"));
+        one.addMessagingShard(new AgentShard(pylon.HomeServerAddressName, one.name));
 
 
         ShadowPylon pylon2 = new ShadowPylon();
         pylon2.configure(
-                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8885"));
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8886")
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8886")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-Two"));
+
         pylon2.start();
-        AgentTest two = new AgentTest("Two");
+        AgentTest two = new AgentTest("Two-" + "localhost:8886");
         two.addContext(pylon2.asContext());
-        two.addMessagingShard(new ShadowAgent("ws://localhost:8885"));
+        two.addMessagingShard(new AgentShard("ws://localhost:8886", two.name));
 
         Thread.sleep(1000);
 
@@ -182,34 +200,20 @@ public class AgentTestBoot {
 
         Thread.sleep(1000);
 
+        one.moveToAnotherNode("Pylon-Two");
+
+        Thread.sleep(1000);
+
+        one.addContext(pylon2.asContext());
+        one.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, one.name));
+
+        one.start();
+        two.start();
+
+        Thread.sleep(3000);
+
         pylon2.stop();
         pylon.stop();
 
-//        WebSocketPylon pylon = new WebSocketPylon();
-//        pylon.configure(
-//                new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
-//                        .addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_PORT_NAME, "8885"));
-//        pylon.start();
-//        BootSimple.AgentTest one = new BootSimple.AgentTest("One");
-//        one.addContext(pylon.asContext());
-//        one.addMessagingShard(new WebSocketMessagingShard());
-//
-//        WebSocketPylon pylon2 = new WebSocketPylon();
-//        pylon2.configure(
-//                new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885"));
-//        pylon2.start();
-//        BootSimple.AgentTest two = new BootSimple.AgentTest("Two");
-//        two.addContext(pylon2.asContext());
-//        two.addMessagingShard(new WebSocketMessagingShard());
-
-//        Thread.sleep(1000);
-//
-//        one.start();
-//        two.start();
-//
-//        Thread.sleep(1000);
-//
-//        pylon2.stop();
-//        pylon.stop();
     }
 }

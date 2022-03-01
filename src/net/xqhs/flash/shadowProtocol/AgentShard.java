@@ -13,24 +13,7 @@ import org.json.simple.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * Agent it's a messaging shard that
- *  - comunicates with the Shadow for the regular checks
- *  - decrements the ttl
- *  - creates the proxy if necessary
- */
-
-public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
-
-    /**
-     * Actual value of the ttl
-     */
-    private int ttl;
-
-    /**
-     * The original value of the ttl
-     */
-    private int originalttl;
+public class AgentShard extends AbstractNameBasedMessagingShard {
 
     /**
      * Reference to the local pylon proxy
@@ -47,28 +30,36 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      */
     private ShadowHost shadow =     null;
 
+    private String agent_name = null;
+
     /**
      * Default constructor
      */
-    public ShadowAgentShard(String serverURI) {
+    public AgentShard(String serverURI, String name) {
         super();
+        this.agent_name = name;
         inbox = new MessageReceiver() {
             @Override
             public void receive(String source, String destination, String content) {
-                receiveMessage(source, destination, content);
+                if (content.equals("stop")) {
+                    pylon.send(agent_name, destination, content);
+                } else {
+                    receiveMessage(source, destination, content);
+                }
             }
         };
         if (shadow == null) {
-            System.out.println("The shadow doesn't exist!!");
+            String short_name = (name.split("-"))[0];
+            li("The shadow doesn't exist!!");
             try {
                 int tries = 10;
                 long space = 1000;
                 while(tries > 0) {
                     try {
-                        shadow = new ShadowHost(new URI(serverURI));
+                        shadow = new ShadowHost(new URI(serverURI), short_name);
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
-                        System.out.println("Shadow didn't connect");
+                        le("Shadow didn't connect!");
                     }
                     if(shadow.connectBlocking())
                         break;
@@ -86,8 +77,9 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
 
     @Override
     public boolean sendMessage(String source, String target, String content) {
-        System.out.println("Send message");
+        li("Send message");
         JSONObject messageToServer = new JSONObject();
+        messageToServer.put("type", "content");
         messageToServer.put("nodeName", pylon.getEntityName());
         messageToServer.put("source", source);
         messageToServer.put("destination", target);
@@ -103,9 +95,10 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
     @Override
     public void register(String entityName) {
         pylon.register(entityName, inbox);
-        System.out.println("On pylon " + pylon.getEntityName() + " we have agent " + entityName);
+        lf("On pylon " + pylon.getEntityName() + " we have agent " + entityName);
         shadow.addReceiverAgent(entityName, inbox);
         JSONObject messageToServer = new JSONObject();
+        messageToServer.put("type", "register");
         messageToServer.put("nodeName", pylon.getEntityName());
         messageToServer.put("entityName", entityName);
         shadow.send(messageToServer.toString());
@@ -113,12 +106,9 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
 
     /**
      * Get the pylon from context
-     * @param context
-     * @return
      */
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        System.out.println("General context");
         if(!(context instanceof MessagingPylonProxy))
             return false;
         pylon = (MessagingPylonProxy) context;
@@ -134,7 +124,19 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         }
 
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_WAVE)) {
-            System.out.println("Received message");
+            li("Received message");
         }
+    }
+
+    public boolean moveToAnotherPylon(String pylon_name) {
+        System.out.println(pylon_name);
+        li("Agent wants to move to another pylon");
+        JSONObject messageToServer = new JSONObject();
+        messageToServer.put("type", "reqLeave");
+        messageToServer.put("nodeName", pylon.getEntityName());
+        messageToServer.put("source", this.agent_name);
+        messageToServer.put("destinationNode", pylon_name);
+        shadow.send(messageToServer.toString());
+        return true;
     }
 }

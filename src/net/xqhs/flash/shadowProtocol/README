@@ -1,17 +1,1 @@
-    Shadow Protocol - work in progress
-
-Components:
-    - ShadowHomeServer = central server that knows the location of the agent and its shadow (websocket server)
-    - ShadowHost = shadow components (its a web socket client that communicates with the ShadowHomeServer)
-    - ShadowProxy = it is created by the agent if the agent decide to migrate (contains the next destination of the agent)
-    - ShadowPylon = manages all the components that are on the machine
-    - ShadowAgent = shards
-
-Flow for the components created on a machine:
-   - pylon is created
-        - pylon checks if the homeServer it is up, if not starts the homeServer
-   - Agent is created => with the messaging shard ShadowAgent
-   - The shard created checks if it has a shadow
-        - if not, creates the shadow => that it is the websocket client and connects to the server
-
 

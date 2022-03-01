@@ -5,6 +5,7 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
@@ -15,29 +16,27 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * The host for the shadows
- *  - receives message at regular intervals from the agents
- */
 public class ShadowHost extends Unit {
-    {
-        setUnitName("shadow-host");
-        setLoggerType(PlatformUtils.platformLogType());
-    }
 
     protected WebSocketClient client;
-    /**
-     * The shadow keeps a map for the agents and the first destination of those
-     */
-    protected Map<String, MessagingPylonProxy> agentToFirstdestination;
 
-    protected HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
+    protected MessageReceiver messageReceivers	= null;
+
+    protected String agent_name = null;
+
+    protected String serverName = null;
 
     void addReceiverAgent(String name, MessageReceiver receiver) {
-        messageReceivers.put(name, receiver);
+        agent_name = name;
+        messageReceivers = receiver;
     }
 
-    public ShadowHost(URI serverURI) {
+    public ShadowHost(URI serverURI, String agent_name) {
+        {
+            setUnitName("proxy-" + agent_name);
+            setLoggerType(PlatformUtils.platformLogType());
+        }
+        serverName = serverURI.toString();
         client = new WebSocketClient(serverURI) {
 
             @Override
@@ -50,8 +49,23 @@ public class ShadowHost extends Unit {
                 Object obj = JSONValue.parse(s);
                 if(obj == null) return;
                 JSONObject message = (JSONObject) obj;
-
-                System.out.println("Message from " + message.get("source"));
+                String str = (String) message.get("type");
+                switch (str) {
+                    case "content":
+                        messageReceivers.receive((String) message.get("source"), (String) message.get("destination"), (String) message.get("content"));
+                        li("Message from " + message.get("source") + ": " + message.get("content"));
+                        break;
+                    case "reqLeave":
+                        String response = (String) message.get("response");
+                        if (response.equals("OK")) {
+                            li("Prepare to leave");
+                            messageReceivers.receive("", "", "stop");
+                            client.close();
+                        }
+                        break;
+                    default:
+                        System.out.println("Unknown type");
+                }
             }
 
             @Override
@@ -67,7 +81,7 @@ public class ShadowHost extends Unit {
     }
 
     public boolean send(String message) {
-        System.out.println("Send from shadow");
+        li("Send from shadow");
         client.send(message);
         return true;
     }
