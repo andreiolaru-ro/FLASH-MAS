@@ -47,19 +47,21 @@ public class AgentTestBoot {
         public boolean start()
         {
             messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
-            if(name.contains("Two"))
-                messagingShard.sendMessage(messagingShard.getAgentAddress(), "One-localhost:8885", "Hello from the other side!");
             return true;
         }
 
-        public boolean moveToAnotherNode(String node_name) {
-            if (messagingShard instanceof AgentShard) {
-                ((AgentShard) messagingShard).moveToAnotherPylon(node_name);
-                messagingShard = null;
-                return true;
-            }
-            return false;
+        public void sendMessage(String destination, String content) {
+            messagingShard.sendMessage(messagingShard.getAgentAddress(), destination, content);
         }
+
+        public void moveToAnotherNode() {
+            messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
+        }
+
+        public void reconnect() {
+            messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AFTER_MOVE));
+        }
+
 
         @Override
         public boolean stop()
@@ -193,25 +195,69 @@ public class AgentTestBoot {
         two.addContext(pylon2.asContext());
         two.addMessagingShard(new AgentShard("ws://localhost:8886", two.name));
 
+        ShadowPylon pylon3 = new ShadowPylon();
+        pylon3.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8886")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-Three"));
+
+        pylon3.start();
+
+        AgentTest three = new AgentTest("Three-" + "localhost:8886");
+        three.addContext(pylon3.asContext());
+        three.addMessagingShard(new AgentShard("ws://localhost:8886", three.name));
+
         Thread.sleep(1000);
 
         one.start();
         two.start();
+        three.start();
 
+        Thread.sleep(3000);
+        one.sendMessage("Two-localhost:8886", "Message 1");
+        Thread.sleep(1000);
+        one.sendMessage("Three-localhost:8886", "Message 2");
+        Thread.sleep(1000);
+        three.sendMessage("One-localhost:8885", "Message 3");
+        Thread.sleep(1000);
+        three.sendMessage("Two-localhost:8886", "Message 4");
+        Thread.sleep(1000);
+        two.sendMessage("Three-localhost:8886", "Message 5");
+        Thread.sleep(1000);
+        two.sendMessage("One-localhost:8885", "Message 6");
         Thread.sleep(1000);
 
-        one.moveToAnotherNode("Pylon-Two");
+        one.moveToAnotherNode();
+        three.moveToAnotherNode();
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         one.addContext(pylon2.asContext());
         one.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, one.name));
 
-        one.start();
-        two.start();
+        two.sendMessage("One-localhost:8885", "Message 7");
+        two.sendMessage("One-localhost:8885", "Message 8");
+
+        one.reconnect();
+
+        three.addContext(pylon2.asContext());
+        three.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, three.name));
+
+        two.sendMessage("Three-localhost:8886", "Message 9");
+        two.sendMessage("Three-localhost:8886", "Message 10");
+
+        three.reconnect();
 
         Thread.sleep(3000);
 
+        two.sendMessage("One-localhost:8885", "Message 11");
+        two.sendMessage("Three-localhost:8886", "Message 12");
+
+
+        Thread.sleep(5000);
+
+
+        pylon3.stop();
         pylon2.stop();
         pylon.stop();
 

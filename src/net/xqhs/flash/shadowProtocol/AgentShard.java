@@ -126,17 +126,28 @@ public class AgentShard extends AbstractNameBasedMessagingShard {
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_WAVE)) {
             li("Received message");
         }
-    }
 
-    public boolean moveToAnotherPylon(String pylon_name) {
-        System.out.println(pylon_name);
-        li("Agent wants to move to another pylon");
-        JSONObject messageToServer = new JSONObject();
-        messageToServer.put("type", "reqLeave");
-        messageToServer.put("nodeName", pylon.getEntityName());
-        messageToServer.put("source", this.agent_name);
-        messageToServer.put("destinationNode", pylon_name);
-        shadow.send(messageToServer.toString());
-        return true;
+        if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
+            li("Agent wants to move to another pylon");
+            JSONObject messageToServer = new JSONObject();
+            messageToServer.put("type", "reqLeave");
+            messageToServer.put("nodeName", pylon.getEntityName());
+            messageToServer.put("source", this.agent_name);
+            shadow.send(messageToServer.toString());
+        }
+
+        if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
+            String entityName = getAgent().getEntityName();
+            pylon.register(entityName, inbox);
+            lf("On pylon " + pylon.getEntityName() + " arrived the agent " + entityName);
+            shadow.addReceiverAgent(entityName, inbox);
+            JSONObject messageToServer = new JSONObject();
+            messageToServer.put("type", "connect");
+            messageToServer.put("nodeName", pylon.getEntityName());
+            messageToServer.put("entityName", entityName);
+            shadow.send(messageToServer.toString());
+        }
+
+
     }
 }

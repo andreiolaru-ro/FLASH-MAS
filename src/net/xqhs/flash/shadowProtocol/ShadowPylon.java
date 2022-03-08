@@ -39,7 +39,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
         @Override
         public boolean register(String entityName, MessageReceiver receiver) {
-            //System.out.println("Register " + entityName);
+            System.out.println("Register " + entityName);
             if(!agentList.containsKey(entityName)) {
                 agentList.put(entityName, receiver);
             }
