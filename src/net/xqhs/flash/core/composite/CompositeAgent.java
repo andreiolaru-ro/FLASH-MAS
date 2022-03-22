@@ -29,10 +29,12 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.webSocket.WebSocketMessagingShard;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
+import org.json.simple.JSONObject;
 
 /**
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
@@ -88,6 +90,12 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 
 	public void moveTo(String destination) {
 		String agentData = serialize();
+		JSONObject root = new JSONObject();
+		root.put(OperationUtils.NAME, OperationUtils.ControlOperation.RECEIVE_AGENT.toString().toLowerCase());
+		root.put(OperationUtils.PARAMETERS, destination);
+		root.put("agentData", agentData);
+
+		String json = root.toJSONString();
 
 		AgentShard shard = getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
 
@@ -103,7 +111,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, "move") ;
 			postAgentEvent(prepareMoveEvent);
 
-			nodeProxy.moveAgent(destination, agentData);
+			nodeProxy.moveAgent(destination, json);
 		}
 
 		stop();

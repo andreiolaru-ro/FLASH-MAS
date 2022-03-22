@@ -53,7 +53,6 @@ public class Node extends Unit implements Entity<Node>
 			return name;
 		}
 
-
 		public void moveAgent(String destination, String agentData) {
 			sendMessage(destination, agentData);
 		}
@@ -125,28 +124,38 @@ public class Node extends Unit implements Entity<Node>
 				if(jo.get(OperationUtils.NAME) != null && jo.get(OperationUtils.PARAMETERS) != null) {
 					String operation  = (String)jo.get(OperationUtils.NAME);
 					String param      = (String)jo.get(OperationUtils.PARAMETERS);
+
+					// name = operation.receive?, param = agent
+
 					Entity<?> entity = entityOrder.stream()
 							.filter(en -> en.getName().equals(param))
 							.findFirst().orElse(null);
 					if(entity == null) {
 						le("[] entity not found in the context of [].", param, name);
-						return;
+//						return;
 					}
-					if(operation.equals(OperationUtils.ControlOperation.START.getOperation()))
-						if(entity.start()) {
+					if(operation.equals(OperationUtils.ControlOperation.START.getOperation())) {
+						if (entity.start()) {
 							lf("[] was started by parent [].", param, name);
 							return;
 						}
+					}
+					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
+						System.out.println("########## Agent wants to move #########");
+						String agentData = (String) jo.get("agentData");
+
+//						CompositeAgent agent = NodeProxy.deserializeAgent(agentData);
+//						agent.addGeneralContext(this); // ?
+//						agent.start();
+					}
 				}
 				le("[] cannot properly parse received message.", name);
-			}
-			if (obj instanceof String) {
-				System.out.println("####### Received " + obj);
 			}
 		}
 
 		@Override
 		public void postAgentEvent(AgentEvent event) {
+			System.out.println("Agent event " + event);
 			switch (event.getType())
 			{
 				case AGENT_WAVE:

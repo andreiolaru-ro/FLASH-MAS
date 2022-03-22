@@ -20,6 +20,7 @@ public class Boot {
         test_args += " -node nodeA";
         test_args += " -pylon webSocket:slaveA serverPort:8888 connectTo:ws://localhost:8888";
         test_args += " -agent composite:agentA1 -shard messaging";
+        test_args += " -agent composite:agentA2 -shard messaging";
 
         test_args += " -node nodeB";
         test_args += " -pylon webSocket:slaveB connectTo:ws://localhost:8888";
@@ -56,7 +57,7 @@ public class Boot {
 
         for(Node node : nodes) {
             System.out.println(node.getName() + " has the following entities: " + node.entityOrder);
-            node.stop();
+//            node.stop();
         }
     }
 
