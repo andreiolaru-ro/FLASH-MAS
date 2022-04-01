@@ -160,12 +160,7 @@ public class AgentTestBoot {
         }
     }
 
-    /**
-     * @param args
-     * @throws InterruptedException
-     */
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void test1() throws InterruptedException {
         ArrayList<String> servers = new ArrayList<>();
         servers.add("ws://localhost:8885");
         servers.add("ws://localhost:8886");
@@ -253,13 +248,100 @@ public class AgentTestBoot {
         two.sendMessage("One-localhost:8885", "Message 11");
         two.sendMessage("Three-localhost:8886", "Message 12");
 
-
         Thread.sleep(5000);
-
 
         pylon3.stop();
         pylon2.stop();
         pylon.stop();
+    }
 
+    public static void test2() throws InterruptedException {
+        ArrayList<String> servers = new ArrayList<>();
+        servers.add("ws://localhost:8885");
+        servers.add("ws://localhost:8886");
+
+        ShadowPylon pylon = new ShadowPylon();
+        pylon.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8885")
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8885")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-One"));
+
+        pylon.start();
+        AgentTest one = new AgentTest("One-" + "localhost:8885");
+        one.addContext(pylon.asContext());
+        one.addMessagingShard(new AgentShard(pylon.HomeServerAddressName, one.name));
+
+
+        ShadowPylon pylon2 = new ShadowPylon();
+        pylon2.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8886")
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8886")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-Two"));
+
+        pylon2.start();
+        AgentTest two = new AgentTest("Two-" + "localhost:8886");
+        two.addContext(pylon2.asContext());
+        two.addMessagingShard(new AgentShard("ws://localhost:8886", two.name));
+
+        ShadowPylon pylon3 = new ShadowPylon();
+        pylon3.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8886")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-Three"));
+
+        pylon3.start();
+
+        AgentTest three = new AgentTest("Three-" + "localhost:8886");
+        three.addContext(pylon3.asContext());
+        three.addMessagingShard(new AgentShard("ws://localhost:8886", three.name));
+
+        Thread.sleep(1000);
+
+        one.start();
+        two.start();
+        three.start();
+
+        Thread.sleep(3000);
+
+        one.moveToAnotherNode();
+        three.moveToAnotherNode();
+
+        Thread.sleep(2000);
+
+        one.addContext(pylon2.asContext());
+        one.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, one.name));
+        one.reconnect();
+
+        three.addContext(pylon2.asContext());
+        three.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, three.name));
+        three.reconnect();
+
+        Thread.sleep(3000);
+
+        one.moveToAnotherNode();
+
+        Thread.sleep(2000);
+
+        one.addContext(pylon.asContext());
+        one.addMessagingShard(new AgentShard(pylon.HomeServerAddressName, one.name));
+        one.reconnect();
+
+        Thread.sleep(5000);
+
+        pylon3.stop();
+        pylon2.stop();
+        pylon.stop();
+    }
+
+    /**
+     * @param args
+     * @throws InterruptedException
+     */
+    public static void main(String[] args) throws InterruptedException
+    {
+        //test1();
+        test2();
     }
 }

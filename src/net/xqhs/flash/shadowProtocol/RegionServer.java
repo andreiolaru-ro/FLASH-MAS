@@ -76,11 +76,12 @@ public class RegionServer extends Unit implements Entity {
                 /*
                  * When the connection is closed, delete the entry from map
                  */
-                for (AgentStatus ag : agentsList.values()) {
-                    if (webSocket.toString().equals(ag.getClientConnection().toString()) && ag.getStatus().equals("ONLINE")) {
-                        ag.setStatus("OFFLINE");
-                    }
-                }
+
+//                for (AgentStatus ag : agentsList.values()) {
+//                    if (webSocket.toString().equals(ag.getClientConnection().toString()) && ag.getStatus().equals("ONLINE")) {
+//                        ag.setStatus("OFFLINE");
+//                    }
+//                }
                 //printAgentList();
                 //agentsList.entrySet().removeIf(entry -> webSocket.toString().equals(entry.getValue().getClientConnection().toString()));
                 li(("[] closed with exit code " + i), webSocket);
@@ -125,6 +126,9 @@ public class RegionServer extends Unit implements Entity {
 
             @Override
             public void onClose(int i, String s, boolean b) {
+                System.out.println();
+                printAgentList();
+                System.out.println();
                 lw("Closed with exit code " + i);
             }
 
@@ -148,7 +152,7 @@ public class RegionServer extends Unit implements Entity {
                 lf("Received message from new agent with shadow " + webSocket);
                 String new_agent = (String) mesg.get("entityName");
                 if (!agentsList.containsKey(new_agent)) {
-                    agentsList.put(new_agent, new AgentStatus(new_agent, webSocket, "ONLINE", this.name));
+                    agentsList.put(new_agent, new AgentStatus(new_agent, webSocket, "ONLINE", this.name, true));
                 } else {
                     le("An agent with that name already exist!");
                 }
@@ -158,7 +162,7 @@ public class RegionServer extends Unit implements Entity {
                 lf("Received message from arrived agent with shadow " + webSocket);
                 String arrived_agent = (String) mesg.get("entityName");
                 if (!agentsList.containsKey(arrived_agent)) {
-                    agentsList.put(arrived_agent, new AgentStatus(arrived_agent, webSocket, "MOVED", this.name));
+                    agentsList.put(arrived_agent, new AgentStatus(arrived_agent, webSocket, "TRANSITION", this.name, false));
                     String homeServer = (arrived_agent.split("-"))[1];
                     if (clients.containsKey(homeServer)) {
                         JSONObject messageToServer = new JSONObject();
@@ -186,10 +190,10 @@ public class RegionServer extends Unit implements Entity {
                 String target = (String) mesg.get("destination");
                 if (agentsList.containsKey(target)) {
                     AgentStatus ag = agentsList.get(target);
-                    if (ag.getStatus().equals("ONLINE") || ag.getStatus().equals("MOVED")) {
+                    if (ag.getStatus().equals("ONLINE") || ag.getStatus().equals("TRANSITION")) {
                         ag.getClientConnection().send(message);
                     }
-                    if (ag.getStatus().equals("TRANSITION")) {
+                    if (ag.getStatus().equals("OFFLINE")) {
                         ag.addMessage(message);
                     }
                 } else {
@@ -205,10 +209,14 @@ public class RegionServer extends Unit implements Entity {
                 String source = (String) mesg.get("source");
                 if (agentsList.containsKey(source)) {
                     AgentStatus ag = agentsList.get(source);
-                    ag.setStatus("TRANSITION");
+                    if (ag.isLocalNode()) {
+                        ag.setStatus("OFFLINE");
+                    } else {
+                        agentsList.remove(source);
+                    }
 
-                    printAgentList();
-                    System.out.println("Accept request");
+                    //printAgentList();
+                    //System.out.println("Accept request");
                     JSONObject messageToClient = new JSONObject();
                     messageToClient.put("type", "reqLeave");
                     messageToClient.put("response", "OK");
@@ -225,9 +233,8 @@ public class RegionServer extends Unit implements Entity {
                 if (agentsList.containsKey(movedAgent)) {
                     AgentStatus ag = agentsList.get(movedAgent);
                     String new_location = (String) mesg.get("lastLocation");
-                    ag.setStatus("MOVED");
+                    ag.setStatus("TRANSITION");
                     ag.setLastLocation(new_location);
-                    printAgentList();
 
                     if (clients.containsKey(new_location)) {
                         for (String saved : ag.getMessages()) {
@@ -244,7 +251,7 @@ public class RegionServer extends Unit implements Entity {
 
     public void printAgentList() {
         for (AgentStatus ag : agentsList.values()) {
-            System.out.println(ag.toString());
+            li(ag.toString());
         }
         System.out.println();
     }
