@@ -63,25 +63,7 @@ public class Node extends Unit implements Entity<Node>
 			agent.start();
 		}
 
-		private CompositeAgent deserializeAgent(String agentData) {
-			CompositeAgent agent = null;
-			ByteArrayInputStream fis;
-			ObjectInputStream in;
-			try {
-				fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
-				in = new ObjectInputStream(fis);
-				agent = (CompositeAgent) in.readObject();
-				agent.toggleTransient();
-				agent.start();
-				in.close();
-				System.out.println("Deserialized agent obj from string:");
-				System.out.println(agent);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
 
-			return agent;
-		}
 	}
 
 	/**
@@ -111,6 +93,26 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT      = "control";
 
+	private CompositeAgent deserializeAgent(String agentData) {
+		CompositeAgent agent = null;
+		ByteArrayInputStream fis;
+		ObjectInputStream in;
+		try {
+			fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
+			in = new ObjectInputStream(fis);
+			agent = (CompositeAgent) in.readObject();
+//			agent.toggleTransient();
+//			agent.start();
+			in.close();
+			System.out.println("Deserialized agent obj from string:");
+			System.out.println(agent);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return agent;
+	}
+
 	protected ShardContainer proxy = new ShardContainer() {
 
 		/**
@@ -127,14 +129,15 @@ public class Node extends Unit implements Entity<Node>
 
 					// name = operation.receive?, param = agent
 
-					Entity<?> entity = entityOrder.stream()
-							.filter(en -> en.getName().equals(param))
-							.findFirst().orElse(null);
-					if(entity == null) {
-						le("[] entity not found in the context of [].", param, name);
-//						return;
-					}
+
 					if(operation.equals(OperationUtils.ControlOperation.START.getOperation())) {
+						Entity<?> entity = entityOrder.stream()
+								.filter(en -> en.getName().equals(param))
+								.findFirst().orElse(null);
+						if(entity == null) {
+							le("[] entity not found in the context of [].", param, name);
+//							return;
+						}
 						if (entity.start()) {
 							lf("[] was started by parent [].", param, name);
 							return;
@@ -143,10 +146,13 @@ public class Node extends Unit implements Entity<Node>
 					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
 						System.out.println("########## Agent wants to move #########");
 						String agentData = (String) jo.get("agentData");
+						// TODO: gasire nodeProxy si apelare deserializeAgent()
 
-//						CompositeAgent agent = NodeProxy.deserializeAgent(agentData);
-//						agent.addGeneralContext(this); // ?
-//						agent.start();
+						CompositeAgent agent = deserializeAgent(agentData);
+						agent.addGeneralContext(this); // ?
+						registeredEntities.put(agent.getName(), List.of(agent));
+						entityOrder.add(agent);
+						agent.startAfterMove();
 					}
 				}
 				le("[] cannot properly parse received message.", name);

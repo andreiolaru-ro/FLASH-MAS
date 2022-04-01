@@ -11,8 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
-import org.json.simple.JSONObject;
-
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -22,10 +20,10 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.OperationUtils;
+import org.json.simple.JSONObject;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
+
 
 /**
  * The {@link WebSocketMessagingShard} class manages the link between agent's messaging service and its pylon.
