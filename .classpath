@@ -11,9 +11,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/net.xqhs.XML.jar"/>
 	<classpathentry kind="lib" path="lib/attoparser-2.0.5.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-databind-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/javassist-3.20.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/netty-all-4.1.47.Final.jar"/>
 	<classpathentry kind="lib" path="lib/netty-buffer-4.1.48.Final.jar"/>
@@ -59,6 +56,15 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Logging-modern.jar!/doc-Logging-modern/pages/javadoc"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/ros/jetty-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-http-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-io-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-util-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-api-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jackson-core-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jackson-databind-2.10.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
