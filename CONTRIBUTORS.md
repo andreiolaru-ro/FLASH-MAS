@@ -19,15 +19,15 @@ FLASH-MAS contributors:
    * past modeling and implementations:
       * Vlad Tălmaciu <vlad.talmaciu@gmail.com>
       * Cosmin Mihai <yonutix.mc@gmail.com>
-* Monitoring and control (currently merged into guiWork)
+* Monitoring and control
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
 * Android development (currently a separate project)
    * Daniel Berbece <daniel.berbece97@gmail.com>
-* Web application (currently merged into guiWork)
+* Web application
    * Andrei Mihu <andreimihu280997@gmail.com>
-* Automatic interface generation (currently merged into guiWork)
+* Automatic interface generation
    * Florin Mihalache <florin.razvan.mihalache@gmail.com>
-* MPI and synchronous communication (currently unmerged)
+* MPI and synchronous communication
    * Ștefania Popescu <stefania.s.popescu@gmail.com>
 * HPC work
    * Andrada Hristu <andrada.hristu@gmail.com>
