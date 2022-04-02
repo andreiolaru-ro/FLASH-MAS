@@ -31,7 +31,7 @@ FLASH-MAS contributors:
    * Ștefania Popescu <stefania.s.popescu@gmail.com>
 * HPC work
    * Andrada Hristu <andrada.hristu@gmail.com>
-* ROS-based communication (currently unmerged)
+* ROS-based communication
    * Laura Cucu <laurat.cucu@gmail.com>
 * S-CLAIM parser and interpreter
    * Marius-Tudor Benea <tudorbenea@gmail.com>
