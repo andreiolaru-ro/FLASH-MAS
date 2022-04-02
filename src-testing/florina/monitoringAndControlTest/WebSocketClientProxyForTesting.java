@@ -1,26 +1,26 @@
-package net.xqhs.flash.webSocket;
+package florina.monitoringAndControlTest;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import florina.monitoringAndControlTest.shards.PingTestComponent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import florina.monitoringAndControlTest.shards.PingTestComponent;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 
 /**
- * The {@link WebSocketClientProxy} manages communication with the server.
+ * The {@link WebSocketClientProxyForTesting} manages communication with the server.
  *
  *  @author Florina Nastasoiu
  */
-public class WebSocketClientProxy extends Unit {
+public class WebSocketClientProxyForTesting extends Unit {
     {
         setUnitName("websocket-client").setLoggerType(PlatformUtils.platformLogType());
     }
@@ -33,7 +33,7 @@ public class WebSocketClientProxy extends Unit {
         messageReceivers.put(name, receiver);
     }
 
-    public WebSocketClientProxy(URI serverURI) {
+    public WebSocketClientProxyForTesting(URI serverURI) {
         client = new WebSocketClient(serverURI) {
 
             @Override
@@ -71,16 +71,15 @@ public class WebSocketClientProxy extends Unit {
                     String source  = (String) jsonObject.get("source");
                     String content = (String) jsonObject.get("content");
                     messageReceivers.get(localAddr).receive(source, destination, content);
-					if(localAddr.equals("AgentA") && content != null && content.contains("reply")
-							&& source.contains("pong")) {
-						int ieo = source.indexOf("/");
-						if(ieo != -1) {
-							int index = Integer.parseInt(source.substring(0, ieo));
-							PingTestComponent.lock_stopAgent.lock();
-							PingTestComponent.stopAgentsTime[index] = System.currentTimeMillis();
-							PingTestComponent.lock_stopAgent.unlock();
-						}
-					}
+                    if (localAddr.equals("AgentA") && content != null && content.contains("reply") && source.contains("pong")) {
+                        int ieo = source.indexOf("/");
+                        if (ieo != -1) {
+                            int index = Integer.parseInt(source.substring(0 , ieo));
+                            PingTestComponent.lock_stopAgent.lock();
+                            PingTestComponent.stopAgentsTime[index] = System.currentTimeMillis();
+                            PingTestComponent.lock_stopAgent.unlock();
+                        }
+                    }
                 }
             }
 
