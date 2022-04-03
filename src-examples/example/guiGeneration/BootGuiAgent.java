@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package andrei.guiWorks;
+package example.guiGeneration;
 
 import net.xqhs.flash.FlashBoot;
 
