@@ -46,7 +46,7 @@ public interface EntityTools {
 	 * 
 	 * @return <code>true</code> if the addition succeeded (no other operation with the same name already existed).
 	 */
-	boolean createOperation(Operation description);
+	boolean createOperation(Operation operation);
 	
 	/**
 	 * Removes an operation from the list of available operations.
@@ -75,9 +75,9 @@ public interface EntityTools {
 	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call (without
 	 * expecting a result).
 	 * 
-	 * @param call
+	 * @param operationCall
 	 */
-	void handleCall(OperationCall call);
+	void handleOutgoingOperationCall(OperationCall operationCall);
 	
 	/**
 	 * Callback for when a result of the operation is received.
@@ -91,30 +91,30 @@ public interface EntityTools {
 	}
 	
 	/**
-	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call (without
-	 * expecting a result).
+	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call and
+	 * expecting a result.
 	 * 
-	 * @param call
+	 * @param operationCall
 	 * @param callback
 	 */
-	void handleCall(OperationCall call, ResultReceiver callback);
+	void handleOutgoingOperationCall(OperationCall operationCall, ResultReceiver callback);
 	
 	/**
-	 * @param call
+	 * @param operationCall
 	 * @param targets
 	 *            - a description of the restrictions that the target entities must abide to.
 	 * @param expectResults
 	 * @param callback
 	 */
-	void broadcastCall(OperationCall call, Set<Restriction> targets, boolean expectResults, ResultReceiver callback);
+	void broadcastOutgoingOperationCall(OperationCall operationCall, Set<Restriction> targets, boolean expectResults, ResultReceiver callback);
 	
 	/**
 	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call and expect
 	 * until a result is received.
 	 * 
-	 * @param call
+	 * @param operationCall
 	 * @return the result of the operation.
 	 */
-	Object handleCallBlocking(OperationCall call);
+	Object handleOperationCallBlocking(OperationCall operationCall);
 	
 }

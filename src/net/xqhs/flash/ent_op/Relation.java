@@ -2,7 +2,7 @@ package net.xqhs.flash.ent_op;
 
 @SuppressWarnings("javadoc")
 public class Relation {
-	static enum RelationChangeType {
+	public static enum RelationChangeType {
 		CREATE, DESTROY
 	}
 	

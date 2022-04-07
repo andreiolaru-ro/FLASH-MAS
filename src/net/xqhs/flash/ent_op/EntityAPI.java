@@ -29,7 +29,7 @@ public interface EntityAPI {
 	 * @return <code>true</code> if setup is successful and the entity is ready to be started. <code>false</code> means
 	 *         the the entity hasn't got the necessary configuration for it to run.
 	 */
-	public boolean setup(MultiTreeMap configuration);
+	boolean setup(MultiTreeMap configuration);
 
 	/**
 	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
@@ -43,7 +43,7 @@ public interface EntityAPI {
 	 * 
 	 * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
 	 */
-	public boolean start();
+	boolean start();
 	
 	/**
 	 * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after
@@ -51,15 +51,15 @@ public interface EntityAPI {
 	 * 
 	 * @return <code>true</code> if the entity is currently running.
 	 */
-	public boolean isRunning();
+	boolean isRunning();
 	
 	/**
 	 * Call an operation of the entity.
 	 * 
-	 * @param opCall
+	 * @param operationCall
 	 * @return the result of the operation call, if any.
 	 */
-	public Object handleOperationCall(OperationCall opCall);
+	Object handleOperationCall(OperationCall operationCall);
 	
 	/**
 	 * The method is called when it is wished that changes are performed in the relations between this entity and other
@@ -71,6 +71,6 @@ public interface EntityAPI {
 	 *            - the relation to add or remove.
 	 * @return <code>true</code> if the change is accepted, <code>false</code> otherwise.
 	 */
-	public boolean handleRelationChange(RelationChangeType changeType, Relation relation);
+	boolean handleRelationChange(RelationChangeType changeType, Relation relation);
 	
 }

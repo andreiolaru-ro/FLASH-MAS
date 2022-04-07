@@ -21,27 +21,27 @@ import java.util.Set;
  * @author Andrei Olaru
  */
 public interface Operation {
-	public interface Description {
+	interface Description {
 	}
 	
-	public interface Restriction {
+	interface Restriction {
 	}
 	
-	public interface Value {
-		public String getType();
+	interface Value {
+		String getType();
 		
-		public Description getDescription();
+		Description getDescription();
 	}
 	
-	public String getName();
+	String getName();
 	
-	public Description getDescription();
+	Description getDescription();
 	
-	public boolean hasResult();
+	boolean hasResult();
 	
-	public Value getResultType();
+	Value getResultType();
 	
-	public ArrayList<Value> getArguments();
+	ArrayList<Value> getArguments();
 	
-	public Set<Restriction> getRestrictions();
+	Set<Restriction> getRestrictions();
 }
