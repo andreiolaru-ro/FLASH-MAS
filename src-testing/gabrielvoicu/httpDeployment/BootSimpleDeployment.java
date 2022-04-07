@@ -1,4 +1,4 @@
-package example.httpDeployment;
+package gabrielvoicu.httpDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
