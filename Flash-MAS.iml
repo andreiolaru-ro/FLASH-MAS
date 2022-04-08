@@ -116,5 +116,9 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Logging-modern (2)" level="project" />
+    <orderEntry type="library" name="websocket-api-9.4.3.v20170317" level="project" />
+    <orderEntry type="library" name="websocket-client-9.4.3.v20170317" level="project" />
+    <orderEntry type="library" name="websocket-common-9.4.3.v20170317" level="project" />
+    <orderEntry type="library" name="jetty-util-9.4.3.v20170317" level="project" />
   </component>
 </module>

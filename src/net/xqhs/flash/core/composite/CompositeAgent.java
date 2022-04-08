@@ -24,14 +24,10 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
-import org.json.simple.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.*;
@@ -51,6 +47,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
 {
+	public CompositeAgent() {}
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
@@ -89,33 +86,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		}
 	}
 
-	public void moveTo(String destination) {
-		AgentEvent prepareMoveEvent = new AgentEvent(AgentEventType.AGENT_STOP);
-		prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, "move");
-		prepareMoveEvent.add("target", destination);
-		postAgentEvent(prepareMoveEvent);
-	}
 
-	public void startAfterMove() {
-		// adaugare transient event parameter
-		AgentEvent prepareMoveEvent = new AgentEvent(AgentEventType.AGENT_START);
-		prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, "move");
-		postAgentEvent(prepareMoveEvent);
-	}
-
-	public String serialize() {
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		ObjectOutputStream objectOutputStream;
-		try {
-			objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-			objectOutputStream.writeObject(this);
-			objectOutputStream.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-	}
 
 	/**
 	 * Values indicating the current state of the agent, especially with respect to processing events.
@@ -151,7 +122,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		/**
 		 * This state is a version of the {@link #STOPPED} state, with the exception that it does not allow any changes
 		 * the general state of the agent (e.g. shard list). The state should be used to "freeze" the agent, such as for
-		 * it to be serialized.. Normally, in this state shards should not allow any changes either.
+		 * it to be serialized. Normally, in this state shards should not allow any changes either.
 		 */
 		TRANSIENT,
 
@@ -162,7 +133,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		STARTING,
 
 		/**
-		 * State indicating that the agent is currently stopping. It is not accepting events any more. The thread may or
+		 * State indicating that the agent is currently stopping. It is not accepting events anymore. The thread may or
 		 * may not be running. The shards are in the process of stopping.
 		 */
 		STOPPING,
@@ -212,10 +183,11 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 
 	/**
 	 * The {@link Map} that links shard designations (functionalities) to shard instances.
+	 * FIXME: support making shards transient and having shards null
 	 */
 	protected Map<AgentShardDesignation, AgentShard>		shards						= new HashMap<>();
 	/**
-	 * A {@link List} that holds the order in which shards were added, so as to signal agent events to shards in the
+	 * A {@link List} that holds the order in which shards were added, to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
 	 * <p>
 	 * It is important that this list is managed together with {@link #shards}.
@@ -376,24 +348,24 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 
 				threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
 
-				 if ("move".equals(event.get(TRANSIENT_EVENT_PARAMETER))) {
-					 // serializarea
-
-					 String destination = event.getValue("target");
-					 String agentData = serialize();
-					 JSONObject root = new JSONObject();
-					 root.put(OperationUtils.NAME, OperationUtils.ControlOperation.RECEIVE_AGENT.toString().toLowerCase());
-					 root.put(OperationUtils.PARAMETERS, destination);
-					 root.put("agentData", agentData);
-
-					 String json = root.toJSONString();
-
-					 Node.NodeProxy nodeProxy = getNodeProxyContext();
-					 if (nodeProxy != null) {
-						 removeGeneralContext(nodeProxy);
-						 nodeProxy.moveAgent(destination, json);
-					 }
-				 }
+//				if (MOVE_TRANSIENT_EVENT_PARAMETER.equals(event.get(TRANSIENT_EVENT_PARAMETER))) {
+//					// serializarea
+//
+//					String destination = event.getValue("target");
+//					String agentData = serialize();
+//					JSONObject root = new JSONObject();
+//					root.put(OperationUtils.NAME, OperationUtils.ControlOperation.RECEIVE_AGENT.toString().toLowerCase());
+//					root.put(OperationUtils.PARAMETERS, destination);
+//					root.put("agentData", agentData);
+//
+//					String json = root.toJSONString();
+//
+//					Node.NodeProxy nodeProxy = getNodeProxyContext();
+//					if (nodeProxy != null) {
+//						removeGeneralContext(nodeProxy);
+//						nodeProxy.moveAgent(destination, json);
+//					}
+//				}
 			}
 		}
 	}
@@ -517,7 +489,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 *                            queue; <code>false</code> if this method should only return when the agent has
 	 *                            stopped.
 	 * @return the state the agent should enter next (the actual state change will happen in
-	 *         {@link #postAgentEvent(AgentEvent)}, together with posting the event to the queue.
+	 *         {@link #postAgentEvent(AgentEvent)}, together with posting the event to the queue).
 	 */
 	protected AgentState FSMEventIn(AgentEventType eventType, boolean fromToTransient, boolean createThread)
 	{

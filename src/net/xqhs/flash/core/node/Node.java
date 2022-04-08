@@ -16,7 +16,7 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import net.xqhs.flash.core.composite.CompositeAgent;
+import maria.MobileCompositeAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -56,14 +56,6 @@ public class Node extends Unit implements Entity<Node>
 		public void moveAgent(String destination, String agentData) {
 			sendMessage(destination, agentData);
 		}
-
-		public void receiveAgent(String agentData) {
-			CompositeAgent agent = deserializeAgent(agentData);
-			agent.addGeneralContext(this); // ?
-			agent.start();
-		}
-
-
 	}
 
 	/**
@@ -93,14 +85,14 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT      = "control";
 
-	private CompositeAgent deserializeAgent(String agentData) {
-		CompositeAgent agent = null;
+	private MobileCompositeAgent deserializeAgent(String agentData) {
+		MobileCompositeAgent agent = null;
 		ByteArrayInputStream fis;
 		ObjectInputStream in;
 		try {
 			fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
 			in = new ObjectInputStream(fis);
-			agent = (CompositeAgent) in.readObject();
+			agent = (MobileCompositeAgent) in.readObject();
 //			agent.toggleTransient();
 //			agent.start();
 			in.close();
@@ -127,16 +119,13 @@ public class Node extends Unit implements Entity<Node>
 					String operation  = (String)jo.get(OperationUtils.NAME);
 					String param      = (String)jo.get(OperationUtils.PARAMETERS);
 
-					// name = operation.receive?, param = agent
-
-
 					if(operation.equals(OperationUtils.ControlOperation.START.getOperation())) {
 						Entity<?> entity = entityOrder.stream()
 								.filter(en -> en.getName().equals(param))
 								.findFirst().orElse(null);
 						if(entity == null) {
 							le("[] entity not found in the context of [].", param, name);
-//							return;
+							return;
 						}
 						if (entity.start()) {
 							lf("[] was started by parent [].", param, name);
@@ -146,16 +135,16 @@ public class Node extends Unit implements Entity<Node>
 					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
 						System.out.println("########## Agent wants to move #########");
 						String agentData = (String) jo.get("agentData");
-						// TODO: gasire nodeProxy si apelare deserializeAgent()
 
-						CompositeAgent agent = deserializeAgent(agentData);
-						agent.addGeneralContext(this); // ?
-						registeredEntities.put(agent.getName(), List.of(agent));
+						MobileCompositeAgent agent = deserializeAgent(agentData);
+						agent.addGeneralContext(this);
+
+						registeredEntities.get("agent").add(agent);
 						entityOrder.add(agent);
 						agent.startAfterMove();
 					}
 				}
-				le("[] cannot properly parse received message.", name);
+//				le("[] cannot properly parse received message.", name);
 			}
 		}
 
@@ -216,7 +205,7 @@ public class Node extends Unit implements Entity<Node>
 	{
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
-			registeredEntities.put(entityType, new LinkedList<Entity<?>>());
+			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
