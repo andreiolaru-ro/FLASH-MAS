@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +55,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author andreiolaru
  */
-public interface Entity<P extends Entity<?>> extends Serializable
+public interface Entity<P extends Entity<?>>
 {
 	/**
 	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
@@ -169,7 +168,7 @@ public interface Entity<P extends Entity<?>> extends Serializable
 	 * @param <C>
 	 *                the class of the entity for which this is a proxy.
 	 */
-	interface EntityProxy<C extends Entity<?>> extends Serializable
+	interface EntityProxy<C extends Entity<?>>
 	{
 		/**
 		 * @return the name of the proxy-ed {@link Entity}, if the entity does wish to provide it (may be

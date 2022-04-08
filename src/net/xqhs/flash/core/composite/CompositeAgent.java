@@ -11,6 +11,14 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.RunnableEntity;
@@ -28,11 +36,6 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
 
-import java.io.Serializable;
-import java.security.InvalidParameterException;
-import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
-
 /**
  * This class implements an agent formed by shards and an event queue that allows shards to communicate among each
  * other.
@@ -45,13 +48,12 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author Andrei Olaru
  */
-public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
+public class CompositeAgent implements Agent, RunnableEntity<Pylon>
 {
-	public CompositeAgent() {}
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	class CompositeAgentShardContainer implements ShardContainer, Serializable
+	class CompositeAgentShardContainer implements ShardContainer
 	{
 		/**
 		 * The agent
@@ -154,11 +156,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	}
 
 	/**
-	 * The class UID
-	 */
-	private static final long								serialVersionUID			= -2693230015986527097L;
-
-	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to take the agent out of / into the <code>TRANSIENT</code>
 	 * state.
@@ -192,7 +189,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * <p>
 	 * It is important that this list is managed together with {@link #shards}.
 	 */
-	protected ArrayList<AgentShard>							shardOrder					= new ArrayList<>();
+	protected ArrayList<AgentShardDesignation>				shardOrder		= new ArrayList<>();
 	/**
 	 * The list of all contexts this agent is placed in, in the order in which they were added.
 	 */
@@ -230,6 +227,12 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	protected boolean										USE_LOCAL_LOG				= true;
 
 	/**
+	 * The default constructor. Should be used only when deserializing.
+	 */
+	public CompositeAgent() {
+	}
+	
+	/**
 	 * Constructor for {@link CompositeAgent} instances.
 	 * <p>
 	 * The configuration is used to extract the name of the agent from it (as the value associated with the
@@ -239,11 +242,12 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * is automatically generated.
 	 *
 	 * @param configuration
-	 *                          - the configuration, from which the name of the agent will be taken.
+	 *            - the configuration, from which the name of the agent will be taken.
 	 */
 	public CompositeAgent(MultiTreeMap configuration)
 	{
-		agentName = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		if(configuration != null && configuration.containsKey(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
+			agentName = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 	}
 
 	/**
@@ -302,16 +306,19 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 * The method handles the entire event processing cycle of the agent, from after the
 	 * {@link AgentEventType#AGENT_START} event to the {@link AgentEventType#AGENT_STOP} event. The method should only
 	 * return when the agent has completed stopping.
+	 * 
+	 * @return the event that caused the cycle to exit, if any; <code>null</code> otherwise.
 	 */
-	protected void eventProcessingCycle()
+	protected AgentEvent eventProcessingCycle()
 	{
 		boolean threadExit = false;
+		// TODO: should be able to do without threadExit, and with while(true).
 		while(!threadExit)
 		{
 			if(eventQueue == null)
 			{
 				log("No event queue present");
-				return;
+				return null;
 			}
 			// System.out.println("oops");
 			AgentEvent event = null;
@@ -334,12 +341,17 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 				{
 				case CONSTRUCTIVE:
 				case UNORDERED:
-					for(AgentShard shard : shardOrder)
-						shard.signalAgentEvent(event);
+					for(AgentShardDesignation shardDesignation : shardOrder)
+						if(shards.containsKey(shardDesignation))
+							shards.get(shardDesignation).signalAgentEvent(event);
 					break;
 				case DESTRUCTIVE:
-					for(ListIterator<AgentShard> it = shardOrder.listIterator(shardOrder.size()); it.hasPrevious();)
-						it.previous().signalAgentEvent(event);
+					for(ListIterator<AgentShardDesignation> it = shardOrder.listIterator(shardOrder.size()); it
+							.hasPrevious();) {
+						AgentShardDesignation shardDesignation = it.previous();
+						if(shards.containsKey(shardDesignation))
+							shards.get(shardDesignation).signalAgentEvent(event);
+					}
 					break;
 				default:
 					throw new IllegalStateException(
@@ -347,7 +359,9 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 				}
 
 				threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
-
+				if(threadExit)
+					return event;
+					
 //				if (MOVE_TRANSIENT_EVENT_PARAMETER.equals(event.get(TRANSIENT_EVENT_PARAMETER))) {
 //					// serializarea
 //
@@ -368,6 +382,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 //				}
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -681,7 +696,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 			throw new InvalidParameterException(
 					"Cannot add multiple shards for designation [" + shard.getShardDesignation() + "]");
 		shards.put(shard.getShardDesignation(), shard);
-		shardOrder.add(shard);
+		shardOrder.add(shard.getShardDesignation());
 		shard.addContext(this.asContext());
 		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			shard.addGeneralContext(context);
@@ -700,7 +715,7 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		if(!hasShard(designation))
 			throw new InvalidParameterException("Shard [" + designation + "] does not exist");
 		AgentShard shard = getShard(designation);
-		shardOrder.remove(shard);
+		shardOrder.remove(designation);
 		shards.remove(designation);
 		return shard;
 	}

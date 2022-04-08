@@ -14,13 +14,18 @@ package net.xqhs.flash.core.node;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import maria.MobileCompositeAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -97,6 +102,7 @@ public class Node extends Unit implements Entity<Node>
 //			agent.start();
 			in.close();
 			System.out.println("Deserialized agent obj from string:");
+			System.out.println(agentData);
 			System.out.println(agent);
 		} catch (Exception ex) {
 			ex.printStackTrace();
