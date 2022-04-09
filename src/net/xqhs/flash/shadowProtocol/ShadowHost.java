@@ -50,18 +50,15 @@ public class ShadowHost extends Unit {
                 if(obj == null) return;
                 JSONObject message = (JSONObject) obj;
                 String str = (String) message.get("type");
-                switch (str) {
-                    case "content":
+                switch (MessageFactory.MessageType.valueOf(str)) {
+                    case CONTENT:
                         messageReceivers.receive((String) message.get("source"), (String) message.get("destination"), (String) message.get("content"));
                         li("Message from " + message.get("source") + ": " + message.get("content"));
                         break;
-                    case "reqLeave":
-                        String response = (String) message.get("response");
-                        if (response.equals("OK")) {
-                            li("Prepare to leave");
-                            messageReceivers.receive("", "", "stop");
-                            client.close();
-                        }
+                    case REQ_ACCEPT:
+                        li("Prepare to leave");
+                        messageReceivers.receive("", "", "stop");
+                        client.close();
                         break;
                     default:
                         System.out.println("Unknown type");

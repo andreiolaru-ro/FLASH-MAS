@@ -17,6 +17,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
+
 public class RegionServer extends Unit implements Entity {
 
     private static final int		SERVER_STOP_TIME	= 10;
@@ -27,6 +29,8 @@ public class RegionServer extends Unit implements Entity {
      * List of agents
      */
     Map<String, AgentStatus> agentsList = new HashMap<>();
+
+    Map<String, AgentStatus> mobileAgents = new HashMap<>();
 
     /**
      * Conections with others servers
@@ -147,35 +151,35 @@ public class RegionServer extends Unit implements Entity {
         if(obj == null) return;
         JSONObject mesg = (JSONObject) obj;
         String str = (String) mesg.get("type");
-        switch (str) {
-            case "register":
+        switch (MessageFactory.MessageType.valueOf(str)) {
+            case REGISTER:
                 lf("Received message from new agent with shadow " + webSocket);
-                String new_agent = (String) mesg.get("entityName");
+                String new_agent = (String) mesg.get("source");
                 if (!agentsList.containsKey(new_agent)) {
-                    agentsList.put(new_agent, new AgentStatus(new_agent, webSocket, "ONLINE", this.name, true));
+                    agentsList.put(new_agent, new AgentStatus(new_agent, webSocket, AgentStatus.Status.ONLINE, this.name));
                 } else {
                     le("An agent with that name already exist!");
                 }
                // printAgentList();
                 break;
-            case "connect":
+            case CONNECT:
                 lf("Received message from arrived agent with shadow " + webSocket);
-                String arrived_agent = (String) mesg.get("entityName");
+                String arrived_agent = (String) mesg.get("source");
                 if (!agentsList.containsKey(arrived_agent)) {
-                    agentsList.put(arrived_agent, new AgentStatus(arrived_agent, webSocket, "TRANSITION", this.name, false));
-                    String homeServer = (arrived_agent.split("-"))[1];
-                    if (clients.containsKey(homeServer)) {
-                        JSONObject messageToServer = new JSONObject();
-                        messageToServer.put("type", "agentArrived");
-                        messageToServer.put("agentName", arrived_agent);
-                        messageToServer.put("lastLocation", this.name);
-                        clients.get(homeServer).send(messageToServer.toString());
+                    if(!mobileAgents.containsKey(arrived_agent)) {
+                        mobileAgents.put(arrived_agent, new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.TRANSITION, this.name));
+                        String homeServer = (arrived_agent.split("-"))[1];
+                        if (clients.containsKey(homeServer)) {
+                            Map<String, String> data = new HashMap<>();
+                            data.put("lastLocation", this.name);
+                            clients.get(homeServer).send(createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
+                        }
                     }
                 } else {
                     le("An agent with that name already exist!");
                     AgentStatus ag = agentsList.get(arrived_agent);
-                    if (ag.getStatus().equals("TRANSITION")) {
-                        ag.setStatus("ONLINE");
+                    if (ag.getStatus() == AgentStatus.Status.TRANSITION) {
+                        ag.setStatus(AgentStatus.Status.ONLINE);
                         ag.setClientConnection(webSocket);
 
                         for (String saved : ag.getMessages()) {
@@ -185,55 +189,76 @@ public class RegionServer extends Unit implements Entity {
                     }
                 }
                 break;
-            case "content":
+            case CONTENT:
                 li("Message to send to " + mesg.get("destination"));
                 String target = (String) mesg.get("destination");
                 if (agentsList.containsKey(target)) {
                     AgentStatus ag = agentsList.get(target);
-                    if (ag.getStatus().equals("ONLINE") || ag.getStatus().equals("TRANSITION")) {
+                    if (ag.getStatus() == AgentStatus.Status.ONLINE || ag.getStatus() == AgentStatus.Status.TRANSITION) {
                         ag.getClientConnection().send(message);
                     }
-                    if (ag.getStatus().equals("OFFLINE")) {
+                    if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
                         ag.addMessage(message);
                     }
                 } else {
-                    le("Host unknown");
-                    String regServer = (target.split("-"))[1];
-                    if (clients.containsKey(regServer)) {
-                        clients.get(regServer).send(message);
+                    if (mobileAgents.containsKey(target)) {
+                        AgentStatus ag = mobileAgents.get(target);
+                        ag.getClientConnection().send(message);
+                    } else {
+                        le("Host unknown");
+                        String regServer = (target.split("-"))[1];
+                        if (clients.containsKey(regServer)) {
+                            clients.get(regServer).send(message);
+                        }
                     }
                 }
                 break;
-            case "reqLeave":
+            case REQ_LEAVE:
                 li("Request to leave from agent " + mesg.get("source"));
                 String source = (String) mesg.get("source");
                 if (agentsList.containsKey(source)) {
                     AgentStatus ag = agentsList.get(source);
-                    if (ag.isLocalNode()) {
-                        ag.setStatus("OFFLINE");
-                    } else {
-                        agentsList.remove(source);
+                    ag.setStatus(AgentStatus.Status.OFFLINE);
+                    ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
+                } else {
+                    if (mobileAgents.containsKey(source)) {
+                        String homeServer = (source.split("-"))[1];
+                        if (clients.containsKey(homeServer)) {
+                            Map<String, String> data = new HashMap<>();
+                            data.put("agentName", source);
+                            clients.get(homeServer).send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_BUFFER, data));
+                        }
                     }
-
-                    //printAgentList();
-                    //System.out.println("Accept request");
-                    JSONObject messageToClient = new JSONObject();
-                    messageToClient.put("type", "reqLeave");
-                    messageToClient.put("response", "OK");
-                    ag.getClientConnection().send(messageToClient.toString());
                 }
                 break;
-            case "reqBuffer":
+            case REQ_BUFFER:
                 System.out.println("Request to buffer");
+                String agentReq = (String) mesg.get("agentName");
+                if (agentsList.containsKey(agentReq)) {
+                    AgentStatus ag = agentsList.get(agentReq);
+                    ag.setStatus(AgentStatus.Status.OFFLINE);
+                    Map<String, String> data = new HashMap<>();
+                    data.put("agentName", agentReq);
+                    clients.get(ag.getLastLocation()).send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
+                }
                 System.out.println("Accept request");
                 break;
-            case "agentArrived":
+            case REQ_ACCEPT:
+                System.out.println("Accept request");
+                String agentResp = (String) mesg.get("agentName");
+                if (mobileAgents.containsKey(agentResp)) {
+                    AgentStatus ag = mobileAgents.get(agentResp);
+                    ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
+                    mobileAgents.remove(agentResp);
+                }
+                break;
+            case AGENT_UPDATE:
                 li("Agent arrived");
-                String movedAgent = (String) mesg.get("agentName");
+                String movedAgent = (String) mesg.get("source");
                 if (agentsList.containsKey(movedAgent)) {
                     AgentStatus ag = agentsList.get(movedAgent);
                     String new_location = (String) mesg.get("lastLocation");
-                    ag.setStatus("TRANSITION");
+                    ag.setStatus(AgentStatus.Status.TRANSITION);
                     ag.setLastLocation(new_location);
 
                     if (clients.containsKey(new_location)) {
@@ -283,7 +308,7 @@ public class RegionServer extends Unit implements Entity {
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
 
     @Override

@@ -335,6 +335,65 @@ public class AgentTestBoot {
         pylon.stop();
     }
 
+    public static void test3() throws InterruptedException {
+        ArrayList<String> servers = new ArrayList<>();
+        servers.add("ws://localhost:8885");
+        servers.add("ws://localhost:8886");
+
+        ShadowPylon pylon = new ShadowPylon();
+        pylon.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8885")
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8885")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-One"));
+
+        pylon.start();
+        AgentTest one = new AgentTest("One-" + "localhost:8885");
+        one.addContext(pylon.asContext());
+        one.addMessagingShard(new AgentShard(pylon.HomeServerAddressName, one.name));
+
+
+        ShadowPylon pylon2 = new ShadowPylon();
+        pylon2.configure(
+                new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://localhost:8886")
+                        .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, "8886")
+                        .addSingleValue("servers", servers.toString())
+                        .addSingleValue("pylon_name", "Pylon-Two"));
+
+        pylon2.start();
+        AgentTest two = new AgentTest("Two-" + "localhost:8886");
+        two.addContext(pylon2.asContext());
+        two.addMessagingShard(new AgentShard("ws://localhost:8886", two.name));
+
+
+        Thread.sleep(1000);
+
+        one.start();
+        two.start();
+
+        Thread.sleep(3000);
+        one.sendMessage("Two-localhost:8886", "Message 1");
+
+        Thread.sleep(2000);
+
+        one.moveToAnotherNode();
+
+        Thread.sleep(2000);
+
+        one.addContext(pylon2.asContext());
+        one.addMessagingShard(new AgentShard(pylon2.HomeServerAddressName, one.name));
+
+        two.sendMessage("One-localhost:8885", "Message 2");
+        two.sendMessage("One-localhost:8885", "Message 3");
+        Thread.sleep(1000);
+        one.reconnect();
+
+        Thread.sleep(3000);
+
+        pylon2.stop();
+        pylon.stop();
+    }
+
     /**
      * @param args
      * @throws InterruptedException
@@ -342,6 +401,7 @@ public class AgentTestBoot {
     public static void main(String[] args) throws InterruptedException
     {
         //test1();
-        test2();
+        //test2();
+        test3();
     }
 }

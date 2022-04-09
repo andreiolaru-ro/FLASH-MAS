@@ -12,6 +12,10 @@ import org.json.simple.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static net.xqhs.flash.shadowProtocol.MessageFactory.*;
 
 public class AgentShard extends AbstractNameBasedMessagingShard {
 
@@ -78,13 +82,10 @@ public class AgentShard extends AbstractNameBasedMessagingShard {
     @Override
     public boolean sendMessage(String source, String target, String content) {
         li("Send message");
-        JSONObject messageToServer = new JSONObject();
-        messageToServer.put("type", "content");
-        messageToServer.put("nodeName", pylon.getEntityName());
-        messageToServer.put("source", source);
-        messageToServer.put("destination", target);
-        messageToServer.put("content", content);
-        return shadow.send(messageToServer.toString());
+        Map<String, String> data = new HashMap<>();
+        data.put("destination", target);
+        data.put("content", content);
+        return shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
     }
 
     @Override
@@ -97,11 +98,7 @@ public class AgentShard extends AbstractNameBasedMessagingShard {
         pylon.register(entityName, inbox);
         lf("On pylon " + pylon.getEntityName() + " we have agent " + entityName);
         shadow.addReceiverAgent(entityName, inbox);
-        JSONObject messageToServer = new JSONObject();
-        messageToServer.put("type", "register");
-        messageToServer.put("nodeName", pylon.getEntityName());
-        messageToServer.put("entityName", entityName);
-        shadow.send(messageToServer.toString());
+        shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, new HashMap<>()));
     }
 
     /**
@@ -129,11 +126,7 @@ public class AgentShard extends AbstractNameBasedMessagingShard {
 
         if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
             li("Agent wants to move to another pylon");
-            JSONObject messageToServer = new JSONObject();
-            messageToServer.put("type", "reqLeave");
-            messageToServer.put("nodeName", pylon.getEntityName());
-            messageToServer.put("source", this.agent_name);
-            shadow.send(messageToServer.toString());
+            shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, new HashMap<>()));
         }
 
         if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
@@ -141,13 +134,14 @@ public class AgentShard extends AbstractNameBasedMessagingShard {
             pylon.register(entityName, inbox);
             lf("On pylon " + pylon.getEntityName() + " arrived the agent " + entityName);
             shadow.addReceiverAgent(entityName, inbox);
-            JSONObject messageToServer = new JSONObject();
-            messageToServer.put("type", "connect");
-            messageToServer.put("nodeName", pylon.getEntityName());
-            messageToServer.put("entityName", entityName);
-            shadow.send(messageToServer.toString());
+            shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, new HashMap<>()));
         }
 
 
+    }
+
+    @Override
+    public String getName() {
+        return this.agent_name;
     }
 }
