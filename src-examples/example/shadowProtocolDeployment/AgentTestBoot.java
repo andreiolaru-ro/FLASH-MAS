@@ -390,6 +390,22 @@ public class AgentTestBoot {
 
         Thread.sleep(3000);
 
+        Thread.sleep(2000);
+
+        one.moveToAnotherNode();
+
+        Thread.sleep(2000);
+
+        one.addContext(pylon.asContext());
+        one.addMessagingShard(new AgentShard(pylon.HomeServerAddressName, one.name));
+
+        two.sendMessage("One-localhost:8885", "Message 4");
+        two.sendMessage("One-localhost:8885", "Message 5");
+        Thread.sleep(1000);
+        one.reconnect();
+
+        Thread.sleep(3000);
+
         pylon2.stop();
         pylon.stop();
     }
@@ -402,6 +418,8 @@ public class AgentTestBoot {
     {
         //test1();
         //test2();
-        test3();
+        //test3();
+        TestClass test = new TestClass("src-examples/example/shadowProtocolDeployment/TestCases/Test1.json");
+        test.generateTest(2, 3);
     }
 }

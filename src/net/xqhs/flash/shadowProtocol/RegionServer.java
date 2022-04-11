@@ -178,10 +178,10 @@ public class RegionServer extends Unit implements Entity {
                 } else {
                     le("An agent with that name already exist!");
                     AgentStatus ag = agentsList.get(arrived_agent);
-                    if (ag.getStatus() == AgentStatus.Status.TRANSITION) {
+                    if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
                         ag.setStatus(AgentStatus.Status.ONLINE);
                         ag.setClientConnection(webSocket);
-
+                        ag.setLastLocation(this.name);
                         for (String saved : ag.getMessages()) {
                             System.out.println("Saved " + saved);
                             ag.getClientConnection().send(saved);
@@ -193,8 +193,10 @@ public class RegionServer extends Unit implements Entity {
                 li("Message to send to " + mesg.get("destination"));
                 String target = (String) mesg.get("destination");
                 if (agentsList.containsKey(target)) {
+                    System.out.println("GASIT1 " + target);
                     AgentStatus ag = agentsList.get(target);
                     if (ag.getStatus() == AgentStatus.Status.ONLINE || ag.getStatus() == AgentStatus.Status.TRANSITION) {
+                        System.out.println("TRIMIS");
                         ag.getClientConnection().send(message);
                     }
                     if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
@@ -202,6 +204,7 @@ public class RegionServer extends Unit implements Entity {
                     }
                 } else {
                     if (mobileAgents.containsKey(target)) {
+                        System.out.println("GASIT2 " + target);
                         AgentStatus ag = mobileAgents.get(target);
                         ag.getClientConnection().send(message);
                     } else {
@@ -222,6 +225,7 @@ public class RegionServer extends Unit implements Entity {
                     ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
                 } else {
                     if (mobileAgents.containsKey(source)) {
+                        System.out.println("AICI!!!@");
                         String homeServer = (source.split("-"))[1];
                         if (clients.containsKey(homeServer)) {
                             Map<String, String> data = new HashMap<>();
@@ -232,23 +236,29 @@ public class RegionServer extends Unit implements Entity {
                 }
                 break;
             case REQ_BUFFER:
-                System.out.println("Request to buffer");
+                li("Request to buffer");
                 String agentReq = (String) mesg.get("agentName");
+                System.out.println(agentReq);
                 if (agentsList.containsKey(agentReq)) {
+                    System.out.println("AICI!!!");
                     AgentStatus ag = agentsList.get(agentReq);
                     ag.setStatus(AgentStatus.Status.OFFLINE);
                     Map<String, String> data = new HashMap<>();
                     data.put("agentName", agentReq);
-                    clients.get(ag.getLastLocation()).send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
+                    String lastLocation = ag.getLastLocation();
+                    System.out.println(lastLocation);
+                    if (clients.containsKey(lastLocation)) {
+                        (clients.get(lastLocation)).send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
+                    }
                 }
-                System.out.println("Accept request");
                 break;
             case REQ_ACCEPT:
-                System.out.println("Accept request");
+                li("Accept request");
                 String agentResp = (String) mesg.get("agentName");
                 if (mobileAgents.containsKey(agentResp)) {
                     AgentStatus ag = mobileAgents.get(agentResp);
                     ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
+                    System.out.println("REMOVED!!!!1");
                     mobileAgents.remove(agentResp);
                 }
                 break;
@@ -263,9 +273,10 @@ public class RegionServer extends Unit implements Entity {
 
                     if (clients.containsKey(new_location)) {
                         for (String saved : ag.getMessages()) {
-                            System.out.println("Saved " + saved);
+                            li("Saved " + saved);
                             clients.get(new_location).send(saved);
                         }
+                        ag.getMessages().clear();
                     }
                 }
                 break;

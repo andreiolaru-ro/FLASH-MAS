@@ -37,12 +37,15 @@ public class MessageFactory {
                 break;
             case REQ_BUFFER:
                 data.put("type", "REQ_BUFFER");
+                data.putAll(content);
                 break;
             case REQ_LEAVE:
                 data.put("type", "REQ_LEAVE");
+                data.putAll(content);
                 break;
             case REQ_ACCEPT:
                 data.put("type", "REQ_ACCEPT");
+                data.putAll(content);
                 break;
             case AGENT_UPDATE:
                 data.put("type", "AGENT_UPDATE");
