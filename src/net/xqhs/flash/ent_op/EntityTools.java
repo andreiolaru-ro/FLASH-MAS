@@ -19,13 +19,13 @@ public interface EntityTools {
 	 * This should be called by an entity at {@link EntityAPI#setup} time to make the link between the entity and the
 	 * {@link EntityTools} instance and to assign a name to the entity.
 	 * 
-	 * @param name
+	 * @param entity
 	 *            - the name that the entity intends to use. <code>null</code> if the entity does not have any
 	 *            preference for the name (a name will be automatically assigned).
 	 * @return <code>true</code> if the link with the {@link EntityTools} is successful. <code>false</code> is returned
 	 *         if the chosen name is not available.
 	 */
-	boolean initialize(String name);
+	boolean initialize(EntityAPI entity);
 	
 	/**
 	 * This can be called either from the entity (for verification) or from the framework, in order to obtain the list

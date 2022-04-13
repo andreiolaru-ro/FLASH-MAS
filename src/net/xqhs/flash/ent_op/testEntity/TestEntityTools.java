@@ -1,9 +1,10 @@
-package net.xqhs.flash.ent_op.test;
+package net.xqhs.flash.ent_op.testEntity;
 
-import net.xqhs.flash.ent_op.EntityTools;
-import net.xqhs.flash.ent_op.Operation;
-import net.xqhs.flash.ent_op.OperationCall;
-import net.xqhs.flash.ent_op.Relation;
+import net.xqhs.flash.ent_op.*;
+import net.xqhs.flash.ent_op.support.DefaultFMasImplementation;
+import net.xqhs.flash.ent_op.support.DefaultLocalRouterImplementation;
+import net.xqhs.flash.ent_op.support.FMas;
+import net.xqhs.flash.ent_op.support.LocalRouter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,12 +13,27 @@ public class TestEntityTools implements EntityTools {
     /**
      * The default name for instances of this implementation.
      */
-    protected static final String DEFAULT_ENTITY_NAME = "Default Test Entity";
+    private static final String DEFAULT_ENTITY_NAME = "Default Test Entity";
 
     /**
      * The name of the corresponding entity for this instance.
      */
-    protected String entityName = DEFAULT_ENTITY_NAME;
+    private String entityName = DEFAULT_ENTITY_NAME;
+
+    /**
+     * The entityAPI.
+     */
+    private EntityAPI entityAPI;
+
+    /**
+     * The local router.
+     */
+    private LocalRouter localRouter;
+
+    /**
+     * The framework.
+     */
+    private FMas fMas;
 
     /**
      * The list of available operations.
@@ -30,11 +46,12 @@ public class TestEntityTools implements EntityTools {
     private Set<Relation> relations;
 
     @Override
-    public boolean initialize(String name) {
+    public boolean initialize(EntityAPI entity) {
         operations = new HashSet<>();
         relations = new HashSet<>();
-        if (name != null)
-            entityName = name;
+        entityAPI = entity;
+        localRouter = DefaultLocalRouterImplementation.getInstance();
+        fMas = DefaultFMasImplementation.getInstance();
         return true;
     }
 
@@ -53,9 +70,11 @@ public class TestEntityTools implements EntityTools {
 
     @Override
     public boolean createOperation(Operation operation) {
+        // fails if the operation already exists
         if (getOperation(operation.getName()) != null)
             return false;
         operations.add(operation);
+        localRouter.registerOperation(operation);
         return true;
     }
 
@@ -64,6 +83,7 @@ public class TestEntityTools implements EntityTools {
         Operation operation = getOperation(operationName);
         if (operation == null)
             return false;
+        localRouter.registerOperation(operation);
         operations.remove(operation);
         return true;
     }
@@ -87,7 +107,7 @@ public class TestEntityTools implements EntityTools {
 
     @Override
     public void handleOutgoingOperationCall(OperationCall operationCall) {
-
+        fMas.route(operationCall);
     }
 
     @Override
@@ -105,7 +125,7 @@ public class TestEntityTools implements EntityTools {
         return null;
     }
 
-    private void checkOperation() {
-
+    public void handleIncomingOperationCall(OperationCall operationCall) {
+        entityAPI.handleOperationCall(operationCall);
     }
 }

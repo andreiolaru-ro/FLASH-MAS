@@ -2,10 +2,14 @@ package net.xqhs.flash.ent_op;
 
 @SuppressWarnings("javadoc")
 public class Relation {
-	public static enum RelationChangeType {
+	public enum RelationChangeType {
 		CREATE, DESTROY
 	}
-	
+
+	public enum RelationType {
+		NODE, EXECUTES_ON, IN_SCOPE_OF
+	}
+
 	EntityID	from;
 	EntityID	to;
 	String		relationName;
