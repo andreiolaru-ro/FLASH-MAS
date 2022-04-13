@@ -55,7 +55,7 @@ class Topology {
     }
 
     public void topologyAfterMove(Action moveAction) {
-        System.out.println(topology);
+       // System.out.println(topology);
         String nextPylon = moveAction.getDestination();
         String prevPylon = getPylon(moveAction.source);
         String agent = moveAction.source;
@@ -129,7 +129,10 @@ public class TestClass {
     List<String> pylonsList = new ArrayList<>();
     List<String> agentsList = new ArrayList<>();
     Topology topology_map;
+    Topology topology_init;
     static Integer index_message = 0;
+
+    private Map<String, Object> elements = new HashMap<>();
 
     public enum Actions {
         SEND_MESSAGE,
@@ -143,11 +146,12 @@ public class TestClass {
 
             // create a reader
             Reader reader = Files.newBufferedReader(Paths.get(filename));
-
+            Reader reader1 = Files.newBufferedReader(Paths.get(filename));
             // convert JSON file to map
             this.topology_map = gson.fromJson(reader, Topology.class);
+            this.topology_init = gson.fromJson(reader1, Topology.class);
 
-            System.out.println(this.topology_map.getTopology());
+            System.out.println(this.topology_init.getTopology());
 
             for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_map.getTopology()).entrySet()) {
                 this.regionServersList.add(region.getKey());
@@ -164,9 +168,9 @@ public class TestClass {
             ex.printStackTrace();
         }
 
-        System.out.println(regionServersList);
-        System.out.println(pylonsList);
-        System.out.println(agentsList);
+        //System.out.println(regionServersList);
+        //System.out.println(pylonsList);
+        //System.out.println(agentsList);
     }
 
     public String getRandomElement(List<String> givenList) {
@@ -189,7 +193,7 @@ public class TestClass {
         return new Action(agent, getRandomElement(copy), "", Actions.MOVE_TO_ANOTHER_NODE);
     }
 
-    public void generateTest(Integer numberOfMessages, Integer numberOfMoves) {
+    public List<Action> generateTest(Integer numberOfMessages, Integer numberOfMoves) {
         List<Action> test = new ArrayList<>();
         for (int i = 0; i < numberOfMessages; i++) {
             test.add(sendMessageAction());
@@ -203,26 +207,71 @@ public class TestClass {
         for (Action a : test) {
             System.out.println(a.toString());
         }
+
+        return test;
     }
 
     public void CreateElements() {
-        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_map.getTopology()).entrySet()) {
+        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
             for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
-                String port_value = ((region.getKey()).split(":"))[2];
-                ShadowPylon pylon_1 = new ShadowPylon();
-                pylon_1.configure(
+                String port_value = ((region.getKey()).split(":"))[1];
+                ShadowPylon pylon_elem = new ShadowPylon();
+                pylon_elem.configure(
                         new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + region.getKey())
                                 .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value)
                                 .addSingleValue("servers", regionServersList.toString())
                                 .addSingleValue("pylon_name", pylon.getKey()));
 
-                pylon_1.start();
+                pylon_elem.start();
+
+                elements.put(pylon.getKey(), pylon_elem);
 
                 for (String agent : (pylon.getValue())) {
-                    AgentTestBoot.AgentTest one = new AgentTestBoot.AgentTest(agent + "-" + region.getKey());
-                    one.addContext(pylon_1.asContext());
-                    one.addMessagingShard(new AgentShard(pylon_1.HomeServerAddressName, one.getName()));
+                    AgentTestBoot.AgentTest agent_elem = new AgentTestBoot.AgentTest(agent + "-" + region.getKey());
+                    agent_elem.addContext(pylon_elem.asContext());
+                    agent_elem.addMessagingShard(new AgentShard(pylon_elem.HomeServerAddressName, agent_elem.getName()));
+                    elements.put(agent, agent_elem);
                 }
+            }
+        }
+        for (Map.Entry<String, Object> elem : elements.entrySet()) {
+            if (elem.getValue() instanceof AgentTestBoot.AgentTest) {
+                ((AgentTestBoot.AgentTest) elem.getValue()).start();
+            }
+        }
+
+        //System.out.println(elements);
+    }
+
+    public void runTest(List<Action> test) throws InterruptedException {
+        for (Action action : test) {
+            //System.out.println(action.toString());
+            switch (action.getType()) {
+                case MOVE_TO_ANOTHER_NODE:
+                    AgentTestBoot.AgentTest agent = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+                    ShadowPylon dest_pylon = (ShadowPylon) elements.get(action.getDestination());
+
+                    agent.moveToAnotherNode();
+                    Thread.sleep(1000);
+                    agent.addContext(dest_pylon.asContext());
+                    agent.addMessagingShard(new AgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
+                    Thread.sleep(1000);
+                    agent.reconnect();
+                    break;
+                case SEND_MESSAGE:
+                    AgentTestBoot.AgentTest source = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+                    String destination = action.getDestination() + "-" + topology_init.getServerForAgent(action.getDestination());
+
+                    source.sendMessage(destination, action.getContent());
+                    break;
+            }
+        }
+    }
+
+    public void closeConnections() {
+        for (Map.Entry<String, Object> elem : elements.entrySet()) {
+            if (elem.getValue() instanceof ShadowPylon ) {
+                ((ShadowPylon) elem.getValue()).stop();
             }
         }
     }

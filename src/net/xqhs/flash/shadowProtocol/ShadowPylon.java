@@ -101,7 +101,8 @@ public class ShadowPylon extends DefaultPylonImplementation {
             String s = configuration.getAValue("servers");
             s = s.substring(1, s.length()-1);
             serverList = new ArrayList<>(Arrays.asList(s.split(", ")));
-            serverList.remove(HomeServerAddressName);
+            var nickname = (HomeServerAddressName.split("//"))[1];
+            serverList.remove(nickname);
         }
         if(configuration.isSimple("pylon_name")) {
             this.name = configuration.getAValue("pylon_name");

@@ -14,6 +14,8 @@ import net.xqhs.flash.shadowProtocol.AgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class AgentTestBoot {
     /**
@@ -420,6 +422,11 @@ public class AgentTestBoot {
         //test2();
         //test3();
         TestClass test = new TestClass("src-examples/example/shadowProtocolDeployment/TestCases/Test1.json");
-        test.generateTest(2, 3);
+        List<Action> testCase = test.generateTest(3, 3);
+        test.CreateElements();
+        Thread.sleep(3000);
+        test.runTest(testCase);
+        Thread.sleep(5000);
+        test.closeConnections();
     }
 }

@@ -48,16 +48,16 @@ public class RegionServer extends Unit implements Entity {
             public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
                 li("new client connected []", webSocket);
                 for (String server : servers) {
-                    var nickname = (server.split("//"))[1];
-                    if (!clients.containsKey(nickname)) {
+                    //var nickname = (server.split("//"))[1];
+                    if (!clients.containsKey(server)) {
                         try {
                             WebSocketClient temp_client = null;
                             int tries = 10;
                             long space = 1000;
                             while (tries > 0) {
                                 try {
-                                    ServerClient(new URI(server), nickname);
-                                    temp_client = clients.get(nickname);
+                                    ServerClient(new URI("ws://" + server), server);
+                                    temp_client = clients.get(server);
                                 } catch (URISyntaxException e) {
                                     e.printStackTrace();
                                     le("Couldn't connect to server!");
@@ -193,10 +193,8 @@ public class RegionServer extends Unit implements Entity {
                 li("Message to send to " + mesg.get("destination"));
                 String target = (String) mesg.get("destination");
                 if (agentsList.containsKey(target)) {
-                    System.out.println("GASIT1 " + target);
                     AgentStatus ag = agentsList.get(target);
                     if (ag.getStatus() == AgentStatus.Status.ONLINE || ag.getStatus() == AgentStatus.Status.TRANSITION) {
-                        System.out.println("TRIMIS");
                         ag.getClientConnection().send(message);
                     }
                     if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
@@ -204,7 +202,6 @@ public class RegionServer extends Unit implements Entity {
                     }
                 } else {
                     if (mobileAgents.containsKey(target)) {
-                        System.out.println("GASIT2 " + target);
                         AgentStatus ag = mobileAgents.get(target);
                         ag.getClientConnection().send(message);
                     } else {
@@ -225,7 +222,6 @@ public class RegionServer extends Unit implements Entity {
                     ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
                 } else {
                     if (mobileAgents.containsKey(source)) {
-                        System.out.println("AICI!!!@");
                         String homeServer = (source.split("-"))[1];
                         if (clients.containsKey(homeServer)) {
                             Map<String, String> data = new HashMap<>();
@@ -238,15 +234,12 @@ public class RegionServer extends Unit implements Entity {
             case REQ_BUFFER:
                 li("Request to buffer");
                 String agentReq = (String) mesg.get("agentName");
-                System.out.println(agentReq);
                 if (agentsList.containsKey(agentReq)) {
-                    System.out.println("AICI!!!");
                     AgentStatus ag = agentsList.get(agentReq);
                     ag.setStatus(AgentStatus.Status.OFFLINE);
                     Map<String, String> data = new HashMap<>();
                     data.put("agentName", agentReq);
                     String lastLocation = ag.getLastLocation();
-                    System.out.println(lastLocation);
                     if (clients.containsKey(lastLocation)) {
                         (clients.get(lastLocation)).send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
                     }
@@ -258,7 +251,6 @@ public class RegionServer extends Unit implements Entity {
                 if (mobileAgents.containsKey(agentResp)) {
                     AgentStatus ag = mobileAgents.get(agentResp);
                     ag.getClientConnection().send(createMessage("", this.getName(), MessageFactory.MessageType.REQ_ACCEPT, new HashMap<>()));
-                    System.out.println("REMOVED!!!!1");
                     mobileAgents.remove(agentResp);
                 }
                 break;
