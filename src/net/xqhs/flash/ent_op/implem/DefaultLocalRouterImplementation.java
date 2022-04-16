@@ -1,11 +1,12 @@
-package net.xqhs.flash.ent_op.support;
+package net.xqhs.flash.ent_op.implem;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
-import net.xqhs.flash.ent_op.EntityID;
-import net.xqhs.flash.ent_op.Operation;
-import net.xqhs.flash.ent_op.OperationCall;
-import net.xqhs.flash.ent_op.Relation;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.LocalRouter;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
 public class DefaultLocalRouterImplementation extends Unit implements LocalRouter {
@@ -19,11 +20,6 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
      * (key, value) -> (entityName, operations supported by that entity)
      */
     private static MultiValueMap operations;
-
-    /**
-     * The corresponding entity tools for this instance.
-     */
-    private DefaultLocalRouterEntityTools defaultLocalRouterEntityTools;
 
     private DefaultLocalRouterImplementation() {
         // private constructor

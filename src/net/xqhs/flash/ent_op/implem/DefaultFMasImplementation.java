@@ -1,10 +1,12 @@
-package net.xqhs.flash.ent_op.support;
+package net.xqhs.flash.ent_op.implem;
 
-import net.xqhs.flash.core.util.MultiValueMap;
-import net.xqhs.flash.ent_op.EntityAPI;
-import net.xqhs.flash.ent_op.EntityTools;
-import net.xqhs.flash.ent_op.OperationCall;
-import net.xqhs.flash.ent_op.testEntity.TestEntityTools;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.LocalRouter;
+import net.xqhs.flash.ent_op.model.OperationCall;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultFMasImplementation implements FMas {
     /**
@@ -15,7 +17,7 @@ public class DefaultFMasImplementation implements FMas {
     /**
      * The map that contains the registered entities.
      */
-    private static MultiValueMap entities;
+    private static Map<String, EntityTools> entities;
 
     private DefaultFMasImplementation() {
         // private constructor
@@ -24,7 +26,7 @@ public class DefaultFMasImplementation implements FMas {
     public static DefaultFMasImplementation getInstance() {
         if (instance == null) {
             instance = new DefaultFMasImplementation();
-            entities = new MultiValueMap();
+            entities = new HashMap<>();
         }
         return instance;
     }
@@ -33,7 +35,7 @@ public class DefaultFMasImplementation implements FMas {
     public boolean registerEntity(String entityName, EntityTools entityTools) {
         if (entities.containsKey(entityName))
             return false;
-        entities.addObject(entityName, entityTools);
+        entities.put(entityName, entityTools);
         return true;
     }
 
@@ -45,7 +47,7 @@ public class DefaultFMasImplementation implements FMas {
             localRouter.route(operationCall);
         } else {
             String targetEntityName = operationCall.getTargetEntity().ID;
-            TestEntityTools entityTools = (TestEntityTools) entities.getObject(targetEntityName);
+            EntityTools entityTools = entities.get(targetEntityName);
             entityTools.handleIncomingOperationCall(operationCall);
         }
     }

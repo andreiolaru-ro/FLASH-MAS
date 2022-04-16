@@ -1,16 +1,16 @@
-package net.xqhs.flash.ent_op.testEntity;
+package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.EntityAPI;
-import net.xqhs.flash.ent_op.EntityID;
-import net.xqhs.flash.ent_op.OperationCall;
-import net.xqhs.flash.ent_op.Relation;
-import net.xqhs.flash.ent_op.support.DefaultFMasImplementation;
-import net.xqhs.flash.ent_op.support.DefaultLocalRouterImplementation;
+import net.xqhs.flash.ent_op.implem.DefaultFMasImplementation;
+import net.xqhs.flash.ent_op.implem.EntityToolsImplementation;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
-import java.sql.SQLOutput;
+import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class TestEntity extends Unit implements EntityAPI {
     /**
@@ -36,13 +36,13 @@ public class TestEntity extends Unit implements EntityAPI {
     /**
      * The corresponding entity tools for this instance.
      */
-    private TestEntityTools testEntityTools;
+    private EntityToolsImplementation testEntityTools;
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
         name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-        entityID = new EntityID(configuration.getAValue(DeploymentConfiguration.ENTITY_ID_ATTRIBUTE_NAME));
-        testEntityTools = new TestEntityTools();
+        entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
+        testEntityTools = new EntityToolsImplementation();
         testEntityTools.initialize(this);
         DefaultFMasImplementation.getInstance().registerEntity(entityID.ID, testEntityTools);
         this.setUnitName(name);
@@ -87,7 +87,7 @@ public class TestEntity extends Unit implements EntityAPI {
         return entityID;
     }
 
-    public TestEntityTools getTestEntityTools() {
+    public EntityToolsImplementation getTestEntityTools() {
         return testEntityTools;
     }
 

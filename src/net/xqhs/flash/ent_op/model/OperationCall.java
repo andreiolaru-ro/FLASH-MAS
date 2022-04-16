@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 import java.util.ArrayList;
 import java.util.Set;

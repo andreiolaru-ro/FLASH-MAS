@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 /**
  * Stores the identifier of an entity.
@@ -6,7 +6,10 @@ package net.xqhs.flash.ent_op;
  * @author Andrei Olaru
  */
 public class EntityID {
-	
+	/**
+	 * The name of the attribute which contains the entity id.
+	 */
+	public static final String	ENTITY_ID_ATTRIBUTE_NAME = "entity-id";
 	/**
 	 * A placeholder ID to be used, for example, when specifying the <i>caller entity</i> in the restriction on an
 	 * operations. The {@link #SUBJECT_ID} does not have a hash code and is not equal to itself.

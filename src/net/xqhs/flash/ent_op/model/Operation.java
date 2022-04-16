@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 import java.util.ArrayList;
 import java.util.Set;

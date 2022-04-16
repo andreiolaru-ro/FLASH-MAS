@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 /**
  * This interface serves as a base interface for any implementation which fits the <i>model</i> of an entity. For

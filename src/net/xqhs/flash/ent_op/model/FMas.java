@@ -1,8 +1,4 @@
-package net.xqhs.flash.ent_op.support;
-
-import net.xqhs.flash.ent_op.EntityAPI;
-import net.xqhs.flash.ent_op.EntityTools;
-import net.xqhs.flash.ent_op.OperationCall;
+package net.xqhs.flash.ent_op.model;
 
 public interface FMas {
 
@@ -10,7 +6,7 @@ public interface FMas {
      * Method used to register an entity.
      *
      * @param entityName
- *              -the entity name
+     *          -the entity name
      * @param entityTools
      *          -the entity tools of the entity that needs to be registered
      * @return - <code>true</code> if the entity was successfully registered; <code>false</code> otherwise.

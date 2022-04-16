@@ -9,14 +9,14 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.Relation.RelationChangeType;
+import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 
 /**
  * Defines all the methods that an entity should offer to an object which has a reference to the entity. Normally, an
- * {@link EntityTools} instance should access an entity via these methods.
+ * {@link OutboundEntityTools} instance should access an entity via these methods.
  * 
  * @author andreiolaru
  */

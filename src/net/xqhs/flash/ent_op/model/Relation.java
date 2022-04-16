@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
 
 @SuppressWarnings("javadoc")
 public class Relation {

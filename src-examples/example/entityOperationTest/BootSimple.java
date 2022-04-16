@@ -1,19 +1,15 @@
 package example.entityOperationTest;
 
-import jdk.dynalink.linker.LinkerServices;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.EntityID;
-import net.xqhs.flash.ent_op.Operation;
-import net.xqhs.flash.ent_op.OperationCall;
-import net.xqhs.flash.ent_op.support.DefaultFMasImplementation;
-import net.xqhs.flash.ent_op.support.FMas;
-import net.xqhs.flash.ent_op.testEntity.TestEntity;
-import net.xqhs.flash.webSocket.WebSocketPylon;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.entities.TestEntity;
 
 import java.util.*;
 
-import static net.xqhs.flash.core.DeploymentConfiguration.ENTITY_ID_ATTRIBUTE_NAME;
+import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
+
 
 public class BootSimple {
     public static void main(String[] args) {

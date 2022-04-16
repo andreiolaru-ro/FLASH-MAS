@@ -83,10 +83,6 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String	NAME_ATTRIBUTE_NAME				= "name";
 	/**
-	 * The name of the attribute which contains the entity id.
-	 */
-	public static final String	ENTITY_ID_ATTRIBUTE_NAME	    = "entity-id";
-	/**
 	 * The name of the element(s) which contain entity context.
 	 */
 	public static final String	CONTEXT_ELEMENT_NAME			= "in-context-of";

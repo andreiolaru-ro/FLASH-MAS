@@ -1,8 +1,4 @@
-package net.xqhs.flash.ent_op.support;
-
-import net.xqhs.flash.ent_op.EntityAPI;
-import net.xqhs.flash.ent_op.Operation;
-import net.xqhs.flash.ent_op.OperationCall;
+package net.xqhs.flash.ent_op.model;
 
 public interface LocalRouter extends EntityAPI {
 

@@ -1,15 +1,18 @@
-package net.xqhs.flash.ent_op.testEntity;
+package net.xqhs.flash.ent_op.implem;
 
-import net.xqhs.flash.ent_op.*;
-import net.xqhs.flash.ent_op.support.DefaultFMasImplementation;
-import net.xqhs.flash.ent_op.support.DefaultLocalRouterImplementation;
-import net.xqhs.flash.ent_op.support.FMas;
-import net.xqhs.flash.ent_op.support.LocalRouter;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.LocalRouter;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.Relation;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class TestEntityTools implements EntityTools {
+public class EntityToolsImplementation implements EntityTools {
+
     /**
      * The default name for instances of this implementation.
      */

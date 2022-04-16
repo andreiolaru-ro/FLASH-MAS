@@ -1,11 +1,11 @@
-package net.xqhs.flash.ent_op;
+package net.xqhs.flash.ent_op.model;
+
+import net.xqhs.flash.ent_op.model.Operation.Restriction;
 
 import java.util.Set;
 
-import net.xqhs.flash.ent_op.Operation.Restriction;
-
 /**
- * An {@link EntityTools} instance is associated with an entity (implementing {@link EntityAPI}) in order to connect it
+ * An {@link OutboundEntityTools} instance is associated with an entity (implementing {@link EntityAPI}) in order to connect it
  * with the FLASH-MAS framework.
  * <p>
  * This interface should primarily face an Entity implementation, offering to it a variety of services, among which
@@ -14,32 +14,18 @@ import net.xqhs.flash.ent_op.Operation.Restriction;
  * 
  * @author Andrei Olaru
  */
-public interface EntityTools {
+public interface OutboundEntityTools {
 	/**
 	 * This should be called by an entity at {@link EntityAPI#setup} time to make the link between the entity and the
-	 * {@link EntityTools} instance and to assign a name to the entity.
+	 * {@link OutboundEntityTools} instance and to assign a name to the entity.
 	 * 
 	 * @param entity
 	 *            - the name that the entity intends to use. <code>null</code> if the entity does not have any
 	 *            preference for the name (a name will be automatically assigned).
-	 * @return <code>true</code> if the link with the {@link EntityTools} is successful. <code>false</code> is returned
+	 * @return <code>true</code> if the link with the {@link OutboundEntityTools} is successful. <code>false</code> is returned
 	 *         if the chosen name is not available.
 	 */
 	boolean initialize(EntityAPI entity);
-	
-	/**
-	 * This can be called either from the entity (for verification) or from the framework, in order to obtain the list
-	 * of operations for the associated entity.
-	 * 
-	 * @return
-	 */
-	Set<Operation> getOperationList();
-	
-	/**
-	 * This can be called either from the entity (for verification) or from the framework, in order to obtain the list
-	 * of operations for the associated entity.
-	 */
-	Operation getOperation(String operationName);
 	
 	/**
 	 * Adds a new operation to the list of operations.
@@ -72,7 +58,7 @@ public interface EntityTools {
 	Set<Relation> getOutgoingRelations(); // parents
 	
 	/**
-	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call (without
+	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to issue an operation call (without
 	 * expecting a result).
 	 * 
 	 * @param operationCall
@@ -91,7 +77,7 @@ public interface EntityTools {
 	}
 	
 	/**
-	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call and
+	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to issue an operation call and
 	 * expecting a result.
 	 * 
 	 * @param operationCall
@@ -109,7 +95,7 @@ public interface EntityTools {
 	void broadcastOutgoingOperationCall(OperationCall operationCall, Set<Restriction> targets, boolean expectResults, ResultReceiver callback);
 	
 	/**
-	 * Method called by an entity to its associated {@link EntityTools} instance to issue an operation call and expect
+	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to issue an operation call and expect
 	 * until a result is received.
 	 * 
 	 * @param operationCall
