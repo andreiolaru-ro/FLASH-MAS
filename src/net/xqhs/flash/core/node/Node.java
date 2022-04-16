@@ -14,12 +14,7 @@ package net.xqhs.flash.core.node;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -58,7 +53,13 @@ public class Node extends Unit implements Entity<Node>
 			return name;
 		}
 
-		public void moveAgent(String destination, String agentData) {
+		public void moveAgent(String destination, String agentName, String agentData) {
+			entityOrder.stream()
+					.filter(entity ->
+							entity instanceof MobileCompositeAgent &&
+							entity.getName().equals(agentName)
+					).findAny().ifPresent(entity -> entityOrder.remove(entity));
+
 			sendMessage(destination, agentData);
 		}
 	}
@@ -98,12 +99,7 @@ public class Node extends Unit implements Entity<Node>
 			fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
 			in = new ObjectInputStream(fis);
 			agent = (MobileCompositeAgent) in.readObject();
-//			agent.toggleTransient();
-//			agent.start();
 			in.close();
-			System.out.println("Deserialized agent obj from string:");
-			System.out.println(agentData);
-			System.out.println(agent);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -139,7 +135,6 @@ public class Node extends Unit implements Entity<Node>
 						}
 					}
 					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
-						System.out.println("########## Agent wants to move #########");
 						String agentData = (String) jo.get("agentData");
 
 						MobileCompositeAgent agent = deserializeAgent(agentData);
@@ -156,7 +151,6 @@ public class Node extends Unit implements Entity<Node>
 
 		@Override
 		public void postAgentEvent(AgentEvent event) {
-			System.out.println("Agent event " + event);
 			switch (event.getType())
 			{
 				case AGENT_WAVE:

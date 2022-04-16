@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.composite;
 
+import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,12 +49,12 @@ import net.xqhs.util.logging.UnitComponent;
  *
  * @author Andrei Olaru
  */
-public class CompositeAgent implements Agent, RunnableEntity<Pylon>
+public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
 {
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	class CompositeAgentShardContainer implements ShardContainer
+	class CompositeAgentShardContainer implements ShardContainer, Serializable
 	{
 		/**
 		 * The agent
