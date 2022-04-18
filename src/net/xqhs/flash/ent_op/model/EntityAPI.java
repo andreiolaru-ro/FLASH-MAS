@@ -72,5 +72,11 @@ public interface EntityAPI {
 	 * @return <code>true</code> if the change is accepted, <code>false</code> otherwise.
 	 */
 	boolean handleRelationChange(RelationChangeType changeType, Relation relation);
-	
+
+	/**
+	 * Used to get the name of an entity.
+	 *
+	 * @return the name of the corresponding entity.
+	 */
+	String getName();
 }

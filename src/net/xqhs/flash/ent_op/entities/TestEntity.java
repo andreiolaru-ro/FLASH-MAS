@@ -13,6 +13,7 @@ import net.xqhs.util.logging.Unit;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class TestEntity extends Unit implements EntityAPI {
+
     /**
      * The default name for instances of this implementation.
      */
@@ -21,7 +22,7 @@ public class TestEntity extends Unit implements EntityAPI {
     /**
      * Indicates whether the implementation is currently running.
      */
-    private boolean isRunning = false;
+    private boolean isRunning;
 
     /**
      * The name of this instance.
@@ -45,7 +46,7 @@ public class TestEntity extends Unit implements EntityAPI {
         testEntityTools = new EntityToolsImplementation();
         testEntityTools.initialize(this);
         DefaultFMasImplementation.getInstance().registerEntity(entityID.ID, testEntityTools);
-        this.setUnitName(name);
+        setUnitName(name);
         return true;
     }
 
@@ -68,12 +69,8 @@ public class TestEntity extends Unit implements EntityAPI {
             le("[] is not running", name);
             return null;
         }
-        switch(opCall.getOperationName()) {
-            case "PRINT":
-                printMessageOperation(opCall.getArgumentValues().get(0).toString());
-                break;
-            default:
-                lw("The [] operation is not supported by the [] entity", opCall.getOperationName(), name);
+        if ("PRINT".equals(opCall.getOperationName())) {
+            printMessageOperation(opCall.getArgumentValues().get(0).toString());
         }
         return null;
     }
@@ -81,6 +78,11 @@ public class TestEntity extends Unit implements EntityAPI {
     @Override
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return entityID.ID;
     }
 
     public EntityID getEntityID() {
@@ -96,6 +98,6 @@ public class TestEntity extends Unit implements EntityAPI {
     }
 
     private void printMessageOperation(String message) {
-        li("Print received message []", message);
+        li("received message: []", message);
     }
 }

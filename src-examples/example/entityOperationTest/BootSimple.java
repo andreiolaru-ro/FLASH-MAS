@@ -2,11 +2,12 @@ package example.entityOperationTest;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.TestEntity;
 import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.entities.TestEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Set;
 
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
@@ -21,11 +22,6 @@ public class BootSimple {
             @Override
             public String getName() {
                 return "PRINT";
-            }
-
-            @Override
-            public String getOwner() {
-                return "test/entity/1";
             }
 
             @Override
@@ -60,6 +56,7 @@ public class BootSimple {
         testEntity2.start();
         ArrayList<Object> argumentValues = new ArrayList<>();
         argumentValues.add("HELLO");
-        testEntity2.callOperation(new OperationCall(testEntity2.getEntityID(), null, "PRINT", false, argumentValues));
+        testEntity2.callOperation(new OperationCall(testEntity2.getEntityID(), testEntity1.getEntityID(), "PRINT", false, argumentValues));
+        testEntity2.callOperation(new OperationCall(testEntity2.getEntityID(), testEntity1.getEntityID(), "MULTIPLY", false, argumentValues));
     }
 }

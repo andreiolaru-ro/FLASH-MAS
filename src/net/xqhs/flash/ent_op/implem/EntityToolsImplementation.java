@@ -3,35 +3,35 @@ package net.xqhs.flash.ent_op.implem;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.LocalRouter;
 import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.util.logging.Unit;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class EntityToolsImplementation implements EntityTools {
+public class EntityToolsImplementation extends Unit implements EntityTools {
 
     /**
-     * The default name for instances of this implementation.
+     * The default name for entity tools instances of this implementation.
      */
-    private static final String DEFAULT_ENTITY_NAME = "Default Test Entity";
+    private static final String DEFAULT_ENTITY_TOOLS_NAME = "entity tools";
+
+    /**
+     * The name of the current entity tools instance.
+     */
+    private String entityToolsName = DEFAULT_ENTITY_TOOLS_NAME;
 
     /**
      * The name of the corresponding entity for this instance.
      */
-    private String entityName = DEFAULT_ENTITY_NAME;
+    private String entityName;
 
     /**
      * The entityAPI.
      */
     private EntityAPI entityAPI;
-
-    /**
-     * The local router.
-     */
-    private LocalRouter localRouter;
 
     /**
      * The framework.
@@ -52,9 +52,11 @@ public class EntityToolsImplementation implements EntityTools {
     public boolean initialize(EntityAPI entity) {
         operations = new HashSet<>();
         relations = new HashSet<>();
-        entityAPI = entity;
-        localRouter = DefaultLocalRouterImplementation.getInstance();
         fMas = DefaultFMasImplementation.getInstance();
+        entityAPI = entity;
+        entityName = entity.getName();
+        entityToolsName = entityName +  " " + DEFAULT_ENTITY_TOOLS_NAME;
+        setUnitName(entityToolsName);
         return true;
     }
 
@@ -74,10 +76,12 @@ public class EntityToolsImplementation implements EntityTools {
     @Override
     public boolean createOperation(Operation operation) {
         // fails if the operation already exists
-        if (getOperation(operation.getName()) != null)
+        if (getOperation(operation.getName()) != null) {
+            li("[] operation couldn't be added to []", operation.getName(), entityName);
             return false;
+        }
         operations.add(operation);
-        localRouter.registerOperation(operation);
+        li("[] operation successfully added to []", operation.getName(), entityName);
         return true;
     }
 
@@ -86,7 +90,6 @@ public class EntityToolsImplementation implements EntityTools {
         Operation operation = getOperation(operationName);
         if (operation == null)
             return false;
-        localRouter.registerOperation(operation);
         operations.remove(operation);
         return true;
     }
@@ -129,6 +132,10 @@ public class EntityToolsImplementation implements EntityTools {
     }
 
     public void handleIncomingOperationCall(OperationCall operationCall) {
+        String operationName = operationCall.getOperationName();
+        if (getOperation(operationName) == null) {
+            lw("The [] operation is not supported by the [] entity", operationName, entityName);
+        }
         entityAPI.handleOperationCall(operationCall);
     }
 }

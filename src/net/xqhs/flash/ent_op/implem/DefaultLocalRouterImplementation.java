@@ -2,14 +2,19 @@ package net.xqhs.flash.ent_op.implem;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
-import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.LocalRouter;
-import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
 public class DefaultLocalRouterImplementation extends Unit implements LocalRouter {
+
+    /**
+     * The default name for entity tools instances of this implementation.
+     */
+    private static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
+
     /**
      * The instance of the local router
      */
@@ -59,51 +64,21 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
     }
 
     @Override
-    public boolean registerOperation(Operation operation) {
-        if (operationExists(operation))
-            return false;
-        operations.add(operation.getOwner(), operation.getName());
-        return true;
-    }
-
-    @Override
-    public boolean unregisterOperation(Operation operation) {
-        if (!operationExists(operation))
-            return false;
-        operations.remove(operation.getOwner(), operation.getName());
-        return true;
+    public String getName() {
+        return DEFAULT_LOCAL_ROUTER_NAME;
     }
 
     @Override
     public void route(OperationCall operationCall) {
+        FMas fMas = DefaultFMasImplementation.getInstance();
+        String targetEntityName = operationCall.getTargetEntity().ID;
+
         // internal routing
-        String targetEntity = getTargetEntity(operationCall.getOperationName());
-        if (targetEntity != null) {
-            operationCall.setTargetEntity(new EntityID(targetEntity));
+        if (fMas.entityExistsOnLocalNode(targetEntityName)) {
             operationCall.setRouted(true);
-            DefaultFMasImplementation.getInstance().route(operationCall);
+            fMas.route(operationCall);
         } else { //external routing
-            // TODO: the external routing of the operation calls
+            // TODO: send the opCall to the pylon
         }
-    }
-
-    private boolean operationExists(Operation operation) {
-        return operations.getValues(operation.getOwner()).contains(operation.getName());
-    }
-
-    private boolean operationExistsOnNode(String operationName) {
-        for (String key : operations.getKeys()) {
-            if (operations.getValues(key).contains(operationName))
-                return true;
-        }
-        return false;
-    }
-
-    private String getTargetEntity(String operationName) {
-        for (String key : operations.getKeys()) {
-            if (operations.getValues(key).contains(operationName))
-                return key;
-        }
-        return null;
     }
 }

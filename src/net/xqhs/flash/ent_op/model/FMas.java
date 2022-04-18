@@ -14,6 +14,15 @@ public interface FMas {
     boolean registerEntity(String entityName, EntityTools entityTools);
 
     /**
+     * Method used to check if an entity is present on the local node.
+     *
+     * @param entityName
+     *          -the entity name
+     * @return <code>true</code> if the entity is present on the current node; <code>false</code> otherwise.
+     */
+    boolean entityExistsOnLocalNode(String entityName);
+
+    /**
      * Method used to route an operation call. This method only forwards an operation call to the {@link LocalRouter}
      * which will implement the routing policy.
      *

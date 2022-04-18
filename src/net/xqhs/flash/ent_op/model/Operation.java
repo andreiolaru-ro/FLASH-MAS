@@ -34,8 +34,6 @@ public interface Operation {
 	}
 	
 	String getName();
-
-	String getOwner();
 	
 	Description getDescription();
 	

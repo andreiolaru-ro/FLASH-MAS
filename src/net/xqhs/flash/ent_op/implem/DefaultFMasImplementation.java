@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultFMasImplementation implements FMas {
+
     /**
      * The FMas instance.
      */
@@ -40,6 +41,11 @@ public class DefaultFMasImplementation implements FMas {
     }
 
     @Override
+    public boolean entityExistsOnLocalNode(String entityName) {
+        return entities.containsKey(entityName);
+    }
+
+    @Override
     public void route(OperationCall operationCall) {
         // send the opCall to the local route to route the opCall
         if (!operationCall.wasRouted()) {
@@ -51,6 +57,5 @@ public class DefaultFMasImplementation implements FMas {
             entityTools.handleIncomingOperationCall(operationCall);
         }
     }
-
 
 }

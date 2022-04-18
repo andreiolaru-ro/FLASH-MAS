@@ -36,6 +36,10 @@ public class OperationCall {
 		// TODO
 	}
 
+	public EntityID getSourceEntity() {
+		return sourceEntity;
+	}
+
 	public String getOperationName() {
 		return targetOperation;
 	}
