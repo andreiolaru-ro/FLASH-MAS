@@ -29,7 +29,7 @@ public class BootGuiAgent
 		String test_args = "";
 
 		test_args += " -loader agent:composite";
-		test_args += " -package andrei.guiWorks";
+		test_args += " -package example.guiGeneration";
 
 		test_args += " -node main";
 		test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui from:one-port.yml -shard test";
