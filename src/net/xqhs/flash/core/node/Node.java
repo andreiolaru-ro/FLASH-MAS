@@ -30,7 +30,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -233,7 +233,8 @@ public class Node extends Unit implements Entity<Node>
 			lf("starting entity []...", entityName);
 			if(entity.start()) {
 				lf("entity [] started successfully.", entityName);
-				if(getName() != null && (entity instanceof DefaultPylonImplementation))
+				EntityProxy<?> ctx = entity.asContext();
+				if(getName() != null && messagingShard != null && (ctx instanceof MessagingPylonProxy))
 					messagingShard.register(getName());
 			}
 			else
