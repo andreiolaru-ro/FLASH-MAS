@@ -9,56 +9,116 @@ import java.util.Map;
 public class MessageFactory {
 
     public enum MessageType {
+        /**
+         * Message sent from new created agent to the Region-Server from their birth region.
+         * Contains the next fields: type, node (pylon name), source (sender agent name)
+         */
         REGISTER,
+        /**
+         * Message sent from new arrived agent to the Region-Server.
+         * Contains the next fields: type, node (pylon name), source (sender agent name)
+         */
         CONNECT,
+        /**
+         * Standard message, sent from one agent to another agent.
+         * Contains the next fields: type, node (pylon name), source (sender agent name), destination (receiver agent name), content (message content)
+         */
         CONTENT,
+        /**
+         * Message sent from agent to the Region-Server, when it wants to leave to another node.
+         * Contains the next fields: type, node (pylon name), source (sender agent name)
+         */
         REQ_LEAVE,
+        /**
+         * Message sent from Region-Server to the Region-Server from the birthplace of the agent, when that agent wants to leave to another node.
+         * Contains the next fields: type, node (pylon name), source (sender server name), agentName (the agent name that wants to leave)
+         */
         REQ_BUFFER,
+        /**
+         * Message sent from Region-Server to the Region-Server from the birthplace of the agent, when the agent arrives in the new region.
+         * Contains the next fields: type, node (pylon name), source (agent name), lastLocation (agent last location)
+         */
         AGENT_UPDATE,
-        REQ_ACCEPT
+        /**
+         * Message sent from Region-Server to the agent
+         * Contains the next fields: type, node (pylon name), source (sender server name)
+         */
+        REQ_ACCEPT,
     }
 
+    public enum ActionType {
+        /**
+         * An agent receives a message from another agent.
+         */
+        RECEIVE_MESSAGE,
+        /**
+         * An agent sends a message to another agent.
+         */
+        SEND_MESSAGE,
+        /**
+         * An agent moves on another node.
+         */
+        MOVE_TO_ANOTHER_NODE,
+        /**
+         * An agent arrives on another node.
+         */
+        ARRIVED_ON_NODE,
+    }
+
+    /**
+     * Creates the message with the given information.
+     * @param node
+     *            - the pylon name
+     * @param agent
+     *            - the sender name
+     * @param type
+     *            - message type
+     * @param content
+     *            - information extra
+     * @return
+     *            - returns an object with type String with the complete message
+     */
     public static String createMessage(String node, String agent, MessageType type, Map<String, String> content) {
         GsonBuilder builder = new GsonBuilder();
-        builder.setPrettyPrinting();
         Gson gson = builder.create();
-
         Map<String, String> data = new HashMap<>();
+
+        builder.setPrettyPrinting();
         switch (type) {
-            case REGISTER:
-                data.put("type", "REGISTER");
-                break;
-            case CONNECT:
-                data.put("type", "CONNECT");
-                break;
             case CONTENT:
-                data.put("type", "CONTENT");
-                data.putAll(content);
-                break;
             case REQ_BUFFER:
-                data.put("type", "REQ_BUFFER");
-                data.putAll(content);
-                break;
             case REQ_LEAVE:
-                data.put("type", "REQ_LEAVE");
-                data.putAll(content);
-                break;
             case REQ_ACCEPT:
-                data.put("type", "REQ_ACCEPT");
-                data.putAll(content);
-                break;
             case AGENT_UPDATE:
-                data.put("type", "AGENT_UPDATE");
-                data.putAll(content);
+                if (content != null) data.putAll(content);
+                break;
+            default:
                 break;
         }
-
+        data.put("type", type.toString());
         data.put("node", node);
         data.put("source", agent);
+        return gson.toJson(data);
+    }
 
-        String JSONObject = gson.toJson(data);
-        System.out.println(JSONObject);
+    /**
+     * Creates the logs that will be sent to the monitor entity.
+     * @param action
+     *            - action type
+     * @param content
+     *            - information extra
+     * @return
+     *            - returns an object with type String
+     */
+    public static String createMonitorNotification(ActionType action, String content) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        Map<String, String> data = new HashMap<>();
 
-        return JSONObject;
+        builder.setPrettyPrinting();
+        data.put("action", action.toString());
+        data.put("content", content);
+
+        return gson.toJson(data);
     }
 }

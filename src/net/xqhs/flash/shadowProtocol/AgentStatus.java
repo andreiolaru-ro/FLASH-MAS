@@ -5,27 +5,41 @@ import org.java_websocket.WebSocket;
 import java.util.LinkedList;
 
 public class AgentStatus {
-    private String name = null;
-    private WebSocket clientConnection = null;
     /**
-     * An agent can be in one of the following states:
-     *      ONLINE => agent up
-     *      OFFLINE => agent is disconnected/moving
-     *      TRANSITION => agent is located on another region
+     * The agent name.
      */
+    private String name;
+    /**
+     * The Websocket object, used for sending messages to the agent.
+     */
+    private WebSocket clientConnection;
+    /**
+     * Agent status.
+     */
+    private Status status;
+    /**
+     * Agent last location known by the birth Region-Server.
+     */
+    private String lastLocation;
+    /**
+     * Saved messages for the agents that are OFFLINE.
+     */
+    private final LinkedList<String> messages;
+
     public enum Status {
+        /**
+         * The agent can receive messages anytime.
+         */
         ONLINE,
+        /**
+         * The agent is disconnected and the messages will be saved for it.
+         */
         OFFLINE,
-        TRANSITION
+        /**
+         * The agent is moved on another region, but it is ONLINE and can receive messages.
+         */
+        TRANSITION,
     }
-
-    private Status status = null;
-    private String lastLocation = null;
-
-    /**
-     * message buffer
-     */
-    private LinkedList<String> messages;
 
     public AgentStatus(String name, WebSocket webSocket, Status status, String lastLocation) {
         this.clientConnection = webSocket;

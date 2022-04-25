@@ -7,27 +7,28 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * The pylon needs to know the agents and the shadows
- */
-public class ShadowPylon extends DefaultPylonImplementation {
-    /**
-     *  The thread that manages the message queue.
-     */
-    class MessageThread implements Runnable {
 
+public class ShadowPylon extends DefaultPylonImplementation {
+
+    static class MessageThread implements Runnable {
         @Override
         public void run() {
 
         }
     }
 
+    /**
+     * Agents list, that are located on this node.
+     */
     protected Map<String, MessageReceiver> agentList = new HashMap<>();
 
     public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
@@ -39,19 +40,32 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
         @Override
         public boolean register(String entityName, MessageReceiver receiver) {
-           // System.out.println("Register " + entityName);
+            lf("On pylon " + getEntityName() + " arrived the agent " + entityName);
             if(!agentList.containsKey(entityName)) {
                 agentList.put(entityName, receiver);
             }
-           // System.out.println(agentList.toString());
             return true;
         }
 
         @Override
         public boolean send(String source, String destination, String content) {
-            if (content.equals("stop")) {
-                li("Agent " + source + " is leaving");
-                agentList.remove(source);
+            Object obj = JSONValue.parse(content);
+            if(obj == null) return false;
+            JSONObject mesg = (JSONObject) obj;
+            String type = (String) mesg.get("action");
+            switch (MessageFactory.ActionType.valueOf(type)) {
+                case RECEIVE_MESSAGE:
+                case SEND_MESSAGE:
+                case ARRIVED_ON_NODE:
+                    monitor.inbox.receive(source, destination, content);
+                    break;
+                case MOVE_TO_ANOTHER_NODE:
+                    monitor.inbox.receive(source, destination, content);
+                    lf("Agent " + source + " is leaving");
+                    agentList.remove(source);
+                    break;
+                default:
+                    break;
             }
             return false;
         }
@@ -73,23 +87,19 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
     protected boolean				hasServer       = false;
     protected int					serverPort      = -1;
-    protected RegionServer serverEntity    = null;
+    protected RegionServer          serverEntity    = null;
     protected ArrayList<String>     serverList      = null;
+    public String                   HomeServerAddressName = null;
 
-    /**
-     * The server address itself.
-     */
-    public String                HomeServerAddressName       = null;
+    protected boolean               useThread       = true;
+    protected Thread                messageThread   = null;
 
-    protected boolean useThread         = true;
-    protected Thread messageThread      = null;
-
-    protected String nodeName       = null;
+    protected MonitoringEntity         monitor      = null;
 
     @Override
     public boolean configure(MultiTreeMap configuration) {
-        if(!super.configure(configuration))
-            return false;
+        if(!super.configure(configuration)) return false;
+
         if(configuration.isSimple(HOME_SERVER_ADDRESS_NAME)) {
             HomeServerAddressName = configuration.getAValue(HOME_SERVER_ADDRESS_NAME);
         }
@@ -101,23 +111,29 @@ public class ShadowPylon extends DefaultPylonImplementation {
             String s = configuration.getAValue("servers");
             s = s.substring(1, s.length()-1);
             serverList = new ArrayList<>(Arrays.asList(s.split(", ")));
-            var nickname = (HomeServerAddressName.split("//"))[1];
+            String nickname = null;
+            if (HomeServerAddressName != null) {
+                nickname = (HomeServerAddressName.split("//"))[1];
+            }
             serverList.remove(nickname);
         }
         if(configuration.isSimple("pylon_name")) {
-            this.name = configuration.getAValue("pylon_name");
+            setUnitName(configuration.getAValue("pylon_name"));
+            setLoggerType(PlatformUtils.platformLogType());
         }
         return true;
     }
 
     @Override
     public boolean start() {
-        /*
-         * Starting server
-         */
         if(hasServer) {
             serverEntity = new RegionServer(serverPort, serverList);
             serverEntity.start();
+        }
+
+        if (monitor == null) {
+            monitor = new MonitoringEntity(getName() + "-monitor");
+            monitor.start();
         }
 
         if(!super.start())
@@ -127,28 +143,21 @@ public class ShadowPylon extends DefaultPylonImplementation {
             messageThread = new Thread(new MessageThread());
             messageThread.start();
         }
-        li("Started" + (useThread ? " with thread." : ""));
 
+        li("Started" + (useThread ? " with thread." : ""));
         return true;
     }
 
     @Override
     public boolean stop() {
         super.stop();
-
-        /*
-         * Stopping threads
-         */
         if(useThread) {
             useThread = false;
             messageThread = null;
         }
-
-        /*
-         * Stopping server
-         */
         if(hasServer)
             serverEntity.stop();
+        monitor.stop();
         return true;
     }
 
@@ -156,7 +165,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
     public boolean addContext(EntityProxy<Node> context) {
         if(!super.addContext(context))
             return false;
-        nodeName = context.getEntityName();
+        String nodeName = context.getEntityName();
         lf("Added node context ", nodeName);
         return true;
     }
@@ -178,4 +187,6 @@ public class ShadowPylon extends DefaultPylonImplementation {
         return messagingProxy;
     }
 
+    @Override
+    public String getName() { return getUnitName(); }
 }
