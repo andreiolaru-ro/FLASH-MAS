@@ -258,6 +258,9 @@ public class WebEntity extends CentralGUI {
 	public boolean updateGui(String entity, Element guiSpecification) {
 		super.updateGui(entity, guiSpecification);
 		
+		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
+		if(entity == null)
+			return false;
 		idManager.removeIdsWithPrefix(entity);
 		idManager.insertIdsInto(guiSpecification, entity);
 		

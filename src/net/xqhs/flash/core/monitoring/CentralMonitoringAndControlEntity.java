@@ -313,6 +313,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		if(op.equals(MonitoringOperation.GUI_UPDATE.getOperation())) {
 			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
 			Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
+			if(interfaceStructure == null)
+				try {
+					interfaceStructure = (Element) standardCtrls.clone();
+				} catch(CloneNotSupportedException e) {
+					le("Failed to clone standard controls", e);
+				}
 			entitiesData.get(entity).setGuiSpecification(interfaceStructure);
 			try {
 				entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
@@ -367,7 +373,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				entitiesData.put(name, new EntityData().setName(name).setStatus(UNKNOWN).addOperations(operationDetails)
 						.setGuiSpecification((Element) standardCtrls.clone()));
 			} catch(CloneNotSupportedException e) {
-				e.printStackTrace();
+				le("Failed to clone standard controls", e);
 			}
 			gui.updateGui(name, entitiesData.get(name).getGuiSpecification());
 		}
