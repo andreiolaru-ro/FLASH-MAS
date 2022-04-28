@@ -1,4 +1,4 @@
-package example.entityOperationTest;
+package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -9,13 +9,14 @@ import net.xqhs.flash.ent_op.model.OperationCall;
 import java.util.ArrayList;
 import java.util.Set;
 
+import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 
 public class BootSimple {
     public static void main(String[] args) {
         TestEntity testEntity1 = new TestEntity();
-        testEntity1.setup(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "Test Entity 1")
+        testEntity1.setup(new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "test/entity/1")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "test/entity/1"));
         testEntity1.start();
         testEntity1.getTestEntityTools().createOperation(new Operation() {
@@ -51,7 +52,7 @@ public class BootSimple {
         });
 
         TestEntity testEntity2 = new TestEntity();
-        testEntity2.setup(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "Test Entity 2")
+        testEntity2.setup(new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "test/entity/2")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "test/entity/2"));
         testEntity2.start();
         ArrayList<Object> argumentValues = new ArrayList<>();

@@ -13,7 +13,7 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
     /**
      * The default name for entity tools instances of this implementation.
      */
-    private static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
+    protected static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
 
     /**
      * The instance of the local router
@@ -24,7 +24,7 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
      * The multiValueMap contains the list of available operations.
      * (key, value) -> (entityName, operations supported by that entity)
      */
-    private static MultiValueMap operations;
+    protected static MultiValueMap operations;
 
     private DefaultLocalRouterImplementation() {
         // private constructor

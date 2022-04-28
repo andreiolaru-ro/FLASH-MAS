@@ -1,12 +1,11 @@
 package net.xqhs.flash.ent_op.entities;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.implem.DefaultFMasImplementation;
-import net.xqhs.flash.ent_op.implem.EntityToolsImplementation;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.PingPongOperation.PING_PONG_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
@@ -29,50 +29,55 @@ public class PingPongAgent extends Unit implements EntityAPI {
     /**
      * Initial delay before the first ping message.
      */
-    private static final long PING_INITIAL_DELAY = 2000;
+    protected static final long PING_INITIAL_DELAY = 2000;
 
     /**
      * Time between ping messages.
      */
-    private static final long PING_PERIOD = 2000;
+    protected static final long PING_PERIOD = 2000;
 
     /**
      * Indicates whether the implementation is currently running.
      */
-    private boolean isRunning;
+    protected boolean isRunning;
 
     /**
      * The name of the agent.
      */
-    private String agentName;
+    protected String agentName;
 
     /**
      * Cache for the name of the other agent.
      */
-    private List<String> otherAgents;
+    protected List<String> otherAgents;
 
     /**
      * Timer for pinging.
      */
-    private Timer pingTimer;
+    protected Timer pingTimer;
 
     /**
      * The id of this instance.
      */
-    private EntityID entityID;
+    protected EntityID entityID;
 
     /**
      * The corresponding entity tools for this instance.
      */
-    private EntityToolsImplementation entityTools;
+    protected EntityTools entityTools;
+
+    /**
+     * The ping pong operation.
+     */
+    protected Operation pingPong;
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
-        agentName = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+        agentName = configuration.getAValue(NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
-        entityTools = new EntityToolsImplementation();
-        entityTools.initialize(this);
-        DefaultFMasImplementation.getInstance().registerEntity(entityID.ID, entityTools);
+        pingPong = new PingPongOperation();
+        entityTools = DefaultFMasImplementation.getInstance().registerEntity(this);
+        entityTools.createOperation(pingPong);
         setUnitName(agentName);
         if (configuration.isSet(DEST_AGENT_PARAMETER_NAME))
             otherAgents = configuration.getValues(DEST_AGENT_PARAMETER_NAME);

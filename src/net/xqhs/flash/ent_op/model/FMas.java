@@ -5,13 +5,12 @@ public interface FMas {
     /**
      * Method used to register an entity.
      *
-     * @param entityName
-     *          -the entity name
-     * @param entityTools
-     *          -the entity tools of the entity that needs to be registered
-     * @return - <code>true</code> if the entity was successfully registered; <code>false</code> otherwise.
+     * @param entity
+     *          -the entity that needs to be registered
+     *
+     * @return - {@link EntityTools} if the entity was successfully registered; null otherwise.
      */
-    boolean registerEntity(String entityName, EntityTools entityTools);
+    EntityTools registerEntity(EntityAPI entity);
 
     /**
      * Method used to check if an entity is present on the local node.

@@ -16,37 +16,37 @@ public class EntityToolsImplementation extends Unit implements EntityTools {
     /**
      * The default name for entity tools instances of this implementation.
      */
-    private static final String DEFAULT_ENTITY_TOOLS_NAME = "entity tools";
+    protected static final String DEFAULT_ENTITY_TOOLS_NAME = "entity tools";
 
     /**
      * The name of the current entity tools instance.
      */
-    private String entityToolsName = DEFAULT_ENTITY_TOOLS_NAME;
+    protected String entityToolsName = DEFAULT_ENTITY_TOOLS_NAME;
 
     /**
      * The name of the corresponding entity for this instance.
      */
-    private String entityName;
+    protected String entityName;
 
     /**
      * The entityAPI.
      */
-    private EntityAPI entityAPI;
+    protected EntityAPI entityAPI;
 
     /**
      * The framework.
      */
-    private FMas fMas;
+    protected FMas fMas;
 
     /**
      * The list of available operations.
      */
-    private Set<Operation> operations;
+    protected Set<Operation> operations;
 
     /**
      * The list of relations with other entities.
      */
-    private Set<Relation> relations;
+    protected Set<Relation> relations;
 
     @Override
     public boolean initialize(EntityAPI entity) {

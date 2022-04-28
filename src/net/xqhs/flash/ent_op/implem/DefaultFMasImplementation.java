@@ -1,5 +1,6 @@
 package net.xqhs.flash.ent_op.implem;
 
+import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.LocalRouter;
@@ -18,7 +19,7 @@ public class DefaultFMasImplementation implements FMas {
     /**
      * The map that contains the registered entities.
      */
-    private static Map<String, EntityTools> entities;
+    protected static Map<String, EntityTools> entities;
 
     private DefaultFMasImplementation() {
         // private constructor
@@ -33,11 +34,14 @@ public class DefaultFMasImplementation implements FMas {
     }
 
     @Override
-    public boolean registerEntity(String entityName, EntityTools entityTools) {
+    public EntityTools registerEntity(EntityAPI entity) {
+        String entityName = entity.getName();
         if (entities.containsKey(entityName))
-            return false;
+            return null;
+        EntityTools entityTools = new EntityToolsImplementation();
+        entityTools.initialize(entity);
         entities.put(entityName, entityTools);
-        return true;
+        return entityTools;
     }
 
     @Override
