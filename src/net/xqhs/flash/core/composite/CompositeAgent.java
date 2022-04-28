@@ -22,12 +22,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.RunnableEntity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentEvent.AgentSequenceType;
-import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -49,13 +47,22 @@ import net.xqhs.util.logging.UnitComponent;
  *
  * @author Andrei Olaru
  */
-public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon>
+public class CompositeAgent implements CompositeAgentModel
 {
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = -5676876894024151157L;
+	
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
 	class CompositeAgentShardContainer implements ShardContainer, Serializable
 	{
+		/**
+		 * The serial UID.
+		 */
+		private static final long	serialVersionUID	= 4212641806365747549L;
 		/**
 		 * The agent
 		 */
@@ -619,16 +626,6 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 		return isTransient();
 	}
 
-
-	public Node.NodeProxy getNodeProxyContext() {
-		for(var context : agentContext) {
-			if (context instanceof Node.NodeProxy) {
-				return (Node.NodeProxy) context;
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Context can be added to an agent only when it is not running.
 	 */
@@ -687,7 +684,8 @@ public class CompositeAgent implements Serializable, Agent, RunnableEntity<Pylon
 	 *                  - the {@link AgentShard} instance to add.
 	 * @return the agent instance itself. This can be used to continue adding other shards.
 	 */
-	protected CompositeAgent addShard(AgentShard shard)
+	@Override
+	public CompositeAgent addShard(AgentShard shard)
 	{
 		if(!canAddShards())
 			throw new IllegalStateException("Cannot add shards in state [" + agentState + "].");

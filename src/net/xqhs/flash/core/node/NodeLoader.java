@@ -13,6 +13,7 @@ package net.xqhs.flash.core.node;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -137,7 +139,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		
 		// ============================================================================== get loaders
 		// loaders are stored as entity -> kind -> loaders
-		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
+		Map<String, Map<String, List<Loader<?>>>> loaders = new LinkedHashMap<>();
 		MultiTreeMap loader_configs = nodeConfiguration.getSingleTree(CategoryName.LOADER.s());
 		if(loader_configs != null) {
 			if(!loader_configs.getSimpleNames().isEmpty()) // just a warning
@@ -165,7 +167,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
 						// add to map
 						if(!loaders.containsKey(entity))
-							loaders.put(entity, new HashMap<String, List<Loader<?>>>());
+							loaders.put(entity, new LinkedHashMap<String, List<Loader<?>>>());
 						if(!loaders.get(entity).containsKey(kind))
 							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 						loaders.get(entity).get(kind).add(loader);
@@ -266,8 +268,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
 					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { // if the category in loader
-																							// list
+					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { 
+						// if the category in loader list
 						log_catLoad = catName;
 						if(loaders.get(catName).containsKey(kind)) { // get loaders for this kind
 							loaderList = loaders.get(catName).get(kind);
@@ -280,7 +282,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							}
 							else { // get loaders for the first kind
 								loaderList = loaders.get(catName).values().iterator().next();
-								log_kindLoad = "first(" + loaders.get(catName).keySet().iterator().next() + ")";
+								log_kindLoad = "first (" + loaders.get(catName).keySet().iterator().next() + ")";
 							}
 						}
 					}
