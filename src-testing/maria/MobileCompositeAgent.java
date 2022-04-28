@@ -1,6 +1,10 @@
 package maria;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -8,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
-import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -38,6 +41,18 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 
 	public MobileCompositeAgent(MultiTreeMap configuration) {
 		super(configuration);
+	}
+	
+	public Node.NodeProxy getNodeProxyContext()
+	{
+		for(var context : agentContext)
+		{
+			if(context instanceof Node.NodeProxy)
+			{
+				return (Node.NodeProxy) context;
+			}
+		}
+		return null;
 	}
 
     public void moveTo(String destination) {
