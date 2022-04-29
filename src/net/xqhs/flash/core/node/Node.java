@@ -346,6 +346,7 @@ public class Node extends Unit implements Entity<Node>
 			le("Unable to construct node messaging shard: ", PlatformUtils.printException(e));
 		}
 		messagingShard.addContext(proxy);
+		li("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
 	
