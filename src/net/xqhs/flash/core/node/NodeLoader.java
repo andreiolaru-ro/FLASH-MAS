@@ -11,13 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -214,7 +211,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			return null;
 		}
 		
-		Map<String, Entity<?>> loaded = new HashMap<>();
+		Map<String, Entity<?>> loaded = new LinkedHashMap<>();
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
 		
@@ -223,7 +220,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			li("Nothing to load");
 		else {
 			li("Loading: ", toLoad);
-			Set<MessagingPylonProxy> messagingProxies = new HashSet<>();
+			List<MessagingPylonProxy> messagingProxies = new LinkedList<>();
 			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR)) {
 				CategoryName cat = CategoryName.byName(catName);
 				List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(subordinateEntities,
