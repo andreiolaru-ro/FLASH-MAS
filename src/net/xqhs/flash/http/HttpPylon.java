@@ -20,33 +20,35 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import org.json.simple.JSONValue;
 
-public class HttpPylon extends DefaultPylonImplementation {
-    
+public class HttpPylon extends DefaultPylonImplementation
+{
+
     private final ExecutorService asyncMessagesExecutorService = Executors.newFixedThreadPool(10);
     /**
      * The key in the JSON object which is assigned to the source of the message.
      */
-    public static final String	MESSAGE_SOURCE_KEY		= "source";
+    public static final String MESSAGE_SOURCE_KEY = "source";
     /**
      * The key in the JSON object which is assigned to the name of the node on which an entity executes (for
      * registration messages).
      */
-    public static final String	MESSAGE_NODE_KEY		= "nodeName";
+    public static final String MESSAGE_NODE_KEY = "nodeName";
     /**
      * The key in the JSON object which is assigned to the destination of the message.
      */
-    public static final String	MESSAGE_DESTINATION_KEY	= "destination";
+    public static final String MESSAGE_DESTINATION_KEY = "destination";
     /**
      * The key in the JSON object which is assigned to the content of the message.
      */
-    public static final String	MESSAGE_CONTENT_KEY		= "content";
+    public static final String MESSAGE_CONTENT_KEY = "content";
 
     /**
      * The receivers for each agent.
      */
     protected Map<String, MessageReceiver> messageReceivers = new HashMap<>();
+    
+    protected Map<String, String> serviceRegistry = new ConcurrentHashMap<>();
 
     /**
      * The attribute name of server address of this instance.
@@ -56,32 +58,38 @@ public class HttpPylon extends DefaultPylonImplementation {
      * The attribute name for the server port.
      */
     public static final String HTTP_SERVER_PORT_NAME = "serverPort";
+    
+    public static final String RESOURCE_NAME = "resource";
     /**
      * The prefix for Http server address.
      */
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
     
+    public static final String HTTP_SERVER_PREFIX = HTTP_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI();
+
     protected int serverPort = -1;
 
     /**
      * For the case in which a server must be created on this node, the entity that represents the server.
      */
     protected HttpServerEntity serverEntity;
-
-    /**
-     * The address of the Http server of the pylon
-     */
-    protected String httpServerAddress;
-
-    /**
-     * The address of the Http server the pylon connects to
-     */
-    protected String remoteHttpServerAddress;
+    
+    protected String resource;
 
     /**
      * The {@link HttpClient} instance to use.
      */
     protected HttpClient httpClient;
+
+    public int getServerPort()
+    {
+        return serverPort;
+    }
+
+    public String getResource()
+    {
+        return resource;
+    }
 
     /**
      * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
@@ -117,17 +125,24 @@ public class HttpPylon extends DefaultPylonImplementation {
             messageToServer.put(MESSAGE_SOURCE_KEY, source);
             messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
             messageToServer.put(MESSAGE_CONTENT_KEY, content);
+            
+            String remoteDestinationUrl = serviceRegistry.get(destination.split(AgentWave.ADDRESS_SEPARATOR)[0]);
+            if (remoteDestinationUrl == null)
+            {
+                le("The remote url of the destination " + destination + " is not known.");
+                return false;
+            }
             try
             {
                 HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .headers("Content-Type", "text/plain;charset=UTF-8")
-                    .uri(new URI(httpServerAddress))
+                    .header("Content-Type", "text/plain;charset=UTF-8")
+                    .header("sourceAddress", HTTP_SERVER_PREFIX + ":" + serverPort)
+                    .uri(new URI(remoteDestinationUrl))
                     .POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString()))
                     .build();
-                CompletableFuture<HttpResponse<String>> response = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
-                receiveMessage(response);
+                httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
             }
-            catch (URISyntaxException | InterruptedException | ExecutionException e)
+            catch (URISyntaxException e)
             {
                 e.printStackTrace();
             }
@@ -145,12 +160,10 @@ public class HttpPylon extends DefaultPylonImplementation {
         }
     };
     
-    private void receiveMessage(CompletableFuture<HttpResponse<String>> response) throws ExecutionException, InterruptedException {
-        Object obj = JSONValue.parse(response.get().body());
-        if(obj == null) {
+    void receiveMessage(JSONObject jsonObject) {
+        if(jsonObject == null) {
             le("null message received");
         }
-        JSONObject jsonObject = (JSONObject) obj;
 
         if(jsonObject.get("destination") == null) {
             le("No destination entity received.");
@@ -161,14 +174,16 @@ public class HttpPylon extends DefaultPylonImplementation {
             le("Entity [] does not exist in the scope of this pylon.", localAddr);
         else {
             String source = (String) jsonObject.get("source");
+            String sourceAddress = (String) jsonObject.get("sourceAddress");
             String content = (String) jsonObject.get("content");
+            serviceRegistry.computeIfAbsent(source.split(AgentWave.ADDRESS_SEPARATOR)[0], a -> sourceAddress + "/" + a);
             messageReceivers.get(localAddr).receive(source, destination, content);
         }
     }
     
     @Override
     public boolean start() {
-        serverEntity = new HttpServerEntity(serverPort, messageReceivers);
+        serverEntity = new HttpServerEntity(this);
         serverEntity.start();
         
         Properties properties = System.getProperties();
@@ -198,10 +213,12 @@ public class HttpPylon extends DefaultPylonImplementation {
             return false;
         if(configuration.isSimple(HTTP_SERVER_PORT_NAME)) {
             serverPort = Integer.parseInt(configuration.getAValue(HTTP_SERVER_PORT_NAME));
-            httpServerAddress = HTTP_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort;
+            resource = configuration.getAValue(RESOURCE_NAME);
         }
         if(configuration.isSimple(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME)) {
-            remoteHttpServerAddress = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);
+            String remoteUrl = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);
+            String remoteDestination = remoteUrl.substring(remoteUrl.lastIndexOf("/") + 1);
+            serviceRegistry.put(remoteDestination, remoteUrl);
         }
         if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)) {
             name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
