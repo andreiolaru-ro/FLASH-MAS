@@ -9,6 +9,9 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
+import net.xqhs.flash.shadowProtocol.ShadowPylon;
+
 import java.util.List;
 
 public class AgentTestBoot {
@@ -52,6 +55,15 @@ public class AgentTestBoot {
 
         public void moveToAnotherNode() {
             messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
+//            if (messagingShard instanceof ShadowAgentShard) {
+//                try {
+//                    synchronized (((ShadowAgentShard) messagingShard).lock) {
+//                        ((ShadowAgentShard) messagingShard).lock.wait();
+//                    }
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
 
         public void reconnect() {
@@ -157,12 +169,14 @@ public class AgentTestBoot {
 
     public static void main(String[] args) throws InterruptedException
     {
-        TestClass test = new TestClass("src-examples/example/shadowProtocolDeployment/TestCases/Test1.json");
-        List<Action> testCase = test.generateTest(3, 3);
+        TestClass test = new TestClass("src-examples/example/shadowProtocolDeployment/RandomTestCases/Test2.json");
+        List<Action> testCase = test.generateTest(10, 5);
         test.CreateElements();
-        Thread.sleep(3000);
+        System.out.println();
+        System.out.println();
         test.runTest(testCase);
-        Thread.sleep(3000);
+        System.out.println();
+        System.out.println();
         test.closeConnections();
     }
 }

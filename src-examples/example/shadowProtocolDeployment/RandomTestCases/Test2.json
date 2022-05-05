@@ -1,0 +1,10 @@
+{
+  "topology": {
+    "localhost:8885": {
+      "Pylon-One": ["one", "two"]
+    },
+    "localhost:8886": {
+      "Pylon-Two": ["three", "four"]
+    }
+  }
+}

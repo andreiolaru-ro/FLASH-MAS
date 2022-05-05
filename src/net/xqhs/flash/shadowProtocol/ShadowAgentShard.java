@@ -30,6 +30,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      */
     private ShadowHost shadow =     null;
 
+    public final Object lock = new Object();
     /**
      * Default constructor
      */
@@ -53,6 +54,9 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                         break;
                     case MOVE_TO_ANOTHER_NODE:
                         pylon.send(getName(), destination, content);
+//                        synchronized (lock) {
+//                            lock.notify();
+//                        }
                         break;
                     default:
                         break;

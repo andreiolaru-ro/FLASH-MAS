@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 /**
@@ -127,6 +128,8 @@ public class TestClass {
     Topology topology_map;
     Topology topology_init;
     static Integer index_message = 0;
+
+    static Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, Object> elements = new HashMap<>();
 
@@ -249,6 +252,11 @@ public class TestClass {
      * Create and start the entities
      */
     public void CreateElements() {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
             for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                 String port_value = ((region.getKey()).split(":"))[1];
@@ -274,6 +282,7 @@ public class TestClass {
                 ((AgentTestBoot.AgentTest) elem.getValue()).start();
             }
         }
+        semaphore.release();
     }
 
     /**
@@ -282,6 +291,11 @@ public class TestClass {
      *      - list of actions
      */
     public void runTest(List<Action> test) throws InterruptedException {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         for (Action action : test) {
             switch (action.getType()) {
                 case MOVE_TO_ANOTHER_NODE:
@@ -289,29 +303,35 @@ public class TestClass {
                     ShadowPylon dest_pylon = (ShadowPylon) elements.get(action.getDestination());
 
                     agent.moveToAnotherNode();
-                    Thread.sleep(1000);
                     agent.addContext(dest_pylon.asContext());
                     agent.addMessagingShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
-                    Thread.sleep(1000);
                     agent.reconnect();
                     break;
                 case SEND_MESSAGE:
                     AgentTestBoot.AgentTest source = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+                    AgentTestBoot.AgentTest dest = (AgentTestBoot.AgentTest) elements.get(action.getDestination());
                     String destination = action.getDestination() + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, action.getDestination());
                     source.sendMessage(destination, action.getContent());
                     break;
             }
         }
+        semaphore.release();
     }
 
     /**
      * Stop the entities.
      */
     public void closeConnections() {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
             if (elem.getValue() instanceof ShadowPylon ) {
                 ((ShadowPylon) elem.getValue()).stop();
             }
         }
+        semaphore.release();
     }
 }
