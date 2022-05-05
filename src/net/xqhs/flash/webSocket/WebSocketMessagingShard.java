@@ -22,67 +22,95 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.OperationUtils;
 import org.json.simple.JSONObject;
 
+import java.io.Serializable;
+
+
 /**
  * The {@link WebSocketMessagingShard} class manages the link between agent's messaging service and its pylon.
  *
- *  @author Florina Nastasoiu
+ * @author Florina Nastasoiu
  */
-public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
-
-    private static final long serialVersionUID = 2L;
-
-    protected static final String	SHARD_ENDPOINT				= "messaging";
-
-    private MessagingPylonProxy pylon;
-
-    public MessageReceiver inbox;
-
-    public WebSocketMessagingShard() {
-        super();
-        inbox = new MessageReceiver() {
-            @Override
-            public void receive(String source, String destination, String content) {
-                receiveMessage(source, destination, content);
-            }
-        };
-    }
-
-    @Override
-    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
-    {
-        if(!(context instanceof MessagingPylonProxy))
-            return false;
-        pylon = (MessagingPylonProxy) context;
-        return true;
-    }
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements Serializable {
+	
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 2L;
+	
+	/**
+	 * Endpoint name for this shard (see {@link AgentWave}).
+	 */
+	protected static final String SHARD_ENDPOINT = "messaging";
+	
+	/**
+	 * Reference to the local Websocket pylon.
+	 */
+	private transient MessagingPylonProxy pylon;
+	
+	/**
+	 * The proxy to this shard, to be used by the pylon.
+	 */
+	public transient MessageReceiver inbox;
+	
+	/**
+	 * Default constructor.
+	 */
+	public WebSocketMessagingShard() {
+		super();
+		inbox = new MessageReceiver() {
+			@Override
+			public void receive(String source, String destination, String content) {
+				receiveMessage(source, destination, content);
+			}
+		};
+	}
 	
 	@Override
-	public void signalAgentEvent(AgentEvent event)
-	{
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		if(!(context instanceof MessagingPylonProxy))
+			return false;
+		pylon = (MessagingPylonProxy) context;
+		return true;
+	}
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-        if(event.getType().equals(AgentEventType.AGENT_WAVE))
-            if((((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT)) {
-                JSONObject msg = OperationUtils.operationToJSON("message", "", ((AgentWave) event).getContent(), DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-                sendMessage(getAgent().getEntityName() + "/" + SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME + "/control", msg.toString());
-            }
 		if(event.getType().equals(AgentEventType.AGENT_START))
 			pylon.register(getAgent().getEntityName(), inbox);
+		if(event.getType().equals(AgentEventType.AGENT_WAVE))
+			if((((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT)) {
+				JSONObject msg = OperationUtils.operationToJSON("message", "", ((AgentWave) event).getContent(),
+						DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+				sendMessage(getAgent().getEntityName() + "/" + SHARD_ENDPOINT,
+						DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME + "/control", msg.toString());
+			}
+	}
+	
+	@Override
+	public boolean sendMessage(String target, String source, String content) {
+		return pylon.send(target, source, content);
+	}
+	
+	@Override
+	protected void receiveMessage(String source, String destination, String content) {
+		super.receiveMessage(source, destination, content);
+	}
+	
+	/**
+	 * This can be called by non-agent entities to register their messaging shard.
+	 */
+	@Override
+	public void register(String entityName) {
+		pylon.register(entityName, inbox);
 	}
 
-    @Override
-    public boolean sendMessage(String target, String source, String content) {
-        return pylon.send(target,source, content);
-    }
-
-    @Override
-    protected void receiveMessage(String source, String destination, String content)
-    {
-        super.receiveMessage(source, destination, content);
-    }
-
-
-    @Override
-    public void register(String entityName) {
-        pylon.register(entityName, inbox);
-    }
+//	private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
+//		inbox = new MessageReceiver() {
+//			@Override
+//			public void receive(String source, String destination, String content) {
+//				receiveMessage(source, destination, content);
+//			}
+//		};
+//	}
 }

@@ -26,77 +26,63 @@ import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
 /**
- *  The {@link WebSocketServerEntity} class manages the routing of messages between different entities. It knows the
- *  available agents in the FLASH-MAS system along with their websocket address. It also keeps track of central nodes.
+ * The {@link WebSocketServerEntity} class manages the routing of messages between different entities. It knows the
+ * available entities in the FLASH-MAS system along with their websocket address.
+ * <p>
+ * Most of the functionality implemented in this class is present in the
+ * {@link WebSocketServer#onMessage(WebSocket, String)} method.
  *
- *  @author Florina Nastasoiu
+ * @author Florina Nastasoiu
+ * @author Andrei Olaru
  */
-public class WebSocketServerEntity extends Unit implements Entity
-{
+public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	{
 		setUnitName("websocket-server");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
-	private static final int		SERVER_STOP_TIME	= 10;
-	private WebSocketServer			webSocketServer;
-	private boolean					running;
-
+	/**
+	 * Timeout for stopping the server (sent directly to {@link WebSocketServer#stop(int)}.
+	 */
+	private static final int	SERVER_STOP_TIME	= 10;
+	/**
+	 * The {@link WebSocketServer} instance.
+	 */
+	private WebSocketServer		webSocketServer;
+	/**
+	 * <code>true</code> if the server is currently running.
+	 */
+	private boolean				running;
+	
 	/**
 	 * Map all entities to their {@link WebSocket}.
 	 */
-	private HashMap<String, WebSocket> entityToWebSocket = new HashMap<>();
+	private HashMap<String, WebSocket>		entityToWebSocket	= new HashMap<>();
 	/**
 	 * Map all nodes to their {@link WebSocket}.
-	 * */
-	private HashMap<String, WebSocket> nodeToWebSocket  = new HashMap<>();
+	 */
+	private HashMap<String, WebSocket>		nodeToWebSocket		= new HashMap<>();
 	/**
 	 * Keep track of all entities within a node context.
-	 * */
-	private HashMap<String, List<String>> nodeToEntities = new LinkedHashMap<>();
-
-	/**
-	 * @param message
-	 * 					- the message to be sent
-	 * @return
-	 * 					- an indication of success
 	 */
-	private boolean routeTheMessage(JSONObject message) {
-			String destination = (String) message.get("destination");
-			String destEntity = destination.split(
-					AgentWave.ADDRESS_SEPARATOR)[0];
-
-			WebSocket destinationWebSocket;
-			destinationWebSocket = entityToWebSocket.get(destEntity);
-			if(destinationWebSocket != null) {
-				destinationWebSocket.send(message.toString());
-				li("Sent to agent: []. ", message.toString());
-				return true;
-			}
-
-			destinationWebSocket = nodeToWebSocket.get(destEntity);
-			if(destinationWebSocket != null) {
-				destinationWebSocket.send(message.toString());
-				li("Sent to node: []. ", message.toString());
-				return true;
-			}
-
-			le("Failed to find the entity [] websocket.", destEntity);
-			return false;
-	}
-
-
-	public WebSocketServerEntity(int serverAddress)
-	{
-		webSocketServer = new WebSocketServer(new InetSocketAddress(serverAddress)) {
-			
+	private HashMap<String, List<String>>	nodeToEntities		= new LinkedHashMap<>();
+	
+	/**
+	 * Creates a Websocket server instance. It must be started with {@link #start()}.
+	 * 
+	 * @param serverPort
+	 *            - the port on which to start the server.
+	 */
+	public WebSocketServerEntity(int serverPort) {
+		li("Starting websocket server on port: ", Integer.valueOf(serverPort));
+		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
 			@Override
-			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake)
-			{
+			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
 				/*
 				 * This method sends a message to the new client.
 				 */
@@ -104,49 +90,54 @@ public class WebSocketServerEntity extends Unit implements Entity
 			}
 			
 			@Override
-			public void onClose(WebSocket webSocket, int i, String s, boolean b)
-			{
-				li(("[] closed with exit code " + i), webSocket);
+			public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+				li("[] closed with exit code ", webSocket, Integer.valueOf(i));
 			}
-
+			
 			/**
-			 * Receives message from a {@link WebSocketClient}.
-			 * Messages can be:
-			 * 					- entity registration message
-			 * 					- message from one entity to another
+			 * Receives message from a {@link WebSocketClient}. Messages can be:
+			 * <ul>
+			 * <li>message from one entity to another - contains a <code>destination</code> field <i>and</i> can be
+			 * routed.
+			 * <li>entity registration message. It must contain a <code>nodeName</code> field. If it registers an
+			 * entity, it must also contain an <code>entityName</code> field.
+			 * </ul>
+			 * The state will be printed after each registration.
 			 *
 			 * @param webSocket
-			 * 					- the sender {@link WebSocket} client
-			 * @param s
-			 * 					- the JSON string containing a message and routing information
+			 *            - the sender {@link WebSocket} client
+			 * @param json
+			 *            - the JSON string containing a message and routing information
 			 */
 			@Override
-			public void onMessage(WebSocket webSocket, String s)
-			{
-				Object obj = JSONValue.parse(s);
-				if(obj == null) return;
-				JSONObject message = (JSONObject) obj;
-
-				// message in transit through the server
-				if(message.get("destination") != null && routeTheMessage(message))
+			public void onMessage(WebSocket webSocket, String json) {
+				Object obj = JSONValue.parse(json);
+				if(obj == null)
 					return;
-
-				if(message.get("nodeName") == null) return;
-				String nodeName = (String)message.get("nodeName");
-
-				//node registration message
-                if(!nodeToWebSocket.containsKey(nodeName)) {
+				JSONObject message = (JSONObject) obj;
+				
+				// message in transit through the server
+				if(message.get("destination") != null && routeMessage(message))
+					return;
+				
+				if(message.get("nodeName") == null) {
+					lw("nodeName is null");
+				}
+				String nodeName = (String) message.get("nodeName");
+				if(nodeName == null)
+					nodeName = "null";
+				
+				// node registration message
+				if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
 					li("Registered node []. ", nodeName);
-					return;
 				}
-
+				
 				// entity registration message
 				String newEntity;
-				if(message.get("entityName") != null)
-				{
-					newEntity = (String)message.get("entityName");
+				if(message.get("entityName") != null) {
+					newEntity = (String) message.get("entityName");
 					if(!entityToWebSocket.containsKey(newEntity)) {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);
@@ -155,109 +146,131 @@ public class WebSocketServerEntity extends Unit implements Entity
 					printState();
 					return;
 				}
+				printState();
 			}
 			
 			@Override
-			public void onError(WebSocket webSocket, Exception e)
-			{
+			public void onError(WebSocket webSocket, Exception e) {
 				e.printStackTrace();
 			}
 			
 			@Override
-			public void onStart()
-			{
+			public void onStart() {
 				li("Server started successfully.");
-			}
-
-			private void printState() {
-				li("###entities:  " + entityToWebSocket.keySet());
-				li("###nodes: " + nodeToEntities.keySet());
-				li("###entities: " + nodeToEntities.values());
 			}
 		};
 		webSocketServer.setReuseAddr(true);
 	}
 	
+	/**
+	 * Tries to find a target Websocket client and sends the message to it.
+	 * 
+	 * @param message
+	 *            - the message to be sent. Must contain a <code>destination</code> field.
+	 * @return - an indication of success.
+	 */
+	private boolean routeMessage(JSONObject message) {
+		String destination = (String) message.get("destination");
+		String destEntity = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
+		
+		WebSocket destinationWebSocket;
+		destinationWebSocket = entityToWebSocket.get(destEntity);
+		if(destinationWebSocket != null) {
+			destinationWebSocket.send(message.toString());
+			lf("Sent to agent: []. ", message.toString());
+			return true;
+		}
+		
+		destinationWebSocket = nodeToWebSocket.get(destEntity);
+		if(destinationWebSocket != null) {
+			destinationWebSocket.send(message.toString());
+			lf("Sent to node: []. ", message.toString());
+			return true;
+		}
+		
+		le("Failed to find websocket for the entity [].", destEntity);
+		return false;
+	}
+	
+	/**
+	 * Logs (fine level) the state of the server, as the lists of entities known, nodes known, and correspondence
+	 * between nodes and entities.
+	 */
+	private void printState() {
+		lf("entities: [] ; nodes: [] ; node-entities: ", entityToWebSocket.keySet(), nodeToEntities.keySet(),
+				nodeToEntities);
+	}
+	
 	@Override
-	public boolean start()
-	{
+	public boolean start() {
 		webSocketServer.start();
 		running = true;
 		return true;
 	}
-
+	
 	/**
 	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean stop()
-	{
-		try
-		{
+	public boolean stop() {
+		try {
 			webSocketServer.stop(SERVER_STOP_TIME);
 			running = false;
+			li("server successfully stopped.");
 			return true;
-		} catch(InterruptedException e)
-		{
+		} catch(InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
 	}
 	
 	@Override
-	public boolean isRunning()
-	{
+	public boolean isRunning() {
 		return running;
 	}
 	
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return null;
 	}
-
-	/**
-	 * Functionality not used yet.
-	 */
+	
 	@Override
-	public boolean addContext(EntityProxy context)
-	{
+	public boolean addContext(EntityProxy<Node> context) {
 		return false;
 	}
-
-	/**
-	 * Functionality not used yet.
-	 */
+	
 	@Override
-	public boolean removeContext(EntityProxy context)
-	{
+	public boolean removeContext(EntityProxy<Node> context) {
 		return false;
 	}
-
-	/**
-	 * Functionality not used yet.
-	 */
+	
 	@Override
-	public boolean removeGeneralContext(EntityProxy context)
-	{
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return false;
 	}
-
-	/**
-	 * Functionality not used yet.
-	 */
+	
 	@Override
-	public EntityProxy asContext()
-	{
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		return false;
+	}
+	
+	@Override
+	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return null;
 	}
-
-	/**
-	 * Functionality not used yet.
-	 */
+	
 	@Override
-	public boolean addGeneralContext(EntityProxy context)
-	{
-		return false;
+	protected void li(String message, Object... arguments) {
+		super.li(message, arguments);
+	}
+	
+	@Override
+	protected void lw(String message, Object... arguments) {
+		super.lw(message, arguments);
+	}
+	
+	@Override
+	protected void le(String message, Object... arguments) {
+		super.le(message, arguments);
 	}
 }

@@ -73,6 +73,13 @@ public class PlatformUtils
 	}
 	
 	/**
+	 * @return the URI of the local machine.
+	 */
+	public static String getLocalHostURI() {
+		return "localhost";
+	}
+	
+	/**
 	 * @return a {@link ClassFactory} instance to create new instances.
 	 */
 	public static ClassFactory getClassFactory()

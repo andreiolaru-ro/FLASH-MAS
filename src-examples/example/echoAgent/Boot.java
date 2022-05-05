@@ -16,20 +16,15 @@ import net.xqhs.flash.FlashBoot;
 /**
  * Deployment testing.
  */
-public class Boot
-{
+public class Boot {
 	/**
 	 * Boots example.
 	 * 
-	 * @param args
-	 *                 - not used.
+	 * @param args_
+	 *            - not used.
 	 */
-	public static void main(String[] args)
-	{
-		String test_args = "";
-		test_args += "src-examples/example/echoAgent/simpleDeployment.xml";
-		
-		FlashBoot.main(test_args.split(" "));
+	public static void main(String[] args_) {
+		FlashBoot.main(new String[] { "src-examples/example/echoAgent/deployment.xml" });
 	}
 	
 }

@@ -85,7 +85,7 @@
 	</complexType>
 
 
-	<complexType name="support">
+	<complexType name="pylon">
 		<complexContent>
 			<extension base="tns:entitybase">
 				<sequence>
@@ -114,7 +114,7 @@
 							</complexContent>
 						</complexType>
 					</element>
-					<element name="support" type="tns:support" minOccurs="0" maxOccurs="unbounded" />
+					<element name="pylon" type="tns:pylon" minOccurs="0" maxOccurs="unbounded" />
 					<element name="agent" type="tns:agent" minOccurs="0" maxOccurs="unbounded" />
 				</sequence>
 			</extension>

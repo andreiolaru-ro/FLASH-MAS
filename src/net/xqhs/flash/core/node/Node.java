@@ -11,17 +11,16 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -30,7 +29,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -53,6 +52,16 @@ public class Node extends Unit implements Entity<Node>
 		public String getEntityName() {
 			return name;
 		}
+
+		public void moveAgent(String destination, String agentName, String agentData) {
+			entityOrder.stream()
+					.filter(entity ->
+							entity instanceof MobileCompositeAgent &&
+							entity.getName().equals(agentName)
+					).findAny().ifPresent(entity -> entityOrder.remove(entity));
+
+			sendMessage(destination, agentData);
+		}
 	}
 
 	/**
@@ -68,7 +77,7 @@ public class Node extends Unit implements Entity<Node>
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	public List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 	/**
 	 *  A {@link MessagingShard} of this node for message communication.
@@ -81,6 +90,22 @@ public class Node extends Unit implements Entity<Node>
     private boolean isRunning;
 
     private static final String             SHARD_ENDPOINT      = "control";
+
+	private MobileCompositeAgent deserializeAgent(String agentData) {
+		MobileCompositeAgent agent = null;
+		ByteArrayInputStream fis;
+		ObjectInputStream in;
+		try {
+			fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
+			in = new ObjectInputStream(fis);
+			agent = (MobileCompositeAgent) in.readObject();
+			in.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return agent;
+	}
 
 	protected ShardContainer proxy = new ShardContainer() {
 
@@ -95,20 +120,32 @@ public class Node extends Unit implements Entity<Node>
 				if(jo.get(OperationUtils.NAME) != null && jo.get(OperationUtils.PARAMETERS) != null) {
 					String operation  = (String)jo.get(OperationUtils.NAME);
 					String param      = (String)jo.get(OperationUtils.PARAMETERS);
-					Entity<?> entity = entityOrder.stream()
-							.filter(en -> en.getName().equals(param))
-							.findFirst().orElse(null);
-					if(entity == null) {
-						le("[] entity not found in the context of [].", param, name);
-						return;
-					}
-					if(operation.equals(OperationUtils.ControlOperation.START.getOperation()))
-						if(entity.start()) {
+
+					if(operation.equals(OperationUtils.ControlOperation.START.getOperation())) {
+						Entity<?> entity = entityOrder.stream()
+								.filter(en -> en.getName().equals(param))
+								.findFirst().orElse(null);
+						if(entity == null) {
+							le("[] entity not found in the context of [].", param, name);
+							return;
+						}
+						if (entity.start()) {
 							lf("[] was started by parent [].", param, name);
 							return;
 						}
+					}
+					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
+						String agentData = (String) jo.get("agentData");
+
+						MobileCompositeAgent agent = deserializeAgent(agentData);
+						agent.addGeneralContext(this);
+
+						registeredEntities.get("agent").add(agent);
+						entityOrder.add(agent);
+						agent.startAfterMove();
+					}
 				}
-				le("[] cannot properly parse received message.", name);
+//				le("[] cannot properly parse received message.", name);
 			}
 		}
 
@@ -168,7 +205,7 @@ public class Node extends Unit implements Entity<Node>
 	{
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
-			registeredEntities.put(entityType, new LinkedList<Entity<?>>());
+			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
@@ -233,7 +270,8 @@ public class Node extends Unit implements Entity<Node>
 			lf("starting entity []...", entityName);
 			if(entity.start()) {
 				lf("entity [] started successfully.", entityName);
-				if(getName() != null && (entity instanceof DefaultPylonImplementation))
+				EntityProxy<?> ctx = entity.asContext();
+				if(getName() != null && messagingShard != null && (ctx instanceof MessagingPylonProxy))
 					messagingShard.register(getName());
 			}
 			else
@@ -285,8 +323,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean addContext(EntityProxy<Node> context)
 	{
-		// unsupported
-		return false;
+		return addGeneralContext(context);
 	}
 	
 	@Override
@@ -306,9 +343,10 @@ public class Node extends Unit implements Entity<Node>
 				| InstantiationException | NoSuchMethodException
 				| IllegalAccessException | InvocationTargetException e)
 		{
-			e.printStackTrace();
+			le("Unable to construct node messaging shard: ", PlatformUtils.printException(e));
 		}
 		messagingShard.addContext(proxy);
+		li("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
 	

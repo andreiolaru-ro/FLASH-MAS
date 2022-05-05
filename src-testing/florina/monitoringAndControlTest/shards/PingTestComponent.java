@@ -11,6 +11,7 @@
  ******************************************************************************/
 package florina.monitoringAndControlTest.shards;
 
+import florina.monitoringAndControlTest.BootCompositeWebSocket;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -18,9 +19,14 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.ReentrantLock;
 
 import example.compositePingPong.Boot;
 
@@ -33,6 +39,12 @@ import example.compositePingPong.Boot;
  */
 public class PingTestComponent extends AgentShardGeneral
 {
+
+	public static long[] startAgentsTime = new long[BootCompositeWebSocket.N];
+	public static long[] stopAgentsTime = new long[BootCompositeWebSocket.N];
+
+	public static ReentrantLock lock_stopAgent = new ReentrantLock();
+
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 
@@ -48,6 +60,18 @@ public class PingTestComponent extends AgentShardGeneral
 		@Override
 		public void run()
 		{
+			if (tick == 2) {
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < BootCompositeWebSocket.N; i++) {
+					sb.append(i + ": " + (stopAgentsTime[i] - startAgentsTime[i]) + "\n");
+				}
+				File file = new File("test_1000.csv");
+				try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+					writer.write(sb.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			tick++;
 			System.out.println("Sending the message....");
 			sendMessage("ping-no " + tick);
@@ -155,6 +179,8 @@ public class PingTestComponent extends AgentShardGeneral
 		if(otherAgents == null) return false;
 		for(String a : otherAgents) {
 			sendMessage(content, SHARD_ENDPOINT, a, PingBackTestComponent.SHARD_ENDPOINT);
+			int index = Integer.parseInt(a);
+			startAgentsTime[index] = System.currentTimeMillis();
 		}
 		return true;
 	}

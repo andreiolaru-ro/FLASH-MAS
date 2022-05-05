@@ -23,25 +23,6 @@
 
 	<entity type="agentarray">
 		<entity type="agent" kind="composite">
-<<<<<<< HEAD
-			<in-context-of>websocket</in-context-of>
-		</entity>
-	</entity>
-
-	<load_order>support</load_order>
-
-	<package>ComplexDeployment</package>
-	<package>otherPackage</package>
-	<package>somePackage</package>
-	<!--package>net.xqhs.flash.core.agent.</package -->
-
-
-	<loader for="agent:java" />
-	<!-- <loader for="agent" kind="composite" /> -->
-	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
-
-	<support kind="websocket" />
-=======
 			<in-context-of>websockets</in-context-of>
 		</entity>
 	</entity>
@@ -59,8 +40,6 @@
 	<loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
 
 	<support kind="websockets" />
->>>>>>> refs/heads/guiWork
-
 	<support kind="custom">
 		<parameter name="classpath" value="custom" />
 	</support>

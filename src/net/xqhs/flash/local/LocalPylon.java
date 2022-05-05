@@ -46,6 +46,9 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * in the configuration), which processes a queue to which messages are added, and from which messages are taken to be
  * delivered.
  * <p>
+ * For the safety and reliability of implementations which just want to use the default pylon, the default method is the
+ * queued method, so deadlocks are avoided.
+ * <p>
  * <b>Warning:</b> in this method, the {@link SimpleLocalMessaging#send(String, String, String)} always returns
  * <code>true</code>, but it is no guaranteed that the message has reached its destination.
  * <p>
@@ -138,8 +141,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		}
 	}
 
-	protected String nodeName;
-
 	/**
 	 * The proxy to this entity.
 	 */
@@ -177,7 +178,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	public static final String	USE_THREAD_PARAM_NAME			= "use-thread";
 	/**
 	 * Indicates whether the messages where the destination is not known should be kept and delivery should be retried.
-	 * The value of the parameter indicates the number of retries (see {@link LocalSupport} for more details).
+	 * The value of the parameter indicates the number of retries (see {@link LocalPylon} for more details).
 	 */
 	public static final String	KEEP_UNDELIVERABLE_PARAM_NAME	= "keep-undeliverable-for";
 	/**
@@ -194,10 +195,10 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
 	 */
-	protected boolean	useThread			= false;
+	protected boolean	useThread			= true;
 	/**
 	 * Indicates whether the messages where the destination is not known should be kept and delivery should be retried.
-	 * The value of the parameter indicates the number of retries (see {@link LocalSupport} for more details).
+	 * The value of the parameter indicates the number of retries (see {@link LocalPylon} for more details).
 	 */
 	protected int		keepUndeliverable	= 0;
 	/**
@@ -227,9 +228,9 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			return false;
 		if(name == null)
 			name = LOCAL_SUPPORT_NAME;
-		li("my name is", name);
-		useThread = configuration.isSimple(USE_THREAD_PARAM_NAME)
-				&& configuration.getAValue(USE_THREAD_PARAM_NAME) != Boolean.FALSE.toString();
+		if(configuration.isSimple(USE_THREAD_PARAM_NAME)
+				&& configuration.getAValue(USE_THREAD_PARAM_NAME) == Boolean.FALSE.toString())
+			useThread = false;
 		if(configuration.isSimple(KEEP_UNDELIVERABLE_PARAM_NAME))
 			try {
 				keepUndeliverable = Integer.parseInt(configuration.getAValue(KEEP_UNDELIVERABLE_PARAM_NAME));
@@ -257,6 +258,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
+		li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
 	
@@ -278,6 +280,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			messageQueue = null;
 			messageThread = null;
 		}
+		li("Stopped");
 		return true;
 	}
 	
@@ -352,22 +355,6 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 				deliver(message.get(0), message.get(1), message.get(2));
 			}
 		}
-	}
-
-	@Override
-	public boolean addContext(EntityProxy<Node> context) {
-		if(!super.addContext(context))
-			return false;
-		nodeName = context.getEntityName();
-		lf("Added node context", nodeName);
-		return true;
-	}
-
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context) {
-		if(context instanceof Node.NodeProxy)
-			return addContext((Node.NodeProxy) context);
-		return false;
 	}
 
 	@Override

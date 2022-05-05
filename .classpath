@@ -4,61 +4,30 @@
 	<classpathentry kind="src" path="src-examples"/>
 	<classpathentry kind="src" path="src-tests"/>
 	<classpathentry kind="src" path="src-testing"/>
-	<classpathentry kind="lib" path="lib/Config.jar" sourcepath="lib/Config.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Config.jar!/doc-Config/pages/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/net.xqhs.XML.jar"/>
-	<classpathentry kind="lib" path="lib/attoparser-2.0.5.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-databind-2.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/javassist-3.20.0-GA.jar"/>
-	<classpathentry kind="lib" path="lib/netty-all-4.1.47.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-buffer-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-codec-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-codec-dns-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-codec-http-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-codec-http2-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-codec-socks-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-common-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-handler-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-handler-proxy-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-resolver-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-resolver-dns-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-tcnative-boringssl-static-2.0.26.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-transport-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-transport-native-epoll-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-transport-native-kqueue-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/netty-transport-native-unix-common-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ognl-3.2.jar"/>
-	<classpathentry kind="lib" path="lib/reactive-streams-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/rxjava-1.3.8.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-2.0.0-alpha1.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-simple-2.0.0-alpha1.jar"/>
-	<classpathentry kind="lib" path="lib/snakeyaml-1.25.jar"/>
-	<classpathentry kind="lib" path="lib/thymeleaf-3.0.11.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/unbescape-1.1.6.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-auth-common-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-bridge-common-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-codegen-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-core-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-rx-gen-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-rx-java-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-tcp-eventbus-bridge-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-web-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-web-common-3.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-web-templ-rocker-3.8.5.jar"/>
-	<classpathentry kind="lib" path="lib/vertx-web-templ-thymeleaf-3.8.5.jar"/>
-	<classpathentry kind="lib" path="lib/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/Java-WebSocket-1.4.0-with-dependencies.jar"/>
-	<classpathentry kind="lib" path="lib/Logging-modern.jar" sourcepath="lib/Logging-modern.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/Flash-MAS/lib/Logging-modern.jar!/doc-Logging-modern/pages/javadoc"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/mpi/mpi.jar"/>
+	<classpathentry kind="lib" path="lib/websocket_support/Java-WebSocket-1.4.0-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/core/Config.jar"/>
+	<classpathentry kind="lib" path="lib/core/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="lib/core/Logging-modern.jar"/>
+	<classpathentry kind="lib" path="lib/core/net.xqhs.XML.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-io-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-http-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-util-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/gui/snakeyaml-1.25.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-api-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/netty-all-4.1.47.Final.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-core-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-web-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-web-common-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-bridge-common-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-annotations-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-core-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-databind-2.10.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>

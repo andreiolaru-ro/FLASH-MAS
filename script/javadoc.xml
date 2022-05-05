@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Copyright (C) 2021 Andrei Olaru.
+  
+  This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+  
+  Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+  
+  Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<project name="FLASH-MAS" default="javadoc" basedir="../">
+	<property name="packages" value="net.xqhs.flash.*,quick.*,example.*" />
+	<property name="project-name" value="${ant.project.name}" />
+	<property name="doc-access-level" value="private" />
+	<property name="java-version" value="11" />
+
+
+	<property name="libs.dir" location="lib" />
+	<path id="build.classpath">
+		<fileset dir="${libs.dir}"
+		         includes="**/*.jar"
+		         erroronmissingdir="false"
+		/>
+	</path>
+
+	<target name="javadoc">
+		<javadoc access="${doc-access-level}"
+		         author="true"
+		         classpath="."
+		         classpathref="build.classpath"
+		         destdir="doc/javadoc/"
+		         nodeprecated="false"
+		         nodeprecatedlist="false"
+		         noindex="false"
+		         nonavbar="false"
+		         notree="false"
+		         packagenames="${packages}"
+		         source="${java-version}"
+		         splitindex="false"
+		         use="true"
+		         version="true"
+		>
+	        <sourcepath>
+	            <path location="src" />
+	            <path location="src-examples" />
+	        </sourcepath>
+			<header>
+			Copyright (C) 2021 Andrei Olaru and the FLASH-MAS project under the GNU General Public License. See &lt;a href="http://www.gnu.org/licenses/"&gt;http://www.gnu.org/licenses/&lt;/a&gt;.
+			</header>
+		</javadoc>
+	</target>
+
+</project>
