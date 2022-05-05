@@ -1,4 +1,4 @@
-package example.shadowProtocolDeployment;
+package shadowProtocolDeployment;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;

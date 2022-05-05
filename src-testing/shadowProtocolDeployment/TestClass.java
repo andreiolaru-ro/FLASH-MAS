@@ -1,4 +1,4 @@
-package example.shadowProtocolDeployment;
+package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
 import net.xqhs.flash.core.util.MultiTreeMap;
