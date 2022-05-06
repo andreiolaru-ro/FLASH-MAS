@@ -11,6 +11,26 @@ public class PingPongOperation implements Operation {
      */
     public static final String PING_PONG_OPERATION_NAME = "PING-PONG";
 
+    /**
+     * The arguments list.
+     */
+    protected ArrayList<Value> arguments;
+
+    public PingPongOperation() {
+        arguments = new ArrayList<>();
+        arguments.add(new Value() {
+            @Override
+            public String getType() {
+                return null;
+            }
+
+            @Override
+            public Description getDescription() {
+                return () -> "This operation doesn't have any arguments.";
+            }
+        });
+    }
+
     @Override
     public String getName() {
         return PING_PONG_OPERATION_NAME;
@@ -18,7 +38,9 @@ public class PingPongOperation implements Operation {
 
     @Override
     public Description getDescription() {
-        return null;
+        return () -> "The default operation supported by a ping-pong agent. " +
+                "This operation can be called by a ping-pong agent to ping other " +
+                "ping pong agents, the latter sending back a reply.";
     }
 
     @Override
@@ -33,7 +55,7 @@ public class PingPongOperation implements Operation {
 
     @Override
     public ArrayList<Value> getArguments() {
-        return null;
+        return arguments;
     }
 
     @Override

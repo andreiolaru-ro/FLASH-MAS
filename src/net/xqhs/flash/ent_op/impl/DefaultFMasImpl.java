@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.implem;
+package net.xqhs.flash.ent_op.impl;
 
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -9,25 +9,25 @@ import net.xqhs.flash.ent_op.model.OperationCall;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultFMasImplementation implements FMas {
+public class DefaultFMasImpl implements FMas {
 
     /**
      * The FMas instance.
      */
-    private static DefaultFMasImplementation instance;
+    private static DefaultFMasImpl instance;
 
     /**
      * The map that contains the registered entities.
      */
     protected static Map<String, EntityTools> entities;
 
-    private DefaultFMasImplementation() {
+    private DefaultFMasImpl() {
         // private constructor
     }
 
-    public static DefaultFMasImplementation getInstance() {
+    public static DefaultFMasImpl getInstance() {
         if (instance == null) {
-            instance = new DefaultFMasImplementation();
+            instance = new DefaultFMasImpl();
             entities = new HashMap<>();
         }
         return instance;
@@ -38,7 +38,7 @@ public class DefaultFMasImplementation implements FMas {
         String entityName = entity.getName();
         if (entities.containsKey(entityName))
             return null;
-        EntityTools entityTools = new EntityToolsImplementation();
+        EntityTools entityTools = new DefaultEntityToolsImpl();
         entityTools.initialize(entity);
         entities.put(entityName, entityTools);
         return entityTools;
@@ -53,7 +53,7 @@ public class DefaultFMasImplementation implements FMas {
     public void route(OperationCall operationCall) {
         // send the opCall to the local route to route the opCall
         if (!operationCall.wasRouted()) {
-            LocalRouter localRouter = DefaultLocalRouterImplementation.getInstance();
+            LocalRouter localRouter = DefaultLocalRouterImpl.getInstance();
             localRouter.route(operationCall);
         } else {
             String targetEntityName = operationCall.getTargetEntity().ID;

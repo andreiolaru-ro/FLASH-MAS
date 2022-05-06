@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.implem;
+package net.xqhs.flash.ent_op.impl;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
@@ -8,7 +8,7 @@ import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
-public class DefaultLocalRouterImplementation extends Unit implements LocalRouter {
+public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
     /**
      * The default name for entity tools instances of this implementation.
@@ -26,13 +26,13 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
      */
     protected static MultiValueMap operations;
 
-    private DefaultLocalRouterImplementation() {
+    private DefaultLocalRouterImpl() {
         // private constructor
     }
 
     public static LocalRouter getInstance() {
         if (instance == null) {
-            instance = new DefaultLocalRouterImplementation();
+            instance = new DefaultLocalRouterImpl();
             operations = new MultiValueMap();
         }
         return instance;
@@ -54,7 +54,7 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
     }
 
     @Override
-    public Object handleOperationCall(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCall operationCall) {
         return null;
     }
 
@@ -70,7 +70,7 @@ public class DefaultLocalRouterImplementation extends Unit implements LocalRoute
 
     @Override
     public void route(OperationCall operationCall) {
-        FMas fMas = DefaultFMasImplementation.getInstance();
+        FMas fMas = DefaultFMasImpl.getInstance();
         String targetEntityName = operationCall.getTargetEntity().ID;
 
         // internal routing

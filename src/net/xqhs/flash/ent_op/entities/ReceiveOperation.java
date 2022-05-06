@@ -11,6 +11,26 @@ public class ReceiveOperation implements Operation {
      */
     public static final String RECEIVE_OPERATION_NAME = "RECEIVE";
 
+    /**
+     * The arguments list.
+     */
+    protected ArrayList<Value> arguments;
+
+    public ReceiveOperation() {
+        arguments = new ArrayList<>();
+        arguments.add(new Value() {
+            @Override
+            public String getType() {
+                return String.class.getName();
+            }
+
+            @Override
+            public Description getDescription() {
+                return () -> "The message of the operation";
+            }
+        });
+    }
+
     @Override
     public String getName() {
         return RECEIVE_OPERATION_NAME;
@@ -18,7 +38,7 @@ public class ReceiveOperation implements Operation {
 
     @Override
     public Description getDescription() {
-        return null;
+        return () -> "The default operation supported by an agent. This operation takes one argument - the message of the operation.";
     }
 
     @Override
@@ -33,7 +53,7 @@ public class ReceiveOperation implements Operation {
 
     @Override
     public ArrayList<Value> getArguments() {
-        return null;
+        return arguments;
     }
 
     @Override

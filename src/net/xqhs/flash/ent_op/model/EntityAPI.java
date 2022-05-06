@@ -59,7 +59,7 @@ public interface EntityAPI {
 	 * @param operationCall
 	 * @return the result of the operation call, if any.
 	 */
-	Object handleOperationCall(OperationCall operationCall);
+	Object handleIncomingOperationCall(OperationCall operationCall);
 	
 	/**
 	 * The method is called when it is wished that changes are performed in the relations between this entity and other

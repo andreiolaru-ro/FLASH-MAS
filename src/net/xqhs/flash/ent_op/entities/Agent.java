@@ -1,7 +1,7 @@
 package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.implem.DefaultFMasImplementation;
+import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -46,7 +46,7 @@ public class Agent extends Unit implements EntityAPI {
         agentName = configuration.getAValue(NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
         receiveOp = new ReceiveOperation();
-        entityTools = DefaultFMasImplementation.getInstance().registerEntity(this);
+        entityTools = DefaultFMasImpl.getInstance().registerEntity(this);
         entityTools.createOperation(receiveOp);
         setUnitName(agentName);
         return true;
@@ -70,7 +70,7 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleOperationCall(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCall operationCall) {
         if (!isRunning) {
             le("[] is not running", agentName);
             return null;

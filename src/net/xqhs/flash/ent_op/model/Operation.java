@@ -22,6 +22,7 @@ import java.util.Set;
  */
 public interface Operation {
 	interface Description {
+		String createDescription();
 	}
 	
 	interface Restriction {

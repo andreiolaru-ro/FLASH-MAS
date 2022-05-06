@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.implem;
+package net.xqhs.flash.ent_op.impl;
 
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -11,7 +11,7 @@ import net.xqhs.util.logging.Unit;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EntityToolsImplementation extends Unit implements EntityTools {
+public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     /**
      * The default name for entity tools instances of this implementation.
@@ -52,7 +52,7 @@ public class EntityToolsImplementation extends Unit implements EntityTools {
     public boolean initialize(EntityAPI entity) {
         operations = new HashSet<>();
         relations = new HashSet<>();
-        fMas = DefaultFMasImplementation.getInstance();
+        fMas = DefaultFMasImpl.getInstance();
         entityAPI = entity;
         entityName = entity.getName();
         entityToolsName = entityName +  " " + DEFAULT_ENTITY_TOOLS_NAME;
@@ -136,6 +136,6 @@ public class EntityToolsImplementation extends Unit implements EntityTools {
         if (getOperation(operationName) == null) {
             lw("The [] operation is not supported by the [] entity", operationName, entityName);
         }
-        entityAPI.handleOperationCall(operationCall);
+        entityAPI.handleIncomingOperationCall(operationCall);
     }
 }
