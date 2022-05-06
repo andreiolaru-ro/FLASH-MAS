@@ -42,13 +42,17 @@ public class Agent extends Unit implements EntityAPI {
     protected Operation receiveOp;
 
     @Override
-    public boolean setup(MultiTreeMap configuration) {
-        agentName = configuration.getAValue(NAME_ATTRIBUTE_NAME);
-        entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
+    public boolean setup(MultiTreeMap agentConfiguration) {
+        if (agentConfiguration == null)
+            return false;
+
+        agentName = agentConfiguration.getAValue(NAME_ATTRIBUTE_NAME);
+        entityID = new EntityID(agentConfiguration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
         receiveOp = new ReceiveOperation();
         entityTools = DefaultFMasImpl.getInstance().registerEntity(this);
         entityTools.createOperation(receiveOp);
         setUnitName(agentName);
+
         return true;
     }
 
@@ -65,16 +69,13 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     public boolean stop() {
+        isRunning = false;
         li("Agent [] stopped", agentName);
         return true;
     }
 
     @Override
     public Object handleIncomingOperationCall(OperationCall operationCall) {
-        if (!isRunning) {
-            le("[] is not running", agentName);
-            return null;
-        }
         if (operationCall.getOperationName().equals(RECEIVE_OPERATION_NAME)) {
             String message = operationCall.getArgumentValues().get(0).toString();
             String sender = operationCall.getSourceEntity().ID;
@@ -91,6 +92,10 @@ public class Agent extends Unit implements EntityAPI {
     @Override
     public String getName() {
         return agentName;
+    }
+
+    public EntityID getEntityID() {
+        return entityID;
     }
 
     public void callOperation(OperationCall operationCall) {

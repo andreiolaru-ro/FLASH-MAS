@@ -133,9 +133,17 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     public void handleIncomingOperationCall(OperationCall operationCall) {
         String operationName = operationCall.getOperationName();
+
+        if (!entityAPI.isRunning()) {
+            le("[] is not running", entityAPI.getName());
+            return;
+        }
+
         if (getOperation(operationName) == null) {
             lw("The [] operation is not supported by the [] entity", operationName, entityName);
+            return;
         }
+
         entityAPI.handleIncomingOperationCall(operationCall);
     }
 }
