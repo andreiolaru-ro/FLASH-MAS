@@ -2,10 +2,10 @@ package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
@@ -39,11 +39,20 @@ public class TestEntity extends Unit implements EntityAPI {
      */
     protected EntityTools entityTools;
 
+    /**
+     * The framework instance.
+     */
+    protected FMas fMas;
+
+    public TestEntity(FMas fMas) {
+        this.fMas = fMas;
+    }
+
     @Override
     public boolean setup(MultiTreeMap configuration) {
         name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
-        entityTools = DefaultFMasImpl.getInstance().registerEntity(this);
+        entityTools = fMas.registerEntity(this);
         setUnitName(name);
         return true;
     }
@@ -67,7 +76,7 @@ public class TestEntity extends Unit implements EntityAPI {
             le("[] is not running", name);
             return null;
         }
-        if ("PRINT".equals(opCall.getOperationName())) {
+        if ("PRINT".equals(opCall.getTargetOperation())) {
             printMessageOperation(opCall.getArgumentValues().get(0).toString());
         }
         return null;

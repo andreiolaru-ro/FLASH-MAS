@@ -1,10 +1,10 @@
 package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
@@ -41,6 +41,19 @@ public class Agent extends Unit implements EntityAPI {
      */
     protected Operation receiveOp;
 
+    /**
+     * The framework instance.
+     */
+    protected FMas fMas;
+
+    public Agent() {
+
+    }
+
+    public Agent(FMas fMas) {
+        this.fMas = fMas;
+    }
+
     @Override
     public boolean setup(MultiTreeMap agentConfiguration) {
         if (agentConfiguration == null)
@@ -49,7 +62,7 @@ public class Agent extends Unit implements EntityAPI {
         agentName = agentConfiguration.getAValue(NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(agentConfiguration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
         receiveOp = new ReceiveOperation();
-        entityTools = DefaultFMasImpl.getInstance().registerEntity(this);
+        entityTools = fMas.registerEntity(this);
         entityTools.createOperation(receiveOp);
         setUnitName(agentName);
 
@@ -59,7 +72,7 @@ public class Agent extends Unit implements EntityAPI {
     @Override
     public boolean start() {
         isRunning = true;
-        li("Agent [] started", agentName);
+        li("Agent started");
         return true;
     }
 
@@ -70,13 +83,13 @@ public class Agent extends Unit implements EntityAPI {
 
     public boolean stop() {
         isRunning = false;
-        li("Agent [] stopped", agentName);
+        li("Agent stopped");
         return true;
     }
 
     @Override
     public Object handleIncomingOperationCall(OperationCall operationCall) {
-        if (operationCall.getOperationName().equals(RECEIVE_OPERATION_NAME)) {
+        if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
             String message = operationCall.getArgumentValues().get(0).toString();
             String sender = operationCall.getSourceEntity().ID;
             li("received message: [] from []", message, sender);
@@ -104,5 +117,9 @@ public class Agent extends Unit implements EntityAPI {
 
     public EntityTools getEntityTools() {
         return entityTools;
+    }
+
+    public void setfMas(FMas fMas) {
+        this.fMas = fMas;
     }
 }

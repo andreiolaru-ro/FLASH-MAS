@@ -48,14 +48,17 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
      */
     protected Set<Relation> relations;
 
+    public DefaultEntityToolsImpl(FMas fMas) {
+        this.fMas = fMas;
+    }
+
     @Override
     public boolean initialize(EntityAPI entity) {
         operations = new HashSet<>();
         relations = new HashSet<>();
-        fMas = DefaultFMasImpl.getInstance();
         entityAPI = entity;
         entityName = entity.getName();
-        entityToolsName = entityName +  " " + DEFAULT_ENTITY_TOOLS_NAME;
+        entityToolsName = entityName + " " + DEFAULT_ENTITY_TOOLS_NAME;
         setUnitName(entityToolsName);
         return true;
     }
@@ -132,7 +135,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     public void handleIncomingOperationCall(OperationCall operationCall) {
-        String operationName = operationCall.getOperationName();
+        String operationName = operationCall.getTargetOperation();
 
         if (!entityAPI.isRunning()) {
             le("[] is not running", entityAPI.getName());

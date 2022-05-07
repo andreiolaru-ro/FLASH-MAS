@@ -1,10 +1,10 @@
 package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
@@ -71,12 +71,21 @@ public class PingPongAgent extends Unit implements EntityAPI {
      */
     protected Operation pingPong;
 
+    /**
+     * The framework instance.
+     */
+    protected FMas fMas;
+
+    public PingPongAgent(FMas fMas) {
+        this.fMas = fMas;
+    }
+
     @Override
     public boolean setup(MultiTreeMap configuration) {
         agentName = configuration.getAValue(NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
         pingPong = new PingPongOperation();
-        entityTools = DefaultFMasImpl.getInstance().registerEntity(this);
+        entityTools = fMas.registerEntity(this);
         entityTools.createOperation(pingPong);
         setUnitName(agentName);
         if (configuration.isSet(DEST_AGENT_PARAMETER_NAME))
@@ -131,7 +140,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
             le("[] is not running", agentName);
             return null;
         }
-        if (operationCall.getOperationName().equals(PING_PONG_OPERATION_NAME)) {
+        if (operationCall.getTargetOperation().equals(PING_PONG_OPERATION_NAME)) {
             String message = operationCall.getArgumentValues().get(0).toString();
             String sender = operationCall.getSourceEntity().ID;
             li("received message: [] from []", message, sender);

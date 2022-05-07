@@ -20,7 +20,11 @@ public class EntityID {
 	 * The identifier, as a URI.
 	 */
 	public String ID;
-	
+
+	public EntityID() {
+
+	}
+
 	/**
 	 * Default constructor.
 	 * 

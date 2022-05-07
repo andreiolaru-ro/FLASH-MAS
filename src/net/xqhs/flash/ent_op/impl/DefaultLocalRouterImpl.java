@@ -1,7 +1,10 @@
 package net.xqhs.flash.ent_op.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.LocalRouter;
 import net.xqhs.flash.ent_op.model.OperationCall;
@@ -16,26 +19,33 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     protected static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
 
     /**
-     * The instance of the local router
-     */
-    private static LocalRouter instance;
-
-    /**
      * The multiValueMap contains the list of available operations.
      * (key, value) -> (entityName, operations supported by that entity)
      */
-    protected static MultiValueMap operations;
+    protected static MultiValueMap operations = new MultiValueMap();
 
-    private DefaultLocalRouterImpl() {
-        // private constructor
+    /**
+     * The framework instance.
+     */
+    protected FMas fMas;
+
+    /**
+     * The pylon used for external routing.
+     */
+    protected WebSocketPylon pylon;
+
+    /**
+     * The object mapper.
+     */
+    protected ObjectMapper mapper = new ObjectMapper();
+
+    //used for one-node deployment
+    public DefaultLocalRouterImpl(FMas fMas) {
+        this.fMas = fMas;
     }
 
-    public static LocalRouter getInstance() {
-        if (instance == null) {
-            instance = new DefaultLocalRouterImpl();
-            operations = new MultiValueMap();
-        }
-        return instance;
+    public DefaultLocalRouterImpl(WebSocketPylon pylon) {
+        this.pylon = pylon;
     }
 
     @Override
@@ -70,15 +80,31 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
     @Override
     public void route(OperationCall operationCall) {
-        FMas fMas = DefaultFMasImpl.getInstance();
         String targetEntityName = operationCall.getTargetEntity().ID;
+        String sourceEntityName = operationCall.getSourceEntity().ID;
 
         // internal routing
         if (fMas.entityExistsOnLocalNode(targetEntityName)) {
             operationCall.setRouted(true);
             fMas.route(operationCall);
-        } else { //external routing
-            // TODO: send the opCall to the pylon
+        } else {//external routing
+            operationCall.setRouted(true);
+            pylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
         }
     }
+
+    public void setfMas(FMas fMas) {
+        this.fMas = fMas;
+    }
+
+    private String serializeOpCall(OperationCall operationCall) {
+        String json = "";
+        try {
+            json = mapper.writeValueAsString(operationCall);
+        } catch (JsonProcessingException e) {
+            le("The operation call couldn't be serialized.");
+        }
+        return json;
+    }
+
 }

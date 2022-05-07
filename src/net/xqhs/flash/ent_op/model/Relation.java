@@ -10,19 +10,24 @@ public class Relation {
 		NODE, EXECUTES_ON, IN_SCOPE_OF
 	}
 
-	EntityID	from;
-	EntityID	to;
-	String		relationName;
-	
+	EntityID	 from;
+	EntityID	 to;
+	String		 relationName;
+	RelationType relationType;
+
 	public EntityID getFrom() {
 		return from;
 	}
-	
+
 	public EntityID getTo() {
 		return to;
 	}
-	
+
 	public String getRelation() {
 		return relationName;
+	}
+
+	public RelationType getRelationType () {
+		return relationType;
 	}
 }

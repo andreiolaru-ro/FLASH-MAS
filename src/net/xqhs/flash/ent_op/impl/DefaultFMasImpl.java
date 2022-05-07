@@ -1,5 +1,6 @@
 package net.xqhs.flash.ent_op.impl;
 
+import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
@@ -10,27 +11,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultFMasImpl implements FMas {
-
-    /**
-     * The FMas instance.
-     */
-    private static DefaultFMasImpl instance;
-
     /**
      * The map that contains the registered entities.
      */
-    protected static Map<String, EntityTools> entities;
+    protected Map<String, EntityTools> entities = new HashMap<>();
 
-    private DefaultFMasImpl() {
-        // private constructor
+    /**
+     * The local router.
+     */
+    protected LocalRouter localRouter;
+
+    /**
+     * The pylon used for the external routing.
+     */
+    protected WebSocketPylon pylon;
+
+    public DefaultFMasImpl() {
+        localRouter = new DefaultLocalRouterImpl(this);
     }
 
-    public static DefaultFMasImpl getInstance() {
-        if (instance == null) {
-            instance = new DefaultFMasImpl();
-            entities = new HashMap<>();
-        }
-        return instance;
+    public DefaultFMasImpl(LocalRouter localRouter, WebSocketPylon pylon) {
+        this.localRouter = localRouter;
+        this.pylon = pylon;
     }
 
     @Override
@@ -38,9 +40,11 @@ public class DefaultFMasImpl implements FMas {
         String entityName = entity.getName();
         if (entities.containsKey(entityName))
             return null;
-        EntityTools entityTools = new DefaultEntityToolsImpl();
+        EntityTools entityTools = new DefaultEntityToolsImpl(this);
         entityTools.initialize(entity);
         entities.put(entityName, entityTools);
+        if (pylon != null)
+            pylon.register(entityName);
         return entityTools;
     }
 
@@ -52,8 +56,7 @@ public class DefaultFMasImpl implements FMas {
     @Override
     public void route(OperationCall operationCall) {
         // send the opCall to the local route to route the opCall
-        if (!operationCall.wasRouted()) {
-            LocalRouter localRouter = DefaultLocalRouterImpl.getInstance();
+        if (!operationCall.isRouted()) {
             localRouter.route(operationCall);
         } else {
             String targetEntityName = operationCall.getTargetEntity().ID;

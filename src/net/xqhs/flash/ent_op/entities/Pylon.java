@@ -1,4 +1,7 @@
 package net.xqhs.flash.ent_op.entities;
 
-public class Pylon {
+
+import net.xqhs.flash.ent_op.model.EntityAPI;
+
+public interface Pylon extends EntityAPI {
 }

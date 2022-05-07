@@ -1,9 +1,10 @@
 package net.xqhs.flash.ent_op.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class OperationCall {
+public class OperationCall implements Serializable {
 	public interface AuthorizationToken {
 	}
 
@@ -15,6 +16,14 @@ public class OperationCall {
 	private ArrayList<Object>		argumentValues;
 	private Set<AuthorizationToken>	tokens;
 
+	public OperationCall() {
+
+	}
+
+	public OperationCall(String targetOperation) {
+		this.targetOperation = targetOperation;
+	}
+
 	public OperationCall(EntityID sourceEntity, EntityID targetEntity, String targetOperation, boolean sendReturnValue, ArrayList<Object> argumentValues) {
 		this.sourceEntity = sourceEntity;
 		this.targetEntity = targetEntity;
@@ -23,15 +32,12 @@ public class OperationCall {
 		this.argumentValues = argumentValues;
 	}
 
-	public OperationCall(String targetOperation) {
-		this.targetOperation = targetOperation;
-	}
-	
+
 	public void setArguments(Object... args) {
 		// error if number or type of arguments is incorrect
 		// TODO
 	}
-	
+
 	public void addToken(AuthorizationToken token) {
 		// TODO
 	}
@@ -40,16 +46,8 @@ public class OperationCall {
 		return sourceEntity;
 	}
 
-	public String getOperationName() {
-		return targetOperation;
-	}
-
-	public boolean wasRouted() {
-		return routed;
-	}
-
-	public void setRouted(boolean routed) {
-		this.routed = routed;
+	public void setSourceEntity(EntityID sourceEntity) {
+		this.sourceEntity = sourceEntity;
 	}
 
 	public EntityID getTargetEntity() {
@@ -60,7 +58,43 @@ public class OperationCall {
 		this.targetEntity = targetEntity;
 	}
 
+	public String getTargetOperation() {
+		return targetOperation;
+	}
+
+	public void setTargetOperation(String targetOperation) {
+		this.targetOperation = targetOperation;
+	}
+
+	public boolean isSendReturnValue() {
+		return sendReturnValue;
+	}
+
+	public void setSendReturnValue(boolean sendReturnValue) {
+		this.sendReturnValue = sendReturnValue;
+	}
+
+	public boolean isRouted() {
+		return routed;
+	}
+
+	public void setRouted(boolean routed) {
+		this.routed = routed;
+	}
+
 	public ArrayList<Object> getArgumentValues() {
 		return argumentValues;
+	}
+
+	public void setArgumentValues(ArrayList<Object> argumentValues) {
+		this.argumentValues = argumentValues;
+	}
+
+	public Set<AuthorizationToken> getTokens() {
+		return tokens;
+	}
+
+	public void setTokens(Set<AuthorizationToken> tokens) {
+		this.tokens = tokens;
 	}
 }
