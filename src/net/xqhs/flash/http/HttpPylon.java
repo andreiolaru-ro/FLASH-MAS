@@ -59,7 +59,6 @@ public class HttpPylon extends DefaultPylonImplementation
      */
     public static final String HTTP_SERVER_PORT_NAME = "serverPort";
     
-    public static final String RESOURCE_NAME = "resource";
     /**
      * The prefix for Http server address.
      */
@@ -73,22 +72,22 @@ public class HttpPylon extends DefaultPylonImplementation
      * For the case in which a server must be created on this node, the entity that represents the server.
      */
     protected HttpServerEntity serverEntity;
-    
-    protected String resource;
 
     /**
      * The {@link HttpClient} instance to use.
      */
     protected HttpClient httpClient;
-
+    
+    private List<String> resourceNames = new ArrayList<>();
+    
     public int getServerPort()
     {
         return serverPort;
     }
-
-    public String getResource()
+    
+    public List<String> getResourceNames()
     {
-        return resource;
+        return resourceNames;
     }
 
     /**
@@ -213,7 +212,11 @@ public class HttpPylon extends DefaultPylonImplementation
             return false;
         if(configuration.isSimple(HTTP_SERVER_PORT_NAME)) {
             serverPort = Integer.parseInt(configuration.getAValue(HTTP_SERVER_PORT_NAME));
-            resource = configuration.getAValue(RESOURCE_NAME);
+        }
+        String agentKey = "agent";
+        if (configuration.isHierarchical(agentKey))
+        {
+            resourceNames = new ArrayList<>(configuration.getATree(agentKey).getKeys());
         }
         if(configuration.isSimple(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME)) {
             String remoteUrl = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);

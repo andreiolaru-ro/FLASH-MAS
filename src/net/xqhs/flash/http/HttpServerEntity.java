@@ -85,10 +85,10 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
      */
     public HttpServerEntity(HttpPylon pylon) {
         this.pylon = pylon;
-        pylon.li(format("Starting http server on port: {0}, resource: {1}", pylon.getServerPort(), pylon.getResource()));
+        pylon.li(format("Starting http server on port: {0}, resources: {1}", pylon.getServerPort(), pylon.getResourceNames()));
         try {
             httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(pylon.getServerPort()), 0);
-            httpServer.createContext("/" + pylon.getResource(), new CustomHttpHandler());
+            pylon.getResourceNames().forEach(resource -> httpServer.createContext("/" + resource, new CustomHttpHandler()));
             ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
             httpServer.setExecutor(threadPoolExecutor);
         } catch (IOException e) {

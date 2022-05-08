@@ -11,8 +11,9 @@ public class BootSimpleDeployment
 		args += " -package example.simplePingPong";
 
 		args += " -node node1";
-		args += " -pylon http:slave1 serverPort:8885 resource:AgentA connectTo:http://localhost:8886/AgentB";
+		args += " -pylon http:slave1 serverPort:8885 connectTo:http://localhost:8886/AgentB";
 		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		args += " -agent AgentC classpath:AgentPingPong sendTo:AgentB";
 
 //		http://localhost:8885/AgentA
 
