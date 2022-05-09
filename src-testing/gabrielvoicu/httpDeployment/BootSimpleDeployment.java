@@ -18,7 +18,7 @@ public class BootSimpleDeployment
 //		http://localhost:8885/AgentA
 
 		args += " -node node2";
-		args += " -pylon http:slave2 serverPort:8886 resource:AgentB";
+		args += " -pylon http:slave2 serverPort:8886";
 		args += " -agent AgentB classpath:AgentPingPong";
 
 //		http://localhost:8886/AgentB

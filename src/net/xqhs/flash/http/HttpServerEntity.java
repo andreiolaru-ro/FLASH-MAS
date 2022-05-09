@@ -47,9 +47,23 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            receiveMessage(exchange);
+            if (exchange.getRequestMethod().equalsIgnoreCase("GET"))
+            {
+                displayInfo(exchange);
+            } else {
+                receiveMessage(exchange);
+            }
         }
-        
+
+        private void displayInfo(HttpExchange exchange) throws IOException
+        {
+            exchange.sendResponseHeaders(200, 0);
+            OutputStream os = exchange.getResponseBody();
+            String response = "Hello from " + exchange.getHttpContext().getPath().substring(1) + "!";
+            os.write(response.getBytes());
+            os.close();
+        }
+
         private void receiveMessage(HttpExchange exchange)
         {
             try
