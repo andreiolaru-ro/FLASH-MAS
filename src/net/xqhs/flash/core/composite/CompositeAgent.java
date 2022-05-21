@@ -57,7 +57,7 @@ public class CompositeAgent implements CompositeAgentModel
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	class CompositeAgentShardContainer implements ShardContainer, Serializable
+	protected class CompositeAgentShardContainer implements ShardContainer, Serializable
 	{
 		/**
 		 * The serial UID.
@@ -72,7 +72,7 @@ public class CompositeAgent implements CompositeAgentModel
 		 * @param agent
 		 *                  - the agent
 		 */
-		protected CompositeAgentShardContainer(CompositeAgent agent)
+		public CompositeAgentShardContainer(CompositeAgent agent)
 		{
 			this.agent = agent;
 		}
@@ -92,8 +92,8 @@ public class CompositeAgent implements CompositeAgentModel
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
-			System.out.println("getagentshard from " + this + " is " + shards.get(designation));
-			System.out.println("getagentshard shards object " + shards);
+//			System.out.println("getagentshard from " + this + " is " + shards.get(designation));
+//			System.out.println("getagentshard shards object " + shards);
 			return shards.get(designation);
 		}
 	}

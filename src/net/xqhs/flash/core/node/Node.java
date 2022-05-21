@@ -145,6 +145,7 @@ public class Node extends Unit implements Entity<Node>
 
 						System.out.println("incerc sa adaug pylon in agent din node");
 						agent.addGeneralContext(nodePylonProxy);
+						agent.addAsParentAgent();
 						System.out.println("Shards dupa add context: " + agent.shards + " din agent " + ((Object)agent).toString());
 						registeredEntities.get("agent").add(agent);
 						entityOrder.add(agent);

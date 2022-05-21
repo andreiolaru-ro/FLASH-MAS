@@ -91,7 +91,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	
 	@Override
 	public boolean sendMessage(String target, String source, String content) {
-		System.out.println("sendmessage from target " + target + " to source " + source + " in messaging shard " + this);
+//		System.out.println("sendmessage from target " + target + " to source " + source + " in messaging shard " + this);
 		return pylon.send(target, source, content);
 	}
 	

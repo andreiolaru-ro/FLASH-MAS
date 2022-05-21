@@ -87,7 +87,7 @@ public class AgentShardGeneral extends AgentShardCore
 			String... targetPathElements)
 	{
 		MessagingShard msd = getMessagingShard();
-		System.out.println("sendMessage in PingTestComponent from messaging shard " + msd);
+//		System.out.println("sendMessage in PingTestComponent from messaging shard " + msd);
 		return msd.sendMessage(AgentWave.makePath(msd.getAgentAddress(), sourceInternalEndpoint),
 				AgentWave.makePath(targetAgent, targetPathElements), content);
 	}

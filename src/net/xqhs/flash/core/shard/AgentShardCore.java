@@ -248,7 +248,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	public final boolean addContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent != null)
-			return ler(false, "Parent already set");
+//			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
 		System.out.println("ParentAgent added in PingTestComponent " + parent);
@@ -296,7 +296,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 */
 	final protected ShardContainer getAgent()
 	{
-		System.out.println("ParentAgent in PingTestComponent" + parentAgent);
+//		System.out.println("ParentAgent in PingTestComponent" + parentAgent);
 		return parentAgent;
 	}
 	

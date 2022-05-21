@@ -16,6 +16,7 @@ import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 
@@ -82,13 +83,18 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 			shards.put(designation, deserializeShard(serializedShard))
 		);
 		System.out.println("### DESERIALIZED SHARDS: " + shards);
-		deserialized = true;
 		nonserializedShardDesignations.forEach(designation -> {
 			loader.preloadShard(designation.toString(), null, null, "LOADING_NON-SERIALIZED_SHARDS: ");
 			loader.loadShard(designation.toString(), null, "LOADING_NON-SERIALIZED_SHARDS: ", agentName);
 		});
 	}
 
+	public void addAsParentAgent() {
+		shards.values().forEach(shard -> {
+			ShardContainer container = new CompositeAgentShardContainer(this);
+			shard.addContext(container);
+		});
+	}
 	private AgentShard deserializeShard(String serializedShard) {
 		AgentShard agentShard = null;
 		ByteArrayInputStream fis;
