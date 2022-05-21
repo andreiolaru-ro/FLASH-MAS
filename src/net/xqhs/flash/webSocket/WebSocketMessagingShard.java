@@ -67,9 +67,11 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(!(context instanceof MessagingPylonProxy))
+		if(!(context instanceof MessagingPylonProxy)) {
 			return false;
+		}
 		pylon = (MessagingPylonProxy) context;
+		System.out.println("Added pylon to messaging shard " + this + " " + pylon);
 		return true;
 	}
 	
@@ -89,6 +91,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	
 	@Override
 	public boolean sendMessage(String target, String source, String content) {
+		System.out.println("sendmessage from target " + target + " to source " + source + " in messaging shard " + this);
 		return pylon.send(target, source, content);
 	}
 	

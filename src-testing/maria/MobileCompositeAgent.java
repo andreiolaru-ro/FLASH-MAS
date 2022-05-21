@@ -1,10 +1,6 @@
 package maria;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -16,7 +12,9 @@ import com.google.gson.JsonObject;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
@@ -26,15 +24,20 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 	/**
 	 * The serial UID.
 	 */
+	@Serial
 	private static final long serialVersionUID = -308343471716425142L;
 
 	public static final String MOVE_TRANSIENT_EVENT_PARAMETER = "MOVE";
 
     public static final String TARGET = "TARGET";
 
+	public boolean deserialized = false;
+
     public Map<AgentShardDesignation, String> serializedShards = new HashMap<>();
 
     public List<AgentShardDesignation> nonserializedShardDesignations = new ArrayList<>();
+
+	private transient CompositeAgentLoader loader = new CompositeAgentLoader();
 
 	public MobileCompositeAgent() {
 	}
@@ -56,6 +59,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 	}
 
     public void moveTo(String destination) {
+		System.out.println("### SHARDS BEFORE SERIALIZATION: " + shards);
         AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP);
         prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
         prepareMoveEvent.add(TARGET, destination);
@@ -65,20 +69,53 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
     public void startAfterMove() {
         // adaugare transient event parameter
 		System.out.println("Starting after move, my name is " + agentName);
-//        AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_START);
-//        prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
-//        postAgentEvent(prepareMoveEvent);
+//		start();
+        AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_START);
+        prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
+        postAgentEvent(prepareMoveEvent);
     }
 
+	public void loadShards() {
+		loader = new CompositeAgentLoader();
+		System.out.println("shards before load " + shards);
+		serializedShards.forEach((designation, serializedShard) ->
+			shards.put(designation, deserializeShard(serializedShard))
+		);
+		System.out.println("### DESERIALIZED SHARDS: " + shards);
+		deserialized = true;
+		nonserializedShardDesignations.forEach(designation -> {
+			loader.preloadShard(designation.toString(), null, null, "LOADING_NON-SERIALIZED_SHARDS: ");
+			loader.loadShard(designation.toString(), null, "LOADING_NON-SERIALIZED_SHARDS: ", agentName);
+		});
+	}
+
+	private AgentShard deserializeShard(String serializedShard) {
+		AgentShard agentShard = null;
+		ByteArrayInputStream fis;
+		ObjectInputStream in;
+		try {
+			fis = new ByteArrayInputStream(Base64.getDecoder().decode(serializedShard));
+			in = new ObjectInputStream(fis);
+			agentShard = (AgentShard) in.readObject();
+			in.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return agentShard;
+	}
+
     public String serialize() {
-		for(var designation : shards.keySet()) {
+		for(AgentShardDesignation designation : shards.keySet()) {
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
                 objectOutputStream.writeObject(shards.get(designation));
-
+				System.out.println("SERIALIZABLE SHARD: " + shards.get(designation));
                 serializedShards.put(designation, Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
 			} catch (NotSerializableException e) {
-                nonserializedShardDesignations.add(designation);
+				e.printStackTrace();
+				System.out.println("NONSERIALIZABLE SHARD: " + shards.get(designation));
+				nonserializedShardDesignations.add(designation);
             } catch (IOException e) {
                 //TODO
             }

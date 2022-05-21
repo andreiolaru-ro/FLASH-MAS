@@ -91,6 +91,8 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT      = "control";
 
+	private PylonProxy nodePylonProxy;
+
 	private MobileCompositeAgent deserializeAgent(String agentData) {
 		MobileCompositeAgent agent = null;
 		ByteArrayInputStream fis;
@@ -138,8 +140,12 @@ public class Node extends Unit implements Entity<Node>
 						String agentData = (String) jo.get("agentData");
 
 						MobileCompositeAgent agent = deserializeAgent(agentData);
-						agent.addGeneralContext(this);
 
+						agent.loadShards();
+
+						System.out.println("incerc sa adaug pylon in agent din node");
+						agent.addGeneralContext(nodePylonProxy);
+						System.out.println("Shards dupa add context: " + agent.shards + " din agent " + ((Object)agent).toString());
 						registeredEntities.get("agent").add(agent);
 						entityOrder.add(agent);
 						agent.startAfterMove();
@@ -330,6 +336,7 @@ public class Node extends Unit implements Entity<Node>
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		PylonProxy pylonProxy = (PylonProxy)context;
+		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy
 				.getRecommendedShardImplementation(
 						AgentShardDesignation.standardShard(

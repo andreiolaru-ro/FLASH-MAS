@@ -11,15 +11,17 @@
  ******************************************************************************/
 package example.compositePingPong;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
+import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
@@ -76,7 +78,7 @@ public class PingTestComponent extends AgentShardGeneral
 	/**
 	 * Timer for pinging.
 	 */
-	Timer							pingTimer					= null;
+	transient Timer							pingTimer					= null;
 	/**
 	 * Cache for the name of this agent.
 	 */

@@ -35,7 +35,7 @@ public class MonitoringTestShard extends AgentShardCore
 	/**
 	 * The log.
 	 */
-	UnitComponent				locallog			= null;
+	private transient UnitComponent				locallog			= null;
 	
 	/**
 	 * Default constructor
@@ -43,6 +43,7 @@ public class MonitoringTestShard extends AgentShardCore
 	public MonitoringTestShard()
 	{
 		super(AgentShardDesignation.customShard(Boot.MONITORING));
+		parentChangeNotifier(null);
 	}
 	
 	@Override
@@ -61,7 +62,7 @@ public class MonitoringTestShard extends AgentShardCore
 	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		super.parentChangeNotifier(oldParent);
-		
+
 		if(getAgent() != null)
 		{
 			locallog = new UnitComponent("net.xqhs.flash.core.monitoring-" + getAgent().getEntityName())

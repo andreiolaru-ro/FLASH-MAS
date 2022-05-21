@@ -251,6 +251,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
+		System.out.println("ParentAgent added in PingTestComponent " + parent);
 		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;
@@ -295,6 +296,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 */
 	final protected ShardContainer getAgent()
 	{
+		System.out.println("ParentAgent in PingTestComponent" + parentAgent);
 		return parentAgent;
 	}
 	
