@@ -9,6 +9,11 @@ import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 
 public class Node extends Unit implements EntityAPI {
@@ -34,9 +39,14 @@ public class Node extends Unit implements EntityAPI {
     protected DefaultLocalRouterImpl localRouter;
 
     /**
-     * The pylon instance.
+     * All added entities.
      */
-    protected WebSocketPylon pylon;
+    protected Map<String, EntityAPI> entities = new HashMap<>();
+
+    /**
+     * Added pylons.
+     */
+    protected Set<WebSocketPylon> pylons = new LinkedHashSet<>();
 
     /**
      * Indicates whether the implementation is currently running.
@@ -46,26 +56,20 @@ public class Node extends Unit implements EntityAPI {
     @Override
     public boolean setup(MultiTreeMap nodeConfiguration) {
         name = nodeConfiguration.get(NODE_NAME);
-        pylon = new WebSocketPylon();
-        pylon.setup(nodeConfiguration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
-        localRouter = new DefaultLocalRouterImpl(pylon);
-        fMas = new DefaultFMasImpl(localRouter, pylon);
-        localRouter.setfMas(fMas);
-        pylon.setfMas(fMas);
         setUnitName(name);
         return true;
     }
 
     @Override
     public boolean start() {
-        pylon.start();
+        pylons.stream().findFirst().ifPresent(WebSocketPylon::start);
         localRouter.start();
         isRunning = true;
         return true;
     }
 
     public boolean stop() {
-        pylon.stop();
+        pylons.stream().findFirst().ifPresent(WebSocketPylon::stop);
         isRunning = false;
         return true;
     }
@@ -90,10 +94,26 @@ public class Node extends Unit implements EntityAPI {
         return name;
     }
 
-    public boolean addAgent(Agent agent, MultiTreeMap agentConfiguration) {
-        agent.setfMas(fMas);
-        agent.setup(agentConfiguration);
-        agent.start();
-        return true;
+    public boolean addEntity(EntityAPI entityAPI, MultiTreeMap configuration) {
+        if (entityAPI instanceof Agent) {
+            Agent agent = (Agent) entityAPI;
+            agent.setfMas(fMas);
+            agent.setup(configuration);
+            agent.start();
+            entities.put(agent.getName(), agent);
+            return true;
+        }
+        if (entityAPI instanceof WebSocketPylon) {
+            WebSocketPylon pylon = (WebSocketPylon) entityAPI;
+            pylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
+            localRouter = new DefaultLocalRouterImpl(pylon);
+            fMas = new DefaultFMasImpl(localRouter, pylon);
+            localRouter.setfMas(fMas);
+            pylon.setfMas(fMas);
+            pylons.add(pylon);
+            entities.put(pylon.getName(), pylon);
+            return true;
+        }
+        return false;
     }
 }
