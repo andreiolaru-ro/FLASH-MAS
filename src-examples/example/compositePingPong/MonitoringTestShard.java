@@ -43,7 +43,6 @@ public class MonitoringTestShard extends AgentShardCore
 	public MonitoringTestShard()
 	{
 		super(AgentShardDesignation.customShard(Boot.MONITORING));
-		parentChangeNotifier(null);
 	}
 	
 	@Override

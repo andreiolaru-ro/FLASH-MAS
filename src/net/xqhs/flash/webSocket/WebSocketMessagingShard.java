@@ -11,6 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
+import java.io.Serializable;
+
+import org.json.simple.JSONObject;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -20,9 +24,6 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.OperationUtils;
-import org.json.simple.JSONObject;
-
-import java.io.Serializable;
 
 
 /**
@@ -57,12 +58,6 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	 */
 	public WebSocketMessagingShard() {
 		super();
-		inbox = new MessageReceiver() {
-			@Override
-			public void receive(String source, String destination, String content) {
-				receiveMessage(source, destination, content);
-			}
-		};
 	}
 	
 	@Override
@@ -70,6 +65,13 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 		if(!(context instanceof MessagingPylonProxy)) {
 			return false;
 		}
+		if(inbox == null)
+			inbox = new MessageReceiver() {
+				@Override
+				public void receive(String source, String destination, String content) {
+					receiveMessage(source, destination, content);
+				}
+			};
 		pylon = (MessagingPylonProxy) context;
 		System.out.println("Added pylon to messaging shard " + this + " " + pylon);
 		return true;

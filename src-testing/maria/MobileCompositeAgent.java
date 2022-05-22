@@ -1,6 +1,12 @@
 package maria;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -25,7 +31,6 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 	/**
 	 * The serial UID.
 	 */
-	@Serial
 	private static final long serialVersionUID = -308343471716425142L;
 
 	public static final String MOVE_TRANSIENT_EVENT_PARAMETER = "MOVE";
