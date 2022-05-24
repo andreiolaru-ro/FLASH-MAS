@@ -31,7 +31,7 @@ import net.xqhs.flash.core.util.OperationUtils;
  *
  * @author Florina Nastasoiu
  */
-public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements Serializable {
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	
 	/**
 	 * The serial UID.
@@ -46,7 +46,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	private transient MessagingPylonProxy pylon;
+	private MessagingPylonProxy pylon;
 	
 	/**
 	 * The proxy to this shard, to be used by the pylon.

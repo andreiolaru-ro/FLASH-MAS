@@ -89,7 +89,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 		);
 		System.out.println("### DESERIALIZED SHARDS: " + shards);
 		nonserializedShardDesignations.forEach(designation -> {
-			loader.preloadShard(designation.toString(), null, null, "LOADING_NON-SERIALIZED_SHARDS: ");
+			loader.preloadShard(designation.toString(), null, null, "PRE_LOADING_NON-SERIALIZED_SHARDS: ");
 			loader.loadShard(designation.toString(), null, "LOADING_NON-SERIALIZED_SHARDS: ", agentName);
 		});
 	}
