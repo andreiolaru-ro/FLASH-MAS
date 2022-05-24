@@ -11,8 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
-import java.io.Serializable;
-
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -46,7 +44,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	private MessagingPylonProxy pylon;
+	private transient MessagingPylonProxy	pylon;
 	
 	/**
 	 * The proxy to this shard, to be used by the pylon.

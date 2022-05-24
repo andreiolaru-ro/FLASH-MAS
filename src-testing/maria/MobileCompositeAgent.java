@@ -25,6 +25,9 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Logger.Level;
+import net.xqhs.util.logging.UnitComponent;
 
 public class MobileCompositeAgent extends CompositeAgent implements Serializable {
 
@@ -41,7 +44,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 
     public Map<AgentShardDesignation, String> serializedShards = new HashMap<>();
 
-    public List<AgentShardDesignation> nonserializedShardDesignations = new ArrayList<>();
+	public Map<AgentShardDesignation, MultiTreeMap>	nonserializedShardDesignations	= new HashMap<>();
 
 	private transient CompositeAgentLoader loader = new CompositeAgentLoader();
 
@@ -82,16 +85,20 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
     }
 
 	public void loadShards() {
+		localLog = new UnitComponent().setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.ALL);
 		loader = new CompositeAgentLoader();
+		loader.configure(new MultiTreeMap(), localLog, PlatformUtils.getClassFactory());
 		System.out.println("shards before load " + shards);
 		serializedShards.forEach((designation, serializedShard) ->
-			shards.put(designation, deserializeShard(serializedShard))
+		addShard(deserializeShard(serializedShard))
 		);
-		System.out.println("### DESERIALIZED SHARDS: " + shards);
-		nonserializedShardDesignations.forEach(designation -> {
-			loader.preloadShard(designation.toString(), null, null, "PRE_LOADING_NON-SERIALIZED_SHARDS: ");
-			loader.loadShard(designation.toString(), null, "LOADING_NON-SERIALIZED_SHARDS: ", agentName);
+		nonserializedShardDesignations.forEach((designation, configuration) -> {
+			loader.preloadShard(designation.toString(), configuration, null, "PRE_LOADING_NON-SERIALIZED_SHARDS: ");
+			AgentShard shard = loader.loadShard(designation.toString(), configuration,
+					"LOADING_NON-SERIALIZED_SHARDS: ", agentName);
+			addShard(shard);
 		});
+		System.out.println("### DESERIALIZED SHARDS: " + shards);
 	}
 
 	public void addAsParentAgent() {
@@ -126,13 +133,17 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 			} catch (NotSerializableException e) {
 				e.printStackTrace();
 				System.out.println("NONSERIALIZABLE SHARD: " + shards.get(designation));
-				nonserializedShardDesignations.add(designation);
+				MultiTreeMap configuration = shards.get(designation) instanceof NonSerializableShard
+						? ((NonSerializableShard) shards.get(designation)).getShardConfiguration()
+						: null;
+				nonserializedShardDesignations.put(designation, configuration);
             } catch (IOException e) {
                 //TODO
             }
         }
 
         shards = new HashMap<>();
+		shardOrder = new ArrayList<>();
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream;

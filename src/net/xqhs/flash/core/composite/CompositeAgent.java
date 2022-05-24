@@ -841,7 +841,8 @@ public class CompositeAgent implements CompositeAgentModel
 	 */
 	public boolean canAddShards()
 	{
-		return (agentState == AgentState.STOPPED) || (agentState == AgentState.RUNNING);
+		return (agentState == AgentState.STOPPED) || (agentState == AgentState.TRANSIENT)
+				|| (agentState == AgentState.RUNNING);
 	}
 
 	/**
