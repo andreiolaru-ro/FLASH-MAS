@@ -83,14 +83,8 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         String targetEntityName = operationCall.getTargetEntity().ID;
         String sourceEntityName = operationCall.getSourceEntity().ID;
 
-        // internal routing
-        if (fMas.entityExistsOnLocalNode(targetEntityName)) {
-            operationCall.setRouted(true);
-            fMas.route(operationCall);
-        } else {//external routing
-            operationCall.setRouted(true);
-            pylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
-        }
+        operationCall.setRouted(true);
+        pylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
     }
 
     public void setfMas(FMas fMas) {

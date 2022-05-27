@@ -96,20 +96,24 @@ public class Node extends Unit implements EntityAPI {
 
     public boolean addEntity(EntityAPI entityAPI, MultiTreeMap configuration) {
         if (entityAPI instanceof Agent) {
+            // agent setup
             Agent agent = (Agent) entityAPI;
             agent.setfMas(fMas);
             agent.setup(configuration);
             agent.start();
+
             entities.put(agent.getName(), agent);
             return true;
         }
         if (entityAPI instanceof WebSocketPylon) {
+            // pylon setup
             WebSocketPylon pylon = (WebSocketPylon) entityAPI;
             pylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
             localRouter = new DefaultLocalRouterImpl(pylon);
             fMas = new DefaultFMasImpl(localRouter, pylon);
             localRouter.setfMas(fMas);
             pylon.setfMas(fMas);
+
             pylons.add(pylon);
             entities.put(pylon.getName(), pylon);
             return true;

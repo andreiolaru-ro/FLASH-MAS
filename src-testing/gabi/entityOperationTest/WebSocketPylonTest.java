@@ -58,10 +58,15 @@ public class WebSocketPylonTest {
         node2.addEntity(agent2, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent2")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent2"));
 
+        // add agent
+        Agent agent3 = new Agent();
+        node2.addEntity(agent3, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent3")
+                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent3"));
+
         // agent1(node1) calls an agent2(node2) operation
         ArrayList<Object> argumentValues = new ArrayList<>();
         argumentValues.add("simple message");
-        OperationCall operationCall = new OperationCall(agent1.getEntityID(), agent2.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
+        OperationCall operationCall = new OperationCall(agent1.getEntityID(), agent3.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
         agent1.callOperation(operationCall);
 
         // stop nodes

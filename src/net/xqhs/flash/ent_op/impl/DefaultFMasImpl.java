@@ -40,8 +40,11 @@ public class DefaultFMasImpl implements FMas {
         String entityName = entity.getName();
         if (entities.containsKey(entityName))
             return null;
+        // EntityTools is the link between entities and FMas. there is one instance of EntityTools
+        // on each entity.
         EntityTools entityTools = new DefaultEntityToolsImpl(this);
         entityTools.initialize(entity);
+        // On FMas level, we map each entity with its entityTools.
         entities.put(entityName, entityTools);
         if (pylon != null)
             pylon.register(entityName);
