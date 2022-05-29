@@ -19,18 +19,27 @@ import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class WebSocketPylonTest {
     public static void main(String[] args) throws InterruptedException {
-        // first node setup
+
+        // ******************************** first node setup ************************************************ //
         Node node1 = new Node();
         node1.setup(new MultiTreeMap().addFirstValue(NODE_NAME, "node1"));
 
-        // add pylon
-        WebSocketPylon pylon1 = new WebSocketPylon();
-        node1.addEntity(pylon1, new MultiTreeMap()
+        WebSocketPylon pylon = new WebSocketPylon();
+        node1.addEntity(pylon, new MultiTreeMap()
                 .addSingleTree(WEBSOCKET_PYLON_CONFIG, new MultiTreeMap()
                         .addSingleValue(WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
                         .addSingleValue(WEBSOCKET_SERVER_PORT_NAME, "8885")
                         .addSingleValue(WEBSOCKET_PYLON_NAME, "pylon1")
                         .addSingleValue(NODE_NAME, "node1")));
+
+        for (int i = 0; i < 6; i++) {
+            WebSocketPylon pylon_ = new WebSocketPylon();
+            node1.addEntity(pylon_, new MultiTreeMap()
+                    .addSingleTree(WEBSOCKET_PYLON_CONFIG, new MultiTreeMap()
+                            .addSingleValue(WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
+                            .addSingleValue(WEBSOCKET_PYLON_NAME, "pylon1." + i)
+                            .addSingleValue(NODE_NAME, "node1")));
+        }
         // start node
         node1.start();
 
@@ -39,7 +48,8 @@ public class WebSocketPylonTest {
         node1.addEntity(agent1, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent1")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent1"));
 
-        // second node setup
+        // ******************************** second node setup ************************************************ //
+
         Node node2 = new Node();
         node2.setup(new MultiTreeMap().addFirstValue(NODE_NAME, "node2"));
 
@@ -50,10 +60,10 @@ public class WebSocketPylonTest {
                         .addSingleValue(WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
                         .addSingleValue(WEBSOCKET_PYLON_NAME, "pylon2")
                         .addSingleValue(NODE_NAME, "node2")));
-
         //start node
         node2.start();
 
+        // add agent
         Agent agent2 = new Agent();
         node2.addEntity(agent2, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent2")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent2"));
@@ -62,6 +72,8 @@ public class WebSocketPylonTest {
         Agent agent3 = new Agent();
         node2.addEntity(agent3, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent3")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent3"));
+
+        // *************************************** op call *************************************************** //
 
         // agent1(node1) calls an agent2(node2) operation
         ArrayList<Object> argumentValues = new ArrayList<>();

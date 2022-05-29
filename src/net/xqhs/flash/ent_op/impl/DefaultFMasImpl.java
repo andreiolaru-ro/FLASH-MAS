@@ -1,5 +1,6 @@
 package net.xqhs.flash.ent_op.impl;
 
+import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -8,7 +9,9 @@ import net.xqhs.flash.ent_op.model.LocalRouter;
 import net.xqhs.flash.ent_op.model.OperationCall;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DefaultFMasImpl implements FMas {
     /**
@@ -22,17 +25,16 @@ public class DefaultFMasImpl implements FMas {
     protected LocalRouter localRouter;
 
     /**
-     * The pylon used for the external routing.
+     * Added pylons used for external routing.
      */
-    protected WebSocketPylon pylon;
+    protected Set<Pylon> pylons = new LinkedHashSet<>();
 
     public DefaultFMasImpl() {
         localRouter = new DefaultLocalRouterImpl(this);
     }
 
-    public DefaultFMasImpl(LocalRouter localRouter, WebSocketPylon pylon) {
+    public DefaultFMasImpl(LocalRouter localRouter) {
         this.localRouter = localRouter;
-        this.pylon = pylon;
     }
 
     @Override
@@ -46,8 +48,9 @@ public class DefaultFMasImpl implements FMas {
         entityTools.initialize(entity);
         // On FMas level, we map each entity with its entityTools.
         entities.put(entityName, entityTools);
-        if (pylon != null)
-            pylon.register(entityName);
+        pylons.stream()
+                .filter(pylon -> pylon instanceof WebSocketPylon)
+                .forEach(pylon -> ((WebSocketPylon) pylon).register(entityName));
         return entityTools;
     }
 
@@ -66,6 +69,10 @@ public class DefaultFMasImpl implements FMas {
             EntityTools entityTools = entities.get(targetEntityName);
             entityTools.handleIncomingOperationCall(operationCall);
         }
+    }
+
+    public void addPylon(Pylon pylon) {
+        pylons.add(pylon);
     }
 
 }

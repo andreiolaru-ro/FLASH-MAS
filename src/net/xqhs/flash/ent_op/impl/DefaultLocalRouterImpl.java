@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
-import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.LocalRouter;
-import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
+
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
 
 public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
@@ -30,9 +32,9 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     protected FMas fMas;
 
     /**
-     * The pylon used for external routing.
+     * Added pylons used for external routing.
      */
-    protected WebSocketPylon pylon;
+    protected Set<Pylon> pylons = new LinkedHashSet<>();
 
     /**
      * The object mapper.
@@ -44,9 +46,7 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         this.fMas = fMas;
     }
 
-    public DefaultLocalRouterImpl(WebSocketPylon pylon) {
-        this.pylon = pylon;
-    }
+    public DefaultLocalRouterImpl() {}
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
@@ -84,11 +84,22 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         String sourceEntityName = operationCall.getSourceEntity().ID;
 
         operationCall.setRouted(true);
-        pylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
+
+        Optional<Pylon> pylonAbleToRoute =  anyPylonAbleToRoute(targetEntityName);
+        if ((pylonAbleToRoute).isPresent()) {
+            if (pylonAbleToRoute.get() instanceof WebSocketPylon) {
+                WebSocketPylon webSocketPylon = (WebSocketPylon) pylonAbleToRoute.get();
+                webSocketPylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
+            }
+        }
     }
 
     public void setfMas(FMas fMas) {
         this.fMas = fMas;
+    }
+
+    public void addPylon(Pylon pylon) {
+        pylons.add(pylon);
     }
 
     private String serializeOpCall(OperationCall operationCall) {
@@ -99,6 +110,10 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
             le("The operation call couldn't be serialized.");
         }
         return json;
+    }
+
+    private Optional<Pylon> anyPylonAbleToRoute(String targetEntityName) {
+        return pylons.stream().findFirst();
     }
 
 }

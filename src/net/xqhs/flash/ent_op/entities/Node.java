@@ -4,7 +4,6 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.DefaultLocalRouterImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
@@ -31,12 +30,12 @@ public class Node extends Unit implements EntityAPI {
     /**
      * The framework instance.
      */
-    protected FMas fMas;
+    protected DefaultFMasImpl fMas = null;
 
     /**
      * The local router instance.
      */
-    protected DefaultLocalRouterImpl localRouter;
+    protected DefaultLocalRouterImpl localRouter = null;
 
     /**
      * All added entities.
@@ -62,14 +61,14 @@ public class Node extends Unit implements EntityAPI {
 
     @Override
     public boolean start() {
-        pylons.stream().findFirst().ifPresent(WebSocketPylon::start);
+        pylons.forEach(WebSocketPylon::start);
         localRouter.start();
         isRunning = true;
         return true;
     }
 
     public boolean stop() {
-        pylons.stream().findFirst().ifPresent(WebSocketPylon::stop);
+        pylons.forEach(WebSocketPylon::stop);
         isRunning = false;
         return true;
     }
@@ -98,26 +97,44 @@ public class Node extends Unit implements EntityAPI {
         if (entityAPI instanceof Agent) {
             // agent setup
             Agent agent = (Agent) entityAPI;
-            agent.setfMas(fMas);
-            agent.setup(configuration);
-            agent.start();
-
-            entities.put(agent.getName(), agent);
-            return true;
+            return addAgent(agent, configuration);
         }
         if (entityAPI instanceof WebSocketPylon) {
             // pylon setup
             WebSocketPylon pylon = (WebSocketPylon) entityAPI;
-            pylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
-            localRouter = new DefaultLocalRouterImpl(pylon);
-            fMas = new DefaultFMasImpl(localRouter, pylon);
-            localRouter.setfMas(fMas);
-            pylon.setfMas(fMas);
-
-            pylons.add(pylon);
-            entities.put(pylon.getName(), pylon);
-            return true;
+            return addWebSocketPylon(pylon, configuration);
         }
         return false;
+    }
+
+    private boolean addAgent(Agent agent, MultiTreeMap configuration) {
+        agent.setfMas(fMas);
+        agent.setup(configuration);
+        agent.start();
+        // store all added agents
+        entities.put(agent.getName(), agent);
+        return true;
+    }
+
+    private boolean addWebSocketPylon(WebSocketPylon webSocketPylon, MultiTreeMap configuration) {
+        webSocketPylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
+        // localRouter setup
+        if (localRouter == null) {
+            localRouter = new DefaultLocalRouterImpl();
+        }
+        localRouter.addPylon(webSocketPylon);
+
+        // fmas setup
+        if (fMas == null) {
+            fMas = new DefaultFMasImpl(localRouter);
+            localRouter.setfMas(fMas);
+        }
+        fMas.addPylon(webSocketPylon);
+
+        webSocketPylon.setfMas(fMas);
+        // store all added pylons
+        pylons.add(webSocketPylon);
+        entities.put(webSocketPylon.getName(), webSocketPylon);
+        return true;
     }
 }
