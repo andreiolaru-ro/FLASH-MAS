@@ -19,7 +19,6 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.PlatformUtils;
 
 public class HttpPylon extends DefaultPylonImplementation
 {
@@ -59,14 +58,16 @@ public class HttpPylon extends DefaultPylonImplementation
      */
     public static final String HTTP_SERVER_PORT_NAME = "serverPort";
     
+    public static final String HTTP_SERVER_HOST_NAME = "serverHost";
+    
     /**
      * The prefix for Http server address.
      */
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
-    
-    public static final String HTTP_SERVER_PREFIX = HTTP_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI();
 
     protected int serverPort = -1;
+    
+    protected String serverHostname = "localhost";
 
     /**
      * For the case in which a server must be created on this node, the entity that represents the server.
@@ -135,7 +136,7 @@ public class HttpPylon extends DefaultPylonImplementation
             {
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                     .header("Content-Type", "text/plain;charset=UTF-8")
-                    .header("sourceAddress", HTTP_SERVER_PREFIX + ":" + serverPort)
+                    .header("sourceAddress", HTTP_PROTOCOL_PREFIX + serverHostname + ":" + serverPort)
                     .uri(new URI(remoteDestinationUrl))
                     .POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString()))
                     .build();
@@ -212,6 +213,9 @@ public class HttpPylon extends DefaultPylonImplementation
             return false;
         if(configuration.isSimple(HTTP_SERVER_PORT_NAME)) {
             serverPort = Integer.parseInt(configuration.getAValue(HTTP_SERVER_PORT_NAME));
+        }
+        if(configuration.isSimple(HTTP_SERVER_HOST_NAME)) {
+            serverHostname = configuration.getAValue(HTTP_SERVER_HOST_NAME);
         }
         String agentKey = "agent";
         if (configuration.isHierarchical(agentKey))
