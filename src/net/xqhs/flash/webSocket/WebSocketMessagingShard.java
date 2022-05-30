@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
+import maria.NonSerializableShard;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -29,7 +31,7 @@ import net.xqhs.flash.core.util.OperationUtils;
  *
  * @author Florina Nastasoiu
  */
-public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
 	
 	/**
 	 * The serial UID.
@@ -44,7 +46,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	private transient MessagingPylonProxy	pylon;
+	private MessagingPylonProxy	pylon;
 	
 	/**
 	 * The proxy to this shard, to be used by the pylon.
@@ -106,6 +108,11 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard {
 	@Override
 	public void register(String entityName) {
 		pylon.register(entityName, inbox);
+	}
+
+	@Override
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 
 //	private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {

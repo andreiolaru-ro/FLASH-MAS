@@ -131,7 +131,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 				System.out.println("SERIALIZABLE SHARD: " + shards.get(designation));
                 serializedShards.put(designation, Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
 			} catch (NotSerializableException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				System.out.println("NONSERIALIZABLE SHARD: " + shards.get(designation));
 				MultiTreeMap configuration = shards.get(designation) instanceof NonSerializableShard
 						? ((NonSerializableShard) shards.get(designation)).getShardConfiguration()

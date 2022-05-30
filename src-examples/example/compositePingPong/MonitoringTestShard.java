@@ -11,12 +11,14 @@
  ******************************************************************************/
 package example.compositePingPong;
 
+import maria.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
@@ -26,8 +28,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore
-{
+public class MonitoringTestShard extends AgentShardCore implements NonSerializableShard {
 	/**
 	 * The UID.
 	 */
@@ -73,5 +74,10 @@ public class MonitoringTestShard extends AgentShardCore
 			locallog.doExit();
 			locallog = null;
 		}
+	}
+
+	@Override
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 }

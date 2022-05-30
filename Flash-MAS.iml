@@ -120,5 +120,12 @@
     <orderEntry type="library" name="websocket-client-9.4.3.v20170317" level="project" />
     <orderEntry type="library" name="websocket-common-9.4.3.v20170317" level="project" />
     <orderEntry type="library" name="jetty-util-9.4.3.v20170317" level="project" />
+    <orderEntry type="library" name="lib (4)" level="project" />
+    <orderEntry type="library" name="core (2)" level="project" />
+    <orderEntry type="library" name="gui (2)" level="project" />
+    <orderEntry type="library" name="mpi (3)" level="project" />
+    <orderEntry type="library" name="ros (3)" level="project" />
+    <orderEntry type="library" name="webserver (3)" level="project" />
+    <orderEntry type="library" name="websocket_support (3)" level="project" />
   </component>
 </module>

@@ -59,7 +59,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 * Creation data for the shard. The field is initialized with an empty structure, so that it is guaranteed that it
 	 * will never be <code>null</code> after construction.
 	 */
-	private MultiTreeMap			shardConfiguration;
+	protected MultiTreeMap			shardConfiguration;
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */

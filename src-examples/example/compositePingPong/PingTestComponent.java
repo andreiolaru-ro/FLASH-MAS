@@ -11,9 +11,8 @@
  ******************************************************************************/
 package example.compositePingPong;
 
-import maria.MobileCompositeAgent;
+import maria.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
@@ -30,8 +29,7 @@ import java.util.TimerTask;
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentShardGeneral
-{
+public class PingTestComponent extends AgentShardGeneral implements NonSerializableShard {
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 
@@ -148,5 +146,10 @@ public class PingTestComponent extends AgentShardGeneral
 	protected MultiTreeMap getShardData()
 	{
 		return super.getShardData();
+	}
+
+	@Override
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 }

@@ -11,11 +11,13 @@
  ******************************************************************************/
 package example.compositePingPong;
 
+import maria.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
@@ -25,8 +27,7 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
  * 
  * @author Andrei Olaru
  */
-public class PingBackTestComponent extends AgentShardGeneral
-{
+public class PingBackTestComponent extends AgentShardGeneral implements NonSerializableShard {
 	/**
 	 * The UID.
 	 */
@@ -57,5 +58,10 @@ public class PingBackTestComponent extends AgentShardGeneral
 		default:
 			break;
 		}
+	}
+
+	@Override
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 }
