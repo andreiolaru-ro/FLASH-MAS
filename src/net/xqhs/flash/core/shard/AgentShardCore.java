@@ -63,7 +63,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private ShardContainer			parentAgent;
+	private transient ShardContainer	parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -142,6 +142,10 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 			shardConfiguration = configuration;
 		}
 		return true;
+	}
+	
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 	
 	/**
@@ -251,7 +255,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 //			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		System.out.println("ParentAgent added in PingTestComponent " + parent);
+		System.out.println("ParentAgent added in shard " + parent);
 		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;

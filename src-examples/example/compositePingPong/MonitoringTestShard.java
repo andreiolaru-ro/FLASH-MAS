@@ -11,14 +11,12 @@
  ******************************************************************************/
 package example.compositePingPong;
 
-import maria.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
@@ -28,7 +26,8 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore implements NonSerializableShard {
+public class MonitoringTestShard extends AgentShardCore
+{
 	/**
 	 * The UID.
 	 */
@@ -36,7 +35,7 @@ public class MonitoringTestShard extends AgentShardCore implements NonSerializab
 	/**
 	 * The log.
 	 */
-	private transient UnitComponent				locallog			= null;
+	transient UnitComponent		locallog			= null;
 	
 	/**
 	 * Default constructor
@@ -62,7 +61,7 @@ public class MonitoringTestShard extends AgentShardCore implements NonSerializab
 	protected void parentChangeNotifier(ShardContainer oldParent)
 	{
 		super.parentChangeNotifier(oldParent);
-
+		
 		if(getAgent() != null)
 		{
 			locallog = new UnitComponent("net.xqhs.flash.core.monitoring-" + getAgent().getEntityName())
@@ -74,10 +73,5 @@ public class MonitoringTestShard extends AgentShardCore implements NonSerializab
 			locallog.doExit();
 			locallog = null;
 		}
-	}
-
-	@Override
-	public MultiTreeMap getShardConfiguration() {
-		return shardConfiguration;
 	}
 }

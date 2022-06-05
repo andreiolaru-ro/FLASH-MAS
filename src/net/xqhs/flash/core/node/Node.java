@@ -14,7 +14,12 @@ package net.xqhs.flash.core.node;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -140,16 +145,10 @@ public class Node extends Unit implements Entity<Node>
 						String agentData = (String) jo.get("agentData");
 
 						MobileCompositeAgent agent = deserializeAgent(agentData);
-
-						agent.loadShards();
-
+						registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
 						System.out.println("incerc sa adaug pylon in agent din node");
 						agent.addGeneralContext(nodePylonProxy);
-						agent.addAsParentAgent();
-						System.out.println("Shards dupa add context: " + agent.shards + " din agent " + ((Object)agent).toString());
-						registeredEntities.get("agent").add(agent);
-						entityOrder.add(agent);
-						agent.startAfterMove();
+						agent.start();
 					}
 				}
 //				le("[] cannot properly parse received message.", name);

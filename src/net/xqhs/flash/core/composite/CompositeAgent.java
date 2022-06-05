@@ -118,7 +118,7 @@ public class CompositeAgent implements CompositeAgentModel
 	 *
 	 * @author Andrei Olaru
 	 */
-	enum AgentState {
+	protected enum AgentState {
 		/**
 		 * State indicating that the agent is currently behaving normally and agent events are processed in good order.
 		 * All shards are running.

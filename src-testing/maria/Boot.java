@@ -15,15 +15,20 @@ public class Boot {
 
         test_args += " -node nodeA";
         test_args += " -pylon webSocket:slaveA serverPort:8888 connectTo:ws://localhost:8888";
-//		test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingTestComponent otherAgent:agentB1 -shard MonitoringTestShard";
+		/*
+		test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingTestComponent otherAgent:agentB1 -shard MonitoringTestShard";
+/*/
         test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+//*/
         test_args += " -agent agentA2 -shard messaging -shard MonitoringTestShard";
 
         test_args += " -node nodeB";
         test_args += " -pylon webSocket:slaveB connectTo:ws://localhost:8888";
-//		test_args += " -agent agentB1 -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+		/*
+		test_args += " -agent agentB1 -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+/*/     
         test_args += " -agent agentB1 -shard messaging -shard PingTestComponent otherAgent:agentA1 -shard MonitoringTestShard";
-
+//*/
 
         List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(test_args.split(" ")));
         for(Node node : nodes) {

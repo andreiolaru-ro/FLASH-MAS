@@ -22,7 +22,6 @@ import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -75,13 +74,19 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
         postAgentEvent(prepareMoveEvent);
     }
 
-    public void startAfterMove() {
+	@Override
+	public boolean start() {
+		if(agentState != AgentState.TRANSIENT)
+			return super.start();
+		
         // adaugare transient event parameter
 		System.out.println("Starting after move, my name is " + agentName);
+		
+		loadShards();
 //		start();
         AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_START);
         prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
-        postAgentEvent(prepareMoveEvent);
+		return postAgentEvent(prepareMoveEvent);
     }
 
 	public void loadShards() {
@@ -98,15 +103,13 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 					"LOADING_NON-SERIALIZED_SHARDS: ", agentName);
 			addShard(shard);
 		});
+		shards.values().forEach(shard -> {
+			// ShardContainer container = new CompositeAgentShardContainer(this);
+			shard.addContext(asContext);
+		});
 		System.out.println("### DESERIALIZED SHARDS: " + shards);
 	}
-
-	public void addAsParentAgent() {
-		shards.values().forEach(shard -> {
-			ShardContainer container = new CompositeAgentShardContainer(this);
-			shard.addContext(container);
-		});
-	}
+	
 	private AgentShard deserializeShard(String serializedShard) {
 		AgentShard agentShard = null;
 		ByteArrayInputStream fis;
@@ -131,7 +134,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 				System.out.println("SERIALIZABLE SHARD: " + shards.get(designation));
                 serializedShards.put(designation, Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
 			} catch (NotSerializableException e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 				System.out.println("NONSERIALIZABLE SHARD: " + shards.get(designation));
 				MultiTreeMap configuration = shards.get(designation) instanceof NonSerializableShard
 						? ((NonSerializableShard) shards.get(designation)).getShardConfiguration()
