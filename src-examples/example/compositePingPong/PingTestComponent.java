@@ -11,16 +11,15 @@
  ******************************************************************************/
 package example.compositePingPong;
 
-import maria.NonSerializableShard;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
@@ -29,7 +28,7 @@ import java.util.TimerTask;
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentShardGeneral implements NonSerializableShard {
+public class PingTestComponent extends AgentShardGeneral {
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 
@@ -37,11 +36,6 @@ public class PingTestComponent extends AgentShardGeneral implements NonSerializa
 	 */
 	class Pinger extends TimerTask
 	{
-		/**
-		 * The index of the message sent.
-		 */
-		int	tick	= 0;
-		
 		@Override
 		public void run()
 		{
@@ -76,7 +70,7 @@ public class PingTestComponent extends AgentShardGeneral implements NonSerializa
 	/**
 	 * Timer for pinging.
 	 */
-	transient Timer							pingTimer					= null;
+	transient Timer	pingTimer	= null;
 	/**
 	 * Cache for the name of this agent.
 	 */
@@ -85,6 +79,10 @@ public class PingTestComponent extends AgentShardGeneral implements NonSerializa
 	 * Cache for the name of the other agent.
 	 */
 	String							otherAgent					= null;
+	/**
+	 * The index of the message sent.
+	 */
+	int				tick		= 0;
 	
 	/**
 	 * Default constructor
@@ -146,10 +144,5 @@ public class PingTestComponent extends AgentShardGeneral implements NonSerializa
 	protected MultiTreeMap getShardData()
 	{
 		return super.getShardData();
-	}
-
-	@Override
-	public MultiTreeMap getShardConfiguration() {
-		return shardConfiguration;
 	}
 }
