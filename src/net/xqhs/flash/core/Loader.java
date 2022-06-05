@@ -243,7 +243,8 @@ public interface Loader<T extends Entity<?>>
 	 *            for classes.
 	 * @return <code>true</code> if the item is found / can be loaded.
 	 */
-	private static boolean loadCheck(String path, SearchItemType searchType, Object... objects) {
+	static boolean loadCheck(String path, SearchItemType searchType, Object... objects)
+	{
 		ClassFactory factory;
 		switch(searchType) {
 		case CLASS:
@@ -270,7 +271,7 @@ public interface Loader<T extends Entity<?>>
 	 * @param others
 	 * @return the found path.
 	 */
-	private static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
+	static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
 			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
 		String D = searchType == SearchItemType.CLASS ? "." : "/";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();

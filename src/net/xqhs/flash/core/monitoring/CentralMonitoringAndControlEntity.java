@@ -207,7 +207,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			li("web gui started");
 		
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue("from", "controls.yml")
-				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackageName()), getLogger());
+				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
 		
 		// TODO Swing GUI
 		// gui = new GUIBoard(new CentralEntityProxy());
