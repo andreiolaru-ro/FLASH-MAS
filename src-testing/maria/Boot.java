@@ -64,7 +64,7 @@ public class Boot {
         }
     }
 
-    private static Entity<?> getAgent(List<Node> nodes, String entityName) {
+	protected static Entity<?> getAgent(List<Node> nodes, String entityName) {
         for (Node node: nodes) {
             for (Entity<?> entity: node.entityOrder) {
                 if (entity.getName().contentEquals(entityName)) {
