@@ -19,8 +19,8 @@ public class MonitoringEntity extends Unit implements Entity {
 
     public MessageReceiver inbox;
     private FileWriter myWriter;
-    private List<Map<String, String>> logList;
     private Yaml yaml;
+    private final Object lock = new Object();
 
     public MonitoringEntity(String name) {
         {
@@ -41,13 +41,9 @@ public class MonitoringEntity extends Unit implements Entity {
                 newLog.put("action", type);
                 newLog.put("destination", destination);
                 newLog.put("content", String.valueOf(mesg.get("content")));
-                logList.add(newLog);
-                System.out.println(logList);
-                yaml.dump(newLog, myWriter);
-//                if (logList.size() > 1) {
-//                    yaml.dump(logList, myWriter);
-//                    logList.clear();
-//                }
+                synchronized (lock) {
+                    yaml.dump(newLog, myWriter);
+                }
             }
         };
 
@@ -67,13 +63,11 @@ public class MonitoringEntity extends Unit implements Entity {
             le("An error occurred.");
             e.printStackTrace();
         }
-        logList = Collections.synchronizedList(new ArrayList<>());
         return false;
     }
 
     @Override
     public boolean stop() {
-        yaml.dump(logList, myWriter);
         try {
             myWriter.close();
         } catch (IOException e) {

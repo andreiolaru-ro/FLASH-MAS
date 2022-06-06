@@ -297,7 +297,7 @@ public class TestClass {
                 var messaging_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
                 var test_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
                 if (test_shard instanceof SendMessageShard) {
-                    ((SendMessageShard) test_shard).attachMessagingShard(messaging_shard);
+                  //  ((SendMessageShard) test_shard).attachMessagingShard(messaging_shard);
                     test_shard.start();
                 }
             }

@@ -41,10 +41,8 @@ public class CompositeAgentTestBoot {
 
         test.CreateElements(testCase);
         test.waitForAgents();
-        test.startTest();
+        //test.startTest();
         //Thread.sleep(5000);
         //test.closeConnections();
-
-
     }
 }
