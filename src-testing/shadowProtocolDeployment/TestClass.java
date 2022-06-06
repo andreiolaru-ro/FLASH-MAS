@@ -1,10 +1,13 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
+import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
 
+import javax.swing.*;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -129,8 +132,6 @@ public class TestClass {
     Topology topology_init;
     static Integer index_message = 0;
 
-    static Semaphore semaphore = new Semaphore(1);
-
     private final Map<String, Object> elements = new HashMap<>();
 
     public enum Actions {
@@ -191,7 +192,9 @@ public class TestClass {
         List<String> copy = new ArrayList<>(agentsList);
         copy.remove(source);
         String destination = getRandomElement(copy);
-        return new Action(source, destination, "Message " + index_message++, Actions.SEND_MESSAGE);
+        String complete_dest = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
+        String complete_source = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
+        return new Action(complete_source, complete_dest, "Message " + index_message++, Actions.SEND_MESSAGE);
     }
 
     /**
@@ -237,26 +240,28 @@ public class TestClass {
             }
         }
 
-        System.out.println();
-        System.out.println(topology_map.getTopology());
-        System.out.println();
-        System.out.println(topology_init.getTopology());
+//        System.out.println();
+//        System.out.println(topology_map.getTopology());
+//        System.out.println();
+//        System.out.println(topology_init.getTopology());
 
-        for (Action a : test) {
-            System.out.println(a.toString());
-        }
+//        for (Action a : test) {
+//            System.out.println(a.toString());
+//        }
         return test;
+    }
+
+
+    public Map<String, List<Action>> filterActionsBySources(List<Action> testCase) {
+        return testCase.stream().collect(Collectors.groupingBy(s -> s.source));
     }
 
     /**
      * Create and start the entities
      */
-    public void CreateElements() {
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void CreateElements(List<Action> testCase) {
+        Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
+
         for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
             for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                 String port_value = ((region.getKey()).split(":"))[1];
@@ -270,19 +275,33 @@ public class TestClass {
                 elements.put(pylon.getKey(), pylon_elem);
 
                 for (String agent : (pylon.getValue())) {
-                    AgentTestBoot.AgentTest agent_elem = new AgentTestBoot.AgentTest(agent + "-" + region.getKey());
+                    CompositeAgentTestBoot.CompositeAgentTest agent_elem = new CompositeAgentTestBoot.CompositeAgentTest(agent + "-" + region.getKey());
                     agent_elem.addContext(pylon_elem.asContext());
-                    agent_elem.addMessagingShard(new ShadowAgentShard(pylon_elem.HomeServerAddressName, agent_elem.getName()));
+                    agent_elem.addShard(new ShadowAgentShard(pylon_elem.HomeServerAddressName, agent_elem.getName()));
+                    agent_elem.addShard(new SendMessageShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL), sortActions.get(agent_elem.getName())));
                     elements.put(agent, agent_elem);
                 }
             }
         }
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
-            if (elem.getValue() instanceof AgentTestBoot.AgentTest) {
-                ((AgentTestBoot.AgentTest) elem.getValue()).start();
+            if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest) {
+                ((CompositeAgentTestBoot.CompositeAgentTest) elem.getValue()).start();
             }
         }
-        semaphore.release();
+    }
+
+    public void startTest() {
+        for (Map.Entry<String, Object> elem : elements.entrySet()) {
+            if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest) {
+                var agent_running = (CompositeAgentTestBoot.CompositeAgentTest) elem.getValue();
+                var messaging_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+                var test_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
+                if (test_shard instanceof SendMessageShard) {
+                    ((SendMessageShard) test_shard).attachMessagingShard(messaging_shard);
+                    test_shard.start();
+                }
+            }
+        }
     }
 
     /**
@@ -291,47 +310,53 @@ public class TestClass {
      *      - list of actions
      */
     public void runTest(List<Action> test) throws InterruptedException {
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         for (Action action : test) {
             switch (action.getType()) {
                 case MOVE_TO_ANOTHER_NODE:
-                    AgentTestBoot.AgentTest agent = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+                    //AgentTestBoot.AgentTest agent = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+                    CompositeAgentTestBoot.CompositeAgentTest agent = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getSource());
                     ShadowPylon dest_pylon = (ShadowPylon) elements.get(action.getDestination());
 
-                    agent.moveToAnotherNode();
-                    agent.addContext(dest_pylon.asContext());
-                    agent.addMessagingShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
-                    agent.reconnect();
+                    //agent.moveToAnotherNode();
+                    //agent.addContext(dest_pylon.asContext());
+                    //agent.addMessagingShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
+                    //agent.addShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
+                    //agent.reconnect();
                     break;
                 case SEND_MESSAGE:
-                    AgentTestBoot.AgentTest source = (AgentTestBoot.AgentTest) elements.get(action.getSource());
-                    AgentTestBoot.AgentTest dest = (AgentTestBoot.AgentTest) elements.get(action.getDestination());
+//                    AgentTestBoot.AgentTest source = (AgentTestBoot.AgentTest) elements.get(action.getSource());
+//                    AgentTestBoot.AgentTest dest = (AgentTestBoot.AgentTest) elements.get(action.getDestination());
+                    CompositeAgentTestBoot.CompositeAgentTest source = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getSource());
+                    CompositeAgentTestBoot.CompositeAgentTest dest = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getDestination());
                     String destination = action.getDestination() + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, action.getDestination());
-                    source.sendMessage(destination, action.getContent());
+                    // source.sendMessage(destination, action.getContent());
                     break;
             }
         }
-        semaphore.release();
+    }
+
+    public void waitForAgents() {
+        int count_agents = this.agentsList.size();
+        int check_state = 0;
+        while (check_state < count_agents) {
+            for (Map.Entry<String, Object> elem : elements.entrySet()) {
+                if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest agent) {
+                    if (agent.isRunning()) {
+                        check_state++;
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Stop the entities.
      */
-    public void closeConnections() {
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void closeConnections() throws InterruptedException {
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
             if (elem.getValue() instanceof ShadowPylon ) {
                 ((ShadowPylon) elem.getValue()).stop();
             }
         }
-        semaphore.release();
     }
 }

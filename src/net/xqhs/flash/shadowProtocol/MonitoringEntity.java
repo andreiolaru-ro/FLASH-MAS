@@ -7,15 +7,20 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.*;
 
 
 public class MonitoringEntity extends Unit implements Entity {
 
     public MessageReceiver inbox;
     private FileWriter myWriter;
+    private List<Map<String, String>> logList;
+    private Yaml yaml;
 
     public MonitoringEntity(String name) {
         {
@@ -29,29 +34,20 @@ public class MonitoringEntity extends Unit implements Entity {
                 if(obj == null) return;
                 JSONObject mesg = (JSONObject) obj;
                 String type = (String) mesg.get("action");
-                String log = null;
-                switch (MessageFactory.ActionType.valueOf(type)) {
-                    case RECEIVE_MESSAGE:
-                        log = "Agent " + destination + " received message " + mesg.get("content") + " from agent " + source;
-                        break;
-                    case MOVE_TO_ANOTHER_NODE:
-                        log = "Agent " + source +" is leaving";
-                        break;
-                    case SEND_MESSAGE:
-                        log = "Agent " + source + " sends message " + mesg.get("content") + " to agent " + destination;
-                        break;
-                    case ARRIVED_ON_NODE:
-                        log = "Agent " + source + " arrived on " + destination;
-                        break;
-                    default:
-                        break;
-                }
-                try {
-                    myWriter.write(log + "\n");
-                } catch (IOException e) {
-                    le("An error occurred.");
-                    e.printStackTrace();
-                }
+
+                Map<String, String> newLog = new HashMap<>();
+                newLog.put("time", String.valueOf(mesg.get("time")));
+                newLog.put("source", source);
+                newLog.put("action", type);
+                newLog.put("destination", destination);
+                newLog.put("content", String.valueOf(mesg.get("content")));
+                logList.add(newLog);
+                System.out.println(logList);
+                yaml.dump(newLog, myWriter);
+//                if (logList.size() > 1) {
+//                    yaml.dump(logList, myWriter);
+//                    logList.clear();
+//                }
             }
         };
 
@@ -59,18 +55,25 @@ public class MonitoringEntity extends Unit implements Entity {
 
     @Override
     public boolean start() {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+        yaml = new Yaml();
+
         try {
-            String filename = "log-" + getName() + ".txt";
-            myWriter = new FileWriter(filename);
+            String filename = "log-" + getName() + ".yaml";
+            myWriter = new FileWriter(filename, false);
         } catch (IOException e) {
             le("An error occurred.");
             e.printStackTrace();
         }
+        logList = Collections.synchronizedList(new ArrayList<>());
         return false;
     }
 
     @Override
     public boolean stop() {
+        yaml.dump(logList, myWriter);
         try {
             myWriter.close();
         } catch (IOException e) {

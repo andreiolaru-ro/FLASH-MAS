@@ -6,11 +6,14 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.PlatformUtils;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,12 +28,10 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      * The {@link MessageReceiver} instance of this shard.
      */
     public MessageReceiver inbox;
-    /**
-     * The shadow instance of the agent
-     */
-    private ShadowHost shadow =     null;
 
     public final Object lock = new Object();
+
+    protected WebSocketClient client;
     /**
      * Default constructor
      */
@@ -53,40 +54,72 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                         pylon.send(source, destination, content);
                         break;
                     case MOVE_TO_ANOTHER_NODE:
+                    case AGENT_READY_TO_STOP:
                         pylon.send(getName(), destination, content);
-//                        synchronized (lock) {
-//                            lock.notify();
-//                        }
                         break;
                     default:
                         break;
                 }
             }
         };
-        if (shadow == null) {
-            String short_name = (name.split("-"))[0];
-            le("The shadow doesn't exist!");
-            try {
-                int tries = 10;
-                long space = 1000;
-                while(tries > 0) {
-                    try {
-                        shadow = new ShadowHost(new URI(serverURI), short_name);
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                        le("Shadow didn't connect!");
-                    }
-                    if(shadow.connectBlocking())
-                        break;
-                    Thread.sleep(space);
-                    tries--;
-                    System.out.println("Tries:" + tries);
+        try {
+            int tries = 10;
+            long space = 1000;
+            while(tries > 0) {
+                try {
+                    client = new WebSocketClient(new URI(serverURI)) {
+                        @Override
+                        public void onOpen(ServerHandshake serverHandshake) {
+                            li("New connection to server.");
+                        }
+
+                        @Override
+                        public void onMessage(String s) {
+                            Object obj = JSONValue.parse(s);
+                            if(obj == null) return;
+                            JSONObject message = (JSONObject) obj;
+                            String str = (String) message.get("type");
+                            String content;
+
+                            switch (MessageFactory.MessageType.valueOf(str)) {
+                                case CONTENT:
+                                    content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE, (String) message.get("content"));
+                                    inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
+                                    li("Message from " + message.get("source") + ": " + message.get("content"));
+                                    break;
+                                case REQ_ACCEPT:
+                                    li("[] Prepare to leave", getUnitName());
+                                    content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null);
+                                    inbox.receive(null, null, content);
+                                    client.close();
+                                    break;
+                                default:
+                                    le("Unknown type");
+                            }
+                        }
+
+                        @Override
+                        public void onClose(int i, String s, boolean b) {
+                            lw("Closed with exit code " + i);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            le(Arrays.toString(e.getStackTrace()));
+                        }
+                    };
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                    le("Websocket didn't connect!");
                 }
-            } catch(InterruptedException e) {
-                e.printStackTrace();
+                if(client.connectBlocking())
+                    break;
+                Thread.sleep(space);
+                tries--;
+                System.out.println("Tries:" + tries);
             }
-        } else {
-            le("The shadow exist!");
+        } catch(InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -99,7 +132,8 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         Map<String, String> data = new HashMap<>();
         data.put("destination", target);
         data.put("content", content);
-        return shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+        return true;
     }
 
     @Override
@@ -110,8 +144,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
     @Override
     public void register(String entityName) {
         pylon.register(entityName, inbox);
-        shadow.addReceiverAgent(inbox);
-        shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
+        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
     }
 
     @Override
@@ -132,7 +165,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
 
         if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
             lf("Agent " + this.getName() + " wants to move to another node");
-            shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
+            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
         }
 
         if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
@@ -141,8 +174,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
             pylon.send(this.getName(), pylon.getEntityName(), notify_content);
 
             pylon.register(entityName, inbox);
-            shadow.addReceiverAgent(inbox);
-            shadow.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
+            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
         }
     }
 

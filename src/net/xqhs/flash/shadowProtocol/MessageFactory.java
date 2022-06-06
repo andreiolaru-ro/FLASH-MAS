@@ -3,6 +3,7 @@ package net.xqhs.flash.shadowProtocol;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +64,10 @@ public class MessageFactory {
          * An agent arrives on another node.
          */
         ARRIVED_ON_NODE,
+        /**
+         * Message sent from test-shard to the pylon to announce that the agent finished.
+         */
+        AGENT_READY_TO_STOP,
     }
 
     /**
@@ -118,6 +123,7 @@ public class MessageFactory {
         builder.setPrettyPrinting();
         data.put("action", action.toString());
         data.put("content", content);
+        data.put("time", (new Timestamp(System.currentTimeMillis())).toString());
 
         return gson.toJson(data);
     }

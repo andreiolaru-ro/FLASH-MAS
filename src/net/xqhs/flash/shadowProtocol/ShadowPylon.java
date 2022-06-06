@@ -31,6 +31,8 @@ public class ShadowPylon extends DefaultPylonImplementation {
      */
     protected Map<String, MessageReceiver> agentList = new HashMap<>();
 
+    private int agents_ready_to_stop = 0;
+
     public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
 
         @Override
@@ -63,6 +65,10 @@ public class ShadowPylon extends DefaultPylonImplementation {
                     monitor.inbox.receive(source, destination, content);
                     lf("Agent " + source + " is leaving");
                     agentList.remove(source);
+                    break;
+                case AGENT_READY_TO_STOP:
+                    System.out.println("Agent stop");
+                    agents_ready_to_stop++;
                     break;
                 default:
                     break;
@@ -150,6 +156,12 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
     @Override
     public boolean stop() {
+
+        System.out.println(agentList);
+        while (agents_ready_to_stop < agentList.size()) {
+            System.out.println("Wait for agents");
+        }
+
         super.stop();
         if(useThread) {
             useThread = false;

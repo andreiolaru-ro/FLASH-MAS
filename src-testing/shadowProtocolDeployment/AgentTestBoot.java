@@ -169,14 +169,14 @@ public class AgentTestBoot {
 
     public static void main(String[] args) throws InterruptedException
     {
-        TestClass test = new TestClass("src-examples/example/shadowProtocolDeployment/RandomTestCases/Test2.json");
+        TestClass test = new TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/Test2.json");
         List<Action> testCase = test.generateTest(10, 5);
-        test.CreateElements();
-        System.out.println();
-        System.out.println();
-        test.runTest(testCase);
-        System.out.println();
-        System.out.println();
-        test.closeConnections();
+//        test.CreateElements();
+//        System.out.println();
+//        System.out.println();
+//        test.runTest(testCase);
+//        System.out.println();
+//        System.out.println();
+//        test.closeConnections();
     }
 }
