@@ -36,27 +36,27 @@ public class Boot {
             System.out.println(node.getName() + " has the following entities: " + node.entityOrder);
         }
 
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            TimeUnit.SECONDS.sleep(2);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         MobileCompositeAgent agentA1 = (MobileCompositeAgent) getAgent(nodes, "agentA1");
 
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            TimeUnit.SECONDS.sleep(2);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         agentA1.moveTo("nodeB");
 
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            TimeUnit.SECONDS.sleep(2);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         for(Node node : nodes) {
             System.out.println(node.getName() + " has the following entities: " + node.entityOrder);
