@@ -109,9 +109,6 @@ public class MonitoringEntity extends Unit implements Entity {
 
     @Override
     public boolean addGeneralContext(EntityProxy context) {
-        if(!(context instanceof MessagingPylonProxy))
-            return false;
-        MessagingPylonProxy pylon = (MessagingPylonProxy) context;
-        return true;
+        return context instanceof MessagingPylonProxy;
     }
 }

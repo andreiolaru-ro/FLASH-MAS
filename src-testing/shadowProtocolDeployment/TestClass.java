@@ -1,18 +1,19 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
-import net.xqhs.flash.core.composite.CompositeAgent;
+import com.google.gson.GsonBuilder;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.shadowProtocol.MessageFactory;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
-import javax.swing.*;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 /**
@@ -119,6 +120,23 @@ class Action {
                 ", type=" + type +
                 '}';
     }
+
+    public String toJsonString() {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        Map<String, String> data = new HashMap<>();
+        data.put("source", source);
+        data.put("destination", destination);
+        data.put("content", content);
+        data.put("type", String.valueOf(type));
+        return gson.toJson(data);
+    }
+
+    public static Action jsonStringToAction(String element) {
+        Object obj = JSONValue.parse(element);
+        JSONObject elem = (JSONObject) obj;
+        return new Action((String) elem.get("source"), (String) elem.get("destination"), (String) elem.get("content"), TestClass.Actions.valueOf((String) elem.get("type")));
+    }
 }
 
 /**
@@ -147,8 +165,8 @@ public class TestClass {
 
     /**
      * Constructor
-     * @param filename
-     *              - the test file
+     *
+     * @param filename - the test file
      */
     public TestClass(String filename) {
         try {
@@ -172,10 +190,8 @@ public class TestClass {
     }
 
     /**
-     * @param givenList
-     *          - the list used to extract an element
-     * @return
-     *          - returns a random element from the given list
+     * @param givenList - the list used to extract an element
+     * @return - returns a random element from the given list
      */
     public String getRandomElement(List<String> givenList) {
         Random rand = new Random();
@@ -184,8 +200,8 @@ public class TestClass {
 
     /**
      * Generate an action of type send_message between the selected agents.
-     * @return
-     *      - returns an Action object.
+     *
+     * @return - returns an Action object.
      */
     public Action sendMessageAction() {
         String source = getRandomElement(agentsList);
@@ -199,8 +215,8 @@ public class TestClass {
 
     /**
      * Generate an action of type move_to_another_node for a selected agent.
-     * @return
-     *      - returns an Action object.
+     *
+     * @return - returns an Action object.
      */
     public Action moveToAnotherNodeAction() {
         String agent = getRandomElement(agentsList);
@@ -210,12 +226,9 @@ public class TestClass {
     }
 
     /**
-     * @param numberOfMessages
-     *          - the number of send_message actions
-     * @param numberOfMoves
-     *          - the number of move actions
-     * @return
-     *          - returns a list of actions
+     * @param numberOfMessages - the number of send_message actions
+     * @param numberOfMoves    - the number of move actions
+     * @return - returns a list of actions
      */
     public List<Action> generateTest(Integer numberOfMessages, Integer numberOfMoves) {
         List<Action> test = new ArrayList<>();
@@ -228,7 +241,7 @@ public class TestClass {
         all_actions.addAll(mess);
         all_actions.addAll(moves);
         Collections.shuffle(all_actions);
-        for (Actions ac: all_actions) {
+        for (Actions ac : all_actions) {
             switch (ac) {
                 case MOVE_TO_ANOTHER_NODE:
                     Action moveAC = moveToAnotherNodeAction();
@@ -239,19 +252,13 @@ public class TestClass {
                     test.add(sendMessageAction());
             }
         }
-
-//        System.out.println();
-//        System.out.println(topology_map.getTopology());
-//        System.out.println();
-//        System.out.println(topology_init.getTopology());
-
-//        for (Action a : test) {
-//            System.out.println(a.toString());
-//        }
         return test;
     }
 
-
+    /**
+     * @param testCase - the list of actions
+     * @return - returns actions for each agent
+     */
     public Map<String, List<Action>> filterActionsBySources(List<Action> testCase) {
         return testCase.stream().collect(Collectors.groupingBy(s -> s.source));
     }
@@ -278,7 +285,11 @@ public class TestClass {
                     CompositeAgentTestBoot.CompositeAgentTest agent_elem = new CompositeAgentTestBoot.CompositeAgentTest(agent + "-" + region.getKey());
                     agent_elem.addContext(pylon_elem.asContext());
                     agent_elem.addShard(new ShadowAgentShard(pylon_elem.HomeServerAddressName, agent_elem.getName()));
-                    agent_elem.addShard(new SendMessageShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL), sortActions.get(agent_elem.getName())));
+
+                    SendMessageShard testingShard = new SendMessageShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
+                    List<String> actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
+                    testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
+                    agent_elem.addShard(testingShard);
                     elements.put(agent, agent_elem);
                 }
             }
@@ -286,76 +297,6 @@ public class TestClass {
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
             if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest) {
                 ((CompositeAgentTestBoot.CompositeAgentTest) elem.getValue()).start();
-            }
-        }
-    }
-
-    public void startTest() {
-        for (Map.Entry<String, Object> elem : elements.entrySet()) {
-            if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest) {
-                var agent_running = (CompositeAgentTestBoot.CompositeAgentTest) elem.getValue();
-                var messaging_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
-                var test_shard = agent_running.getShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
-                if (test_shard instanceof SendMessageShard) {
-                  //  ((SendMessageShard) test_shard).attachMessagingShard(messaging_shard);
-                    test_shard.start();
-                }
-            }
-        }
-    }
-
-    /**
-     * Run all actions previously generated
-     * @param test
-     *      - list of actions
-     */
-    public void runTest(List<Action> test) throws InterruptedException {
-        for (Action action : test) {
-            switch (action.getType()) {
-                case MOVE_TO_ANOTHER_NODE:
-                    //AgentTestBoot.AgentTest agent = (AgentTestBoot.AgentTest) elements.get(action.getSource());
-                    CompositeAgentTestBoot.CompositeAgentTest agent = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getSource());
-                    ShadowPylon dest_pylon = (ShadowPylon) elements.get(action.getDestination());
-
-                    //agent.moveToAnotherNode();
-                    //agent.addContext(dest_pylon.asContext());
-                    //agent.addMessagingShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
-                    //agent.addShard(new ShadowAgentShard(dest_pylon.HomeServerAddressName, agent.getName()));
-                    //agent.reconnect();
-                    break;
-                case SEND_MESSAGE:
-//                    AgentTestBoot.AgentTest source = (AgentTestBoot.AgentTest) elements.get(action.getSource());
-//                    AgentTestBoot.AgentTest dest = (AgentTestBoot.AgentTest) elements.get(action.getDestination());
-                    CompositeAgentTestBoot.CompositeAgentTest source = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getSource());
-                    CompositeAgentTestBoot.CompositeAgentTest dest = (CompositeAgentTestBoot.CompositeAgentTest) elements.get(action.getDestination());
-                    String destination = action.getDestination() + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, action.getDestination());
-                    // source.sendMessage(destination, action.getContent());
-                    break;
-            }
-        }
-    }
-
-    public void waitForAgents() {
-        int count_agents = this.agentsList.size();
-        int check_state = 0;
-        while (check_state < count_agents) {
-            for (Map.Entry<String, Object> elem : elements.entrySet()) {
-                if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest agent) {
-                    if (agent.isRunning()) {
-                        check_state++;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Stop the entities.
-     */
-    public void closeConnections() throws InterruptedException {
-        for (Map.Entry<String, Object> elem : elements.entrySet()) {
-            if (elem.getValue() instanceof ShadowPylon ) {
-                ((ShadowPylon) elem.getValue()).stop();
             }
         }
     }

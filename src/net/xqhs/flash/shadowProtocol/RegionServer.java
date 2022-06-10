@@ -229,7 +229,16 @@ public class RegionServer extends Unit implements Entity {
         System.out.println();
     }
 
+    /**
+     * Class that handles messages according to their type.
+     */
     class MessageHandler {
+        /**
+         * A method that checks if the connection is still open before sending a message.
+         * @param webSocket - the connection with the destination
+         * @param entityName - the destination name
+         * @param message - the message that will be sent
+         */
         public void sendMessage(WebSocket webSocket, String entityName, String message) {
             if (webSocket.isOpen()) {
                 webSocket.send(message);
@@ -237,6 +246,7 @@ public class RegionServer extends Unit implements Entity {
                 le("Connection closed with entity " + entityName);
             }
         }
+
         public void registerMessageHandler(JSONObject mesg, WebSocket webSocket) {
             String new_agent = (String) mesg.get("source");
             lf("Received message from new agent " + new_agent);
@@ -246,6 +256,7 @@ public class RegionServer extends Unit implements Entity {
                 le("An agent with the name" + new_agent + " already exist!");
             }
         }
+
         public void connectMessageHandler(JSONObject mesg, WebSocket webSocket) {
             String arrived_agent = (String) mesg.get("source");
             lf("Received message from mobile agent " + arrived_agent);
@@ -257,11 +268,6 @@ public class RegionServer extends Unit implements Entity {
                         Map<String, String> data = new HashMap<>();
                         data.put("lastLocation", getUnitName());
                         sendMessage(clients.get(homeServer), homeServer, createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
-//                        if (sv.isOpen()) {
-//                            sv.send(createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
-//                        } else {
-//                            le("Connection closed with server " + homeServer);
-//                        }
                     }
                 }
             } else {
@@ -273,11 +279,11 @@ public class RegionServer extends Unit implements Entity {
                     ag.setLastLocation(getUnitName());
                     for (String saved : ag.getMessages()) {
                         sendMessage(ag.getClientConnection(), arrived_agent, saved);
-                        //ag.getClientConnection().send(saved);
                     }
                 }
             }
         }
+
         public void contentMessageHandler(JSONObject mesg, String message) {
             String target = (String) mesg.get("destination");
             li("Message to send from " + mesg.get("source") + " to agent " + target);
@@ -285,11 +291,6 @@ public class RegionServer extends Unit implements Entity {
                 AgentStatus ag = agentsList.get(target);
                 if (ag.getStatus() == AgentStatus.Status.ONLINE || ag.getStatus() == AgentStatus.Status.TRANSITION) {
                     sendMessage(ag.getClientConnection(), target, message);
-//                    if (ag.getClientConnection().isOpen()) {
-//                        ag.getClientConnection().send(message);
-//                    } else {
-//                        le("Connection closed with agent " + target);
-//                    }
                 }
                 if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
                     ag.addMessage(message);
@@ -297,25 +298,23 @@ public class RegionServer extends Unit implements Entity {
             } else {
                 if (mobileAgents.containsKey(target)) {
                     AgentStatus ag = mobileAgents.get(target);
-                    //ag.getClientConnection().send(message);
                     sendMessage(ag.getClientConnection(), target, message);
                 } else {
                     String regServer = (target.split("-"))[1];
                     le("Agent " + target + " location isn't known. Sending message to birth Region-Server " + regServer);
                     if (clients.containsKey(regServer)) {
-                        //clients.get(regServer).send(message);
                         sendMessage(clients.get(regServer), regServer, message);
                     }
                 }
             }
         }
+
         public void reqLeaveMessageHandler(JSONObject mesg) {
             String source = (String) mesg.get("source");
             lf("Request to leave from agent " + source);
             if (agentsList.containsKey(source)) {
                 AgentStatus ag = agentsList.get(source);
                 ag.setStatus(AgentStatus.Status.OFFLINE);
-                //ag.getClientConnection().send(createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
                 sendMessage(ag.getClientConnection(), source, createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
             } else {
                 if (mobileAgents.containsKey(source)) {
@@ -324,11 +323,11 @@ public class RegionServer extends Unit implements Entity {
                         Map<String, String> data = new HashMap<>();
                         data.put("agentName", source);
                         sendMessage(clients.get(homeServer), homeServer, createMessage("", getName(), MessageFactory.MessageType.REQ_BUFFER, data));
-                        //clients.get(homeServer).send(createMessage("", getName(), MessageFactory.MessageType.REQ_BUFFER, data));
                     }
                 }
             }
         }
+
         public void reqBufferMessageHandler(JSONObject mesg) {
             String agentReq = (String) mesg.get("agentName");
             lf("Request to buffer for agent " + agentReq);
@@ -340,20 +339,20 @@ public class RegionServer extends Unit implements Entity {
                 String lastLocation = ag.getLastLocation();
                 if (clients.containsKey(lastLocation)) {
                     sendMessage(clients.get(lastLocation), lastLocation, createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
-                    //(clients.get(lastLocation)).send(createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
                 }
             }
         }
+
         public void reqAcceptMessageHandler(JSONObject mesg) {
             String agentResp = (String) mesg.get("agentName");
             lf("Accept request received from agent " + agentResp);
             if (mobileAgents.containsKey(agentResp)) {
                 AgentStatus ag = mobileAgents.get(agentResp);
                 sendMessage(ag.getClientConnection(), agentResp, createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
-               // ag.getClientConnection().send(createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
                 mobileAgents.remove(agentResp);
             }
         }
+
         public void agentUpdateMessageHandler(JSONObject mesg) {
             String movedAgent = (String) mesg.get("source");
             String new_location = (String) mesg.get("lastLocation");
@@ -366,7 +365,6 @@ public class RegionServer extends Unit implements Entity {
                     for (String saved : ag.getMessages()) {
                         li("Sending saved message: " + saved);
                         sendMessage(clients.get(new_location), new_location, saved);
-                        //clients.get(new_location).send(saved);
                     }
                     ag.getMessages().clear();
                 }

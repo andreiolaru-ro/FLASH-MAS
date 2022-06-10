@@ -28,9 +28,9 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      * The {@link MessageReceiver} instance of this shard.
      */
     public MessageReceiver inbox;
-
-    public final Object lock = new Object();
-
+    /**
+     * the Websocket object connected to Region server.
+     */
     protected WebSocketClient client;
     /**
      * Default constructor
@@ -54,9 +54,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                         pylon.send(source, destination, content);
                         break;
                     case MOVE_TO_ANOTHER_NODE:
-                    case AGENT_READY_TO_STOP:
-                        pylon.send(getName(), destination, content);
-                        break;
                     default:
                         break;
                 }
