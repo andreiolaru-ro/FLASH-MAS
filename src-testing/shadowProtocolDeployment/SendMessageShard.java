@@ -9,8 +9,6 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static shadowProtocolDeployment.Action.jsonStringToAction;
-
 public class SendMessageShard extends AgentShardGeneral {
 
     /**
@@ -24,6 +22,13 @@ public class SendMessageShard extends AgentShardGeneral {
 
         @Override
         public void run() {
+            if (actions == null) {
+                return;
+            }
+            if (index == actions.size()) {
+                action_timer.cancel();
+                return;
+            }
             switch (actions.get(index).getType()) {
                 case MOVE_TO_ANOTHER_NODE:
                     break;
@@ -32,9 +37,6 @@ public class SendMessageShard extends AgentShardGeneral {
                     break;
             }
             index++;
-            if (index == actions.size()) {
-                action_timer.cancel();
-            }
         }
     }
 
@@ -49,11 +51,10 @@ public class SendMessageShard extends AgentShardGeneral {
     Timer action_timer = null;
 
     /**
-     * @param designation - the shard type
      * @see AgentShardCore#AgentShardCore(AgentShardDesignation)
      */
-    protected SendMessageShard(AgentShardDesignation designation) {
-        super(designation);
+    public SendMessageShard() {
+        super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
     }
 
     @Override
@@ -61,8 +62,18 @@ public class SendMessageShard extends AgentShardGeneral {
     {
         if(!super.configure(configuration))
             return false;
-        List<String> test = new ArrayList<>(Arrays.asList(configuration.getAValue("Actions_List").split(";")));
-        actions = test.stream().map(Action::jsonStringToAction).collect(Collectors.toList());
+        if (configuration.getAValue("agent_name") != null) {
+            TestClass test = new TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/Test1.json");
+            List<Action> testCase = test.generateTest(5, 0);
+            Map<String, List<Action>> sortActions = test.filterActionsBySources(testCase);
+            System.out.println(testCase);
+            actions = sortActions.get(configuration.getAValue("agent_name"));
+        }
+
+        if (configuration.getAValue("Actions_List") != null) {
+            List<String> test = new ArrayList<>(Arrays.asList(configuration.getAValue("Actions_List").split(";")));
+            actions = test.stream().map(Action::jsonStringToAction).collect(Collectors.toList());
+        }
         return true;
     }
 

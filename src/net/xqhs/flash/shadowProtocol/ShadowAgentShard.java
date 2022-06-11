@@ -5,6 +5,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -13,9 +14,8 @@ import org.json.simple.JSONValue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.xqhs.flash.shadowProtocol.MessageFactory.*;
 
@@ -32,11 +32,15 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      * the Websocket object connected to Region server.
      */
     protected WebSocketClient client;
+    String serverURI;
+    String name;
     /**
      * Default constructor
      */
-    public ShadowAgentShard(String serverURI, String name) {
-        super();
+    public ShadowAgentShard() {
+    }
+
+    public void startShadowAgentShard() {
         {
             setUnitName(name);
             setLoggerType(PlatformUtils.platformLogType());
@@ -118,6 +122,21 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
+        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
+    }
+
+    @Override
+    public boolean configure(MultiTreeMap configuration)
+    {
+        if(!super.configure(configuration))
+            return false;
+        if (configuration.getAValue("connectTo") != null) {
+            this.serverURI = configuration.getAValue("connectTo");
+        }
+        if (configuration.getAValue("agent_name") != null) {
+            this.name = configuration.getAValue("agent_name");
+        }
+        return true;
     }
 
     @Override
@@ -129,7 +148,9 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         Map<String, String> data = new HashMap<>();
         data.put("destination", target);
         data.put("content", content);
-        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+        if (client != null) {
+            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+        }
         return true;
     }
 
@@ -141,7 +162,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
     @Override
     public void register(String entityName) {
         pylon.register(entityName, inbox);
-        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
+      //  client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
     }
 
     @Override
@@ -157,6 +178,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         super.signalAgentEvent(event);
 
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
+            startShadowAgentShard();
             this.register(getAgent().getEntityName());
         }
 
@@ -178,5 +200,10 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
     @Override
     public String getName() {
         return (getUnitName().split(".messaging"))[0];
+    }
+
+    @Override
+    public String getAgentAddress() {
+        return this.getName();
     }
 }

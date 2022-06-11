@@ -282,11 +282,14 @@ public class TestClass {
                 elements.put(pylon.getKey(), pylon_elem);
 
                 for (String agent : (pylon.getValue())) {
-                    CompositeAgentTestBoot.CompositeAgentTest agent_elem = new CompositeAgentTestBoot.CompositeAgentTest(agent + "-" + region.getKey());
+                    CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent + "-" + region.getKey()));
                     agent_elem.addContext(pylon_elem.asContext());
-                    agent_elem.addShard(new ShadowAgentShard(pylon_elem.HomeServerAddressName, agent_elem.getName()));
+                    ShadowAgentShard mesgShard = new ShadowAgentShard();
+                    mesgShard.configure(new MultiTreeMap().addSingleValue("connectTo", pylon_elem.HomeServerAddressName)
+                            .addSingleValue("agent_name", agent_elem.getName()));
+                    agent_elem.addShard(mesgShard);
 
-                    SendMessageShard testingShard = new SendMessageShard(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
+                    SendMessageShard testingShard = new SendMessageShard();
                     List<String> actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
                     testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
                     agent_elem.addShard(testingShard);
@@ -295,8 +298,8 @@ public class TestClass {
             }
         }
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
-            if (elem.getValue() instanceof CompositeAgentTestBoot.CompositeAgentTest) {
-                ((CompositeAgentTestBoot.CompositeAgentTest) elem.getValue()).start();
+            if (elem.getValue() instanceof CompositeAgentTest) {
+                ((CompositeAgentTest) elem.getValue()).start();
             }
         }
     }

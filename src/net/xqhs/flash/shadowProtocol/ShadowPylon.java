@@ -8,6 +8,7 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.webSocket.WebSocketMessagingShard;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -126,6 +127,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
     @Override
     public boolean start() {
+        System.out.println("ACICI");
         if(hasServer) {
             serverEntity = new RegionServer(serverPort, serverList);
             serverEntity.start();
@@ -178,8 +180,10 @@ public class ShadowPylon extends DefaultPylonImplementation {
     }
 
     @Override
-    public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation) {
-        return null;
+    public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
+        if(shardName.equals(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)))
+            return ShadowAgentShard.class.getName();
+        return super.getRecommendedShardImplementation(shardName);
     }
 
     @Override
