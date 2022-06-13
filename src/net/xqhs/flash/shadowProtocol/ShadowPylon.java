@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 
 public class ShadowPylon extends DefaultPylonImplementation {
@@ -110,8 +111,8 @@ public class ShadowPylon extends DefaultPylonImplementation {
         }
         if(configuration.isSimple("servers")) {
             String s = configuration.getAValue("servers");
-            s = s.substring(1, s.length()-1);
-            serverList = new ArrayList<>(Arrays.asList(s.split(", ")));
+            //s = s.substring(1, s.length()-1);
+            serverList = new ArrayList<>(Arrays.asList(s.split("\\|")));
             String nickname = null;
             if (HomeServerAddressName != null) {
                 nickname = (HomeServerAddressName.split("//"))[1];
@@ -127,7 +128,6 @@ public class ShadowPylon extends DefaultPylonImplementation {
 
     @Override
     public boolean start() {
-        System.out.println("ACICI");
         if(hasServer) {
             serverEntity = new RegionServer(serverPort, serverList);
             serverEntity.start();

@@ -46,12 +46,11 @@ public class Boot
 		args += " -package shadowProtocolDeployment -loader agent:composite";
 
 		args += " -node node1";
-		args += " -pylon Pylon-One classpath:net.xqhs.flash.shadowProtocol.ShadowPylon connectTo:ws://localhost:8885 serverPort:8885 servers:" + test.regionServersList.toString() + " pylon_name:Pylon-One";
-
+		args += " -pylon Pylon-One classpath:net.xqhs.flash.shadowProtocol.ShadowPylon connectTo:ws://localhost:8885 serverPort:8885 servers:" + String.join("|", test.regionServersList) + " pylon_name:Pylon-One";
 		args += " -agent one-localhost:8885 classpath:shadowProtocolDeployment.CompositeAgentTest -shard messaging ShadowAgentShard connectTo:ws://localhost:8885 agent_name:one-localhost:8885 -shard SendMessageShard agent_name:one-localhost:8885";
 
 		args += " -node node2";
-		args += " -pylon Pylon-Two classpath:net.xqhs.flash.shadowProtocol.ShadowPylon connectTo:ws://localhost:8886 serverPort:8886 servers:" + test.regionServersList.toString() + " pylon_name:Pylon-Two";
+		args += " -pylon Pylon-Two classpath:net.xqhs.flash.shadowProtocol.ShadowPylon connectTo:ws://localhost:8886 serverPort:8886 servers:" + String.join("|", test.regionServersList) + " pylon_name:Pylon-Two";
 		args += " -agent two-localhost:8886 classpath:shadowProtocolDeployment.CompositeAgentTest -shard messaging ShadowAgentShard connectTo:ws://localhost:8886 agent_name:two-localhost:8886 -shard SendMessageShard agent_name:two-localhost:8886";
 
 		FlashBoot.main(args.split(" "));

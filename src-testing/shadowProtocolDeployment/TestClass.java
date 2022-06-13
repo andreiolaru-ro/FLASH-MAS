@@ -276,7 +276,7 @@ public class TestClass {
                 pylon_elem.configure(
                         new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + region.getKey())
                                 .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value)
-                                .addSingleValue("servers", regionServersList.toString())
+                                .addSingleValue("servers", String.join("|", regionServersList))
                                 .addSingleValue("pylon_name", pylon.getKey()));
                 pylon_elem.start();
                 elements.put(pylon.getKey(), pylon_elem);

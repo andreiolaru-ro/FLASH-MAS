@@ -64,7 +64,7 @@ public class RegionServer extends Unit implements Entity {
                                     break;
                                 Thread.sleep(space);
                                 tries--;
-                                System.out.println("Tries:" + tries);
+                                le("Tries:" + tries);
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -104,7 +104,22 @@ public class RegionServer extends Unit implements Entity {
      *              - server name
      */
     public void ServerClient(URI serverURI, String nickname) {
-        clients.put(nickname, new WebSocketClient(serverURI) {
+//        le("BEFORE WHILE");
+//        while (true) {
+//            WebSocketClient testConnection = createWebsocketClient(serverURI);
+//            if (testConnection.isOpen()) {
+//                le("CONNECTED");
+//                testConnection.close();
+//                break;
+//            }
+//            testConnection.close();
+//        }
+//        le("AFTER WHILE");
+        clients.put(nickname, createWebsocketClient(serverURI));
+    }
+
+    private WebSocketClient createWebsocketClient(URI serverURI) {
+        return new WebSocketClient(serverURI) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
                 li("New connection from server: " + serverURI);
@@ -127,7 +142,7 @@ public class RegionServer extends Unit implements Entity {
             public void onError(Exception e) {
                 le(Arrays.toString(e.getStackTrace()));
             }
-        });
+        };
     }
 
     /**
