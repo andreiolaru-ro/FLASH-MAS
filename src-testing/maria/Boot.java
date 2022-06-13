@@ -5,20 +5,24 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 
 public class Boot {
+
+    public static final String FUNCTIONALITY = "MOBILITY";
+
     public static void main(String[] args) {
         String test_args = "";
-		test_args += " -package maria example.compositePingPong -loader agent:composite";
+		test_args += " -package maria example.compositePingPong shadowProtocolDeployment -loader agent:composite";
 
         test_args += " -node nodeA";
         test_args += " -pylon webSocket:slaveA serverPort:8888 connectTo:ws://localhost:8888";
 		/*
 		test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingTestComponent otherAgent:agentB1 -shard MonitoringTestShard";
 /*/
-        test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+        test_args += " -agent agentA1 classpath:maria.MobileCompositeAgent -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard -shard MobilityTestShard -shard SendMessageShard";
 //*/
         test_args += " -agent agentA2 -shard messaging -shard MonitoringTestShard";
 
@@ -43,6 +47,7 @@ public class Boot {
 //        }
 
         MobileCompositeAgent agentA1 = (MobileCompositeAgent) getAgent(nodes, "agentA1");
+//        agentA1.postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
 
 //        try {
 //            TimeUnit.SECONDS.sleep(2);
@@ -50,7 +55,7 @@ public class Boot {
 //            e.printStackTrace();
 //        }
 
-        agentA1.moveTo("nodeB");
+//        agentA1.moveTo("nodeB");
 
 //        try {
 //            TimeUnit.SECONDS.sleep(2);

@@ -9,16 +9,14 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static shadowProtocolDeployment.Action.jsonStringToAction;
+
 public class SendMessageShard extends AgentShardGeneral {
 
     /**
      * Send message another agent.
      */
     class ActionTimer extends TimerTask {
-        /**
-         * The message index.
-         */
-        int index = 0;
 
         @Override
         public void run() {
@@ -31,6 +29,7 @@ public class SendMessageShard extends AgentShardGeneral {
             }
             switch (actions.get(index).getType()) {
                 case MOVE_TO_ANOTHER_NODE:
+                    getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
                     break;
                 case SEND_MESSAGE:
                     sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
@@ -41,14 +40,19 @@ public class SendMessageShard extends AgentShardGeneral {
     }
 
     /**
+     * The message index.
+     */
+    int index = 0;
+
+    /**
      * The list of actions that the node needs to execute.
      */
-    List<Action> actions;
+    List<Action> actions = new ArrayList<>();
 
     /**
      * Timer for messaging.
      */
-    Timer action_timer = null;
+    transient Timer action_timer = null;
 
     /**
      * @see AgentShardCore#AgentShardCore(AgentShardDesignation)

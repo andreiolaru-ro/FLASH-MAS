@@ -408,7 +408,7 @@ public class CompositeAgent implements CompositeAgentModel
 	 *                  the event to disseminate.
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
-	protected boolean postAgentEvent(AgentEvent event)
+	public boolean postAgentEvent(AgentEvent event)
 	{
 		// TODO: commented this because agent events may need to be processed further. Think if this is a good idea.
 		// event.lock();
