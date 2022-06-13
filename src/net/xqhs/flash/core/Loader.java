@@ -19,6 +19,7 @@ import java.util.List;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
 
 /**
@@ -243,11 +244,12 @@ public interface Loader<T extends Entity<?>>
 	 *            for classes.
 	 * @return <code>true</code> if the item is found / can be loaded.
 	 */
-	private static boolean loadCheck(String path, SearchItemType searchType, Object... objects) {
+	static boolean loadCheck(String path, SearchItemType searchType, Object... objects)
+	{
 		ClassFactory factory;
 		switch(searchType) {
 		case CLASS:
-			factory = (ClassFactory) objects[0];
+			factory = objects[0] != null ? (ClassFactory) objects[0] : PlatformUtils.getClassFactory();
 			return factory.canLoadClass(path);
 		case FILE:
 			return new File(path).isFile();
@@ -270,7 +272,7 @@ public interface Loader<T extends Entity<?>>
 	 * @param others
 	 * @return the found path.
 	 */
-	private static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
+	static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
 			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
 		String D = searchType == SearchItemType.CLASS ? "." : "/";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();

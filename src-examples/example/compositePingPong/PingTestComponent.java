@@ -28,8 +28,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentShardGeneral
-{
+public class PingTestComponent extends AgentShardGeneral {
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 
@@ -37,11 +36,6 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	class Pinger extends TimerTask
 	{
-		/**
-		 * The index of the message sent.
-		 */
-		int	tick	= 0;
-		
 		@Override
 		public void run()
 		{
@@ -76,7 +70,7 @@ public class PingTestComponent extends AgentShardGeneral
 	/**
 	 * Timer for pinging.
 	 */
-	Timer							pingTimer					= null;
+	transient Timer	pingTimer	= null;
 	/**
 	 * Cache for the name of this agent.
 	 */
@@ -85,6 +79,10 @@ public class PingTestComponent extends AgentShardGeneral
 	 * Cache for the name of the other agent.
 	 */
 	String							otherAgent					= null;
+	/**
+	 * The index of the message sent.
+	 */
+	int				tick		= 0;
 	
 	/**
 	 * Default constructor

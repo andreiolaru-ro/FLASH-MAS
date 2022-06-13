@@ -57,7 +57,7 @@ public class CompositeAgent implements CompositeAgentModel
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link CompositeAgent}.
 	 */
-	class CompositeAgentShardContainer implements ShardContainer, Serializable
+	protected class CompositeAgentShardContainer implements ShardContainer, Serializable
 	{
 		/**
 		 * The serial UID.
@@ -72,7 +72,7 @@ public class CompositeAgent implements CompositeAgentModel
 		 * @param agent
 		 *                  - the agent
 		 */
-		protected CompositeAgentShardContainer(CompositeAgent agent)
+		public CompositeAgentShardContainer(CompositeAgent agent)
 		{
 			this.agent = agent;
 		}
@@ -92,6 +92,8 @@ public class CompositeAgent implements CompositeAgentModel
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation)
 		{
+//			System.out.println("getagentshard from " + this + " is " + shards.get(designation));
+//			System.out.println("getagentshard shards object " + shards);
 			return shards.get(designation);
 		}
 	}
@@ -116,7 +118,7 @@ public class CompositeAgent implements CompositeAgentModel
 	 *
 	 * @author Andrei Olaru
 	 */
-	enum AgentState {
+	protected enum AgentState {
 		/**
 		 * State indicating that the agent is currently behaving normally and agent events are processed in good order.
 		 * All shards are running.
@@ -190,7 +192,7 @@ public class CompositeAgent implements CompositeAgentModel
 	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 * FIXME: support making shards transient and having shards null
 	 */
-	protected Map<AgentShardDesignation, AgentShard>		shards						= new HashMap<>();
+	public Map<AgentShardDesignation, AgentShard>		shards						= new HashMap<>(); // change to protected
 	/**
 	 * A {@link List} that holds the order in which shards were added, to signal agent events to shards in the
 	 * correct order (as specified by {@link AgentSequenceType}).
@@ -647,11 +649,17 @@ public class CompositeAgent implements CompositeAgentModel
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		if(isRunning())
+		if(isRunning()) {
 			return false;
+		}
+
 		agentContext.add(context);
-		for(AgentShard shard : shards.values())
+		System.out.println("adaug pylon in shard din agent");
+		for(AgentShard shard : shards.values()) {
+			System.out.println("adaug pylon in shard " + shard + " " + this.getName());
 			shard.addGeneralContext(context);
+		}
+
 		return true;
 	}
 
@@ -694,11 +702,17 @@ public class CompositeAgent implements CompositeAgentModel
 		if(hasShard(shard.getShardDesignation()))
 			throw new InvalidParameterException(
 					"Cannot add multiple shards for designation [" + shard.getShardDesignation() + "]");
+
+//		if (shard.getShardDesignation().toString().equalsIgnoreCase("messaging")) {
+//			System.out.println("aa adaug messaging shard " + shard);
+//		}
+		System.out.println("Shards before addShard " + shards);
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard.getShardDesignation());
 		shard.addContext(this.asContext());
 		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			shard.addGeneralContext(context);
+		System.out.println("Shards after addShard " + shards);
 		return this;
 	}
 
@@ -827,7 +841,8 @@ public class CompositeAgent implements CompositeAgentModel
 	 */
 	public boolean canAddShards()
 	{
-		return (agentState == AgentState.STOPPED) || (agentState == AgentState.RUNNING);
+		return (agentState == AgentState.STOPPED) || (agentState == AgentState.TRANSIENT)
+				|| (agentState == AgentState.RUNNING);
 	}
 
 	/**

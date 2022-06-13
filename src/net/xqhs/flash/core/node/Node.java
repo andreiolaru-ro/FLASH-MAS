@@ -11,15 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
 import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -36,6 +27,12 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -47,12 +44,22 @@ import net.xqhs.util.logging.Unit;
  */
 public class Node extends Unit implements Entity<Node>
 {
+
+	/**
+	 * The proxy of the node.
+	 */
 	public class NodeProxy implements EntityProxy<Node> {
 		@Override
 		public String getEntityName() {
 			return name;
 		}
 
+		/**
+		 *
+		 * @param destination - name of the destination node
+		 * @param agentName - name of the agent that wants to move
+		 * @param agentData - serialization of the agent
+		 */
 		public void moveAgent(String destination, String agentName, String agentData) {
 			entityOrder.stream()
 					.filter(entity ->
@@ -91,21 +98,10 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT      = "control";
 
-	private MobileCompositeAgent deserializeAgent(String agentData) {
-		MobileCompositeAgent agent = null;
-		ByteArrayInputStream fis;
-		ObjectInputStream in;
-		try {
-			fis = new ByteArrayInputStream(Base64.getDecoder().decode(agentData));
-			in = new ObjectInputStream(fis);
-			agent = (MobileCompositeAgent) in.readObject();
-			in.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return agent;
-	}
+	/**
+	 * The pylon proxy of the node.
+	 */
+	private PylonProxy nodePylonProxy;
 
 	protected ShardContainer proxy = new ShardContainer() {
 
@@ -137,12 +133,11 @@ public class Node extends Unit implements Entity<Node>
 					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
 						String agentData = (String) jo.get("agentData");
 
-						MobileCompositeAgent agent = deserializeAgent(agentData);
-						agent.addGeneralContext(this);
-
-						registeredEntities.get("agent").add(agent);
-						entityOrder.add(agent);
-						agent.startAfterMove();
+						MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
+						registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
+						System.out.println("incerc sa adaug pylon in agent din node");
+						agent.addGeneralContext(nodePylonProxy);
+						agent.start();
 					}
 				}
 //				le("[] cannot properly parse received message.", name);
@@ -237,9 +232,8 @@ public class Node extends Unit implements Entity<Node>
 	protected boolean registerEntitiesToCentralEntity() {
 	    JSONArray operations = configureOperations();
 		JSONArray entities = new JSONArray();
-		registeredEntities.entrySet().forEach(entry-> {
-			String category = entry.getKey();
-			for(Entity<?> entity : entry.getValue()) {
+		registeredEntities.forEach((category, value) -> {
+			for (Entity<?> entity : value) {
 				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
 				entities.add(ent);
 			}
@@ -330,6 +324,7 @@ public class Node extends Unit implements Entity<Node>
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		PylonProxy pylonProxy = (PylonProxy)context;
+		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy
 				.getRecommendedShardImplementation(
 						AgentShardDesignation.standardShard(

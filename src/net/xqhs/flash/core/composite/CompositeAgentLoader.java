@@ -127,10 +127,10 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	 * @param logPre
 	 *            - prefix to add to log entries.
 	 */
-	protected void preloadShard(String shardName, MultiTreeMap shardConfig,
+	public void preloadShard(String shardName, MultiTreeMap shardConfig,
 			List<EntityProxy<? extends Entity<?>>> context, String logPre) {
 		// get shard class
-		String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+		String shardClass = shardConfig == null ? null : shardConfig.get(SHARD_CLASS_PARAMETER);
 		List<String> checked = new LinkedList<>();
 		// test given class, if any
 		if(shardClass != null)
@@ -172,9 +172,12 @@ public class CompositeAgentLoader implements Loader<Agent> {
 		
 		if(classLoader.canLoadClass(shardClass)) {
 			log.lf(logPre + "shard [" + shardName + "] can be loaded");
-			if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
-				shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
-			shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
+			if(shardConfig != null)
+			{
+				if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
+					shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
+				shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
+			}
 		}
 		else {
 			log.le(logPre + "Shard class [" + shardName + " | " + shardClass + "] not found; it will not be loaded.");
@@ -246,7 +249,9 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	 *            - the name of the agent that will contain the shard, used for logging only.
 	 * @return the loaded shard, if successful, <code>null</code> otherwise.
 	 */
-	protected AgentShard loadShard(String shardName, MultiTreeMap shardConfig, String logPre, String agentName) {
+	public AgentShard loadShard(String shardName, MultiTreeMap shardConfig, String logPre, String agentName) {
+		if(shardConfig == null)
+			shardConfig = new MultiTreeMap();
 		String shardClass = shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
 		shardConfig.addAll(CategoryName.PACKAGE.s(), packages);
 		if(shardClass != null)

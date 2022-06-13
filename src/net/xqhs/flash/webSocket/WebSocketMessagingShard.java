@@ -11,6 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
+import org.json.simple.JSONObject;
+
+import maria.NonSerializableShard;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -20,9 +23,6 @@ import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.OperationUtils;
-import org.json.simple.JSONObject;
-
-import java.io.Serializable;
 
 
 /**
@@ -30,7 +30,7 @@ import java.io.Serializable;
  *
  * @author Florina Nastasoiu
  */
-public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements Serializable {
+public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
 	
 	/**
 	 * The serial UID.
@@ -45,7 +45,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	private transient MessagingPylonProxy pylon;
+	private MessagingPylonProxy pylon;
 	
 	/**
 	 * The proxy to this shard, to be used by the pylon.
@@ -57,19 +57,22 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	 */
 	public WebSocketMessagingShard() {
 		super();
-		inbox = new MessageReceiver() {
-			@Override
-			public void receive(String source, String destination, String content) {
-				receiveMessage(source, destination, content);
-			}
-		};
 	}
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(!(context instanceof MessagingPylonProxy))
+		if(!(context instanceof MessagingPylonProxy)) {
 			return false;
+		}
+		if(inbox == null)
+			inbox = new MessageReceiver() {
+				@Override
+				public void receive(String source, String destination, String content) {
+					receiveMessage(source, destination, content);
+				}
+			};
 		pylon = (MessagingPylonProxy) context;
+		System.out.println("Added pylon to messaging shard " + this + " " + pylon);
 		return true;
 	}
 	
@@ -89,6 +92,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	
 	@Override
 	public boolean sendMessage(String target, String source, String content) {
+//		System.out.println("sendmessage from target " + target + " to source " + source + " in messaging shard " + this);
 		return pylon.send(target, source, content);
 	}
 	

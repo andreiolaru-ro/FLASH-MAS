@@ -137,8 +137,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				// entity registration message
 				String newEntity;
 				if(message.get("entityName") != null) {
+					// TODO: corner case when an entity is registered from the same WSPylon but a different node??
+					// TODO: unregister old location?
 					newEntity = (String) message.get("entityName");
-					if(!entityToWebSocket.containsKey(newEntity)) {
+					if(!entityToWebSocket.containsKey(newEntity) || entityToWebSocket.get(newEntity) != webSocket) {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);
 					}

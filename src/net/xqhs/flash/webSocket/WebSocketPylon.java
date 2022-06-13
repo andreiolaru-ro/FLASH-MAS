@@ -116,6 +116,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
 			messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
 			webSocketClient.send(messageToServer.toString());
+			lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
 			return true;
 		}
 		
@@ -266,7 +267,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 							String destination = (String) jsonObject.get("destination");
 							String localAddr = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
 							if(!messageReceivers.containsKey(localAddr) || messageReceivers.get(localAddr) == null)
-								le("Entity [] does not exist in the scope of this pylon.", localAddr);
+								le("Entity [] does not exist in the scope of this pylon [].", localAddr, thisPylon());
 							else {
 								String source = (String) jsonObject.get("source");
 								String content = (String) jsonObject.get("content");
@@ -387,5 +388,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	@Override
 	protected void li(String message, Object... arguments) {
 		super.li(message, arguments);
+	}
+	
+	WebSocketPylon thisPylon() {
+		return this;
 	}
 }
