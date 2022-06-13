@@ -2,6 +2,8 @@ package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.MessageFactory;
@@ -280,6 +282,11 @@ public class TestClass {
                                 .addSingleValue("pylon_name", pylon.getKey()));
                 pylon_elem.start();
                 elements.put(pylon.getKey(), pylon_elem);
+
+                Node node = new Node(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node-" + pylon.getKey()));
+                node.addGeneralContext(pylon_elem.asContext());
+                node.start();
+                elements.put("node-" + pylon.getKey(), node);
 
                 for (String agent : (pylon.getValue())) {
                     CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent + "-" + region.getKey()));
