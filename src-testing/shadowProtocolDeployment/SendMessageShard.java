@@ -9,44 +9,46 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static shadowProtocolDeployment.Action.jsonStringToAction;
-
 public class SendMessageShard extends AgentShardGeneral {
 
     /**
      * Send message another agent.
      */
     class ActionTimer extends TimerTask {
-        /**
-         * The message index.
-         */
-        int index = 0;
 
         @Override
         public void run() {
+            if (index == actions.size()) {
+                action_timer.cancel();
+                return;
+            }
+
             switch (actions.get(index).getType()) {
                 case MOVE_TO_ANOTHER_NODE:
+                    getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
                     break;
                 case SEND_MESSAGE:
                     sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
                     break;
             }
             index++;
-            if (index == actions.size()) {
-                action_timer.cancel();
-            }
         }
     }
 
     /**
+     * The message index.
+     */
+    int index = 0;
+
+    /**
      * The list of actions that the node needs to execute.
      */
-    List<Action> actions;
+    List<Action> actions = new ArrayList<>();
 
     /**
      * Timer for messaging.
      */
-    Timer action_timer = null;
+    transient Timer action_timer = null;
 
     /**
      * @param designation - the shard type
@@ -56,11 +58,22 @@ public class SendMessageShard extends AgentShardGeneral {
         super(designation);
     }
 
+    public SendMessageShard() {
+        super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
+        Action action = new Action("agentA1", "nodeB", "", Action.Actions.MOVE_TO_ANOTHER_NODE);
+
+        actions.add(action);
+
+    }
+
     @Override
     public boolean configure(MultiTreeMap configuration)
     {
         if(!super.configure(configuration))
             return false;
+        if (configuration.getAValue("Actions_List") == null) {
+            return true;
+        }
         List<String> test = new ArrayList<>(Arrays.asList(configuration.getAValue("Actions_List").split(";")));
         actions = test.stream().map(Action::jsonStringToAction).collect(Collectors.toList());
         return true;

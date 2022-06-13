@@ -1,143 +1,16 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.shadowProtocol.MessageFactory;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-
-/**
- * Class used in parsing the Json file that contains the topology.
- */
-class Topology {
-    private Map<String, Map<String, List<String>>> topology;
-
-    public enum GetterType {
-        GET_PYLON_FOR_AGENT,
-        GET_SERVER_FOR_AGENT,
-        GET_SERVER_FOR_PYLON,
-    }
-
-    public Map<String, Map<String, List<String>>> getTopology() {
-        return topology;
-    }
-
-    public void setTopology(Map<String, Map<String, List<String>>> topology) {
-        this.topology = topology;
-    }
-
-    public String getter(GetterType type, String entity) {
-        for (Map.Entry<String, Map<String, List<String>>> region : topology.entrySet()) {
-            for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
-                switch (type) {
-                    case GET_PYLON_FOR_AGENT:
-                        if ((pylon.getValue()).contains(entity)) return pylon.getKey();
-                        break;
-                    case GET_SERVER_FOR_AGENT:
-                        if ((pylon.getValue()).contains(entity)) return region.getKey();
-                        break;
-                    case GET_SERVER_FOR_PYLON:
-                        if((pylon.getKey()).equals(entity)) return region.getKey();
-                        break;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void topologyAfterMove(Action moveAction) {
-        String nextPylon = moveAction.getDestination();
-        String prevPylon = getter(GetterType.GET_PYLON_FOR_AGENT, moveAction.source);
-        String agent = moveAction.source;
-        topology.get(getter(GetterType.GET_SERVER_FOR_PYLON, nextPylon)).get(nextPylon).add(agent);
-        topology.get(getter(GetterType.GET_SERVER_FOR_PYLON, prevPylon)).get(prevPylon).remove(agent);
-        System.out.println(topology);
-    }
-}
-
-/**
- * Class that describe an action.
- */
-class Action {
-    String source, destination, content;
-    TestClass.Actions type;
-
-    public Action(String source, String destination, String content, TestClass.Actions type) {
-        this.source = source;
-        this.destination = destination;
-        this.content = content;
-        this.type = type;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public TestClass.Actions getType() {
-        return type;
-    }
-
-    public void setType(TestClass.Actions type) {
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return "Action{" +
-                "source='" + source + '\'' +
-                ", destination='" + destination + '\'' +
-                ", content='" + content + '\'' +
-                ", type=" + type +
-                '}';
-    }
-
-    public String toJsonString() {
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-        Map<String, String> data = new HashMap<>();
-        data.put("source", source);
-        data.put("destination", destination);
-        data.put("content", content);
-        data.put("type", String.valueOf(type));
-        return gson.toJson(data);
-    }
-
-    public static Action jsonStringToAction(String element) {
-        Object obj = JSONValue.parse(element);
-        JSONObject elem = (JSONObject) obj;
-        return new Action((String) elem.get("source"), (String) elem.get("destination"), (String) elem.get("content"), TestClass.Actions.valueOf((String) elem.get("type")));
-    }
-}
 
 /**
  * Class that generates and execute tests.
@@ -151,17 +24,6 @@ public class TestClass {
     static Integer index_message = 0;
 
     private final Map<String, Object> elements = new HashMap<>();
-
-    public enum Actions {
-        /**
-         * An agent sends a message to another agent.
-         */
-        SEND_MESSAGE,
-        /**
-         * An agent moves on another node.
-         */
-        MOVE_TO_ANOTHER_NODE
-    }
 
     /**
      * Constructor
@@ -210,7 +72,7 @@ public class TestClass {
         String destination = getRandomElement(copy);
         String complete_dest = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
         String complete_source = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
-        return new Action(complete_source, complete_dest, "Message " + index_message++, Actions.SEND_MESSAGE);
+        return new Action(complete_source, complete_dest, "Message " + index_message++, Action.Actions.SEND_MESSAGE);
     }
 
     /**
@@ -222,7 +84,7 @@ public class TestClass {
         String agent = getRandomElement(agentsList);
         List<String> copy = new ArrayList<>(pylonsList);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
-        return new Action(agent, getRandomElement(copy), "", Actions.MOVE_TO_ANOTHER_NODE);
+        return new Action(agent, getRandomElement(copy), "", Action.Actions.MOVE_TO_ANOTHER_NODE);
     }
 
     /**
@@ -232,16 +94,16 @@ public class TestClass {
      */
     public List<Action> generateTest(Integer numberOfMessages, Integer numberOfMoves) {
         List<Action> test = new ArrayList<>();
-        List<Actions> mess = new ArrayList<>(Arrays.asList(new Actions[numberOfMessages]));
-        List<Actions> moves = new ArrayList<>(Arrays.asList(new Actions[numberOfMoves]));
-        List<Actions> all_actions = new ArrayList<>();
+        List<Action.Actions> mess = new ArrayList<>(Arrays.asList(new Action.Actions[numberOfMessages]));
+        List<Action.Actions> moves = new ArrayList<>(Arrays.asList(new Action.Actions[numberOfMoves]));
+        List<Action.Actions> all_actions = new ArrayList<>();
 
-        Collections.fill(mess, Actions.SEND_MESSAGE);
-        Collections.fill(moves, Actions.MOVE_TO_ANOTHER_NODE);
+        Collections.fill(mess, Action.Actions.SEND_MESSAGE);
+        Collections.fill(moves, Action.Actions.MOVE_TO_ANOTHER_NODE);
         all_actions.addAll(mess);
         all_actions.addAll(moves);
         Collections.shuffle(all_actions);
-        for (Actions ac : all_actions) {
+        for (Action.Actions ac : all_actions) {
             switch (ac) {
                 case MOVE_TO_ANOTHER_NODE:
                     Action moveAC = moveToAnotherNodeAction();

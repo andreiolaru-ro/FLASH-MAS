@@ -54,10 +54,10 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 	 */
     public static final String TARGET = "TARGET";
 
-	/**
-	 * The proxy to this agent.
-	 */
-	protected EntityProxy<Agent> asContext = new MobileCompositeAgentShardContainer(this);
+//	/**
+//	 * The proxy to this agent.
+//	 */
+//	protected EntityProxy<Agent> asContext = new MobileCompositeAgentShardContainer(this);
 
 	/**
 	 * Map with {@link AgentShardDesignation}/Serialization of shards, for reloading them after moving
@@ -109,10 +109,12 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 	}
 
 	public MobileCompositeAgent() {
+		asContext = new MobileCompositeAgentShardContainer(this);
 	}
 
 	public MobileCompositeAgent(MultiTreeMap configuration) {
 		super(configuration);
+		asContext = new MobileCompositeAgentShardContainer(this);
 	}
 
 	/**
