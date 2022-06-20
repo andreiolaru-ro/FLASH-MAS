@@ -1,14 +1,11 @@
 package net.xqhs.flash.http;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import com.sun.net.httpserver.*;
 import net.xqhs.flash.core.node.Node;
@@ -20,6 +17,10 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONValue;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import static java.text.MessageFormat.format;
 
@@ -34,6 +35,10 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
      * The {@link WebSocketServer} instance.
      */
     private HttpServer httpServer;
+    
+    private boolean isHttps;
+    
+    private HttpsServer httpsServer;
     /**
      * <code>true</code> if the server is currently running.
      */
@@ -92,27 +97,72 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
             }
         }
     }
+    
+    public HttpServerEntity(HttpPylon pylon) {
+        this(pylon, false, null);
+    }
 
     /**
      * Creates a Http server instance. It must be started with {@link #start()}.
      * @param pylon the pylon reference
+     * @param isHttps if server should be configured with TLS
+     * @param certificatePath certificate of the HTTPS server
      */
-    public HttpServerEntity(HttpPylon pylon) {
+    public HttpServerEntity(HttpPylon pylon, boolean isHttps, String certificatePath) {
         this.pylon = pylon;
-        pylon.li(format("Starting http server on port: {0}, resources: {1}", pylon.getServerPort(), pylon.getResourceNames()));
+        this.isHttps = isHttps;
+        pylon.li(format("Starting {0} server on port: {1}, resources: {2}", isHttps ? "https" : "http", pylon.getServerPort(), pylon.getResourceNames()));
+        if (isHttps) {
+            createHttpsServer(certificatePath);
+        } else {
+            createHttpServer();
+        }
+    }
+    
+    private void createHttpServer() {
         try {
             httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(pylon.getServerPort()), 0);
             pylon.getResourceNames().forEach(resource -> httpServer.createContext("/" + resource, new CustomHttpHandler()));
-            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-            httpServer.setExecutor(threadPoolExecutor);
+            httpServer.setExecutor(Executors.newFixedThreadPool(10));
         } catch (IOException e) {
             le(e.getMessage());
         }
     }
+    
+    private void createHttpsServer(String certPath) {
+        try (InputStream fis = this.getClass().getResourceAsStream(certPath)){
+            httpsServer = HttpsServer.create(new InetSocketAddress(pylon.getServerPort()), 0);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            char[] password = "password".toCharArray();
+            KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(fis, password);
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, password);
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            HttpsConfigurator httpsConfigurator = new HttpsCustomConfigurator(sslContext);
+            httpsServer.setHttpsConfigurator(httpsConfigurator);
+            httpsServer.setExecutor(Executors.newFixedThreadPool(10));
+            pylon.getResourceNames().forEach(resource -> httpsServer.createContext("/" + resource, new CustomHttpHandler()));
+        }
+        catch (Exception e)
+        {
+            le(e.getMessage());
+        }
+    }
+    
 
     @Override
     public boolean start() {
-        httpServer.start();
+        if (isHttps) {
+            httpsServer.start();
+        } else {
+            httpServer.start();
+        }
         running = true;
         return true;
     }
@@ -122,7 +172,11 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
      */
     @Override
     public boolean stop() {
-        httpServer.stop(SERVER_STOP_TIME);
+        if (isHttps) {
+            httpsServer.stop(SERVER_STOP_TIME);
+        } else {
+            httpServer.stop(SERVER_STOP_TIME);
+        }
         running = false;
         li("server successfully stopped.");
         return true;

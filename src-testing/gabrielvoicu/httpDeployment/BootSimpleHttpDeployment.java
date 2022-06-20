@@ -2,7 +2,7 @@ package gabrielvoicu.httpDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
-public class BootSimpleDeployment
+public class BootSimpleHttpDeployment
 {
 	public static void main(String[] args_)
 	{

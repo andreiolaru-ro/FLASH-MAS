@@ -1,10 +1,19 @@
 package net.xqhs.flash.http;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
@@ -19,6 +28,9 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 public class HttpPylon extends DefaultPylonImplementation
 {
@@ -59,13 +71,35 @@ public class HttpPylon extends DefaultPylonImplementation
     public static final String HTTP_SERVER_PORT_NAME = "serverPort";
     
     public static final String HTTP_SERVER_HOST_NAME = "serverHost";
+
+    public static final String TRUSTED_CA = "trustedCa";
+    
+    public static final String IS_HTTPS = "https";
+    
+    public static final String HTTPS_CERTIFICATE = "cert";
     
     /**
      * The prefix for Http server address.
      */
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
 
+    /**
+     * The prefix for the HTTPS server address
+     */
+    public static final String HTTPS_PROTOCOL_PREFIX = "https://";
+
     protected int serverPort = -1;
+
+    /**
+     * If server supports HTTPS
+     */
+    protected boolean isHttps = false;
+
+    protected String trustedCaPath;
+    /**
+     * Path to the JKS file containing the certificate
+     */
+    protected String httpsCertificatePath;
     
     protected String serverHostname = "localhost";
 
@@ -134,9 +168,10 @@ public class HttpPylon extends DefaultPylonImplementation
             }
             try
             {
+                String sourceAddress = (isHttps ? HTTPS_PROTOCOL_PREFIX: HTTP_PROTOCOL_PREFIX) + serverHostname + ":" + serverPort;
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                     .header("Content-Type", "text/plain;charset=UTF-8")
-                    .header("sourceAddress", HTTP_PROTOCOL_PREFIX + serverHostname + ":" + serverPort)
+                    .header("sourceAddress", sourceAddress)
                     .uri(new URI(remoteDestinationUrl))
                     .POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString()))
                     .build();
@@ -183,20 +218,49 @@ public class HttpPylon extends DefaultPylonImplementation
     
     @Override
     public boolean start() {
-        serverEntity = new HttpServerEntity(this);
+        serverEntity = new HttpServerEntity(this, isHttps, httpsCertificatePath);
         serverEntity.start();
         
         Properties properties = System.getProperties();
         properties.setProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
         
-        httpClient = HttpClient.newBuilder()
+        HttpClient.Builder builder = HttpClient.newBuilder()
             .executor(asyncMessagesExecutorService)
             .version(HttpClient.Version.HTTP_1_1)
             .followRedirects(HttpClient.Redirect.NORMAL)
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+            .connectTimeout(Duration.ofSeconds(10));
         
+        if (trustedCaPath != null) {
+            builder.sslContext(initClientSslContext());
+        }
+        httpClient = builder.build();
         return true;
+    }
+    
+    public SSLContext initClientSslContext() {
+        X509Certificate cert;
+        try (InputStream pemFileStream = this.getClass().getResourceAsStream(trustedCaPath)) {
+            CertificateFactory certFactory = CertificateFactory.getInstance("X509");
+            cert = (X509Certificate) certFactory.generateCertificate(pemFileStream);
+            //create truststore
+            KeyStore trustStore = KeyStore.getInstance("JKS");
+            trustStore.load(null);
+            String alias = cert.getSubjectX500Principal().getName() + "["
+                + cert.getSubjectX500Principal().getName().hashCode() + "]";
+            trustStore.setCertificateEntry(alias, cert);
+            TrustManagerFactory trustManagerFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+            return sslContext;
+        }
+        catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException e)
+        {
+            le("An error occurred while building the SSL Context");
+            le(e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -214,6 +278,12 @@ public class HttpPylon extends DefaultPylonImplementation
         if(configuration.isSimple(HTTP_SERVER_PORT_NAME)) {
             serverPort = Integer.parseInt(configuration.getAValue(HTTP_SERVER_PORT_NAME));
         }
+        if (configuration.isSimple(IS_HTTPS)) {
+            isHttps = Boolean.parseBoolean(configuration.getAValue(IS_HTTPS));
+            if (isHttps) {
+                httpsCertificatePath = configuration.getAValue(HTTPS_CERTIFICATE);
+            }
+        }
         if(configuration.isSimple(HTTP_SERVER_HOST_NAME)) {
             serverHostname = configuration.getAValue(HTTP_SERVER_HOST_NAME);
         }
@@ -226,6 +296,9 @@ public class HttpPylon extends DefaultPylonImplementation
             String remoteUrl = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);
             String remoteDestination = remoteUrl.substring(remoteUrl.lastIndexOf("/") + 1);
             serviceRegistry.put(remoteDestination, remoteUrl);
+        }
+        if (configuration.isSimple(TRUSTED_CA)) {
+            trustedCaPath = configuration.getAValue(TRUSTED_CA);
         }
         if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)) {
             name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
