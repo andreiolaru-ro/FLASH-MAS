@@ -8,15 +8,14 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.webSocket.WebSocketMessagingShard;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.StreamSupport;
+
+import static net.xqhs.flash.shadowProtocol.MessageFactory.*;
 
 
 public class ShadowPylon extends DefaultPylonImplementation {
@@ -46,6 +45,10 @@ public class ShadowPylon extends DefaultPylonImplementation {
             if(!agentList.containsKey(entityName)) {
                 agentList.put(entityName, receiver);
             }
+            Map<String, String> data = new HashMap<>();
+            data.put("server", HomeServerAddressName);
+            data.put("action", String.valueOf(ActionType.RECEIVE_MESSAGE));
+            receiver.receive(getEntityName(), entityName, createMessage(getEntityName(), entityName, MessageType.CONTENT, data));
             return true;
         }
 

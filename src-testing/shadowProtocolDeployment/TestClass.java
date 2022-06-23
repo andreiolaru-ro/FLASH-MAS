@@ -1,7 +1,9 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
+import maria.MobilityTestShard;
+import net.xqhs.flash.core.*;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
@@ -82,9 +84,12 @@ public class TestClass {
      */
     public Action moveToAnotherNodeAction() {
         String agent = getRandomElement(agentsList);
+        String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
         List<String> copy = new ArrayList<>(pylonsList);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
-        return new Action(agent, getRandomElement(copy), "", Action.Actions.MOVE_TO_ANOTHER_NODE);
+        String pylon = getRandomElement(copy);
+        String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
+        return new Action(agent_complete, pylon_complete, "", Action.Actions.MOVE_TO_ANOTHER_NODE);
     }
 
     /**
@@ -134,37 +139,60 @@ public class TestClass {
         for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
             for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                 String port_value = ((region.getKey()).split(":"))[1];
+                String server_name = region.getKey();
+                String pylon_name = pylon.getKey();
+                String node_name = "node-" + pylon_name + "-" + server_name;
+
+                // CREATE PYLON
                 ShadowPylon pylon_elem = new ShadowPylon();
                 pylon_elem.configure(
-                        new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + region.getKey())
+                        new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
                                 .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value)
                                 .addSingleValue("servers", String.join("|", regionServersList))
-                                .addSingleValue("pylon_name", pylon.getKey()));
+                                .addSingleValue("pylon_name", pylon_name));
                 pylon_elem.start();
                 elements.put(pylon.getKey(), pylon_elem);
 
-                Node node = new Node(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node-" + pylon.getKey()));
+                // CREATE NODE
+                Node node = new Node(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
+                        .addSingleValue("region-server", "ws://" + server_name));
                 node.addGeneralContext(pylon_elem.asContext());
-                node.start();
-                elements.put("node-" + pylon.getKey(), node);
+                elements.put(node_name, node);
 
+                // CREATE AGENTS
                 for (String agent : (pylon.getValue())) {
-                    CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent + "-" + region.getKey()));
+                    String agent_name = agent + "-" + region.getKey();
+                    CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent_name));
+
+                    // ADD CONTEXT
                     agent_elem.addContext(pylon_elem.asContext());
+                    agent_elem.addGeneralContext(node.asContext());
+
+                    // ADD SHARDS
                     ShadowAgentShard mesgShard = new ShadowAgentShard();
                     mesgShard.configure(new MultiTreeMap().addSingleValue("connectTo", pylon_elem.HomeServerAddressName)
-                            .addSingleValue("agent_name", agent_elem.getName()));
+                            .addSingleValue("agent_name", agent_elem.getName())
+                            .addSingleValue(SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
                     agent_elem.addShard(mesgShard);
 
                     SendMessageShard testingShard = new SendMessageShard();
-                    List<String> actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
+                    List<String> actionsToString = new ArrayList<>(List.of(""));
+                    if (sortActions.get(agent_elem.getName()) != null) {
+                        actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
+                    }
                     testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
                     agent_elem.addShard(testingShard);
+
+                    agent_elem.addShard(new MobilityTestShard());
+
                     elements.put(agent, agent_elem);
                 }
             }
         }
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
+            if (elem.getValue() instanceof Node) {
+                ((Node) elem.getValue()).start();
+            }
             if (elem.getValue() instanceof CompositeAgentTest) {
                 ((CompositeAgentTest) elem.getValue()).start();
             }

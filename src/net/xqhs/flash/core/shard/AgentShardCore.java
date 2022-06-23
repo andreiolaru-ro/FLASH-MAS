@@ -255,7 +255,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 //			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		System.out.println("ParentAgent added in shard " + parent);
+		//System.out.println("ParentAgent added in shard " + parent);
 		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;

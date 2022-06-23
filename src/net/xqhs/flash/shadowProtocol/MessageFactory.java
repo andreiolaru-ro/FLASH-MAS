@@ -45,6 +45,11 @@ public class MessageFactory {
          * Contains the next fields: type, node (pylon name), source (sender server name)
          */
         REQ_ACCEPT,
+        /**
+         * Message sent from a Node to another Node
+         * Contains the agent in serialized form
+         */
+        AGENT_CONTENT,
     }
 
     public enum ActionType {
@@ -91,6 +96,7 @@ public class MessageFactory {
             case REQ_LEAVE:
             case REQ_ACCEPT:
             case AGENT_UPDATE:
+            case AGENT_CONTENT:
                 if (content != null) data.putAll(content);
                 break;
             default:

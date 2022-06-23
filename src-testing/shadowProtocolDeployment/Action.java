@@ -90,7 +90,10 @@ class Action implements Serializable {
 	public static Action jsonStringToAction(String element) {
 		Object obj = JSONValue.parse(element);
 		JSONObject elem = (JSONObject) obj;
-		return new Action((String) elem.get("source"), (String) elem.get("destination"), (String) elem.get("content"), Actions.valueOf((String) elem.get("type")));
+		if (elem != null) {
+			return new Action((String) elem.get("source"), (String) elem.get("destination"), (String) elem.get("content"), Actions.valueOf((String) elem.get("type")));
+		}
+		return null;
 	}
 
 

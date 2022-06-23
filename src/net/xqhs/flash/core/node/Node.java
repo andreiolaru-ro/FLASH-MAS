@@ -26,6 +26,8 @@ import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.shadowProtocol.MessageFactory;
+import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.util.logging.Unit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -103,7 +105,9 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	private PylonProxy nodePylonProxy;
 
-	protected ShardContainer proxy = new ShardContainer() {
+	protected String serverURI = null;
+
+	public ShardContainer proxy = new ShardContainer() {
 
 		/**
 		 * This method parses the content received and takes further control/monitoring decisions.
@@ -135,12 +139,14 @@ public class Node extends Unit implements Entity<Node>
 
 						MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
 						registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
-						System.out.println("incerc sa adaug pylon in agent din node");
-						agent.addGeneralContext(nodePylonProxy);
+						//System.out.println("incerc sa adaug pylon in agent din node");
+						//agent.addGeneralContext(nodePylonProxy);
+						li("Started agent after moving " + agent.getName());
+						agent.addGeneralContext(asContext());
+						agent.addContext(nodePylonProxy);
 						agent.start();
 					}
 				}
-//				le("[] cannot properly parse received message.", name);
 			}
 		}
 
@@ -180,8 +186,10 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	public Node(MultiTreeMap nodeConfiguration)
 	{
-		if(nodeConfiguration != null)
+		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+			this.serverURI = nodeConfiguration.get("region-server");
+		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
@@ -271,6 +279,9 @@ public class Node extends Unit implements Entity<Node>
 			else
 				le("failed to start entity [].", entityName);
 		}
+		if (messagingShard instanceof ShadowAgentShard) {
+			((ShadowAgentShard) messagingShard).startShadowAgentShard(MessageFactory.MessageType.REGISTER);
+		}
 		isRunning = true;
 		sendStatusUpdate();
 		li("Node [] started.", name);
@@ -341,6 +352,8 @@ public class Node extends Unit implements Entity<Node>
 			le("Unable to construct node messaging shard: ", PlatformUtils.printException(e));
 		}
 		messagingShard.addContext(proxy);
+		messagingShard.configure(new MultiTreeMap().addSingleValue("connectTo", this.serverURI)
+				.addSingleValue("agent_name", getName()));
 		li("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
@@ -375,6 +388,7 @@ public class Node extends Unit implements Entity<Node>
 	 * 						- an indication of success
 	 */
 	public boolean sendMessage(String destination, String content) {
+		le("SEND MESSAGE WITH AGENT");
 		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, SHARD_ENDPOINT),

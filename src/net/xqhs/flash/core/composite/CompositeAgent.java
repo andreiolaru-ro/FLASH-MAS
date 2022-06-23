@@ -654,9 +654,9 @@ public class CompositeAgent implements CompositeAgentModel
 		}
 
 		agentContext.add(context);
-		System.out.println("adaug pylon in shard din agent");
+		//System.out.println("adaug pylon in shard din agent");
 		for(AgentShard shard : shards.values()) {
-			System.out.println("adaug pylon in shard " + shard + " " + this.getName());
+			//System.out.println("adaug pylon in shard " + shard + " " + this.getName());
 			shard.addGeneralContext(context);
 		}
 
@@ -706,13 +706,13 @@ public class CompositeAgent implements CompositeAgentModel
 //		if (shard.getShardDesignation().toString().equalsIgnoreCase("messaging")) {
 //			System.out.println("aa adaug messaging shard " + shard);
 //		}
-		System.out.println("Shards before addShard " + shards);
+		//System.out.println("Shards before addShard " + shards);
 		shards.put(shard.getShardDesignation(), shard);
 		shardOrder.add(shard.getShardDesignation());
 		shard.addContext(this.asContext());
 		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			shard.addGeneralContext(context);
-		System.out.println("Shards after addShard " + shards);
+		//System.out.println("Shards after addShard " + shards);
 		return this;
 	}
 

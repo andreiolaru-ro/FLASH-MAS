@@ -9,9 +9,9 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static shadowProtocolDeployment.Action.jsonStringToAction;
-
 public class SendMessageShard extends AgentShardGeneral {
+
+    public static final String TARGET = "TARGET";
 
     /**
      * Send message another agent.
@@ -27,11 +27,20 @@ public class SendMessageShard extends AgentShardGeneral {
                 action_timer.cancel();
                 return;
             }
+            if (actions.get(index) == null) {
+                action_timer.cancel();
+                return;
+            }
             switch (actions.get(index).getType()) {
                 case MOVE_TO_ANOTHER_NODE:
-                    getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE));
+                    li("MOVE_TO_ANOTHER_NODE");
+                    action_timer.cancel();
+                    AgentEvent move_event = new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE);
+                    move_event.add(TARGET, "node-" + actions.get(index).getDestination());
+                    getAgent().postAgentEvent(move_event);
                     break;
                 case SEND_MESSAGE:
+                    li("SEND_MESSAGE");
                     sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
                     break;
             }
@@ -70,7 +79,6 @@ public class SendMessageShard extends AgentShardGeneral {
             TestClass test = new TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/Test1.json");
             List<Action> testCase = test.generateTest(5, 0);
             Map<String, List<Action>> sortActions = test.filterActionsBySources(testCase);
-            System.out.println(testCase);
             actions = sortActions.get(configuration.getAValue("agent_name"));
         }
 

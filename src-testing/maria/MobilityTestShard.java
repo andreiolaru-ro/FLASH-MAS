@@ -12,9 +12,10 @@ public class MobilityTestShard extends AgentShardGeneral {
 	class MobilityTimer extends TimerTask
 	{
 		@Override
-		public void run()
-		{
-			((MobileCompositeAgent.MobileCompositeAgentShardContainer)getAgent()).moveTo("nodeB");
+		public void run() {
+			if (destination != null) {
+				((MobileCompositeAgent.MobileCompositeAgentShardContainer) getAgent()).moveTo(destination);
+			}
 		}
 	}
 
@@ -22,6 +23,9 @@ public class MobilityTestShard extends AgentShardGeneral {
 	 * Timer for moving.
 	 */
 	transient Timer	pingTimer	= null;
+
+	String destination = null;
+	public static final String TARGET = "TARGET";
 
 	public MobilityTestShard() {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
@@ -31,11 +35,10 @@ public class MobilityTestShard extends AgentShardGeneral {
 	public void signalAgentEvent(AgentEvent event)
 	{
 		super.signalAgentEvent(event);
-		System.out.println("######## Event in MobilityTestShard: " + event);
 
 		switch (event.getType()) {
 			case BEFORE_MOVE -> {
-				System.out.println("buna ziua");
+				destination = event.getValue(TARGET);
 				pingTimer = new Timer();
 				pingTimer.schedule(new MobilityTimer(), 5000);
 			}

@@ -1,7 +1,11 @@
 package net.xqhs.flash.shadowProtocol;
 
+import maria.NonSerializableShard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -19,11 +23,12 @@ import java.util.stream.Collectors;
 
 import static net.xqhs.flash.shadowProtocol.MessageFactory.*;
 
-public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
+public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
     /**
      * Reference to the local pylon proxy
      */
     private MessagingPylonProxy pylon =     null;
+
     /**
      * The {@link MessageReceiver} instance of this shard.
      */
@@ -38,13 +43,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
      * Default constructor
      */
     public ShadowAgentShard() {
-    }
-
-    public void startShadowAgentShard() {
-        {
-            setUnitName(name);
-            setLoggerType(PlatformUtils.platformLogType());
-        }
         inbox = new MessageReceiver() {
             @Override
             public void receive(String source, String destination, String content) {
@@ -54,6 +52,12 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                 String type = (String) mesg.get("action");
                 switch (MessageFactory.ActionType.valueOf(type)) {
                     case RECEIVE_MESSAGE:
+                        String server = (String) mesg.get("server");
+                        if (server != null) {
+                            serverURI = server;
+                            li("After moving connect to " + serverURI);
+                            break;
+                        }
                         receiveMessage(source, destination, (String) mesg.get("content"));
                         pylon.send(source, destination, content);
                         break;
@@ -63,6 +67,13 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                 }
             }
         };
+    }
+
+    public void startShadowAgentShard(MessageType connection_type) {
+        {
+            setUnitName(name);
+            setLoggerType(PlatformUtils.platformLogType());
+        }
         try {
             int tries = 10;
             long space = 1000;
@@ -81,7 +92,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                             JSONObject message = (JSONObject) obj;
                             String str = (String) message.get("type");
                             String content;
-
                             switch (MessageFactory.MessageType.valueOf(str)) {
                                 case CONTENT:
                                     content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE, (String) message.get("content"));
@@ -93,6 +103,13 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
                                     content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null);
                                     inbox.receive(null, null, content);
                                     client.close();
+                                    break;
+                                case AGENT_CONTENT:
+                                    li("Received agent from " + message.get("source"));
+                                    AgentEvent arrived_agent = new AgentWave();
+                                    arrived_agent.add("content", (String) message.get("content"));
+                                    arrived_agent.add("destination-complete", (String) message.get("destination"));
+                                    getAgent().postAgentEvent(arrived_agent);
                                     break;
                                 default:
                                     le("Unknown type");
@@ -122,7 +139,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
-        client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
+        client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
     }
 
     @Override
@@ -149,7 +166,14 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         data.put("destination", target);
         data.put("content", content);
         if (client != null) {
-            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+            if (target.contains("Monitoring")) {
+                return true;
+            }
+            if (source.contains("node") || target.contains("node")) {
+                client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.AGENT_CONTENT, data));
+            } else {
+                client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+            }
         }
         return true;
     }
@@ -165,6 +189,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
       //  client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
     }
 
+
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
         if(!(context instanceof MessagingPylonProxy))
@@ -178,12 +203,25 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard {
         super.signalAgentEvent(event);
 
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
-            startShadowAgentShard();
             this.register(getAgent().getEntityName());
+            if (event.get("TO_FROM_TRANSIENT") != null) {
+                le("Agent started after move.");
+                String entityName = getAgent().getEntityName();
+                String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null);
+                pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+
+                pylon.register(entityName, inbox);
+                startShadowAgentShard(MessageType.CONNECT);
+            } else {
+                this.register(getAgent().getEntityName());
+                startShadowAgentShard(MessageType.REGISTER);
+            }
+
         }
 
         if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
-            lf("Agent " + this.getName() + " wants to move to another node");
+            String target = event.get("TARGET");
+            lf("Agent " + this.getName() + " wants to move to another node " + target);
             client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
         }
 
