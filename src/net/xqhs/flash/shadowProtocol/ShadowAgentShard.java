@@ -203,7 +203,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
         super.signalAgentEvent(event);
 
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
-            this.register(getAgent().getEntityName());
             if (event.get("TO_FROM_TRANSIENT") != null) {
                 le("Agent started after move.");
                 String entityName = getAgent().getEntityName();
@@ -222,6 +221,8 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
         if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
             String target = event.get("TARGET");
             lf("Agent " + this.getName() + " wants to move to another node " + target);
+            String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null);
+            pylon.send(this.getName(), pylon.getEntityName(), notify_content);
             client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
         }
 

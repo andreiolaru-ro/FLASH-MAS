@@ -24,6 +24,7 @@ public class SendMessageShard extends AgentShardGeneral {
                 return;
             }
             if (index == actions.size()) {
+                li("DONE!");
                 action_timer.cancel();
                 return;
             }
