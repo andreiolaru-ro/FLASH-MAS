@@ -117,7 +117,7 @@ public class MessageFactory {
      * @return
      *            - returns an object with type String
      */
-    public static String createMonitorNotification(ActionType action, String content) {
+    public static String createMonitorNotification(ActionType action, String content, String time) {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         Map<String, String> data = new HashMap<>();
@@ -125,8 +125,8 @@ public class MessageFactory {
         builder.setPrettyPrinting();
         data.put("action", action.toString());
         data.put("content", content);
-        data.put("time", (new Timestamp(System.currentTimeMillis())).toString());
-
+        //data.put("time", (new Timestamp(System.currentTimeMillis())).toString());
+        data.put("time", time);
         return gson.toJson(data);
     }
 }

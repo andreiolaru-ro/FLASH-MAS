@@ -39,7 +39,7 @@ public class Boot
 	 */
 	public static void main(String[] args_)
 	{
-		TestClass test = new TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/Test1.json");
+		TestClass test = new TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/topology1_2_servers_2_pylons_2_agents.json");
 
 		String args = "";
 

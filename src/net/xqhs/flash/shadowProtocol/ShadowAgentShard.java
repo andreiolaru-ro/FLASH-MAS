@@ -18,6 +18,7 @@ import org.json.simple.JSONValue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
                             break;
                         }
                         receiveMessage(source, destination, (String) mesg.get("content"));
-                        pylon.send(source, destination, content);
+                        //pylon.send(source, destination, content);
                         break;
                     case MOVE_TO_ANOTHER_NODE:
                     default:
@@ -94,18 +95,21 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
                             String content;
                             switch (MessageFactory.MessageType.valueOf(str)) {
                                 case CONTENT:
-                                    content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE, (String) message.get("content"));
+                                    content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE, (String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
                                     inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
+                                    pylon.send((String) message.get("source"), (String) message.get("destination"), content);
                                     li("Message from " + message.get("source") + ": " + message.get("content"));
                                     break;
                                 case REQ_ACCEPT:
                                     li("[] Prepare to leave", getUnitName());
-                                    content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null);
+                                    content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
                                     inbox.receive(null, null, content);
                                     client.close();
                                     break;
                                 case AGENT_CONTENT:
                                     li("Received agent from " + message.get("source"));
+                                    content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
+                                    pylon.send((String) message.get("source"), (String) message.get("destination"), content);
                                     AgentEvent arrived_agent = new AgentWave();
                                     arrived_agent.add("content", (String) message.get("content"));
                                     arrived_agent.add("destination-complete", (String) message.get("destination"));
@@ -159,7 +163,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
     @Override
     public boolean sendMessage(String source, String target, String content) {
         li("Send message " + content + " from agent " + source + " to agent " + target);
-        String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content);
+        String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content, String.valueOf(new Timestamp(System.currentTimeMillis())));
         pylon.send(this.getName(), target, notify_content);
 
         Map<String, String> data = new HashMap<>();
@@ -206,7 +210,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
             if (event.get("TO_FROM_TRANSIENT") != null) {
                 le("Agent started after move.");
                 String entityName = getAgent().getEntityName();
-                String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null);
+                String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,String.valueOf(new Timestamp(System.currentTimeMillis())));
                 pylon.send(this.getName(), pylon.getEntityName(), notify_content);
 
                 pylon.register(entityName, inbox);
@@ -221,14 +225,14 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
         if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
             String target = event.get("TARGET");
             lf("Agent " + this.getName() + " wants to move to another node " + target);
-            String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null);
+            String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
             pylon.send(this.getName(), pylon.getEntityName(), notify_content);
             client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
         }
 
         if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
             String entityName = getAgent().getEntityName();
-            String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null);
+            String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
             pylon.send(this.getName(), pylon.getEntityName(), notify_content);
 
             pylon.register(entityName, inbox);

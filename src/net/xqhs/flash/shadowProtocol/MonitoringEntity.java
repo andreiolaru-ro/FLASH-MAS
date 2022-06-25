@@ -1,5 +1,7 @@
 package net.xqhs.flash.shadowProtocol;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -54,7 +56,7 @@ public class MonitoringEntity extends Unit implements Entity {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);
-        yaml = new Yaml();
+        yaml = new Yaml(options);
 
         try {
             String filename = "log-" + getName() + ".yaml";

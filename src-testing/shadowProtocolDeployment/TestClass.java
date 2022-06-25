@@ -8,11 +8,14 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
 
-import java.io.Reader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * Class that generates and execute tests.
@@ -86,6 +89,7 @@ public class TestClass {
         String agent = getRandomElement(agentsList);
         String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
         List<String> copy = new ArrayList<>(pylonsList);
+        System.out.println(agent);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
         String pylon = getRandomElement(copy);
         String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;

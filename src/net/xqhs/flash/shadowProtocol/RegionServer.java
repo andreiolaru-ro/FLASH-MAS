@@ -104,17 +104,6 @@ public class RegionServer extends Unit implements Entity {
      *              - server name
      */
     public void ServerClient(URI serverURI, String nickname) {
-//        le("BEFORE WHILE");
-//        while (true) {
-//            WebSocketClient testConnection = createWebsocketClient(serverURI);
-//            if (testConnection.isOpen()) {
-//                le("CONNECTED");
-//                testConnection.close();
-//                break;
-//            }
-//            testConnection.close();
-//        }
-//        le("AFTER WHILE");
         clients.put(nickname, createWebsocketClient(serverURI));
     }
 
