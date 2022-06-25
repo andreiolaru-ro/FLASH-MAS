@@ -98,11 +98,21 @@ public class Validate_Results {
                 if (log.get("destination").equals(needToFind.get("destination")) &&
                         log.get("source").equals(needToFind.get("source")) &&
                         log.get("content").equals(needToFind.get("content"))) {
+
+                    Timestamp timestamp_start = Timestamp.valueOf(needToFind.get("time").substring(1, needToFind.get("time").length() - 1));
+                    Timestamp timestamp_stop = Timestamp.valueOf(log.get("time").substring(1, log.get("time").length() - 1));
+
                     if (needToFind.get("action").equals("SEND_MESSAGE") && log.get("action").equals("RECEIVE_MESSAGE")) {
                         result = log;
+                        if (timestamp_stop.after(timestamp_start)) {
+                            return log;
+                        }
                     }
                     if (needToFind.get("action").equals("MOVE_TO_ANOTHER_NODE") && log.get("action").equals("ARRIVED_ON_NODE")) {
                         result = log;
+                        if (timestamp_stop.after(timestamp_start)) {
+                            return log;
+                        }
                     }
                 }
             }
