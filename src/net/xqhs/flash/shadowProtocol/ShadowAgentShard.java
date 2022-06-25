@@ -212,7 +212,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
                 String entityName = getAgent().getEntityName();
                 String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,String.valueOf(new Timestamp(System.currentTimeMillis())));
                 pylon.send(this.getName(), pylon.getEntityName(), notify_content);
-
                 pylon.register(entityName, inbox);
                 startShadowAgentShard(MessageType.CONNECT);
             } else {
@@ -226,7 +225,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
             String target = event.get("TARGET");
             lf("Agent " + this.getName() + " wants to move to another node " + target);
             String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
-            pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+            pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
             client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
         }
 

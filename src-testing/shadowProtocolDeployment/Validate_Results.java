@@ -60,7 +60,7 @@ public class Validate_Results {
 
                         // get time difference in seconds
                         long milliseconds = timestamp_stop.getTime() - timestamp_start.getTime();
-                        System.out.println(Math.abs(milliseconds) + " ms");
+                        System.out.println(milliseconds + " ms");
 
                         if (log.get("action").equals("SEND_MESSAGE")) {
                             receive_mess_time.add(Math.abs(milliseconds));

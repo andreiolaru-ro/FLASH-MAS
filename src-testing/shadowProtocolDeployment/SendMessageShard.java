@@ -41,6 +41,7 @@ public class SendMessageShard extends AgentShardGeneral {
                     action_timer.cancel();
                     AgentEvent move_event = new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE);
                     move_event.add(TARGET, "node-" + actions.get(index).getDestination());
+                    move_event.add("pylon_destination", actions.get(index).getDestination().split("-")[0]);
                     getAgent().postAgentEvent(move_event);
                     break;
                 case SEND_MESSAGE:
