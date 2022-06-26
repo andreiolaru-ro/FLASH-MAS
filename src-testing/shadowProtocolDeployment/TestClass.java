@@ -11,8 +11,6 @@ import net.xqhs.flash.shadowProtocol.ShadowPylon;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -179,7 +177,7 @@ public class TestClass {
                             .addSingleValue(SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
                     agent_elem.addShard(mesgShard);
 
-                    SendMessageShard testingShard = new SendMessageShard();
+                    TestingShard testingShard = new TestingShard();
                     List<String> actionsToString = new ArrayList<>(List.of(""));
                     if (sortActions.get(agent_elem.getName()) != null) {
                         actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());

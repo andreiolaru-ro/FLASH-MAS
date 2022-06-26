@@ -9,7 +9,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SendMessageShard extends AgentShardGeneral {
+public class TestingShard extends AgentShardGeneral {
 
     public static final String TARGET = "TARGET";
 
@@ -71,7 +71,7 @@ public class SendMessageShard extends AgentShardGeneral {
     /**
      * @see AgentShardCore#AgentShardCore(AgentShardDesignation)
      */
-    public SendMessageShard() {
+    public TestingShard() {
         super(AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.CONTROL));
     }
 
