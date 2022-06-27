@@ -78,6 +78,15 @@ public class TestClass {
         return new Action(complete_source, complete_dest, "Message " + index_message++, Action.Actions.SEND_MESSAGE);
     }
 
+    public Action sendMessageActionForAgent(String source) {
+        List<String> copy = new ArrayList<>(agentsList);
+        copy.remove(source);
+        String destination = getRandomElement(copy);
+        String complete_dest = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
+        String complete_source = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
+        return new Action(complete_source, complete_dest, "Message " + index_message++, Action.Actions.SEND_MESSAGE);
+    }
+
     /**
      * Generate an action of type move_to_another_node for a selected agent.
      *
@@ -85,6 +94,16 @@ public class TestClass {
      */
     public Action moveToAnotherNodeAction() {
         String agent = getRandomElement(agentsList);
+        String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
+        List<String> copy = new ArrayList<>(pylonsList);
+        System.out.println(agent);
+        copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
+        String pylon = getRandomElement(copy);
+        String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
+        return new Action(agent_complete, pylon_complete, "", Action.Actions.MOVE_TO_ANOTHER_NODE);
+    }
+
+    public Action moveToAnotherNodeActionForAgent(String agent) {
         String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
         List<String> copy = new ArrayList<>(pylonsList);
         System.out.println(agent);
@@ -124,6 +143,53 @@ public class TestClass {
         return test;
     }
 
+    public List<Action> generateActionsForAgent(Integer numberOfMessages, Integer numberOfMoves, String agent) {
+        List<Action> test = new ArrayList<>();
+        List<Action.Actions> mess = new ArrayList<>(Arrays.asList(new Action.Actions[numberOfMessages]));
+        List<Action.Actions> moves = new ArrayList<>(Arrays.asList(new Action.Actions[numberOfMoves]));
+        List<Action.Actions> all_actions = new ArrayList<>();
+
+        Collections.fill(mess, Action.Actions.SEND_MESSAGE);
+        Collections.fill(moves, Action.Actions.MOVE_TO_ANOTHER_NODE);
+//        all_actions.addAll(moves);
+//        all_actions.addAll(mess);
+//        Collections.shuffle(all_actions);
+        if (numberOfMessages == numberOfMoves) {
+            for (int i = 0; i < numberOfMessages; i++) {
+                all_actions.add(mess.get(i));
+                all_actions.add(moves.get(i));
+            }
+        }
+        if (numberOfMessages > numberOfMoves) {
+            for (int i = 0; i < numberOfMoves; i++) {
+                all_actions.add(mess.get(i));
+                all_actions.add(moves.get(i));
+            }
+            all_actions.addAll(mess.subList(numberOfMoves, numberOfMessages));
+        }
+
+        if (numberOfMessages < numberOfMoves) {
+            for (int i = 0; i < numberOfMessages; i++) {
+                all_actions.add(mess.get(i));
+                all_actions.add(moves.get(i));
+            }
+            all_actions.addAll(moves.subList(numberOfMessages, numberOfMoves));
+        }
+        System.out.println(all_actions);
+        for (Action.Actions ac : all_actions) {
+            switch (ac) {
+                case MOVE_TO_ANOTHER_NODE:
+                    Action moveAC = moveToAnotherNodeActionForAgent(agent);
+                    test.add(moveAC);
+                    topology_map.topologyAfterMove(moveAC);
+                    break;
+                case SEND_MESSAGE:
+                    test.add(sendMessageActionForAgent(agent));
+            }
+        }
+        return test;
+    }
+
     /**
      * @param testCase - the list of actions
      * @return - returns actions for each agent
@@ -135,7 +201,7 @@ public class TestClass {
     /**
      * Create and start the entities
      */
-    public void CreateElements(List<Action> testCase) {
+    public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves) {
         Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
 
         for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
@@ -178,10 +244,12 @@ public class TestClass {
                     agent_elem.addShard(mesgShard);
 
                     TestingShard testingShard = new TestingShard();
-                    List<String> actionsToString = new ArrayList<>(List.of(""));
-                    if (sortActions.get(agent_elem.getName()) != null) {
-                        actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
-                    }
+//                    List<String> actionsToString = new ArrayList<>(List.of(""));
+//                    if (sortActions.get(agent_elem.getName()) != null) {
+//                        actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
+//                    }
+                    List<String> actionsToString = generateActionsForAgent(numberOfMessages, numberOfMoves, agent).stream().map(Action::toJsonString).collect(Collectors.toList());
+
                     testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
                     agent_elem.addShard(testingShard);
 
