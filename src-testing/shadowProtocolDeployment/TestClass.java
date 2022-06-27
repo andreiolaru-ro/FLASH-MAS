@@ -24,6 +24,7 @@ public class TestClass {
     List<String> agentsList = new ArrayList<>();
     Topology topology_map;
     Topology topology_init;
+    Topology topology_for_node;
     static Integer index_message = 0;
 
     private final Map<String, Object> elements = new HashMap<>();
@@ -48,6 +49,17 @@ public class TestClass {
                 }
             }
 
+            reader.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void addTopologyForNode(String filename) {
+        try {
+            Gson gson = new Gson();
+            Reader reader = Files.newBufferedReader(Paths.get(filename));
+            this.topology_for_node = gson.fromJson(Files.newBufferedReader(Paths.get(filename)), Topology.class);
             reader.close();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -204,7 +216,7 @@ public class TestClass {
     public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves) {
         Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
 
-        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
+        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
             for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                 String port_value = ((region.getKey()).split(":"))[1];
                 String server_name = region.getKey();
