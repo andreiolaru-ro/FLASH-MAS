@@ -1,12 +1,23 @@
 from interfaces.classification import Classification
 from tensorflow import keras
 import numpy as np
+import rdflib
 
 class KerasClassification(Classification):
     def __init__(self, model_extension):
         super().__init__(model_extension)
 
-    def load(self, path, loss, optimizer, metrics):
+    def load(self, path, description):
+        for x in description.query("SELECT ?pred ?obj WHERE { <http://example.org#Loss> ?pred ?obj }"):
+            loss = x[1].split('#')[-1]
+
+        for x in description.query("SELECT ?pred ?obj WHERE { <http://example.org#Optimizer> ?pred ?obj }"):
+            optimizer = x[1].split('#')[-1]
+
+        metrics = []
+        for x in description.query("SELECT ?sub ?pred WHERE { ?sub ?pred <http://www.w3.org/ns/mls#EvaluationMeasure> }"):
+            metrics.append(x[0].split('#')[-1].lower())
+
         try:
             model = keras.models.load_model(path)
             model.compile(loss=loss, optimizer=optimizer, metrics=metrics)

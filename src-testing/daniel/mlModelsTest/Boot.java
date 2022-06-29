@@ -30,52 +30,12 @@ public class Boot {
         test_args += " -package net.xqhs.flash.mlModels";
         test_args += " -loader agent:composite";
 
-        // Exemplul 1 - NU MERGE
-
-        // test_args += " -node node1";
-		// test_args += " -pylon local:ml-runner classpath:MLRunnerPylon";
-
-        // test_args += " -agent composite:AgentA -shard messaging -shard MLDescriptionShard -shard PingBackTestComponent";
-        // test_args += " -agent composite:AgentB -shard messaging -shard MLDescriptionShard -shard PingTestComponent otherAgent:AgentA";
-        
-
-
-        // Exemplul 2 - NU MERGE
-    
-
-        // test_args += " -node node1";
-        // test_args += " -pylon local:default";
-        // test_args += " -pylon local:ml-runner classpath:MLRunnerPylon";
-
-        // test_args += " -agent composite:AgentA -shard messaging -shard MLDescriptionShard -shard PingBackTestComponent";
-        // test_args += " -agent composite:AgentB -shard messaging -shard MLDescriptionShard -shard PingTestComponent otherAgent:AgentA";
-
-
-
-        // Exemplul 3 - MERGE
-
-
         test_args += " -node node1";
 		test_args += " -pylon local:ml-runner classpath:MLRunnerPylon";
         test_args += " -pylon local:main";
 
-        test_args += " -agent composite:AgentA -shard messaging -shard MLDescriptionShard -shard PingBackTestComponent";
-        test_args += " -agent composite:AgentB -shard messaging -shard MLDescriptionShard -shard PingTestComponent otherAgent:AgentA";
-
-
-
-        // Exemplul 4 - MERGE
-
-
-		// test_args += " -node node1";
-        // test_args += " -pylon local:ml-runner classpath:MLRunnerPylon";
-        // test_args += " -pylon webSocket:slave1 serverPort:8886 connectTo:ws://localhost:8886";
-		// test_args += " -agent composite:AgentA -shard messaging -shard MLDescriptionShard -shard PingBackTestComponent";
-
-		// test_args += " -node node2";
-        // test_args += " -pylon webSocket:slave2 connectTo:ws://localhost:8886";
-		// test_args += " -agent composite:AgentB -shard messaging -shard MLDescriptionShard -shard PingTestComponent otherAgent:AgentA";
-
+        test_args += " -agent composite:AgentA -shard messaging -shard MLDescriptionShard";
+        test_args += " -agent composite:AgentB -shard messaging -shard MLDescriptionShard otherAgent:AgentA";
 
         FlashBoot.main(test_args.split(" "));
     }

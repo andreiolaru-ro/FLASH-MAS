@@ -11,6 +11,8 @@
  ******************************************************************************/
 package net.xqhs.flash.mlModels;
 
+import java.io.File;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
@@ -33,12 +35,18 @@ public class MLDescriptionShard extends AgentShardGeneral {
 	 */
 	public static final String	SHARD_ENDPOINT		= "ml_description";
 
+	/**
+	 * The functionality of the shard
+	 */
 	public static final String	FUNCTIONALITY	    = "ML_DESCRIPTION";
 
 	/**
 	 * Cache for the name of this agent.
 	 */
 	String						thisAgent		    = null;
+
+	private String storage = "D:\\Facultate\\Master\\Anul 2\\Research\\src-testing\\daniel\\mlModelsTest\\storage";
+	private File localStorage = new File(storage, "agent"); // get the name of the agent
 
 	{
 		setUnitName("ml_description-shard");
@@ -66,6 +74,12 @@ public class MLDescriptionShard extends AgentShardGeneral {
 				sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
 				break;
 			case AGENT_START:
+				System.out.println(localStorage.getPath());
+
+				if (!localStorage.exists()) {
+					localStorage.mkdir();
+				}
+
 				break;
 			case AGENT_STOP:
 				break;
@@ -84,4 +98,9 @@ public class MLDescriptionShard extends AgentShardGeneral {
 		if(getAgent() != null)
 			thisAgent = getAgent().getEntityName();
 	}
+
+	/**
+	 * Method for excuting a speciefic request
+	 */
+	private void executeRequest() {}
 }

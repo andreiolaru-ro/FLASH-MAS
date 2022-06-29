@@ -12,7 +12,7 @@ class TorchClassification(Classification):
         super().__init__(model_extension)
         self.input_size = input_size
 
-    def load(self, path, loss, optimizer, metrics):
+    def load(self, path, description):
         try:
             model = torch.jit.load(path)
         except:

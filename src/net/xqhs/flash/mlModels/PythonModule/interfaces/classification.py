@@ -2,7 +2,7 @@ from .task import Task
 from typing import *
 
 class Classification(Task):
-    def load(self, path, loss, optimizer, metrics) -> (Any, str):
+    def load(self, path, description) -> (Any, str):
         pass
 
     def predict(self, model, inputs) -> list:

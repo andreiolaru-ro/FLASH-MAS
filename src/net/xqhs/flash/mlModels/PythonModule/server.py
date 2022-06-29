@@ -5,31 +5,40 @@ import json
 from utils import *
 from frameworks.keras_classification import KerasClassification
 from frameworks.torch_classification import TorchClassification
+import base64
 
 app = Flask(__name__)
 
-frameworks = {'keras': KerasClassification(model_extension='h5'), 'torch': TorchClassification(model_extension='pt', input_size=(64, 1, 28, 28))}
+frameworks = {'Keras': KerasClassification(model_extension='h5'), 'PyTorch': TorchClassification(model_extension='pt', input_size=(64, 1, 28, 28))}
 models = {}
-framework = frameworks['keras']
+framework = frameworks['Keras']
 
 @app.route('/load', methods=['GET'])
 def load():
-    data = request.data
+    data = json.loads(request.data)
 
-    g = rdflib.Graph().parse(format="turtle", data=data)
+    g = rdflib.Graph().parse(format="turtle", data=data['description'])
 
-    if check_parameters(['model'], request.args):
-        model_name = request.args.get('model')
-        model_path = 'models/' + model_name + '.' + framework.model_extension
-        model, log = framework.load(model_path, "categorical_crossentropy", "adam", ["accuracy"])
-        
-        if model is not None:
-            models[model_name] = {}
-            models[model_name]['model'] = model
-            models[model_name]['framework'] = 'keras' #g.query(query_object("Software"))[0]
-            return log, 200
-        else:
-            return log, 500
+    model_bytes = base64.b64decode(data['model'])
+
+    for x in g.query(query_subject(DATA['Name'])):
+        model_name = x[1].split('#')[-1]
+
+    for x in g.query(query_object(MLS["Software"])):
+        software = x[0].split('#')[-1]
+
+    model_path  = 'models/' + model_name + '_tmp.' + frameworks[software].model_extension
+    with open(model_path, 'wb') as file:
+        file.write(model_bytes)
+    model, log  = frameworks[software].load(model_path, g)
+    
+    if model is not None:
+        models[model_name] = {}
+        models[model_name]['model'] = model
+        models[model_name]['framework'] = software
+        return log, 200
+    else:
+        return log, 500
 
     return "Invalid arguments", 400
 
@@ -90,16 +99,19 @@ def score():
 
 @app.route('/save', methods=['GET'])
 def save_model():
-    if check_parameters(['model', 'name'], request.args):
+    if check_parameters(['model'], request.args):
         model = request.args.get('model')
 
         if model in models:
-            name  = request.args.get('name')
-            path  = 'models/' + name + '.' + framework.model_extension
+            path  = 'models/' + model + '_tmp.' + framework.model_extension
 
             success, log = frameworks[models[model]['framework']].save(models[model]['model'], path)
 
-            return log, 200 if success else 500
+            with open(path, 'rb') as file:
+                model_byte = file.read()
+                model = base64.b64encode(model_byte).decode("utf-8")
+
+            return model, 200 if success else 500
 
     return "Invalid arguments", 400
 
