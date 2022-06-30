@@ -72,6 +72,21 @@ public class AgentEvent extends MultiValueMap
 		 * Event occurs when the simulation is paused by the user.
 		 */
 		SIMULATION_PAUSE(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the simulation is paused by the user.
+		 */
+		ML_TASK(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the simulation is paused by the user.
+		 */
+		ML_ASK(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the simulation is paused by the user.
+		 */
+		ML_TRANSFER(AgentSequenceType.UNORDERED),
 		
 		;
 		

@@ -34,8 +34,8 @@ public class Boot {
 
 		test_args += " -node node1";
 		test_args += " -pylon l-runner classpath:MLRunnerPylon";
-		test_args += " -agent composite:AgentA in-context-of:local:default -shard monitoring -shard messaging -shard MLDescriptionShard -shard PingBackTestComponent";
-		test_args += " -agent composite:AgentB in-context-of:local:default -shard monitoring -shard messaging -shard MLDescriptionShard -shard PingTestComponent otherAgent:AgentA";
+		test_args += " -agent composite:AgentA in-context-of:local:default -shard monitoring -shard messaging -shard MLDescriptionShard";
+		test_args += " -agent AgentB classpath:AgentTest otherAgent:AgentA";
         
 
 
