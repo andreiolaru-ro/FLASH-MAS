@@ -132,7 +132,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
     @Override
     public boolean start() {
         if(hasServer) {
-            serverEntity = new RegionServer(serverPort, serverList);
+            serverEntity = new RegionServer(serverPort, serverList, (HomeServerAddressName.split("//"))[1]);
             serverEntity.start();
         }
 
