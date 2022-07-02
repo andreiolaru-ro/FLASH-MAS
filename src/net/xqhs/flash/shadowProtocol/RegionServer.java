@@ -47,6 +47,15 @@ public class RegionServer extends Unit implements Entity {
             @Override
             public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
                 li("New client connected []", webSocket);
+                for (String server : servers) {
+                    if (!clients.containsKey(server)) {
+                        try {
+                            ServerClient(new URI("ws://" + server), server);
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
 
             @Override
@@ -67,15 +76,6 @@ public class RegionServer extends Unit implements Entity {
             @Override
             public void onStart() {
                 li("Server started successfully.");
-                for (String server : servers) {
-                    if (!clients.containsKey(server)) {
-                        try {
-                            ServerClient(new URI("ws://" + server), server);
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
             }
         };
         webSocketServer.setReuseAddr(true);
@@ -95,7 +95,7 @@ public class RegionServer extends Unit implements Entity {
     private WebSocketClient createWebsocketClient(URI serverURI, String server) {
         WebSocketClient client = null;
         try {
-            int tries = 10;
+            int tries = 3;
             long space = 2000;
             while (tries > 0) {
                 client = new WebSocketClient(serverURI) {
