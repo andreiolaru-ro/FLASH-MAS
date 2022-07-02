@@ -12,6 +12,7 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import java.awt.desktop.SystemSleepEvent;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,24 +50,8 @@ public class RegionServer extends Unit implements Entity {
                 for (String server : servers) {
                     if (!clients.containsKey(server)) {
                         try {
-                            WebSocketClient temp_client = null;
-                            int tries = 10;
-                            long space = 1000;
-                            while (tries > 0) {
-                                try {
-                                    ServerClient(new URI("ws://" + server), server);
-                                    temp_client = clients.get(server);
-                                } catch (URISyntaxException e) {
-                                    e.printStackTrace();
-                                    le("Couldn't connect to server!");
-                                }
-                                if (temp_client != null && temp_client.connectBlocking())
-                                    break;
-                                Thread.sleep(space);
-                                tries--;
-                                le("Tries:" + tries);
-                            }
-                        } catch (InterruptedException e) {
+                            ServerClient(new URI("ws://" + server), server);
+                        } catch (URISyntaxException e) {
                             e.printStackTrace();
                         }
                     }
@@ -104,34 +89,51 @@ public class RegionServer extends Unit implements Entity {
      *              - server name
      */
     public void ServerClient(URI serverURI, String nickname) {
-        clients.put(nickname, createWebsocketClient(serverURI));
+        clients.put(nickname, createWebsocketClient(serverURI, nickname));
     }
 
-    private WebSocketClient createWebsocketClient(URI serverURI) {
-        return new WebSocketClient(serverURI) {
-            @Override
-            public void onOpen(ServerHandshake serverHandshake) {
-                li("New connection from server: " + serverURI);
-            }
+    private WebSocketClient createWebsocketClient(URI serverURI, String server) {
+        WebSocketClient client = null;
+        try {
+            int tries = 10;
+            long space = 1000;
+            while (tries > 0) {
+                client = new WebSocketClient(serverURI) {
+                    @Override
+                    public void onOpen(ServerHandshake serverHandshake) {
+                        li("New connection from server: " + serverURI);
+                    }
 
-            @Override
-            public void onMessage(String s) {
-                Object obj = JSONValue.parse(s);
-                if(obj == null) return;
-                JSONObject message = (JSONObject) obj;
-                li("Message from server " + message.get("source"));
-            }
+                    @Override
+                    public void onMessage(String s) {
+                        Object obj = JSONValue.parse(s);
+                        if(obj == null) return;
+                        JSONObject message = (JSONObject) obj;
+                        li("Message from server " + message.get("source"));
+                    }
 
-            @Override
-            public void onClose(int i, String s, boolean b) {
-                lw("Closed with exit code " + i);
-            }
+                    @Override
+                    public void onClose(int i, String s, boolean b) {
+                        lw("Closed with exit code " + i);
+                    }
 
-            @Override
-            public void onError(Exception e) {
-                le(Arrays.toString(e.getStackTrace()));
+                    @Override
+                    public void onError(Exception e) {
+                        le(Arrays.toString(e.getStackTrace()));
+                    }
+                };
+
+                if (client.connectBlocking()) {
+                    break;
+                }
+                Thread.sleep(space);
+                tries--;
+                le("Tries:" + tries);
             }
-        };
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return client;
     }
 
     /**
