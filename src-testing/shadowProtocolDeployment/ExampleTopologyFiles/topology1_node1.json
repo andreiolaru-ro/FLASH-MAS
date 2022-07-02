@@ -1,6 +1,6 @@
 {
   "topology": {
-    "localhost:8885": {
+    "192.168.1.128:8885": {
       "Pylon1": ["agent1"]
     }
   }

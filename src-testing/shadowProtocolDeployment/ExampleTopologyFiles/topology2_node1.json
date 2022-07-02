@@ -7,14 +7,6 @@
         "agent3",
         "agent4"
       ]
-    },
-    "192.168.1.131:8886": {
-      "Pylon2": [
-        "agent5",
-        "agent6",
-        "agent7",
-        "agent8"
-      ]
     }
   }
 }

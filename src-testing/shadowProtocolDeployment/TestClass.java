@@ -7,6 +7,10 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -202,6 +206,41 @@ public class TestClass {
         return test;
     }
 
+    public List<Action> getActionsFromFile(String filename, String agent_name) {
+        List<Action> test = new ArrayList<>();
+
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(filename));
+            JSONObject jsonObject = (JSONObject)obj;
+            JSONArray actions = (JSONArray)jsonObject.get(agent_name);
+            if (actions != null) {
+                Iterator iterator = actions.iterator();
+                while (iterator.hasNext()) {
+                    Object act = JSONValue.parse(iterator.next().toString());
+                    if(act == null) break;
+                    JSONObject action = (JSONObject) act;
+                    Action.Actions ac_type = Action.Actions.valueOf((String) action.get("type"));
+                    String source = (String) action.get("source");
+                    String destination = (String) action.get("destination");
+                    String source_complete = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
+                    String destination_complete;
+                    switch (ac_type) {
+                        case SEND_MESSAGE -> destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
+                        case MOVE_TO_ANOTHER_NODE -> destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, destination);
+                        default -> throw new IllegalStateException("Unexpected value: " + ac_type);
+                    }
+                    
+                    test.add(new Action(source_complete, destination_complete, (String) action.get("content"), ac_type));
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return test;
+    }
+
     /**
      * @param testCase - the list of actions
      * @return - returns actions for each agent
@@ -213,64 +252,71 @@ public class TestClass {
     /**
      * Create and start the entities
      */
-    public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves) {
-        Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
+    public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves, boolean generateActions) {
+       // Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
 
-        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
-            for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
-                String port_value = ((region.getKey()).split(":"))[1];
-                String server_name = region.getKey();
-                String pylon_name = pylon.getKey();
-                String node_name = "node-" + pylon_name + "-" + server_name;
+       // for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
+        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
+                for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
+                    String port_value = ((region.getKey()).split(":"))[1];
+                    String server_name = region.getKey();
+                    String pylon_name = pylon.getKey();
+                    String node_name = "node-" + pylon_name + "-" + server_name;
 
-                // CREATE PYLON
-                ShadowPylon pylon_elem = new ShadowPylon();
-                pylon_elem.configure(
-                        new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
-                                .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value)
-                                .addSingleValue("servers", String.join("|", regionServersList))
-                                .addSingleValue("pylon_name", pylon_name));
-                pylon_elem.start();
-                elements.put(pylon.getKey(), pylon_elem);
+                    // CREATE PYLON
+                    ShadowPylon pylon_elem = new ShadowPylon();
+                    pylon_elem.configure(
+                            new MultiTreeMap().addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
+                                    .addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value)
+                                    .addSingleValue("servers", String.join("|", regionServersList))
+                                    .addSingleValue("pylon_name", pylon_name));
+                    pylon_elem.start();
+                    elements.put(pylon.getKey(), pylon_elem);
 
-                // CREATE NODE
-                Node node = new Node(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
-                        .addSingleValue("region-server", "ws://" + server_name));
-                node.addGeneralContext(pylon_elem.asContext());
-                elements.put(node_name, node);
+                    // CREATE NODE
+                    Node node = new Node(new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
+                            .addSingleValue("region-server", "ws://" + server_name));
+                    node.addGeneralContext(pylon_elem.asContext());
+                    elements.put(node_name, node);
 
-                // CREATE AGENTS
-                for (String agent : (pylon.getValue())) {
-                    String agent_name = agent + "-" + region.getKey();
-                    CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent_name));
+                    // CREATE AGENTS
+                    for (String agent : (pylon.getValue())) {
+                        String agent_name = agent + "-" + region.getKey();
+                        CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent_name));
 
-                    // ADD CONTEXT
-                    agent_elem.addContext(pylon_elem.asContext());
-                    agent_elem.addGeneralContext(node.asContext());
+                        // ADD CONTEXT
+                        agent_elem.addContext(pylon_elem.asContext());
+                        agent_elem.addGeneralContext(node.asContext());
 
-                    // ADD SHARDS
-                    ShadowAgentShard mesgShard = new ShadowAgentShard();
-                    mesgShard.configure(new MultiTreeMap().addSingleValue("connectTo", pylon_elem.HomeServerAddressName)
-                            .addSingleValue("agent_name", agent_elem.getName())
-                            .addSingleValue(SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
-                    agent_elem.addShard(mesgShard);
+                        // ADD SHARDS
+                        ShadowAgentShard mesgShard = new ShadowAgentShard();
+                        mesgShard.configure(new MultiTreeMap().addSingleValue("connectTo", pylon_elem.HomeServerAddressName)
+                                .addSingleValue("agent_name", agent_elem.getName())
+                                .addSingleValue(SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
+                        agent_elem.addShard(mesgShard);
 
-                    TestingShard testingShard = new TestingShard();
+                        TestingShard testingShard = new TestingShard();
 //                    List<String> actionsToString = new ArrayList<>(List.of(""));
 //                    if (sortActions.get(agent_elem.getName()) != null) {
 //                        actionsToString = sortActions.get(agent_elem.getName()).stream().map(Action::toJsonString).collect(Collectors.toList());
 //                    }
-                    List<String> actionsToString = generateActionsForAgent(numberOfMessages, numberOfMoves, agent).stream().map(Action::toJsonString).collect(Collectors.toList());
+                        List<String> actionsToString = null;
+                        if (generateActions) {
+                            actionsToString = generateActionsForAgent(numberOfMessages, numberOfMoves, agent).stream().map(Action::toJsonString).collect(Collectors.toList());
+                            System.out.println(actionsToString);
+                        } else {
+                            actionsToString = getActionsFromFile("src-testing/shadowProtocolDeployment/ActionsForAgents/" + pylon_name + ".json", agent).stream().map(Action::toJsonString).collect(Collectors.toList());
+                            System.out.println(actionsToString);
+                        }
+                        testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
+                        agent_elem.addShard(testingShard);
 
-                    testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
-                    agent_elem.addShard(testingShard);
+                        agent_elem.addShard(new MobilityTestShard());
 
-                    agent_elem.addShard(new MobilityTestShard());
-
-                    elements.put(agent, agent_elem);
+                        elements.put(agent, agent_elem);
+                    }
                 }
             }
-        }
         for (Map.Entry<String, Object> elem : elements.entrySet()) {
             if (elem.getValue() instanceof Node) {
                 ((Node) elem.getValue()).start();

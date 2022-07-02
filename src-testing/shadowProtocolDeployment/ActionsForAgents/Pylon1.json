@@ -1,0 +1,16 @@
+{
+  "agent1": [
+    {"source": "agent1", "destination": "agent2", "content": "Message 1", "type": "SEND_MESSAGE"},
+    {"source": "agent1", "destination": "agent3", "content": "Message 2", "type": "SEND_MESSAGE"},
+    {"source": "agent1", "destination": "Pylon2", "content": "", "type": "MOVE_TO_ANOTHER_NODE"},
+    {"source": "agent1", "destination": "agent4", "content": "Message 3", "type": "SEND_MESSAGE"},
+    {"source": "agent1", "destination": "agent5", "content": "Message 4", "type": "SEND_MESSAGE"}
+  ],
+  "agent2": [
+    {"source": "agent2", "destination": "agent1", "content": "Message 5", "type": "SEND_MESSAGE"},
+    {"source": "agent2", "destination": "agent3", "content": "Message 6", "type": "SEND_MESSAGE"},
+    {"source": "agent2", "destination": "Pylon3", "content": "", "type": "MOVE_TO_ANOTHER_NODE"},
+    {"source": "agent2", "destination": "agent4", "content": "Message 7", "type": "SEND_MESSAGE"},
+    {"source": "agent2", "destination": "agent5", "content": "Message 8", "type": "SEND_MESSAGE"}
+  ]
+}
