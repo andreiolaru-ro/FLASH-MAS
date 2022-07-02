@@ -38,9 +38,9 @@ public class RegionServer extends Unit implements Entity {
      */
     private final Map<String, WebSocketClient> clients = new HashMap<>();
 
-    public RegionServer(int serverPort, ArrayList<String> servers) {
+    public RegionServer(int serverPort, ArrayList<String> servers, String server_name) {
         {
-            setUnitName("localhost:" + serverPort);
+            setUnitName(server_name);
             setLoggerType(PlatformUtils.platformLogType());
         }
         webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
