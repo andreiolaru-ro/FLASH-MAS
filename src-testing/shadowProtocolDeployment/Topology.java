@@ -49,6 +49,6 @@ class Topology {
 		String prevPylon = getter(GetterType.GET_PYLON_FOR_AGENT, agent);
 		topology.get(getter(GetterType.GET_SERVER_FOR_PYLON, nextPylon)).get(nextPylon).add(agent);
 		topology.get(getter(GetterType.GET_SERVER_FOR_PYLON, prevPylon)).get(prevPylon).remove(agent);
-		System.out.println(topology);
+		//System.out.println(topology);
 	}
 }

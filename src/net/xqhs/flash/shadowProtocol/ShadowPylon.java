@@ -149,7 +149,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
             messageThread.start();
         }
 
-        li("Started" + (useThread ? " with thread." : ""));
+       // li("Started" + (useThread ? " with thread." : ""));
         return true;
     }
 
@@ -171,7 +171,7 @@ public class ShadowPylon extends DefaultPylonImplementation {
         if(!super.addContext(context))
             return false;
         String nodeName = context.getEntityName();
-        lf("Added node context ", nodeName);
+       // lf("Added node context ", nodeName);
         return true;
     }
 

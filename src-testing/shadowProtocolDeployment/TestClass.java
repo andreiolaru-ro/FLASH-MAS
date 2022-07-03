@@ -1,6 +1,7 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
+import maria.MobileCompositeAgent;
 import maria.MobilityTestShard;
 import net.xqhs.flash.core.*;
 import net.xqhs.flash.core.node.Node;
@@ -112,7 +113,7 @@ public class TestClass {
         String agent = getRandomElement(agentsList);
         String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
         List<String> copy = new ArrayList<>(pylonsList);
-        System.out.println(agent);
+        //System.out.println(agent);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
         String pylon = getRandomElement(copy);
         String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
@@ -122,7 +123,7 @@ public class TestClass {
     public Action moveToAnotherNodeActionForAgent(String agent) {
         String agent_complete = agent + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, agent);
         List<String> copy = new ArrayList<>(pylonsList);
-        System.out.println(agent);
+        //System.out.println(agent);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
         String pylon = getRandomElement(copy);
         String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
@@ -191,7 +192,7 @@ public class TestClass {
             }
             all_actions.addAll(moves.subList(numberOfMessages, numberOfMoves));
         }
-        System.out.println(all_actions);
+        //System.out.println(all_actions);
         for (Action.Actions ac : all_actions) {
             switch (ac) {
                 case MOVE_TO_ANOTHER_NODE:
@@ -255,7 +256,7 @@ public class TestClass {
     public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves, boolean generateActions) {
        // Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
 
-       // for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
+//        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
         for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
                 for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                     String port_value = ((region.getKey()).split(":"))[1];
@@ -278,11 +279,11 @@ public class TestClass {
                             .addSingleValue("region-server", "ws://" + server_name));
                     node.addGeneralContext(pylon_elem.asContext());
                     elements.put(node_name, node);
-
+                    int delay = 20000;
                     // CREATE AGENTS
                     for (String agent : (pylon.getValue())) {
                         String agent_name = agent + "-" + region.getKey();
-                        CompositeAgentTest agent_elem = new CompositeAgentTest(new MultiTreeMap().addSingleValue("agent_name", agent_name));
+                        MobileCompositeAgent agent_elem = new MobileCompositeAgent(new MultiTreeMap().addSingleValue("agent_name", agent_name).addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, agent_name));
 
                         // ADD CONTEXT
                         agent_elem.addContext(pylon_elem.asContext());
@@ -303,13 +304,15 @@ public class TestClass {
                         List<String> actionsToString = null;
                         if (generateActions) {
                             actionsToString = generateActionsForAgent(numberOfMessages, numberOfMoves, agent).stream().map(Action::toJsonString).collect(Collectors.toList());
-                            System.out.println(actionsToString);
+                           // System.out.println(actionsToString);
                         } else {
                             actionsToString = getActionsFromFile("src-testing/shadowProtocolDeployment/ActionsForAgents/" + pylon_name + ".json", agent).stream().map(Action::toJsonString).collect(Collectors.toList());
-                            System.out.println(actionsToString);
+                            //System.out.println(actionsToString);
                         }
-                        testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)));
+                        testingShard.configure(new MultiTreeMap().addSingleValue("Actions_List", String.join(";", actionsToString)).addSingleValue("delay", String.valueOf(delay)));
                         agent_elem.addShard(testingShard);
+
+                        delay = delay + 1000;
 
                         agent_elem.addShard(new MobilityTestShard());
 
@@ -321,8 +324,8 @@ public class TestClass {
             if (elem.getValue() instanceof Node) {
                 ((Node) elem.getValue()).start();
             }
-            if (elem.getValue() instanceof CompositeAgentTest) {
-                ((CompositeAgentTest) elem.getValue()).start();
+            if (elem.getValue() instanceof MobileCompositeAgent) {
+                ((MobileCompositeAgent) elem.getValue()).start();
             }
         }
     }

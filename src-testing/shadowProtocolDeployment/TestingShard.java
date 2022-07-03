@@ -30,14 +30,15 @@ public class TestingShard extends AgentShardGeneral {
                 return;
             }
             if (actions.get(index) == null) {
-                li("NO ACTION " + index + " " + actions.size());
+                li("NO ACTION");
                 //action_timer.cancel();
                 return;
             }
-            li("INDEX " + index + " " +  actions.get(index).getSource() + " " + actions.get(index));
+            //li("INDEX " + index + " " +  actions.get(index).getSource() + " " + actions.get(index));
+            System.out.println();
             switch (actions.get(index).getType()) {
                 case MOVE_TO_ANOTHER_NODE:
-                    li("MOVE_TO_ANOTHER_NODE");
+                    //li("MOVE_TO_ANOTHER_NODE");
                     action_timer.cancel();
                     AgentEvent move_event = new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE);
                     move_event.add(TARGET, "node-" + actions.get(index).getDestination());
@@ -45,7 +46,7 @@ public class TestingShard extends AgentShardGeneral {
                     getAgent().postAgentEvent(move_event);
                     break;
                 case SEND_MESSAGE:
-                    li("SEND_MESSAGE");
+                    //li("SEND_MESSAGE");
                     sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
                     break;
             }
@@ -57,6 +58,7 @@ public class TestingShard extends AgentShardGeneral {
      * The message index.
      */
     int index = 0;
+    int delay = 20000;
 
     /**
      * The list of actions that the node needs to execute.
@@ -91,7 +93,10 @@ public class TestingShard extends AgentShardGeneral {
             List<String> test = new ArrayList<>(Arrays.asList(configuration.getAValue("Actions_List").split(";")));
             actions = test.stream().map(Action::jsonStringToAction).collect(Collectors.toList());
         }
-        li("SIZE " + actions.size());
+        if (configuration.getAValue("delay") != null) {
+            delay = Integer.parseInt(configuration.getAValue("delay"));
+        }
+        //li("SIZE " + actions.size());
         return true;
     }
 
@@ -103,7 +108,7 @@ public class TestingShard extends AgentShardGeneral {
         {
             case AGENT_START:
                 action_timer = new Timer();
-                action_timer.schedule(new ActionTimer(), 1000, 5000);
+                action_timer.schedule(new ActionTimer(), delay, 20000);
                 break;
             case AGENT_STOP:
                 action_timer.cancel();

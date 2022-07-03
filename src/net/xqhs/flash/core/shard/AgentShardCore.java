@@ -282,14 +282,14 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
+//		lw("No general context supported for shards by default.");
 		return false;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
+//		lw("No general context supported for shards by default.");
 		return false;
 	}
 	
