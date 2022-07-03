@@ -96,6 +96,7 @@ public class MobileCompositeAgent extends CompositeAgent implements Serializable
 		}
 
 		public void moveTo(String destination) {
+			moveTime = new Timestamp(System.currentTimeMillis());
 			log("agent [] has been requested to move to []", agentName, destination);
 			log("agent [] started moving process at []", agentName, moveTime);
 			log("agent [] has shards: [] before serialization", agentName, shards);
