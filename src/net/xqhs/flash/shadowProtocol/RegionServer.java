@@ -258,7 +258,7 @@ public class RegionServer extends Unit implements Entity {
 
         public void registerMessageHandler(JSONObject mesg, WebSocket webSocket) {
             String new_agent = (String) mesg.get("source");
-            lf("Received message from new agent " + new_agent);
+            lf("Received REGISTER message from new agent " + new_agent);
             if (!agentsList.containsKey(new_agent)) {
                 agentsList.put(new_agent, new AgentStatus(new_agent, webSocket, AgentStatus.Status.ONLINE, getUnitName()));
             } else {
@@ -268,7 +268,7 @@ public class RegionServer extends Unit implements Entity {
 
         public void connectMessageHandler(JSONObject mesg, WebSocket webSocket) {
             String arrived_agent = (String) mesg.get("source");
-            lf("Received message from mobile agent " + arrived_agent);
+            lf("Received CONNECT message from mobile agent " + arrived_agent);
             if (!agentsList.containsKey(arrived_agent)) {
                 if(!mobileAgents.containsKey(arrived_agent)) {
                     mobileAgents.put(arrived_agent, new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.TRANSITION, getUnitName()));

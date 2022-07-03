@@ -162,7 +162,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 
     @Override
     public boolean sendMessage(String source, String target, String content) {
-        li("Send message " + content + " from agent " + source + " to agent " + target);
+        li("Send message <<" + content + ">> from agent " + source + " to agent " + target);
         String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content, String.valueOf(new Timestamp(System.currentTimeMillis())));
         pylon.send(this.getName(), target, notify_content);
 
@@ -205,7 +205,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
     @Override
     public void signalAgentEvent(AgentEvent event) {
         super.signalAgentEvent(event);
-
         if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
             if (event.get("TO_FROM_TRANSIENT") != null) {
                 le("Agent started after move.");
@@ -214,6 +213,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
                 pylon.send(this.getName(), pylon.getEntityName(), notify_content);
                 pylon.register(entityName, inbox);
                 startShadowAgentShard(MessageType.CONNECT);
+                System.out.println();
             } else {
                 this.register(getAgent().getEntityName());
                 startShadowAgentShard(MessageType.REGISTER);

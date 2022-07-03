@@ -256,8 +256,8 @@ public class TestClass {
     public void CreateElements(List<Action> testCase, Integer numberOfMessages, Integer numberOfMoves, boolean generateActions) {
        // Map<String, List<Action>> sortActions = filterActionsBySources(testCase);
 
-//        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
-        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
+        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_for_node.getTopology()).entrySet()) {
+//        for (Map.Entry<String, Map<String, List<String>>> region : (this.topology_init.getTopology()).entrySet()) {
                 for (Map.Entry<String, List<String>> pylon : (region.getValue()).entrySet()) {
                     String port_value = ((region.getKey()).split(":"))[1];
                     String server_name = region.getKey();
