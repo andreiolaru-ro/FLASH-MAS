@@ -55,7 +55,7 @@ public class Boot {
 //            e.printStackTrace();
 //        }
 
-//        agentA1.moveTo("nodeB");
+        agentA1.moveTo("nodeB");
 
 //        try {
 //            TimeUnit.SECONDS.sleep(2);
