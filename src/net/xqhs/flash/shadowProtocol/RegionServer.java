@@ -95,7 +95,7 @@ public class RegionServer extends Unit implements Entity {
     private WebSocketClient createWebsocketClient(URI serverURI, String server) {
         WebSocketClient client = null;
         try {
-            int tries = 3;
+            int tries = 5;
             long space = 2000;
             while (tries > 0) {
                 client = new WebSocketClient(serverURI) {

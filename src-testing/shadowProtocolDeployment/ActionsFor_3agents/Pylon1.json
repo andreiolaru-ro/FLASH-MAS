@@ -1,0 +1,7 @@
+{
+  "agent1": [
+    {"source": "agent1", "destination": "Pylon2", "content": "", "type": "MOVE_TO_ANOTHER_NODE"},
+    {"source": "agent1", "destination": "agent2", "content": "Message 2-agent1", "type": "SEND_MESSAGE"},
+    {"source": "agent1", "destination": "agent3", "content": "Message 3-agent1", "type": "SEND_MESSAGE"}
+  ]
+}

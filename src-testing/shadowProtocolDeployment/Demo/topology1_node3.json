@@ -1,7 +1,7 @@
 {
   "topology": {
     "localhost:8887": {
-      "Pylon3": ["agent4", "agent5"]
+      "Pylon3": ["agent3"]
     }
   }
 }
