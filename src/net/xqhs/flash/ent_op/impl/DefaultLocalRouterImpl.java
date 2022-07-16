@@ -83,14 +83,17 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         String targetEntityName = operationCall.getTargetEntity().ID;
         String sourceEntityName = operationCall.getSourceEntity().ID;
 
-        operationCall.setRouted(true);
-
         Optional<Pylon> pylonAbleToRoute =  anyPylonAbleToRoute(targetEntityName);
         if ((pylonAbleToRoute).isPresent()) {
+            operationCall.setRouted(true);
+            li("Found pylon to route the op call.");
+
             if (pylonAbleToRoute.get() instanceof WebSocketPylon) {
                 WebSocketPylon webSocketPylon = (WebSocketPylon) pylonAbleToRoute.get();
                 webSocketPylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
             }
+        } else {
+            lw("No pylon found to route the op call");
         }
     }
 
@@ -113,6 +116,7 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     private Optional<Pylon> anyPylonAbleToRoute(String targetEntityName) {
+        // check each of the pylons if they support communication for that specific agent
         return pylons.stream().findFirst();
     }
 
