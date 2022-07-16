@@ -90,30 +90,27 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         }
     }
 
-
+    /**
+     * Check each of the pylons if they support communication for that specific agent.
+     * TODO: check for all future types of pylons
+     */
     private boolean routeIfAnyPylon(OperationCall operationCall) {
         String sourceEntityName = operationCall.getSourceEntity().ID;
         String targetEntity = operationCall.getTargetEntity().ID;
-        String destinationHint = targetEntity.split(AgentWave.ADDRESS_SEPARATOR)[0];
 
-        // check each of the pylons if they support communication for that specific agent
-        // TODO: check for all future types of pylons
-        switch(destinationHint) {
-            case "ws:" :
-                var pylon = pylons.stream().filter(p ->  p instanceof WebSocketPylon).findFirst();
-                if (pylon.isPresent()) {
-                    operationCall.setRouted(true);
+        // first check for websocket pylons
+            var pylon = pylons.stream().filter(p ->  p.canRouteOpCall(targetEntity)).findFirst();
+            if (pylon.isPresent()) {
+                operationCall.setRouted(true);
+                if (pylon.get() instanceof WebSocketPylon) {
                     WebSocketPylon webSocketPylon = (WebSocketPylon) pylon.get();
                     webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
                     li("Found a pylon to route message to %s", targetEntity);
                     return true;
-                } else {
-                    le("Failed to find a pylon to route message to %s", targetEntity);
-                    return false;
                 }
-            default:
-                return false;
-        }
+            }
+        le("Failed to find a pylon to route message to %s", targetEntity);
+        return false;
     }
 
     public void setfMas(FMas fMas) {

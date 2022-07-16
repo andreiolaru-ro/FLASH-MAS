@@ -283,4 +283,9 @@ public class WebSocketPylon extends Unit implements Pylon {
     public void setfMas(FMas fMas) {
         this.fMas = fMas;
     }
+
+    @Override
+    public boolean canRouteOpCall(String destinationTarget) {
+        return destinationTarget.startsWith("ws:");
+    }
 }
