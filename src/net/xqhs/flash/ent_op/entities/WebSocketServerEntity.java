@@ -134,8 +134,7 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
      * @return - an indication of success.
      */
     private boolean routeMessage(JSONObject message) {
-        String destination = (String) message.get("destination");
-        String destEntity = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
+        String destEntity = (String) message.get("destination");
 
         WebSocket destinationWebSocket;
         destinationWebSocket = entityToWebSocket.get(destEntity);

@@ -45,8 +45,8 @@ public class WebSocketPylonTest {
 
         // add agent
         Agent agent1 = new Agent();
-        node1.addEntity(agent1, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent1")
-                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent1"));
+        node1.addEntity(agent1, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "ws://localhost:agent1")
+                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent1"));
 
         // ******************************** second node setup ************************************************ //
 
@@ -65,13 +65,13 @@ public class WebSocketPylonTest {
 
         // add agent
         Agent agent2 = new Agent();
-        node2.addEntity(agent2, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent2")
-                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent2"));
+        node2.addEntity(agent2, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "ws://localhost:agent2")
+                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent2"));
 
         // add agent
         Agent agent3 = new Agent();
-        node2.addEntity(agent3, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "agent3")
-                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "agent3"));
+        node2.addEntity(agent3, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "ws://localhost:agent3")
+                .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent3"));
 
         // *************************************** op call *************************************************** //
 

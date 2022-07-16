@@ -2,6 +2,7 @@ package net.xqhs.flash.ent_op.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.ent_op.entities.Pylon;
@@ -80,20 +81,38 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
     @Override
     public void route(OperationCall operationCall) {
-        String targetEntityName = operationCall.getTargetEntity().ID;
-        String sourceEntityName = operationCall.getSourceEntity().ID;
 
-        Optional<Pylon> pylonAbleToRoute =  anyPylonAbleToRoute(targetEntityName);
-        if ((pylonAbleToRoute).isPresent()) {
-            operationCall.setRouted(true);
-            li("Found pylon to route the op call.");
-
-            if (pylonAbleToRoute.get() instanceof WebSocketPylon) {
-                WebSocketPylon webSocketPylon = (WebSocketPylon) pylonAbleToRoute.get();
-                webSocketPylon.send(sourceEntityName, targetEntityName, serializeOpCall(operationCall));
-            }
+        var routed =  routeIfAnyPylon(operationCall);
+        if (routed) {
+            li("Pylon routed the op call.");
         } else {
             lw("No pylon found to route the op call");
+        }
+    }
+
+
+    private boolean routeIfAnyPylon(OperationCall operationCall) {
+        String sourceEntityName = operationCall.getSourceEntity().ID;
+        String targetEntity = operationCall.getTargetEntity().ID;
+        String destinationHint = targetEntity.split(AgentWave.ADDRESS_SEPARATOR)[0];
+
+        // check each of the pylons if they support communication for that specific agent
+        // TODO: check for all future types of pylons
+        switch(destinationHint) {
+            case "ws:" :
+                var pylon = pylons.stream().filter(p ->  p instanceof WebSocketPylon).findFirst();
+                if (pylon.isPresent()) {
+                    operationCall.setRouted(true);
+                    WebSocketPylon webSocketPylon = (WebSocketPylon) pylon.get();
+                    webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
+                    li("Found a pylon to route message to %s", targetEntity);
+                    return true;
+                } else {
+                    le("Failed to find a pylon to route message to %s", targetEntity);
+                    return false;
+                }
+            default:
+                return false;
         }
     }
 
@@ -114,10 +133,4 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         }
         return json;
     }
-
-    private Optional<Pylon> anyPylonAbleToRoute(String targetEntityName) {
-        // check each of the pylons if they support communication for that specific agent
-        return pylons.stream().findFirst();
-    }
-
 }
