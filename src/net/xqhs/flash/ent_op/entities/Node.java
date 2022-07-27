@@ -28,14 +28,14 @@ public class Node extends Unit implements EntityAPI {
     protected String name;
 
     /**
-     * The framework instance.
-     */
-    protected DefaultFMasImpl fMas = null;
-
-    /**
      * The local router instance.
      */
-    protected DefaultLocalRouterImpl localRouter = null;
+    protected DefaultLocalRouterImpl localRouter = new DefaultLocalRouterImpl();
+
+    /**
+     * The framework instance.
+     */
+    protected DefaultFMasImpl fMas =  new DefaultFMasImpl(localRouter);
 
     /**
      * All added entities.
@@ -51,6 +51,10 @@ public class Node extends Unit implements EntityAPI {
      * Indicates whether the implementation is currently running.
      */
     protected boolean isRunning;
+
+    public Node() {
+        localRouter.setfMas(fMas);
+    }
 
     @Override
     public boolean setup(MultiTreeMap nodeConfiguration) {
@@ -118,17 +122,7 @@ public class Node extends Unit implements EntityAPI {
 
     private boolean addWebSocketPylon(WebSocketPylon webSocketPylon, MultiTreeMap configuration) {
         webSocketPylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
-        // localRouter setup
-        if (localRouter == null) {
-            localRouter = new DefaultLocalRouterImpl();
-        }
         localRouter.addPylon(webSocketPylon);
-
-        // fmas setup
-        if (fMas == null) {
-            fMas = new DefaultFMasImpl(localRouter);
-            localRouter.setfMas(fMas);
-        }
         fMas.addPylon(webSocketPylon);
 
         webSocketPylon.setfMas(fMas);
