@@ -1,6 +1,7 @@
 package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.operations.ReceiveOperation;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -11,7 +12,7 @@ import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.entities.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class Agent extends Unit implements EntityAPI {

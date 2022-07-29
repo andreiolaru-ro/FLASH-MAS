@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.entities.operations.RouteOperation;
+import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -120,9 +119,19 @@ public class WebSocketPylon extends Unit implements Pylon {
     protected FMas fMas;
 
     /**
+     * The corresponding entity tools for this instance.
+     */
+    protected EntityTools entityTools;
+
+    /**
      * The object mapper.
      */
     protected ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * The route operation .
+     */
+    protected RouteOperation routeOperation;
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
@@ -138,6 +147,11 @@ public class WebSocketPylon extends Unit implements Pylon {
         if (configuration.isSimple(NODE_NAME))
             nodeName = configuration.getAValue(NODE_NAME);
         setUnitName(pylonName);
+
+        routeOperation = new RouteOperation();
+        entityTools = fMas.registerEntity(this);
+        entityTools.createOperation(routeOperation);
+
         return true;
     }
 
@@ -254,6 +268,8 @@ public class WebSocketPylon extends Unit implements Pylon {
 
     @SuppressWarnings("unchecked")
     public boolean register(String entityName) {
+        if (webSocketClient == null)
+            return false;
         JSONObject messageToServer = new JSONObject();
         messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
         messageToServer.put(MESSAGE_ENTITY_KEY, entityName);

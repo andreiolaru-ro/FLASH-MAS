@@ -115,17 +115,18 @@ public class Node extends Unit implements EntityAPI {
         agent.setfMas(fMas);
         agent.setup(configuration);
         agent.start();
+
         // store all added agents
         entities.put(agent.getName(), agent);
         return true;
     }
 
     private boolean addWebSocketPylon(WebSocketPylon webSocketPylon, MultiTreeMap configuration) {
+        webSocketPylon.setfMas(fMas);
         webSocketPylon.setup(configuration.getSingleTree(WEBSOCKET_PYLON_CONFIG));
         localRouter.addPylon(webSocketPylon);
         fMas.addPylon(webSocketPylon);
 
-        webSocketPylon.setfMas(fMas);
         // store all added pylons
         pylons.add(webSocketPylon);
         entities.put(webSocketPylon.getName(), webSocketPylon);

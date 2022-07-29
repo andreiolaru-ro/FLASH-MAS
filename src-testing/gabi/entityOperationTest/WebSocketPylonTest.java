@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
-import static net.xqhs.flash.ent_op.entities.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_NAME;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;
