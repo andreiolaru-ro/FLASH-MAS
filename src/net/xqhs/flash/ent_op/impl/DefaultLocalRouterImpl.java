@@ -118,7 +118,7 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         List<EntityAPI> routerEntities = fMas.routerEntities();
 
         var routerEntity = routerEntities.stream().findFirst();
-        if (routerEntity.isPresent()) {
+        if (routerEntity.isPresent() && routerEntity.get().canRoute(operationCall.getTargetEntity())) {
             operationCall.setRouted(true);
             if (routerEntity.get() instanceof WebSocketPylon) {
                 WebSocketPylon webSocketPylon = (WebSocketPylon) routerEntity.get();
