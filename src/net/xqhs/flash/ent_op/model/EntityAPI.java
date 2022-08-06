@@ -89,4 +89,17 @@ public interface EntityAPI {
 	 * @return a list of operations.
 	 */
 	List<Operation> getOperations();
+
+
+	/**
+	 * Used to check if current entity can route a call.
+	 *
+	 * @return <code>true</code> if the route is possible, <code>false</code> otherwise.
+	 */
+	boolean canRoute(EntityID entityID);
+
+	/**
+	 * Used get the entity id.
+	 */
+	EntityID getEntityID();
 }

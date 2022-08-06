@@ -86,6 +86,16 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
+    }
+
+    @Override
+    public EntityID getEntityID() {
+        return null;
+    }
+
+    @Override
     public void route(OperationCall operationCall) {
 
         var routed =  routeIfAnyPylon(operationCall);
@@ -107,11 +117,11 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         // first check for websocket pylons
         List<EntityAPI> routerEntities = fMas.routerEntities();
 
-        var pylon = routerEntities.stream().findFirst();
-        if (pylon.isPresent()) {
+        var routerEntity = routerEntities.stream().findFirst();
+        if (routerEntity.isPresent()) {
             operationCall.setRouted(true);
-            if (pylon.get() instanceof WebSocketPylon) {
-                WebSocketPylon webSocketPylon = (WebSocketPylon) pylon.get();
+            if (routerEntity.get() instanceof WebSocketPylon) {
+                WebSocketPylon webSocketPylon = (WebSocketPylon) routerEntity.get();
                 webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
                 li("Found a pylon to route message to %s", targetEntity);
                 return true;

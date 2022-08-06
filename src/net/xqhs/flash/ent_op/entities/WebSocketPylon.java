@@ -274,6 +274,16 @@ public class WebSocketPylon extends Unit implements Pylon {
         return operations;
     }
 
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return entityID != null && entityID.ID.contains("ws:");
+    }
+
+    @Override
+    public EntityID getEntityID() {
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     public boolean register(String entityName) {
         if (webSocketClient == null)

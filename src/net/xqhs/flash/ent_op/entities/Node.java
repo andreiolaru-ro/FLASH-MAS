@@ -3,15 +3,13 @@ package net.xqhs.flash.ent_op.entities;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.DefaultLocalRouterImpl;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
 
 import java.util.*;
 
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
+import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class Node extends Unit implements EntityAPI {
 
@@ -50,6 +48,9 @@ public class Node extends Unit implements EntityAPI {
      */
     protected boolean isRunning;
 
+    protected EntityID entityID;
+
+
     public Node() {
         localRouter.setfMas(fMas);
     }
@@ -57,6 +58,7 @@ public class Node extends Unit implements EntityAPI {
     @Override
     public boolean setup(MultiTreeMap nodeConfiguration) {
         name = nodeConfiguration.get(NODE_NAME);
+        entityID = new EntityID(nodeConfiguration.getAValue(NODE_NAME));
         setUnitName(name);
         return true;
     }
@@ -98,6 +100,16 @@ public class Node extends Unit implements EntityAPI {
     @Override
     public List<Operation> getOperations() {
         return null;
+    }
+
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
+    }
+
+    @Override
+    public EntityID getEntityID() {
+        return entityID;
     }
 
     public boolean addEntity(EntityAPI entityAPI, MultiTreeMap configuration) {

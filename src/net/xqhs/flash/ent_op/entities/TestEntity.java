@@ -94,6 +94,11 @@ public class TestEntity extends Unit implements EntityAPI {
         return null;
     }
 
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
+    }
+
     public EntityID getEntityID() {
         return entityID;
     }

@@ -2,10 +2,7 @@ package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -204,6 +201,16 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
 
     @Override
     public List<Operation> getOperations() {
+        return null;
+    }
+
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
+    }
+
+    @Override
+    public EntityID getEntityID() {
         return null;
     }
 }

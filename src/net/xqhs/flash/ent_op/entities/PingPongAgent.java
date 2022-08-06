@@ -171,6 +171,16 @@ public class PingPongAgent extends Unit implements EntityAPI {
         return null;
     }
 
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
+    }
+
+    @Override
+    public EntityID getEntityID() {
+        return entityID;
+    }
+
     public void callOperation(OperationCall operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
     }

@@ -95,7 +95,7 @@ public class Agent extends Unit implements EntityAPI {
         if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
             String message = operationCall.getArgumentValues().get(0).toString();
             String sender = operationCall.getSourceEntity().ID;
-            li("received message: [] from []", message, sender);
+            li("############ received message: [] from []", message, sender);
         }
         return null;
     }
@@ -113,6 +113,11 @@ public class Agent extends Unit implements EntityAPI {
     @Override
     public List<Operation> getOperations() {
         return null;
+    }
+
+    @Override
+    public boolean canRoute(EntityID entityID) {
+        return false;
     }
 
     public EntityID getEntityID() {
