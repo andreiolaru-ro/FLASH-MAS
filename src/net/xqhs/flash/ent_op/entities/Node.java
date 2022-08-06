@@ -4,14 +4,12 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.DefaultLocalRouterImpl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 
@@ -95,6 +93,11 @@ public class Node extends Unit implements EntityAPI {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public List<Operation> getOperations() {
+        return null;
     }
 
     public boolean addEntity(EntityAPI entityAPI, MultiTreeMap configuration) {

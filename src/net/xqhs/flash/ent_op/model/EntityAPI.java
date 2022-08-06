@@ -14,6 +14,8 @@ package net.xqhs.flash.ent_op.model;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 
+import java.util.List;
+
 /**
  * Defines all the methods that an entity should offer to an object which has a reference to the entity. Normally, an
  * {@link OutboundEntityTools} instance should access an entity via these methods.
@@ -79,4 +81,12 @@ public interface EntityAPI {
 	 * @return the name of the corresponding entity.
 	 */
 	String getName();
+
+
+	/**
+	 * Used to get the list of available operations.
+	 *
+	 * @return a list of operations.
+	 */
+	List<Operation> getOperations();
 }

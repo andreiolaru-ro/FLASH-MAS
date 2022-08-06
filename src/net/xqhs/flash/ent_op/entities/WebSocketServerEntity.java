@@ -3,6 +3,7 @@ package net.xqhs.flash.ent_op.entities;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OperationCall;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
@@ -15,6 +16,7 @@ import org.json.simple.JSONValue;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 
 public class WebSocketServerEntity extends Unit implements EntityAPI {
 
@@ -197,6 +199,11 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
 
     @Override
     public String getName() {
+        return null;
+    }
+
+    @Override
+    public List<Operation> getOperations() {
         return null;
     }
 }

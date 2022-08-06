@@ -2,13 +2,10 @@ package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.EntityID;
-import net.xqhs.flash.ent_op.model.EntityTools;
-import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.OperationCall;
-import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
+
+import java.util.List;
 
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
@@ -90,6 +87,11 @@ public class TestEntity extends Unit implements EntityAPI {
     @Override
     public String getName() {
         return entityID.ID;
+    }
+
+    @Override
+    public List<Operation> getOperations() {
+        return null;
     }
 
     public EntityID getEntityID() {

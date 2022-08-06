@@ -1,5 +1,7 @@
 package net.xqhs.flash.ent_op.model;
 
+import java.util.List;
+
 public interface FMas {
 
     /**
@@ -20,6 +22,13 @@ public interface FMas {
      * @return <code>true</code> if the entity is present on the current node; <code>false</code> otherwise.
      */
     boolean entityExistsOnLocalNode(String entityName);
+
+    /**
+     * Method used to give all entities able to route.
+     *
+     * @return a list of entities.
+     */
+    List<EntityAPI> routerEntities();
 
     /**
      * Method used to route an operation call. This method only forwards an operation call to the {@link LocalRouter}

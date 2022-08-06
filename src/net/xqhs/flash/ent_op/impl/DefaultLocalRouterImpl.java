@@ -11,6 +11,7 @@ import net.xqhs.flash.ent_op.model.*;
 import net.xqhs.util.logging.Unit;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -80,6 +81,11 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     @Override
+    public List<Operation> getOperations() {
+        return null;
+    }
+
+    @Override
     public void route(OperationCall operationCall) {
 
         var routed =  routeIfAnyPylon(operationCall);
@@ -99,16 +105,18 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         String targetEntity = operationCall.getTargetEntity().ID;
 
         // first check for websocket pylons
-            var pylon = pylons.stream().filter(p ->  p.canRouteOpCall(targetEntity)).findFirst();
-            if (pylon.isPresent()) {
-                operationCall.setRouted(true);
-                if (pylon.get() instanceof WebSocketPylon) {
-                    WebSocketPylon webSocketPylon = (WebSocketPylon) pylon.get();
-                    webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
-                    li("Found a pylon to route message to %s", targetEntity);
-                    return true;
-                }
+        List<EntityAPI> routerEntities = fMas.routerEntities();
+
+        var pylon = routerEntities.stream().findFirst();
+        if (pylon.isPresent()) {
+            operationCall.setRouted(true);
+            if (pylon.get() instanceof WebSocketPylon) {
+                WebSocketPylon webSocketPylon = (WebSocketPylon) pylon.get();
+                webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
+                li("Found a pylon to route message to %s", targetEntity);
+                return true;
             }
+        }
         le("Failed to find a pylon to route message to %s", targetEntity);
         return false;
     }

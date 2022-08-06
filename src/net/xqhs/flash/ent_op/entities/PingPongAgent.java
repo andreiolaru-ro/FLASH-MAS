@@ -166,6 +166,11 @@ public class PingPongAgent extends Unit implements EntityAPI {
         return agentName;
     }
 
+    @Override
+    public List<Operation> getOperations() {
+        return null;
+    }
+
     public void callOperation(OperationCall operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
     }

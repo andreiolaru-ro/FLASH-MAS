@@ -16,6 +16,8 @@ import org.json.simple.JSONValue;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
 
@@ -131,7 +133,7 @@ public class WebSocketPylon extends Unit implements Pylon {
     /**
      * The route operation .
      */
-    protected RouteOperation routeOperation;
+    protected List<Operation> operations = new LinkedList<>();
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
@@ -148,7 +150,8 @@ public class WebSocketPylon extends Unit implements Pylon {
             nodeName = configuration.getAValue(NODE_NAME);
         setUnitName(pylonName);
 
-        routeOperation = new RouteOperation();
+        RouteOperation routeOperation = new RouteOperation();
+        operations.add(routeOperation);
         entityTools = fMas.registerEntity(this);
         entityTools.createOperation(routeOperation);
 
@@ -264,6 +267,11 @@ public class WebSocketPylon extends Unit implements Pylon {
     @Override
     public String getName() {
         return pylonName;
+    }
+
+    @Override
+    public List<Operation> getOperations() {
+        return operations;
     }
 
     @SuppressWarnings("unchecked")
