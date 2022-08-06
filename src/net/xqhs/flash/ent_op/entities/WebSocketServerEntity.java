@@ -190,6 +190,11 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
     }
 
     @Override
+    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+        return null;
+    }
+
+    @Override
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }

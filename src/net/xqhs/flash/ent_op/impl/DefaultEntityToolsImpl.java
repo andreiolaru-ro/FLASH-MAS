@@ -147,6 +147,6 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
             return;
         }
 
-        entityAPI.handleIncomingOperationCall(operationCall);
+        entityAPI.handleIncomingOperationCallWithResult(operationCall);
     }
 }

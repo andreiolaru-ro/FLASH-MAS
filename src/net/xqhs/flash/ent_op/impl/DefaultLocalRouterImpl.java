@@ -71,6 +71,11 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     @Override
+    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+        return null;
+    }
+
+    @Override
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }

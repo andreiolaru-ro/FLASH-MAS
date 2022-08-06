@@ -101,6 +101,16 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     @Override
+    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+        if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
+            String message = operationCall.getArgumentValues().get(0).toString();
+            String sender = operationCall.getSourceEntity().ID;
+            li(">>>>>>>>>>> received message: [] from []", message, sender);
+        }
+        return null;
+    }
+
+    @Override
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
