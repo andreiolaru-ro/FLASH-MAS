@@ -9,17 +9,26 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.webSocketDeployment;
+package test.compositePingPong;
 
 import net.xqhs.flash.FlashBoot;
 
 /**
- * Tests WebSocket support works in a deployment of non-composite agents.
+ * Deployment testing.
  */
-public class BootSimpleDeployment
+public class Boot
 {
 	/**
-	 * Performs test.
+	 * Designation for shards.
+	 */
+	public static final String	FUNCTIONALITY	= "TESTING";
+	/**
+	 * Different designation for shards.
+	 */
+	public static final String	MONITORING		= "OTHER-MONITORING";
+	
+	/**
+	 * Performs test
 	 * 
 	 * @param args_
 	 *            - not used.
@@ -28,15 +37,11 @@ public class BootSimpleDeployment
 	{
 		String args = "";
 		
-		args += " -package example.simplePingPong";
-		
+		args += " -package test.compositePingPong -loader agent:composite";
 		args += " -node node1";
-		args += " -pylon webSocket:slave1 serverPort:8885";
-		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
-		
-		args += " -node node2";
-		args += " -pylon webSocket:slave2 connectTo:ws://localhost:8885";
-		args += " -agent AgentB classpath:AgentPingPong";
+		// notice how the name of the shard does not necessarily need to contain "Shard", as it is handled by autoFind
+		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard MonitoringTest";
+		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard MonitoringTestShard";
 		
 		FlashBoot.main(args.split(" "));
 	}

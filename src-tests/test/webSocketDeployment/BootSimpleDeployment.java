@@ -9,43 +9,34 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.webSocketDeployment;
+package test.webSocketDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
 /**
- * Deployment testing.
+ * Tests WebSocket support works in a deployment of non-composite agents.
  */
-public class BootCompositeDeployment
+public class BootSimpleDeployment
 {
 	/**
-	 * Designation for shards.
-	 */
-	public static final String	FUNCTIONALITY	= "TESTING";
-	/**
-	 * Different designation for shards.
-	 */
-	public static final String	MONITORING		= "MONITORING";
-	
-	/**
-	 * Performs test
+	 * Performs test.
 	 * 
 	 * @param args_
-	 *                 - not used.
+	 *            - not used.
 	 */
 	public static void main(String[] args_)
 	{
 		String args = "";
 		
-		args += " -package example.compositePingPong -loader agent:composite";
+		args += " -package test.simplePingPong";
 		
 		args += " -node node1";
-		args += " -pylon webSocket:slave1 serverPort:8886";
-		args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
+		args += " -pylon webSocket:pylon1 serverPort:8885";
+		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		
 		args += " -node node2";
-		args += " -pylon webSocket:slave2 connectTo:ws://localhost:8886";
-		args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+		args += " -pylon webSocket:pylon2 connectTo:ws://localhost:8885";
+		args += " -agent AgentB classpath:AgentPingPong";
 		
 		FlashBoot.main(args.split(" "));
 	}

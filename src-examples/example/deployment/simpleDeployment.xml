@@ -21,7 +21,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
 
-	<package>example.simplePingPong</package>
+	<package>test.simplePingPong</package>
 	<parameter name="serverPort" value="8886" />
 	<agent classpath="AgentPingPong" name="AgentA">
 		<parameter name="sendTo" value="AgentB" />

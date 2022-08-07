@@ -9,31 +9,15 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.simplePingPong;
-
-import net.xqhs.flash.FlashBoot;
-
 /**
- * Deployment testing.
+ * The scenario of two agents which ping messages between them (one sends and one replies).
+ * <p>
+ * Run this with:
+ * <p>
+ * <code>-package examples.compositeAgent -loader agent:composite -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";</code>
+ * <p>
+ * Expect to see at each 2 seconds 2 events: one from AgentB and one from AgentA.
+ * <p>
+ * <b>Verifies:</b> correct loading and management of {@link net.xqhs.flash.core.composite.CompositeAgent}s
  */
-public class Boot
-{
-	/**
-	 * Performs test.
-	 * 
-	 * @param args
-	 *                 - not used.
-	 */
-	public static void main(String[] args)
-	{
-		String test_args = "";
-		
-		test_args += " -package example.simplePingPong";
-		test_args += " -node main";
-		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
-		test_args += " -agent AgentB classpath:AgentPingPong";
-		
-		FlashBoot.main(test_args.split(" "));
-	}
-	
-}
+package test.compositePingPong;

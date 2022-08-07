@@ -9,17 +9,31 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
+package test.simplePingPong;
+
+import net.xqhs.flash.FlashBoot;
+
 /**
- * 
+ * Deployment testing.
  */
-/**
- * The scenario of two agents which ping messages between them (one sends and one replies). The scenario is given as
- * console arguments.
- * <p>
- * Run the Boot class.
- * <p>
- * Expect to see at each 2 seconds 2 events: one from AgentB and one from AgentA.
- * 
- * @author Andrei Olaru
- */
-package example.simplePingPong;
+public class Boot
+{
+	/**
+	 * Performs test.
+	 * 
+	 * @param args
+	 *                 - not used.
+	 */
+	public static void main(String[] args)
+	{
+		String test_args = "";
+		
+		test_args += " -package test.simplePingPong";
+		test_args += " -node main";
+		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		test_args += " -agent AgentB classpath:AgentPingPong";
+		
+		FlashBoot.main(test_args.split(" "));
+	}
+	
+}

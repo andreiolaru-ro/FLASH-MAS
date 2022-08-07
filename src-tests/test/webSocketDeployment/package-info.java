@@ -19,4 +19,4 @@
  * 
  * @author Andrei Olaru
  */
-package example.webSocketDeployment;
+package test.webSocketDeployment;

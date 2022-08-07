@@ -27,11 +27,10 @@ import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import test.simplePingPong.AgentPingPong;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
-import example.simplePingPong.AgentPingPong;
 
 
 /**

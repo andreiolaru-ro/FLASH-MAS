@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.compositePingPong;
+package test.compositePingPong;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +28,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public class PingTestComponent extends AgentShardGeneral
+public class PingTestShard extends AgentShardGeneral
 {
 	/**
 	 * The instance sends a message to the "other agent".
@@ -89,7 +89,7 @@ public class PingTestComponent extends AgentShardGeneral
 	/**
 	 * Default constructor
 	 */
-	public PingTestComponent()
+	public PingTestShard()
 	{
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
@@ -139,7 +139,7 @@ public class PingTestComponent extends AgentShardGeneral
 	 */
 	protected boolean sendMessage(String content)
 	{
-		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
+		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestShard.SHARD_ENDPOINT);
 	}
 	
 	@Override
