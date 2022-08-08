@@ -11,6 +11,7 @@
  ******************************************************************************/
 package test.compositePingPong;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -48,9 +49,13 @@ public class PingTestShard extends AgentShardGeneral {
 	 */
 	private static final long		serialVersionUID			= 5214882018809437402L;
 	/**
-	 * The name of the component parameter that contains the id of the other agent.
+	 * The name of the parameter that contains the id(s) of the other agent(s).
 	 */
 	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "otherAgent";
+	/**
+	 * The name of the parameter that contains the period between pings.
+	 */
+	protected static final String	TIME_PARAMETER_NAME			= "every";
 	/**
 	 * Endpoint element for this shard.
 	 */
@@ -62,12 +67,12 @@ public class PingTestShard extends AgentShardGeneral {
 	/**
 	 * Time between ping messages.
 	 */
-	protected static final long		PING_PERIOD					= 2000;
+	protected static final int		DEFAULT_PING_PERIOD			= 2000;
 	
 	/**
 	 * Timer for pinging.
 	 */
-	Timer	pingTimer	= null;
+	transient Timer	pingTimer	= null;
 	/**
 	 * Cache for the name of this agent.
 	 */
@@ -75,11 +80,15 @@ public class PingTestShard extends AgentShardGeneral {
 	/**
 	 * Cache for the name of the other agent.
 	 */
-	String	otherAgent	= null;
+	List<String>	otherAgents	= null;
 	/**
 	 * The index of the message sent.
 	 */
 	int		tick		= 0;
+	/**
+	 * Period between pings.
+	 */
+	int				period;
 	
 	/**
 	 * Default constructor
@@ -92,7 +101,10 @@ public class PingTestShard extends AgentShardGeneral {
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
-		otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
+		otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
+		period = configuration.containsKey(TIME_PARAMETER_NAME)
+				? Integer.parseInt(configuration.getFirstValue(TIME_PARAMETER_NAME))
+				: DEFAULT_PING_PERIOD;
 		return true;
 	}
 	
@@ -102,15 +114,13 @@ public class PingTestShard extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			pingTimer = new Timer();
-			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
-			break;
-		case SIMULATION_START:
+			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, DEFAULT_PING_PERIOD);
 			break;
 		case AGENT_STOP:
 			pingTimer.cancel();
 			break;
 		default:
-			break;
+			//
 		}
 	}
 	
@@ -128,7 +138,10 @@ public class PingTestShard extends AgentShardGeneral {
 	 * @return a success indication.
 	 */
 	protected boolean sendMessage(String content) {
-		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestShard.SHARD_ENDPOINT);
+		boolean res = true;
+		for(String otherAgent : otherAgents)
+			res &= sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestShard.SHARD_ENDPOINT);
+		return res;
 	}
 	
 	@Override
