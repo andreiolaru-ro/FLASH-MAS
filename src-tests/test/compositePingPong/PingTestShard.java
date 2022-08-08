@@ -28,28 +28,19 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public class PingTestShard extends AgentShardGeneral
-{
+public class PingTestShard extends AgentShardGeneral {
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 
 	 * @author Andrei Olaru
 	 */
-	class Pinger extends TimerTask
-	{
-		/**
-		 * The index of the message sent.
-		 */
-		int	tick	= 0;
-		
+	class Pinger extends TimerTask {
 		@Override
-		public void run()
-		{
+		public void run() {
 			tick++;
 			System.out.println("Sending the message....");
 			sendMessage("ping-no " + tick);
 		}
-		
 	}
 	
 	/**
@@ -76,27 +67,29 @@ public class PingTestShard extends AgentShardGeneral
 	/**
 	 * Timer for pinging.
 	 */
-	Timer							pingTimer					= null;
+	Timer	pingTimer	= null;
 	/**
 	 * Cache for the name of this agent.
 	 */
-	String							thisAgent					= null;
+	String	thisAgent	= null;
 	/**
 	 * Cache for the name of the other agent.
 	 */
-	String							otherAgent					= null;
+	String	otherAgent	= null;
+	/**
+	 * The index of the message sent.
+	 */
+	int		tick		= 0;
 	
 	/**
 	 * Default constructor
 	 */
-	public PingTestShard()
-	{
+	public PingTestShard() {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
 	@Override
-	public boolean configure(MultiTreeMap configuration)
-	{
+	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
 		otherAgent = configuration.getFirstValue(OTHER_AGENT_PARAMETER_NAME);
@@ -104,11 +97,9 @@ public class PingTestShard extends AgentShardGeneral
 	}
 	
 	@Override
-	public void signalAgentEvent(AgentEvent event)
-	{
+	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		switch(event.getType())
-		{
+		switch(event.getType()) {
 		case AGENT_START:
 			pingTimer = new Timer();
 			pingTimer.schedule(new Pinger(), PING_INITIAL_DELAY, PING_PERIOD);
@@ -124,8 +115,7 @@ public class PingTestShard extends AgentShardGeneral
 	}
 	
 	@Override
-	protected void parentChangeNotifier(ShardContainer oldParent)
-	{
+	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
 		if(getAgent() != null)
 			thisAgent = getAgent().getEntityName();
@@ -137,14 +127,12 @@ public class PingTestShard extends AgentShardGeneral
 	 * @param content
 	 * @return a success indication.
 	 */
-	protected boolean sendMessage(String content)
-	{
+	protected boolean sendMessage(String content) {
 		return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestShard.SHARD_ENDPOINT);
 	}
 	
 	@Override
-	protected MultiTreeMap getShardData()
-	{
+	protected MultiTreeMap getShardData() {
 		return super.getShardData();
 	}
 }

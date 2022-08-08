@@ -59,11 +59,11 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 * Creation data for the shard. The field is initialized with an empty structure, so that it is guaranteed that it
 	 * will never be <code>null</code> after construction.
 	 */
-	private MultiTreeMap			shardConfiguration;
+	protected MultiTreeMap			shardConfiguration;
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private ShardContainer			parentAgent;
+	private transient ShardContainer	parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -142,6 +142,10 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 			shardConfiguration = configuration;
 		}
 		return true;
+	}
+	
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 	
 	/**
@@ -248,9 +252,10 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	public final boolean addContext(EntityProxy<Agent> parent)
 	{
 		if(parentAgent != null)
-			return ler(false, "Parent already set");
+//			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
+		//System.out.println("ParentAgent added in shard " + parent);
 		parentAgent = (ShardContainer) parent;
 		parentChangeNotifier(null);
 		return true;
@@ -277,14 +282,14 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
+//		lw("No general context supported for shards by default.");
 		return false;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
+//		lw("No general context supported for shards by default.");
 		return false;
 	}
 	
@@ -295,6 +300,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	 */
 	final protected ShardContainer getAgent()
 	{
+//		System.out.println("ParentAgent in PingTestComponent" + parentAgent);
 		return parentAgent;
 	}
 	

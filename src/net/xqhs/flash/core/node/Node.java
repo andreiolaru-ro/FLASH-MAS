@@ -11,17 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
+import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -36,7 +26,15 @@ import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.shadowProtocol.MessageFactory;
+import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -48,10 +46,30 @@ import net.xqhs.util.logging.Unit;
  */
 public class Node extends Unit implements Entity<Node>
 {
+
+	/**
+	 * The proxy of the node.
+	 */
 	public class NodeProxy implements EntityProxy<Node> {
 		@Override
 		public String getEntityName() {
 			return name;
+		}
+
+		/**
+		 *
+		 * @param destination - name of the destination node
+		 * @param agentName - name of the agent that wants to move
+		 * @param agentData - serialization of the agent
+		 */
+		public void moveAgent(String destination, String agentName, String agentData) {
+			entityOrder.stream()
+					.filter(entity ->
+							entity instanceof MobileCompositeAgent &&
+							entity.getName().equals(agentName)
+					).findAny().ifPresent(entity -> entityOrder.remove(entity));
+
+			sendMessage(destination, agentData);
 		}
 	}
 
@@ -68,7 +86,7 @@ public class Node extends Unit implements Entity<Node>
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	public List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 	/**
 	 *  A {@link MessagingShard} of this node for message communication.
@@ -82,7 +100,14 @@ public class Node extends Unit implements Entity<Node>
 
     private static final String             SHARD_ENDPOINT      = "control";
 
-	protected ShardContainer proxy = new ShardContainer() {
+	/**
+	 * The pylon proxy of the node.
+	 */
+	private PylonProxy nodePylonProxy;
+
+	protected String serverURI = null;
+
+	public ShardContainer proxy = new ShardContainer() {
 
 		/**
 		 * This method parses the content received and takes further control/monitoring decisions.
@@ -95,20 +120,33 @@ public class Node extends Unit implements Entity<Node>
 				if(jo.get(OperationUtils.NAME) != null && jo.get(OperationUtils.PARAMETERS) != null) {
 					String operation  = (String)jo.get(OperationUtils.NAME);
 					String param      = (String)jo.get(OperationUtils.PARAMETERS);
-					Entity<?> entity = entityOrder.stream()
-							.filter(en -> en.getName().equals(param))
-							.findFirst().orElse(null);
-					if(entity == null) {
-						le("[] entity not found in the context of [].", param, name);
-						return;
-					}
-					if(operation.equals(OperationUtils.ControlOperation.START.getOperation()))
-						if(entity.start()) {
+
+					if(operation.equals(OperationUtils.ControlOperation.START.getOperation())) {
+						Entity<?> entity = entityOrder.stream()
+								.filter(en -> en.getName().equals(param))
+								.findFirst().orElse(null);
+						if(entity == null) {
+							le("[] entity not found in the context of [].", param, name);
+							return;
+						}
+						if (entity.start()) {
 							lf("[] was started by parent [].", param, name);
 							return;
 						}
+					}
+					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
+						String agentData = (String) jo.get("agentData");
+
+						MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
+						registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
+						//System.out.println("incerc sa adaug pylon in agent din node");
+						//agent.addGeneralContext(nodePylonProxy);
+						li("Started agent after moving " + agent.getName());
+						agent.addGeneralContext(asContext());
+						agent.addContext(nodePylonProxy);
+						agent.start();
+					}
 				}
-				le("[] cannot properly parse received message.", name);
 			}
 		}
 
@@ -148,8 +186,10 @@ public class Node extends Unit implements Entity<Node>
 	 */
 	public Node(MultiTreeMap nodeConfiguration)
 	{
-		if(nodeConfiguration != null)
+		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+			this.serverURI = nodeConfiguration.get("region-server");
+		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
@@ -168,7 +208,7 @@ public class Node extends Unit implements Entity<Node>
 	{
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
-			registeredEntities.put(entityType, new LinkedList<Entity<?>>());
+			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
 	}
@@ -200,9 +240,8 @@ public class Node extends Unit implements Entity<Node>
 	protected boolean registerEntitiesToCentralEntity() {
 	    JSONArray operations = configureOperations();
 		JSONArray entities = new JSONArray();
-		registeredEntities.entrySet().forEach(entry-> {
-			String category = entry.getKey();
-			for(Entity<?> entity : entry.getValue()) {
+		registeredEntities.forEach((category, value) -> {
+			for (Entity<?> entity : value) {
 				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
 				entities.add(ent);
 			}
@@ -239,6 +278,9 @@ public class Node extends Unit implements Entity<Node>
 			}
 			else
 				le("failed to start entity [].", entityName);
+		}
+		if (messagingShard instanceof ShadowAgentShard) {
+			((ShadowAgentShard) messagingShard).startShadowAgentShard(MessageFactory.MessageType.REGISTER);
 		}
 		isRunning = true;
 		sendStatusUpdate();
@@ -293,6 +335,7 @@ public class Node extends Unit implements Entity<Node>
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
 		PylonProxy pylonProxy = (PylonProxy)context;
+		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy
 				.getRecommendedShardImplementation(
 						AgentShardDesignation.standardShard(
@@ -309,6 +352,8 @@ public class Node extends Unit implements Entity<Node>
 			le("Unable to construct node messaging shard: ", PlatformUtils.printException(e));
 		}
 		messagingShard.addContext(proxy);
+		messagingShard.configure(new MultiTreeMap().addSingleValue("connectTo", this.serverURI)
+				.addSingleValue("agent_name", getName()));
 		li("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
@@ -343,6 +388,7 @@ public class Node extends Unit implements Entity<Node>
 	 * 						- an indication of success
 	 */
 	public boolean sendMessage(String destination, String content) {
+		le("SEND MESSAGE WITH AGENT");
 		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, SHARD_ENDPOINT),

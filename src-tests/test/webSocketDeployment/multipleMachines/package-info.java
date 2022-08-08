@@ -7,4 +7,4 @@
  * @author Andrei
  *
  */
-package example.webSocketDeployment.multipleMachines;
+package test.webSocketDeployment.multipleMachines;

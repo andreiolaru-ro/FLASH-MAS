@@ -35,7 +35,7 @@ public class MonitoringTestShard extends AgentShardCore
 	/**
 	 * The log.
 	 */
-	UnitComponent				locallog			= null;
+	transient UnitComponent		locallog			= null;
 	
 	/**
 	 * Default constructor

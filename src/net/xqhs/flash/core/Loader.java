@@ -19,6 +19,7 @@ import java.util.List;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
 
 /**
@@ -248,7 +249,7 @@ public interface Loader<T extends Entity<?>>
 		ClassFactory factory;
 		switch(searchType) {
 		case CLASS:
-			factory = (ClassFactory) objects[0];
+			factory = objects[0] != null ? (ClassFactory) objects[0] : PlatformUtils.getClassFactory();
 			return factory.canLoadClass(path);
 		case FILE:
 			return new File(path).isFile();
