@@ -11,6 +11,8 @@
  ******************************************************************************/
 package test.compositePingPong;
 
+import java.io.Serializable;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -26,7 +28,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore
+public class MonitoringTestShard extends AgentShardCore implements Serializable
 {
 	/**
 	 * The UID.

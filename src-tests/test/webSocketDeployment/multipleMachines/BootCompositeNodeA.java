@@ -18,7 +18,13 @@ import net.xqhs.flash.FlashBoot;
  */
 public class BootCompositeNodeA
 {
+	/**
+	 * The IP address of the main node.
+	 */
 	public static String	MAIN_IP		= "192.168.100.3";
+	/**
+	 * The port on the main node.
+	 */
 	public static int		MAIN_PORT	= 8886;
 	
 	/**

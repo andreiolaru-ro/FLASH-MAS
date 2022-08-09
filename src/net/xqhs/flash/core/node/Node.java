@@ -11,6 +11,17 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
 import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -29,12 +40,6 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.shadowProtocol.MessageFactory;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.util.logging.Unit;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -48,7 +53,7 @@ public class Node extends Unit implements Entity<Node>
 {
 
 	/**
-	 * The proxy of the node.
+	 * Proxy for a {@link Node}.
 	 */
 	public class NodeProxy implements EntityProxy<Node> {
 		@Override
@@ -68,7 +73,7 @@ public class Node extends Unit implements Entity<Node>
 							entity instanceof MobileCompositeAgent &&
 							entity.getName().equals(agentName)
 					).findAny().ifPresent(entity -> entityOrder.remove(entity));
-
+			li("Send message with agent [] to []", agentName, destination);
 			sendMessage(destination, agentData);
 		}
 	}
@@ -86,7 +91,7 @@ public class Node extends Unit implements Entity<Node>
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	public List<Entity<?>>				entityOrder			= new LinkedList<>();
+	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 
 	/**
 	 *  A {@link MessagingShard} of this node for message communication.
@@ -99,6 +104,8 @@ public class Node extends Unit implements Entity<Node>
     private boolean isRunning;
 
     private static final String             SHARD_ENDPOINT      = "control";
+	
+	public static final String RECEIVE_AGENT_OPERATION = "receive_agent";
 
 	/**
 	 * The pylon proxy of the node.
@@ -107,7 +114,7 @@ public class Node extends Unit implements Entity<Node>
 
 	protected String serverURI = null;
 
-	public ShardContainer proxy = new ShardContainer() {
+	protected ShardContainer proxy = new ShardContainer() {
 
 		/**
 		 * This method parses the content received and takes further control/monitoring decisions.
@@ -134,7 +141,7 @@ public class Node extends Unit implements Entity<Node>
 							return;
 						}
 					}
-					if (operation.equals(OperationUtils.ControlOperation.RECEIVE_AGENT.getOperation())) {
+					if(operation.equals(RECEIVE_AGENT_OPERATION)) {
 						String agentData = (String) jo.get("agentData");
 
 						MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
@@ -266,7 +273,7 @@ public class Node extends Unit implements Entity<Node>
 	@Override
 	public boolean start()
 	{
-		li("Starting node [].", name);
+		li("Starting node [] with entities [].", name, entityOrder);
 		for(Entity<?> entity : entityOrder) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
@@ -388,7 +395,6 @@ public class Node extends Unit implements Entity<Node>
 	 * 						- an indication of success
 	 */
 	public boolean sendMessage(String destination, String content) {
-		le("SEND MESSAGE WITH AGENT");
 		return messagingShard.sendMessage(
 				AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, SHARD_ENDPOINT),

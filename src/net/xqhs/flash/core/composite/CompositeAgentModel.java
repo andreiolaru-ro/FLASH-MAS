@@ -1,7 +1,5 @@
 package net.xqhs.flash.core.composite;
 
-import java.io.Serializable;
-
 import net.xqhs.flash.core.RunnableEntity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -12,7 +10,7 @@ import net.xqhs.flash.core.support.Pylon;
  * 
  * @author Andrei Olaru
  */
-public interface CompositeAgentModel extends Serializable, Agent, RunnableEntity<Pylon>
+public interface CompositeAgentModel extends Agent, RunnableEntity<Pylon>
 {
 	/**
 	 * Adds a shard to the agent, which has been configured beforehand.

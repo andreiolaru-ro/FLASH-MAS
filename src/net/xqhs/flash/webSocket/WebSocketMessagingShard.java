@@ -92,7 +92,6 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	
 	@Override
 	public boolean sendMessage(String target, String source, String content) {
-//		System.out.println("sendmessage from target " + target + " to source " + source + " in messaging shard " + this);
 		return pylon.send(target, source, content);
 	}
 	
@@ -108,13 +107,4 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	public void register(String entityName) {
 		pylon.register(entityName, inbox);
 	}
-
-//	private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-//		inbox = new MessageReceiver() {
-//			@Override
-//			public void receive(String source, String destination, String content) {
-//				receiveMessage(source, destination, content);
-//			}
-//		};
-//	}
 }

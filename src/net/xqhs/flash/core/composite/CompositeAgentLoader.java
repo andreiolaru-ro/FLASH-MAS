@@ -130,7 +130,7 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	public void preloadShard(String shardName, MultiTreeMap shardConfig,
 			List<EntityProxy<? extends Entity<?>>> context, String logPre) {
 		// get shard class
-		String shardClass = shardConfig == null ? null : shardConfig.get(SHARD_CLASS_PARAMETER);
+		String shardClass = shardConfig == null ? null : shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
 		List<String> checked = new LinkedList<>();
 		// test given class, if any
 		if(shardClass != null)

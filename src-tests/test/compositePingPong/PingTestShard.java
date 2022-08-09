@@ -11,6 +11,7 @@
  ******************************************************************************/
 package test.compositePingPong;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,7 +30,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * 
  * @author Andrei Olaru
  */
-public class PingTestShard extends AgentShardGeneral {
+public class PingTestShard extends AgentShardGeneral implements Serializable {
 	/**
 	 * The instance sends a message to the "other agent".
 	 * 

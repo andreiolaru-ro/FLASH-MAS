@@ -369,9 +369,4 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	public EntityProxy<Pylon> asContext() {
 		return messagingProxy;
 	}
-
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context) {
-		return super.addGeneralContext(context);
-	}
 }

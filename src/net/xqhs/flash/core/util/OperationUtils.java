@@ -38,7 +38,7 @@ public class OperationUtils {
 		 */
 		STOP_SIMULATION,
 
-		RECEIVE_AGENT;
+		;
 		
 		public String getOperation() {
 			return name().toLowerCase();
