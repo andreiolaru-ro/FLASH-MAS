@@ -8,7 +8,6 @@
 	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/mpi/mpi.jar"/>
-	<classpathentry kind="lib" path="lib/websocket_support/Java-WebSocket-1.4.0-with-dependencies.jar"/>
 	<classpathentry kind="lib" path="lib/core/Config.jar"/>
 	<classpathentry kind="lib" path="lib/core/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/Logging-modern.jar"/>
@@ -28,6 +27,7 @@
 	<classpathentry kind="lib" path="lib/webserver/jackson-annotations-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/jackson-core-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/jackson-databind-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/websocket/Java-WebSocket-1.4.0-with-dependencies.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>

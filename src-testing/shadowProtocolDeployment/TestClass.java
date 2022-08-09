@@ -227,9 +227,12 @@ public class TestClass {
                     String source_complete = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
                     String destination_complete;
                     switch (ac_type) {
-                        case SEND_MESSAGE -> destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
-                        case MOVE_TO_ANOTHER_NODE -> destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, destination);
-                        default -> throw new IllegalStateException("Unexpected value: " + ac_type);
+                        case SEND_MESSAGE:
+                        	destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
+                        	break;
+                        case MOVE_TO_ANOTHER_NODE: destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, destination);
+                        break;
+                        default: throw new IllegalStateException("Unexpected value: " + ac_type);
                     }
                     
                     test.add(new Action(source_complete, destination_complete, (String) action.get("content"), ac_type));
