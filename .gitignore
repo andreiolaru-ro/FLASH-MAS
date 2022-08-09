@@ -1,4 +1,5 @@
 /bin/
+/lib-all/
 .idea
 .xml
 *.iml
