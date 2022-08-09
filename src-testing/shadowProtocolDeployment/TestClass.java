@@ -1,13 +1,15 @@
 package shadowProtocolDeployment;
 
 import com.google.gson.Gson;
-import maria.MobileCompositeAgent;
-import maria.MobilityTestShard;
+
 import net.xqhs.flash.core.*;
+import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
+import test.compositeMobility.MobilityTestShard;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;

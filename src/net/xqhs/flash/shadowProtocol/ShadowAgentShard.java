@@ -1,9 +1,9 @@
 package net.xqhs.flash.shadowProtocol;
 
-import maria.NonSerializableShard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;

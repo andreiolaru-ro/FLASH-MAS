@@ -1,6 +1,6 @@
 package shadowProtocolDeployment;
 
-import maria.MobileCompositeAgent;
+import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;

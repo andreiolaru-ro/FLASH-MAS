@@ -1,7 +1,7 @@
 /**
  * 
  */
-package maria;
+package net.xqhs.flash.core.mobileComposite;
 
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.util.MultiTreeMap;

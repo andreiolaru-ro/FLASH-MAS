@@ -219,7 +219,7 @@ public class CompositeAgentLoader implements Loader<Agent> {
 			
 		}
 		else
-			agent = new CompositeAgent(agentConfiguration);
+			agent = createAgentInstance(agentConfiguration);
 		String agentName = agentConfiguration.getValue(NAME_ATTRIBUTE_NAME);
 		
 		if(context != null)
@@ -237,11 +237,23 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	}
 	
 	/**
+	 * Creates a new instance of {@link CompositeAgent}. This can be overridden to use a different class.
+	 * 
+	 * @param configuration
+	 *            - the configuration for the agent.
+	 * @return the agent instance.
+	 */
+	@SuppressWarnings("static-method")
+	protected CompositeAgentModel createAgentInstance(MultiTreeMap configuration) {
+		return new CompositeAgent(configuration);
+	}
+	
+	/**
 	 * Loads an {@link AgentShard} to be added to a {@link CompositeAgent}.
 	 * 
 	 * @param shardName
 	 *            - the name of the shard.
-	 * @param shardConfig
+	 * @param shardConfig_arg
 	 *            - the configuration of the shard.
 	 * @param logPre
 	 *            - prefix to add to log entries.
@@ -249,9 +261,8 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	 *            - the name of the agent that will contain the shard, used for logging only.
 	 * @return the loaded shard, if successful, <code>null</code> otherwise.
 	 */
-	public AgentShard loadShard(String shardName, MultiTreeMap shardConfig, String logPre, String agentName) {
-		if(shardConfig == null)
-			shardConfig = new MultiTreeMap();
+	public AgentShard loadShard(String shardName, MultiTreeMap shardConfig_arg, String logPre, String agentName) {
+		MultiTreeMap shardConfig = shardConfig_arg == null ? new MultiTreeMap() : shardConfig_arg;
 		String shardClass = shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
 		shardConfig.addAll(CategoryName.PACKAGE.s(), packages);
 		if(shardClass != null)

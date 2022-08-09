@@ -22,12 +22,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import maria.MobileCompositeAgent;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;

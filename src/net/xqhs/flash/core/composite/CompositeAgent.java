@@ -224,7 +224,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	protected boolean					USE_LOCAL_LOG	= true;
 	
 	/**
-	 * The default constructor. Should be used only when deserializing.
+	 * The default constructor. This <b>should be used only</b> at de-serialization.
 	 */
 	public CompositeAgent() {
 	}
@@ -608,7 +608,8 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 			throw new InvalidParameterException(
 					"Cannot add multiple shards for designation [" + shard.getShardDesignation() + "]");
 		shards.put(shard.getShardDesignation(), shard);
-		shardOrder.add(shard.getShardDesignation());
+		if(!shardOrder.contains(shard.getShardDesignation()))
+			shardOrder.add(shard.getShardDesignation());
 		shard.addContext(this.asContext());
 		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			shard.addGeneralContext(context);

@@ -9,45 +9,39 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package maria;
+package test.compositeMobility;
 
 import java.util.Arrays;
-import java.util.List;
 
-import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
-import test.webSocketDeployment.multipleMachines.BootCompositeNodeA;
 
 /**
  * Deployment testing.
  */
-public class BootNodeB
-{
+public class BootNodeA {
 	/**
-	 * Runs Node B.
+	 * The IP address of the main node.
+	 */
+	public static String	MAIN_IP		= "localhost";
+	/**
+	 * The port on the main node.
+	 */
+	public static int		MAIN_PORT	= 8886;
+	
+	/**
+	 * Runs Node A.
 	 * 
 	 * @param args_
 	 *            - not used.
 	 */
-	public static void main(String[] args_)
-	{
-		String test_args = "";
-		test_args += " -package maria example.compositePingPong -loader agent:composite";
+	public static void main(String[] args_) {
+		String a = "";
+		a += " -package maria test.compositePingPong shadowProtocolDeployment -loader agent:composite";
 		
-        test_args += " -node nodeB";
-		test_args += " -pylon webSocket:wsB connectTo:ws://" + BootCompositeNodeA.MAIN_IP + ":"
-				+ Integer.valueOf(BootCompositeNodeA.MAIN_PORT);
-		/*
-		test_args += " -agent agentB1 -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
-/*/     
-        test_args += " -agent agentB1 -shard messaging -shard PingTestComponent otherAgent:agentA1 -shard MonitoringTestShard";
-//*/
-
-        List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(test_args.split(" ")));
-        for(Node node : nodes) {
-            node.start();
-            System.out.println(node.getName() + " has the following entities: " + node.entityOrder);
-        }
+		a += " -node nodeA";
+		a += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);
+		a += Boot.nodeA_agents;
+		
+		new NodeLoader().loadDeployment(Arrays.asList(a.split(" "))).forEach(node -> node.start());
 	}
-	
 }

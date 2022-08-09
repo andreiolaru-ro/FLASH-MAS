@@ -13,11 +13,11 @@ package net.xqhs.flash.webSocket;
 
 import org.json.simple.JSONObject;
 
-import maria.NonSerializableShard;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
