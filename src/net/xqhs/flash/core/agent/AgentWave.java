@@ -87,7 +87,7 @@ public class AgentWave extends AgentEvent {
 	public final String			VALUE					= "value";
 	
 	/**
-	 * The {@link MultiValueMap} keys which have special meanings in the wave and are not part of actual content.
+	 * The keys which have special meanings in the wave and are not part of actual content.
 	 */
 	@SuppressWarnings("hiding")
 	protected static final String[] specialKeys = { EVENT_TYPE_PARAMETER_NAME, SOURCE_ELEMENT, COMPLETE_DESTINATION,

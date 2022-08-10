@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.JsonObject;
-
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -25,7 +23,6 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
@@ -104,10 +101,9 @@ public class MobileCompositeAgent extends CompositeAgent {
 		 */
 		public void moveTo(String destination) {
 			log("preparing to move to []", destination);
-			AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP);
-			prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
-			prepareMoveEvent.add(TARGET, destination);
-			postAgentEvent(prepareMoveEvent);
+			postAgentEvent(new AgentEvent(AgentEventType.BEFORE_MOVE));
+			postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP)
+					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER).add(TARGET, destination));
 		}
 		
 		/**
@@ -169,9 +165,10 @@ public class MobileCompositeAgent extends CompositeAgent {
 		loadShards();
 
 		log("agent has moved successfully");
-        AgentEvent prepareMoveEvent = new AgentEvent(AgentEvent.AgentEventType.AGENT_START);
-        prepareMoveEvent.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER);
-		return postAgentEvent(prepareMoveEvent);
+		boolean res = postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_START)
+				.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER));
+		postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
+		return res;
     }
 
 	/**
@@ -232,19 +229,10 @@ public class MobileCompositeAgent extends CompositeAgent {
 
 		if(exitEvent != null && MOVE_TRANSIENT_EVENT_PARAMETER.equals(exitEvent.get(TRANSIENT_EVENT_PARAMETER))) {
 			Node.NodeProxy nodeProxy = getNodeProxyContext();
-
-			List<EntityProxy<? extends Entity<?>>> contexts = new ArrayList<>(agentContext);
-			contexts.forEach(this::removeGeneralContext);
-
-			JsonObject root = new JsonObject();
-			root.addProperty(OperationUtils.NAME, Node.RECEIVE_AGENT_OPERATION);
-			root.addProperty(OperationUtils.PARAMETERS, exitEvent.getValue(TARGET));
-			root.addProperty("agentData", serialize());
-
-			String json = root.toString();
-
 			if(nodeProxy != null) {
-				nodeProxy.moveAgent(exitEvent.getValue(TARGET), agentName, json);
+				List<EntityProxy<? extends Entity<?>>> contexts = new ArrayList<>(agentContext);
+				contexts.forEach(this::removeGeneralContext);
+				nodeProxy.moveAgent(exitEvent.getValue(TARGET), agentName, serialize());
 			}
 		}
 		return exitEvent;
@@ -263,7 +251,8 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 */
 	public String serialize() {
 		log("Serializing shards [] with the order [].", shards, shardOrder);
-		shards.forEach((designation, shard) -> {
+		for(AgentShardDesignation designation : shards.keySet()) {
+			AgentShard shard = shards.get(designation);
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
 	            objectOutputStream.writeObject(shard);
@@ -279,7 +268,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	        } catch (IOException e) {
 				log("Unable to do anything with shard [].", designation);
 	        }
-		});
+		}
 		
 		// the shards map will be recreated at de-serialization.
 		shards.clear();

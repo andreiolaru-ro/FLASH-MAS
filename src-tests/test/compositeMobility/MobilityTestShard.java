@@ -97,9 +97,6 @@ public class MobilityTestShard extends AgentShardGeneral {
 			pingTimer = new Timer();
 			pingTimer.schedule(new MobilityTimer(), delay);
 			break;
-		case AFTER_MOVE:
-			pingTimer.cancel();
-			break;
 		default:
 			// nothing to do
 		}

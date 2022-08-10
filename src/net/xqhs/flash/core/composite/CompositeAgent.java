@@ -392,6 +392,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		
 		if(event.getType().equals(AgentEventType.AGENT_START) && futureState != null
 				&& futureState.equals(AgentState.STARTING) && event.isSet(NO_CREATE_THREAD))
+			// event processing should happen on this thread
 			eventProcessingCycle();
 		return true;
 	}

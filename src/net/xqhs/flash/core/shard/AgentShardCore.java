@@ -144,6 +144,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		return true;
 	}
 	
+	/**
+	 * @return the shard configuration stored at {@link #configure(MultiTreeMap)} time.
+	 */
 	public MultiTreeMap getShardConfiguration() {
 		return shardConfiguration;
 	}
