@@ -27,7 +27,6 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
 
-
 /**
  * This class extends {@link CompositeAgent} and is specifically destined to moving agents.
  *
@@ -35,45 +34,44 @@ import net.xqhs.util.logging.UnitComponent;
  * @author Andrei Olaru
  */
 public class MobileCompositeAgent extends CompositeAgent {
-
+	
 	/**
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = -308343471716425142L;
-
+	
 	/**
 	 * The name of the parameter that should be added to {@link AgentEventType#AGENT_START} /
 	 * {@link AgentEventType#AGENT_STOP} events in order to signal that the agent has moved.
 	 */
 	public static final String MOVE_TRANSIENT_EVENT_PARAMETER = "MOVE";
-
+	
 	/**
 	 * Key corresponding to the destination of a moving agent, in a pair that should be added to an
 	 * {@link AgentEventType#AGENT_STOP} event.
 	 */
-    public static final String TARGET = "TARGET";
-
+	public static final String TARGET = "TARGET";
+	
 	/**
 	 * Map with {@link AgentShardDesignation}/Serialization of shards, for reloading them after moving
 	 */
-    public Map<AgentShardDesignation, String> serializedShards = new HashMap<>();
-
+	public Map<AgentShardDesignation, String> serializedShards = new HashMap<>();
+	
 	/**
-	 * Map with {@link AgentShardDesignation}/{@link MultiTreeMap} - representing shard configurations,
-	 * for reloading shards that cannot be serialized.
+	 * Map with {@link AgentShardDesignation}/{@link MultiTreeMap} - representing shard configurations, for reloading
+	 * shards that cannot be serialized.
 	 */
 	public Map<AgentShardDesignation, MultiTreeMap> nonSerializedShardDesignations = new HashMap<>();
-
+	
 	/**
 	 * Loader for loading non-serializable shards.
 	 */
 	private transient CompositeAgentLoader loader = new CompositeAgentLoader();
-
+	
 	/**
 	 * The implementation of {@link ShardContainer} as a proxy for {@link MobileCompositeAgent}.
 	 */
-	public class MobileCompositeAgentShardContainer extends CompositeAgentShardContainer
-	{
+	public class MobileCompositeAgentShardContainer extends CompositeAgentShardContainer {
 		/**
 		 * The serial UID.
 		 */
@@ -81,17 +79,16 @@ public class MobileCompositeAgent extends CompositeAgent {
 		/**
 		 * The agent
 		 */
-		MobileCompositeAgent agent;
-
+		MobileCompositeAgent		agent;
+		
 		/**
 		 * @param agent
-		 *                  - the agent
+		 *            - the agent
 		 */
-		public MobileCompositeAgentShardContainer(MobileCompositeAgent agent)
-		{
+		public MobileCompositeAgentShardContainer(MobileCompositeAgent agent) {
 			super(agent);
 		}
-
+		
 		/**
 		 * Starts the mobility process by posting an {@link AgentEventType#AGENT_STOP} with the indication that the
 		 * agent should become transient.
@@ -114,14 +111,14 @@ public class MobileCompositeAgent extends CompositeAgent {
 			return nodeProxy != null ? nodeProxy.getEntityName() : null;
 		}
 	}
-
+	
 	/**
 	 * Default constructor. This <b>should only be used</b> at de-serialization.
 	 */
 	public MobileCompositeAgent() {
 		asContext = new MobileCompositeAgentShardContainer(this);
 	}
-
+	
 	/**
 	 * Constructor with configuration.
 	 * 
@@ -131,7 +128,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		super(configuration);
 		asContext = new MobileCompositeAgentShardContainer(this);
 	}
-
+	
 	/**
 	 * De-serializes an agent instance. No other operations are performed (such as loading shards, etc.). All other
 	 * operations are done when the agent is started, after context has been added.
@@ -149,13 +146,13 @@ public class MobileCompositeAgent extends CompositeAgent {
 			in = new ObjectInputStream(fis);
 			agent = (MobileCompositeAgent) in.readObject();
 			in.close();
-		} catch (Exception ex) {
+		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-	
+		
 		return agent;
 	}
-
+	
 	@Override
 	public boolean start() {
 		if(agentState != AgentState.TRANSIENT)
@@ -163,14 +160,14 @@ public class MobileCompositeAgent extends CompositeAgent {
 		
 		// this is the point where the agent has arrived after mobility.
 		loadShards();
-
+		
 		log("agent has moved successfully");
 		boolean res = postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_START)
 				.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER));
 		postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
 		return res;
-    }
-
+	}
+	
 	/**
 	 * Loads shards after moving.
 	 */
@@ -180,9 +177,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		loader = new CompositeAgentLoader();
 		loader.configure(new MultiTreeMap(), localLog, PlatformUtils.getClassFactory());
 		
-		serializedShards.forEach((designation, serializedShard) ->
-		addShard(deserializeShard(serializedShard))
-		);
+		serializedShards.forEach((designation, serializedShard) -> addShard(deserializeShard(serializedShard)));
 		
 		nonSerializedShardDesignations.forEach((designation, configuration) -> {
 			loader.preloadShard(designation.toString(), configuration, null, "PRE_LOADING_NON-SERIALIZED_SHARDS: ");
@@ -190,10 +185,10 @@ public class MobileCompositeAgent extends CompositeAgent {
 					"LOADING_NON-SERIALIZED_SHARDS: ", agentName);
 			addShard(shard);
 		});
-
+		
 		log("agent [] has shards [] after deserialization in order: []", agentName, shards, shardOrder);
 	}
-
+	
 	/**
 	 * De-serializes a shard.
 	 * 
@@ -211,22 +206,22 @@ public class MobileCompositeAgent extends CompositeAgent {
 			in = new ObjectInputStream(fis);
 			agentShard = (AgentShard) in.readObject();
 			in.close();
-		} catch (Exception ex) {
+		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-
+		
 		return agentShard;
 	}
-
+	
 	/**
 	 * Overrides the implementation in {@link CompositeAgent}. When an event with a
-	 * {@link MobileCompositeAgent#MOVE_TRANSIENT_EVENT_PARAMETER} is received, the agent is packaged
-	 * in a JSON with the destination and sent to the node proxy.
+	 * {@link MobileCompositeAgent#MOVE_TRANSIENT_EVENT_PARAMETER} is received, the agent is packaged in a JSON with the
+	 * destination and sent to the node proxy.
 	 */
 	@Override
 	protected AgentEvent eventProcessingCycle() {
 		AgentEvent exitEvent = super.eventProcessingCycle();
-
+		
 		if(exitEvent != null && MOVE_TRANSIENT_EVENT_PARAMETER.equals(exitEvent.get(TRANSIENT_EVENT_PARAMETER))) {
 			Node.NodeProxy nodeProxy = getNodeProxyContext();
 			if(nodeProxy != null) {
@@ -255,37 +250,38 @@ public class MobileCompositeAgent extends CompositeAgent {
 			AgentShard shard = shards.get(designation);
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-	            objectOutputStream.writeObject(shard);
-	
+				objectOutputStream.writeObject(shard);
+				
 				log("serializable shard: []", shard);
-	            serializedShards.put(designation, Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
-			} catch (NotSerializableException e) {
+				serializedShards.put(designation,
+						Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
+			} catch(NotSerializableException e) {
 				log("non-serializable shard: []", shard);
 				MultiTreeMap configuration = shard instanceof NonSerializableShard
 						? ((NonSerializableShard) shard).getShardConfiguration()
 						: null;
 				nonSerializedShardDesignations.put(designation, configuration);
-	        } catch (IOException e) {
+			} catch(IOException e) {
 				log("Unable to do anything with shard [].", designation);
-	        }
+			}
 		}
 		
 		// the shards map will be recreated at de-serialization.
 		shards.clear();
-	
-	    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	    ObjectOutputStream objectOutputStream;
-	    try {
-	        objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-	        objectOutputStream.writeObject(this);
-	        objectOutputStream.close();
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	    }
-	
-	    return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+		
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		ObjectOutputStream objectOutputStream;
+		try {
+			objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+			objectOutputStream.writeObject(this);
+			objectOutputStream.close();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
 	}
-
+	
 	/**
 	 * @return the proxy to the current node, if any; <code>null</code> otherwise.
 	 */
@@ -295,7 +291,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 				return (NodeProxy) context;
 		return null;
 	}
-
+	
 	@Override
 	protected void log(String message, Object... arguments) {
 		super.log(message, arguments);

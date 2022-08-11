@@ -219,7 +219,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");
 		else {
-			li("Loading: ", toLoad);
+			lf("Loading order: ", toLoad);
 			List<MessagingPylonProxy> messagingProxies = new LinkedList<>();
 			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR)) {
 				CategoryName cat = CategoryName.byName(catName);
@@ -229,7 +229,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					li("No [] entities defined.", catName);
 					continue;
 				}
-				li("Loading: ", catName);
+				lf("Loading category: ", catName);
 				
 				for(MultiTreeMap entityConfig : entities) {
 					// TODO add comments & notes about what names, kinds and ids really are.
@@ -329,7 +329,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							entity = defaultLoader.load(entityConfig, context, subEntities);
 					}
 					if(entity != null) {
-						li("Entity []/[] of type [] loaded.", name, local_id, catName);
+						li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						
@@ -347,7 +347,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 				}
 			}
 			
-			li("Other configuration:");
+			lf("Other configuration:");
 			
 			if(messagingProxies.isEmpty())
 				return node;
@@ -366,11 +366,11 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 			
-			li("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 					DeploymentConfiguration.MONITORING_TYPE);
 			DeploymentConfiguration.isCentralNode = false;
 			
-			li("Loading done.");
+			li("Loading node [] completed.", node.getName());
 		}
 		return node;
 	}

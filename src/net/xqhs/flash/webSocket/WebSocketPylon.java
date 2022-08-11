@@ -236,11 +236,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			long spaceBetweenTries = 1000;
 			while(tries > 0) {
 				try {
-					li("Trying connection to WS server ", webSocketServerAddress);
+					lf("Trying connection to WS server ", webSocketServerAddress);
 					webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
 						@Override
 						public void onOpen(ServerHandshake serverHandshake) {
-							li("new connection to server opened.");
+							lf("new connection to server opened.");
 						}
 						
 						/**
@@ -307,7 +307,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
-		li("Started" + (useThread ? " with thread." : ""));
+		li("Started" + (useThread ? " [with thread]." : "[without thread]"));
 		return true;
 	}
 	

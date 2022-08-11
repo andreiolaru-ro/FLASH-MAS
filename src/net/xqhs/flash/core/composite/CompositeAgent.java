@@ -523,7 +523,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 *
 	 * @return <code>true</code> if the agent is now (after the change) in the {@link AgentState#TRANSIENT} state.
 	 *         <code>false</code> if it is now in {@link AgentState#STOPPED}.
-	 *		
+	 * 		
 	 * @throws RuntimeException
 	 *             if the agent is in any other state than the two above.
 	 */

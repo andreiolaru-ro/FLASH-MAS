@@ -79,7 +79,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 *            - the port on which to start the server.
 	 */
 	public WebSocketServerEntity(int serverPort) {
-		li("Starting websocket server on port: ", Integer.valueOf(serverPort));
+		lf("Starting websocket server on port: ", Integer.valueOf(serverPort));
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -131,7 +131,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
-					li("Registered node []. ", nodeName);
+					lf("Registered node []. ", nodeName);
 				}
 				
 				// entity registration message
@@ -144,7 +144,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);
 					}
-					li("Registered entity []. ", newEntity);
+					lf("Registered entity []. ", newEntity);
 					printState();
 					return;
 				}
@@ -262,6 +262,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	}
 	
 	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
+	
+	@Override
 	protected void li(String message, Object... arguments) {
 		super.li(message, arguments);
 	}
@@ -269,10 +274,5 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	@Override
 	protected void lw(String message, Object... arguments) {
 		super.lw(message, arguments);
-	}
-	
-	@Override
-	protected void le(String message, Object... arguments) {
-		super.le(message, arguments);
 	}
 }

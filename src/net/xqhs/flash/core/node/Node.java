@@ -210,7 +210,7 @@ public class Node extends Unit implements Entity<Node> {
 	
 	@Override
 	public boolean stop() {
-		li("Stopping node [].", name);
+		li("Stopping node [] with entities [].", name, entityOrder);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
@@ -287,7 +287,7 @@ public class Node extends Unit implements Entity<Node> {
 		});
 		messagingShard.configure(
 				new MultiTreeMap().addSingleValue("connectTo", this.serverURI).addSingleValue("agent_name", getName()));
-		li("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
+		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
 	
@@ -366,7 +366,7 @@ public class Node extends Unit implements Entity<Node> {
 				
 				MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
 				registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
-				li("Starting agent [] after moving...", agent.getName());
+				lf("Starting agent [] after moving...", agent.getName());
 				agent.addGeneralContext(asContext());
 				agent.addContext(nodePylonProxy);
 				agent.start();
@@ -393,7 +393,7 @@ public class Node extends Unit implements Entity<Node> {
 		root.addProperty(OperationUtils.PARAMETERS, destination);
 		root.addProperty(AGENT_DATA_PARAMETER_NAME, agentData);
 		
-		li("Send message with agent [] to []", agentName, destination);
+		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(destination, root.toString());
 	}
 }
