@@ -20,6 +20,7 @@ import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.Node.NodeProxy;
 import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -252,15 +253,23 @@ public class MobileCompositeAgent extends CompositeAgent {
 			try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
 				objectOutputStream.writeObject(shard);
 				
-				log("serializable shard: []", shard);
+				log("[] is serializable", shard);
 				serializedShards.put(designation,
 						Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray()));
 			} catch(NotSerializableException e) {
-				log("non-serializable shard: []", shard);
-				MultiTreeMap configuration = shard instanceof NonSerializableShard
-						? ((NonSerializableShard) shard).getShardConfiguration()
-						: null;
+				MultiTreeMap configuration = null;
+				if(shard instanceof NonSerializableShard) {
+					log("[] is instance of NonSerializableShard", shard);
+					configuration = ((NonSerializableShard) shard).getShardConfiguration();
+				}
+				else if(shard instanceof AgentShardCore) {
+					log("[] is instance of AgentShardCore", shard);
+					configuration = ((AgentShardCore) shard).getShardConfiguration();
+				}
+				else
+					log("[] only designation available for shard", shard);
 				nonSerializedShardDesignations.put(designation, configuration);
+				
 			} catch(IOException e) {
 				log("Unable to do anything with shard [].", designation);
 			}

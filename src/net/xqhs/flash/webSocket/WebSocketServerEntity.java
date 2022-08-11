@@ -144,7 +144,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 						entityToWebSocket.put(newEntity, webSocket);
 						nodeToEntities.get(nodeName).add(newEntity);
 					}
-					lf("Registered entity []. ", newEntity);
+					lf("Registered entity [] on []. ", newEntity, nodeName);
 					printState();
 					return;
 				}

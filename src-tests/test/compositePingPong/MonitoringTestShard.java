@@ -11,8 +11,6 @@
  ******************************************************************************/
 package test.compositePingPong;
 
-import java.io.Serializable;
-
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -28,8 +26,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore implements Serializable
-{
+public class MonitoringTestShard extends AgentShardCore {
 	/**
 	 * The UID.
 	 */
@@ -42,14 +39,12 @@ public class MonitoringTestShard extends AgentShardCore implements Serializable
 	/**
 	 * Default constructor
 	 */
-	public MonitoringTestShard()
-	{
+	public MonitoringTestShard() {
 		super(AgentShardDesignation.customShard(Boot.MONITORING));
 	}
 	
 	@Override
-	public void signalAgentEvent(AgentEvent event)
-	{
+	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
 		locallog.li(eventMessage);
@@ -60,18 +55,15 @@ public class MonitoringTestShard extends AgentShardCore implements Serializable
 	}
 	
 	@Override
-	protected void parentChangeNotifier(ShardContainer oldParent)
-	{
+	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
 		
-		if(getAgent() != null)
-		{
-			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>")
-					.setLogLevel(Level.ALL).setLoggerType(PlatformUtils.platformLogType());
+		if(getAgent() != null) {
+			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>").setLogLevel(Level.ALL)
+					.setLoggerType(PlatformUtils.platformLogType());
 			locallog.lf("testing started.");
 		}
-		else if(locallog != null)
-		{
+		else if(locallog != null) {
 			locallog.doExit();
 			locallog = null;
 		}

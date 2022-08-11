@@ -17,8 +17,8 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -72,7 +72,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 				}
 			};
 		pylon = (MessagingPylonProxy) context;
-		System.out.println("Added pylon to messaging shard " + this + " " + pylon);
+		// System.out.println("Added pylon to messaging shard " + this + " " + pylon);
 		return true;
 	}
 	
