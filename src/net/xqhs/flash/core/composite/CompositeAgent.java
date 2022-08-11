@@ -166,20 +166,9 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	protected static final String	NO_CREATE_THREAD			= "DONT_CREATE_THREAD";
 	
 	/**
-	 * This can be used by support implementation-specific shards to contact the support implementation.
+	 * The {@link Map} that links shard designations (functionalities) to shard instances.
 	 */
-	protected EntityProxy<Pylon> supportLink = null;
-	
-	/**
-	 * The proxy to this agent.
-	 */
-	protected EntityProxy<Agent> asContext = new CompositeAgentShardContainer(this);
-	
-	/**
-	 * The {@link Map} that links shard designations (functionalities) to shard instances. FIXME: support making shards
-	 * transient and having shards null
-	 */
-	public Map<AgentShardDesignation, AgentShard>			shards			= new HashMap<>();	// change to protected
+	protected Map<AgentShardDesignation, AgentShard>		shards			= new HashMap<>();
 	/**
 	 * A {@link List} that holds the order in which shards were added, to signal agent events to shards in the correct
 	 * order (as specified by {@link AgentSequenceType}).
@@ -191,20 +180,23 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 * The list of all contexts this agent is placed in, in the order in which they were added.
 	 */
 	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext	= new ArrayList<>();
-	
 	/**
 	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
 	 */
-	protected LinkedBlockingQueue<AgentEvent>	eventQueue	= null;
+	protected LinkedBlockingQueue<AgentEvent>				eventQueue		= null;
 	/**
 	 * The thread managing the agent's life-cycle (managing events).
 	 */
-	protected transient Thread					agentThread	= null;
+	protected transient Thread								agentThread		= null;
 	/**
 	 * The agent state. See {@link AgentState}. Access to this member should be synchronized with the lock of
 	 * <code>eventQueue</code>.
 	 */
-	protected AgentState						agentState	= AgentState.STOPPED;
+	protected AgentState									agentState		= AgentState.STOPPED;
+	/**
+	 * The proxy to this agent.
+	 */
+	protected EntityProxy<Agent>							asContext		= new CompositeAgentShardContainer(this);
 	
 	/**
 	 * The agent name, if given.
@@ -301,9 +293,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 * @return the event that caused the cycle to exit, if any; <code>null</code> otherwise.
 	 */
 	protected AgentEvent eventProcessingCycle() {
-		boolean threadExit = false;
-		// TODO: should be able to do without threadExit, and with while(true).
-		while(!threadExit) {
+		while(true) {
 			if(eventQueue == null) {
 				log("No event queue present");
 				return null;
@@ -341,12 +331,11 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 							"Unsupported sequence type: " + event.getType().getSequenceType().toString());
 				}
 				
-				threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
+				boolean threadExit = FSMEventOut(event.getType(), event.isSet(TRANSIENT_EVENT_PARAMETER));
 				if(threadExit)
 					return event;
 			}
 		}
-		return null;
 	}
 	
 	/**
@@ -363,9 +352,6 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 * @return <code>true</code> if the event has been successfully posted; <code>false</code> otherwise.
 	 */
 	protected boolean postAgentEvent(AgentEvent event) {
-		// TODO: commented this because agent events may need to be processed further. Think if this is a good idea.
-		// event.lock();
-		
 		if(!canPostEvent(event))
 			return false;
 		
@@ -655,15 +641,6 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 */
 	protected AgentShard getShard(AgentShardDesignation designation) {
 		return shards.get(designation);
-	}
-	
-	/**
-	 * Retrieves the link to the support implementation.
-	 *
-	 * @return the support implementation.
-	 */
-	protected Object getSupportImplementation() {
-		return supportLink;
 	}
 	
 	/**
