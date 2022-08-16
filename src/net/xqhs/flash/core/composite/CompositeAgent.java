@@ -386,12 +386,13 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	/**
 	 * Checks whether the specified event can be posted in the current agent state.
 	 * <p>
-	 * Basically, there are two checks:
+	 * There are several checks:
 	 * <ul>
 	 * <li>Any event except {@link AgentEventType#AGENT_START} can be posted only in the {@link AgentState#RUNNING}
 	 * state.
 	 * <li>If the {@link AgentEventType#AGENT_START} is posted while the agent is in the {@link AgentState#TRANSIENT}
 	 * state, it needs to shard a parameter called {@value #TRANSIENT_EVENT_PARAMETER} (with any value).
+	 * <li>During the {@link AgentState#STARTING} phase, a {@link AgentEventType#AFTER_MOVE} event may also be posted.
 	 * <li>The {@link AgentEventType#AGENT_START} event can be posted while the agent is {@link AgentState#STOPPED}.
 	 *
 	 * @param event
@@ -404,6 +405,8 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 			if(agentState == AgentState.TRANSIENT)
 				return event.isSet(TRANSIENT_EVENT_PARAMETER);
 			return agentState == AgentState.STOPPED;
+		case AFTER_MOVE:
+			return agentState == AgentState.STARTING;
 		default:
 			return agentState == AgentState.RUNNING;
 		}
