@@ -20,8 +20,8 @@ import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
@@ -79,41 +79,40 @@ public class Node extends Unit implements Entity<Node> {
 	}
 	
 	/**
+	 * The endpoint for messages sent between nodes.
+	 */
+	private static final String	SHARD_ENDPOINT			= "node";
+	/**
+	 * The name of the operation in which a node receives a mobile agent.
+	 */
+	public static final String	RECEIVE_AGENT_OPERATION	= "receive_agent";
+	
+	/**
 	 * The name of the node.
 	 */
-	protected String name = null;
-	
+	protected String						name				= null;
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
 	 */
-	protected Map<String, List<Entity<?>>> registeredEntities = new HashMap<>();
-	
+	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>> entityOrder = new LinkedList<>();
-	
+	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
-	protected MessagingShard messagingShard;
-	
+	protected MessagingShard				messagingShard;
 	/**
 	 * An indication if this entity is running.
 	 */
-	private boolean isRunning;
-	
-	private static final String SHARD_ENDPOINT = "control";
-	
-	public static final String	RECEIVE_AGENT_OPERATION		= "receive_agent";
-	public static final String	AGENT_DATA_PARAMETER_NAME	= "agent-data";
-	
+	private boolean							isRunning;
 	/**
-	 * The pylon proxy of the node.
+	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
+	 * mobile agents which arrive here.
 	 */
-	private PylonProxy nodePylonProxy;
-	
-	protected String serverURI = null;
+	private PylonProxy						nodePylonProxy;
+	protected String						serverURI			= null;
 	
 	/**
 	 * Creates a new {@link Node} instance.
@@ -245,6 +244,9 @@ public class Node extends Unit implements Entity<Node> {
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		if(nodePylonProxy != null)
+			// only one pylon can be added as context for the node
+			return false;
 		PylonProxy pylonProxy = (PylonProxy) context;
 		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
@@ -264,7 +266,7 @@ public class Node extends Unit implements Entity<Node> {
 					String localAddr = ((AgentWave) event).getCompleteDestination();
 					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
 						break;
-					Object msg = JSONValue.parse(((AgentWave) event).getContent());
+					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
 					if(msg == null)
 						break;
 					parseReceivedMsg(msg);
@@ -293,8 +295,11 @@ public class Node extends Unit implements Entity<Node> {
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		// unsupported
-		return false;
+		if(nodePylonProxy != context)
+			return false;
+		nodePylonProxy = null;
+		messagingShard = null;
+		return true;
 	}
 	
 	@Override
@@ -340,37 +345,34 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * This method parses the content received and takes further control/monitoring decisions.
 	 * 
-	 * @param obj
+	 * @param jo
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
-	private void parseReceivedMsg(Object obj) {
-		if(obj instanceof JSONObject) {
-			JSONObject jo = (JSONObject) obj;
-			if(OperationUtils.ControlOperation.START.getOperation().equals(jo.get(OperationUtils.NAME))) {
-				String param = (String) jo.get(OperationUtils.PARAMETERS);
-				if(param == null)
-					return;
-				Entity<?> entity = entityOrder.stream().filter(en -> en.getName().equals(param)).findFirst()
-						.orElse(null);
-				if(entity == null) {
-					le("[] entity not found in the context of [].", param, name);
-					return;
-				}
-				if(entity.start()) {
-					lf("[] was started by parent [].", param, name);
-					return;
-				}
+	private void parseReceivedMsg(JsonObject jo) {
+		String op = jo.get(OperationUtils.NAME).getAsString();
+		if(OperationUtils.ControlOperation.START.getOperation().equals(op)) {
+			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
+			if(param == null)
+				return;
+			Entity<?> entity = entityOrder.stream().filter(en -> en.getName().equals(param)).findFirst().orElse(null);
+			if(entity == null) {
+				le("[] entity not found in the context of [].", param, name);
+				return;
 			}
-			else if(RECEIVE_AGENT_OPERATION.equals(jo.get(OperationUtils.NAME))) {
-				String agentData = (String) jo.get(AGENT_DATA_PARAMETER_NAME);
-				
-				MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
-				registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
-				lf("Starting agent [] after moving...", agent.getName());
-				agent.addGeneralContext(asContext());
-				agent.addContext(nodePylonProxy);
-				agent.start();
+			if(entity.start()) {
+				lf("[] was started by parent [].", param, name);
+				return;
 			}
+		}
+		else if(RECEIVE_AGENT_OPERATION.equals(op)) {
+			String agentData = jo.get(OperationUtils.PARAMETERS).getAsString();
+			
+			MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
+			registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
+			lf("Starting agent [] after moving...", agent.getName());
+			agent.addGeneralContext(asContext());
+			agent.addContext(nodePylonProxy);
+			agent.start();
 		}
 	}
 	
@@ -390,8 +392,7 @@ public class Node extends Unit implements Entity<Node> {
 				.findAny().ifPresent(entity -> entityOrder.remove(entity));
 		JsonObject root = new JsonObject();
 		root.addProperty(OperationUtils.NAME, Node.RECEIVE_AGENT_OPERATION);
-		root.addProperty(OperationUtils.PARAMETERS, destination);
-		root.addProperty(AGENT_DATA_PARAMETER_NAME, agentData);
+		root.addProperty(OperationUtils.PARAMETERS, agentData);
 		
 		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(destination, root.toString());
