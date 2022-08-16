@@ -112,7 +112,6 @@ public class Node extends Unit implements Entity<Node> {
 	 * mobile agents which arrive here.
 	 */
 	private PylonProxy						nodePylonProxy;
-	protected String						serverURI			= null;
 	
 	/**
 	 * Creates a new {@link Node} instance.
@@ -121,10 +120,8 @@ public class Node extends Unit implements Entity<Node> {
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
 	public Node(MultiTreeMap nodeConfiguration) {
-		if(nodeConfiguration != null) {
+		if(nodeConfiguration != null)
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			this.serverURI = nodeConfiguration.get("region-server");
-		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
@@ -287,8 +284,6 @@ public class Node extends Unit implements Entity<Node> {
 				return getName();
 			}
 		});
-		messagingShard.configure(
-				new MultiTreeMap().addSingleValue("connectTo", this.serverURI).addSingleValue("agent_name", getName()));
 		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}

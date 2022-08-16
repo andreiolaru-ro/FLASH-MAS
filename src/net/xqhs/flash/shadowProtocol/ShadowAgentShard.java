@@ -155,6 +155,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
     {
         if(!super.configure(configuration))
             return false;
+		// FIXME: auto-get region server for nodes?
         if (configuration.getAValue("connectTo") != null) {
             this.serverURI = configuration.getAValue("connectTo");
         }
