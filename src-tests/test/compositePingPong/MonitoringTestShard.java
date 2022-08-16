@@ -37,7 +37,7 @@ public class MonitoringTestShard extends AgentShardCore {
 	transient UnitComponent		locallog			= null;
 	
 	/**
-	 * Default constructor
+	 * No-argument constructor
 	 */
 	public MonitoringTestShard() {
 		super(AgentShardDesignation.customShard(Boot.MONITORING));

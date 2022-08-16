@@ -78,7 +78,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		public MessageReceiver		inbox;
 		
 		/**
-		 * Default constructor.
+		 * No-argument constructor.
 		 */
 		public SimpleLocalMessaging() {
 			super();

@@ -36,7 +36,7 @@ public class PingBackTestShard extends AgentShardGeneral {
 	public static final String	SHARD_ENDPOINT		= "pong";
 	
 	/**
-	 * Default constructor
+	 * No-argument constructor
 	 */
 	public PingBackTestShard() {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));

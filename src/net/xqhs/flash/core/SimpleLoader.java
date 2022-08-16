@@ -12,7 +12,7 @@ import net.xqhs.util.logging.Logger;
  * Simple implementation for {@link Loader}, which attempts to load the entity class by instantiating it:
  * <ul>
  * <li>using a constructor that receives a {@link MultiTreeMap} as argument, or
- * <li>using the default constructor, and if the instance implements {@link ConfigurableEntity}, subsequently
+ * <li>using the no-argument constructor, and if the instance implements {@link ConfigurableEntity}, subsequently
  * calling {@link ConfigurableEntity#configure}.
  * </ul>
  * <p>
@@ -85,7 +85,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 	 * The instantiation is tried in order:
 	 * <ul>
 	 * <li>using a constructor that receives a {@link MultiTreeMap} as argument, passing the given configuration;
-	 * <li>using the default constructor, and if the instance implements {@link ConfigurableEntity}, the
+	 * <li>using the no-argument constructor, and if the instance implements {@link ConfigurableEntity}, the
 	 * {@link ConfigurableEntity#configure} method will be called with the given configuration.
 	 * </ul>
 	 * <p>
@@ -95,7 +95,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 	 * No subordinate entities will be loaded.
 	 * 
 	 * @param subordinateEntities
-	 *                                - this will not be used.
+	 *            - this will not be used.
 	 */
 	@Override
 	public Entity<?> load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
@@ -117,7 +117,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 					{
 						loaded = (Entity<?>) classLoader.loadClassInstance(classpath, null, true);
 						if(loaded instanceof ConfigurableEntity)
-						{// default constructor used, must try to configure
+						{// no-argument constructor used, must try to configure
 							if(!((ConfigurableEntity<?>) loaded).configure(configuration) && log != null)
 								log.le("Entity [] loaded from [] but configuration failed.", loaded.getName(),
 										classpath);
@@ -128,7 +128,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 					} catch(Exception e1)
 					{
 						if(log != null)
-							log.le("Failed to load class [] via default constructor: ", classpath,
+							log.le("Failed to load class [] via no-argument constructor: ", classpath,
 									PlatformUtils.printException(e));
 					}
 				}

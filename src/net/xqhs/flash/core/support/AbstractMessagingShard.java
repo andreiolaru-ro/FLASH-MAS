@@ -63,8 +63,6 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		boolean isset;
 		
 		/**
-		 * Default constructor.
-		 * 
 		 * @param set
 		 *                - activation state.
 		 */
@@ -86,7 +84,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	private static final long serialVersionUID = -7541956285166819418L;
 	
 	/**
-	 * Default constructor.
+	 * No-argument constructor.
 	 */
 	public AbstractMessagingShard()
 	{

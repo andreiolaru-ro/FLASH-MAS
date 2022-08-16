@@ -1,28 +1,31 @@
 package net.xqhs.flash.shadowProtocol;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
-import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.PlatformUtils;
+import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
+import static net.xqhs.flash.shadowProtocol.MessageFactory.createMonitorNotification;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static net.xqhs.flash.shadowProtocol.MessageFactory.*;
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
+import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
+import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.shadowProtocol.MessageFactory.ActionType;
+import net.xqhs.flash.shadowProtocol.MessageFactory.MessageType;
 
 public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
     /**
@@ -40,9 +43,10 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
     protected WebSocketClient client;
     String serverURI;
     String name;
-    /**
-     * Default constructor
-     */
+    
+	/**
+	 * No-argument constructor
+	 */
     public ShadowAgentShard() {
         inbox = new MessageReceiver() {
             @Override

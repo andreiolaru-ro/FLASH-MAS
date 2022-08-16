@@ -114,7 +114,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	}
 	
 	/**
-	 * Default constructor. This <b>should only be used</b> at de-serialization.
+	 * No-argument constructor. This <b>should only be used</b> at de-serialization.
 	 */
 	public MobileCompositeAgent() {
 		asContext = new MobileCompositeAgentShardContainer(this);

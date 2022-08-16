@@ -216,7 +216,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	protected boolean					USE_LOCAL_LOG	= true;
 	
 	/**
-	 * The default constructor. This <b>should be used only</b> at de-serialization.
+	 * The no-argument constructor. This <b>should be used only</b> at de-serialization.
 	 */
 	public CompositeAgent() {
 	}

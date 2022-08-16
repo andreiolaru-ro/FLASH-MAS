@@ -53,7 +53,7 @@ public class WebSocketMessagingShard extends AbstractNameBasedMessagingShard imp
 	public transient MessageReceiver inbox;
 	
 	/**
-	 * Default constructor.
+	 * No-argument constructor.
 	 */
 	public WebSocketMessagingShard() {
 		super();

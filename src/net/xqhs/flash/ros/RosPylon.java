@@ -150,8 +150,8 @@ public class RosPylon extends DefaultPylonImplementation {
         public RosBridge bridge;
 
         /**
-         * Default constructor.
-         */
+		 * No-argument constructor.
+		 */
         public SimpleLocalMessaging() {
             super();
 

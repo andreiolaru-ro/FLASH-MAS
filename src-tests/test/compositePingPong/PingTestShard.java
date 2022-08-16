@@ -91,7 +91,7 @@ public class PingTestShard extends AgentShardGeneral {
 	int				period;
 	
 	/**
-	 * Default constructor
+	 * No-argument constructor
 	 */
 	public PingTestShard() {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));

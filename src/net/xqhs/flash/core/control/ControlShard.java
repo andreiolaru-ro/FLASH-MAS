@@ -42,7 +42,7 @@ public class ControlShard extends AgentShardGeneral {
 	}
 	
 	/**
-	 * Default constructor
+	 * No-argument constructor.
 	 */
 	public ControlShard() {
 		super(StandardAgentShard.CONTROL.toAgentShardDesignation());
