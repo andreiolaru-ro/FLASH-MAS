@@ -22,7 +22,7 @@ public class BootNodeA {
 	/**
 	 * The IP address of the main node.
 	 */
-	public static String	MAIN_IP		= "localhost";
+	public static String	MAIN_IP		= "192.168.100.3";
 	/**
 	 * The port on the main node.
 	 */
@@ -36,7 +36,7 @@ public class BootNodeA {
 	 */
 	public static void main(String[] args_) {
 		String a = "";
-		a += " -package maria test.compositePingPong shadowProtocolDeployment -loader agent:composite";
+		a += Boot.prelude;
 		
 		a += " -node nodeA";
 		a += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);

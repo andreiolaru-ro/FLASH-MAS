@@ -29,7 +29,7 @@ public class BootNodeB
 	public static void main(String[] args_)
 	{
 		String a = "";
-		a += " -package maria test.compositePingPong shadowProtocolDeployment -loader agent:composite";
+		a += Boot.prelude;
 		
 		a += " -node nodeB";
 		a += " -pylon webSocket:wsB connectTo:ws://" + BootNodeA.MAIN_IP + ":" + Integer.valueOf(BootNodeA.MAIN_PORT);

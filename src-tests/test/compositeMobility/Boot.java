@@ -27,11 +27,15 @@ public class Boot {
 	/**
 	 * Arguments for creating agents on nodeA.
 	 */
-	public static String nodeA_agents = "";
+	public static String	nodeA_agents	= "";
 	/**
 	 * Arguments for creating agents on nodeB.
 	 */
-	public static String nodeB_agents = "";
+	public static String	nodeB_agents	= "";
+	/**
+	 * Arguments for packages and loaders.
+	 */
+	public static String	prelude			= " -package test.compositeMobility test.compositePingPong -loader agent:composite -loader agent:mobileComposite";
 	
 	static {
 		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard MonitoringTest -shard MobilityTest to:nodeB time:5000";
@@ -52,7 +56,7 @@ public class Boot {
 	 */
 	public static void main(String[] args) {
 		String a = "";
-		a += " -package test.compositeMobility test.compositePingPong -loader agent:composite -loader agent:mobileComposite";
+		a += prelude;
 		
 		a += " -node nodeA";
 		a += " -pylon webSocket:pylonA serverPort:8888";
