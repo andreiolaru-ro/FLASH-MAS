@@ -13,11 +13,17 @@ public class FlashApplication extends Application {
         super.onCreate();
         int port = 8882;
         String arg = "-package com.flashmas.lib.agents.gui " +
-                "com.flashmas.lib.agents.sensors" +
-                " -loader agent:composite -node A -pylon webSocket:slave1 connectTo:ws://192.168.0.172:" + port +
-//                "-loader agent:composite -node A -pylon local" +
-                " -agent composite:Agent0 -shard messaging -shard SensorsShard " +SensorsShard.SENSOR_TYPES_ARRAY_KEY+":" + Sensor.TYPE_ALL +
-                    " -shard AndroidGuiShard -shard SensorsGuiLinkShard "+ SensorsGuiLinkShard.SHARD_SENSORS_KEY +":" + Sensor.TYPE_ALL;
+//                "com.flashmas.lib.agents.sensors" +
+//                " -loader agent:composite -node A -pylon webSocket:slave1 connectTo:ws://192.168.100.19:" + port +
+//                " -agent composite:Agent0 -shard messaging -shard SensorsShard " +SensorsShard.SENSOR_TYPES_ARRAY_KEY+":" + Sensor.TYPE_ALL +
+//                    " -shard AndroidGuiShard -shard SensorsGuiLinkShard "+ SensorsGuiLinkShard.SHARD_SENSORS_KEY +":" + Sensor.TYPE_ALL;
+
+                  /* this deployment is used
+                     in testing: webSocketsDeployment.BootCompositeAndroidDeployment */
+                " test.compositePingPong -loader agent:composite" +
+                " -node node2" +
+                " -pylon webSocket:slave2 connectTo:ws://192.168.100.19:8886" +
+                " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
 //
 //                " -agent composite:Agent1 -shard messaging -shard SensorsShard SENSOR_TYPES_ARRAY_KEY:" + Sensor.TYPE_ALL +
 //                " -shard AndroidGuiShard -shard GuiLinkShard SHARD_DESIGNATIONS_KEY:" + SensorsShard.DESIGNATION +
