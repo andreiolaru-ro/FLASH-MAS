@@ -1,5 +1,5 @@
 /bin/
+/out/
+/android-deployment/app/build/
+/android-deployment/flash/build/
 /lib-all/
-.idea
-.xml
-*.iml

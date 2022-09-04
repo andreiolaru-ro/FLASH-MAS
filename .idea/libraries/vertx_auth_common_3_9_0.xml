@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="vertx-auth-common-3.9.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/vertx-auth-common-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-bridge-common-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-codegen-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-core-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-rx-gen-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-rx-java-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-tcp-eventbus-bridge-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-web-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-web-common-3.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-web-templ-rocker-3.8.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vertx-web-templ-thymeleaf-3.8.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="jetty-client-9.4.3.v20170317">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/ros/jetty-client-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/jetty-http-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/jetty-io-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/jetty-util-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/websocket-api-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/websocket-client-9.4.3.v20170317.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ros/websocket-common-9.4.3.v20170317.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

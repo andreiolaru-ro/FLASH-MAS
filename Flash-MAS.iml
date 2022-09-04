@@ -2,29 +2,25 @@
 <module type="JAVA_MODULE" version="4">
   <component name="EclipseModuleManager">
     <libelement value="jar://$MODULE_DIR$/lib/json-simple-1.1.1.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/ros/websocket-client-9.4.3.v20170317.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/ros/websocket-common-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/mpi/mpi.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/websocket_support/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/core/Config.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/core/gson-2.8.6.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/core/Logging-modern.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/core/net.xqhs.XML.jar!/" />
+    <libelement value="file://lib/gson-2.8.6.jar" />
+    <libelement value="file://lib/core/net.xqhs.XML.jar" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-io-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-client-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-http-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-util-9.4.3.v20170317.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/gui/snakeyaml-1.25.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/ros/websocket-api-9.4.3.v20170317.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/netty-all-4.1.47.Final.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-core-3.9.0.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-web-3.9.0.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-web-common-3.9.0.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-bridge-common-3.9.0.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/jackson-annotations-2.10.2.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/jackson-core-2.10.2.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/webserver/jackson-databind-2.10.2.jar!/" />
+    <libelement value="file://lib/gui/snakeyaml-1.25.jar" />
+    <libelement value="file://lib/webserver/netty-all-4.1.47.Final.jar" />
+    <libelement value="file://lib/webserver/vertx-core-3.9.0.jar" />
+    <libelement value="file://lib/webserver/vertx-web-3.9.0.jar" />
+    <libelement value="file://lib/webserver/vertx-web-common-3.9.0.jar" />
+    <libelement value="file://lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar" />
+    <libelement value="file://lib/webserver/vertx-bridge-common-3.9.0.jar" />
+    <libelement value="file://lib/webserver/jackson-annotations-2.10.2.jar" />
+    <libelement value="file://lib/webserver/jackson-core-2.10.2.jar" />
+    <libelement value="file://lib/webserver/jackson-databind-2.10.2.jar" />
+    <libelement value="file://lib/Java-WebSocket-1.4.0-with-dependencies.jar" />
+    <libelement value="file://lib/Logging-light.jar" />
     <src_description expected_position="0">
       <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
       <src_folder value="file://$MODULE_DIR$/src-examples" expected_position="1" />
@@ -52,24 +48,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="websocket-client-9.4.3.v20170317.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ros/websocket-client-9.4.3.v20170317.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="websocket-common-9.4.3.v20170317.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ros/websocket-common-9.4.3.v20170317.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="mpi.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/mpi/mpi.jar!/" />
@@ -79,18 +57,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Java-WebSocket-1.4.0-with-dependencies.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/websocket_support/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="Config.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/core/Config.jar!/" />
+          <root url="file://lib/Config.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -99,16 +68,7 @@
     <orderEntry type="module-library">
       <library name="gson-2.8.6.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/core/gson-2.8.6.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Logging-modern.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/core/Logging-modern.jar!/" />
+          <root url="file://lib/gson-2.8.6.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -117,7 +77,7 @@
     <orderEntry type="module-library">
       <library name="net.xqhs.XML.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/core/net.xqhs.XML.jar!/" />
+          <root url="file://lib/core/net.xqhs.XML.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -162,16 +122,7 @@
     <orderEntry type="module-library">
       <library name="snakeyaml-1.25.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gui/snakeyaml-1.25.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="websocket-api-9.4.3.v20170317.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ros/websocket-api-9.4.3.v20170317.jar!/" />
+          <root url="file://lib/gui/snakeyaml-1.25.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -180,7 +131,7 @@
     <orderEntry type="module-library">
       <library name="netty-all-4.1.47.Final.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/netty-all-4.1.47.Final.jar!/" />
+          <root url="file://lib/webserver/netty-all-4.1.47.Final.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -189,7 +140,7 @@
     <orderEntry type="module-library">
       <library name="vertx-core-3.9.0.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/vertx-core-3.9.0.jar!/" />
+          <root url="file://lib/webserver/vertx-core-3.9.0.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -198,7 +149,7 @@
     <orderEntry type="module-library">
       <library name="vertx-web-3.9.0.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/vertx-web-3.9.0.jar!/" />
+          <root url="file://lib/webserver/vertx-web-3.9.0.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -207,7 +158,7 @@
     <orderEntry type="module-library">
       <library name="vertx-web-common-3.9.0.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/vertx-web-common-3.9.0.jar!/" />
+          <root url="file://lib/webserver/vertx-web-common-3.9.0.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -216,7 +167,7 @@
     <orderEntry type="module-library">
       <library name="vertx-tcp-eventbus-bridge-3.9.0.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar!/" />
+          <root url="file://lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -225,7 +176,7 @@
     <orderEntry type="module-library">
       <library name="vertx-bridge-common-3.9.0.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/vertx-bridge-common-3.9.0.jar!/" />
+          <root url="file://lib/webserver/vertx-bridge-common-3.9.0.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -234,7 +185,7 @@
     <orderEntry type="module-library">
       <library name="jackson-annotations-2.10.2.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/jackson-annotations-2.10.2.jar!/" />
+          <root url="file://lib/webserver/jackson-annotations-2.10.2.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -243,7 +194,7 @@
     <orderEntry type="module-library">
       <library name="jackson-core-2.10.2.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/jackson-core-2.10.2.jar!/" />
+          <root url="file://lib/webserver/jackson-core-2.10.2.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -252,12 +203,30 @@
     <orderEntry type="module-library">
       <library name="jackson-databind-2.10.2.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/webserver/jackson-databind-2.10.2.jar!/" />
+          <root url="file://lib/webserver/jackson-databind-2.10.2.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="Config (2)" level="project" />
+    <orderEntry type="library" name="gson-2.8.6" level="project" />
+    <orderEntry type="library" name="net.xqhs.XML" level="project" />
+    <orderEntry type="library" name="jackson-annotations-2.10.2" level="project" />
+    <orderEntry type="library" name="jetty-client-9.4.3.v20170317" level="project" />
+    <orderEntry type="library" name="snakeyaml-1.25" level="project" />
+    <orderEntry type="library" name="vertx-auth-common-3.9.0" level="project" />
+    <orderEntry type="library" name="netty-buffer-4.1.48.Final" level="project" />
+    <orderEntry type="library" name="LightSrz_Logging" level="project" />
   </component>
 </module>

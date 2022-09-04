@@ -18,7 +18,7 @@ import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Logger.Level;
+import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
@@ -59,8 +59,8 @@ public class MonitoringTestShard extends AgentShardCore {
 		super.parentChangeNotifier(oldParent);
 		
 		if(getAgent() != null) {
-			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>").setLogLevel(Level.ALL)
-					.setLoggerType(PlatformUtils.platformLogType());
+			locallog = (UnitComponent) new UnitComponent().setUnitName("net.xqhs.flash.core.monitoring-" + getAgent().getEntityName())
+					.setLogLevel(Level.ALL).setLoggerType(PlatformUtils.platformLogType());
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null) {

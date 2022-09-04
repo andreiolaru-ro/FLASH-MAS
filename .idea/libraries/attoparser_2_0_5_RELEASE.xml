@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="attoparser-2.0.5.RELEASE">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/attoparser-2.0.5.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/gson-2.8.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jackson-annotations-2.10.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jackson-core-2.10.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jackson-databind-2.10.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/Java-WebSocket-1.4.0-with-dependencies.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.20.0-GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/Config.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/Config.jar!/doc-Config/pages/javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/Config.jar!/src" />
+    </SOURCES>
+  </library>
+</component>

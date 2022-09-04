@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="net.xqhs.XML">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/net.xqhs.XML.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/net.xqhs.XML.jar!/doc-net.xqhs.XML" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/net.xqhs.XML.jar!/src" />
+    </SOURCES>
+  </library>
+</component>

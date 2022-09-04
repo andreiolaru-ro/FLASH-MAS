@@ -9,7 +9,7 @@ import com.flashmas.lib.agents.sensors.SensorsShard;
 import net.xqhs.flash.android.AndroidClassFactory;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.CompositeAgentLoader;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -43,7 +43,7 @@ public class CompositeAgentBuilder {
         if (sensorTypes != null) {
             sensorShardConfig.addAll(SENSOR_TYPES_ARRAY_KEY, listToStringList(sensorTypes));
         }
-        sensorShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsShard.class.getName());
+        sensorShardConfig.addSingleValue(SimpleLoader.CLASSPATH_KEY, SensorsShard.class.getName());
         shardsTree.addOneTree("sensorShard", sensorShardConfig);
         return this;
     }
@@ -59,7 +59,7 @@ public class CompositeAgentBuilder {
 
     public CompositeAgentBuilder addGuiShard() {
         MultiTreeMap guiShardConfig = new MultiTreeMap();
-        guiShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
+        guiShardConfig.addSingleValue(SimpleLoader.CLASSPATH_KEY, AndroidGuiShard.class.getName());
         shardsTree.addOneTree("guiShard", guiShardConfig);
         return this;
     }
@@ -95,7 +95,7 @@ public class CompositeAgentBuilder {
 
     public CompositeAgentBuilder addGuiLinkShard(List<String> sensorTypes) {
         MultiTreeMap guiLinkShardConfig = new MultiTreeMap();
-        guiLinkShardConfig.addSingleValue(Loader.SimpleLoader.CLASSPATH_KEY, SensorsGuiLinkShard.class.getName());
+        guiLinkShardConfig.addSingleValue(SimpleLoader.CLASSPATH_KEY, SensorsGuiLinkShard.class.getName());
         if (sensorTypes != null) {
             guiLinkShardConfig.addAll(SensorsGuiLinkShard.SHARD_SENSORS_KEY, sensorTypes);
         }

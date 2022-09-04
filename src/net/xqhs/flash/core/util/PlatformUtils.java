@@ -18,7 +18,7 @@ import java.util.Vector;
 
 import net.xqhs.flash.android.AndroidClassFactory;
 import net.xqhs.flash.pc.PCClassFactory;
-import net.xqhs.util.logging.LogWrapper.LoggerType;
+import net.xqhs.util.logging.logging.LogWrapper.LoggerType;
 
 /**
  * Platform-related functionality. All functions should be static.
@@ -70,18 +70,17 @@ public class PlatformUtils
 	public static LoggerType platformLogType()
 	{
 		// return LoggerType.GLOBAL;
-		return LoggerType.MODERN;
+		if (getPlatform() == Platform.ANDROID) {
+			return LoggerType.GLOBAL;
+		}
+		return LoggerType.CONSOLE;
 	}
 	
 	/**
 	 * @return the URI of the local machine.
 	 */
 	public static String getLocalHostURI() {
-		// return "localhost";
-		if (getPlatform() == Platform.ANDROID) {
-			return LoggerType.GLOBAL;
-		}
-		return LoggerType.CONSOLE;
+		 return "localhost";
 	}
 	
 	/**

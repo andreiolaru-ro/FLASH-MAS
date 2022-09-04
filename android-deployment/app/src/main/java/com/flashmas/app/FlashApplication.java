@@ -7,11 +7,13 @@ import com.flashmas.lib.FlashManager;
 import com.flashmas.lib.agents.gui.SensorsGuiLinkShard;
 import com.flashmas.lib.agents.sensors.SensorsShard;
 
+import test.compositeMobility.BootAndroid;
+
 public class FlashApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        int port = 8882;
+//        int port = 8882;
         String arg = "-package com.flashmas.lib.agents.gui " +
 //                "com.flashmas.lib.agents.sensors" +
 //                " -loader agent:composite -node A -pylon webSocket:slave1 connectTo:ws://192.168.100.19:" + port +
@@ -19,11 +21,19 @@ public class FlashApplication extends Application {
 //                    " -shard AndroidGuiShard -shard SensorsGuiLinkShard "+ SensorsGuiLinkShard.SHARD_SENSORS_KEY +":" + Sensor.TYPE_ALL;
 
                   /* this deployment is used
-                     in testing: webSocketsDeployment.BootCompositeAndroidDeployment */
-                " test.compositePingPong -loader agent:composite" +
-                " -node node2" +
-                " -pylon webSocket:slave2 connectTo:ws://192.168.100.19:8886" +
-                " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+                     in testing: webSocketDeployment.BootCompositeAndroidDeployment */
+//                " test.compositePingPong -loader agent:composite" +
+//                " -node node2" +
+//                " -pylon webSocket:slave2 connectTo:ws://192.168.100.19:8886" +
+//                " -agent composite:AgentB -shard messaging -shard PingBackTest -shard MonitoringTest";
+
+                  /* this deployment is used
+                     in testing: compositeMobility.BootAndroid */
+                " test.compositePingPong -loader agent:composite -loader agent:mobileComposite" +
+                " -node nodeB" +
+                " -pylon webSocket:pylonB connectTo:ws://192.168.100.19:8888" +
+                " -agent composite:agentB1 -shard messaging -shard MonitoringTest";
+                arg += BootAndroid.MOBILE_AGENT_PINGS ? " -shard PingBackTest" : " -shard PingTest otherAgent:agentA1 otherAgent:agentA2";;
 //
 //                " -agent composite:Agent1 -shard messaging -shard SensorsShard SENSOR_TYPES_ARRAY_KEY:" + Sensor.TYPE_ALL +
 //                " -shard AndroidGuiShard -shard GuiLinkShard SHARD_DESIGNATIONS_KEY:" + SensorsShard.DESIGNATION +

@@ -25,8 +25,10 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Logger.Level;
+import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.LoggerSimple.Level;
 import net.xqhs.util.logging.UnitComponent;
+import net.xqhs.util.logging.UnitComponentExt;
 
 /**
  * This class extends {@link CompositeAgent} and is specifically destined to moving agents.
@@ -173,10 +175,15 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 * Loads shards after moving.
 	 */
 	public void loadShards() {
-		localLog = new UnitComponent(getName() + "~").setLoggerType(PlatformUtils.platformLogType())
-				.setLogLevel(Level.ALL);
+
+		localLog = (UnitComponentExt) new UnitComponentExt()
+				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.ALL);
+
+//		localLog = new UnitComponent(getName() + "~").setLoggerType(PlatformUtils.platformLogType())
+//				.setLogLevel(Level.ALL);
+
 		loader = new CompositeAgentLoader();
-		loader.configure(new MultiTreeMap(), localLog, PlatformUtils.getClassFactory());
+		loader.configure(new MultiTreeMap(), (Logger) localLog, PlatformUtils.getClassFactory());
 		
 		serializedShards.forEach((designation, serializedShard) -> addShard(deserializeShard(serializedShard)));
 		
@@ -295,7 +302,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 * @return the proxy to the current node, if any; <code>null</code> otherwise.
 	 */
 	public NodeProxy getNodeProxyContext() {
-		for(var context : agentContext)
+		for(EntityProxy<?> context : agentContext)
 			if(context instanceof NodeProxy)
 				return (NodeProxy) context;
 		return null;

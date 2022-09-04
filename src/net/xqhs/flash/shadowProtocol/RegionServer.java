@@ -12,7 +12,7 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.awt.desktop.SystemSleepEvent;
+//import java.awt.desktop.SystemSleepEvent;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -394,7 +394,7 @@ public class RegionServer extends Unit implements Entity {
                 AgentStatus ag = agentsList.get(target);
                 sendMessage(ag.getClientConnection(), target, message);
             } else {
-                var getRegServer = target.split("-");
+                String[] getRegServer = target.split("-");
                 String regServer = getRegServer[getRegServer.length - 1];
                 le("Node " + target + " location isn't known. Sending message to birth Region-Server " + regServer);
                 if (clients.containsKey(regServer)) {

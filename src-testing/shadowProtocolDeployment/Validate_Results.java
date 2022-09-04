@@ -20,7 +20,7 @@ public class Validate_Results {
                 String line;
                 Map<String, String> log = new HashMap<>();
                 while ((line = br.readLine()) != null) {
-                    var getData = line.split(": ");
+                    String[] getData = line.split(": ");
                     if (line.contains("destination")) {
                         if (log.containsKey("destination") && !log.get("destination").equals("Monitoring&Control_Entity/control")) {
                             data.add(log);
@@ -47,11 +47,11 @@ public class Validate_Results {
         List<Long> move_time = new ArrayList<>();
 
         for (Map.Entry<String, List<Map<String, String>>> elem : logsPerPylon.entrySet()) {
-            var logs = elem.getValue();
+            List<Map<String, String>> logs = elem.getValue();
             for (int i = 0; i < logs.size(); i++) {
-                var log = logs.get(i);
+                Map<String, String> log = logs.get(i);
                 if (log.get("action").equals("SEND_MESSAGE") || log.get("action").equals("MOVE_TO_ANOTHER_NODE")) {
-                    var result = findPairAction(logsPerPylon, log);
+                    Map<String, String> result = findPairAction(logsPerPylon, log);
                     System.out.println(result + " - "  + log);
 
                     if(result.get("time") != null) {
@@ -91,10 +91,10 @@ public class Validate_Results {
     public Map<String, String> findPairAction(Map<String, List<Map<String, String>>> logsPerPylon, Map<String, String> needToFind) {
         Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, List<Map<String, String>>> elem : logsPerPylon.entrySet()) {
-            var logs = elem.getValue();
+            List<Map<String, String>> logs = elem.getValue();
             int index = 0;
             for (int i = index; i<logs.size(); i++) {
-                var log = logs.get(i);
+                Map<String, String> log = logs.get(i);
                 if (log.get("destination").equals(needToFind.get("destination")) &&
                         log.get("source").equals(needToFind.get("source")) &&
                         log.get("content").equals(needToFind.get("content"))) {

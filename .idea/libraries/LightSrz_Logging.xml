@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="LightSrz_Logging">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/LightSrz_Logging.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/LightSrz_Logging.jar!/doc-Config/pages/javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/LightSrz_Logging.jar!/src" />
+    </SOURCES>
+  </library>
+</component>

@@ -49,7 +49,7 @@ import net.xqhs.flash.sclaim.constructs.ClaimStructure;
 import net.xqhs.flash.sclaim.constructs.ClaimValue;
 import net.xqhs.flash.sclaim.constructs.ClaimVariable;
 import net.xqhs.flash.sclaim.constructs.ClaimWhile;
-import net.xqhs.util.logging.LoggerClassic;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.UnitComponentExt;
 
 
@@ -579,8 +579,8 @@ final static String yyrule[] = {
 private static String unitName = "parser";
 
 /** the logger */
-public LoggerClassic log = (LoggerClassic) new UnitComponentExt(unitName)
-		.setLoggerType(PlatformUtils.platformLogType());
+public Logger log = (UnitComponentExt) new UnitComponentExt().setUnitName(unitName).setLoggerType(
+        PlatformUtils.platformLogType());
 
 /** a reference to the agent structure returned by the parser */
 public ClaimAgentDefinition parsedAgent;

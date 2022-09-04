@@ -3,6 +3,7 @@ package test.compositeMobility;
 import java.util.Arrays;
 import java.util.List;
 
+import net.xqhs.flash.FlashBoot;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 
@@ -22,7 +23,7 @@ public class Boot {
 	 * If <code>true</code>, the mobile agent will ping the other two agents. If <code>false</code>, another agent pings
 	 * the mobile agent.
 	 */
-	static final boolean MOBILE_AGENT_PINGS = true;
+	static final boolean MOBILE_AGENT_PINGS = false;
 	
 	/**
 	 * Arguments for creating agents on nodeA.
@@ -38,8 +39,8 @@ public class Boot {
 	public static String	prelude			= " -package test.compositeMobility test.compositePingPong -loader agent:composite -loader agent:mobileComposite";
 	
 	static {
-		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard MonitoringTest -shard MobilityTest to:nodeB time:5000";
-		nodeA_agents += MOBILE_AGENT_PINGS ? " -shard PingTest every:500 otherAgent:agentB1 otherAgent:agentA2"
+		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard MonitoringTest -shard MobilityTest to:nodeB time:7000";
+		nodeA_agents += MOBILE_AGENT_PINGS ? " -shard PingTest every:1000 otherAgent:agentB1 otherAgent:agentA2"
 				: " -shard PingBackTest";
 		nodeA_agents += " -agent agentA2 -shard messaging -shard MonitoringTest -shard PingBackTest";
 		
@@ -66,7 +67,8 @@ public class Boot {
 		a += " -pylon webSocket:pylonB connectTo:ws://localhost:8888";
 		a += nodeB_agents;
 		
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(a.split(" ")));
-		nodes.forEach(node -> node.start());
+//		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(a.split(" ")));
+//		nodes.forEach(node -> node.start());
+		FlashBoot.main(a.split(" "));
 	}
 }
