@@ -1,19 +1,27 @@
 package shadowProtocolDeployment;
-import java.util.List;
-
 
 public class CompositeAgentTestBoot {
 
-    public static void main(String[] args) throws InterruptedException
+	@SuppressWarnings("unused")
+	public static void main(String[] args) throws InterruptedException
     {
-        TestClass test = new TestClass("src-testing/shadowProtocolDeployment/Demo/topology1_2_servers_2_pylons_2_agents_local.json");
-//        TestClass test = new TestClass("src-testing/shadowProtocolDeployment/ExampleTopologyFiles/topology4_4_servers_8_pylons_16_agents.json");
-        test.addTopologyForNode("src-testing/shadowProtocolDeployment/Demo/topology1_node2.json");
+    	String demo = "src-testing/shadowProtocolDeployment/Demo/topology1_2_servers_2_pylons_2_agents_local.json";
+		String local = "src-testing/shadowProtocolDeployment/ExampleTopologyFiles/topology1_2_servers_2_pylons_2_agents_local.json";
+		String node2 = "src-testing/shadowProtocolDeployment/Demo/topology1_node2.json";
+		
+		String actions_withMove = "src-testing/shadowProtocolDeployment/ActionsFor_3agents/";
+		String actions_noMove = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_move_only/";
+		String actions_1Move = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_1move/";
+		
+		TestClass test = new TestClass(local);
+
+		// the topology for the current node
+		test.addTopologyForNode(local);
 
        // List<Action> testCase = test.generateTest(0, 8);
         Validate_Results validator = new Validate_Results();
 
-        test.CreateElements(null, 0, 0, false);
+		test.CreateElements(null, actions_1Move, 0, 0, false);
 //        validator.validate_results(test.pylonsList);
     }
 }

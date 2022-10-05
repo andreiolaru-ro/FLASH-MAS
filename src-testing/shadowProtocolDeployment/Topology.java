@@ -7,6 +7,9 @@ import java.util.Map;
  * Class used in parsing the Json file that contains the topology.
  */
 class Topology {
+	/**
+	 * region server IP -> pylon name -> list of agent names
+	 */
 	private Map<String, Map<String, List<String>>> topology;
 
 	public enum GetterType {

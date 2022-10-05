@@ -1,0 +1,10 @@
+destination: Monitoring&Control_Entity/node
+action: SEND_MESSAGE
+time: '2022-10-05 10:02:38.498'
+source: node-Pylon3-localhost:8887
+content: '{"proxy":"","access":"self","name":"status_update","params":"node-Pylon3-localhost:8887","value":"RUNNING"}'
+destination: Monitoring&Control_Entity/node
+action: SEND_MESSAGE
+time: '2022-10-05 10:02:38.517'
+source: node-Pylon3-localhost:8887
+content: '[]'

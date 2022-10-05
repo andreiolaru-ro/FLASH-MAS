@@ -74,6 +74,78 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
         };
     }
 
+	protected void createClient()
+	{
+		try
+		{
+			lf("trying to connect to []", serverURI);
+			client = new WebSocketClient(new URI(serverURI)) {
+				@Override
+				public void onOpen(ServerHandshake serverHandshake)
+				{
+					li("New connection to server.");
+				}
+				
+				@Override
+				public void onMessage(String s)
+				{
+					Object obj = JSONValue.parse(s);
+					if(obj == null)
+						return;
+					JSONObject message = (JSONObject) obj;
+					String str = (String) message.get("type");
+					String content;
+					switch(MessageFactory.MessageType.valueOf(str))
+					{
+					case CONTENT:
+						content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE,
+								(String) message.get("content"),
+								String.valueOf(new Timestamp(System.currentTimeMillis())));
+						inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
+						pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+						li("Message from " + message.get("source") + ": " + message.get("content"));
+						break;
+					case REQ_ACCEPT:
+						li("[] Prepare to leave", getUnitName());
+						content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null,
+								String.valueOf(new Timestamp(System.currentTimeMillis())));
+						inbox.receive(null, null, content);
+						client.close();
+						break;
+					case AGENT_CONTENT:
+						li("Received agent from " + message.get("source"));
+						content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"),
+								String.valueOf(new Timestamp(System.currentTimeMillis())));
+						pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+						AgentEvent arrived_agent = new AgentWave();
+						arrived_agent.add("content", (String) message.get("content"));
+						arrived_agent.add("destination-complete", (String) message.get("destination"));
+						getAgent().postAgentEvent(arrived_agent);
+						break;
+					default:
+						le("Unknown type");
+					}
+				}
+				
+				@Override
+				public void onClose(int i, String s, boolean b)
+				{
+					lw("Closed with exit code " + i);
+				}
+				
+				@Override
+				public void onError(Exception e)
+				{
+					le("Error connecting shard to server:", Arrays.toString(e.getStackTrace()));
+				}
+			};
+			client.connect();
+		} catch(URISyntaxException e)
+		{
+			le("Websocket didn't connect!", Arrays.toString(e.getStackTrace()));
+		}
+	}
+	
     public void startShadowAgentShard(MessageType connection_type) {
         {
             setUnitName(name);
@@ -81,69 +153,27 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
         }
         try {
             int tries = 10;
-            long space = 1000;
-            while(tries > 0) {
-                try {
-                    client = new WebSocketClient(new URI(serverURI)) {
-                        @Override
-                        public void onOpen(ServerHandshake serverHandshake) {
-                            li("New connection to server.");
-                        }
-
-                        @Override
-                        public void onMessage(String s) {
-                            Object obj = JSONValue.parse(s);
-                            if(obj == null) return;
-                            JSONObject message = (JSONObject) obj;
-                            String str = (String) message.get("type");
-                            String content;
-                            switch (MessageFactory.MessageType.valueOf(str)) {
-                                case CONTENT:
-                                    content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE, (String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
-                                    inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
-                                    pylon.send((String) message.get("source"), (String) message.get("destination"), content);
-                                    li("Message from " + message.get("source") + ": " + message.get("content"));
-                                    break;
-                                case REQ_ACCEPT:
-                                    li("[] Prepare to leave", getUnitName());
-                                    content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
-                                    inbox.receive(null, null, content);
-                                    client.close();
-                                    break;
-                                case AGENT_CONTENT:
-                                    li("Received agent from " + message.get("source"));
-                                    content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
-                                    pylon.send((String) message.get("source"), (String) message.get("destination"), content);
-                                    AgentEvent arrived_agent = new AgentWave();
-                                    arrived_agent.add("content", (String) message.get("content"));
-                                    arrived_agent.add("destination-complete", (String) message.get("destination"));
-                                    getAgent().postAgentEvent(arrived_agent);
-                                    break;
-                                default:
-                                    le("Unknown type");
-                            }
-                        }
-
-                        @Override
-                        public void onClose(int i, String s, boolean b) {
-                            lw("Closed with exit code " + i);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            le(Arrays.toString(e.getStackTrace()));
-                        }
-                    };
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                    le("Websocket didn't connect!");
-                }
-                if(client.connectBlocking())
-                    break;
+			long space = 1000;
+			while(tries > 0)
+			{
+				if(client == null)
+					createClient();
+				lf("Client is []. Tries left []", client.getReadyState(), Integer.valueOf(tries));
+				if(client.isOpen())
+				{
+					lf("Client connected.");
+					break;
+				}
+				if(client.isClosing())
+				{
+					lf("Client closed. Trying again.");
+					createClient();
+				}
+				// if(client.connectBlocking())
+				// break;
                 Thread.sleep(space);
                 tries--;
-                System.out.println("Tries:" + tries);
-            }
+			}
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
@@ -155,7 +185,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
     {
         if(!super.configure(configuration))
             return false;
-		// FIXME: auto-get region server for nodes?
         if (configuration.getAValue("connectTo") != null) {
             this.serverURI = configuration.getAValue("connectTo");
         }

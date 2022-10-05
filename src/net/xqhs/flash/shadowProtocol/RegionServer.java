@@ -1,8 +1,14 @@
 package net.xqhs.flash.shadowProtocol;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
+import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
+
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -12,13 +18,9 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.awt.desktop.SystemSleepEvent;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 
 public class RegionServer extends Unit implements Entity {
 
@@ -34,8 +36,8 @@ public class RegionServer extends Unit implements Entity {
      */
     private final Map<String, AgentStatus> mobileAgents = new HashMap<>();
     /**
-     * Conections with others servers
-     */
+	 * Connections with others servers
+	 */
     private final Map<String, WebSocketClient> clients = new HashMap<>();
 
     public RegionServer(int serverPort, ArrayList<String> servers, String server_name) {
@@ -96,12 +98,13 @@ public class RegionServer extends Unit implements Entity {
         WebSocketClient client = null;
         try {
             int tries = 5;
-            long space = 2000;
-            while (tries > 0) {
+			long space = 2000;
+			while(tries > 0 && (client == null || !client.isOpen()))
+			{
                 client = new WebSocketClient(serverURI) {
                     @Override
                     public void onOpen(ServerHandshake serverHandshake) {
-                        li("New connection from server: " + serverURI);
+						li("New connection to server: " + serverURI);
                     }
 
                     @Override
@@ -123,10 +126,9 @@ public class RegionServer extends Unit implements Entity {
                     }
                 };
 
-//                if (client.connectBlocking()) {
-//                    break;
-//                }
-                client.connect();
+				// if(client.connectBlocking())
+				// break;
+				client.connect();
                 Thread.sleep(space);
                 tries--;
                 //le("Tries:" + tries);

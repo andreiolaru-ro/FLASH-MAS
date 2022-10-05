@@ -1,13 +1,18 @@
 package shadowProtocolDeployment;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.stream.Collectors;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.util.MultiTreeMap;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class TestingShard extends AgentShardGeneral {
 
@@ -58,7 +63,7 @@ public class TestingShard extends AgentShardGeneral {
      * The message index.
      */
     int index = 0;
-    int delay = 20000;
+	int				delay			= 5000;
 
     /**
      * The list of actions that the node needs to execute.
@@ -108,7 +113,7 @@ public class TestingShard extends AgentShardGeneral {
         {
             case AGENT_START:
                 action_timer = new Timer();
-                action_timer.schedule(new ActionTimer(), delay, 20000);
+				action_timer.schedule(new ActionTimer(), delay, 5000);
                 break;
             case AGENT_STOP:
                 action_timer.cancel();
