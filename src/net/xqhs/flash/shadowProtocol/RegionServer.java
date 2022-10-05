@@ -48,7 +48,7 @@ public class RegionServer extends Unit implements Entity {
         webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
             @Override
             public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-                //li("New client connected []", webSocket);
+				li("<WSServer> New client connected []", webSocket);
                 for (String server : servers) {
                     if (!clients.containsKey(server)) {
                         try {
@@ -62,7 +62,7 @@ public class RegionServer extends Unit implements Entity {
 
             @Override
             public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-                li(("[] closed with exit code " + i), webSocket);
+				lw("<WSServer> Connection to [] closed with code [].", webSocket, i);
             }
 
             @Override
@@ -72,12 +72,12 @@ public class RegionServer extends Unit implements Entity {
 
             @Override
             public void onError(WebSocket webSocket, Exception e) {
-                e.printStackTrace();
+				le("<WSServer> Connection to [] erred:", Arrays.toString(e.getStackTrace()));
             }
 
             @Override
             public void onStart() {
-                li("Server started successfully.");
+				li("<WSServer> Server started successfully.");
             }
         };
         webSocketServer.setReuseAddr(true);
@@ -94,49 +94,21 @@ public class RegionServer extends Unit implements Entity {
         clients.put(nickname, createWebsocketClient(serverURI, nickname));
     }
 
-    private WebSocketClient createWebsocketClient(URI serverURI, String server) {
-        WebSocketClient client = null;
-        try {
-            int tries = 5;
-			long space = 2000;
-			while(tries > 0 && (client == null || !client.isOpen()))
-			{
-                client = new WebSocketClient(serverURI) {
-                    @Override
-                    public void onOpen(ServerHandshake serverHandshake) {
-						li("New connection to server: " + serverURI);
-                    }
-
-                    @Override
-                    public void onMessage(String s) {
-                        Object obj = JSONValue.parse(s);
-                        if(obj == null) return;
-                        JSONObject message = (JSONObject) obj;
-                        li("Message from server " + message.get("source"));
-                    }
-
-                    @Override
-                    public void onClose(int i, String s, boolean b) {
-                        lw("Closed with exit code " + i);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        le(Arrays.toString(e.getStackTrace()));
-                    }
-                };
-
-				// if(client.connectBlocking())
-				// break;
-				client.connect();
-                Thread.sleep(space);
-                tries--;
-                //le("Tries:" + tries);
+    private WSClient createWebsocketClient(URI serverURI, String server) {
+        return new WSClient(serverURI, 10, 3000, this.getLogger()) {
+        	@Override
+			public void onOpen(ServerHandshake serverHandshake) {
+				li("<WSServer> New region-to-region connection to server: " + server);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return client;
+        	
+        	@Override
+			public void onMessage(String s) {
+        		 Object obj = JSONValue.parse(s);
+                 if(obj == null) return;
+                 JSONObject message = (JSONObject) obj;
+					li("Message from server []", message.get("source"));				
+			}
+		};
     }
 
     /**

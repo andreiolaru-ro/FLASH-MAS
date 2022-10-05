@@ -6,12 +6,10 @@ import static net.xqhs.flash.shadowProtocol.MessageFactory.createMonitorNotifica
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -28,258 +26,211 @@ import net.xqhs.flash.shadowProtocol.MessageFactory.ActionType;
 import net.xqhs.flash.shadowProtocol.MessageFactory.MessageType;
 
 public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
-    /**
-     * Reference to the local pylon proxy
-     */
-    private MessagingPylonProxy pylon =     null;
-
-    /**
-     * The {@link MessageReceiver} instance of this shard.
-     */
-    public MessageReceiver inbox;
-    /**
-     * the Websocket object connected to Region server.
-     */
-    protected WebSocketClient client;
-    String serverURI;
-    String name;
-    
+	/**
+	 * Reference to the local pylon proxy
+	 */
+	private MessagingPylonProxy	pylon	= null;
+	
+	/**
+	 * The {@link MessageReceiver} instance of this shard.
+	 */
+	public MessageReceiver		inbox;
+	/**
+	 * the Websocket object connected to Region server.
+	 */
+	protected WebSocketClient	client;
+	URI							serverURI;
+	String						name;
+	
 	/**
 	 * No-argument constructor
 	 */
-    public ShadowAgentShard() {
-        inbox = new MessageReceiver() {
-            @Override
-            public void receive(String source, String destination, String content) {
-                Object obj = JSONValue.parse(content);
-                if(obj == null) return;
-                JSONObject mesg = (JSONObject) obj;
-                String type = (String) mesg.get("action");
-                switch (MessageFactory.ActionType.valueOf(type)) {
-                    case RECEIVE_MESSAGE:
-                        String server = (String) mesg.get("server");
-                        if (server != null) {
-                            serverURI = server;
-                            li("After moving connect to " + serverURI);
-                            break;
-                        }
-                        receiveMessage(source, destination, (String) mesg.get("content"));
-                        //pylon.send(source, destination, content);
-                        break;
-                    case MOVE_TO_ANOTHER_NODE:
-                    default:
-                        break;
-                }
-            }
-        };
-    }
-
-	protected void createClient()
-	{
-		try
-		{
-			lf("trying to connect to []", serverURI);
-			client = new WebSocketClient(new URI(serverURI)) {
-				@Override
-				public void onOpen(ServerHandshake serverHandshake)
-				{
-					li("New connection to server.");
-				}
-				
-				@Override
-				public void onMessage(String s)
-				{
-					Object obj = JSONValue.parse(s);
-					if(obj == null)
-						return;
-					JSONObject message = (JSONObject) obj;
-					String str = (String) message.get("type");
-					String content;
-					switch(MessageFactory.MessageType.valueOf(str))
-					{
-					case CONTENT:
-						content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE,
-								(String) message.get("content"),
-								String.valueOf(new Timestamp(System.currentTimeMillis())));
-						inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
-						pylon.send((String) message.get("source"), (String) message.get("destination"), content);
-						li("Message from " + message.get("source") + ": " + message.get("content"));
+	public ShadowAgentShard() {
+		inbox = new MessageReceiver() {
+			@Override
+			public void receive(String source, String destination, String content) {
+				Object obj = JSONValue.parse(content);
+				if(obj == null)
+					return;
+				JSONObject mesg = (JSONObject) obj;
+				String type = (String) mesg.get("action");
+				switch(MessageFactory.ActionType.valueOf(type)) {
+				case RECEIVE_MESSAGE:
+					String server = (String) mesg.get("server");
+					if(server != null) {
+						try {
+							serverURI = new URI(server);
+							li("After moving connect to " + serverURI);
+						} catch(URISyntaxException e) {
+							le("Incorrect URI format []", server);
+						}
 						break;
-					case REQ_ACCEPT:
-						li("[] Prepare to leave", getUnitName());
-						content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null,
-								String.valueOf(new Timestamp(System.currentTimeMillis())));
-						inbox.receive(null, null, content);
-						client.close();
-						break;
-					case AGENT_CONTENT:
-						li("Received agent from " + message.get("source"));
-						content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"),
-								String.valueOf(new Timestamp(System.currentTimeMillis())));
-						pylon.send((String) message.get("source"), (String) message.get("destination"), content);
-						AgentEvent arrived_agent = new AgentWave();
-						arrived_agent.add("content", (String) message.get("content"));
-						arrived_agent.add("destination-complete", (String) message.get("destination"));
-						getAgent().postAgentEvent(arrived_agent);
-						break;
-					default:
-						le("Unknown type");
 					}
+					receiveMessage(source, destination, (String) mesg.get("content"));
+					// pylon.send(source, destination, content);
+					break;
+				case MOVE_TO_ANOTHER_NODE:
+				default:
+					break;
 				}
-				
-				@Override
-				public void onClose(int i, String s, boolean b)
-				{
-					lw("Closed with exit code " + i);
+			}
+		};
+	}
+	
+	public void startShadowAgentShard(MessageType connection_type) {
+		setUnitName(name);
+		setLoggerType(PlatformUtils.platformLogType());
+		client = new WSClient(serverURI, 10, 3000, this.getLogger()) {
+			@Override
+			public void onMessage(String s) {
+				Object obj = JSONValue.parse(s);
+				if(obj == null)
+					return;
+				JSONObject message = (JSONObject) obj;
+				String str = (String) message.get("type");
+				String content;
+				switch(MessageFactory.MessageType.valueOf(str)) {
+				case CONTENT:
+					content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE,
+							(String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
+					inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
+					pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+					li("Message from " + message.get("source") + ": " + message.get("content"));
+					break;
+				case REQ_ACCEPT:
+					li("[] Prepare to leave", getUnitName());
+					content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null,
+							String.valueOf(new Timestamp(System.currentTimeMillis())));
+					inbox.receive(null, null, content);
+					client.close();
+					break;
+				case AGENT_CONTENT:
+					li("Received agent from " + message.get("source"));
+					content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"),
+							String.valueOf(new Timestamp(System.currentTimeMillis())));
+					pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+					AgentEvent arrived_agent = new AgentWave();
+					arrived_agent.add("content", (String) message.get("content"));
+					arrived_agent.add("destination-complete", (String) message.get("destination"));
+					getAgent().postAgentEvent(arrived_agent);
+					break;
+				default:
+					le("Unknown type");
 				}
-				
-				@Override
-				public void onError(Exception e)
-				{
-					le("Error connecting shard to server:", Arrays.toString(e.getStackTrace()));
-				}
-			};
-			client.connect();
-		} catch(URISyntaxException e)
-		{
-			le("Websocket didn't connect!", Arrays.toString(e.getStackTrace()));
+			}
+		};
+//		client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
+	}
+	
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration.getAValue("connectTo") != null) {
+			try {
+				this.serverURI = new URI(configuration.getAValue("connectTo"));
+			} catch(URISyntaxException e) {
+				le("Incorrect URI format []", configuration.getAValue("connectTo"));
+				return false;
+			}
+		}
+		if(configuration.getAValue("agent_name") != null) {
+			this.name = configuration.getAValue("agent_name");
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean sendMessage(String source, String target, String content) {
+		li("Send message <<" + content + ">> from agent " + source + " to agent " + target);
+		String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content,
+				String.valueOf(new Timestamp(System.currentTimeMillis())));
+		pylon.send(this.getName(), target, notify_content);
+		
+		Map<String, String> data = new HashMap<>();
+		data.put("destination", target);
+		data.put("content", content);
+		if(client != null) {
+			if(target.contains("Monitoring")) {
+				return true;
+			}
+			if(source.contains("node") || target.contains("node")) {
+				client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.AGENT_CONTENT, data));
+			}
+			else {
+				client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	protected void receiveMessage(String source, String destination, String content) {
+		super.receiveMessage(source, destination, content);
+	}
+	
+	@Override
+	public void register(String entityName) {
+		pylon.register(entityName, inbox);
+		// client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		if(!(context instanceof MessagingPylonProxy))
+			return false;
+		pylon = (MessagingPylonProxy) context;
+		return true;
+	}
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
+		super.signalAgentEvent(event);
+		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
+			if(event.get("TO_FROM_TRANSIENT") != null) {
+				le("Agent started after move.");
+				String entityName = getAgent().getEntityName();
+				String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
+						String.valueOf(new Timestamp(System.currentTimeMillis())));
+				pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+				pylon.register(entityName, inbox);
+				startShadowAgentShard(MessageType.CONNECT);
+				System.out.println();
+			}
+			else {
+				this.register(getAgent().getEntityName());
+				startShadowAgentShard(MessageType.REGISTER);
+			}
+			
+		}
+		
+		if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
+			String target = event.get("TARGET");
+			lf("Agent " + this.getName() + " wants to move to another node " + target);
+			String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null,
+					String.valueOf(new Timestamp(System.currentTimeMillis())));
+			pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
+			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
+		}
+		
+		if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
+			String entityName = getAgent().getEntityName();
+			String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
+					String.valueOf(new Timestamp(System.currentTimeMillis())));
+			pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+			
+			pylon.register(entityName, inbox);
+			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
 		}
 	}
 	
-    public void startShadowAgentShard(MessageType connection_type) {
-        {
-            setUnitName(name);
-            setLoggerType(PlatformUtils.platformLogType());
-        }
-        try {
-            int tries = 10;
-			long space = 1000;
-			while(tries > 0)
-			{
-				if(client == null)
-					createClient();
-				lf("Client is []. Tries left []", client.getReadyState(), Integer.valueOf(tries));
-				if(client.isOpen())
-				{
-					lf("Client connected.");
-					break;
-				}
-				if(client.isClosing())
-				{
-					lf("Client closed. Trying again.");
-					createClient();
-				}
-				// if(client.connectBlocking())
-				// break;
-                Thread.sleep(space);
-                tries--;
-			}
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
-        client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
-    }
-
-    @Override
-    public boolean configure(MultiTreeMap configuration)
-    {
-        if(!super.configure(configuration))
-            return false;
-        if (configuration.getAValue("connectTo") != null) {
-            this.serverURI = configuration.getAValue("connectTo");
-        }
-        if (configuration.getAValue("agent_name") != null) {
-            this.name = configuration.getAValue("agent_name");
-        }
-        return true;
-    }
-
-    @Override
-    public boolean sendMessage(String source, String target, String content) {
-        li("Send message <<" + content + ">> from agent " + source + " to agent " + target);
-        String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content, String.valueOf(new Timestamp(System.currentTimeMillis())));
-        pylon.send(this.getName(), target, notify_content);
-
-        Map<String, String> data = new HashMap<>();
-        data.put("destination", target);
-        data.put("content", content);
-        if (client != null) {
-            if (target.contains("Monitoring")) {
-                return true;
-            }
-            if (source.contains("node") || target.contains("node")) {
-                client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.AGENT_CONTENT, data));
-            } else {
-                client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected void receiveMessage(String source, String destination, String content) {
-        super.receiveMessage(source, destination, content);
-    }
-
-    @Override
-    public void register(String entityName) {
-        pylon.register(entityName, inbox);
-      //  client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
-    }
-
-
-    @Override
-    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        if(!(context instanceof MessagingPylonProxy))
-            return false;
-        pylon = (MessagingPylonProxy) context;
-        return true;
-    }
-
-    @Override
-    public void signalAgentEvent(AgentEvent event) {
-        super.signalAgentEvent(event);
-        if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
-            if (event.get("TO_FROM_TRANSIENT") != null) {
-                le("Agent started after move.");
-                String entityName = getAgent().getEntityName();
-                String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,String.valueOf(new Timestamp(System.currentTimeMillis())));
-                pylon.send(this.getName(), pylon.getEntityName(), notify_content);
-                pylon.register(entityName, inbox);
-                startShadowAgentShard(MessageType.CONNECT);
-                System.out.println();
-            } else {
-                this.register(getAgent().getEntityName());
-                startShadowAgentShard(MessageType.REGISTER);
-            }
-
-        }
-
-        if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
-            String target = event.get("TARGET");
-            lf("Agent " + this.getName() + " wants to move to another node " + target);
-            String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
-            pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
-            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
-        }
-
-        if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
-            String entityName = getAgent().getEntityName();
-            String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null, String.valueOf(new Timestamp(System.currentTimeMillis())));
-            pylon.send(this.getName(), pylon.getEntityName(), notify_content);
-
-            pylon.register(entityName, inbox);
-            client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
-        }
-    }
-
-    @Override
-    public String getName() {
-        return (getUnitName().split(".messaging"))[0];
-    }
-
-    @Override
-    public String getAgentAddress() {
-        return this.getName();
-    }
+	@Override
+	public String getName() {
+		return (getUnitName().split(".messaging"))[0];
+	}
+	
+	@Override
+	public String getAgentAddress() {
+		return this.getName();
+	}
 }
