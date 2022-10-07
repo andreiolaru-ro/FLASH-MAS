@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -38,7 +37,7 @@ public class RegionServer extends Unit implements Entity {
     /**
 	 * Connections with others servers
 	 */
-    private final Map<String, WebSocketClient> clients = new HashMap<>();
+	private final Map<String, WSClient>		clients				= new HashMap<>();
 
     public RegionServer(int serverPort, ArrayList<String> servers, String server_name) {
         {
@@ -49,15 +48,6 @@ public class RegionServer extends Unit implements Entity {
             @Override
             public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
 				li("<WSServer> New client connected []", webSocket);
-                for (String server : servers) {
-                    if (!clients.containsKey(server)) {
-                        try {
-                            ServerClient(new URI("ws://" + server), server);
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
             }
 
             @Override
@@ -80,7 +70,22 @@ public class RegionServer extends Unit implements Entity {
 				li("<WSServer> Server started successfully.");
             }
         };
+		
         webSocketServer.setReuseAddr(true);
+		
+		new Thread() {
+			public void run() {
+				for(String server : servers) {
+					if(!clients.containsKey(server)) {
+						try {
+							ServerClient(new URI("ws://" + server), server);
+						} catch(URISyntaxException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}.start();
     }
 
     /**
@@ -95,7 +100,7 @@ public class RegionServer extends Unit implements Entity {
     }
 
     private WSClient createWebsocketClient(URI serverURI, String server) {
-        return new WSClient(serverURI, 10, 3000, this.getLogger()) {
+		return new WSClient(serverURI, 10, 5000, this.getLogger()) {
         	@Override
 			public void onOpen(ServerHandshake serverHandshake) {
 				li("<WSServer> New region-to-region connection to server: " + server);
@@ -222,7 +227,7 @@ public class RegionServer extends Unit implements Entity {
          * @param entityName - the destination name
          * @param message - the message that will be sent
          */
-        public void sendMessage(WebSocket webSocket, String entityName, String message) {
+		public void sendMessage(WebSocket webSocket, String entityName, String message) {
             if (webSocket.isOpen()) {
                 webSocket.send(message);
             } else {
@@ -250,7 +255,8 @@ public class RegionServer extends Unit implements Entity {
                     if (clients.containsKey(homeServer)) {
                         Map<String, String> data = new HashMap<>();
                         data.put("lastLocation", getUnitName());
-                        sendMessage(clients.get(homeServer), homeServer, createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
+						sendMessage(clients.get(homeServer).client, homeServer,
+								createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
                     }
                 }
             } else {
@@ -278,7 +284,7 @@ public class RegionServer extends Unit implements Entity {
                 if (ag.getStatus() == AgentStatus.Status.TRANSITION) {
                     String lastServer = ag.getLastLocation();
                     li("Send message <<" + mesg.get("content") + ">> to agent " + target + " located on " + lastServer);
-                    sendMessage(clients.get(lastServer), lastServer, message);
+					sendMessage(clients.get(lastServer).client, lastServer, message);
                 }
                 if (ag.getStatus() == AgentStatus.Status.OFFLINE) {
                     li("Saved message <<" + mesg.get("content") + ">> for " + target);
@@ -292,7 +298,7 @@ public class RegionServer extends Unit implements Entity {
                     String regServer = (target.split("-"))[1];
                     le("Agent " + target + " location isn't known. Sending message <<" + mesg.get("content") + ">> to birth Region-Server " + regServer);
                     if (clients.containsKey(regServer)) {
-                        sendMessage(clients.get(regServer), regServer, message);
+						sendMessage(clients.get(regServer).client, regServer, message);
                     }
                 }
             }
@@ -311,7 +317,8 @@ public class RegionServer extends Unit implements Entity {
                     if (clients.containsKey(homeServer)) {
                         Map<String, String> data = new HashMap<>();
                         data.put("agentName", source);
-                        sendMessage(clients.get(homeServer), homeServer, createMessage("", getName(), MessageFactory.MessageType.REQ_BUFFER, data));
+						sendMessage(clients.get(homeServer).client, homeServer,
+								createMessage("", getName(), MessageFactory.MessageType.REQ_BUFFER, data));
                     }
                 }
             }
@@ -327,7 +334,8 @@ public class RegionServer extends Unit implements Entity {
                 data.put("agentName", agentReq);
                 String lastLocation = ag.getLastLocation();
                 if (clients.containsKey(lastLocation)) {
-                    sendMessage(clients.get(lastLocation), lastLocation, createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
+					sendMessage(clients.get(lastLocation).client, lastLocation,
+							createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
                 }
             }
         }
@@ -353,7 +361,7 @@ public class RegionServer extends Unit implements Entity {
                 if (clients.containsKey(new_location)) {
                     for (String saved : ag.getMessages()) {
                         li("Sending saved message: " + saved);
-                        sendMessage(clients.get(new_location), new_location, saved);
+						sendMessage(clients.get(new_location).client, new_location, saved);
                     }
                     ag.getMessages().clear();
                 }
@@ -372,7 +380,7 @@ public class RegionServer extends Unit implements Entity {
                 String regServer = getRegServer[getRegServer.length - 1];
                 le("Node " + target + " location isn't known. Sending message to birth Region-Server " + regServer);
                 if (clients.containsKey(regServer)) {
-                    sendMessage(clients.get(regServer), regServer, message);
+					sendMessage(clients.get(regServer).client, regServer, message);
                 }
             }
         }

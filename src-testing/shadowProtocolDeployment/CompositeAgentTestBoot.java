@@ -15,7 +15,7 @@ public class CompositeAgentTestBoot {
 		String actions_1Move = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_1move/";
 		String noActions = "";
 		
-		TestClass test = new TestClass(local_no_agents);
+		TestClass test = new TestClass(local);
 
 		// the topology for the current node
 		test.addTopologyForNode(local);
@@ -23,7 +23,7 @@ public class CompositeAgentTestBoot {
        // List<Action> testCase = test.generateTest(0, 8);
         Validate_Results validator = new Validate_Results();
 
-		test.CreateElements(null, noActions, 0, 0, false);
+		test.CreateElements(null, actions_1Move, 0, 0, false);
 //        validator.validate_results(test.pylonsList);
     }
 }

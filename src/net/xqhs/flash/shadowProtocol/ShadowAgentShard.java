@@ -9,7 +9,6 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.java_websocket.client.WebSocketClient;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -29,18 +28,18 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	/**
 	 * Reference to the local pylon proxy
 	 */
-	private MessagingPylonProxy	pylon	= null;
+	private MessagingPylonProxy pylon = null;
 	
 	/**
 	 * The {@link MessageReceiver} instance of this shard.
 	 */
-	public MessageReceiver		inbox;
+	public MessageReceiver	inbox;
 	/**
 	 * the Websocket object connected to Region server.
 	 */
-	protected WebSocketClient	client;
-	URI							serverURI;
-	String						name;
+	protected WSClient		client;
+	URI						serverURI;
+	String					name;
 	
 	/**
 	 * No-argument constructor
@@ -80,7 +79,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	public void startShadowAgentShard(MessageType connection_type) {
 		setUnitName(name);
 		setLoggerType(PlatformUtils.platformLogType());
-		client = new WSClient(serverURI, 10, 3000, this.getLogger()) {
+		client = new WSClient(serverURI, 10, 5000, this.getLogger()) {
 			@Override
 			public void onMessage(String s) {
 				Object obj = JSONValue.parse(s);
@@ -119,7 +118,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 				}
 			}
 		};
-//		client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
+		// client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
 	}
 	
 	@Override
