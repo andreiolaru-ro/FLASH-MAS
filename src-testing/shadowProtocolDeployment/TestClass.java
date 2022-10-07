@@ -262,7 +262,7 @@ public class TestClass {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+			System.out.println("No actions in file " + filename);
         }
 
         return test;
