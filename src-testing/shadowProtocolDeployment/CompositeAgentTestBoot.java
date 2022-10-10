@@ -11,7 +11,7 @@ public class CompositeAgentTestBoot {
 		String node2 = "src-testing/shadowProtocolDeployment/Demo/topology1_node2.json";
 		
 		String actions_withMove = "src-testing/shadowProtocolDeployment/ActionsFor_3agents/";
-		String actions_noMove = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_move_only/";
+		String actions_noMove = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_msg_only/";
 		String actions_1Move = "src-testing/shadowProtocolDeployment/ActionsFor_3agents_1move/";
 		String noActions = "";
 		
@@ -23,7 +23,7 @@ public class CompositeAgentTestBoot {
        // List<Action> testCase = test.generateTest(0, 8);
         Validate_Results validator = new Validate_Results();
 
-		test.CreateElements(null, actions_1Move, 0, 0, false);
+		test.CreateElements(null, actions_noMove, 0, 0, false);
 //        validator.validate_results(test.pylonsList);
     }
 }

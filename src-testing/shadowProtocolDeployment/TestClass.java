@@ -308,7 +308,7 @@ public class TestClass {
 									.addFirstValue("region-server", "ws://" + server_name));
                     node.addGeneralContext(pylon_elem.asContext());
                     elements.put(node_name, node);
-                    int delay = 20000;
+					int delay = 5000;
                     // CREATE AGENTS
                     for (String agent : (pylon.getValue())) {
                         String agent_name = agent + "-" + region.getKey();

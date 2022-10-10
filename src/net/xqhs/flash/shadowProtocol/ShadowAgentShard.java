@@ -15,6 +15,7 @@ import org.json.simple.JSONValue;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
@@ -118,7 +119,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 				}
 			}
 		};
-		// client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
+		client.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
 	}
 	
 	@Override
@@ -186,7 +187,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
-			if(event.get("TO_FROM_TRANSIENT") != null) {
+			if(event.get(MobileCompositeAgent.TRANSIENT_EVENT_PARAMETER) != null) {
 				le("Agent started after move.");
 				String entityName = getAgent().getEntityName();
 				String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,

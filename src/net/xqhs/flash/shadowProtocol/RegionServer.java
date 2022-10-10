@@ -296,10 +296,12 @@ public class RegionServer extends Unit implements Entity {
                     sendMessage(ag.getClientConnection(), target, message);
                 } else {
                     String regServer = (target.split("-"))[1];
-                    le("Agent " + target + " location isn't known. Sending message <<" + mesg.get("content") + ">> to birth Region-Server " + regServer);
-                    if (clients.containsKey(regServer)) {
+					li("Agent " + target + " location isn't known. Sending message <<" + mesg.get("content")
+							+ ">> to birth Region-Server " + regServer);
+					if(clients.containsKey(regServer))
 						sendMessage(clients.get(regServer).client, regServer, message);
-                    }
+					else
+						le("Region server [] not connected; known servers: ", regServer, clients.keySet());
                 }
             }
         }
