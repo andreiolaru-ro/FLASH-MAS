@@ -354,21 +354,23 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			MessagingPylonProxy pylon = messagingProxies.stream().findFirst().get();
 			node.addGeneralContext(pylon);
 			
-			if(!DeploymentConfiguration.isCentralNode)
+			if(!nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY))
 				return node;
 				
 			// delegate the central node
 			// and register the central monitoring and control entity in its context
 			li("Node [] is central node.", node.getName());
 			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
-					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+					new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
+							.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
+									nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
 			centralEntity.addGeneralContext(pylon);
 			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 			
 			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 					DeploymentConfiguration.MONITORING_TYPE);
-			DeploymentConfiguration.isCentralNode = false;
 			
 			li("Loading node [] completed.", node.getName());
 		}
