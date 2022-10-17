@@ -29,6 +29,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.flash.shadowProtocol.ShadowPylon;
 import test.compositeMobility.MobilityTestShard;
+import test.compositePingPong.MonitoringTestShard;
 
 
 /**
@@ -113,7 +114,8 @@ public class TestClass {
         List<String> copy = new ArrayList<>(agentsList);
         copy.remove(source);
         String destination = getRandomElement(copy);
-        String complete_dest = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
+		String complete_dest = destination + "-"
+				+ topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
         String complete_source = source + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, source);
         return new Action(complete_source, complete_dest, "Message " + index_message++, Action.Actions.SEND_MESSAGE);
     }
@@ -139,7 +141,7 @@ public class TestClass {
         //System.out.println(agent);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
         String pylon = getRandomElement(copy);
-        String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
+		String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);
         return new Action(agent_complete, pylon_complete, "", Action.Actions.MOVE_TO_ANOTHER_NODE);
     }
 
@@ -149,7 +151,7 @@ public class TestClass {
         //System.out.println(agent);
         copy.remove(topology_map.getter(Topology.GetterType.GET_PYLON_FOR_AGENT, agent));
         String pylon = getRandomElement(copy);
-        String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);;
+		String pylon_complete = pylon + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, pylon);
         return new Action(agent_complete, pylon_complete, "", Action.Actions.MOVE_TO_ANOTHER_NODE);
     }
 
@@ -253,7 +255,9 @@ public class TestClass {
                         case SEND_MESSAGE:
                         	destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_AGENT, destination);
                         	break;
-                        case MOVE_TO_ANOTHER_NODE: destination_complete = destination + "-" + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, destination);
+						case MOVE_TO_ANOTHER_NODE:
+							destination_complete = destination;// + "-"
+							// + topology_init.getter(Topology.GetterType.GET_SERVER_FOR_PYLON, destination);
                         break;
                         default: throw new IllegalStateException("Unexpected value: " + ac_type);
                     }
@@ -261,10 +265,10 @@ public class TestClass {
                     test.add(new Action(source_complete, destination_complete, (String) action.get("content"), ac_type));
                 }
             }
+			System.out.println("Total actions: " + test);
         } catch(Exception e) {
 			System.out.println("No actions in file " + filename);
         }
-
         return test;
     }
 
@@ -326,6 +330,8 @@ public class TestClass {
                                 .addSingleValue("agent_name", agent_elem.getName())
                                 .addSingleValue(SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
                         agent_elem.addShard(mesgShard);
+						
+						agent_elem.addShard(new MonitoringTestShard());
 
                         TestingShard testingShard = new TestingShard();
 //                    List<String> actionsToString = new ArrayList<>(List.of(""));

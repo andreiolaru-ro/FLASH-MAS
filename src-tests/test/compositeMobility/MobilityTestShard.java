@@ -87,7 +87,7 @@ public class MobilityTestShard extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			if(nextDestination != null) {
-				if(destination.equals(nextDestination))
+				if(nextDestination.equals(destination))
 					return; // the agent had already moved back to the original node
 				destination = nextDestination; // the next move will be to the original node
 			}

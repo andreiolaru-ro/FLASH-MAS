@@ -204,7 +204,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 			
 		}
 		
-		if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
+		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP)) {
 			String target = event.get("TARGET");
 			lf("Agent " + this.getName() + " wants to move to another node " + target);
 			String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null,
