@@ -24,7 +24,7 @@ public class CompositeAgentTestBoot {
        // List<Action> testCase = test.generateTest(0, 8);
         Validate_Results validator = new Validate_Results();
 
-		test.CreateElements(null, actions_1Move, 0, 0, false);
+		test.CreateElements(null, actions_withMove, 0, 0, false);
 //        validator.validate_results(test.pylonsList);
     }
 }

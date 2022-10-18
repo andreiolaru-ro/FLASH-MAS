@@ -188,7 +188,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 		super.signalAgentEvent(event);
 		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
 			if(event.get(MobileCompositeAgent.TRANSIENT_EVENT_PARAMETER) != null) {
-				le("Agent started after move.");
+				li("Agent started after move.");
 				String entityName = getAgent().getEntityName();
 				String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
 						String.valueOf(new Timestamp(System.currentTimeMillis())));
