@@ -1,13 +1,14 @@
 package shadowProtocolDeployment;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Class that describe an action.
@@ -21,7 +22,11 @@ class Action implements Serializable {
 		/**
 		 * An agent moves on another node.
 		 */
-		MOVE_TO_ANOTHER_NODE
+		MOVE_TO_ANOTHER_NODE,
+		/**
+		 * No action.
+		 */
+		NOP,
 	}
 
 	String source, destination, content;

@@ -35,28 +35,30 @@ public class TestingShard extends AgentShardGeneral {
 				// action_timer.cancel();
 				return;
 			}
+			// lf("Current index [] current actions []", index, actions);
 			if(actions.get(index) == null) {
 				li("NO ACTION");
 				// action_timer.cancel();
-				return;
 			}
-			// li("INDEX " + index + " " + actions.get(index).getSource() + " " + actions.get(index));
-			// System.out.println();
-			switch(actions.get(index).getType()) {
-			case MOVE_TO_ANOTHER_NODE:
-				li("MOVE_TO_ANOTHER_NODE: []", actions.get(index).getDestination());
-				// action_timer.cancel();
-				((MobileCompositeAgentShardContainer) getAgent()).moveTo("node-" + actions.get(index).getDestination());
-				// AgentEvent move_event = new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE);
-				// move_event.add(TARGET, "node-" + actions.get(index).getDestination());
-				// move_event.add("pylon_destination", actions.get(index).getDestination().split("-")[0]);
-				// getAgent().postAgentEvent(move_event);
-				break;
-			case SEND_MESSAGE:
-				// li("SEND_MESSAGE");
-				sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
-				break;
-			}
+			else
+				// li("INDEX " + index + " " + actions.get(index).getSource() + " " + actions.get(index));
+				// System.out.println();
+				switch(actions.get(index).getType()) {
+				case MOVE_TO_ANOTHER_NODE:
+					li("MOVE_TO_ANOTHER_NODE: []", actions.get(index).getDestination());
+					// action_timer.cancel();
+					((MobileCompositeAgentShardContainer) getAgent())
+							.moveTo("node-" + actions.get(index).getDestination());
+					// AgentEvent move_event = new AgentEvent(AgentEvent.AgentEventType.BEFORE_MOVE);
+					// move_event.add(TARGET, "node-" + actions.get(index).getDestination());
+					// move_event.add("pylon_destination", actions.get(index).getDestination().split("-")[0]);
+					// getAgent().postAgentEvent(move_event);
+					break;
+				case SEND_MESSAGE:
+					// li("SEND_MESSAGE");
+					sendMessage(actions.get(index).getContent(), "", actions.get(index).getDestination());
+					break;
+				}
 			index++;
 		}
 	}
