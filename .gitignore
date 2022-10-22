@@ -3,6 +3,4 @@
 .idea
 .xml
 *.iml
-/log-Pylon1-monitor.yaml
-/log-Pylon2-monitor.yaml
-/log-Pylon3-monitor.yaml
+/log-*.yaml
