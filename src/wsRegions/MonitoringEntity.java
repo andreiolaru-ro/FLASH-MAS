@@ -1,4 +1,4 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,7 +1,7 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
-import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
-import static net.xqhs.flash.shadowProtocol.MessageFactory.createMonitorNotification;
+import static wsRegions.MessageFactory.createMessage;
+import static wsRegions.MessageFactory.createMonitorNotification;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,10 +22,10 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.shadowProtocol.MessageFactory.ActionType;
-import net.xqhs.flash.shadowProtocol.MessageFactory.MessageType;
+import wsRegions.MessageFactory.ActionType;
+import wsRegions.MessageFactory.MessageType;
 
-public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
+public class WSRegionsShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
 	/**
 	 * Reference to the local pylon proxy
 	 */
@@ -40,12 +40,11 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	 */
 	protected WSClient		client;
 	URI						serverURI;
-	String					name;
 	
 	/**
 	 * No-argument constructor
 	 */
-	public ShadowAgentShard() {
+	public WSRegionsShard() {
 		inbox = new MessageReceiver() {
 			@Override
 			public void receive(String source, String destination, String content) {
@@ -78,7 +77,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	}
 	
 	public void startShadowAgentShard(MessageType connection_type) {
-		setUnitName(name);
+		setUnitName(getAgent().getEntityName());
 		setLoggerType(PlatformUtils.platformLogType());
 		client = new WSClient(serverURI, 10, 5000, this.getLogger()) {
 			@Override
@@ -133,9 +132,6 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 				le("Incorrect URI format []", configuration.getAValue("connectTo"));
 				return false;
 			}
-		}
-		if(configuration.getAValue("agent_name") != null) {
-			this.name = configuration.getAValue("agent_name");
 		}
 		return true;
 	}
@@ -226,7 +222,7 @@ public class ShadowAgentShard extends AbstractNameBasedMessagingShard implements
 	
 	@Override
 	public String getName() {
-		return (getUnitName().split(".messaging"))[0];
+		return getAgent().getEntityName();
 	}
 	
 	@Override

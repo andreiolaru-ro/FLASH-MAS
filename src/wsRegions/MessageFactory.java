@@ -1,4 +1,4 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -110,7 +110,7 @@ public class MessageFactory {
 
     /**
      * Creates the logs that will be sent to the monitor entity.
-     * @param action
+     * @param actionType
      *            - action type
      * @param content
      *            - information extra

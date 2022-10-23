@@ -1,6 +1,6 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
-import static net.xqhs.flash.shadowProtocol.MessageFactory.createMessage;
+import static wsRegions.MessageFactory.createMessage;
 
 import java.net.InetSocketAddress;
 import java.net.URI;

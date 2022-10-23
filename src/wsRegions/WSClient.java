@@ -1,4 +1,4 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
 import java.net.URI;
 import java.util.Arrays;

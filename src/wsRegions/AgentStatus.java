@@ -1,4 +1,4 @@
-package net.xqhs.flash.shadowProtocol;
+package wsRegions;
 
 import org.java_websocket.WebSocket;
 
