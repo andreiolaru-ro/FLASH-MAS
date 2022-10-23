@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.compositePingPong;
+package testing;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -26,7 +26,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class MonitoringTestShard extends AgentShardCore {
+public class EchoTestingShard extends AgentShardCore {
 	/**
 	 * The UID.
 	 */
@@ -35,12 +35,16 @@ public class MonitoringTestShard extends AgentShardCore {
 	 * The log.
 	 */
 	transient UnitComponent		locallog			= null;
+	/**
+	 * Shard designation.
+	 */
+	public static final String	DESIGNATION			= "test/monitoring";
 	
 	/**
 	 * No-argument constructor
 	 */
-	public MonitoringTestShard() {
-		super(AgentShardDesignation.customShard(Boot.MONITORING));
+	public EchoTestingShard() {
+		super(AgentShardDesignation.customShard(DESIGNATION));
 	}
 	
 	@Override
@@ -64,6 +68,7 @@ public class MonitoringTestShard extends AgentShardCore {
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null) {
+			locallog.lf("testing stopped.");
 			locallog.doExit();
 			locallog = null;
 		}
