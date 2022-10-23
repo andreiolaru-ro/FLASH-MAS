@@ -215,8 +215,8 @@ public interface Loader<T extends Entity<?>>
 	 * 
 	 * @see #autoFind(ClassFactory, List, String, String, String, String, List)
 	 * 
-	 *      TODO: upper_name, lower_name and entity don't work in a meaningful way and are assambled by capitalization
-	 *      of the names. The Todo is to change the manner of assembly when searching for files and assemble via
+	 *      TODO: upper_name, lower_name and entity don't work in a meaningful way and are assembled by capitalization
+	 *      of the names. The to-do is to change the manner of assembly when searching for files and assemble via
 	 *      underscores.
 	 * 
 	 * @param packages
@@ -247,12 +247,18 @@ public interface Loader<T extends Entity<?>>
 	static boolean loadCheck(String path, SearchItemType searchType, Object... objects)
 	{
 		ClassFactory factory;
+		File file;
 		switch(searchType) {
 		case CLASS:
 			factory = objects[0] != null ? (ClassFactory) objects[0] : PlatformUtils.getClassFactory();
 			return factory.canLoadClass(path);
 		case FILE:
-			return new File(path).isFile();
+			try {
+				file = new File(path);
+			} catch(Exception e) {
+				return false;
+			}
+			return file.isFile();
 		default:
 			return false;
 		}
