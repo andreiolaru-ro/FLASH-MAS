@@ -1,0 +1,20 @@
+script:
+ one-localhost:8885:
+   actions:
+     - action: "SEND_MESSAGE"
+       arguments: {to: "two-localhost:8885", with: "check"}
+     - action: "SEND_MESSAGE"
+       arg: 3000
+       arguments: {to: "two-localhost:8885", with: "go move"}
+ two-localhost:8885:
+   actions:
+     - arg: 3000
+       action: "NOP"
+     - trigger: "EVENT"
+       arg: "AGENT_WAVE"
+       action: "MOVE_TO_NODE"
+       arguments: {to: "node2"}
+     - trigger: "EVENT"
+       arg: "AFTER_MOVE"
+       action: "SEND_MESSAGE"
+       arguments: {to: "one-localhost:8885", with: "arrived"} 

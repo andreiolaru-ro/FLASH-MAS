@@ -26,10 +26,10 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
-import net.xqhs.flash.shadowProtocol.ShadowPylon;
 import shadowProtocolDeployment.Action.Actions;
-import test.compositePingPong.MonitoringTestShard;
+import testing.EchoTestingShard;
+import wsRegions.WSRegionsShard;
+import wsRegions.WSRegionsPylon;
 
 /**
  * Class that generates and execute tests.
@@ -312,12 +312,12 @@ public class TestClass {
 				String node_name = "node-" + pylon_name + "-" + server_name;
 				
 				// CREATE PYLON
-				ShadowPylon pylon_elem = new ShadowPylon();
+				WSRegionsPylon pylon_elem = new WSRegionsPylon();
 				MultiTreeMap config = new MultiTreeMap()
-						.addSingleValue(ShadowPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
+						.addSingleValue(WSRegionsPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
 						.addSingleValue("pylon_name", pylon_name);
 				if(isRegionServer) {
-					config.addSingleValue(ShadowPylon.HOME_SERVER_PORT_NAME, port_value).addSingleValue("servers",
+					config.addSingleValue(WSRegionsPylon.HOME_SERVER_PORT_NAME, port_value).addSingleValue("servers",
 							String.join("|", regionServersList));
 					isRegionServer = false;
 				}
@@ -345,13 +345,13 @@ public class TestClass {
 					agent_elem.addGeneralContext(node.asContext());
 					
 					// ADD SHARDS
-					ShadowAgentShard mesgShard = new ShadowAgentShard();
+					WSRegionsShard mesgShard = new WSRegionsShard();
 					mesgShard.configure(new MultiTreeMap().addSingleValue("connectTo", pylon_elem.HomeServerAddressName)
 							.addSingleValue("agent_name", agent_elem.getName()).addSingleValue(
 									SimpleLoader.CLASSPATH_KEY, "net.xqhs.flash.shadowProtocol.ShadowAgentShard"));
 					agent_elem.addShard(mesgShard);
 					
-					agent_elem.addShard(new MonitoringTestShard());
+					agent_elem.addShard(new EchoTestingShard());
 					
 					TestingShard testingShard = new TestingShard();
 					// List<String> actionsToString = new ArrayList<>(List.of(""));
