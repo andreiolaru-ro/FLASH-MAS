@@ -58,7 +58,11 @@ public class HttpPylon extends DefaultPylonImplementation
      * The receivers for each agent.
      */
     protected Map<String, MessageReceiver> messageReceivers = new HashMap<>();
-    
+
+    /**
+     * A map that contains key-value pairs for storing agent locations (the key is agent name and the value is the hostname where that agent is located)
+     * This acts like an in-memory cache storing information about other agents in the system
+     */
     protected Map<String, String> serviceRegistry = new ConcurrentHashMap<>();
 
     /**
@@ -69,9 +73,15 @@ public class HttpPylon extends DefaultPylonImplementation
      * The attribute name for the server port.
      */
     public static final String HTTP_SERVER_PORT_NAME = "serverPort";
-    
+
+    /**
+     * The attribute name for the server host
+     */
     public static final String HTTP_SERVER_HOST_NAME = "serverHost";
 
+    /**
+     * The attribute name for the trusted CAs
+     */
     public static final String TRUSTED_CA = "trustedCa";
     
     public static final String IS_HTTPS = "https";
@@ -95,6 +105,9 @@ public class HttpPylon extends DefaultPylonImplementation
      */
     protected boolean isHttps = false;
 
+    /**
+     * Path to the file containing the public certificate to be added in the truststore
+     */
     protected String trustedCaPath;
     /**
      * Path to the JKS file containing the certificate
@@ -112,7 +125,10 @@ public class HttpPylon extends DefaultPylonImplementation
      * The {@link HttpClient} instance to use.
      */
     protected HttpClient httpClient;
-    
+
+    /**
+     * The resource names contained in the pylon (e.g. agents names)
+     */
     private List<String> resourceNames = new ArrayList<>();
     
     public int getServerPort()

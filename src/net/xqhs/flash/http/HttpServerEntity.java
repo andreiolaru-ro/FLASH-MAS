@@ -32,21 +32,28 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
     
     private static final int SERVER_STOP_TIME = 10;
     /**
-     * The {@link WebSocketServer} instance.
+     * The {@link HttpServer} instance.
      */
     private HttpServer httpServer;
-    
+
+    /**
+     * If the server should be deployed with TLS feature or not
+     */
     private boolean isHttps;
-    
+
+    /**
+     * The {@link HttpsServer} instance
+     */
     private HttpsServer httpsServer;
     /**
      * <code>true</code> if the server is currently running.
      */
     private boolean running;
-    
-    private HttpPylon pylon;
 
-    protected Map<String, MessageReceiver> messageReceivers = new HashMap<>();
+    /**
+     * The pylon associated with this entity
+     */
+    private HttpPylon pylon;
 
     class CustomHttpHandler extends Unit implements HttpHandler {
         
