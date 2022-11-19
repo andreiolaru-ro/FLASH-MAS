@@ -143,7 +143,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
 	 */
-	public static boolean isCentralNode = true;
+	public static final String CENTRAL_NODE_KEY = "central";
 	
 	/**
 	 * Type for net.xqhs.flash.core.monitoring and control entity.
