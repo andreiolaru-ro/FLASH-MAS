@@ -35,15 +35,15 @@ public class Boot {
 	/**
 	 * Arguments for packages and loaders.
 	 */
-	public static String	prelude			= " -package test.compositeMobility test.compositePingPong -loader agent:composite -loader agent:mobileComposite";
+	public static String	prelude			= " -package testing test.compositeMobility -loader agent:composite -loader agent:mobileComposite";
 	
 	static {
-		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard MonitoringTest -shard MobilityTest to:nodeB time:5000";
+		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard EchoTesting -shard MobilityTest to:nodeB time:5000";
 		nodeA_agents += MOBILE_AGENT_PINGS ? " -shard PingTest every:500 otherAgent:agentB1 otherAgent:agentA2"
 				: " -shard PingBackTest";
-		nodeA_agents += " -agent agentA2 -shard messaging -shard MonitoringTest -shard PingBackTest";
+		nodeA_agents += " -agent agentA2 -shard messaging -shard EchoTesting -shard PingBackTest";
 		
-		nodeB_agents += " -agent agentB1 -shard messaging -shard MonitoringTest";
+		nodeB_agents += " -agent agentB1 -shard messaging -shard EchoTesting";
 		nodeB_agents += MOBILE_AGENT_PINGS ? " -shard PingBackTest"
 				: " -shard PingTest otherAgent:agentA1 otherAgent:agentA2";
 	}

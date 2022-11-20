@@ -236,11 +236,12 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			long spaceBetweenTries = 1000;
 			while(tries > 0) {
 				try {
-					lf("Trying connection to WS server ", webSocketServerAddress);
+					lf("Trying connection to WS server [] tries left: []", webSocketServerAddress,
+							Integer.valueOf(tries));
 					webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
 						@Override
 						public void onOpen(ServerHandshake serverHandshake) {
-							lf("new connection to server opened.");
+							lf("connected to []", getURI());
 						}
 						
 						/**
@@ -293,7 +294,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 					break;
 				Thread.sleep(spaceBetweenTries);
 				tries--;
-				System.out.println("Tries:" + tries);
 			}
 		} catch(InterruptedException e) {
 			e.printStackTrace();
@@ -390,6 +390,14 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		super.li(message, arguments);
 	}
 	
+	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
+	
+	/**
+	 * @return this pylon, to be provided to embedded instances.
+	 */
 	WebSocketPylon thisPylon() {
 		return this;
 	}

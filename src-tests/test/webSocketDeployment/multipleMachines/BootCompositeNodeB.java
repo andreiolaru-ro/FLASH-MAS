@@ -28,12 +28,12 @@ public class BootCompositeNodeB
 	{
 		String args = "";
 		
-		args += " -package test.compositePingPong -loader agent:composite";
+		args += " -package testing -loader agent:composite";
 		
 		args += " -node nodeB";
 		args += " -pylon webSocket:wsB connectTo:ws://" + BootCompositeNodeA.MAIN_IP + ":"
 				+ Integer.valueOf(BootCompositeNodeA.MAIN_PORT);
-		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard MonitoringTestShard";
+		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}
