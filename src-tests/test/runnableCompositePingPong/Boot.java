@@ -39,11 +39,11 @@ public class Boot {
 	public static void main(String[] args) throws InterruptedException {
 		String test_args = "";
 		
-		test_args += " -package test.compositePingPong test.runnableCompositePingPong -loader agent:composite";
+		test_args += " -package testing test.runnableCompositePingPong -loader agent:composite";
 		test_args += " -node main classpath:NodeAccess";
-		test_args += " -support local:main-pylon use-thread";
-		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
-		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+		test_args += " -pylon local:main-pylon use-thread";
+		test_args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
+		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(test_args.split(" ")));
 		NodeAccess node = (NodeAccess) nodes.get(1); // the 0-th node is node <null>

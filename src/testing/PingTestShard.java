@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.compositePingPong;
+package testing;
 
 import java.util.List;
 import java.util.Timer;
@@ -21,6 +21,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import test.compositePingPong.Boot;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.

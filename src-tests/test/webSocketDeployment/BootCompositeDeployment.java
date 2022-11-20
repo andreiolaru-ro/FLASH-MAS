@@ -37,15 +37,15 @@ public class BootCompositeDeployment
 	{
 		String args = "";
 		
-		args += " -package test.compositePingPong -loader agent:composite";
+		args += " -package testing -loader agent:composite";
 		
 		args += " -node node1";
 		args += " -pylon webSocket:pylon1 serverPort:8886";
-		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard MonitoringTest";
+		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
 		
 		args += " -node node2";
 		args += " -pylon webSocket:pylon2 connectTo:ws://localhost:8886";
-		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard MonitoringTest";
+		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}
