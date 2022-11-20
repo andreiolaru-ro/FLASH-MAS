@@ -1,0 +1,68 @@
+script:
+  agent1:
+   actions:
+    - action: "PRINT"
+      arg: 500
+      arguments: {with: "Start script"}
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "next1"}
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "next2"}
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "next3"}
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "next4"}
+    - action: "NOP"
+      arg: 1000
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "after delay"}
+    - action: "PRINT"
+      trigger: "EVENT"
+      arg: "AGENT_WAVE"
+      arguments: {with: "received message 1"}
+    - action: "NOP"
+      arg: 1000
+    - action: "NOP"
+      arg: 1000
+    - action: "PRINT"
+      trigger: "NEXT"
+      arguments: {with: "after second delay"}
+    - action: "MOVE_TO_NODE"
+      arg: 1000
+      arguments: {to: "nodeA"}
+    - action: "PRINT"
+      arg: 1
+      arguments: {with: "after second delay"}
+    - action: "PRINT"
+      arg: 1000
+      arguments: {with: "after second delay 2"}
+    - action: "PRINT"
+      trigger: "EVENT"
+      arg: "AGENT_WAVE"
+      arguments: {with: "received message 2"}
+  agent2:
+    actions:
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     - { action: "SEND_MESSAGE", arg: 1000, arguments: {to: "agent1", with: "check"} }
+     

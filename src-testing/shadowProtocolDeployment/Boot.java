@@ -19,15 +19,6 @@ import net.xqhs.flash.FlashBoot;
 public class Boot
 {
 	/**
-	 * Designation for shards.
-	 */
-	public static final String	FUNCTIONALITY	= "TESTING";
-	/**
-	 * Different designation for shards.
-	 */
-	public static final String	MONITORING		= "OTHER-MONITORING";
-	
-	/**
 	 * Performs test
 	 * 
 	 * @param args_
