@@ -284,14 +284,14 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		// not supported here, but extending classes may call this becaause of good practice.
+		// not supported here, but extending classes may call this because of good practice.
 		return true;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		// not supported here, but extending classes may call this becaause of good practice.
+		// not supported here, but extending classes may call this because of good practice.
 		return true;
 	}
 	

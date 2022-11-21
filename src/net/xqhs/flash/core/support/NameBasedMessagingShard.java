@@ -15,18 +15,16 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
 
 /**
- * A simple extension of {@link AbstractMessagingShard}, which leaves to implement only
- * {@link #sendMessage(String, String, String)} as an abstract method, and also the registration of a message receiver
- * to the pylon. This class is meant to be extended by messaging shards in support infrastructures that use agent names
- * as agent addresses (agents are addressed by name). Therefore, the address of the agent is always the same with its
- * name.
+ * A simple extension of {@link AbstractMessagingShard}. This class is meant to be extended by messaging shards in
+ * support infrastructures that use agent names as agent addresses (agents are addressed by name). Therefore, the
+ * address of the agent is always the same with its name.
  * <p>
  * It is also presumed that agent names do not contain slashes. An exception is thrown if the shard is loaded in an
  * agent with a name containing a slash (or whatever {@link AgentWave#ADDRESS_SEPARATOR} is set to).
  * 
  * @author Andrei Olaru
  */
-public abstract class AbstractNameBasedMessagingShard extends AbstractMessagingShard
+public class NameBasedMessagingShard extends AbstractMessagingShard
 {
 	/**
 	 * The serial UID.
