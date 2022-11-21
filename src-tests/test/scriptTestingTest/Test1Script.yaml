@@ -36,7 +36,7 @@ script:
       arg: 1000
       arguments: {to: "nodeA"}
     - action: "PRINT"
-      arg: 1
+      arg: 0
       arguments: {with: "after second delay"}
     - action: "PRINT"
       arg: 1000

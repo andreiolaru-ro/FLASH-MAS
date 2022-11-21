@@ -159,7 +159,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
-		if(getAgent() != null) {
+		if(getAgent() != null && agentScript == null) {
 			if(entireScript == null || entireScript.script == null
 					|| !entireScript.script.containsKey(getAgent().getEntityName()))
 				li("No script for agent", getAgent().getEntityName());
@@ -187,12 +187,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			break;
 		case AGENT_STOP:
 			dontScheduleNext = true;
-			if(actionTimer != null) {
-				actionTimer.cancel();
-				actionTimer = null;
-				// delayTriggeredAction.setArg([get remaining time]);
-				agentScript.add(0, delayTriggeredAction);
-			}
+			suspendDelayed();
 			break;
 		default:
 			// nothing to do
@@ -266,9 +261,22 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	}
 	
 	/**
+	 * Suspends delay-triggered actions in the case the agent is going to suspend execution.
+	 */
+	protected void suspendDelayed() {
+		if(actionTimer != null) {
+			actionTimer.cancel();
+			actionTimer = null;
+			// TODO: how to save remaining time?
+			// delayTriggeredAction.setArg([get remaining time]);
+			agentScript.add(0, delayTriggeredAction);
+		}
+	}
+	
+	/**
 	 * Performs the next action in the script.
 	 * <p>
-	 * It also calls for the scheduling of the next action, if any action can be scheduled.
+	 * 2 It also calls for the scheduling of the next action, if any action can be scheduled.
 	 * 
 	 * @param action
 	 *            - the action to perform.
@@ -286,9 +294,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			break;
 		case MOVE_TO_NODE:
 			// FIXME check if all fields are present
-			if(getAgent() instanceof MobileCompositeAgentShardContainer) {
+			if(getAgent() instanceof MobileCompositeAgentShardContainer)
 				((MobileCompositeAgentShardContainer) getAgent()).moveTo(args.get(FIELD.to));
-			}
 			else
 				le("Agent is not mobile.");
 			break;
@@ -301,7 +308,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			le("Unknown action: ", action);
 			break;
 		}
-		if(!dontScheduleNext)
+		if(!dontScheduleNext && !action.action.equals(ActionType.MOVE_TO_NODE))
 			scheduleNextAction(null);
 	}
 }
