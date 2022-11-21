@@ -50,7 +50,8 @@ public class EchoTestingShard extends AgentShardCore {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
+		String eventMessage = "agent [" + getAgent().getEntityName() + "|" + getAgent().hashCode() + "] event: ["
+				+ event.toString() + "]";
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
