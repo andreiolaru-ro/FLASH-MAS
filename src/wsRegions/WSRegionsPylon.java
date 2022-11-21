@@ -57,6 +57,12 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		}
 		
 		@Override
+		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+		
+		@Override
 		public boolean send(String source, String destination, String content) {
 			Object obj = JSONValue.parse(content);
 			if(obj == null)

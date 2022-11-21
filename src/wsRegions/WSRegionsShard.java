@@ -12,14 +12,12 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
-import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import wsRegions.MessageFactory.ActionType;
@@ -27,25 +25,14 @@ import wsRegions.MessageFactory.MessageType;
 
 public class WSRegionsShard extends NameBasedMessagingShard implements NonSerializableShard {
 	/**
-	 * Reference to the local pylon proxy
-	 */
-	private MessagingPylonProxy pylon = null;
-	
-	/**
-	 * The {@link MessageReceiver} instance of this shard.
-	 */
-	public MessageReceiver	inbox;
-	/**
 	 * the Websocket object connected to Region server.
 	 */
 	protected WSClient		client;
 	URI						serverURI;
 	
-	/**
-	 * No-argument constructor
-	 */
-	public WSRegionsShard() {
-		inbox = new MessageReceiver() {
+	@Override
+	protected MessageReceiver buildMessageReceiver() {
+		return new MessageReceiver() {
 			@Override
 			public void receive(String source, String destination, String content) {
 				Object obj = JSONValue.parse(content);
@@ -157,25 +144,6 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 				client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
 			}
 		}
-		return true;
-	}
-	
-	@Override
-	protected void receiveMessage(String source, String destination, String content) {
-		super.receiveMessage(source, destination, content);
-	}
-	
-	@Override
-	public void register(String entityName) {
-		pylon.register(entityName, inbox);
-		// client.send(createMessage(pylon.getEntityName(), this.getName(), MessageFactory.MessageType.REGISTER, null));
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(!(context instanceof MessagingPylonProxy))
-			return false;
-		pylon = (MessagingPylonProxy) context;
 		return true;
 	}
 	
