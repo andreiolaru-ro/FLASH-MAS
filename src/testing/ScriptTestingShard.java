@@ -137,8 +137,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		scriptCompleted = true;
 		String file = configuration.getAValue(FROM_PARAMETER);
 		List<String> paths = new LinkedList<>();
-		String filename = Loader.autoFind(configuration.getValues(CategoryName.PACKAGE.s()), null, file, null,
-				"script.yaml", paths);
+		String filename = Loader.autoFind(configuration.getValues(CategoryName.PACKAGE.s()), null, "script", file,
+				".yaml", paths);
 		if(filename == null)
 			return ler(false, "Script file cannot be found for script []. Tried paths: ", file, paths);
 		try (FileInputStream input = new FileInputStream(new File(filename))) {
