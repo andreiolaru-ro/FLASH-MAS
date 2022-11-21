@@ -17,7 +17,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
-import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -25,7 +25,7 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import wsRegions.MessageFactory.ActionType;
 import wsRegions.MessageFactory.MessageType;
 
-public class WSRegionsShard extends AbstractNameBasedMessagingShard implements NonSerializableShard {
+public class WSRegionsShard extends NameBasedMessagingShard implements NonSerializableShard {
 	/**
 	 * Reference to the local pylon proxy
 	 */

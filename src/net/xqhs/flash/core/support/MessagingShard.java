@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 
@@ -21,8 +22,6 @@ import net.xqhs.flash.core.shard.AgentShard;
  * information between entities which <i>may execute</i> on different nodes or are more loosely coupled (e.g. agents, or
  * agents and artifacts), as opposed to entities which are always found on the same node and are more tightly coupled
  * (e.g. shards inside the same agent).
- * 
- * 
  * 
  * @author Andrei Olaru
  */
@@ -47,9 +46,11 @@ public interface MessagingShard extends AgentShard
 	public String getAgentAddress();
 
 	/**
+	 * This can be called by non-agent entities to register their messaging shard, in case they are unable (or it would
+	 * not be practical) to use {@link #signalAgentEvent(AgentEvent)}.
+	 * 
 	 * @param entityName
-	 * 					- the name of entity to be registered
+	 *            - the name of entity to be registered
 	 */
 	public void register(String entityName);
-
 }

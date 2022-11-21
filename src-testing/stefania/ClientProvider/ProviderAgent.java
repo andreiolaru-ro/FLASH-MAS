@@ -14,7 +14,6 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.local.LocalPylon.SimpleLocalMessaging;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
 
 public class ProviderAgent implements Agent {
@@ -453,12 +452,6 @@ public class ProviderAgent implements Agent {
             return true;
 
         return false;
-    }
-
-	private SimpleLocalMessaging getMessagingShard() {
-
-		return (SimpleLocalMessaging) shards
-				.get(AgentShardDesignation.StandardAgentShard.MESSAGING.toAgentShardDesignation());
     }
 
     private void declineJob(AgentWave wave, String reason) {

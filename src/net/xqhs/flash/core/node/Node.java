@@ -104,6 +104,10 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	protected MessagingShard				messagingShard;
 	/**
+	 * monitors if the messaging shard has been registered with its pylon.
+	 */
+	protected boolean						messagingShardRegistered	= false;
+	/**
 	 * An indication if this entity is running.
 	 */
 	private boolean							isRunning;
@@ -189,8 +193,11 @@ public class Node extends Unit implements Entity<Node> {
 			if(entity.start()) {
 				lf("entity [] started successfully.", entityName);
 				EntityProxy<?> ctx = entity.asContext();
-				if(getName() != null && messagingShard != null && (ctx instanceof MessagingPylonProxy))
+				if(!messagingShardRegistered && getName() != null && messagingShard != null
+						&& (ctx instanceof MessagingPylonProxy)) {
 					messagingShard.register(getName());
+					messagingShardRegistered = true;
+				}
 			}
 			else
 				le("failed to start entity [].", entityName);
