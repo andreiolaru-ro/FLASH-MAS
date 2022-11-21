@@ -118,9 +118,21 @@ public class TestingScript implements Serializable {
 		 */
 		public static final int DEFAULT_DELAY = 2000;
 		
+		/**
+		 * The (type of) trigger to the action.
+		 */
 		TriggerType			trigger	= TriggerType.DELAY;
+		/**
+		 * The argument for the trigger. Could be the delay, or the event to trigger the action.
+		 */
 		String				arg;
+		/**
+		 * The type of action to execute/
+		 */
 		ActionType			action;
+		/**
+		 * Arguments to the action to execute.
+		 */
 		Map<FIELD, String>	arguments;
 		
 		/**
@@ -183,6 +195,9 @@ public class TestingScript implements Serializable {
 			this.arguments = arguments;
 		}
 		
+		/**
+		 * @return the delay, for delay-triggered actions.
+		 */
 		public int getDelay() {
 			if(trigger != TriggerType.DELAY)
 				throw new IllegalStateException("Trigger is not a delay");
@@ -191,12 +206,26 @@ public class TestingScript implements Serializable {
 			return Integer.parseInt(arg);
 		}
 		
+		/**
+		 * @return the agent event, for event-triggered actions.
+		 */
 		public AgentEventType getEvent() {
 			if(trigger != TriggerType.EVENT)
 				throw new IllegalStateException("Trigger is not an event");
 			return AgentEventType.valueOf(arg);
 		}
 		
+		/**
+		 * Verifies that a {@link ScriptElement} is coherent. It checks that:
+		 * <ul>
+		 * <li>all script elements contain an action
+		 * <li>actions have no arguments which are not allowed.
+		 * </ul>
+		 * 
+		 * @param log
+		 *            - the {@link Logger} instance to log errors to.
+		 * @return <code>true</code> if the element appears correct with respect to the criteria above.
+		 */
 		public boolean verifyElement(Logger log) {
 			if(action == null)
 				return log.ler(false, "No action specified [].", this);
@@ -213,8 +242,19 @@ public class TestingScript implements Serializable {
 		}
 	}
 	
+	/**
+	 * Testing script for one agent, which is effectively a list of actions ({@link ScriptElement}s).
+	 * 
+	 * @author Andrei Olaru
+	 */
 	public static class AgentScript implements Serializable {
+		/**
+		 * The serial UID.
+		 */
 		private static final long	serialVersionUID	= 9164860342311455468L;
+		/**
+		 * The actions.
+		 */
 		List<ScriptElement>			actions;
 		
 		/**
@@ -232,6 +272,13 @@ public class TestingScript implements Serializable {
 			this.actions = script;
 		}
 		
+		/**
+		 * Verifies the script, by verifying all elements.
+		 * 
+		 * @param log
+		 *            - the {@link Logger} instance to log errors to.
+		 * @return <code>true</code> if the script appears correct.
+		 */
 		public boolean verify(Logger log) {
 			for(ScriptElement element : actions)
 				if(!element.verifyElement(log))
@@ -240,6 +287,9 @@ public class TestingScript implements Serializable {
 		}
 	}
 	
+	/**
+	 * The script - a list of actions for each agent.
+	 */
 	Map<String, AgentScript> script;
 	
 	/**
@@ -257,6 +307,13 @@ public class TestingScript implements Serializable {
 		this.script = script;
 	}
 	
+	/**
+	 * Verifies the script, by verifying all elements.
+	 * 
+	 * @param log
+	 *            - the {@link Logger} instance to log errors to.
+	 * @return <code>true</code> if the script appears correct.
+	 */
 	public boolean verify(Logger log) {
 		for(AgentScript agentScript : script.values())
 			for(ScriptElement element : agentScript.actions)
