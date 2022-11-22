@@ -197,18 +197,18 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			ScriptElement a = eventTriggeredAction.getValue();
 			eventTriggeredAction = null;
 			nextActionScheduled = false;
-			performAction(a, dontScheduleNext);
+			performAction(a, event, dontScheduleNext);
 		}
 	}
 	
 	/**
 	 * Schedules the next action, depending on its trigger or, if the case, performs the next action.
 	 * 
-	 * @param startEvent
-	 *            - the event that lead to the call of this method, if any (should only be
-	 *            {@link AgentEventType#AGENT_START}.
+	 * @param event
+	 *            - the event that lead to the call of this method, if any. It may be {@link AgentEventType#AGENT_START}
+	 *            or it may be the event that triggered a series of {@link TriggerType#NEXT}-triggered actions.
 	 */
-	protected void scheduleNextAction(AgentEvent startEvent) {
+	protected void scheduleNextAction(AgentEvent event) {
 		if(scriptCompleted || nextActionScheduled)
 			return;
 		boolean isNextActionDelayed = false;
@@ -243,7 +243,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 					if(nextIsDelayed && !ActionType.MOVE_TO_NODE.equals(theAction.action))
 						// only scheduled next delayed action if the agent is not going to move
 						scheduleNextAction(null);
-					performAction(theAction, false);
+					performAction(theAction, null, false);
 				}
 			}, delay);
 			break;
@@ -253,7 +253,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			break;
 		case NEXT:
 			nextActionScheduled = false;
-			performAction(a, false);
+			performAction(a, event, false);
 			break;
 		default:
 			le("Unknown trigger []", a.getTrigger());
@@ -280,14 +280,20 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	 * 
 	 * @param action
 	 *            - the action to perform.
+	 * @param event
+	 *            - the event that triggered the action (or the last event-triggered action before a series of
+	 *            {@link TriggerType#NEXT} triggers).
 	 * @param dontScheduleNext
 	 *            - if <code>true</code>, {@link #scheduleNextAction} will not be called after performing the action.
 	 */
-	protected void performAction(ScriptElement action, boolean dontScheduleNext) {
+	protected void performAction(ScriptElement action, AgentEvent event, boolean dontScheduleNext) {
 		lf("Script activate action []. Rest of actions:", action,
 				agentScript.stream().map(a -> a.getAction()).collect(Collectors.toList()));
 		Map<FIELD, String> args = action.arguments;
 		switch(action.action) {
+		case MARK:
+			TimeMonitor.markTime(event);
+			break;
 		case SEND_MESSAGE:
 			// FIXME check if all fields are present
 			sendMessage(args.get(FIELD.with), null, args.get(FIELD.to));
@@ -309,6 +315,6 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			break;
 		}
 		if(!dontScheduleNext && !action.action.equals(ActionType.MOVE_TO_NODE))
-			scheduleNextAction(null);
+			scheduleNextAction(event);
 	}
 }

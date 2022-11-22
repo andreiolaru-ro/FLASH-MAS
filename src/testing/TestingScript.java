@@ -61,6 +61,10 @@ public class TestingScript implements Serializable {
 		 */
 		PRINT(new FIELD[] { FIELD.with }),
 		/**
+		 * marks the time of the event using {@link TimeMonitor}.
+		 */
+		MARK,
+		/**
 		 * No action.
 		 */
 		NOP,
@@ -111,29 +115,29 @@ public class TestingScript implements Serializable {
 		/**
 		 * The serial UID.
 		 */
-		private static final long serialVersionUID = 972744615563762874L;
+		private static final long	serialVersionUID	= 972744615563762874L;
 		
 		/**
 		 * Default delay for delay-triggered events which do not specify a delay.
 		 */
-		public static final int DEFAULT_DELAY = 2000;
+		public static final int		DEFAULT_DELAY		= 2000;
 		
 		/**
 		 * The (type of) trigger to the action.
 		 */
-		TriggerType			trigger	= TriggerType.DELAY;
+		TriggerType					trigger				= TriggerType.DELAY;
 		/**
 		 * The argument for the trigger. Could be the delay, or the event to trigger the action.
 		 */
-		String				arg;
+		String						arg;
 		/**
 		 * The type of action to execute/
 		 */
-		ActionType			action;
+		ActionType					action;
 		/**
 		 * Arguments to the action to execute.
 		 */
-		Map<FIELD, String>	arguments;
+		Map<FIELD, String>			arguments;
 		
 		/**
 		 * @return the trigger
