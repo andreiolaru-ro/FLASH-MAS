@@ -287,7 +287,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	 *            - if <code>true</code>, {@link #scheduleNextAction} will not be called after performing the action.
 	 */
 	protected void performAction(ScriptElement action, AgentEvent event, boolean dontScheduleNext) {
-		lf("Script activate action []. Rest of actions:", action,
+		lf("Script activate action []. [] Rest of actions:", action, dontScheduleNext ? "no follow-up" : "",
 				agentScript.stream().map(a -> a.getAction()).collect(Collectors.toList()));
 		Map<FIELD, String> args = action.arguments;
 		switch(action.action) {
