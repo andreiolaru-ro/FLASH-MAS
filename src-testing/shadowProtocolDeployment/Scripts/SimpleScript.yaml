@@ -1,13 +1,22 @@
 script:
  one-localhost:8885:
    actions:
+     - action: "MARK"
+       trigger: "NEXT"
      - action: "SEND_MESSAGE"
        arguments: {to: "two-localhost:8885", with: "check"}
      - action: "SEND_MESSAGE"
-       arg: 3000
+       arg: 4000
        arguments: {to: "two-localhost:8885", with: "go move"}
+     - action: "MARK"
+       trigger: "EVENT"
+       arg: "AGENT_WAVE"
  two-localhost:8885:
    actions:
+     - trigger: "EVENT"
+       arg: "AGENT_WAVE"
+       action: "SEND_MESSAGE"
+       arguments: {to: "one-localhost:8885", with: "check reply"}
      - arg: 3000
        action: "NOP"
      - trigger: "EVENT"

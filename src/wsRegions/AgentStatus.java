@@ -1,8 +1,8 @@
 package wsRegions;
 
-import org.java_websocket.WebSocket;
-
 import java.util.LinkedList;
+
+import org.java_websocket.WebSocket;
 
 public class AgentStatus {
     /**
@@ -90,6 +90,7 @@ public class AgentStatus {
     }
 
     public String toString() {
-        return "Agent " + this.name + " with status " + this.status + " located on " + this.lastLocation;
+		return "<" + this.name + "|" + this.status + (this.name.startsWith(lastLocation) ? "" : "|" + lastLocation)
+				+ ">";
     }
 }
