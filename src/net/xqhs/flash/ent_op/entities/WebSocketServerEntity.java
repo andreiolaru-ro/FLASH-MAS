@@ -109,7 +109,7 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
                     if (!entityToWebSocket.containsKey(newEntity)) {
                         entityToWebSocket.put(newEntity, webSocket);
                     }
-                    li("Registered entity []. ", newEntity);
+                    li("Registered entity [].", newEntity);
                 }
             }
 

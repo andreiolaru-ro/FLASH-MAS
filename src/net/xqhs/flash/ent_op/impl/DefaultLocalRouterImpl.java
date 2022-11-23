@@ -2,7 +2,6 @@ package net.xqhs.flash.ent_op.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.ent_op.entities.Pylon;
@@ -12,7 +11,6 @@ import net.xqhs.util.logging.Unit;
 
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
@@ -45,10 +43,13 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
     //used for one-node deployment
     public DefaultLocalRouterImpl(FMas fMas) {
+        setUnitName(DEFAULT_LOCAL_ROUTER_NAME);
         this.fMas = fMas;
     }
 
-    public DefaultLocalRouterImpl() {}
+    public DefaultLocalRouterImpl() {
+        setUnitName(DEFAULT_LOCAL_ROUTER_NAME);
+    }
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
@@ -102,20 +103,26 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
 
     @Override
     public void route(OperationCall operationCall) {
+        var targetEntityId = operationCall.getTargetEntity().ID;
 
-        var routed =  routeIfAnyPylon(operationCall);
-        if (routed) {
-            li("Pylon routed the op call.");
+        if (fMas.entityExistsOnLocalNode(targetEntityId)) {
+            routeInternalOpCall(operationCall);
         } else {
-            lw("No pylon found to route the op call");
+            routeExternalOpCall(operationCall);
         }
+    }
+
+    private void routeInternalOpCall(OperationCall operationCall) {
+        li("The op call was successfully routed.");
+        operationCall.setRouted(true);
+        fMas.route(operationCall);
     }
 
     /**
      * Check each of the pylons if they support communication for that specific agent.
      * TODO: check for all future types of pylons
      */
-    private boolean routeIfAnyPylon(OperationCall operationCall) {
+    private void routeExternalOpCall(OperationCall operationCall) {
         String sourceEntityName = operationCall.getSourceEntity().ID;
         String targetEntity = operationCall.getTargetEntity().ID;
 
@@ -126,14 +133,12 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         if (routerEntity.isPresent() && routerEntity.get().canRoute(operationCall.getTargetEntity())) {
             operationCall.setRouted(true);
             if (routerEntity.get() instanceof WebSocketPylon) {
+                li("The op call was successfully routed. Found a pylon to route message to [].", targetEntity);
                 WebSocketPylon webSocketPylon = (WebSocketPylon) routerEntity.get();
                 webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
-                li("Found a pylon to route message to %s", targetEntity);
-                return true;
             }
         }
-        le("Failed to find a pylon to route message to %s", targetEntity);
-        return false;
+        le("The op call couldn't be routed. Failed to find a pylon to route message to [].", targetEntity);
     }
 
     public void setfMas(FMas fMas) {

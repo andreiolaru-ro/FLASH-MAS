@@ -50,6 +50,6 @@ public class EntityID {
 	
 	@Override
 	public String toString() {
-		return "<" + toString() + ">";
+		return "<" + ID + ">";
 	}
 }
