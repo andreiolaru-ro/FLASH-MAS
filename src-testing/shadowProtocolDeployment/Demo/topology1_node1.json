@@ -1,7 +1,0 @@
-{
-  "topology": {
-    "localhost:8885": {
-      "Pylon1": ["agent1"]
-    }
-  }
-}

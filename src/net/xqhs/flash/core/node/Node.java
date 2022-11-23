@@ -41,8 +41,6 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.shadowProtocol.MessageFactory;
-import net.xqhs.flash.shadowProtocol.ShadowAgentShard;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -199,9 +197,7 @@ public class Node extends Unit implements Entity<Node> {
 			else
 				le("failed to start entity [].", entityName);
 		}
-		if(messagingShard instanceof ShadowAgentShard) {
-			((ShadowAgentShard) messagingShard).startShadowAgentShard(MessageFactory.MessageType.REGISTER);
-		}
+		
 		isRunning = true;
 		sendStatusUpdate();
 		li("Node [] started.", name);
