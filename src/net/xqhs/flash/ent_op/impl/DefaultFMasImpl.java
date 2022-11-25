@@ -42,8 +42,7 @@ public class DefaultFMasImpl extends Unit implements FMas {
         String entityName = entity.getName();
         if (entities.containsKey(entityName))
             return null;
-        // EntityTools is the link between entities and FMas. there is one instance of EntityTools
-        // on each entity.
+        // EntityTools is the link between entities and FMas. there is one instance of EntityTools on each entity.
         EntityTools entityTools = new DefaultEntityToolsImpl(this);
         entityTools.initialize(entity);
         // On FMas level, we map each entity with its entityTools.
@@ -74,8 +73,8 @@ public class DefaultFMasImpl extends Unit implements FMas {
         if (!operationCall.isRouted()) {
             localRouter.route(operationCall);
         } else {
-            String targetEntityName = operationCall.getTargetEntity().ID;
-            EntityTools entityTools = entities.get(targetEntityName);
+            var targetEntityName = operationCall.getTargetEntity().ID;
+            var entityTools = entities.get(targetEntityName);
             entityTools.handleIncomingOperationCall(operationCall);
         }
     }

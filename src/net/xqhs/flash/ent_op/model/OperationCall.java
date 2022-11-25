@@ -2,6 +2,7 @@ package net.xqhs.flash.ent_op.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class OperationCall implements Serializable {
@@ -13,8 +14,10 @@ public class OperationCall implements Serializable {
 	private String					targetOperation;
 	private boolean					sendReturnValue;
 	private boolean                 routed;
-	private ArrayList<Object>		argumentValues;
+	private List<Object> 			argumentValues;
 	private Set<AuthorizationToken>	tokens;
+
+	private Object 					result;
 
 	public OperationCall() {
 
@@ -24,7 +27,7 @@ public class OperationCall implements Serializable {
 		this.targetOperation = targetOperation;
 	}
 
-	public OperationCall(EntityID sourceEntity, EntityID targetEntity, String targetOperation, boolean sendReturnValue, ArrayList<Object> argumentValues) {
+	public OperationCall(EntityID sourceEntity, EntityID targetEntity, String targetOperation, boolean sendReturnValue, List<Object> argumentValues) {
 		this.sourceEntity = sourceEntity;
 		this.targetEntity = targetEntity;
 		this.targetOperation = targetOperation;
@@ -82,7 +85,7 @@ public class OperationCall implements Serializable {
 		this.routed = routed;
 	}
 
-	public ArrayList<Object> getArgumentValues() {
+	public List<Object> getArgumentValues() {
 		return argumentValues;
 	}
 
@@ -96,5 +99,13 @@ public class OperationCall implements Serializable {
 
 	public void setTokens(Set<AuthorizationToken> tokens) {
 		this.tokens = tokens;
+	}
+
+	public Object getResult() {
+		return result;
+	}
+
+	public void setResult(Object result) {
+		this.result = result;
 	}
 }

@@ -1,6 +1,7 @@
-package net.xqhs.flash.ent_op.entities;
+package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.operations.PingPongOperation;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -16,7 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.entities.PingPongOperation.PING_PONG_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.entities.operations.PingPongOperation.PING_PONG_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class PingPongAgent extends Unit implements EntityAPI {

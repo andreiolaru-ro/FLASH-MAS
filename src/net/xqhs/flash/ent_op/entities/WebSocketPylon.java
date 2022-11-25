@@ -187,19 +187,19 @@ public class WebSocketPylon extends Unit implements Pylon {
                          */
                         @Override
                         public void onMessage(String s) {
-                            Object obj = JSONValue.parse(s);
+                            var obj = JSONValue.parse(s);
                             if (obj == null) {
-                                le("null message received");
+                                le("Null message received.");
                                 return;
                             }
-                            JSONObject jsonObject = (JSONObject) obj;
 
+                            var jsonObject = (JSONObject) obj;
                             if (jsonObject.get("destination") == null) {
                                 le("No destination entity received.");
                                 return;
                             }
 
-                            String content = (String) jsonObject.get("content");
+                            var content = (String) jsonObject.get("content");
                             OperationCall operationCall = null;
                             try {
                                 operationCall = mapper.readValue(content, OperationCall.class);

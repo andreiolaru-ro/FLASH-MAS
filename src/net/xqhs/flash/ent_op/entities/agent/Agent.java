@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.entities;
+package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.operations.ReceiveOperation;
@@ -40,9 +40,9 @@ public class Agent extends Unit implements EntityAPI {
     protected EntityTools entityTools;
 
     /**
-     * The receive operation .
+     * The agent's operations.
      */
-    protected Operation receiveOp;
+    protected List<Operation> operations;
 
     /**
      * The framework instance.
@@ -64,7 +64,7 @@ public class Agent extends Unit implements EntityAPI {
 
         agentName = agentConfiguration.getAValue(NAME_ATTRIBUTE_NAME);
         entityID = new EntityID(agentConfiguration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
-        receiveOp = new ReceiveOperation();
+        var receiveOp = new ReceiveOperation();
         entityTools = fMas.registerEntity(this);
         entityTools.createOperation(receiveOp);
         setUnitName(agentName);
@@ -92,9 +92,13 @@ public class Agent extends Unit implements EntityAPI {
 
     @Override
     public Object handleIncomingOperationCall(OperationCall operationCall) {
+        if (operationCall.getResult() != null) {
+            li("############ The result of the [] operation is []", operationCall.getTargetOperation(), operationCall.getResult());
+            return null;
+        }
         if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
-            String message = operationCall.getArgumentValues().get(0).toString();
-            String sender = operationCall.getSourceEntity().ID;
+            var message = operationCall.getArgumentValues().get(0).toString();
+            var sender = operationCall.getSourceEntity().ID;
             li("############ received message: [] from []", message, sender);
         }
         return null;
@@ -103,8 +107,8 @@ public class Agent extends Unit implements EntityAPI {
     @Override
     public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
         if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
-            String message = operationCall.getArgumentValues().get(0).toString();
-            String sender = operationCall.getSourceEntity().ID;
+            var message = operationCall.getArgumentValues().get(0).toString();
+            var sender = operationCall.getSourceEntity().ID;
             li(">>>>>>>>>>> received message: [] from []", message, sender);
         }
         return null;
@@ -136,10 +140,6 @@ public class Agent extends Unit implements EntityAPI {
 
     public void callOperation(OperationCall operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
-    }
-
-    public EntityTools getEntityTools() {
-        return entityTools;
     }
 
     public void setfMas(FMas fMas) {

@@ -135,18 +135,29 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     public void handleIncomingOperationCall(OperationCall operationCall) {
-        String operationName = operationCall.getTargetOperation();
+        var operationName = operationCall.getTargetOperation();
 
         if (!entityAPI.isRunning()) {
             le("[] is not running", entityAPI.getName());
             return;
         }
 
-        if (getOperation(operationName) == null) {
+        if (getOperation(operationName) == null && operationCall.getResult() == null) {
             lw("The [] operation is not supported by the [] entity", operationName, entityName);
             return;
         }
 
-        entityAPI.handleIncomingOperationCallWithResult(operationCall);
+        var result = entityAPI.handleIncomingOperationCall(operationCall);
+
+        if (operationCall.isSendReturnValue()) {
+            var sourceId = operationCall.getSourceEntity();
+            var targetId = operationCall.getTargetEntity();
+            operationCall.setTargetEntity(sourceId);
+            operationCall.setSourceEntity(targetId);
+            operationCall.setResult(result);
+            operationCall.setRouted(false);
+            operationCall.setSendReturnValue(false);
+            handleOutgoingOperationCall(operationCall);
+        }
     }
 }

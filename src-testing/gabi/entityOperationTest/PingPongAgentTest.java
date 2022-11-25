@@ -1,14 +1,14 @@
 package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.entities.PingPongAgent;
+import net.xqhs.flash.ent_op.entities.agent.PingPongAgent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.FMas;
 
 import java.util.List;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.entities.PingPongAgent.DEST_AGENT_PARAMETER_NAME;
+import static net.xqhs.flash.ent_op.entities.agent.PingPongAgent.DEST_AGENT_PARAMETER_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class PingPongAgentTest {

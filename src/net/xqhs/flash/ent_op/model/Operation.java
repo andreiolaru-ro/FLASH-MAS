@@ -11,7 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.ent_op.model;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -42,7 +42,7 @@ public interface Operation {
 	
 	Value getResultType();
 	
-	ArrayList<Value> getArguments();
+	List<Value> getArguments();
 	
 	Set<Restriction> getRestrictions();
 }

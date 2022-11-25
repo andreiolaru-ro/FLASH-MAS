@@ -1,15 +1,18 @@
 package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.entities.Agent;
+import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.entities.Node;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
+import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
 import net.xqhs.flash.ent_op.model.OperationCall;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
+import static net.xqhs.flash.ent_op.entities.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_NAME;
@@ -69,17 +72,21 @@ public class WebSocketPylonTest {
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent2"));
 
         // add agent
-        Agent agent3 = new Agent();
+        Agent agent3 = new ComputingAgent();
         node2.addEntity(agent3, new MultiTreeMap().addSingleValue(NAME_ATTRIBUTE_NAME, "ws://localhost:agent3")
                 .addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent3"));
 
         // *************************************** op call *************************************************** //
 
-        // agent1(node1) calls an agent2(node2) operation
-        ArrayList<Object> argumentValues = new ArrayList<>();
+        // agent1(node1) calls an agent3(node2) operation
+        List<Object> argumentValues = new ArrayList<>();
         argumentValues.add("simple message");
-        OperationCall operationCall = new OperationCall(agent1.getEntityID(), agent3.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
+        OperationCall operationCall = new OperationCall(agent1.getEntityID(), agent2.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
         agent1.callOperation(operationCall);
+
+        // agent1(node1) calls an agent3(node2) operation
+        OperationCall multiplyOpCall = new OperationCall(agent1.getEntityID(), agent3.getEntityID(), MULTIPLY_OPERATION_NAME, true, List.of(1.3d, 24.5d, 65.8d));
+        agent1.callOperation(multiplyOpCall);
 
         // stop nodes
         Thread.sleep(10000);
