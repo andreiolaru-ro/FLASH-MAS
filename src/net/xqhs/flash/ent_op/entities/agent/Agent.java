@@ -16,6 +16,8 @@ import java.util.List;
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
 
 public class Agent extends Unit implements EntityAPI {
 
@@ -116,6 +118,14 @@ public class Agent extends Unit implements EntityAPI {
 
     @Override
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
+        if (CREATE.equals(changeType)) {
+            return entityTools.createRelation(relation);
+        }
+        else if (REMOVE.equals(changeType)) {
+            return entityTools.removeRelation(relation);
+        }
+
+        lw("The [] changeType is not supported by the [] entity.", changeType, agentName);
         return false;
     }
 

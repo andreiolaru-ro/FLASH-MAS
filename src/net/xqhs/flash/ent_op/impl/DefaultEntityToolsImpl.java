@@ -160,4 +160,27 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
             handleOutgoingOperationCall(operationCall);
         }
     }
+
+    public boolean createRelation(Relation relation) {
+        if (relations.contains(relation)) {
+            lw("The relation between [] and [] has been successfully added.", relation.getFrom(), relation.getTo());
+            relations.add(relation);
+            return true;
+        }
+
+        li("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
+        return false;
+    }
+
+    public boolean removeRelation(Relation relation) {
+        if (relations.contains(relation)) {
+            relations.remove(relation);
+            lw("The relation between [] and [] has been successfully removed.", relation.getFrom(), relation.getTo());
+            return true;
+        }
+
+        li("Couldn't remove the relation between [] and []. The relation doesn't exists.", relation.getFrom(), relation.getTo());
+        return false;
+    }
+
 }

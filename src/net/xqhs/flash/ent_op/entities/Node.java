@@ -10,7 +10,8 @@ import net.xqhs.util.logging.Unit;
 import java.util.*;
 
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
-import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
+import static net.xqhs.flash.ent_op.model.Relation.RelationType.EXECUTES_ON;
 
 public class Node extends Unit implements EntityAPI {
 
@@ -136,6 +137,7 @@ public class Node extends Unit implements EntityAPI {
         agent.setfMas(fMas);
         agent.setup(configuration);
         agent.start();
+        agent.handleRelationChange(CREATE, new Relation(agent.getEntityID(), this.entityID, EXECUTES_ON));
 
         // store all added agents
         entities.put(agent.getName(), agent);

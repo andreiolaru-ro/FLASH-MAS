@@ -3,7 +3,7 @@ package net.xqhs.flash.ent_op.model;
 @SuppressWarnings("javadoc")
 public class Relation {
 	public enum RelationChangeType {
-		CREATE, DESTROY
+		CREATE, REMOVE
 	}
 
 	public enum RelationType {
@@ -14,6 +14,18 @@ public class Relation {
 	EntityID	 to;
 	String		 relationName;
 	RelationType relationType;
+
+	public Relation(EntityID from, EntityID to, RelationType relationType) {
+		this.from = from;
+		this.to = to;
+		this.relationType = relationType;
+	}
+
+	public Relation(EntityID from, EntityID to, String relationName) {
+		this.from = from;
+		this.to = to;
+		this.relationName = relationName;
+	}
 
 	public EntityID getFrom() {
 		return from;
