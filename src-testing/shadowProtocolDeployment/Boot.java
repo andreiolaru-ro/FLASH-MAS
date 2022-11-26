@@ -12,6 +12,7 @@
 package shadowProtocolDeployment;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.util.logging.MasterLog;
 
 /**
  * Deployment testing.
@@ -47,7 +48,11 @@ public class Boot
 		// args += " -agent two-localhost:8886 classpath:shadowProtocolDeployment.CompositeAgentTest -shard messaging
 		// ShadowAgentShard connectTo:ws://localhost:8886 agent_name:two-localhost:8886 -shard SendMessageShard
 		// agent_name:two-localhost:8886";
-
+		
+		MasterLog.enablePerformanceModeTools(500);
+		// MasterLog.activateGlobalPerformanceMode();
+		System.out.println("."); // to activate console output.
+		
 		FlashBoot.main(args.split(" "));
 	}
 	
