@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ent_op.entities.operations.RouteOperation;
+import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.RelationChangeWave;
+import net.xqhs.flash.ent_op.impl.ResultWave;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;
@@ -84,6 +86,21 @@ public class WebSocketPylon extends Unit implements Pylon {
      * The prefix for WebSocket server address.
      */
     public static final String WS_PROTOCOL_PREFIX = "ws://";
+
+    /**
+     * The OPERATION_CALL wave name.
+     */
+    public static final String OPERATION_CALL_WAVE = "OPERATION_CALL";
+
+    /**
+     * The RELATION_CHANGE wave name.
+     */
+    public static final String RELATION_CHANGE_WAVE = "RELATION_CHANGE";
+
+    /**
+     * The RESULT wave name.
+     */
+    public static final String RESULT_WAVE = "RESULT";
 
     /**
      * The name of the WebSocketPylon.
@@ -331,17 +348,21 @@ public class WebSocketPylon extends Unit implements Pylon {
 
     private Optional<Class<? extends Wave>> getWaveTypeClass(String content) {
         var jsonObject = new JSONObject(content);
-        var typeStr = jsonObject.getString(WAVE_TYPE_KEY);
+        var waveTypeStr = jsonObject.getString(WAVE_TYPE_KEY);
         Class<? extends Wave> waveTypeClass = null;
 
-        switch (typeStr) {
-            case "OPERATION_CALL":
+        switch (waveTypeStr) {
+            case OPERATION_CALL_WAVE:
                 waveTypeClass = OperationCallWave.class;
                 break;
-            case "RELATION_CHANGE":
-            case "RESULT":
+            case RELATION_CHANGE_WAVE:
+                waveTypeClass = RelationChangeWave.class;
+                break;
+            case RESULT_WAVE:
+                waveTypeClass = ResultWave.class;
+                break;
             default:
-                le("The [] wave is not supported by FLASH-MAS.", typeStr);
+                le("The [] wave is not supported by FLASH-MAS.", waveTypeStr);
         }
 
         return Optional.ofNullable(waveTypeClass);

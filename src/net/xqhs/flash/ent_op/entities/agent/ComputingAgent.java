@@ -2,8 +2,8 @@ package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.operations.MultiplyOperation;
+import net.xqhs.flash.ent_op.impl.OperationCallWave;
 import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 
 import static net.xqhs.flash.ent_op.entities.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
 

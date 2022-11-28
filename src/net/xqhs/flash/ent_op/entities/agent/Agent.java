@@ -2,13 +2,14 @@ package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.operations.ReceiveOperation;
+import net.xqhs.flash.ent_op.impl.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.ResultReceiver;
 import net.xqhs.util.logging.Unit;
 
 import java.util.List;
@@ -94,10 +95,6 @@ public class Agent extends Unit implements EntityAPI {
 
     @Override
     public Object handleIncomingOperationCall(OperationCallWave operationCall) {
-        if (operationCall.getResult() != null) {
-            li("############ The result of the [] operation is []", operationCall.getTargetOperation(), operationCall.getResult());
-            return null;
-        }
         if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
             var message = operationCall.getArgumentValues().get(0).toString();
             var sender = operationCall.getSourceEntity().ID;
@@ -110,8 +107,7 @@ public class Agent extends Unit implements EntityAPI {
     public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         if (CREATE.equals(changeType)) {
             return entityTools.createRelation(relation);
-        }
-        else if (REMOVE.equals(changeType)) {
+        } else if (REMOVE.equals(changeType)) {
             return entityTools.removeRelation(relation);
         }
 
@@ -139,7 +135,12 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     public void callOperation(OperationCallWave operationCall) {
-        entityTools.handleOutgoingOperationCall(operationCall);
+        entityTools.handleOutgoingWave(operationCall);
+    }
+
+    public void callOperationWithResult(OperationCallWave operationCall, ResultReceiver callBack) {
+        entityTools.registerResultReceiver(operationCall.getId(), callBack);
+        entityTools.handleOutgoingWave(operationCall);
     }
 
     public void setfMas(FMas fMas) {

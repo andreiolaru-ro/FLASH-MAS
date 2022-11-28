@@ -2,12 +2,12 @@ package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.operations.PingPongOperation;
+import net.xqhs.flash.ent_op.impl.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
@@ -183,7 +183,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
     }
 
     public void callOperation(OperationCallWave operationCall) {
-        entityTools.handleOutgoingOperationCall(operationCall);
+        entityTools.handleOutgoingWave(operationCall);
     }
 
     public EntityTools getEntityTools() {

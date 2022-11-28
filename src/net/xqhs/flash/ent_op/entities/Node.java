@@ -4,10 +4,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.DefaultLocalRouterImpl;
+import net.xqhs.flash.ent_op.impl.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
@@ -41,7 +41,7 @@ public class Node extends Unit implements EntityAPI {
     /**
      * The framework instance.
      */
-    protected DefaultFMasImpl fMas =  new DefaultFMasImpl(localRouter);
+    protected DefaultFMasImpl fMas = new DefaultFMasImpl(localRouter);
 
     /**
      * All added entities.

@@ -10,7 +10,6 @@ import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.LocalRouter;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;

@@ -32,8 +32,8 @@ public interface InboundEntityTools {
      * This method is used to register a result receiver for an operation
      *
      * @param operationCallId
-     * @param resultReceiver
+     * @param callback
      * @return <code>true</code> if the result receiver was successfully registered.
      */
-    boolean registerResultReceiver(String operationCallId, ResultReceiver resultReceiver);
+    boolean registerResultReceiver(String operationCallId, ResultReceiver callback);
 }

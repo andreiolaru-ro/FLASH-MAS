@@ -5,7 +5,6 @@ public abstract class Wave {
         OPERATION_CALL, RELATION_CHANGE, RESULT
     }
 
-    protected String id;
     protected EntityID sourceEntity;
     protected EntityID targetEntity;
     protected boolean routed;
