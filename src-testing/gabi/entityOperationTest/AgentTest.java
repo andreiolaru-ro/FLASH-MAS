@@ -4,7 +4,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 
 import java.util.ArrayList;
 
@@ -27,7 +27,7 @@ public class AgentTest {
 
         ArrayList<Object> argumentValues = new ArrayList<>();
         argumentValues.add("simple message");
-        OperationCall operationCall = new OperationCall(agentA.getEntityID(), agentB.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
+        OperationCallWave operationCall = new OperationCallWave(agentA.getEntityID(), agentB.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
         agentA.callOperation(operationCall);
     }
 }

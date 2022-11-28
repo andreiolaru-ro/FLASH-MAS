@@ -2,22 +2,27 @@ package net.xqhs.flash.ent_op.entities;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ent_op.entities.operations.RouteOperation;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
 
@@ -49,6 +54,11 @@ public class WebSocketPylon extends Unit implements Pylon {
      */
 
     public static final String MESSAGE_CONTENT_KEY = "content";
+
+    /**
+     * The key in the JSON object which is assigned to the wave type.
+     */
+    public static final String WAVE_TYPE_KEY = "type";
 
     /**
      * The attribute name of server address of this instance.
@@ -179,35 +189,21 @@ public class WebSocketPylon extends Unit implements Pylon {
 
                         /**
                          * Receives a message from the server. The message was previously routed to this websocket
-                         * client address and it is further routed to a specific entity using the
-                         * {@link MessageReceiver} instance. The entity is searched within the context of this support.
+                         * client address, and it is further routed to a specific entity using the {@link FMas} instance.
                          *
-                         * @param s
-                         *            - the JSON string containing a message and routing information
+                         * @param message
                          */
                         @Override
-                        public void onMessage(String s) {
-                            var obj = JSONValue.parse(s);
-                            if (obj == null) {
-                                le("Null message received.");
-                                return;
-                            }
+                        public void onMessage(String message) {
+                            var jsonMessage = new JSONObject(message);
 
-                            var jsonObject = (JSONObject) obj;
-                            if (jsonObject.get("destination") == null) {
+                            if (jsonMessage.get("destination") == null) {
                                 le("No destination entity received.");
                                 return;
                             }
 
-                            var content = (String) jsonObject.get("content");
-                            OperationCall operationCall = null;
-                            try {
-                                operationCall = mapper.readValue(content, OperationCall.class);
-                            } catch (JsonProcessingException e) {
-                                le("The operation call couldn't be deserialized.");
-                            }
-
-                            fMas.route(operationCall);
+                            var content = jsonMessage.getString("content");
+                            deserializeWave(content).ifPresent(wave -> fMas.route(wave));
                         }
 
                         @Override
@@ -255,12 +251,7 @@ public class WebSocketPylon extends Unit implements Pylon {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
         return null;
     }
 
@@ -289,7 +280,6 @@ public class WebSocketPylon extends Unit implements Pylon {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public boolean register(String entityName) {
         if (webSocketClient == null)
             return false;
@@ -300,7 +290,6 @@ public class WebSocketPylon extends Unit implements Pylon {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     public boolean send(String source, String destination, String content) {
         JSONObject messageToServer = new JSONObject();
         messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
@@ -326,5 +315,35 @@ public class WebSocketPylon extends Unit implements Pylon {
     @Override
     public boolean canRouteOpCall(String destinationTarget) {
         return destinationTarget.startsWith("ws:");
+    }
+
+    private Optional<Wave> deserializeWave(String content) {
+        return getWaveTypeClass(content)
+                .map(x -> {
+                    try {
+                        return mapper.readValue(content, x);
+                    } catch (JsonProcessingException e) {
+                        le("The wave couldn't be deserialized.");
+                    }
+                    return null;
+                });
+    }
+
+    private Optional<Class<? extends Wave>> getWaveTypeClass(String content) {
+        var jsonObject = new JSONObject(content);
+        var typeStr = jsonObject.getString(WAVE_TYPE_KEY);
+        Class<? extends Wave> waveTypeClass = null;
+
+        switch (typeStr) {
+            case "OPERATION_CALL":
+                waveTypeClass = OperationCallWave.class;
+                break;
+            case "RELATION_CHANGE":
+            case "RESULT":
+            default:
+                le("The [] wave is not supported by FLASH-MAS.", typeStr);
+        }
+
+        return Optional.ofNullable(waveTypeClass);
     }
 }

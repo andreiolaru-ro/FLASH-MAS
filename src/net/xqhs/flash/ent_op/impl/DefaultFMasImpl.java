@@ -3,10 +3,19 @@ package net.xqhs.flash.ent_op.impl;
 import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.entities.operations.RouteOperation;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.LocalRouter;
+import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DefaultFMasImpl extends Unit implements FMas {
     /**
@@ -68,14 +77,14 @@ public class DefaultFMasImpl extends Unit implements FMas {
     }
 
     @Override
-    public void route(OperationCall operationCall) {
-        // send the opCall to the local route to route the opCall
-        if (!operationCall.isRouted()) {
-            localRouter.route(operationCall);
+    public void route(Wave wave) {
+        // send the wave to the local router to be routed
+        if (!wave.isRouted()) {
+            localRouter.route(wave);
         } else {
-            var targetEntityName = operationCall.getTargetEntity().ID;
+            var targetEntityName = wave.getTargetEntity().ID;
             var entityTools = entities.get(targetEntityName);
-            entityTools.handleIncomingOperationCall(operationCall);
+            entityTools.handleIncomingWave(wave);
         }
     }
 

@@ -31,11 +31,10 @@ public interface FMas {
     List<EntityAPI> routerEntities();
 
     /**
-     * Method used to route an operation call. This method only forwards an operation call to the {@link LocalRouter}
+     * Method used to route a wave. This method only forwards a wave to the {@link LocalRouter}
      * which will implement the routing policy.
      *
-     * @param operationCall
-     *          - the operation call that needs to be routed.
+     * @param wave
      */
-    void route(OperationCall operationCall);
+    void route(Wave wave);
 }

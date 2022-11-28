@@ -2,7 +2,13 @@ package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
 import java.util.List;
@@ -68,19 +74,14 @@ public class TestEntity extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall opCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
         if (!isRunning) {
             le("[] is not running", name);
             return null;
         }
-        if ("PRINT".equals(opCall.getTargetOperation())) {
-            printMessageOperation(opCall.getArgumentValues().get(0).toString());
+        if ("PRINT".equals(operationCallWave.getTargetOperation())) {
+            printMessageOperation(operationCallWave.getArgumentValues().get(0).toString());
         }
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
         return null;
     }
 
@@ -112,7 +113,7 @@ public class TestEntity extends Unit implements EntityAPI {
         return entityTools;
     }
 
-    public void callOperation(OperationCall operationCall) {
+    public void callOperation(OperationCallWave operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
     }
 

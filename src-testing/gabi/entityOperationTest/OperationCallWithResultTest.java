@@ -5,7 +5,7 @@ import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class OperationCallWithResultTest {
         agentB.start();
 
         List<Object> argumentValues = List.of(1.4d, 8.2d, 3.5d);
-        OperationCall operationCall = new OperationCall(agentA.getEntityID(), agentB.getEntityID(), MULTIPLY_OPERATION_NAME, true, argumentValues);
+        OperationCallWave operationCall = new OperationCallWave(agentA.getEntityID(), agentB.getEntityID(), MULTIPLY_OPERATION_NAME, true, argumentValues);
         agentA.callOperation(operationCall);
     }
 }

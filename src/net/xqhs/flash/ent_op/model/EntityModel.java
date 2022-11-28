@@ -11,5 +11,5 @@ package net.xqhs.flash.ent_op.model;
  * @author Andrei Olaru
  */
 public interface EntityModel {
-	void handleCall(OperationCall opCall);
+	void handleWave(Wave wave);
 }

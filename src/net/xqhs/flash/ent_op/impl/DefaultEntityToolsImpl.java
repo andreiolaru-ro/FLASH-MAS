@@ -3,9 +3,12 @@ package net.xqhs.flash.ent_op.impl;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.InboundEntityTools;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.ResultReceiver;
+import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;
 
 import java.util.HashSet;
@@ -77,6 +80,11 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     @Override
+    public boolean registerResultReceiver(String operationCallId, ResultReceiver resultReceiver) {
+        return false;
+    }
+
+    @Override
     public boolean createOperation(Operation operation) {
         // fails if the operation already exists
         if (getOperation(operation.getName()) != null) {
@@ -115,50 +123,79 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     @Override
-    public void handleOutgoingOperationCall(OperationCall operationCall) {
-        fMas.route(operationCall);
+    public void handleOutgoingOperationCall(OperationCallWave operationCallWave) {
+        fMas.route(operationCallWave);
     }
 
     @Override
-    public void handleOutgoingOperationCall(OperationCall operationCall, ResultReceiver callback) {
-
-    }
-
-    @Override
-    public void broadcastOutgoingOperationCall(OperationCall operationCall, Set<Operation.Restriction> targets, boolean expectResults, ResultReceiver callback) {
+    public void handleOutgoingOperationCall(OperationCallWave operationCallWave, ResultReceiver callback) {
 
     }
 
     @Override
-    public Object handleOperationCallBlocking(OperationCall operationCall) {
+    public void broadcastOutgoingOperationCall(OperationCallWave operationCallWave, Set<Operation.Restriction> targets, boolean expectResults, ResultReceiver callback) {
+
+    }
+
+    @Override
+    public Object handleOperationCallBlocking(OperationCallWave operationCallWave) {
         return null;
     }
 
-    public void handleIncomingOperationCall(OperationCall operationCall) {
-        var operationName = operationCall.getTargetOperation();
+    @Override
+    public boolean linkInboundEntityTools(InboundEntityTools inboundEntityTools) {
+        return false;
+    }
+
+    @Override
+    public void handleIncomingWave(Wave wave) {
+        switch (wave.getType()) {
+            case OPERATION_CALL:
+                handleIncomingOperationCallWave((OperationCallWave) wave);
+                break;
+            case RELATION_CHANGE:
+                handleIncomingRelationChangeWave(wave);
+                break;
+            case RESULT:
+                handleIncomingResultWave(wave);
+                break;
+            default:
+                le("The wave is not supported by FLASH-MAS.");
+        }
+    }
+
+    private void handleIncomingOperationCallWave(OperationCallWave operationCallWave) {
+        var operationName = operationCallWave.getTargetOperation();
 
         if (!entityAPI.isRunning()) {
             le("[] is not running", entityAPI.getName());
             return;
         }
 
-        if (getOperation(operationName) == null && operationCall.getResult() == null) {
+        if (getOperation(operationName) == null && operationCallWave.getResult() == null) {
             lw("The [] operation is not supported by the [] entity", operationName, entityName);
             return;
         }
 
-        var result = entityAPI.handleIncomingOperationCall(operationCall);
+        var result = entityAPI.handleIncomingOperationCall(operationCallWave);
 
-        if (operationCall.isSendReturnValue()) {
-            var sourceId = operationCall.getSourceEntity();
-            var targetId = operationCall.getTargetEntity();
-            operationCall.setTargetEntity(sourceId);
-            operationCall.setSourceEntity(targetId);
-            operationCall.setResult(result);
-            operationCall.setRouted(false);
-            operationCall.setSendReturnValue(false);
-            handleOutgoingOperationCall(operationCall);
+        if (operationCallWave.isSendReturnValue()) {
+            var sourceId = operationCallWave.getSourceEntity();
+            var targetId = operationCallWave.getTargetEntity();
+            operationCallWave.setTargetEntity(sourceId);
+            operationCallWave.setSourceEntity(targetId);
+            operationCallWave.setResult(result);
+            operationCallWave.setRouted(false);
+            operationCallWave.setSendReturnValue(false);
+            handleOutgoingOperationCall(operationCallWave);
         }
+    }
+
+
+    private void handleIncomingRelationChangeWave(Wave wave) {
+    }
+
+    private void handleIncomingResultWave(Wave wave) {
     }
 
     public boolean createRelation(Relation relation) {

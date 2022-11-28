@@ -5,7 +5,7 @@ import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.entities.Node;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,11 +81,11 @@ public class WebSocketPylonTest {
         // agent1(node1) calls an agent3(node2) operation
         List<Object> argumentValues = new ArrayList<>();
         argumentValues.add("simple message");
-        OperationCall operationCall = new OperationCall(agent1.getEntityID(), agent2.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
+        OperationCallWave operationCall = new OperationCallWave(agent1.getEntityID(), agent2.getEntityID(), RECEIVE_OPERATION_NAME, false, argumentValues);
         agent1.callOperation(operationCall);
 
         // agent1(node1) calls an agent3(node2) operation
-        OperationCall multiplyOpCall = new OperationCall(agent1.getEntityID(), agent3.getEntityID(), MULTIPLY_OPERATION_NAME, true, List.of(1.3d, 24.5d, 65.8d));
+        OperationCallWave multiplyOpCall = new OperationCallWave(agent1.getEntityID(), agent3.getEntityID(), MULTIPLY_OPERATION_NAME, true, List.of(1.3d, 24.5d, 65.8d));
         agent1.callOperation(multiplyOpCall);
 
         // stop nodes

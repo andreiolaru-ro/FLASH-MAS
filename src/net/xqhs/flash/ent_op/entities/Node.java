@@ -4,10 +4,18 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.DefaultLocalRouterImpl;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
@@ -85,12 +93,7 @@ public class Node extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
         return null;
     }
 

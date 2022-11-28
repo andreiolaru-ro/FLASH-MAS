@@ -7,7 +7,7 @@ import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
@@ -93,7 +93,7 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCall) {
         if (operationCall.getResult() != null) {
             li("############ The result of the [] operation is []", operationCall.getTargetOperation(), operationCall.getResult());
             return null;
@@ -102,16 +102,6 @@ public class Agent extends Unit implements EntityAPI {
             var message = operationCall.getArgumentValues().get(0).toString();
             var sender = operationCall.getSourceEntity().ID;
             li("############ received message: [] from []", message, sender);
-        }
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
-        if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
-            var message = operationCall.getArgumentValues().get(0).toString();
-            var sender = operationCall.getSourceEntity().ID;
-            li(">>>>>>>>>>> received message: [] from []", message, sender);
         }
         return null;
     }
@@ -148,7 +138,7 @@ public class Agent extends Unit implements EntityAPI {
         return entityID;
     }
 
-    public void callOperation(OperationCall operationCall) {
+    public void callOperation(OperationCallWave operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
     }
 

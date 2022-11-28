@@ -3,10 +3,10 @@ package net.xqhs.flash.ent_op.model;
 public interface LocalRouter extends EntityAPI {
 
     /**
-     * Routes an operation call based on the target operation.
+     * Routes a wave based on the target entity.
      *
-     * @param operationCall
-     *          - the operation call that must be routed.
+     * @param wave
+     *          - the wave that must be routed.
      */
-    void route(OperationCall operationCall);
+    void route(Wave wave);
 }

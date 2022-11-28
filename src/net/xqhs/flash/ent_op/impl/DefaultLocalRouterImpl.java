@@ -6,7 +6,13 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.LocalRouter;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.util.logging.Unit;
 
 import java.util.LinkedHashSet;
@@ -67,12 +73,7 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCall) {
         return null;
     }
 
@@ -102,43 +103,44 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
     }
 
     @Override
-    public void route(OperationCall operationCall) {
-        var targetEntityId = operationCall.getTargetEntity().ID;
+    public void route(Wave wave) {
+        var targetEntityId = wave.getTargetEntity().ID;
 
         if (fMas.entityExistsOnLocalNode(targetEntityId)) {
-            routeInternalOpCall(operationCall);
+            routeInternalWave(wave);
         } else {
-            routeExternalOpCall(operationCall);
+            routeExternalWave(wave);
         }
     }
 
-    private void routeInternalOpCall(OperationCall operationCall) {
-        li("The op call was successfully routed.");
-        operationCall.setRouted(true);
-        fMas.route(operationCall);
+    private void routeInternalWave(Wave wave) {
+        li("The wave was successfully routed.");
+        wave.setRouted(true);
+        fMas.route(wave);
     }
 
     /**
      * Check each of the pylons if they support communication for that specific agent.
      * TODO: check for all future types of pylons
      */
-    private void routeExternalOpCall(OperationCall operationCall) {
-        String sourceEntityName = operationCall.getSourceEntity().ID;
-        String targetEntity = operationCall.getTargetEntity().ID;
+    private void routeExternalWave(Wave wave) {
+        var sourceEntityName = wave.getSourceEntity().ID;
+        var targetEntity = wave.getTargetEntity().ID;
 
         // first check for websocket pylons
-        List<EntityAPI> routerEntities = fMas.routerEntities();
-
+        var routerEntities = fMas.routerEntities();
         var routerEntity = routerEntities.stream().findFirst();
-        if (routerEntity.isPresent() && routerEntity.get().canRoute(operationCall.getTargetEntity())) {
-            operationCall.setRouted(true);
+
+        if (routerEntity.isPresent() && routerEntity.get().canRoute(wave.getTargetEntity())) {
+            wave.setRouted(true);
             if (routerEntity.get() instanceof WebSocketPylon) {
-                li("The op call was successfully routed. Found a pylon to route message to [].", targetEntity);
-                WebSocketPylon webSocketPylon = (WebSocketPylon) routerEntity.get();
-                webSocketPylon.send(sourceEntityName, targetEntity, serializeOpCall(operationCall));
+                li("The wave was successfully routed. Found a pylon to route the wave to [].", targetEntity);
+                var webSocketPylon = (WebSocketPylon) routerEntity.get();
+                webSocketPylon.send(sourceEntityName, targetEntity, serializeWave(wave));
             }
+        } else {
+            le("The wave couldn't be routed. Failed to find a pylon to route the wave to [].", targetEntity);
         }
-        le("The op call couldn't be routed. Failed to find a pylon to route message to [].", targetEntity);
     }
 
     public void setfMas(FMas fMas) {
@@ -149,13 +151,12 @@ public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
         pylons.add(pylon);
     }
 
-    private String serializeOpCall(OperationCall operationCall) {
-        String json = "";
+    private String serializeWave(Wave wave) {
         try {
-            json = mapper.writeValueAsString(operationCall);
+            return mapper.writeValueAsString(wave);
         } catch (JsonProcessingException e) {
-            le("The operation call couldn't be serialized.");
+            le("The wave couldn't be serialized.");
+            return null;
         }
-        return json;
     }
 }

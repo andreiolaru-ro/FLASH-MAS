@@ -7,7 +7,7 @@ import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 
@@ -114,7 +114,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
                         EntityID otherAgentID = new EntityID(otherAgent);
                         ArrayList<Object> argumentValues = new ArrayList<>();
                         argumentValues.add("ping-no " + tick);
-                        OperationCall pingPongOpCall = new OperationCall(entityID, otherAgentID,
+                        OperationCallWave pingPongOpCall = new OperationCallWave(entityID, otherAgentID,
                                 PING_PONG_OPERATION_NAME, false, argumentValues);
                         callOperation(pingPongOpCall);
                     }
@@ -136,7 +136,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCall) {
         if (!isRunning) {
             le("[] is not running", agentName);
             return null;
@@ -149,16 +149,11 @@ public class PingPongAgent extends Unit implements EntityAPI {
             if (otherAgents == null) {
                 ArrayList<Object> argumentValues = new ArrayList<>();
                 argumentValues.add(message + " reply");
-                OperationCall replyOpCall = new OperationCall(entityID, operationCall.getSourceEntity(),
+                OperationCallWave replyOpCall = new OperationCallWave(entityID, operationCall.getSourceEntity(),
                         PING_PONG_OPERATION_NAME, false, argumentValues);
                 callOperation(replyOpCall);
             }
         }
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
         return null;
     }
 
@@ -187,7 +182,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
         return entityID;
     }
 
-    public void callOperation(OperationCall operationCall) {
+    public void callOperation(OperationCallWave operationCall) {
         entityTools.handleOutgoingOperationCall(operationCall);
     }
 

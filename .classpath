@@ -53,6 +53,7 @@
 	<classpathentry kind="lib" path="lib/vertx-web-templ-thymeleaf-3.8.5.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/json-20220924.jar"/>
 	<classpathentry kind="lib" path="lib/Java-WebSocket-1.4.0-with-dependencies.jar"/>
 	<classpathentry kind="lib" path="lib/Logging-modern.jar" sourcepath="lib/Logging-modern.jar">
 		<attributes>

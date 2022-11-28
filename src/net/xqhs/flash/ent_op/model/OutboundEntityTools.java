@@ -29,7 +29,8 @@ public interface OutboundEntityTools {
 	
 	/**
 	 * Adds a new operation to the list of operations.
-	 * 
+	 *
+	 * @param operation
 	 * @return <code>true</code> if the addition succeeded (no other operation with the same name already existed).
 	 */
 	boolean createOperation(Operation operation);
@@ -38,7 +39,7 @@ public interface OutboundEntityTools {
 	 * Removes an operation from the list of available operations.
 	 * 
 	 * @param operationName
-	 * @return
+	 * @return <code>true</code> if the operation was successfully removed.
 	 */
 	boolean removeOperation(String operationName);
 	
@@ -63,18 +64,12 @@ public interface OutboundEntityTools {
 	 * 
 	 * @param operationCall
 	 */
-	void handleOutgoingOperationCall(OperationCall operationCall);
+	void handleOutgoingOperationCall(OperationCallWave operationCall);
 	
 	/**
 	 * Callback for when a result of the operation is received.
 	 */
-	public static interface ResultReceiver {
-		/**
-		 * @param result
-		 *            - the result of the operation.
-		 */
-		public void resultNotification(Object result);
-	}
+
 	
 	/**
 	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to issue an operation call and
@@ -83,7 +78,7 @@ public interface OutboundEntityTools {
 	 * @param operationCall
 	 * @param callback
 	 */
-	void handleOutgoingOperationCall(OperationCall operationCall, ResultReceiver callback);
+	void handleOutgoingOperationCall(OperationCallWave operationCall, ResultReceiver callback);
 	
 	/**
 	 * @param operationCall
@@ -92,7 +87,7 @@ public interface OutboundEntityTools {
 	 * @param expectResults
 	 * @param callback
 	 */
-	void broadcastOutgoingOperationCall(OperationCall operationCall, Set<Restriction> targets, boolean expectResults, ResultReceiver callback);
+	void broadcastOutgoingOperationCall(OperationCallWave operationCall, Set<Restriction> targets, boolean expectResults, ResultReceiver callback);
 	
 	/**
 	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to issue an operation call and expect
@@ -101,6 +96,14 @@ public interface OutboundEntityTools {
 	 * @param operationCall
 	 * @return the result of the operation.
 	 */
-	Object handleOperationCallBlocking(OperationCall operationCall);
-	
+	Object handleOperationCallBlocking(OperationCallWave operationCall);
+
+	/**
+	 * Method called by an entity to its associated {@link OutboundEntityTools} instance to link the {@link InboundEntityTools} instance.
+	 *
+	 * @param inboundEntityTools
+	 * @return <code>true</code> if the inboundEntityTools was successfully linked.
+	 */
+	boolean linkInboundEntityTools(InboundEntityTools inboundEntityTools);
+
 }

@@ -1,8 +1,11 @@
 package net.xqhs.flash.ent_op.entities;
 
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.model.*;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.util.logging.Unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -55,12 +58,12 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
                 /*
                  * This method sends a message to the new client.
                  */
-                li("New client connected []", webSocket);
+                li("New client connected []", webSocketServerName);
             }
 
             @Override
             public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-                li("[] closed with exit code ", webSocket, i);
+                li("[] closed with exit code ", webSocketServerName, i);
             }
 
             /**
@@ -185,12 +188,7 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
     }
 
     @Override
-    public Object handleIncomingOperationCall(OperationCall operationCall) {
-        return null;
-    }
-
-    @Override
-    public Object handleIncomingOperationCallWithResult(OperationCall operationCall) {
+    public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
         return null;
     }
 

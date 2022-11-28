@@ -5,7 +5,7 @@ import net.xqhs.flash.ent_op.entities.TestEntity;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.OperationCall;
+import net.xqhs.flash.ent_op.model.OperationCallWave;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -61,7 +61,7 @@ public class EntityTest {
         });
         ArrayList<Object> argumentValues = new ArrayList<>();
         argumentValues.add("HELLO");
-        testEntity2.callOperation(new OperationCall(testEntity2.getEntityID(), testEntity1.getEntityID(), "PRINT", false, argumentValues));
-        testEntity2.callOperation(new OperationCall(testEntity2.getEntityID(), testEntity1.getEntityID(), "MULTIPLY", false, argumentValues));
+        testEntity2.callOperation(new OperationCallWave(testEntity2.getEntityID(), testEntity1.getEntityID(), "PRINT", false, argumentValues));
+        testEntity2.callOperation(new OperationCallWave(testEntity2.getEntityID(), testEntity1.getEntityID(), "MULTIPLY", false, argumentValues));
     }
 }
