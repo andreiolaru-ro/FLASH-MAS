@@ -3,9 +3,8 @@ package gabi.entityOperationTest;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.TestEntity;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
-import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 
 import java.util.ArrayList;
 import java.util.Set;

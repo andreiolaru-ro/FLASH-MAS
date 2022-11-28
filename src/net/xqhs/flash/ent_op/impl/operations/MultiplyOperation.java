@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.entities.operations;
+package net.xqhs.flash.ent_op.impl.operations;
 
 import net.xqhs.flash.ent_op.model.Operation;
 

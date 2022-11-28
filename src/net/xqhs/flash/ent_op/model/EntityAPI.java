@@ -12,7 +12,7 @@
 package net.xqhs.flash.ent_op.model;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 
 import java.util.List;

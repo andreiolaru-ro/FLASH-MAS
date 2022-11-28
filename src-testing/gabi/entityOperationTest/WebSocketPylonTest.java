@@ -5,15 +5,15 @@ import net.xqhs.flash.ent_op.entities.agent.Agent;
 import net.xqhs.flash.ent_op.entities.Node;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
-import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
-import static net.xqhs.flash.ent_op.entities.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
-import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_NAME;
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;

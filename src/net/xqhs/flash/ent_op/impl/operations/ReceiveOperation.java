@@ -1,46 +1,44 @@
-package net.xqhs.flash.ent_op.entities.operations;
+package net.xqhs.flash.ent_op.impl.operations;
 
 import net.xqhs.flash.ent_op.model.Operation;
 
 import java.util.ArrayList;
 import java.util.Set;
 
-public class PingPongOperation implements Operation {
+public class ReceiveOperation implements Operation {
     /**
-     * The name of the ping pong operation.
+     * The name of the operation.
      */
-    public static final String PING_PONG_OPERATION_NAME = "PING-PONG";
+    public static final String RECEIVE_OPERATION_NAME = "RECEIVE";
 
     /**
      * The arguments list.
      */
     protected ArrayList<Value> arguments;
 
-    public PingPongOperation() {
+    public ReceiveOperation() {
         arguments = new ArrayList<>();
         arguments.add(new Value() {
             @Override
             public String getType() {
-                return null;
+                return String.class.getName();
             }
 
             @Override
             public Description getDescription() {
-                return () -> "This operation doesn't have any arguments.";
+                return () -> "The message of the operation";
             }
         });
     }
 
     @Override
     public String getName() {
-        return PING_PONG_OPERATION_NAME;
+        return RECEIVE_OPERATION_NAME;
     }
 
     @Override
     public Description getDescription() {
-        return () -> "The default operation supported by a ping-pong agent. " +
-                "This operation can be called by a ping-pong agent to ping other " +
-                "ping pong agents, the latter sending back a reply.";
+        return () -> "The default operation supported by an agent. This operation takes one argument - the message of the operation.";
     }
 
     @Override

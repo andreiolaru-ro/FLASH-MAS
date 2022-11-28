@@ -1,5 +1,8 @@
 package net.xqhs.flash.ent_op.impl;
 
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
+import net.xqhs.flash.ent_op.impl.waves.ResultWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;
 import net.xqhs.flash.ent_op.model.FMas;
@@ -202,7 +205,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     private void handleIncomingResultWave(ResultWave resultWave) {
-        var operationCallId = resultWave.operationCallId;
+        var operationCallId = resultWave.getOperationCallId();
         if (!resultReceiverMap.containsKey(operationCallId)) {
             le("Couldn't find a result receiver for the operation call with id []", operationCallId);
         }

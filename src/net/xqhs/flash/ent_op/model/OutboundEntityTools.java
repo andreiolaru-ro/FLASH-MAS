@@ -1,6 +1,6 @@
 package net.xqhs.flash.ent_op.model;
 
-import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Operation.Restriction;
 
 import java.util.Set;

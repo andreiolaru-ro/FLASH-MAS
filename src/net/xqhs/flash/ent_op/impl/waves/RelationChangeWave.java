@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.impl;
+package net.xqhs.flash.ent_op.impl.waves;
 
 import net.xqhs.flash.ent_op.model.Wave;
 

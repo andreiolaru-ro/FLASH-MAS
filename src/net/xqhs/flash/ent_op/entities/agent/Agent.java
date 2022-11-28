@@ -1,8 +1,8 @@
 package net.xqhs.flash.ent_op.entities.agent;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.entities.operations.ReceiveOperation;
-import net.xqhs.flash.ent_op.impl.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.operations.ReceiveOperation;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.EntityTools;
@@ -15,7 +15,7 @@ import net.xqhs.util.logging.Unit;
 import java.util.List;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.entities.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
