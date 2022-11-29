@@ -262,7 +262,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt("settings load")
-				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.WARN);
+				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
