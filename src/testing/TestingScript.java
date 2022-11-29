@@ -27,6 +27,11 @@ public class TestingScript implements Serializable {
 	 */
 	public enum TriggerType {
 		/**
+		 * The action is triggered after a given time, relative to system boot (as computed when initializing the
+		 * {@link ScriptTestingShard} class.
+		 */
+		BOOT,
+		/**
 		 * The action is triggered after a given time after the previous action, or, if this is the first action in the
 		 * script, after the receipt of the {@link AgentEventType#AGENT_START} event by the testing shard.
 		 */
@@ -63,7 +68,7 @@ public class TestingScript implements Serializable {
 		/**
 		 * marks the time of the event using {@link TimeMonitor}.
 		 */
-		MARK,
+		MARK(new FIELD[] { FIELD.with }),
 		/**
 		 * No action.
 		 */
@@ -203,7 +208,7 @@ public class TestingScript implements Serializable {
 		 * @return the delay, for delay-triggered actions.
 		 */
 		public int getDelay() {
-			if(trigger != TriggerType.DELAY)
+			if(trigger != TriggerType.DELAY && trigger != TriggerType.BOOT)
 				throw new IllegalStateException("Trigger is not a delay");
 			if(arg == null)
 				return DEFAULT_DELAY;
@@ -284,6 +289,8 @@ public class TestingScript implements Serializable {
 		 * @return <code>true</code> if the script appears correct.
 		 */
 		public boolean verify(Logger log) {
+			if(actions == null)
+				return false;
 			for(ScriptElement element : actions)
 				if(!element.verifyElement(log))
 					return false;

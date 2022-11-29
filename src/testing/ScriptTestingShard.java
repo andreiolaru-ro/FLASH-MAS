@@ -75,6 +75,10 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	}
 	
 	/**
+	 * The approximate time of boot.
+	 */
+	protected static final long	boot_time			= System.currentTimeMillis();
+	/**
 	 * The serial UID.
 	 */
 	private static final long	serialVersionUID	= -3151844526556248974L;
@@ -165,9 +169,10 @@ public class ScriptTestingShard extends AgentShardGeneral {
 				li("No script for agent", getAgent().getEntityName());
 			else {
 				AgentScript script = entireScript.script.get(getAgent().getEntityName());
-				if(script.verify(getLogger()))
+				if(script != null && script.verify(getLogger())) {
 					lf("Script verification ok");
-				agentScript = script.getActions();
+					agentScript = script.getActions();
+				}
 				if(agentScript != null && !agentScript.isEmpty())
 					scriptCompleted = false;
 				else
@@ -227,12 +232,16 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			scriptCompleted = true;
 			return;
 		}
+		long delay = 0;
 		switch(a.getTrigger()) {
+		case BOOT:
+			// delay already consumed
+			delay -= System.currentTimeMillis() - boot_time;
+			//$FALL-THROUGH$
 		case DELAY:
 			// next action is scheduled
 			actionTimer = new Timer();
-			long delay;
-			delay = a.getDelay();
+			delay += a.getDelay();
 			delayTriggeredAction = a;
 			actionTimer.schedule(new ScriptTimerTask(a, isNextActionDelayed) {
 				@Override
@@ -292,7 +301,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		Map<FIELD, String> args = action.arguments;
 		switch(action.action) {
 		case MARK:
-			TimeMonitor.markTime(event);
+			TimeMonitor.markTime(args != null ? args.get(FIELD.with) : null, event);
 			break;
 		case SEND_MESSAGE:
 			// FIXME check if all fields are present
