@@ -205,7 +205,7 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 		String line = time + " : [";
 		line += "\"" + new Timestamp(time) + "\", ";
 		line += String.join(", ",
-				Arrays.asList(prints).stream().map(obj -> obj != null ? "\"" + obj.toString() + "\"" : "-")
+				Arrays.asList(prints).stream().map(obj -> obj != null ? "\"" + obj.toString() + "\"" : "\"-\"")
 						.collect(Collectors.toList()));
 		line += "]\n";
 		try {
