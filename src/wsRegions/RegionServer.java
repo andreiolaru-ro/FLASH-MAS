@@ -281,15 +281,17 @@ public class RegionServer extends Unit implements Entity<Node> {
 		public void connectMessageHandler(JSONObject mesg, WebSocket webSocket) {
 			String arrived_agent = (String) mesg.get("source");
 			lf("Received CONNECT message from mobile agent ", arrived_agent);
-			if(!agentsList.containsKey(arrived_agent) && !mobileAgents.containsKey(arrived_agent)) {
-				mobileAgents.put(arrived_agent,
-						new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.TRANSITION, getUnitName()));
-				String homeServer = (arrived_agent.split("-"))[1];
-				if(clients.containsKey(homeServer)) {
-					Map<String, String> data = new HashMap<>();
-					data.put("lastLocation", getUnitName());
-					sendMessage(clients.get(homeServer).client, homeServer,
-							createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
+			if(!agentsList.containsKey(arrived_agent)) {
+				if(!mobileAgents.containsKey(arrived_agent)) {
+					mobileAgents.put(arrived_agent,
+							new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.TRANSITION, getUnitName()));
+					String homeServer = (arrived_agent.split("-"))[1];
+					if(clients.containsKey(homeServer)) {
+						Map<String, String> data = new HashMap<>();
+						data.put("lastLocation", getUnitName());
+						sendMessage(clients.get(homeServer).client, homeServer,
+								createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
+					}
 				}
 			}
 			else {
