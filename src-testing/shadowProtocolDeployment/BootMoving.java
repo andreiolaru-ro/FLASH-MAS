@@ -34,8 +34,8 @@ public class BootMoving {
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
 		for(int i = 0; i < 4; i++) {
-			args += " -node node" + i + " -monitor time: -pylon WSRegions:Pylon" + i;
 			String srv = i % 2 == 0 ? server[i / 2] : server[(i - 1) / 2];
+			args += " -node node" + i + "-" + srv + " -monitor time: -pylon WSRegions:Pylon" + i;
 			args += (i % 2 == 0 ? " isServer:" : " connectTo:") + srv;
 			if(i % 2 == 0)
 				args += " servers:" + server[1 - i / 2];
@@ -44,7 +44,7 @@ public class BootMoving {
 		}
 		
 		// MasterLog.setDefaultLogLevel(Level.OFF);
-		MasterLog.enablePerformanceModeTools(500);
+		MasterLog.enablePerformanceModeTools(1000);
 		MasterLog.activateGlobalPerformanceMode();
 		System.out.println("."); // to activate console output.
 		
