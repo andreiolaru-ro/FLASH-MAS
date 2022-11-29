@@ -1,0 +1,9 @@
+script:
+ A-localhost:8885:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "A-localhost:8885"} }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node1"}, trigger: "NEXT"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node2"}, trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node3"}, trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MARK", trigger: "EVENT", arg: "AFTER_MOVE", arguments: {with: "A-localhost:8885 DONE"} }
+  
