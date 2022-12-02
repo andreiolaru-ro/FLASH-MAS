@@ -158,7 +158,7 @@ public class PingPongAgent extends Unit implements EntityAPI {
     }
 
     @Override
-    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
+    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
 

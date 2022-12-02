@@ -71,6 +71,10 @@ public class DefaultFMasImpl extends Unit implements FMas {
         return entities.containsKey(entityName);
     }
 
+    public EntityTools getEntityTools(String entityName) {
+        return entities.get(entityName);
+    }
+
     @Override
     public List<EntityAPI> routerEntities() {
         return routerEntities;

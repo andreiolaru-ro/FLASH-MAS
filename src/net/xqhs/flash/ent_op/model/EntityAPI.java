@@ -71,7 +71,7 @@ public interface EntityAPI {
      * @param relation   - the relation to add or remove.
      * @return <code>true</code> if the change is accepted, <code>false</code> otherwise.
      */
-    boolean handleRelationChange(RelationChangeType changeType, Relation relation);
+    boolean changeRelation(RelationChangeType changeType, Relation relation);
 
     /**
      * Used to get the name of an entity.

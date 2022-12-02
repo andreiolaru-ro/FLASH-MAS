@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
-import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
-import static net.xqhs.flash.ent_op.model.Relation.RelationType.EXECUTES_ON;
 
 public class Node extends Unit implements EntityAPI {
 
@@ -98,7 +96,7 @@ public class Node extends Unit implements EntityAPI {
     }
 
     @Override
-    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
+    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
 
@@ -140,7 +138,6 @@ public class Node extends Unit implements EntityAPI {
         agent.setfMas(fMas);
         agent.setup(configuration);
         agent.start();
-        agent.handleRelationChange(CREATE, new Relation(agent.getEntityID(), this.entityID, EXECUTES_ON));
 
         // store all added agents
         entities.put(agent.getName(), agent);

@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
 
 public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
@@ -114,7 +118,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     @Override
     public boolean removeOperation(String operationName) {
-        Operation operation = getOperation(operationName);
+        var operation = getOperation(operationName);
         if (operation == null)
             return false;
         operations.remove(operation);
@@ -128,14 +132,16 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     @Override
     public Set<Relation> getIncomingRelations() {
-//        return relations.stream().filter(relation -> relation.getTo().equals(enityId));
-        return null;
+        return relations.stream()
+                .filter(relation -> relation.getTo().equals(entityAPI.getEntityID()))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Set<Relation> getOutgoingRelations() {
-//        return relations.stream().filter(relation -> relation.getFrom().equals(enityId));
-        return null;
+        return relations.stream()
+                .filter(relation -> relation.getFrom().equals(entityAPI.getEntityID()))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -202,6 +208,14 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     private void handleIncomingRelationChangeWave(RelationChangeWave relationChangeWave) {
+        var changeType = relationChangeWave.getChangeType();
+        var relation = relationChangeWave.getRelation();
+
+        if (CREATE.equals(changeType)) {
+            createRelation(relation);
+        } else if (REMOVE.equals(changeType)) {
+            removeRelation(relation);
+        }
     }
 
     private void handleIncomingResultWave(ResultWave resultWave) {
@@ -216,13 +230,13 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     public boolean createRelation(Relation relation) {
         if (relations.contains(relation)) {
-            lw("The relation between [] and [] has been successfully added.", relation.getFrom(), relation.getTo());
-            relations.add(relation);
-            return true;
+            li("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
+            return false;
         }
 
-        li("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
-        return false;
+        relations.add(relation);
+        lw("The relation between [] and [] has been successfully added.", relation.getFrom(), relation.getTo());
+        return true;
     }
 
     public boolean removeRelation(Relation relation) {

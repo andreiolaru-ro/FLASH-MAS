@@ -13,12 +13,9 @@ public class Relation {
 	EntityID	 from;
 	EntityID	 to;
 	String		 relationName;
-	RelationType relationType;
 
-	public Relation(EntityID from, EntityID to, RelationType relationType) {
-		this.from = from;
-		this.to = to;
-		this.relationType = relationType;
+	public Relation() {
+
 	}
 
 	public Relation(EntityID from, EntityID to, String relationName) {
@@ -35,11 +32,7 @@ public class Relation {
 		return to;
 	}
 
-	public String getRelation() {
+	public String getRelationName() {
 		return relationName;
-	}
-
-	public RelationType getRelationType () {
-		return relationType;
 	}
 }

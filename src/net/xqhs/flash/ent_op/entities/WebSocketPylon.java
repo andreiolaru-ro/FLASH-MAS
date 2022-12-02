@@ -273,7 +273,7 @@ public class WebSocketPylon extends Unit implements Pylon {
     }
 
     @Override
-    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
+    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
 

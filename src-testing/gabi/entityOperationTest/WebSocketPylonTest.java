@@ -6,6 +6,7 @@ import net.xqhs.flash.ent_op.entities.Node;
 import net.xqhs.flash.ent_op.entities.WebSocketPylon;
 import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.model.Relation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +88,10 @@ public class WebSocketPylonTest {
         // agent1(node1) calls an agent3(node2) operation
         var multiplyOpCall = new OperationCallWave(agent1.getEntityID(), agent3.getEntityID(), MULTIPLY_OPERATION_NAME, true, List.of(1.3d, 24.5d, 65.8d));
         agent1.callOperationWithResult(multiplyOpCall, x -> System.out.println("The result of the multiply operation is " + x));
+
+        // agent1(node1) creates a relation with agent2(node2)
+        var relation =  new Relation(agent1.getEntityID(), agent2.getEntityID(), "agent1-agent2-relation");
+        agent1.changeRelation(Relation.RelationChangeType.CREATE, relation);
 
         // stop nodes
         Thread.sleep(10000);
