@@ -105,4 +105,8 @@ public interface OutboundEntityTools {
      */
     boolean linkInboundEntityTools(InboundEntityTools inboundEntityTools);
 
+    boolean createRelation(Relation relation);
+
+    boolean removeRelation(Relation relation);
+
 }

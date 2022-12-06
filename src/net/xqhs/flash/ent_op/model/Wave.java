@@ -5,10 +5,19 @@ public abstract class Wave {
         OPERATION_CALL, RELATION_CHANGE, RESULT
     }
 
+    protected String id;
     protected EntityID sourceEntity;
     protected EntityID targetEntity;
     protected boolean routed;
     protected WaveType type;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public EntityID getSourceEntity() {
         return sourceEntity;

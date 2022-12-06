@@ -14,7 +14,6 @@ public class OperationCallWave extends Wave implements Serializable {
     public interface AuthorizationToken {
     }
 
-    protected String id;
     private String targetOperation;
     private boolean sendReturnValue;
     private List<Object> argumentValues;
@@ -27,8 +26,6 @@ public class OperationCallWave extends Wave implements Serializable {
     }
 
     public OperationCallWave(EntityID sourceEntity, EntityID targetEntity, String targetOperation, boolean sendReturnValue, List<Object> argumentValues) {
-        // TODO implement an id generator
-        this.id = targetOperation;
         this.type = OPERATION_CALL;
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
@@ -86,11 +83,4 @@ public class OperationCallWave extends Wave implements Serializable {
         this.result = result;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }

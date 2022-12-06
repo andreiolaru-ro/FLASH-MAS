@@ -134,8 +134,7 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     public void callOperationWithResult(OperationCallWave operationCallWave, ResultReceiver callBack) {
-        entityTools.registerResultReceiver(operationCallWave.getId(), callBack);
-        entityTools.handleOutgoingWave(operationCallWave);
+        entityTools.handleOutgoingWave(operationCallWave, callBack);
     }
 
     public void setfMas(FMas fMas) {

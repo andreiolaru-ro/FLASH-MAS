@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
@@ -64,6 +65,11 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
      */
     protected Map<String, ResultReceiver> resultReceiverMap;
 
+    /**
+     * The counter used to generate unique ids.
+     */
+    protected AtomicLong counter;
+
     public DefaultEntityToolsImpl(FMas fMas) {
         this.fMas = fMas;
     }
@@ -73,6 +79,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         operations = new HashSet<>();
         relations = new HashSet<>();
         resultReceiverMap = new HashMap<>();
+        counter = new AtomicLong();
         entityAPI = entity;
         entityName = entity.getName();
         entityToolsName = entityName + " " + DEFAULT_ENTITY_TOOLS_NAME;
@@ -146,12 +153,15 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
     @Override
     public void handleOutgoingWave(Wave wave) {
+        wave.setId(generateWaveId());
         fMas.route(wave);
     }
 
     @Override
-    public void handleOutgoingWave(OperationCallWave operationCallWave, ResultReceiver callback) {
-
+    public void handleOutgoingWave(OperationCallWave wave, ResultReceiver callback) {
+        wave.setId(generateWaveId());
+        registerResultReceiver(wave.getId(), callback);
+        fMas.route(wave);
     }
 
     @Override
@@ -255,5 +265,9 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         var targetId = operationCallWave.getTargetEntity();
         var resultWave = new ResultWave(targetId, sourceId, operationCallWave.getId(), result);
         handleOutgoingWave(resultWave);
+    }
+
+    private String generateWaveId() {
+        return entityName + "-" + counter.incrementAndGet();
     }
 }
