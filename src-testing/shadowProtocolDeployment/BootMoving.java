@@ -40,7 +40,10 @@ public class BootMoving {
 			if(i % 2 == 0)
 				args += " servers:" + server[1 - i / 2];
 			args += " -agent :" + names[i] + "-" + srv;
-			args += " -shard messaging -shard ScriptTesting from:Moving -shard EchoTesting";
+			args += " -shard EchoTesting";
+			args += " -shard messaging -shard ScriptTesting from:Moving2";
+			if(i == 0)
+				args += " -shard PingBackTest";
 		}
 		
 		// MasterLog.setDefaultLogLevel(Level.OFF);
