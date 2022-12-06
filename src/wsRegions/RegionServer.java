@@ -306,6 +306,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 					}
 				}
 			}
+			printStatus();
 		}
 		
 		public void contentMessageHandler(JSONObject mesg, String message) {

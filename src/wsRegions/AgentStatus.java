@@ -90,7 +90,8 @@ public class AgentStatus {
     }
 
     public String toString() {
-		return "<" + this.name + "|" + this.status + (this.name.startsWith(lastLocation) ? "" : "|" + lastLocation)
+		return "<" + this.name + "|" + this.status
+				+ (this.name.startsWith(lastLocation) ? "" : "|" + lastLocation + "| [" + messages.size() + "] msgs")
 				+ ">";
     }
 }
