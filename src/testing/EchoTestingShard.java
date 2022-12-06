@@ -11,6 +11,9 @@
  ******************************************************************************/
 package testing;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -39,6 +42,7 @@ public class EchoTestingShard extends AgentShardCore {
 	 * Shard designation.
 	 */
 	public static final String	DESIGNATION			= "test/monitoring";
+	protected Map<AgentEventType, Integer>	eventCounts			= new HashMap<>();
 	
 	/**
 	 * No-argument constructor
@@ -50,12 +54,14 @@ public class EchoTestingShard extends AgentShardCore {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		String eventMessage = "agent [" + getAgent().getEntityName() + "|" + getAgent().hashCode() + "] event: ["
-				+ event.toString() + "]";
-		locallog.li(eventMessage);
+		AgentEventType type = event.getType();
+		eventCounts.put(type,
+				Integer.valueOf(eventCounts.containsKey(type) ? eventCounts.get(type).intValue() + 1 : 1));
+		locallog.li("agent [][] event: [] all: []", getAgent().getEntityName(), Integer.valueOf(getAgent().hashCode()),
+				event, eventCounts);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
-		if(event.getType() == AgentEventType.AGENT_STOP)
+		if(type == AgentEventType.AGENT_STOP)
 			locallog.doExit();
 	}
 	
