@@ -8,7 +8,7 @@ public class BootSimpleHttpDeployment
 	{
 		String args = "";
 
-		args += " -package example.simplePingPong";
+		args += " -package test.simplePingPong";
 
 		args += " -node node1";
 		args += " -pylon http:slave1 serverPort:8885 connectTo:http://localhost:8886/AgentB";

@@ -148,8 +148,17 @@ public class HttpPylon extends DefaultPylonImplementation
 
         @Override
         public boolean register(String entityName, MessageReceiver receiver) {
+            if (messageReceivers.containsKey(entityName)) {
+                return ler(false, "Entity [] already registered with this pylon [].", entityName, this);
+            }
             messageReceivers.put(entityName, receiver);
             return true;
+        }
+
+        @Override
+        public boolean unregister(String entityName, MessageReceiver registeredReceiver)
+        {
+            return false;
         }
 
         /**
