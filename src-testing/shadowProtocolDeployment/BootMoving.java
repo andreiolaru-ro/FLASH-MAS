@@ -41,7 +41,7 @@ public class BootMoving {
 				args += " servers:" + server[1 - i / 2];
 			args += " -agent :" + names[i] + "-" + srv;
 			args += " -shard EchoTesting";
-			args += " -shard messaging -shard ScriptTesting from:Moving2";
+			args += " -shard messaging -shard ScriptTesting from:Moving";
 			if(i == 0)
 				args += " -shard PingBackTest";
 		}
