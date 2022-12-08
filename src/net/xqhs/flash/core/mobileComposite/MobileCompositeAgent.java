@@ -295,7 +295,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 * @return the proxy to the current node, if any; <code>null</code> otherwise.
 	 */
 	public NodeProxy getNodeProxyContext() {
-		for(var context : agentContext)
+		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			if(context instanceof NodeProxy)
 				return (NodeProxy) context;
 		return null;

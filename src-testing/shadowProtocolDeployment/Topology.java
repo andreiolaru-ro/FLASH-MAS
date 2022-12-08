@@ -46,7 +46,7 @@ class Topology {
 	}
 
 	public void topologyAfterMove(Action moveAction) {
-		var getPylon = moveAction.getDestination().split("-");
+		String[] getPylon = moveAction.getDestination().split("-");
 		String nextPylon = getPylon[0];
 		String agent = (moveAction.source.split("-"))[0];
 		String prevPylon = getter(GetterType.GET_PYLON_FOR_AGENT, agent);
