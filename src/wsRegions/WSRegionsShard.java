@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -29,6 +30,8 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 	 */
 	protected WSClient		client;
 	URI						serverURI;
+	LinkedBlockingQueue<String>	inQueue;
+	LinkedBlockingQueue<String>	outQueue;
 	
 	@Override
 	protected MessageReceiver buildMessageReceiver() {
@@ -80,7 +83,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 					content = createMonitorNotification(MessageFactory.ActionType.RECEIVE_MESSAGE,
 							(String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
 					inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
-					pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+					// pylon.send((String) message.get("source"), (String) message.get("destination"), content);
 					li("Message from " + message.get("source") + ": " + message.get("content"));
 					break;
 				case REQ_ACCEPT:
@@ -94,7 +97,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 					li("Received agent from " + message.get("source"));
 					content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"),
 							String.valueOf(new Timestamp(System.currentTimeMillis())));
-					pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+					// pylon.send((String) message.get("source"), (String) message.get("destination"), content);
 					AgentEvent arrived_agent = new AgentWave();
 					arrived_agent.add("content", (String) message.get("content"));
 					arrived_agent.add("destination-complete", (String) message.get("destination"));
@@ -126,9 +129,9 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 	@Override
 	public boolean sendMessage(String source, String target, String content) {
 		li("Send message <<" + content + ">> from agent " + source + " to agent " + target);
-		String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content,
-				String.valueOf(new Timestamp(System.currentTimeMillis())));
-		pylon.send(this.getName(), target, notify_content);
+		// String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content,
+		// String.valueOf(new Timestamp(System.currentTimeMillis())));
+		// pylon.send(this.getName(), target, notify_content);
 		
 		Map<String, String> data = new HashMap<>();
 		data.put("destination", target);
@@ -156,8 +159,8 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 				String entityName = getAgent().getEntityName();
 				String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
 						String.valueOf(new Timestamp(System.currentTimeMillis())));
-				pylon.send(this.getName(), pylon.getEntityName(), notify_content);
-				pylon.register(entityName, inbox);
+				// pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+				// pylon.register(entityName, inbox); // already done in AbstractMessagingShard
 				startShadowAgentShard(MessageType.CONNECT);
 				System.out.println();
 			}
@@ -168,22 +171,27 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 			
 		}
 		
-		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_STOP)) {
+		if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
+			// create queues
+			inQueue = new LinkedBlockingQueue<>();
+			outQueue = new LinkedBlockingQueue<>();
+			
 			String target = event.get("TARGET");
 			lf("Agent " + this.getName() + " wants to move to another node " + target);
-			String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null,
-					String.valueOf(new Timestamp(System.currentTimeMillis())));
-			pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
+			// String notify_content = createMonitorNotification(ActionType.MOVE_TO_ANOTHER_NODE, null,
+			// String.valueOf(new Timestamp(System.currentTimeMillis())));
+			// pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
+			// pylon.unregister(getName(), inbox); // already done in AbstractMessagingShard
 			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
 		}
 		
 		if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
 			String entityName = getAgent().getEntityName();
-			String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
-					String.valueOf(new Timestamp(System.currentTimeMillis())));
-			pylon.send(this.getName(), pylon.getEntityName(), notify_content);
+			// String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
+			// String.valueOf(new Timestamp(System.currentTimeMillis())));
+			// pylon.send(this.getName(), pylon.getEntityName(), notify_content);
 			
-			pylon.register(entityName, inbox);
+			// pylon.register(entityName, inbox);
 			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
 		}
 	}

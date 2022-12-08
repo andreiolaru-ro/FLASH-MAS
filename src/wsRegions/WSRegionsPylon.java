@@ -48,6 +48,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			if(!agentList.containsKey(entityName)) {
 				agentList.put(entityName, receiver);
 			}
+			// FIXME: return false if entity already existed?
 			Map<String, String> data = new HashMap<>();
 			data.put("server", HomeServerAddressName);
 			data.put("action", String.valueOf(ActionType.RECEIVE_MESSAGE));
@@ -58,8 +59,10 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		
 		@Override
 		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
-			// TODO Auto-generated method stub
-			return false;
+			lf("Agent " + entityName + " is leaving");
+			agentList.remove(entityName);
+			// FIXME: return false if entity did not exist?
+			return true;
 		}
 		
 		@Override
@@ -77,8 +80,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 				break;
 			case MOVE_TO_ANOTHER_NODE:
 				monitor.inbox.receive(source, destination, content);
-				lf("Agent " + source + " is leaving");
-				agentList.remove(source);
+				
 				break;
 			default:
 				break;
