@@ -22,6 +22,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import wsRegions.AgentStatus.Status;
 
 public class RegionServer extends Unit implements Entity<Node> {
 	
@@ -301,7 +302,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 					ag.setStatus(AgentStatus.Status.ONLINE);
 					ag.setClientConnection(webSocket);
 					ag.setLastLocation(getUnitName());
-					for(String saved : ag.getMessages()) {
+					while(ag.getStatus() == Status.ONLINE && !ag.getMessages().isEmpty()) {
+						String saved = ag.getMessages().pop();
+						li("Sending to online agent [] saved message []", arrived_agent, saved);
 						sendMessage(ag.getClientConnection(), arrived_agent, saved);
 					}
 				}
@@ -311,29 +314,37 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		public void contentMessageHandler(JSONObject mesg, String message) {
 			String target = (String) mesg.get("destination");
-			li("Message to send from [] to [] with content ", mesg.get("source"), target, mesg.get("content"));
+			lf("Message to send from [] to [] with content ", mesg.get("source"), target, mesg.get("content"));
 			printStatus();
 			AgentStatus ag = agentsList.get(target);
 			AgentStatus agm = mobileAgents.get(target);
 			if(ag != null) {
-				if(ag.getStatus() == AgentStatus.Status.ONLINE)
+				switch(ag.getStatus()) {
+				case ONLINE:
+					lf("Send message [] directly to", mesg.get("content"), target);
 					sendMessage(ag.getClientConnection(), target, message);
-				if(ag.getStatus() == AgentStatus.Status.TRANSITION) {
-					String lastServer = ag.getLastLocation();
-					li("Send message [] to agent [] located on []", mesg.get("content"), target, lastServer);
-					sendMessage(clients.get(lastServer).client, lastServer, message);
-				}
-				if(ag.getStatus() == AgentStatus.Status.OFFLINE) {
-					li("Saved message [] for", mesg.get("content"), target);
+					break;
+				case OFFLINE:
+					lf("Saved message [] for", mesg.get("content"), target);
 					ag.addMessage(message);
+					break;
+				case TRANSITION:
+					String lastServer = ag.getLastLocation();
+					lf("Send message [] to agent [] located on []", mesg.get("content"), target, lastServer);
+					sendMessage(clients.get(lastServer).client, lastServer, message);
+					break;
+				default:
+					// can't reach here
 				}
 			}
 			else {
-				if(agm != null)
+				if(agm != null) {
+					lf("Send message [] directly to guest agent", mesg.get("content"), target);
 					sendMessage(agm.getClientConnection(), target, message);
+				}
 				else {
 					String regServer = (target.split("-"))[1];
-					li("Agent [] location isn't known. Sending message [] to home Region Server []", target,
+					lf("Agent [] location isn't known. Sending message [] to home Region Server []", target,
 							mesg.get("content"), regServer);
 					if(clients.containsKey(regServer))
 						sendMessage(clients.get(regServer).client, regServer, message);
@@ -395,25 +406,28 @@ public class RegionServer extends Unit implements Entity<Node> {
 		public void agentUpdateMessageHandler(JSONObject mesg) {
 			String movedAgent = (String) mesg.get("source");
 			String new_location = (String) mesg.get("lastLocation");
-			lf("Agent [] arrived in [].", movedAgent, new_location);
 			AgentStatus ag = agentsList.get(movedAgent);
 			if(ag != null) {
+				lf("Agent [] arrived in []. It has [] saved messages.", movedAgent, new_location,
+						ag.getMessages().size());
 				ag.setStatus(AgentStatus.Status.TRANSITION);
 				ag.setLastLocation(new_location);
 				if(clients.containsKey(new_location)) {
-					for(String saved : ag.getMessages()) {
-						li("Sending to [] saved message []", movedAgent, saved);
+					while(ag.getStatus() == Status.TRANSITION && !ag.getMessages().isEmpty()) {
+						String saved = ag.getMessages().pop();
+						lf("Sending to remote agent [] saved message []", movedAgent, saved);
 						sendMessage(clients.get(new_location).client, new_location, saved);
 					}
-					ag.getMessages().clear();
 				}
 			}
+			else
+				lf("Agent [] arrived in [].", movedAgent, new_location);
 		}
 		
 		public void agentContentMessageHandler(JSONObject mesg, String message) {
 			String target = ((String) mesg.get("destination")).split("/")[0];
 			String source = (String) mesg.get("source");
-			li("Agent content to send from [] to []", source, target);
+			lf("Agent content to send from [] to []", source, target);
 			AgentStatus ag = agentsList.get(target);
 			if(ag != null)
 				sendMessage(ag.getClientConnection(), target, message);
