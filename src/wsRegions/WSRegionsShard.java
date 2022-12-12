@@ -6,6 +6,7 @@ import static wsRegions.MessageFactory.createMonitorNotification;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,7 +16,7 @@ import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
+import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.mobileComposite.NonSerializableShard;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
@@ -28,9 +29,9 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 	/**
 	 * the Websocket object connected to Region server.
 	 */
-	protected WSClient		client;
-	URI						serverURI;
-	LinkedBlockingQueue<String>	inQueue;
+	protected WSClient			client;
+	URI							serverURI;
+	LinkedBlockingQueue<Map.Entry<Map.Entry<String, String>, String>>	inQueue;
 	LinkedBlockingQueue<String>	outQueue;
 	
 	@Override
@@ -38,30 +39,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 		return new MessageReceiver() {
 			@Override
 			public void receive(String source, String destination, String content) {
-				Object obj = JSONValue.parse(content);
-				if(obj == null)
-					return;
-				JSONObject mesg = (JSONObject) obj;
-				String type = (String) mesg.get("action");
-				switch(MessageFactory.ActionType.valueOf(type)) {
-				case RECEIVE_MESSAGE:
-					String server = (String) mesg.get("server");
-					if(server != null) {
-						try {
-							serverURI = new URI(server);
-							li("After moving connect to " + serverURI);
-						} catch(URISyntaxException e) {
-							le("Incorrect URI format []", server);
-						}
-						break;
-					}
-					receiveMessage(source, destination, (String) mesg.get("content"));
-					// pylon.send(source, destination, content);
-					break;
-				case MOVE_TO_ANOTHER_NODE:
-				default:
-					break;
-				}
+				receiveMessage(source, destination, content);
 			}
 		};
 	}
@@ -90,7 +68,8 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 					li("[] Prepare to leave", getUnitName());
 					content = createMonitorNotification(MessageFactory.ActionType.MOVE_TO_ANOTHER_NODE, null,
 							String.valueOf(new Timestamp(System.currentTimeMillis())));
-					inbox.receive(null, null, content);
+					// inbox.receive(null, null, content);
+					
 					client.close();
 					break;
 				case AGENT_CONTENT:
@@ -136,25 +115,29 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 		Map<String, String> data = new HashMap<>();
 		data.put("destination", target);
 		data.put("content", content);
-		if(client != null) {
-			if(target.contains("Monitoring")) {
-				return true;
-			}
-			if(source.contains("node") || target.contains("node")) {
-				client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.AGENT_CONTENT, data));
-			}
-			else {
-				client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONTENT, data));
-			}
+		String message = createMessage(pylon.getEntityName(), this.getName(),
+				// FIXME: very ugly hack, may fail easily
+				source.contains("node") || target.contains("node") ? MessageType.AGENT_CONTENT : MessageType.CONTENT,
+				data);
+		if(outQueue != null) {
+			outQueue.add(message);
+			return true;
 		}
+		
+		if(target.contains("Monitoring"))
+			// FIXME: does this actually occur anymore?
+			return true;
+		if(client != null)
+			client.send(message);
 		return true;
 	}
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START)) {
-			if(event.get(MobileCompositeAgent.TRANSIENT_EVENT_PARAMETER) != null) {
+		switch(event.getType()) {
+		case AGENT_START:
+			if(event.get(CompositeAgent.TRANSIENT_EVENT_PARAMETER) != null) {
 				li("Agent started after move.");
 				String entityName = getAgent().getEntityName();
 				String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
@@ -168,11 +151,9 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 				this.register(getAgent().getEntityName());
 				startShadowAgentShard(MessageType.REGISTER);
 			}
-			
-		}
-		
-		if(event.getType().equals(AgentEvent.AgentEventType.BEFORE_MOVE)) {
-			// create queues
+			break;
+		case BEFORE_MOVE:
+			// create queues, no messages sent / received beyond this point
 			inQueue = new LinkedBlockingQueue<>();
 			outQueue = new LinkedBlockingQueue<>();
 			
@@ -183,9 +164,8 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 			// pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
 			// pylon.unregister(getName(), inbox); // already done in AbstractMessagingShard
 			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
-		}
-		
-		if(event.getType().equals(AgentEvent.AgentEventType.AFTER_MOVE)) {
+			break;
+		case AFTER_MOVE:
 			String entityName = getAgent().getEntityName();
 			// String notify_content = createMonitorNotification(ActionType.ARRIVED_ON_NODE, null,
 			// String.valueOf(new Timestamp(System.currentTimeMillis())));
@@ -193,6 +173,39 @@ public class WSRegionsShard extends NameBasedMessagingShard implements NonSerial
 			
 			// pylon.register(entityName, inbox);
 			client.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.CONNECT, null));
+			break;
+		}
+	}
+	
+	@Override
+	protected void receiveMessage(String source, String destination, String content) {
+		Object obj = JSONValue.parse(content);
+		if(obj == null)
+			return;
+		JSONObject mesg = (JSONObject) obj;
+		String type = (String) mesg.get("action");
+		switch(MessageFactory.ActionType.valueOf(type)) {
+		case RECEIVE_MESSAGE:
+			String server = (String) mesg.get("server");
+			if(server != null) {
+				try {
+					serverURI = new URI(server);
+					li("After moving connect to " + serverURI);
+				} catch(URISyntaxException e) {
+					le("Incorrect URI format []", server);
+				}
+				break;
+			}
+			if(inQueue != null)
+				inQueue.add(new AbstractMap.SimpleEntry<Map.Entry<String, String>, String>(
+						new AbstractMap.SimpleEntry<>(source, destination), (String) mesg.get("content")));
+			else
+				super.receiveMessage(source, destination, (String) mesg.get("content"));
+			// pylon.send(source, destination, content);
+			break;
+		case MOVE_TO_ANOTHER_NODE:
+		default:
+			break;
 		}
 	}
 	
