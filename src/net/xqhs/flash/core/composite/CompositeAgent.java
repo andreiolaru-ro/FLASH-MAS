@@ -64,7 +64,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		/**
 		 * The agent
 		 */
-		CompositeAgent				agent;
+		protected CompositeAgent	agent;
 		
 		/**
 		 * @param agent

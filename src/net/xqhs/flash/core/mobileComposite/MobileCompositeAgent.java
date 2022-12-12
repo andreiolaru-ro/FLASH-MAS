@@ -78,10 +78,6 @@ public class MobileCompositeAgent extends CompositeAgent {
 		 * The serial UID.
 		 */
 		private static final long	serialVersionUID	= 4212641806365747549L;
-		/**
-		 * The agent
-		 */
-		MobileCompositeAgent		agent;
 		
 		/**
 		 * @param agent
@@ -101,7 +97,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		 *         call.
 		 */
 		public boolean moveTo(String destination) {
-			return moveTo(destination);
+			return ((MobileCompositeAgent) agent).moveTo(destination);
 		}
 		
 		/**
@@ -254,7 +250,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
 		if(msgShard == null || !(msgShard instanceof MobilityAwareMessagingShard))
 			return postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP)
-					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER));
+					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER).add(TARGET, destination));
 		return true;
 	}
 	
