@@ -22,7 +22,7 @@ script:
      - trigger: "EVENT"
        arg: "AGENT_WAVE"
        action: "MOVE_TO_NODE"
-       arguments: {to: "node2"}
+       arguments: {to: "node2-localhost:8885"}
      - trigger: "EVENT"
        arg: "AFTER_MOVE"
        action: "SEND_MESSAGE"

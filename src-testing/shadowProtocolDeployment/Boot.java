@@ -35,11 +35,11 @@ public class Boot
 		args += " -load_order monitor;pylon;agent";
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts -loader agent:mobileComposite ";
 
-		args += " -node node1 -monitor time:";
+		args += " -node node1-localhost:8885 -monitor time:";
 		args += " -pylon WSRegions:Pylon1 isServer:localhost:8885";
 		args += " -agent :one-localhost:8885 -shard messaging -shard EchoTesting -shard ScriptTesting from:Simple";
 		args += " -agent :two-localhost:8885 -shard messaging -shard EchoTesting -shard ScriptTesting from:Simple";
-		args += " -node node2";
+		args += " -node node2-localhost:8885";
 		args += " -pylon WSRegions:Pylon2 connectTo:localhost:8885";
 
 		// args += " -node node2";
