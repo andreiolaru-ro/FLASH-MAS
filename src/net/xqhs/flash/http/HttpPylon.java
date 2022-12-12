@@ -125,20 +125,10 @@ public class HttpPylon extends DefaultPylonImplementation
      * The {@link HttpClient} instance to use.
      */
     protected HttpClient httpClient;
-
-    /**
-     * The resource names contained in the pylon (e.g. agents names)
-     */
-    private List<String> resourceNames = new ArrayList<>();
     
     public int getServerPort()
     {
         return serverPort;
-    }
-    
-    public List<String> getResourceNames()
-    {
-        return resourceNames;
     }
 
     /**
@@ -152,13 +142,19 @@ public class HttpPylon extends DefaultPylonImplementation
                 return ler(false, "Entity [] already registered with this pylon [].", entityName, this);
             }
             messageReceivers.put(entityName, receiver);
+            serverEntity.addPath(entityName);
             return true;
         }
 
         @Override
         public boolean unregister(String entityName, MessageReceiver registeredReceiver)
         {
-            return false;
+            if (!messageReceivers.remove(entityName, registeredReceiver)) {
+                return false;
+            }
+            serviceRegistry.remove(entityName);
+            serverEntity.removePath(entityName);
+            return true;
         }
 
         /**
@@ -236,7 +232,8 @@ public class HttpPylon extends DefaultPylonImplementation
             String source = (String) jsonObject.get("source");
             String sourceAddress = (String) jsonObject.get("sourceAddress");
             String content = (String) jsonObject.get("content");
-            serviceRegistry.computeIfAbsent(source.split(AgentWave.ADDRESS_SEPARATOR)[0], a -> sourceAddress + "/" + a);
+            String key = source.split(AgentWave.ADDRESS_SEPARATOR)[0];
+            serviceRegistry.put(key, sourceAddress + "/" + key);
             messageReceivers.get(localAddr).receive(source, destination, content);
         }
     }
@@ -311,11 +308,6 @@ public class HttpPylon extends DefaultPylonImplementation
         }
         if(configuration.isSimple(HTTP_SERVER_HOST_NAME)) {
             serverHostname = configuration.getAValue(HTTP_SERVER_HOST_NAME);
-        }
-        String agentKey = "agent";
-        if (configuration.isHierarchical(agentKey))
-        {
-            resourceNames = new ArrayList<>(configuration.getATree(agentKey).getKeys());
         }
         if(configuration.isSimple(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME)) {
             String remoteUrl = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);

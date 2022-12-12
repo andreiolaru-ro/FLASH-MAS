@@ -118,7 +118,7 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
     public HttpServerEntity(HttpPylon pylon, boolean isHttps, String certificatePath) {
         this.pylon = pylon;
         this.isHttps = isHttps;
-        pylon.li(format("Starting {0} server on port: {1}, resources: {2}", isHttps ? "https" : "http", pylon.getServerPort(), pylon.getResourceNames()));
+        pylon.li(format("Starting {0} server on port: {1}", isHttps ? "https" : "http", pylon.getServerPort()));
         if (isHttps) {
             createHttpsServer(certificatePath);
         } else {
@@ -126,10 +126,32 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
         }
     }
     
+    public void addPath(String resource) {
+        String path = "/" + resource;
+        if (isHttps) {
+            httpsServer.createContext(path, new CustomHttpHandler());
+        }
+        httpServer.createContext(path, new CustomHttpHandler());
+        li("Added path []", path);
+    }
+
+    public void removePath(String resource) {
+        String path = "/" + resource;
+        try {
+            if (this.isHttps) {
+                this.httpsServer.removeContext(path);
+            } else {
+                this.httpServer.removeContext(path);
+            }
+            li("Removed path []", path);
+        } catch (Exception e) {
+            le("Cannot remove path []. Cause: []", path, e.getMessage());
+        }
+    }
+    
     private void createHttpServer() {
         try {
             httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(pylon.getServerPort()), 0);
-            pylon.getResourceNames().forEach(resource -> httpServer.createContext("/" + resource, new CustomHttpHandler()));
             httpServer.setExecutor(Executors.newFixedThreadPool(10));
         } catch (IOException e) {
             le(e.getMessage());
@@ -154,7 +176,6 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
             HttpsConfigurator httpsConfigurator = new HttpsCustomConfigurator(sslContext);
             httpsServer.setHttpsConfigurator(httpsConfigurator);
             httpsServer.setExecutor(Executors.newFixedThreadPool(10));
-            pylon.getResourceNames().forEach(resource -> httpsServer.createContext("/" + resource, new CustomHttpHandler()));
         }
         catch (Exception e)
         {
