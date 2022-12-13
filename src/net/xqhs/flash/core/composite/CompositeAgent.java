@@ -408,7 +408,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		case AFTER_MOVE:
 			return agentState == AgentState.STARTING;
 		default:
-			return agentState == AgentState.RUNNING;
+			return agentState == AgentState.RUNNING || agentState == AgentState.STARTING;
 		}
 	}
 	

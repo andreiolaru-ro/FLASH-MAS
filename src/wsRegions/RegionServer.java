@@ -321,11 +321,11 @@ public class RegionServer extends Unit implements Entity<Node> {
 			if(ag != null) {
 				switch(ag.getStatus()) {
 				case ONLINE:
-					lf("Send message [] directly to", mesg.get("content"), target);
+					lf("Send message [] directly to []", mesg.get("content"), target);
 					sendMessage(ag.getClientConnection(), target, message);
 					break;
 				case OFFLINE:
-					lf("Saved message [] for", mesg.get("content"), target);
+					lf("Saved message [] for []", mesg.get("content"), target);
 					ag.addMessage(message);
 					break;
 				case TRANSITION:
@@ -339,7 +339,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 			}
 			else {
 				if(agm != null) {
-					lf("Send message [] directly to guest agent", mesg.get("content"), target);
+					lf("Send message [] directly to guest agent []", mesg.get("content"), target);
 					sendMessage(agm.getClientConnection(), target, message);
 				}
 				else {
@@ -356,7 +356,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		public void reqLeaveMessageHandler(JSONObject mesg) {
 			String source = (String) mesg.get("source");
-			lf("Request to leave from agent ", source);
+			lf("Request to leave from agent []", source);
 			AgentStatus ag = agentsList.get(source);
 			if(ag != null) {
 				ag.setStatus(AgentStatus.Status.OFFLINE);
@@ -378,7 +378,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		public void reqBufferMessageHandler(JSONObject mesg) {
 			String agentReq = (String) mesg.get("agentName");
-			lf("Request to buffer for agent ", agentReq);
+			lf("Request to buffer for agent []", agentReq);
 			AgentStatus ag = agentsList.get(agentReq);
 			if(ag != null) {
 				ag.setStatus(AgentStatus.Status.OFFLINE);
@@ -394,7 +394,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		public void reqAcceptMessageHandler(JSONObject mesg) {
 			String agentResp = (String) mesg.get("agentName");
-			lf("Accept request received from agent ", agentResp);
+			lf("Accept request received from agent []", agentResp);
 			AgentStatus ag = mobileAgents.get(agentResp);
 			if(ag != null) {
 				sendMessage(ag.getClientConnection(), agentResp,

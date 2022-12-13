@@ -77,7 +77,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		/**
 		 * The serial UID.
 		 */
-		private static final long	serialVersionUID	= 4212641806365747549L;
+		private static final long serialVersionUID = 4212641806365747549L;
 		
 		/**
 		 * @param agent
@@ -158,12 +158,13 @@ public class MobileCompositeAgent extends CompositeAgent {
 		// this is the point where the agent has arrived after mobility.
 		loadShards();
 		
-		log("agent has moved successfully");
+		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
+		boolean shardManagedMigration = msgShard != null && msgShard instanceof MobilityAwareMessagingShard;
+		log("agent has moved successfully; migration managed by []", shardManagedMigration ? "shard" : "agent");
 		if(!postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_START)
 				.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER)))
 			return false;
-		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
-		if(msgShard == null || !(msgShard instanceof MobilityAwareMessagingShard))
+		if(!shardManagedMigration)
 			return postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
 		return true;
 	}
@@ -244,11 +245,12 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 *         some point in the near future. <code>false</code> if the agent will not move as an effect of this call.
 	 */
 	protected boolean moveTo(String destination) {
-		log("preparing to move to []", destination);
+		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
+		boolean shardManagedMigration = msgShard != null && msgShard instanceof MobilityAwareMessagingShard;
+		log("preparing to move to []; managed by []", destination, shardManagedMigration ? "shard" : "agent");
 		if(!postAgentEvent((AgentEvent) new AgentEvent(AgentEventType.BEFORE_MOVE).add(TARGET, destination)))
 			return false;
-		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
-		if(msgShard == null || !(msgShard instanceof MobilityAwareMessagingShard))
+		if(!shardManagedMigration)
 			return postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP)
 					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER).add(TARGET, destination));
 		return true;
