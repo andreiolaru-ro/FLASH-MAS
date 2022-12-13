@@ -28,24 +28,24 @@ public class BootMovingDist {
 		String args = "";
 		
 		String[] names = { "A", "B", "C", "D" };
-		String[] server = { "172.19.3.92", "172.19.3.50", "172.19.3.132", "172.19.3.206" };
-		for(int s = 0; s < 4; s++)
+		String[] server = { "172.19.3.92", "172.19.3.50" };
+		for(int s = 0; s < 2; s++)
 			server[s] = server[s] + ":8885";
 		
 		args += " -load_order monitor;pylon;agent";
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
-		int i = Integer.parseInt(args_[0]);
+		int i = 0;// Integer.parseInt(args_[0]);
 		
 		// for(int i = 0; i < 4; i++) {
-		String srv = server[i];
+		String srv = i % 2 == 0 ? server[i / 2] : server[(i - 1) / 2];
 		args += " -node node" + i + "-" + srv + " -monitor time: -pylon WSRegions:Pylon" + i;
 		args += (i % 2 == 0 ? " isServer:" : " connectTo:") + srv;
 		if(i % 2 == 0)
 			args += " servers:" + server[1 - i / 2];
 		args += " -agent :" + names[i] + "-" + srv;
 		args += " -shard EchoTesting";
-		args += " -shard messaging -shard ScriptTesting from:Moving";
+		args += " -shard messaging -shard ScriptTesting from:MovingDist";
 		if(i == 0)
 			args += " -shard PingBackTest";
 		// }
