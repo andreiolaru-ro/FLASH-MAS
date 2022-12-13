@@ -11,8 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -132,9 +130,7 @@ public class PlatformUtils
 	 */
 	public static String printException(Exception e)
 	{
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		return sw.toString();
+		return e.getMessage();
 	}
 	
 	/**
