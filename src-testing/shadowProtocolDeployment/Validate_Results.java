@@ -91,10 +91,10 @@ public class Validate_Results {
     public Map<String, String> findPairAction(Map<String, List<Map<String, String>>> logsPerPylon, Map<String, String> needToFind) {
         Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, List<Map<String, String>>> elem : logsPerPylon.entrySet()) {
-            var logs = elem.getValue();
+			List<Map<String, String>> logs = elem.getValue();
             int index = 0;
             for (int i = index; i<logs.size(); i++) {
-                var log = logs.get(i);
+				Map<String, String> log = logs.get(i);
                 if (log.get("destination").equals(needToFind.get("destination")) &&
                         log.get("source").equals(needToFind.get("source")) &&
                         log.get("content").equals(needToFind.get("content"))) {
