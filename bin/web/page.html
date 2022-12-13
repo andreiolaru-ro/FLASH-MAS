@@ -1,0 +1,51 @@
+<!--
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Input</title>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/sockjs.js"></script>
+    <script src="js/vertx-eventbus.js"></script>
+    <script src="js/client.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body onload="init()">
+	<div id = "page" class = "root">
+		<div id = "global" class = "global">
+			<label id = "global-label">
+				Global
+			</label>
+			<button id = "node-start_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Start
+			</button>
+			<button id = "node-stop_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Stop
+			</button>
+			<button id = "pause-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Pause simulation
+			</button>
+			<button id = "start-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Start simulation
+			</button>
+			<button id = "stop-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
+				Stop simulation
+			</button>
+			<div id = "entities_list" class = "entities">
+			</div>
+		</div>
+		<div id = "interfaces" class = "interfaces">
+			<div>--</div>
+		</div>
+	</div>
+</body>

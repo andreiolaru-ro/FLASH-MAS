@@ -1,0 +1,10 @@
+(agent AgentA
+	(behavior
+    	(initial startclock
+    		(output @messageSend target/?favoriteAgent)
+    	)
+    	(reactive sendMessage
+    		(input @messageSend ?messageContent target/?targetAgent)
+    	)
+	)
+)
