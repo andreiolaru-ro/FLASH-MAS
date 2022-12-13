@@ -35,7 +35,7 @@ public class BootMovingDist {
 		args += " -load_order monitor;pylon;agent";
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
-		int i = 0;// Integer.parseInt(args_[0]);
+		int i = Integer.parseInt(args_[0]);
 		
 		// for(int i = 0; i < 4; i++) {
 		String srv = i % 2 == 0 ? server[i / 2] : server[(i - 1) / 2];
