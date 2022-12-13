@@ -105,7 +105,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	}
 	
 	private WSClient createWebsocketClient(URI serverURI, @SuppressWarnings("unused") String server) {
-		return new WSClient(serverURI, 10, 5000, this.getLogger()) {
+		return new WSClient(serverURI, 10, 10000, this.getLogger()) {
 			@Override
 			public void onOpen(ServerHandshake serverHandshake) {
 				li("New region-to-region connection to server", server);

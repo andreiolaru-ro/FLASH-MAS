@@ -51,7 +51,7 @@ public class WSRegionsShard extends NameBasedMessagingShard
 	public void startShadowAgentShard(MessageType connection_type) {
 		setUnitName(getAgent().getEntityName());
 		setLoggerType(PlatformUtils.platformLogType());
-		wsClient = new WSClient(serverURI, 10, 5000, this.getLogger()) {
+		wsClient = new WSClient(serverURI, 10, 10000, this.getLogger()) {
 			@Override
 			public void onMessage(String s) {
 				li("[]/[]", inQueue, outQueue);
