@@ -1,5 +1,8 @@
 package JadeScript;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -11,10 +14,10 @@ import jade.wrapper.StaleProxyException;
 import testing.TimeMonitor;
 
 public class Launcher {
-	AgentContainer	container;
-	AgentController	agentCtrl;
+	AgentContainer			container;
+	List<AgentController>	agentCtrl	= new ArrayList<>();
 	
-	void setupPlatform(String mainHost, int mainPort, String host, int port, int index, boolean isMain, String agent) {
+	AgentContainer setupPlatform(String mainHost, int mainPort, String host, int port, int index, boolean isMain) {
 		Properties mainProps = new ExtendedProperties();
 		if(isMain) {
 			mainProps.setProperty(Profile.GUI, "true"); // start the JADE GUI
@@ -30,11 +33,18 @@ public class Launcher {
 		ProfileImpl mainProfile = new ProfileImpl(mainProps);
 		container = isMain ? Runtime.instance().createMainContainer(mainProfile)
 				: Runtime.instance().createAgentContainer(mainProfile);
+		return container;
+	}
+	
+	AgentController addAgent(String name, String cls, Object[] args) {
+		AgentController ag;
 		try {
-			agentCtrl = container.createNewAgent(agent,
-					isMain ? MobileAgent.class.getName() : MessagingAgent.class.getName(), null);
+			ag = container.createNewAgent(name, cls, args);
+			agentCtrl.add(ag);
+			return ag;
 		} catch(StaleProxyException e) {
 			e.printStackTrace();
+			return null;
 		}
 	}
 	
@@ -43,10 +53,49 @@ public class Launcher {
 	 */
 	void startAgents() {
 		try {
-			agentCtrl.start();
+			for(AgentController ag : agentCtrl)
+				ag.start();
 		} catch(StaleProxyException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static Launcher[] script1(int index) {
+		String[] names = { "A", "B", "C", "D" };
+		String[] server = { "172.19.3.92", "172.19.3.50", "172.19.3.132", "172.19.3.206" };
+		String base = index < 0 ? server[0] : "localhost";
+		
+		Launcher[] launcher = new Launcher[index < 0 ? 4 : 1];
+		
+		for(int i = 0; i < launcher.length; i++) {
+			String srv = index < 0 ? base : server[index];
+			launcher[i] = new Launcher();
+			AgentContainer c = launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
+			launcher[i].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
+					new Object[] { "A" });
+		}
+		return launcher;
+	}
+	
+	public static Launcher[] script2(int index) {
+		String[] server = { "172.19.3.92", "172.19.3.50", "172.19.3.132", "172.19.3.206" };
+		String base = index < 0 ? server[0] : "localhost";
+		
+		Launcher[] launcher = new Launcher[index < 0 ? 4 : 1];
+		
+		for(int i = 0; i < launcher.length; i++) {
+			String srv = index < 0 ? base : server[index];
+			launcher[i] = new Launcher();
+			launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
+			
+			launcher[i].addAgent(Integer.valueOf(4 * i).toString(), MessagingAgent.class.getName(),
+					new Object[] { Integer.valueOf((4 * i + 8 + 1) % 16).toString() });
+			launcher[i].addAgent(Integer.valueOf(4 * i + 1).toString(), PongAgent.class.getName(), null);
+			launcher[i].addAgent(Integer.valueOf(4 * i + 2).toString(), MessagingAgent.class.getName(),
+					new Object[] { Integer.valueOf((4 * i + 2 + 8 + 1) % 16).toString() });
+			launcher[i].addAgent(Integer.valueOf(4 * i + 3).toString(), PongAgent.class.getName(), null);
+		}
+		return launcher;
 	}
 	
 	/**
@@ -57,17 +106,24 @@ public class Launcher {
 	 */
 	public static void main(String[] args) {
 		
-		String[] names = { "A", "B", "C", "D" };
-		String[] server = { "localhost" };
-		Launcher[] launcher = new Launcher[4];
+		int index = -1;
+		int script = 1;
+		if(args.length > 0)
+			script = Integer.parseInt(args[0]);
+		if(args.length > 1)
+			index = Integer.parseInt(args[1]);
 		
-		// int i = Integer.parseInt(args[0]);
-		
-		for(int i = 0; i < 4; i++) {
-			String srv = server[0];
-			launcher[i] = new Launcher();
-			launcher[i].setupPlatform(server[0], 1099, srv, 1099 + i, i, i == 0, names[i]);
+		Launcher[] launchers;
+		switch(script) {
+		case 2:
+			launchers = script2(index);
+			break;
+		case 1:
+		default:
+			launchers = script1(index);
+			break;
 		}
+		
 		TimeMonitor time = new TimeMonitor();
 		time.start();
 		
@@ -76,8 +132,8 @@ public class Launcher {
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 		}
-		for(int i = 0; i < 4; i++) {
-			launcher[i].startAgents();
+		for(int i = 0; i < launchers.length; i++) {
+			launchers[i].startAgents();
 		}
 	}
 }

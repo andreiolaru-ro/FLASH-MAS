@@ -11,10 +11,12 @@ public class MessagingAgent extends Agent {
 	protected void setup() {
 		super.setup();
 		
+		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
+		
 		TimeMonitor.markTime(getLocalName() + " start");
 		ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-		msg1.addReceiver(new AID("A", AID.ISLOCALNAME));
-		msg1.setContent(getLocalName() + "00");
+		msg1.addReceiver(destination);
+		msg1.setContent(getLocalName() + "  00");
 		send(msg1);
 		
 		addBehaviour(new CyclicBehaviour() {
@@ -25,11 +27,11 @@ public class MessagingAgent extends Agent {
 					block();
 					return;
 				}
-				System.out.println(getLocalName() + " Received: " + msg.getContent() + " from " + msg.getSender());
+				System.out.println(getLocalName() + " Received: [" + msg.getContent() + "] from " + msg.getSender());
 				ACLMessage reply = msg.createReply();
-				int index = Integer.parseInt(msg.getContent().substring(1, 3)) + 1;
+				int index = Integer.parseInt(msg.getContent().substring(2, 6).trim()) + 1;
 				if(index <= 51) {
-					reply.setContent(getLocalName() + String.format("%2d", index).replace(' ', '0'));
+					reply.setContent(getLocalName() + "  " + String.format("%2d", index).replace(' ', '0'));
 					myAgent.send(reply);
 				}
 				else
