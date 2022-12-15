@@ -77,28 +77,28 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	/**
 	 * The approximate time of boot.
 	 */
-	protected static final long	boot_time			= System.currentTimeMillis();
+	protected static final long								boot_time				= System.currentTimeMillis();
 	/**
 	 * The serial UID.
 	 */
-	private static final long	serialVersionUID	= -3151844526556248974L;
+	private static final long								serialVersionUID		= -3151844526556248974L;
 	/**
 	 * Shard designation.
 	 */
-	public static final String	DESIGNATION			= "test/script";
+	public static final String								DESIGNATION				= "test/script";
 	/**
 	 * The parameter that indicates the file to get the script from.
 	 */
-	public static final String	FROM_PARAMETER		= "from";
+	public static final String								FROM_PARAMETER			= "from";
 	
 	/**
 	 * The entire testing script, which may include actions for other entities.
 	 */
-	protected TestingScript			entireScript;
+	protected TestingScript									entireScript;
 	/**
 	 * The script for this agent.
 	 */
-	protected List<ScriptElement>	agentScript;
+	protected List<ScriptElement>							agentScript;
 	
 	/**
 	 * Timer for delayed actions.
@@ -221,6 +221,11 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		synchronized(agentScript) {
 			if(!agentScript.isEmpty()) {
 				a = agentScript.remove(0);
+				if(a.getTimes() > 1) {
+					ScriptElement b = a.clone();
+					b.setTimes(a.getTimes() - 1);
+					agentScript.add(0, b);
+				}
 				isNextActionDelayed = agentScript.isEmpty() ? false
 						: TriggerType.DELAY.equals(agentScript.get(0).getTrigger());
 				// any further actions in the script must wait for the delay
@@ -242,6 +247,7 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			// next action is scheduled
 			actionTimer = new Timer();
 			delay += a.getDelay();
+			delay = Math.max(delay, 0);
 			delayTriggeredAction = a;
 			actionTimer.schedule(new ScriptTimerTask(a, isNextActionDelayed) {
 				@Override
@@ -299,23 +305,30 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		lf("Script activate action []. [] Rest of actions:", action, dontScheduleNext ? "no follow-up" : "",
 				agentScript.stream().map(a -> a.getAction()).collect(Collectors.toList()));
 		Map<FIELD, String> args = action.arguments;
+		if(args != null)
+			for(FIELD field : args.keySet())
+				if(args.get(field).contains("#"))
+					args.put(field, args.get(field).replace("#times", Integer.valueOf(action.getTimes()).toString()));
+				
 		switch(action.action) {
 		case MARK:
 			TimeMonitor.markTime(args != null ? args.get(FIELD.with) : null, event);
 			break;
 		case SEND_MESSAGE:
 			// FIXME check if all fields are present
-			sendMessage(args.get(FIELD.with), null, args.get(FIELD.to));
+			if(args != null)
+				sendMessage(args.get(FIELD.with), null, args.get(FIELD.to));
 			break;
 		case MOVE_TO_NODE:
 			// FIXME check if all fields are present
+			if(args != null)
 			if(getAgent() instanceof MobileCompositeAgentShardContainer)
 				((MobileCompositeAgentShardContainer) getAgent()).moveTo(args.get(FIELD.to));
 			else
 				le("Agent is not mobile.");
 			break;
 		case PRINT:
-			li("ECHO ", args.get(FIELD.with));
+			li("ECHO ", args != null ? args.get(FIELD.with) : null);
 			break;
 		case NOP:
 			break;

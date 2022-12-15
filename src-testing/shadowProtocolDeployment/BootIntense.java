@@ -43,7 +43,7 @@ public class BootIntense {
 			for(int j = index; j < index + 4; j++) {
 				args += " -agent :" + names[j] + "-" + srv;
 				if(j % 2 == 0)
-					args += " -shard messaging -shard ScriptTesting from:Intense"; // -shard EchoTesting
+					args += " -shard messaging -shard ScriptTesting from:IntenseIsolated"; // -shard EchoTesting
 				else
 					args += " classpath:AgentPingPong";
 			}
