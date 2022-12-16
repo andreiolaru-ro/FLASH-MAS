@@ -98,42 +98,38 @@ public class Launcher {
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
-			System.out.println("Load agent" + Integer.valueOf(4 * i + 2).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), PongAgent.class.getName(), null);
-			System.out.println("Load agent" + Integer.valueOf(4 * i + 4).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), PongAgent.class.getName(), null);
-			
-			int correspondent1, correspondent2;
-			switch(i) {
-			case 0:
-			default:
-				// node 1
-				correspondent1 = 8;
-				correspondent2 = 12;
-				break;
-			case 1:
-				// node 2
-				correspondent1 = 14;
-				correspondent2 = 2;
-				break;
-			case 2:
-				// node 3
-				correspondent1 = 16;
-				correspondent2 = 4;
-				break;
-			case 3:
-				// node 4
-				correspondent1 = 6;
-				correspondent2 = 10;
-				break;
+			if(i == 1 || i == 2) {
+				launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), PongAgent.class.getName(), null);
+				launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), PongAgent.class.getName(), null);
+				launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), PongAgent.class.getName(), null);
+				launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), PongAgent.class.getName(), null);
 			}
-			
-			System.out.println("Load agent" + Integer.valueOf(4 * i + 1).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString() });
-			System.out.println("Load agent" + Integer.valueOf(4 * i + 3).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString() });
+			else {
+				switch(i) {
+				case 0:
+					launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(5).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(6).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(9).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(10).toString(), Integer.valueOf(101).toString() });
+					break;
+				
+				case 3:
+					launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(7).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(8).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(11).toString(), Integer.valueOf(101).toString() });
+					launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), MessagingAgent.class.getName(),
+							new Object[] { Integer.valueOf(12).toString(), Integer.valueOf(101).toString() });
+					break;
+				}
+				
+			}
 			j++;
 		}
 		return launcher;

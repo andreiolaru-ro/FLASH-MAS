@@ -49,17 +49,17 @@ public class MessagingAgent extends Agent {
 				}
 				if(first) {
 					first = false;
-					// addBehaviour(new WakerBehaviour(myAgent, 5000) {
-					// @Override
-					// protected void onWake() {
-					// super.onWake();
-					// // TimeMonitor.markTime(getLocalName() + " start");
-					// ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-					// msg1.addReceiver(destination);
-					// msg1.setContent(getLocalName() + " 00");
-					// send(msg1);
-					// }
-					// });
+					addBehaviour(new WakerBehaviour(myAgent, 5000) {
+						@Override
+						protected void onWake() {
+							super.onWake();
+							TimeMonitor.markTime(getLocalName() + " start");
+							ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+							msg1.addReceiver(destination);
+							msg1.setContent(getLocalName() + " 00");
+							send(msg1);
+						}
+					});
 				}
 				else {
 					System.out
@@ -70,8 +70,8 @@ public class MessagingAgent extends Agent {
 						reply.setContent(getLocalName() + " " + String.format("%2d", index).replace(' ', '0'));
 						myAgent.send(reply);
 					}
-					// else
-//						TimeMonitor.markTime(getLocalName() + " DONE");
+					else
+						TimeMonitor.markTime(getLocalName() + " DONE");
 				}
 			}
 		});
