@@ -94,7 +94,7 @@ public class Launcher {
 			System.out.println("Waiting to start agents");
 			if(index >= 0)
 				try {
-					Thread.sleep(3000);
+					Thread.sleep(500);
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
