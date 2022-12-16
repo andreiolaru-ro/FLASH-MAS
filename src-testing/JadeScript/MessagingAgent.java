@@ -11,9 +11,10 @@ public class MessagingAgent extends Agent {
 	protected void setup() {
 		super.setup();
 		
-		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
+		System.out.println("Setup");
 		int nMsgs = Integer.parseInt((String) getArguments()[1]);
 		System.out.println("Arg - n: " + nMsgs);
+		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
 		System.out.println("Args - dest:" + destination);
 		
 		// if(getAID().getLocalName().equals("1")) {
