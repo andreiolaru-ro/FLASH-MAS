@@ -98,8 +98,9 @@ public class Launcher {
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
-			System.out.println("Start agents");
+			System.out.println("Start agent" + Integer.valueOf(4 * i + 2).toString());
 			launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), PongAgent.class.getName(), null);
+			System.out.println("Start agent" + Integer.valueOf(4 * i + 4).toString());
 			launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), PongAgent.class.getName(), null);
 			
 			int correspondent1, correspondent2;
@@ -127,8 +128,10 @@ public class Launcher {
 				break;
 			}
 			
+			System.out.println("Start agent" + Integer.valueOf(4 * i + 1).toString());
 			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
 					new Object[] { Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString() });
+			System.out.println("Start agent" + Integer.valueOf(4 * i + 3).toString());
 			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
 					new Object[] { Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString() });
 			j++;
