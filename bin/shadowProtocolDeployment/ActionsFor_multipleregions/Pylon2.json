@@ -1,0 +1,8 @@
+{
+  "agent2": [
+    {},
+    {},
+    {},
+    {"source": "agent2", "destination": "agent5", "content": "Test message", "type": "SEND_MESSAGE"}
+  ]
+}

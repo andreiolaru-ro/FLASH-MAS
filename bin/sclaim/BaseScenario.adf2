@@ -1,0 +1,60 @@
+(agent ChatAgent ?favoriteAgent ?defaultMoveTarget ?quickMessageContent
+
+(behavior
+	
+	(initial startclock
+		(addK (struct knowledge sequence 0))		// sequence will be useful to sort messages
+		(output @messageSend target/?favoriteAgent)
+	)
+		
+	(reactive sendMessage
+		(input @messageSend ?messageContent target/?targetAgent)				// the agent is notified that there is a message to send
+																				// port: <messageSend>
+																				// no role specified for first value -> ?messsageContent will be taken from <content> role
+																				// value for ?targetAgent will be taken from <target> role
+		(readK (struct knowledge sequence ?sequence))							// read the sequence number from the knowledge base
+		(removeK (struct knowledge sequence ?sequence))							// remove the stored sequence
+		(increment ?sequence ?newsequence)										// increment the sequence
+		(addK (struct knowledge sequence ?newsequence))							// store the sequence
+
+		(addK (struct knoweldge msg sent ?target ?sequence ?messageContent))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		
+		(if (empty ?targetAgent)
+		then
+			(send ?favoriteAgent (struct message newchat ?messageContent))		// send the message
+			(addK (struct knowledge lastComm ?favoriteAgent))
+		else
+			(send ?targetAgent (struct message newchat ?messageContent))		// send the message
+			(addK (struct knowledge lastComm ?targetAgent))
+		)
+		(send this (struct message update))										// send an update indication to itself
+	)
+	
+	(reactive quickSend
+		(input @quickSend)
+		(send ?favoriteAgent (struct message newchat ?quickMessageContent))
+	)
+	
+	(reactive receiveMessage
+		(receive ?from (struct message newchat ?rcvMessage))			// receive a message of type 'newchat', store the content in ?rcvMessage
+		(readK (struct knowledge sequence ?sequence))					// read the sequence number from the knowledge base
+		(removeK (struct knowledge sequence ?sequence))					// remove the stored sequence
+		(increment ?sequence ?newsequence)								// increment the sequence
+		(addK (struct knowledge sequence ?newsequence))					// store the sequence
+		
+		(addK (struct knoweldge msg rcvd ?from ?sequence ?rcvMessage))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		
+		(send this (struct message update))								// send an update indication to itself
+	)
+	
+	(reactive updateLog
+		(receive (struct message update))											// activation with the internal message 'update'
+		
+		(initOutput ??output)														// will init output to an empty string
+		(forAllK (struct knowledge msg ??direction ??agent ??sequence ??message)	// go through all messages
+			(assembleOutput ??direction ??agent ??sequence ??message ??output)		// put them in the ?output variable; ARTIFICIAL: ?output will be overwritten
+		)
+		(output @chatlog ??output)													// display on <chatlog> port
+	)
+)
+)

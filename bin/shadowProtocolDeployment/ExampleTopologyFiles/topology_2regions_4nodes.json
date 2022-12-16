@@ -1,0 +1,12 @@
+{
+  "topology": {
+    "localhost:8885": {
+      "Pylon1": ["agent1", "agent5"],
+      "Pylon2": ["agent2"]
+    },
+    "localhost:8886": {
+      "Pylon3": ["agent3"],
+      "Pylon4": ["agent4"]
+    }
+  }
+}

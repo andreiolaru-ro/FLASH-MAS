@@ -1,0 +1,84 @@
+body {
+    background-color: #6495ED;
+}
+
+div {
+    padding: 5px;
+}
+
+label {
+    margin: 5px;
+}
+
+input {
+    margin: 10px;
+}
+
+.root {
+    font-family: Century Gothic;
+    display: inline-flex;
+}
+
+.global {
+    border: 3px solid white;
+    padding: 10px;
+    background-color: #E95D30;
+    margin: 10px;
+    margin-right: 20px;
+    color: white;
+}
+
+button {
+    font-family: Century Gothic;
+    margin: 5px;
+}
+
+.entities {
+    max-height: 590px;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+.entity {
+    border: 2px solid white;
+    margin: 5px;
+    text-align: left;
+    border-radius: 20px;
+    background-color: steelblue;
+    color: white;
+}
+
+.entity-name {
+}
+
+.entity-element {
+    margin: 5px;
+    font-family: Century Gothic;
+}
+
+.interfaces {
+    border: 3px solid white;
+    max-width: 1000px;
+    max-height: 900px;
+    overflow-y: scroll;
+    margin-left: 10px;
+    text-align: center;
+    padding: 5px;
+    background-color: #E95D30;
+    color: white;
+}
+
+.interface {
+    border: 3px solid white;
+    border-radius: 20px;
+    width: 300px;
+    margin: 2px;
+    background-color: steelblue;
+    color: white;
+    padding: 5px;
+}
+
+.line {
+    height: 400px;
+    display: inline-flex;
+}
