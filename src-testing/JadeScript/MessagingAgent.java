@@ -3,7 +3,6 @@ package JadeScript;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import testing.TimeMonitor;
 
@@ -44,17 +43,17 @@ public class MessagingAgent extends Agent {
 				}
 				if(first) {
 					first = false;
-					addBehaviour(new WakerBehaviour(myAgent, 5000) {
-						@Override
-						protected void onWake() {
-							super.onWake();
-							TimeMonitor.markTime(getLocalName() + " start");
-							ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-							msg1.addReceiver(destination);
-							msg1.setContent(getLocalName() + "  00");
-							send(msg1);
-						}
-					});
+					// addBehaviour(new WakerBehaviour(myAgent, 5000) {
+					// @Override
+					// protected void onWake() {
+					// super.onWake();
+					// TimeMonitor.markTime(getLocalName() + " start");
+					// ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+					// msg1.addReceiver(destination);
+					// msg1.setContent(getLocalName() + " 00");
+					// send(msg1);
+					// }
+					// });
 				}
 				else {
 					System.out
