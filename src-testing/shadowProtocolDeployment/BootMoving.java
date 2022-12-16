@@ -27,13 +27,26 @@ public class BootMoving {
 	public static void main(String[] args_) {
 		String args = "";
 		
+		String script = "Moving";
+		script += "I";
 		String[] names = { "A", "B", "C", "D" };
+		/*
+		String[] server = { "172.19.3.92", "172.19.3.50" };
+		for(int s = 0; s < 2; s++)
+			server[s] = server[s] + ":8885";
+		script += "Dist";
+		/*/
 		String[] server = { "localhost:8885", "localhost:8886" };
+		//*/
 		
 		args += " -load_order monitor;pylon;agent";
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
-		for(int i = 0; i < 4; i++) {
+		int index = -1;
+		if(args_.length > 0)
+			index = Integer.parseInt(args_[0]);
+		
+		for(int i = index < 0 ? 0 : index; i < (index < 0 ? 4 : index + 1); i++) {
 			String srv = i % 2 == 0 ? server[i / 2] : server[(i - 1) / 2];
 			args += " -node node" + i + "-" + srv + " -monitor time: -pylon WSRegions:Pylon" + i;
 			args += (i % 2 == 0 ? " isServer:" : " connectTo:") + srv;
@@ -41,7 +54,7 @@ public class BootMoving {
 				args += " servers:" + server[1 - i / 2];
 			args += " -agent :" + names[i] + "-" + srv;
 			args += " -shard EchoTesting";
-			args += " -shard messaging -shard ScriptTesting from:Moving";
+			args += " -shard messaging -shard ScriptTesting from:" + script;
 			if(i == 0)
 				args += " -shard PingBackTest";
 		}

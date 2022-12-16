@@ -27,23 +27,36 @@ public class BootIntense {
 	public static void main(String[] args_) {
 		String args = "";
 		
+		String script = "Intense";
+		script += "Isolated";
 		String[] names = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
+		//*
+		String[] server = { "172.19.3.92", "172.19.3.50" };
+		for(int s = 0; s < 2; s++)
+			server[s] = server[s] + ":8885";
+		script += "Dist";
+		/*/
 		String[] server = { "localhost:8885", "localhost:8886" };
+		//*/
 		
 		args += " -load_order monitor;pylon;agent";
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
-		for(int i = 0; i < 4; i++) {
+		int index = -1;
+		if(args_.length > 0)
+			index = Integer.parseInt(args_[0]);
+		
+		for(int i = index < 0 ? 0 : index; i < (index < 0 ? 4 : index + 1); i++) {
 			String srv = i % 2 == 0 ? server[i / 2] : server[(i - 1) / 2];
 			args += " -node node" + i + "-" + srv + " -monitor time: -pylon WSRegions:Pylon" + i;
 			args += (i % 2 == 0 ? " isServer:" : " connectTo:") + srv;
 			if(i % 2 == 0)
 				args += " servers:" + server[1 - i / 2];
-			int index = i % 2 == 0 ? 0 : 4;
-			for(int j = index; j < index + 4; j++) {
+			int index1 = i % 2 == 0 ? 0 : 4;
+			for(int j = index1; j < index1 + 4; j++) {
 				args += " -agent :" + names[j] + "-" + srv;
 				if(j % 2 == 0)
-					args += " -shard messaging -shard ScriptTesting from:IntenseIsolated"; // -shard EchoTesting
+					args += " -shard messaging -shard ScriptTesting from:" + script; // -shard EchoTesting
 				else
 					args += " classpath:AgentPingPong";
 			}
