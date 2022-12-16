@@ -3,9 +3,7 @@ package JadeScript;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
-import testing.TimeMonitor;
 
 public class MessagingAgent extends Agent {
 		
@@ -21,22 +19,22 @@ public class MessagingAgent extends Agent {
 		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
 		System.out.println("Args - dest:" + destination);
 		
-		if(getAID().getLocalName().equals("1")) {
-			System.out.println("This will start");
-			addBehaviour(new WakerBehaviour(this, 15000) {
-				@Override
-				protected void onWake() {
-					super.onWake();
-					TimeMonitor.markTime(getLocalName() + " boot");
-					ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-					for(int i = 3; i < 17; i += 2)
-						msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
-					msg1.setContent("start");
-					send(msg1);
-				}
-				
-			});
-		}
+		// if(getAID().getLocalName().equals("1")) {
+		// System.out.println("This will start");
+		// addBehaviour(new WakerBehaviour(this, 15000) {
+		// @Override
+		// protected void onWake() {
+		// super.onWake();
+		// TimeMonitor.markTime(getLocalName() + " boot");
+		// ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+		// for(int i = 3; i < 17; i += 2)
+		// msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
+		// msg1.setContent("start");
+		// send(msg1);
+		// }
+		//
+		// });
+		// }
 		
 		addBehaviour(new CyclicBehaviour() {
 	
@@ -49,17 +47,17 @@ public class MessagingAgent extends Agent {
 				}
 				if(first) {
 					first = false;
-					addBehaviour(new WakerBehaviour(myAgent, 5000) {
-						@Override
-						protected void onWake() {
-							super.onWake();
-							// TimeMonitor.markTime(getLocalName() + " start");
-							ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-							msg1.addReceiver(destination);
-							msg1.setContent(getLocalName() + " 00");
-							send(msg1);
-						}
-					});
+					// addBehaviour(new WakerBehaviour(myAgent, 5000) {
+					// @Override
+					// protected void onWake() {
+					// super.onWake();
+					// // TimeMonitor.markTime(getLocalName() + " start");
+					// ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+					// msg1.addReceiver(destination);
+					// msg1.setContent(getLocalName() + " 00");
+					// send(msg1);
+					// }
+					// });
 				}
 				else {
 					System.out
@@ -70,8 +68,8 @@ public class MessagingAgent extends Agent {
 						reply.setContent(getLocalName() + " " + String.format("%2d", index).replace(' ', '0'));
 						myAgent.send(reply);
 					}
-					else
-						TimeMonitor.markTime(getLocalName() + " DONE");
+					// else
+//						TimeMonitor.markTime(getLocalName() + " DONE");
 				}
 			}
 		});
