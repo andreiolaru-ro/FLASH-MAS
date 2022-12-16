@@ -129,11 +129,11 @@ public class Launcher {
 			}
 			
 			System.out.println("Load agent" + Integer.valueOf(4 * i + 1).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), "JadeScript.MAgent",
-					new Object[] {}); // Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString()
+			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
+					new Object[] { Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString() });
 			System.out.println("Load agent" + Integer.valueOf(4 * i + 3).toString());
 			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
-					new Object[] {}); // Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString()
+					new Object[] { Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString() });
 			j++;
 		}
 		return launcher;
