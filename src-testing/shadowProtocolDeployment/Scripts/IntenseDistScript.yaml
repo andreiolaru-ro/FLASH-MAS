@@ -1,7 +1,7 @@
 script:
  one-172.19.3.92:8885:
   actions:
-  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "BOOTING one-172.19.3.92:8885"} }
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "BOOTING one-172.19.3.92:8885"} }
   - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "one-172.19.3.50:8885", with: "start"} }
   - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "three-172.19.3.92:8885", with: "start"} }
   - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "five-172.19.3.92:8885", with: "start"} }
