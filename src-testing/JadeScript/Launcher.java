@@ -107,7 +107,7 @@ public class Launcher {
 	public static void main(String[] args) {
 		
 		int index = -1;
-		index = 3;
+		// index = 3;
 		int script = 1;
 		if(args.length > 0)
 			script = Integer.parseInt(args[0]);
