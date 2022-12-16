@@ -32,7 +32,7 @@ public class MobileAgent extends Agent {
 				myAgent.send(reply);
 			}
 		});
-		addBehaviour(new WakerBehaviour(this, 5000) {
+		addBehaviour(new WakerBehaviour(this, 15000) {
 			@Override
 			protected void onWake() {
 				super.onWake();
@@ -61,8 +61,8 @@ public class MobileAgent extends Agent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		if(cycle < 4)
-			// addBehaviour(new WakerBehaviour(this, 20) {
+		if(cycle < 20)
+			// addBehaviour(new WakerBehaviour(this, 5) {
 			addBehaviour(new OneShotBehaviour() {
 				@Override
 				// public void onWake() {
