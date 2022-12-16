@@ -4,7 +4,7 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
-public class MessagingAgent extends Agent {
+public class MAgent extends Agent {
 	@Override
 	protected void setup() {
 		super.setup();

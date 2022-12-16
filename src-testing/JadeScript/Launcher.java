@@ -72,7 +72,7 @@ public class Launcher {
 		for(int i = index < 0 ? 0 : index; i < (index < 0 ? launcher.length : index + 1); i++) {
 			launcher[j] = new Launcher();
 			launcher[j].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), index < 0 ? i : index, i == 0);
-			launcher[j].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
+			launcher[j].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MAgent.class.getName(),
 					new Object[] { "A", "51" });
 			j++;
 		}
@@ -129,11 +129,11 @@ public class Launcher {
 			}
 			
 			System.out.println("Load agent" + Integer.valueOf(4 * i + 1).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString() });
+			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MAgent.class.getName(),
+					new Object[] {}); // Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString()
 			System.out.println("Load agent" + Integer.valueOf(4 * i + 3).toString());
-			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString() });
+			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MAgent.class.getName(),
+					new Object[] {}); // Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString()
 			j++;
 		}
 		return launcher;
