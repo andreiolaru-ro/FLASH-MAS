@@ -28,7 +28,7 @@ public class BootIntense {
 		String args = "";
 		
 		String script = "Intense";
-		script += "Isolated";
+		// script += "Isolated";
 		String[] names = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
 		//*
 		String[] server = { "172.19.3.92", "172.19.3.50" };
