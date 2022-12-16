@@ -8,6 +8,8 @@ import jade.lang.acl.ACLMessage;
 import testing.TimeMonitor;
 
 public class MessagingAgent extends Agent {
+	private static final long serialVersionUID = 933225342970729946L;
+	
 	@Override
 	protected void setup() {
 		super.setup();
@@ -15,24 +17,27 @@ public class MessagingAgent extends Agent {
 		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
 		int nMsgs = Integer.parseInt((String) getArguments()[1]);
 		
-		// if(getAID().getLocalName().equals("1")) {
-		// System.out.println("This will start");
-		// addBehaviour(new WakerBehaviour(this, 15000) {
-		// @Override
-		// protected void onWake() {
-		// super.onWake();
-		// TimeMonitor.markTime(getLocalName() + " boot");
-		// ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-		// for(int i = 3; i < 17; i += 2)
-		// msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
-		// msg1.setContent("start");
-		// send(msg1);
-		// }
-		//
-		// });
-		// }
+		if(getAID().getLocalName().equals("1")) {
+			System.out.println("This will start");
+			addBehaviour(new WakerBehaviour(this, 15000) {
+				private static final long serialVersionUID = -6125104859258181521L;
+
+				@Override
+				protected void onWake() {
+					super.onWake();
+					TimeMonitor.markTime(getLocalName() + " boot");
+					ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+					for(int i = 3; i < 17; i += 2)
+						msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
+					msg1.setContent("start");
+					send(msg1);
+				}
+				
+			});
+		}
 		
 		addBehaviour(new CyclicBehaviour() {
+			private static final long serialVersionUID = -2633537210164026238L;
 			boolean first = true;
 			
 			@Override
@@ -45,6 +50,8 @@ public class MessagingAgent extends Agent {
 				if(first) {
 					first = false;
 					addBehaviour(new WakerBehaviour(myAgent, 5000) {
+						private static final long serialVersionUID = 6232448004679906825L;
+
 						@Override
 						protected void onWake() {
 							super.onWake();
