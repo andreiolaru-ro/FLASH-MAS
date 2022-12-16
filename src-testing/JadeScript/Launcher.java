@@ -62,7 +62,7 @@ public class Launcher {
 	
 	public static Launcher[] script1(int index) {
 		String[] names = { "A", "B", "C", "D" };
-		String[] server = { "172.19.3.92", "172.19.3.50", "172.19.3.132", "172.19.3.206" };
+		String[] server = { "172.19.3.92", "172.19.3.132", "172.19.3.50", "172.19.3.206" };
 		String base = index < 0 ? "localhost" : server[0];
 		
 		Launcher[] launcher = new Launcher[index < 0 ? 4 : 1];
