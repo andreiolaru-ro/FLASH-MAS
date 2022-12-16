@@ -57,16 +57,16 @@ public class MessagingAgent extends Agent {
 					});
 				}
 				else {
-					System.out
-							.println(getLocalName() + " Received: [" + msg.getContent() + "] from " + msg.getSender());
-					ACLMessage reply = msg.createReply();
-					int index = Integer.parseInt(msg.getContent().substring(2, 8).trim()) + 1;
-					if(index <= nMsgs) {
-						reply.setContent(getLocalName() + "  " + String.format("%2d", index).replace(' ', '0'));
-						myAgent.send(reply);
-					}
-					else
-						TimeMonitor.markTime(getLocalName() + " DONE");
+					// System.out
+					// .println(getLocalName() + " Received: [" + msg.getContent() + "] from " + msg.getSender());
+					// ACLMessage reply = msg.createReply();
+					// int index = Integer.parseInt(msg.getContent().substring(2, 8).trim()) + 1;
+					// if(index <= nMsgs) {
+					// reply.setContent(getLocalName() + " " + String.format("%2d", index).replace(' ', '0'));
+					// myAgent.send(reply);
+					// }
+					// else
+					// TimeMonitor.markTime(getLocalName() + " DONE");
 				}
 			}
 		});
