@@ -91,13 +91,14 @@ public class Launcher {
 			launcher[j] = new Launcher();
 			launcher[j].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), index < 0 ? i : index, i == 0);
 			
+			System.out.println("Waiting to start agents");
 			if(index >= 0)
 				try {
 					Thread.sleep(3000);
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
-			
+			System.out.println("Start agents");
 			launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), PongAgent.class.getName(), null);
 			launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), PongAgent.class.getName(), null);
 			
