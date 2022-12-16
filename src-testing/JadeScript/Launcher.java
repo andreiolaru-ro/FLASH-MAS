@@ -67,12 +67,14 @@ public class Launcher {
 		
 		Launcher[] launcher = new Launcher[index < 0 ? 4 : 1];
 		
-		for(int i = 0; i < launcher.length; i++) {
-			String srv = index < 0 ? base : server[index];
-			launcher[i] = new Launcher();
-			launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
-			launcher[i].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
+		String srv = index < 0 ? base : server[index];
+		int j = 0;
+		for(int i = index < 0 ? 0 : index; i < (index < 0 ? launcher.length : index + 1); i++) {
+			launcher[j] = new Launcher();
+			launcher[j].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), index < 0 ? i : index, i == 0);
+			launcher[j].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
 					new Object[] { "A", "51" });
+			j++;
 		}
 		return launcher;
 	}
