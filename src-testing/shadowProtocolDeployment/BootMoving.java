@@ -30,7 +30,7 @@ public class BootMoving {
 		String script = "Moving";
 		script += "I";
 		String[] names = { "A", "B", "C", "D" };
-		/*
+		// *
 		String[] server = { "172.19.3.92", "172.19.3.50" };
 		for(int s = 0; s < 2; s++)
 			server[s] = server[s] + ":8885";
