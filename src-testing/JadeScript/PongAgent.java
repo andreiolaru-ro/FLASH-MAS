@@ -20,7 +20,7 @@ public class PongAgent extends Agent {
 				}
 				System.out.println(getLocalName() + " Received: [" + msg.getContent() + "] from " + msg.getSender());
 				ACLMessage reply = msg.createReply();
-				reply.setContent(msg.getContent() + " reply");
+				reply.setContent(msg.getContent() + "   reply");
 				myAgent.send(reply);
 			}
 		});

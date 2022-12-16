@@ -80,22 +80,50 @@ public class Launcher {
 	}
 	
 	public static Launcher[] script2(int index) {
-		String[] server = { "172.19.3.92", "172.19.3.50", "172.19.3.132", "172.19.3.206" };
+		String[] server = { "172.19.3.92", "172.19.3.132", "172.19.3.50", "172.19.3.206" };
 		String base = index < 0 ? "localhost" : server[0];
 		
 		Launcher[] launcher = new Launcher[index < 0 ? 4 : 1];
 		
-		for(int i = 0; i < launcher.length; i++) {
-			String srv = index < 0 ? base : server[index];
-			launcher[i] = new Launcher();
-			launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
+		String srv = index < 0 ? base : server[index];
+		int j = 0;
+		for(int i = index < 0 ? 0 : index; i < (index < 0 ? launcher.length : index + 1); i++) {
+			launcher[j] = new Launcher();
+			launcher[j].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), index < 0 ? i : index, i == 0);
 			
-			launcher[i].addAgent(Integer.valueOf(4 * i).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf((4 * i + 8 + 1) % 16).toString() });
-			launcher[i].addAgent(Integer.valueOf(4 * i + 1).toString(), PongAgent.class.getName(), null);
-			launcher[i].addAgent(Integer.valueOf(4 * i + 2).toString(), MessagingAgent.class.getName(),
-					new Object[] { Integer.valueOf((4 * i + 2 + 8 + 1) % 16).toString() });
-			launcher[i].addAgent(Integer.valueOf(4 * i + 3).toString(), PongAgent.class.getName(), null);
+			launcher[j].addAgent(Integer.valueOf(4 * i + 2).toString(), PongAgent.class.getName(), null);
+			launcher[j].addAgent(Integer.valueOf(4 * i + 4).toString(), PongAgent.class.getName(), null);
+			
+			int correspondent1, correspondent2;
+			switch(i) {
+			case 0:
+			default:
+				// node 1
+				correspondent1 = 8;
+				correspondent2 = 12;
+				break;
+			case 1:
+				// node 2
+				correspondent1 = 14;
+				correspondent2 = 2;
+				break;
+			case 2:
+				// node 3
+				correspondent1 = 16;
+				correspondent2 = 4;
+				break;
+			case 3:
+				// node 4
+				correspondent1 = 6;
+				correspondent2 = 10;
+				break;
+			}
+			
+			launcher[j].addAgent(Integer.valueOf(4 * i + 1).toString(), MessagingAgent.class.getName(),
+					new Object[] { Integer.valueOf(correspondent1).toString(), Integer.valueOf(101).toString() });
+			launcher[j].addAgent(Integer.valueOf(4 * i + 3).toString(), MessagingAgent.class.getName(),
+					new Object[] { Integer.valueOf(correspondent2).toString(), Integer.valueOf(101).toString() });
+			j++;
 		}
 		return launcher;
 	}
@@ -109,7 +137,7 @@ public class Launcher {
 	public static void main(String[] args) {
 		
 		int index = -1;
-		int script = 1;
+		int script = 2;
 		if(args.length > 0)
 			script = Integer.parseInt(args[0]);
 		if(args.length > 1)
