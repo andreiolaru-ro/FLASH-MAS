@@ -1,0 +1,21 @@
+nodes
+
+A:
+172.19.3.92
+
+B:
+172.19.3.132
+
+C:
+172.19.3.50
+
+D:
+172.19.3.206
+
+
+git clone -b shadow-integration https://github.com/andreiolaru-ro/FLASH-MAS.git
+
+
+java -cp "bin;lib/core/*;lib/gui/*;lib/*;lib/websocket/*" shadowProtocolDeployment.BootMovingDist 0
+
+java -cp "bin:lib/core/*:lib/gui/*:lib/*:lib/websocket/*" shadowProtocolDeployment.BootMovingDist 0

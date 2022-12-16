@@ -2,6 +2,7 @@ package testing;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class TestingScript implements Serializable {
 	 * 
 	 * @author Andrei Olaru
 	 */
-	public static class ScriptElement implements Serializable {
+	public static class ScriptElement implements Serializable, Cloneable {
 		/**
 		 * The serial UID.
 		 */
@@ -143,6 +144,10 @@ public class TestingScript implements Serializable {
 		 * Arguments to the action to execute.
 		 */
 		Map<FIELD, String>			arguments;
+		/**
+		 * Number of times to clone the action.
+		 */
+		int							times				= 0;
 		
 		/**
 		 * @return the trigger
@@ -187,6 +192,21 @@ public class TestingScript implements Serializable {
 		 */
 		public void setAction(ActionType action) {
 			this.action = action;
+		}
+		
+		/**
+		 * @return the times
+		 */
+		public int getTimes() {
+			return times;
+		}
+		
+		/**
+		 * @param times
+		 *            the times to set
+		 */
+		public void setTimes(int times) {
+			this.times = times;
 		}
 		
 		/**
@@ -248,6 +268,17 @@ public class TestingScript implements Serializable {
 		@Override
 		public String toString() {
 			return action + " [" + trigger + " : " + arg + "] " + arguments;
+		}
+		
+		@Override
+		public ScriptElement clone() {
+			try {
+				ScriptElement clone = (ScriptElement) super.clone();
+				clone.setArguments(new HashMap<>(arguments));
+				return clone;
+			} catch(CloneNotSupportedException e) {
+				return null;
+			}
 		}
 	}
 	
