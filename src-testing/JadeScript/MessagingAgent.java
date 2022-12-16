@@ -17,7 +17,7 @@ public class MessagingAgent extends Agent {
 		
 		if(getAID().getLocalName().equals("1")) {
 			System.out.println("This will start");
-			addBehaviour(new WakerBehaviour(this, 1000) {
+			addBehaviour(new WakerBehaviour(this, 15000) {
 				@Override
 				protected void onWake() {
 					super.onWake();
