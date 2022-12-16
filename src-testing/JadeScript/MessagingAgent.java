@@ -29,7 +29,9 @@ public class MessagingAgent extends Agent {
 					super.onWake();
 					TimeMonitor.markTime(getLocalName() + " boot");
 					ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-					for(int i = 3; i < 17; i += 2)
+					for(int i = 2; i <= 4; i += 1)
+						msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
+					for(int i = 13; i <= 16; i += 1)
 						msg1.addReceiver(new AID(Integer.valueOf(i).toString(), AID.ISLOCALNAME));
 					msg1.setContent("start");
 					send(msg1);
