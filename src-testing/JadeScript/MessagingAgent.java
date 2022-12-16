@@ -13,6 +13,8 @@ public class MessagingAgent extends Agent {
 		
 		AID destination = new AID((String) getArguments()[0], AID.ISLOCALNAME);
 		int nMsgs = Integer.parseInt((String) getArguments()[1]);
+		System.out.println("Arg - n: " + nMsgs);
+		System.out.println("Args - dest:" + destination);
 		
 		// if(getAID().getLocalName().equals("1")) {
 		// System.out.println("This will start");
