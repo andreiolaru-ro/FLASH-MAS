@@ -43,6 +43,7 @@ public class BootMoving {
 		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts test.simplePingPong -loader agent:mobileComposite ";
 		
 		int index = -1;
+		// index = 3;
 		if(args_.length > 0)
 			index = Integer.parseInt(args_[0]);
 		
