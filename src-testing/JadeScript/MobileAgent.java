@@ -1,9 +1,11 @@
 package JadeScript;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import testing.TimeMonitor;
 
@@ -30,10 +32,30 @@ public class MobileAgent extends Agent {
 				myAgent.send(reply);
 			}
 		});
-		TimeMonitor.markTime("A start");
-		cnode = 1;
-		System.out.println("moving to " + cnode);
-		doMove(new ContainerID("Container-1", null));
+		addBehaviour(new WakerBehaviour(this, 5000) {
+			@Override
+			protected void onWake() {
+				super.onWake();
+				TimeMonitor.markTime(getLocalName() + " start");
+				ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+				msg1.addReceiver(new AID("B", AID.ISLOCALNAME));
+				msg1.addReceiver(new AID("C", AID.ISLOCALNAME));
+				msg1.addReceiver(new AID("D", AID.ISLOCALNAME));
+				msg1.setContent("start");
+				send(msg1);
+				
+				addBehaviour(new WakerBehaviour(myAgent, 5000) {
+					@Override
+					protected void onWake() {
+						super.onWake();
+						TimeMonitor.markTime("A start");
+						cnode = 1;
+						System.out.println("moving to " + cnode);
+						doMove(new ContainerID("Container-1", null));
+					}
+				});
+			}
+		});
 	}
 	
 	@Override

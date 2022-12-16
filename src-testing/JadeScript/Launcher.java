@@ -70,9 +70,9 @@ public class Launcher {
 		for(int i = 0; i < launcher.length; i++) {
 			String srv = index < 0 ? base : server[index];
 			launcher[i] = new Launcher();
-			AgentContainer c = launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
+			launcher[i].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), i, i == 0);
 			launcher[i].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
-					new Object[] { "A" });
+					new Object[] { "A", "51" });
 		}
 		return launcher;
 	}
