@@ -4,6 +4,7 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import testing.TimeMonitor;
@@ -61,11 +62,11 @@ public class MobileAgent extends Agent {
 	protected void afterMove() {
 		super.afterMove();
 		if(cycle < 20)
-			addBehaviour(new WakerBehaviour(this, 5) {
-				// addBehaviour(new OneShotBehaviour() {
+			// addBehaviour(new WakerBehaviour(this, 5) {
+			addBehaviour(new OneShotBehaviour() {
 				@Override
-				public void onWake() {
-					// public void action() {
+				// public void onWake() {
+				public void action() {
 					cnode += 1;
 					cnode = cnode % 4;
 					if(cnode == 0)
