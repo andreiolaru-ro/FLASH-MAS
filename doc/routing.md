@@ -15,8 +15,9 @@
 * entity directory
     * correspondence between (short) entity names and their complete names
     * short names can be used if they are in the directory
-    * if it is not in the directoy, it can be attempted to be used as a long name
+    * if it is not in the directory, it can be attempted to be used as a long name
     * the short name if after the last slash, or if there is any double slash, everything after the double slash, if the group of 2 or more slashes is not preceded by a colon (e.g. http://server/path//entity/with/slashes)
+      * or rather, one can iterate through different slash-separated prefixes of the name, beginning with the entire name and than moving to progressively shorter prefixes
     * pairs can be given
       * in configuration
       * when first sending to an entity
@@ -55,8 +56,8 @@ _agent names without host name?_
 
 * short path protocol modification
 	* normally messages for agent go through agent's home server
-	* current region server can send to message sender an AGENT_LOCATION message
-	* the sending region server sends a Long_path_stop message through the long path, and a short_path_begin meessage directly to the agent's current region
+	* home server can send to message sender an AGENT_LOCATION message
+	* the sending region server sends a Long_path_stop message through the long path, and a short_path_begin message directly to the agent's current region
 	* the current region will wait for the long_path_stop message before accepting messages sent after the short_path_begin message. This happens on a per-agent/sending-region/current-region basis
 	
 	* when the agent is leaving, the current region sends a short_path_stop message to all regions using short paths for that agent
