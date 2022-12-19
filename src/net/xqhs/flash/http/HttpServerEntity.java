@@ -1,28 +1,34 @@
 package net.xqhs.flash.http;
 
-import java.io.*;
+import static java.text.MessageFormat.format;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.util.*;
+import java.security.KeyStore;
 import java.util.concurrent.Executors;
-
-import com.sun.net.httpserver.*;
-import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.support.MessageReceiver;
-import org.java_websocket.server.WebSocketServer;
-import org.json.simple.JSONObject;
-
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
-import org.json.simple.JSONValue;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import static java.text.MessageFormat.format;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsServer;
+
+import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.Unit;
 
 public class HttpServerEntity extends Unit implements Entity<Node> {
     {
@@ -63,6 +69,7 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
             {
                 displayInfo(exchange);
             } else {
+				System.out.println(exchange.getHttpContext().getPath().substring(1));
                 receiveMessage(exchange);
             }
         }

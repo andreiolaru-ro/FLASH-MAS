@@ -11,11 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Vector;
 
+import net.xqhs.flash.core.util.PlatformUtils.Platform;
 import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.LogWrapper.LoggerType;
 
@@ -132,9 +131,7 @@ public class PlatformUtils
 	 */
 	public static String printException(Exception e)
 	{
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		return sw.toString();
+		return e.toString();
 	}
 	
 	/**

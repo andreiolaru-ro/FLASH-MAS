@@ -15,22 +15,26 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import net.xqhs.flash.core.agent.AgentWave;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.json.simple.JSONObject;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
 public class HttpPylon extends DefaultPylonImplementation
 {
@@ -171,33 +175,37 @@ public class HttpPylon extends DefaultPylonImplementation
         @Override
         @SuppressWarnings("unchecked")
         public boolean send(String source, String destination, String content) {
-            if(messageReceivers.containsKey(destination)) {
-                messageReceivers.get(destination).receive(source, destination, content);
+			// extract the id of the destination without the rest of the endpoint
+        	String destination_base = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
+			if(messageReceivers.containsKey(destination_base)) {
+                messageReceivers.get(destination_base).receive(source, destination_base, content);
                 return true;
             }
             JSONObject messageToServer = new JSONObject();
             messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
             messageToServer.put(MESSAGE_SOURCE_KEY, source);
-            messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
+            messageToServer.put(MESSAGE_DESTINATION_KEY, destination_base);
             messageToServer.put(MESSAGE_CONTENT_KEY, content);
             
-            String remoteDestinationUrl = serviceRegistry.get(destination.split(AgentWave.ADDRESS_SEPARATOR)[0]);
+            String remoteDestinationUrl = serviceRegistry.get(destination_base.split(AgentWave.ADDRESS_SEPARATOR)[0]);
             if (remoteDestinationUrl == null)
             {
-                le("The remote url of the destination " + destination + " is not known.");
+                le("The remote url of the destination " + destination_base + " is not known.");
                 return false;
             }
             try
             {
-                String sourceAddress = (isHttps ? HTTPS_PROTOCOL_PREFIX: HTTP_PROTOCOL_PREFIX) + serverHostname + ":" + serverPort;
-                HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .header("Content-Type", "text/plain;charset=UTF-8")
-                    .header("sourceAddress", sourceAddress)
-                    .uri(new URI(remoteDestinationUrl))
-                    .POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString()))
-                    .build();
-                httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
-            }
+				String sourceAddress = (isHttps ? HTTPS_PROTOCOL_PREFIX : HTTP_PROTOCOL_PREFIX) + serverHostname + ":"
+						+ serverPort;
+				URI uri = new URI(remoteDestinationUrl + (destination.contains(AgentWave.ADDRESS_SEPARATOR)
+						? destination.substring(destination_base.length())
+						: ""));
+				// lf("sending to []", uri);
+				HttpRequest httpRequest = HttpRequest.newBuilder().header("Content-Type", "text/plain;charset=UTF-8")
+						.header("sourceAddress", sourceAddress).uri(uri)
+						.POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString())).build();
+				httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+			}
             catch (URISyntaxException e)
             {
                 e.printStackTrace();
@@ -310,9 +318,10 @@ public class HttpPylon extends DefaultPylonImplementation
             serverHostname = configuration.getAValue(HTTP_SERVER_HOST_NAME);
         }
         if(configuration.isSimple(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME)) {
-            String remoteUrl = configuration.getAValue(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME);
-            String remoteDestination = remoteUrl.substring(remoteUrl.lastIndexOf("/") + 1);
-            serviceRegistry.put(remoteDestination, remoteUrl);
+			for(String remoteUrl : configuration.getValues(HTTP_CONNECT_TO_SERVER_ADDRESS_NAME)) {
+				String remoteDestination = remoteUrl.substring(remoteUrl.lastIndexOf("/") + 1);
+				serviceRegistry.put(remoteDestination, remoteUrl);
+			}
         }
         if (configuration.isSimple(TRUSTED_CA)) {
             trustedCaPath = configuration.getAValue(TRUSTED_CA);
