@@ -1,7 +1,7 @@
 package net.xqhs.flash.ent_op.impl;
 
 import net.xqhs.flash.ent_op.entities.Pylon;
-import net.xqhs.flash.ent_op.entities.WebSocketPylon;
+import net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon;
 import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.model.EntityAPI;
 import net.xqhs.flash.ent_op.model.EntityTools;

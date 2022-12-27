@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.entities;
+package net.xqhs.flash.ent_op.impl.websocket;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;

@@ -1,10 +1,9 @@
 package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.entities.agent.Agent;
+import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.entities.Node;
-import net.xqhs.flash.ent_op.entities.WebSocketPylon;
-import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
+import net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 
@@ -15,10 +14,10 @@ import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
 import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
 import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
-import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
-import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_PYLON_NAME;
-import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;
-import static net.xqhs.flash.ent_op.entities.WebSocketPylon.WEBSOCKET_SERVER_PORT_NAME;
+import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_PYLON_CONFIG;
+import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_PYLON_NAME;
+import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;
+import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_SERVER_PORT_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 public class WebSocketPylonTest {

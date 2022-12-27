@@ -2,8 +2,7 @@ package gabi.entityOperationTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.entities.agent.Agent;
-import net.xqhs.flash.ent_op.entities.agent.ComputingAgent;
+import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.model.Relation;
 

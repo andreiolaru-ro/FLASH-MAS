@@ -1,6 +1,7 @@
-package net.xqhs.flash.ent_op.entities.agent;
+package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.operations.MultiplyOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.FMas;

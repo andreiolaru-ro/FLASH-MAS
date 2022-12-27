@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.entities.agent;
+package net.xqhs.flash.ent_op.entities;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.impl.operations.ReceiveOperation;

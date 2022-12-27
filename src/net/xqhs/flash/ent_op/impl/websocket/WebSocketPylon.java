@@ -1,9 +1,10 @@
-package net.xqhs.flash.ent_op.entities;
+package net.xqhs.flash.ent_op.impl.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;

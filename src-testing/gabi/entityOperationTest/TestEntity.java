@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.entities;
+package gabi.entityOperationTest;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.util.MultiTreeMap;
