@@ -1,6 +1,7 @@
 package net.xqhs.flash.ent_op.impl;
 
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeResultWave;
 import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
 import net.xqhs.flash.ent_op.impl.waves.ResultWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
@@ -20,6 +21,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.APPROVED;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.REJECTED;
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
 import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
 
@@ -165,6 +168,15 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     @Override
+    public void changeRelation(Relation.RelationChangeType changeType, Relation relation) {
+        var relationChangeWave = new RelationChangeWave(changeType, relation, entityAPI.getEntityID(), relation.getTo());
+        if (REMOVE.equals(changeType)) {
+            removeRelation(relation);
+        }
+        handleOutgoingWave(relationChangeWave);
+    }
+
+    @Override
     public void broadcastOutgoingOperationCall(OperationCallWave operationCallWave, Set<Operation.Restriction> targets,
                                                boolean expectResults, ResultReceiver callback) {
 
@@ -191,6 +203,9 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
                 break;
             case RESULT:
                 handleIncomingResultWave((ResultWave) wave);
+                break;
+            case RELATION_CHANGE_RESULT:
+                handleIncomingRelationChangeResultWave((RelationChangeResultWave) wave);
                 break;
             default:
                 le("The wave is not supported by FLASH-MAS.");
@@ -222,7 +237,8 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         var relation = relationChangeWave.getRelation();
 
         if (CREATE.equals(changeType)) {
-            createRelation(relation);
+            var result = createRelation(relation) ? APPROVED : REJECTED;
+            sendRelationChangeResult(relationChangeWave, result);
         } else if (REMOVE.equals(changeType)) {
             removeRelation(relation);
         }
@@ -238,7 +254,25 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         callback.resultNotification(result);
     }
 
-    public boolean createRelation(Relation relation) {
+    private void handleIncomingRelationChangeResultWave(RelationChangeResultWave relationChangeResultWave) {
+        var result = relationChangeResultWave.getResult();
+        var relation = relationChangeResultWave.getRelation();
+
+        if (APPROVED.equals(result)) {
+            relations.add(relation);
+            li("The relation between [] and [] was accepted.", relation.getFrom(), relation.getTo());
+        } else {
+            li("The relation between [] and [] was rejected.", relation.getFrom(), relation.getTo());
+        }
+    }
+
+    private boolean createRelation(Relation relation) {
+        var relationChanged = entityAPI.handleRelationChange(CREATE, relation);
+
+        if (!relationChanged) {
+            return false;
+        }
+
         if (relations.contains(relation)) {
             li("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
             return false;
@@ -249,7 +283,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         return true;
     }
 
-    public boolean removeRelation(Relation relation) {
+    private boolean removeRelation(Relation relation) {
         if (relations.contains(relation)) {
             relations.remove(relation);
             lw("The relation between [] and [] has been successfully removed.", relation.getFrom(), relation.getTo());
@@ -264,6 +298,14 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         var sourceId = operationCallWave.getSourceEntity();
         var targetId = operationCallWave.getTargetEntity();
         var resultWave = new ResultWave(targetId, sourceId, operationCallWave.getId(), result);
+        handleOutgoingWave(resultWave);
+    }
+
+    private void sendRelationChangeResult(RelationChangeWave relationChangeWave, Relation.RelationChangeResult result) {
+        var sourceId = relationChangeWave.getSourceEntity();
+        var targetId = relationChangeWave.getTargetEntity();
+        var relation = relationChangeWave.getRelation();
+        var resultWave = new RelationChangeResultWave(targetId, sourceId, relation, result);
         handleOutgoingWave(resultWave);
     }
 

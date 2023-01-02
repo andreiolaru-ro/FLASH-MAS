@@ -105,8 +105,12 @@ public interface OutboundEntityTools {
      */
     boolean linkInboundEntityTools(InboundEntityTools inboundEntityTools);
 
-    boolean createRelation(Relation relation);
-
-    boolean removeRelation(Relation relation);
+    /**
+     * Method called by an entity to its associated {@link OutboundEntityTools} instance to change a relation.
+     *
+     * @param changeType - whether the relation should be added or removed.
+     * @param relation   - the relation to add or remove.
+     */
+    void changeRelation(Relation.RelationChangeType changeType, Relation relation);
 
 }

@@ -103,10 +103,7 @@ public class Agent extends Unit implements EntityAPI {
     }
 
     @Override
-    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
-        var relationChangeWave = new RelationChangeWave(changeType, relation);
-        entityTools.handleOutgoingWave(relationChangeWave);
-//        lw("The [] changeType is not supported by the [] entity.", changeType, agentName);
+    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return true;
     }
 
@@ -135,6 +132,10 @@ public class Agent extends Unit implements EntityAPI {
 
     public void callOperationWithResult(OperationCallWave operationCallWave, ResultReceiver callBack) {
         entityTools.handleOutgoingWave(operationCallWave, callBack);
+    }
+
+    public void callRelationChange(Relation.RelationChangeType changeType, Relation relation) {
+        entityTools.changeRelation(changeType, relation);
     }
 
     public void setfMas(FMas fMas) {

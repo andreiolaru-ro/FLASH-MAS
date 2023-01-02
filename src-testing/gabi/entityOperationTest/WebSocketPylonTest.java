@@ -90,7 +90,7 @@ public class WebSocketPylonTest {
 
         // agent1(node1) creates a relation with agent2(node2)
         var relation =  new Relation(agent1.getEntityID(), agent2.getEntityID(), "agent1-agent2-relation");
-        agent1.changeRelation(Relation.RelationChangeType.CREATE, relation);
+        agent1.callRelationChange(Relation.RelationChangeType.CREATE, relation);
 
         // stop nodes
         Thread.sleep(10000);

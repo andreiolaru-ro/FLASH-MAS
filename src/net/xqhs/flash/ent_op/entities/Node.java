@@ -96,7 +96,7 @@ public class Node extends Unit implements EntityAPI {
     }
 
     @Override
-    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
+    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
 

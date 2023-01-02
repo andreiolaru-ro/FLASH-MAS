@@ -6,6 +6,10 @@ public class Relation {
 		CREATE, REMOVE
 	}
 
+	public enum RelationChangeResult {
+		APPROVED, REJECTED
+	}
+
 	public enum RelationType {
 		NODE, EXECUTES_ON, IN_SCOPE_OF
 	}

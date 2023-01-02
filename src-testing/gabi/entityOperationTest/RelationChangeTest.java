@@ -24,9 +24,9 @@ public class RelationChangeTest {
         agentB.start();
 
         var relation = new Relation(agentA.getEntityID(), agentB.getEntityID(), "agentA-agentB-relation");
-        agentA.changeRelation(Relation.RelationChangeType.CREATE, relation);
-        agentA.changeRelation(Relation.RelationChangeType.CREATE, relation);
+        agentA.callRelationChange(Relation.RelationChangeType.CREATE, relation);
         System.out.println(fMas.getEntityTools("test/agent/agentB").getRelations());
+        System.out.println(fMas.getEntityTools("test/agent/agentA").getRelations());
         System.out.println(fMas.getEntityTools("test/agent/agentB").getIncomingRelations());
     }
 }

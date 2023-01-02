@@ -1,5 +1,6 @@
 package net.xqhs.flash.ent_op.impl.waves;
 
+import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Wave;
 
@@ -15,12 +16,12 @@ public class RelationChangeWave extends Wave implements Serializable {
 
     }
 
-    public RelationChangeWave(Relation.RelationChangeType changeType, Relation relation) {
+    public RelationChangeWave(Relation.RelationChangeType changeType, Relation relation, EntityID from, EntityID to) {
         this.type = RELATION_CHANGE;
         this.relation = relation;
         this.changeType = changeType;
-        this.sourceEntity = relation.getFrom();
-        this.targetEntity = relation.getTo();
+        this.sourceEntity = from;
+        this.targetEntity = to;
     }
 
     public Relation getRelation() {

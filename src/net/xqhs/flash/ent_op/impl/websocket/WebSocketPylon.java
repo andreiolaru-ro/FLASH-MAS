@@ -7,6 +7,7 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ent_op.entities.Pylon;
 import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeResultWave;
 import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
 import net.xqhs.flash.ent_op.impl.waves.ResultWave;
 import net.xqhs.flash.ent_op.model.EntityID;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static net.xqhs.flash.ent_op.entities.Node.NODE_NAME;
+import static net.xqhs.flash.ent_op.model.Wave.WaveType.RELATION_CHANGE_RESULT;
 
 public class WebSocketPylon extends Unit implements Pylon {
 
@@ -102,6 +104,11 @@ public class WebSocketPylon extends Unit implements Pylon {
      * The RESULT wave name.
      */
     public static final String RESULT_WAVE = "RESULT";
+
+    /**
+     * The RELATION_CHANGE_RESULT wave name.
+     */
+    public static final String RELATION_CHANGE_RESULT_WAVE = "RELATION_CHANGE_RESULT";
 
     /**
      * The name of the WebSocketPylon.
@@ -274,7 +281,7 @@ public class WebSocketPylon extends Unit implements Pylon {
     }
 
     @Override
-    public boolean changeRelation(Relation.RelationChangeType changeType, Relation relation) {
+    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
         return false;
     }
 
@@ -337,9 +344,9 @@ public class WebSocketPylon extends Unit implements Pylon {
 
     private Optional<Wave> deserializeWave(String content) {
         return getWaveTypeClass(content)
-                .map(x -> {
+                .map(aClass -> {
                     try {
-                        return mapper.readValue(content, x);
+                        return mapper.readValue(content, aClass);
                     } catch (JsonProcessingException e) {
                         le("The wave couldn't be deserialized.");
                     }
@@ -361,6 +368,9 @@ public class WebSocketPylon extends Unit implements Pylon {
                 break;
             case RESULT_WAVE:
                 waveTypeClass = ResultWave.class;
+                break;
+            case RELATION_CHANGE_RESULT_WAVE:
+                waveTypeClass = RelationChangeResultWave.class;
                 break;
             default:
                 le("The [] wave is not supported by FLASH-MAS.", waveTypeStr);

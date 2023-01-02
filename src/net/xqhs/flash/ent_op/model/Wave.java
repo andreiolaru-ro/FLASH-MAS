@@ -2,7 +2,7 @@ package net.xqhs.flash.ent_op.model;
 
 public abstract class Wave {
     public enum WaveType {
-        OPERATION_CALL, RELATION_CHANGE, RESULT
+        OPERATION_CALL, RELATION_CHANGE, RESULT, RELATION_CHANGE_RESULT
     }
 
     protected String id;
