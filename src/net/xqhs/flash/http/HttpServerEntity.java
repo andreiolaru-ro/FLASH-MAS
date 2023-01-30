@@ -32,7 +32,6 @@ import net.xqhs.util.logging.Unit;
 
 public class HttpServerEntity extends Unit implements Entity<Node> {
     {
-        setUnitName("http-server");
         setLoggerType(PlatformUtils.platformLogType());
     }
     
@@ -69,7 +68,7 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
             {
                 displayInfo(exchange);
             } else {
-				System.out.println(exchange.getHttpContext().getPath().substring(1));
+				HttpServerEntity.this.li("Received request on URL []", exchange.getRequestURI().getPath());
                 receiveMessage(exchange);
             }
         }
@@ -123,6 +122,7 @@ public class HttpServerEntity extends Unit implements Entity<Node> {
      * @param certificatePath certificate of the HTTPS server
      */
     public HttpServerEntity(HttpPylon pylon, boolean isHttps, String certificatePath) {
+        setUnitName("http-server-" + pylon.getName().split(" ")[0]);
         this.pylon = pylon;
         this.isHttps = isHttps;
         pylon.li(format("Starting {0} server on port: {1}", isHttps ? "https" : "http", pylon.getServerPort()));

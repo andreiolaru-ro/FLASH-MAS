@@ -178,19 +178,19 @@ public class HttpPylon extends DefaultPylonImplementation
 			// extract the id of the destination without the rest of the endpoint
         	String destination_base = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
 			if(messageReceivers.containsKey(destination_base)) {
-                messageReceivers.get(destination_base).receive(source, destination_base, content);
+                messageReceivers.get(destination_base).receive(source, destination, content);
                 return true;
             }
             JSONObject messageToServer = new JSONObject();
             messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
             messageToServer.put(MESSAGE_SOURCE_KEY, source);
-            messageToServer.put(MESSAGE_DESTINATION_KEY, destination_base);
+            messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
             messageToServer.put(MESSAGE_CONTENT_KEY, content);
             
-            String remoteDestinationUrl = serviceRegistry.get(destination_base.split(AgentWave.ADDRESS_SEPARATOR)[0]);
+            String remoteDestinationUrl = serviceRegistry.get(destination_base);
             if (remoteDestinationUrl == null)
             {
-                le("The remote url of the destination " + destination_base + " is not known.");
+                le("The remote url of the destination " + destination + " is not known.");
                 return false;
             }
             try
