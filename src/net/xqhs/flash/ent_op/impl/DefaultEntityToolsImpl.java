@@ -1,18 +1,9 @@
 package net.xqhs.flash.ent_op.impl;
 
-import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
-import net.xqhs.flash.ent_op.impl.waves.RelationChangeResultWave;
-import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
-import net.xqhs.flash.ent_op.impl.waves.ResultWave;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.EntityTools;
-import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.InboundEntityTools;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.Relation;
-import net.xqhs.flash.ent_op.model.ResultReceiver;
-import net.xqhs.flash.ent_op.model.Wave;
-import net.xqhs.util.logging.Unit;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.APPROVED;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.REJECTED;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,10 +12,20 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.APPROVED;
-import static net.xqhs.flash.ent_op.model.Relation.RelationChangeResult.REJECTED;
-import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
-import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.REMOVE;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeResultWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
+import net.xqhs.flash.ent_op.impl.waves.ResultWave;
+import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.EntityTools;
+import net.xqhs.flash.ent_op.model.FMas;
+import net.xqhs.flash.ent_op.model.InboundEntityTools;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.Relation;
+import net.xqhs.flash.ent_op.model.ResultReceiver;
+import net.xqhs.flash.ent_op.model.Wave;
+import net.xqhs.util.logging.Unit;
 
 public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
@@ -41,7 +42,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     /**
      * The name of the corresponding entity for this instance.
      */
-    protected String entityName;
+	protected EntityID entityID;
 
     /**
      * The entityAPI.
@@ -84,8 +85,8 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         resultReceiverMap = new HashMap<>();
         counter = new AtomicLong();
         entityAPI = entity;
-        entityName = entity.getName();
-        entityToolsName = entityName + " " + DEFAULT_ENTITY_TOOLS_NAME;
+		entityID = entity.getID();
+        entityToolsName = entityID + " " + DEFAULT_ENTITY_TOOLS_NAME;
         setUnitName(entityToolsName);
         return true;
     }
@@ -118,11 +119,11 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     public boolean createOperation(Operation operation) {
         // fails if the operation already exists
         if (getOperation(operation.getName()) != null) {
-            li("[] operation couldn't be added to []", operation.getName(), entityName);
+            li("[] operation couldn't be added to []", operation.getName(), entityID);
             return false;
         }
         operations.add(operation);
-        li("[] operation successfully added to []", operation.getName(), entityName);
+        li("[] operation successfully added to []", operation.getName(), entityID);
         return true;
     }
 
@@ -143,33 +144,37 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     @Override
     public Set<Relation> getIncomingRelations() {
         return relations.stream()
-                .filter(relation -> relation.getTo().equals(entityAPI.getEntityID()))
+                .filter(relation -> relation.getTo().equals(entityAPI.getID()))
                 .collect(Collectors.toSet());
     }
 
     @Override
     public Set<Relation> getOutgoingRelations() {
         return relations.stream()
-                .filter(relation -> relation.getFrom().equals(entityAPI.getEntityID()))
+                .filter(relation -> relation.getFrom().equals(entityAPI.getID()))
                 .collect(Collectors.toSet());
     }
 
     @Override
     public void handleOutgoingWave(Wave wave) {
-        wave.setId(generateWaveId());
+		if(wave.getId() == null)
+			// in cases where the entity routes eaves, the wave may have been originally sent by another entity
+			wave.setId(generateWaveId());
         fMas.route(wave);
     }
 
     @Override
     public void handleOutgoingWave(OperationCallWave wave, ResultReceiver callback) {
-        wave.setId(generateWaveId());
+		if(wave.getId() == null)
+			// in cases where the entity routes eaves, the wave may have been originally sent by another entity
+			wave.setId(generateWaveId());
         registerResultReceiver(wave.getId(), callback);
         fMas.route(wave);
     }
 
     @Override
     public void changeRelation(Relation.RelationChangeType changeType, Relation relation) {
-        var relationChangeWave = new RelationChangeWave(changeType, relation, entityAPI.getEntityID(), relation.getTo());
+        var relationChangeWave = new RelationChangeWave(changeType, relation, entityAPI.getID(), relation.getTo());
         if (REMOVE.equals(changeType)) {
             removeRelation(relation);
         }
@@ -216,12 +221,12 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         var operationName = operationCallWave.getTargetOperation();
 
         if (!entityAPI.isRunning()) {
-            le("[] is not running", entityAPI.getName());
+			le("[] is not running", entityID);
             return;
         }
 
         if (getOperation(operationName) == null && operationCallWave.getResult() == null) {
-            lw("The [] operation is not supported by the [] entity", operationName, entityName);
+            lw("The [] operation is not supported by the [] entity", operationName, entityID);
             return;
         }
 
@@ -274,19 +279,19 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
         }
 
         if (relations.contains(relation)) {
-            li("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
+			lw("The relation between [] and [] already exists.", relation.getFrom(), relation.getTo());
             return false;
         }
 
         relations.add(relation);
-        lw("The relation between [] and [] has been successfully added.", relation.getFrom(), relation.getTo());
+		li("The relation between [] and [] has been successfully added.", relation.getFrom(), relation.getTo());
         return true;
     }
 
     private boolean removeRelation(Relation relation) {
         if (relations.contains(relation)) {
             relations.remove(relation);
-            lw("The relation between [] and [] has been successfully removed.", relation.getFrom(), relation.getTo());
+			li("The relation between [] and [] has been successfully removed.", relation.getFrom(), relation.getTo());
             return true;
         }
 
@@ -310,6 +315,6 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
     }
 
     private String generateWaveId() {
-        return entityName + "-" + counter.incrementAndGet();
+        return entityID + "-" + counter.incrementAndGet();
     }
 }

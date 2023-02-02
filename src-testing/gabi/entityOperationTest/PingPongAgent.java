@@ -1,26 +1,22 @@
 package gabi.entityOperationTest;
 
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.operations.PingPongOperation;
-import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.EntityID;
-import net.xqhs.flash.ent_op.model.EntityTools;
-import net.xqhs.flash.ent_op.model.FMas;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.Relation;
-import net.xqhs.util.logging.Unit;
+import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION_NAME;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION_NAME;
-import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
+import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.Agent;
+import net.xqhs.flash.ent_op.impl.operations.PingPongOperation;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.model.EntityID;
+import net.xqhs.flash.ent_op.model.Operation;
+import net.xqhs.flash.ent_op.model.OutboundEntityTools;
+import net.xqhs.flash.ent_op.model.Relation;
 
-public class PingPongAgent extends Unit implements EntityAPI {
+public class PingPongAgent extends Agent {
 
     /**
      * The name of the component parameter that contains the id of the other agent.
@@ -37,15 +33,6 @@ public class PingPongAgent extends Unit implements EntityAPI {
      */
     protected static final long PING_PERIOD = 2000;
 
-    /**
-     * Indicates whether the implementation is currently running.
-     */
-    protected boolean isRunning;
-
-    /**
-     * The name of the agent.
-     */
-    protected String agentName;
 
     /**
      * Cache for the name of the other agent.
@@ -57,47 +44,34 @@ public class PingPongAgent extends Unit implements EntityAPI {
      */
     protected Timer pingTimer;
 
-    /**
-     * The id of this instance.
-     */
-    protected EntityID entityID;
-
-    /**
-     * The corresponding entity tools for this instance.
-     */
-    protected EntityTools entityTools;
 
     /**
      * The ping pong operation.
      */
     protected Operation pingPong;
 
-    /**
-     * The framework instance.
-     */
-    protected FMas fMas;
 
-    public PingPongAgent(FMas fMas) {
-        this.fMas = fMas;
-    }
 
     @Override
     public boolean setup(MultiTreeMap configuration) {
-        agentName = configuration.getAValue(NAME_ATTRIBUTE_NAME);
-        entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
+		super.setup(configuration);
+		if(configuration.isSet(DEST_AGENT_PARAMETER_NAME))
+			otherAgents = configuration.getValues(DEST_AGENT_PARAMETER_NAME);
+		return true;
+	}
+	
+	@Override
+	public boolean connectTools(OutboundEntityTools entityTools) {
+		super.connectTools(entityTools);
         pingPong = new PingPongOperation();
-        entityTools = fMas.registerEntity(this);
         entityTools.createOperation(pingPong);
-        setUnitName(agentName);
-        if (configuration.isSet(DEST_AGENT_PARAMETER_NAME))
-            otherAgents = configuration.getValues(DEST_AGENT_PARAMETER_NAME);
         return true;
     }
 
     @Override
     public boolean start() {
         isRunning = true;
-        li("Agent [] started", agentName);
+		li("Agent started");
         if (otherAgents != null) {
             pingTimer = new Timer();
             pingTimer.schedule(new TimerTask() {
@@ -131,14 +105,14 @@ public class PingPongAgent extends Unit implements EntityAPI {
 
     public boolean stop() {
         pingTimer.cancel();
-        li("Agent [] stopped", agentName);
+		li("Agent stopped");
         return true;
     }
 
     @Override
     public Object handleIncomingOperationCall(OperationCallWave operationCall) {
         if (!isRunning) {
-            le("[] is not running", agentName);
+			le("entity is not running");
             return null;
         }
         if (operationCall.getTargetOperation().equals(PING_PONG_OPERATION_NAME)) {
@@ -163,30 +137,16 @@ public class PingPongAgent extends Unit implements EntityAPI {
     }
 
     @Override
-    public String getName() {
-        return agentName;
-    }
-
-    @Override
-    public List<Operation> getOperations() {
-        return null;
-    }
-
-    @Override
     public boolean canRoute(EntityID entityID) {
         return false;
     }
 
     @Override
-    public EntityID getEntityID() {
+    public EntityID getID() {
         return entityID;
     }
 
     public void callOperation(OperationCallWave operationCall) {
-        entityTools.handleOutgoingWave(operationCall);
-    }
-
-    public EntityTools getEntityTools() {
-        return entityTools;
+		framework.handleOutgoingWave(operationCall);
     }
 }

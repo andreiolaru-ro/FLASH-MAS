@@ -8,6 +8,7 @@ public abstract class Wave {
     protected String id;
     protected EntityID sourceEntity;
     protected EntityID targetEntity;
+	@Deprecated
     protected boolean routed;
     protected WaveType type;
 
@@ -35,10 +36,12 @@ public abstract class Wave {
         this.targetEntity = targetEntity;
     }
 
+	@Deprecated
     public boolean isRouted() {
         return routed;
     }
 
+	@Deprecated
     public void setRouted(boolean routed) {
         this.routed = routed;
     }

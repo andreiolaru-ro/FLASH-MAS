@@ -12,92 +12,93 @@
 package net.xqhs.flash.ent_op.model;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 
-import java.util.List;
-
 /**
  * Defines all the methods that an entity should offer to an object which has a reference to the entity. Normally, an
- * {@link OutboundEntityTools} instance should access an entity via these methods.
+ * {@link InboundEntityTools} instance should access an entity via these methods.
  *
  * @author andreiolaru
  */
 public interface EntityAPI {
-    /**
-     * Prepares the entity for beginning its lifecycle.
-     *
-     * @param configuration - all the necessary configuration.
-     * @return <code>true</code> if setup is successful and the entity is ready to be started. <code>false</code> means
-     * the the entity hasn't got the necessary configuration for it to run.
-     */
-    boolean setup(MultiTreeMap configuration);
-
-    /**
-     * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
-     * normally and be available to receive operation calls.
-     * <p>
-     * The method must guarantee that once it has been started successfully, the entity can immediately begin receiving
-     * events, even if those events will not be processed immediately.
-     * <p>
-     * The method should return immediately. It is not guaranteed that when the method returned, the entity has
-     * successfully started; this should checked using {@link #isRunning()}.
-     *
-     * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
-     */
-    boolean start();
-
-    /**
-     * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after
-     * it has fully {@link #start}ed, but it may have stopped at some point as a result of an operation call.
-     *
-     * @return <code>true</code> if the entity is currently running.
-     */
-    boolean isRunning();
-
-    /**
-     * Call an operation of the entity.
-     *
-     * @param operationCall
-     * @return the result of the operation call, if any.
-     */
-    Object handleIncomingOperationCall(OperationCallWave operationCall);
-
-    /**
-     * The method is called when it is wished that changes are performed in the relations between this entity and other
-     * entities.
-     *
-     * @param changeType - whether the relation should be added or removed.
-     * @param relation   - the relation to add or remove.
-     * @return <code>true</code> if the change is accepted, <code>false</code> otherwise.
-     */
-    boolean handleRelationChange(RelationChangeType changeType, Relation relation);
-
-    /**
-     * Used to get the name of an entity.
-     *
-     * @return the name of the corresponding entity.
-     */
-    String getName();
-
-
-    /**
-     * Used to get the list of available operations.
-     *
-     * @return a list of operations.
-     */
-    List<Operation> getOperations();
-
-
-    /**
-     * Used to check if current entity can route a call.
-     *
-     * @return <code>true</code> if the route is possible, <code>false</code> otherwise.
-     */
-    boolean canRoute(EntityID entityID);
-
-    /**
-     * Used get the entity id.
-     */
-    EntityID getEntityID();
+	/**
+	 * Prepares the entity for beginning its lifecycle.
+	 *
+	 * @param configuration
+	 *            - all the necessary configuration.
+	 * @return <code>true</code> if setup is successful and the entity is ready to be started. <code>false</code> means
+	 *         the the entity hasn't got the necessary configuration for it to run.
+	 */
+	boolean setup(MultiTreeMap configuration);
+	
+	/**
+	 * Links the entity with its corresponding {@link EntityTools} instance.
+	 * 
+	 * @param entityTools
+	 *            - the connection of the entity to the framework.
+	 * @return <code>true</code> if the connection is successful.
+	 */
+	boolean connectTools(OutboundEntityTools entityTools);
+	
+	/**
+	 * Starts the life-cycle of the entity. If this goes well, from this moment on the entity should be executing
+	 * normally and be available to receive operation calls.
+	 * <p>
+	 * The method must guarantee that once it has been started successfully, the entity can immediately begin receiving
+	 * events, even if those events will not be processed immediately.
+	 * <p>
+	 * The method should return immediately. It is not guaranteed that immediately after the method has returned, the
+	 * entity is already running, but it should be running eventually; this should checked using {@link #isRunning()}.
+	 *
+	 * @return <code>true</code> if the entity was started without error. <code>false</code> otherwise.
+	 */
+	boolean start();
+	
+	/**
+	 * Queries the entity to check if it has completed its startup and is fully functional. The entity is running after
+	 * it has fully {@link #start}ed, but it may have stopped at some point as a result of an operation call.
+	 *
+	 * @return <code>true</code> if the entity is currently running.
+	 */
+	boolean isRunning();
+	
+	/**
+	 * Call an operation of the entity.
+	 *
+	 * @param operationCall
+	 * @return the result of the operation call, if any.
+	 */
+	Object handleIncomingOperationCall(OperationCallWave operationCall);
+	
+	/**
+	 * The method is called when it is wished that changes are performed in the relations between this entity and other
+	 * entities.
+	 *
+	 * @param changeType
+	 *            - whether the relation should be added or removed.
+	 * @param relation
+	 *            - the relation to add or remove.
+	 * @return <code>true</code> if the change is accepted, <code>false</code> otherwise.
+	 */
+	boolean handleRelationChange(RelationChangeType changeType, Relation relation);
+	
+	/**
+	 * Used to check if current entity can route a {@link Wave}. This is used by an {@link FMas} implementation to work
+	 * directly with entities that offer the {@link RouteOperation}.
+	 * 
+	 * @param destinationID
+	 *            - the {@link EntityID} of the entity that the wave is meant for.
+	 * 			
+	 * @return <code>true</code> if the route is possible, <code>false</code> otherwise.
+	 */
+	boolean canRoute(EntityID destinationID);
+	
+	/**
+	 * Used get the entity id.
+	 * 
+	 * @return the ID of the entity.
+	 */
+	EntityID getID();
 }

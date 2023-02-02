@@ -21,10 +21,6 @@ public class EntityID {
 	 */
 	public String ID;
 
-	public EntityID() {
-
-	}
-
 	/**
 	 * Default constructor.
 	 * 
@@ -32,6 +28,13 @@ public class EntityID {
 	 */
 	public EntityID(String URI) {
 		ID = URI;
+	}
+	
+	/**
+	 * No-argument constructor needed for JSON parsing.
+	 */
+	public EntityID() {
+		// nothing to do
 	}
 	
 	@Override

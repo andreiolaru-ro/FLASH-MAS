@@ -1,162 +1,86 @@
 package net.xqhs.flash.ent_op.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.ent_op.entities.EntityCore;
 import net.xqhs.flash.ent_op.entities.Pylon;
-import net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon;
+import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.FMas;
 import net.xqhs.flash.ent_op.model.LocalRouter;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Wave;
-import net.xqhs.util.logging.Unit;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-public class DefaultLocalRouterImpl extends Unit implements LocalRouter {
-
-    /**
-     * The default name for entity tools instances of this implementation.
-     */
-    protected static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
-
-    /**
-     * The multiValueMap contains the list of available operations.
-     * (key, value) -> (entityName, operations supported by that entity)
-     */
-    protected static MultiValueMap operations = new MultiValueMap();
-
-    /**
-     * The framework instance.
-     */
-    protected FMas fMas;
-
-    /**
-     * Added pylons used for external routing.
-     */
-    protected Set<Pylon> pylons = new LinkedHashSet<>();
-
-    /**
-     * The object mapper.
-     */
-    protected ObjectMapper mapper = new ObjectMapper();
-
-    //used for one-node deployment
-    public DefaultLocalRouterImpl(FMas fMas) {
-        setUnitName(DEFAULT_LOCAL_ROUTER_NAME);
-        this.fMas = fMas;
-    }
-
-    public DefaultLocalRouterImpl() {
-        setUnitName(DEFAULT_LOCAL_ROUTER_NAME);
-    }
-
-    @Override
-    public boolean setup(MultiTreeMap configuration) {
-        return false;
-    }
-
-    @Override
-    public boolean start() {
-        return false;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return false;
-    }
-
-    @Override
-    public Object handleIncomingOperationCall(OperationCallWave operationCall) {
-        return null;
-    }
-
-    @Override
-    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return DEFAULT_LOCAL_ROUTER_NAME;
-    }
-
-    @Override
-    public List<Operation> getOperations() {
-        return null;
-    }
-
-    @Override
-    public boolean canRoute(EntityID entityID) {
-        return false;
-    }
-
-    @Override
-    public EntityID getEntityID() {
-        return null;
-    }
-
-    @Override
-    public void route(Wave wave) {
-        var targetEntityId = wave.getTargetEntity().ID;
-
-        if (fMas.entityExistsOnLocalNode(targetEntityId)) {
-            routeInternalWave(wave);
-        } else {
-            routeExternalWave(wave);
-        }
-    }
-
-    private void routeInternalWave(Wave wave) {
-        li("The wave was successfully routed.");
-        wave.setRouted(true);
-        fMas.route(wave);
-    }
-
-    /**
-     * Check each of the pylons if they support communication for that specific agent.
-     * TODO: check for all future types of pylons
-     */
-    private void routeExternalWave(Wave wave) {
-        var sourceEntityName = wave.getSourceEntity().ID;
-        var targetEntity = wave.getTargetEntity().ID;
-
-        // first check for websocket pylons
-        var routerEntities = fMas.routerEntities();
-        var routerEntity = routerEntities.stream().findFirst();
-
-        if (routerEntity.isPresent() && routerEntity.get().canRoute(wave.getTargetEntity())) {
-            wave.setRouted(true);
-            if (routerEntity.get() instanceof WebSocketPylon) {
-                li("The wave was successfully routed. Found a pylon to route the wave to [].", targetEntity);
-                var webSocketPylon = (WebSocketPylon) routerEntity.get();
-                webSocketPylon.send(sourceEntityName, targetEntity, serializeWave(wave));
-            }
-        } else {
-            le("The wave couldn't be routed. Failed to find a pylon to route the wave to [].", targetEntity);
-        }
-    }
-
-    public void setfMas(FMas fMas) {
-        this.fMas = fMas;
-    }
-
-    public void addPylon(Pylon pylon) {
-        pylons.add(pylon);
-    }
-
-    private String serializeWave(Wave wave) {
-        try {
-            return mapper.writeValueAsString(wave);
-        } catch (JsonProcessingException e) {
-            le("The wave couldn't be serialized.");
-            return null;
-        }
-    }
+public class DefaultLocalRouterImpl extends EntityCore implements LocalRouter {
+	
+	/**
+	 * The default name for entity tools instances of this implementation.
+	 */
+	protected static final String DEFAULT_LOCAL_ROUTER_NAME = "local router";
+	
+	/**
+	 * The framework instance.
+	 */
+	protected FMas fMas;
+	
+	/**
+	 * Added pylons used for external routing.
+	 */
+	protected Set<Pylon> pylons = new LinkedHashSet<>();
+	
+	@Override
+	public boolean setup(MultiTreeMap configuration, FMas fmas) {
+		setUnitName(DEFAULT_LOCAL_ROUTER_NAME);
+		entityID = new EntityID(DEFAULT_LOCAL_ROUTER_NAME);
+		fMas = fmas;
+		return true;
+	}
+	
+	@Override
+	public void route(Wave wave) {
+		var targetEntityId = wave.getTargetEntity().ID;
+		
+		if(fMas.entityExistsOnLocalNode(targetEntityId)) {
+			routeInternalWave(wave);
+		}
+		else {
+			routeExternalWave(wave);
+		}
+	}
+	
+	private void routeInternalWave(Wave wave) {
+		var targetEntityName = wave.getTargetEntity().ID;
+		var entityTools = fMas.getEntityTools(targetEntityName);
+		if(entityTools != null) {
+			entityTools.handleIncomingWave(wave);
+			li("The wave was successfully routed.");
+		}
+		else
+			le("The wave [] cannot be routed internally because the target entity [] cannot be found.", wave,
+					targetEntityName);
+	}
+	
+	/**
+	 * Check each of the pylons if they support communication for that specific agent. TODO: check for all future types
+	 * of pylons
+	 * 
+	 * @param wave
+	 *            The wave to route.
+	 */
+	private void routeExternalWave(Wave wave) {
+		var targetEntity = wave.getTargetEntity().ID;
+		var routerEntities = fMas.routerEntities();
+		routerEntities.stream().filter(ent -> ent.canRoute(wave.getTargetEntity())).findFirst()
+				.ifPresentOrElse((ent) -> {
+					ent.handleIncomingOperationCall(new OperationCallWave(null, null,
+							RouteOperation.ROUTE_OPERATION_NAME, false, Arrays.asList(wave)));
+					li("The wave was successfully routed. Found a [] pylon to route the wave to [].", ent.getID(),
+							targetEntity);
+				}, () -> {
+					le("The wave couldn't be routed. Failed to find a pylon to route the wave to [].", targetEntity);
+				});
+	}
 }

@@ -1,12 +1,8 @@
 package net.xqhs.flash.ent_op.impl.websocket;
 
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
-import net.xqhs.flash.ent_op.model.EntityAPI;
-import net.xqhs.flash.ent_op.model.EntityID;
-import net.xqhs.flash.ent_op.model.Operation;
-import net.xqhs.flash.ent_op.model.Relation;
-import net.xqhs.util.logging.Unit;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -14,11 +10,10 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.List;
+import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.ent_op.entities.EntityCore;
 
-public class WebSocketServerEntity extends Unit implements EntityAPI {
+public class WebSocketServerEntity extends EntityCore {
 
     /**
      * The {@link org.java_websocket.server.WebSocketServer} instance.
@@ -112,7 +107,7 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
                     if (!entityToWebSocket.containsKey(newEntity)) {
                         entityToWebSocket.put(newEntity, webSocket);
                     }
-                    li("Registered entity [].", newEntity);
+					li("Registered entity [] on websocket [] (node []).", newEntity, webSocket, nodeName);
                 }
             }
 
@@ -180,40 +175,5 @@ public class WebSocketServerEntity extends Unit implements EntityAPI {
             e.printStackTrace();
             return false;
         }
-    }
-
-    @Override
-    public boolean isRunning() {
-        return isRunning;
-    }
-
-    @Override
-    public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
-        return null;
-    }
-
-    @Override
-    public boolean handleRelationChange(Relation.RelationChangeType changeType, Relation relation) {
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public List<Operation> getOperations() {
-        return null;
-    }
-
-    @Override
-    public boolean canRoute(EntityID entityID) {
-        return false;
-    }
-
-    @Override
-    public EntityID getEntityID() {
-        return null;
     }
 }

@@ -1,29 +1,19 @@
 package gabi.entityOperationTest;
 
-import net.xqhs.flash.core.util.MultiTreeMap;
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
+
 import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.operations.MultiplyOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
-import net.xqhs.flash.ent_op.model.FMas;
-
-import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
+import net.xqhs.flash.ent_op.model.OutboundEntityTools;
 
 public class ComputingAgent extends Agent {
-
-    public ComputingAgent() {
-
-    }
-
-    public ComputingAgent(FMas fMas) {
-        this.fMas = fMas;
-    }
-
     @Override
-    public boolean setup(MultiTreeMap agentConfiguration) {
-        super.setup(agentConfiguration);
-        var multiplyOp = new MultiplyOperation();
-        entityTools.createOperation(multiplyOp);
-        return true;
+	public boolean connectTools(OutboundEntityTools entityTools) {
+		super.connectTools(entityTools);
+		var multiplyOp = new MultiplyOperation();
+		framework.createOperation(multiplyOp);
+		return true;
     }
 
     @Override

@@ -1,9 +1,9 @@
 package net.xqhs.flash.ent_op.impl.operations;
 
-import net.xqhs.flash.ent_op.model.Operation;
-
 import java.util.ArrayList;
 import java.util.Set;
+
+import net.xqhs.flash.ent_op.model.Operation;
 
 public class RouteOperation implements Operation {
 
@@ -11,6 +11,11 @@ public class RouteOperation implements Operation {
      * The name of the operation.
      */
     public static final String ROUTE_OPERATION_NAME = "ROUTE";
+	
+	/**
+	 * The operation to register an entity, for routing entities that need entities to be registered.
+	 */
+	public static final String REGISTER_OPERATION = "REGISTER";
 
     /**
      * The arguments list.
@@ -38,7 +43,7 @@ public class RouteOperation implements Operation {
 
     @Override
     public Description getDescription() {
-        return () -> "The route operation supported by an agent.";
+		return () -> "The route operation supported by a support infrastructure pylon.";
     }
 
     @Override
