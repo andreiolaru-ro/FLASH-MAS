@@ -3,6 +3,7 @@ package gabi.entityOperationTest;
 import net.xqhs.flash.ent_op.entities.EntityCore;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityAPI;
+import net.xqhs.flash.ent_op.model.OutboundEntityTools;
 import net.xqhs.flash.ent_op.model.Relation;
 
 public class TestEntity extends EntityCore implements EntityAPI {
@@ -11,6 +12,14 @@ public class TestEntity extends EntityCore implements EntityAPI {
      * The default name for instances of this implementation.
      */
     protected static final String DEFAULT_NAME = "Default Test Entity";
+
+    @Override
+    public boolean connectTools(OutboundEntityTools entityTools) {
+        super.connectTools(entityTools);
+        var printOperation = new PrintOperation();
+        entityTools.createOperation(printOperation);
+        return true;
+    }
 
     @Override
     public boolean start() {
@@ -45,4 +54,9 @@ public class TestEntity extends EntityCore implements EntityAPI {
     private void printMessageOperation(String message) {
         li("received message: []", message);
     }
+
+    public void callOperation(OperationCallWave operationCallWave) {
+        framework.handleOutgoingWave(operationCallWave);
+    }
+
 }

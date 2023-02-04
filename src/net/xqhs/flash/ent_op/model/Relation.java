@@ -39,4 +39,13 @@ public class Relation {
 	public String getRelationName() {
 		return relationName;
 	}
+
+	@Override
+	public String toString() {
+		return "Relation{" +
+				"from=" + from +
+				", to=" + to +
+				", relationName='" + relationName + '\'' +
+				'}';
+	}
 }

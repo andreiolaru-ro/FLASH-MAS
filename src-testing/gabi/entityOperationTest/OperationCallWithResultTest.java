@@ -32,6 +32,6 @@ public class OperationCallWithResultTest {
 
         List<Object> argumentValues = List.of(1.4d, 8.2d, 3.5d);
         var operationCall = new OperationCallWave(agentA.getID(), agentB.getID(), MULTIPLY_OPERATION_NAME, true, argumentValues);
-        agentA.callOperationWithResult(operationCall, System.out::println);
+        agentA.callOperationWithResult(operationCall, x -> System.out.println("The result of the multiply operation is " + x));
     }
 }

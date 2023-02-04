@@ -1,26 +1,13 @@
 package net.xqhs.flash.ent_op.impl.websocket;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONObject;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ent_op.entities.EntityCore;
 import net.xqhs.flash.ent_op.entities.Node;
 import net.xqhs.flash.ent_op.entities.Pylon;
+import net.xqhs.flash.ent_op.impl.operations.RegisterOperation;
 import net.xqhs.flash.ent_op.impl.operations.RouteOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.impl.waves.RelationChangeResultWave;
@@ -34,6 +21,16 @@ import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 import net.xqhs.flash.ent_op.model.Wave;
 import net.xqhs.flash.ent_op.model.Wave.WaveType;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 public class WebSocketPylon extends EntityCore implements Pylon {
 	
@@ -135,17 +132,16 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	
 	@Override
 	public boolean setup(MultiTreeMap configuration) {
-		if(configuration.isSimple(WEBSOCKET_PYLON_NAME))
+		if (configuration.isSimple(WEBSOCKET_PYLON_NAME))
 			pylonName = configuration.getAValue(WEBSOCKET_PYLON_NAME);
-		if(!configuration.containsSimpleName(EntityID.ENTITY_ID_ATTRIBUTE_NAME))
+		if (!configuration.containsSimpleName(EntityID.ENTITY_ID_ATTRIBUTE_NAME))
 			configuration.addSingleValue(EntityID.ENTITY_ID_ATTRIBUTE_NAME, pylonName);
 		super.setup(configuration);
-		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
+		if (configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
 			hasServer = true;
 			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort;
-		}
-		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)) {
+		} else if (configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)) {
 			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
 		}
 		// FIXME: probably not right to use MESSAGE_NODE_KEY
@@ -157,62 +153,17 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	@Override
 	public boolean connectTools(OutboundEntityTools entityTools) {
 		super.connectTools(entityTools);
-		RouteOperation routeOperation = new RouteOperation();
+		var routeOperation = new RouteOperation();
+		var registerOperation = new RegisterOperation();
 		framework.createOperation(routeOperation);
-		framework.createOperation(new Operation() {
-			protected ArrayList<Value> arguments;
-			
-			@Override
-			public boolean hasResult() {
-				return false;
-			}
-			
-			@Override
-			public Value getResultType() {
-				return null;
-			}
-			
-			@Override
-			public Set<Restriction> getRestrictions() {
-				return null;
-			}
-			
-			@Override
-			public String getName() {
-				return RouteOperation.REGISTER_OPERATION;
-			}
-			
-			@Override
-			public Description getDescription() {
-				return null;
-			}
-			
-			@Override
-			public List<Value> getArguments() {
-				if(arguments != null)
-					return arguments;
-				arguments = new ArrayList<>();
-				arguments.add(new Value() {
-					@Override
-					public String getType() {
-						return EntityID.class.getName();
-					}
-					
-					@Override
-					public Description getDescription() {
-						return () -> "The ID of the entity to register";
-					}
-				});
-				return null;
-			}
-		});
+		framework.createOperation(registerOperation);
 		return true;
 	}
 	
 	@Override
 	public boolean handleRelationChange(RelationChangeType changeType, Relation relation) {
 		super.handleRelationChange(changeType, relation);
-		if(changeType == RelationChangeType.CREATE && relation.getRelationName() == Node.EXECUTES_ON_RELATION)
+		if (changeType == RelationChangeType.CREATE && relation.getRelationName() == Node.EXECUTES_ON_RELATION)
 			nodeName = relation.getTo().ID;
 		li("Registered the node name []", nodeName);
 		return true;
@@ -220,11 +171,11 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	
 	@Override
 	public boolean start() {
-		if(isRunning() && ((hasServer && serverEntity != null) || (!hasServer && webSocketClient != null)))
+		if (isRunning() && ((hasServer && serverEntity != null) || (!hasServer && webSocketClient != null)))
 			// no need to re-start
 			return false;
 		super.start();
-		if(hasServer) {
+		if (hasServer) {
 			serverEntity = new WebSocketServerEntity(serverPort);
 			serverEntity.setup(new MultiTreeMap());
 			serverEntity.start();
@@ -232,7 +183,7 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 		try {
 			int tries = 10;
 			long spaceBetweenTries = 1000;
-			while(tries > 0) {
+			while (tries > 0) {
 				try {
 					li("Trying connection to WS server ", webSocketServerAddress);
 					webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
@@ -240,7 +191,7 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 						public void onOpen(ServerHandshake serverHandshake) {
 							li("New connection to server opened.");
 						}
-						
+
 						/**
 						 * Receives a message from the server. The message was previously routed to this websocket
 						 * client address, and it is further routed to a specific entity using the {@link FMas}
@@ -251,37 +202,37 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 						@Override
 						public void onMessage(String message) {
 							var jsonMessage = new JSONObject(message);
-							
-							if(jsonMessage.get("destination") == null) {
+
+							if (jsonMessage.get("destination") == null) {
 								le("No destination entity received.");
 								return;
 							}
-							
+
 							var content = jsonMessage.getString("content");
 							deserializeWave(content).ifPresent(wave -> getFramework().handleOutgoingWave(wave));
 						}
-						
+
 						@Override
 						public void onClose(int i, String s, boolean b) {
 							lw("Closed with exit code " + i);
 						}
-						
+
 						@Override
 						public void onError(Exception e) {
 							le(Arrays.toString(e.getStackTrace()));
 						}
 					};
-				} catch(URISyntaxException e) {
+				} catch (URISyntaxException e) {
 					e.printStackTrace();
 					return false;
 				}
-				if(webSocketClient.connectBlocking())
+				if (webSocketClient.connectBlocking())
 					break;
 				Thread.sleep(spaceBetweenTries);
 				tries--;
 				System.out.println("Tries:" + tries);
 			}
-		} catch(InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -289,11 +240,11 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	}
 	
 	public boolean stop() {
-		if(hasServer)
+		if (hasServer)
 			serverEntity.stop();
 		try {
 			webSocketClient.closeBlocking();
-		} catch(InterruptedException x) {
+		} catch (InterruptedException x) {
 			x.printStackTrace();
 		}
 		li("Stopped");
@@ -302,27 +253,25 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	
 	@Override
 	public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
-		if(webSocketClient == null)
+		if (webSocketClient == null)
 			return Boolean.FALSE;
 		JSONObject messageToServer = new JSONObject();
-		switch(operationCallWave.getTargetOperation()) {
-		
-		case RouteOperation.REGISTER_OPERATION:
-			messageToServer.put(MESSAGE_NODE_KEY, nodeName);
-			messageToServer.put(MESSAGE_ENTITY_KEY, operationCallWave.getArgumentValues().get(0));
-			webSocketClient.send(messageToServer.toString());
-			return Boolean.TRUE;
-		
-		case RouteOperation.ROUTE_OPERATION_NAME:
-			Wave embeddedWave = (Wave) operationCallWave.getArgumentValues().get(0);
-			messageToServer.put(MESSAGE_NODE_KEY, nodeName);
-			messageToServer.put(MESSAGE_SOURCE_KEY, embeddedWave.getSourceEntity().ID);
-			messageToServer.put(MESSAGE_DESTINATION_KEY, embeddedWave.getTargetEntity().ID);
-			messageToServer.put(MESSAGE_CONTENT_KEY, serializeWave(embeddedWave));
-			webSocketClient.send(messageToServer.toString());
-			return Boolean.TRUE;
-		default:
-		
+		switch (operationCallWave.getTargetOperation()) {
+			case RegisterOperation.REGISTER_OPERATION_NAME:
+				messageToServer.put(MESSAGE_NODE_KEY, nodeName);
+				messageToServer.put(MESSAGE_ENTITY_KEY, operationCallWave.getArgumentValues().get(0));
+				webSocketClient.send(messageToServer.toString());
+				return Boolean.TRUE;
+			case RouteOperation.ROUTE_OPERATION_NAME:
+				Wave embeddedWave = (Wave) operationCallWave.getArgumentValues().get(0);
+				messageToServer.put(MESSAGE_NODE_KEY, nodeName);
+				messageToServer.put(MESSAGE_SOURCE_KEY, embeddedWave.getSourceEntity().ID);
+				messageToServer.put(MESSAGE_DESTINATION_KEY, embeddedWave.getTargetEntity().ID);
+				messageToServer.put(MESSAGE_CONTENT_KEY, serializeWave(embeddedWave));
+				webSocketClient.send(messageToServer.toString());
+				return Boolean.TRUE;
+			default:
+
 		}
 		return null;
 	}
@@ -352,22 +301,22 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 		var jsonObject = new JSONObject(content);
 		var waveType = WaveType.valueOf(jsonObject.getString(WAVE_TYPE_KEY));
 		Class<? extends Wave> waveTypeClass = null;
-		
-		switch(waveType) {
-		case OPERATION_CALL:
-			waveTypeClass = OperationCallWave.class;
-			break;
-		case RELATION_CHANGE:
-			waveTypeClass = RelationChangeWave.class;
-			break;
-		case RESULT:
-			waveTypeClass = ResultWave.class;
-			break;
-		case RELATION_CHANGE_RESULT:
-			waveTypeClass = RelationChangeResultWave.class;
-			break;
-		default:
-			le("The [] wave is not supported by FLASH-MAS.", waveType);
+
+		switch (waveType) {
+			case OPERATION_CALL:
+				waveTypeClass = OperationCallWave.class;
+				break;
+			case RELATION_CHANGE:
+				waveTypeClass = RelationChangeWave.class;
+				break;
+			case RESULT:
+				waveTypeClass = ResultWave.class;
+				break;
+			case RELATION_CHANGE_RESULT:
+				waveTypeClass = RelationChangeResultWave.class;
+				break;
+			default:
+				le("The [] wave is not supported by FLASH-MAS.", waveType);
 		}
 		return Optional.ofNullable(waveTypeClass);
 	}
@@ -375,7 +324,7 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	/**
 	 * @return the entity tools.
 	 */
-	OutboundEntityTools getFramework() {
+	public OutboundEntityTools getFramework() {
 		return framework;
 	}
 	

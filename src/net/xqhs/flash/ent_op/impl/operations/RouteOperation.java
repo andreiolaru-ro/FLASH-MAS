@@ -11,11 +11,6 @@ public class RouteOperation implements Operation {
      * The name of the operation.
      */
     public static final String ROUTE_OPERATION_NAME = "ROUTE";
-	
-	/**
-	 * The operation to register an entity, for routing entities that need entities to be registered.
-	 */
-	public static final String REGISTER_OPERATION = "REGISTER";
 
     /**
      * The arguments list.

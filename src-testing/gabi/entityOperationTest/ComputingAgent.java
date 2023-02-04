@@ -23,8 +23,9 @@ public class ComputingAgent extends Agent {
 
         if (operationCall.getTargetOperation().equals(MULTIPLY_OPERATION_NAME)) {
             result = operationCall.getArgumentValues().stream()
-                    .filter(x -> x instanceof Double)
-                    .map(x -> (Double) x)
+                    .filter(x -> x instanceof Number)
+                    .map(Object::toString)
+                    .map(Double::valueOf)
                     .reduce(1d, (x, y) -> x * y);
         }
         return result;

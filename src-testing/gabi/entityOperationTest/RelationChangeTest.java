@@ -29,6 +29,9 @@ public class RelationChangeTest {
         agentA.callRelationChange(Relation.RelationChangeType.CREATE, relation);
 		System.out.println(((OutboundEntityTools) fMas.getEntityTools("test/agent/agentB")).getRelations());
 		System.out.println(((OutboundEntityTools) fMas.getEntityTools("test/agent/agentA")).getRelations());
-		System.out.println(((OutboundEntityTools) fMas.getEntityTools("test/agent/agentB")).getIncomingRelations());
-    }
+
+		agentA.callRelationChange(Relation.RelationChangeType.REMOVE, relation);
+		System.out.println(((OutboundEntityTools) fMas.getEntityTools("test/agent/agentB")).getRelations());
+		System.out.println(((OutboundEntityTools) fMas.getEntityTools("test/agent/agentA")).getRelations());
+	}
 }
