@@ -19,8 +19,6 @@ public class OperationCallWave extends Wave implements Serializable {
     private List<Object> argumentValues;
     private Set<AuthorizationToken> tokens;
 
-    private Object result;
-
     public OperationCallWave() {
 
     }
@@ -73,14 +71,6 @@ public class OperationCallWave extends Wave implements Serializable {
 
     public void setTokens(Set<AuthorizationToken> tokens) {
         this.tokens = tokens;
-    }
-
-    public Object getResult() {
-        return result;
-    }
-
-    public void setResult(Object result) {
-        this.result = result;
     }
 
 }

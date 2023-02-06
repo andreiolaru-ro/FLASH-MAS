@@ -36,7 +36,7 @@ public class EntityCore extends Unit implements EntityAPI {
 	
 	@Override
 	public boolean setup(MultiTreeMap configuration) {
-		if(configuration == null)
+		if (configuration == null)
 			return false;
 		entityID = new EntityID(configuration.getAValue(ENTITY_ID_ATTRIBUTE_NAME));
 		setUnitName(entityID.toString());

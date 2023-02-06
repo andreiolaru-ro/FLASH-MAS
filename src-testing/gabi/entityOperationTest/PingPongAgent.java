@@ -1,6 +1,6 @@
 package gabi.entityOperationTest;
 
-import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +89,7 @@ public class PingPongAgent extends Agent {
                         ArrayList<Object> argumentValues = new ArrayList<>();
                         argumentValues.add("ping-no " + tick);
                         OperationCallWave pingPongOpCall = new OperationCallWave(entityID, otherAgentID,
-                                PING_PONG_OPERATION_NAME, false, argumentValues);
+                                PING_PONG_OPERATION, false, argumentValues);
                         callOperation(pingPongOpCall);
                     }
                 }
@@ -115,7 +115,7 @@ public class PingPongAgent extends Agent {
 			le("entity is not running");
             return null;
         }
-        if (operationCall.getTargetOperation().equals(PING_PONG_OPERATION_NAME)) {
+        if (operationCall.getTargetOperation().equals(PING_PONG_OPERATION)) {
             String message = operationCall.getArgumentValues().get(0).toString();
             String sender = operationCall.getSourceEntity().ID;
             li("received message: [] from []", message, sender);
@@ -124,7 +124,7 @@ public class PingPongAgent extends Agent {
                 ArrayList<Object> argumentValues = new ArrayList<>();
                 argumentValues.add(message + " reply");
                 OperationCallWave replyOpCall = new OperationCallWave(entityID, operationCall.getSourceEntity(),
-                        PING_PONG_OPERATION_NAME, false, argumentValues);
+                        PING_PONG_OPERATION, false, argumentValues);
                 callOperation(replyOpCall);
             }
         }

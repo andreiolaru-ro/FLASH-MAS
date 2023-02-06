@@ -1,7 +1,7 @@
 package gabi.entityOperationTest;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public class OperationCallWithResultTest {
         agentB.start();
 
         List<Object> argumentValues = List.of(1.4d, 8.2d, 3.5d);
-        var operationCall = new OperationCallWave(agentA.getID(), agentB.getID(), MULTIPLY_OPERATION_NAME, true, argumentValues);
+        var operationCall = new OperationCallWave(agentA.getID(), agentB.getID(), MULTIPLY_OPERATION, true, argumentValues);
         agentA.callOperationWithResult(operationCall, x -> System.out.println("The result of the multiply operation is " + x));
     }
 }

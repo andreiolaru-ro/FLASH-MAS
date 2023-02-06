@@ -1,7 +1,7 @@
 package gabi.entityOperationTest;
 
 import static net.xqhs.flash.core.DeploymentConfiguration.NAME_ATTRIBUTE_NAME;
-import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class AgentTest {
 		
 		ArrayList<Object> argumentValues = new ArrayList<>();
 		argumentValues.add("simple message");
-		OperationCallWave operationCall = new OperationCallWave(agentA.getID(), agentB.getID(), RECEIVE_OPERATION_NAME,
+		OperationCallWave operationCall = new OperationCallWave(agentA.getID(), agentB.getID(), RECEIVE_OPERATION,
 				false, argumentValues);
 		agentA.callOperation(operationCall);
 	}

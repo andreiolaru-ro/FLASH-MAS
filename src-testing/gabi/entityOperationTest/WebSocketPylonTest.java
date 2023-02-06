@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
-import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
 import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.NODE_NAME;
 import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_PYLON_NAME;
 import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;
@@ -52,7 +52,7 @@ public class WebSocketPylonTest {
         var agent1 = new Agent();
         agent1.setup(new MultiTreeMap().addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent1"));
         fMas1.registerEntity(agent1);
-        fMas1.route(new OperationCallWave(null, pylon.getID(), RegisterOperation.REGISTER_OPERATION_NAME, false,
+        fMas1.route(new OperationCallWave(null, pylon.getID(), RegisterOperation.REGISTER_OPERATION, false,
                 Arrays.asList(agent1.getID().ID)));
         node1.addEntity(agent1);
 
@@ -79,14 +79,14 @@ public class WebSocketPylonTest {
         agent2.setup(new MultiTreeMap().addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent2"));
         fMas2.registerEntity(agent2);
         node2.addEntity(agent2);
-        fMas2.route(new OperationCallWave(null, pylon2.getID(), RegisterOperation.REGISTER_OPERATION_NAME, false,
+        fMas2.route(new OperationCallWave(null, pylon2.getID(), RegisterOperation.REGISTER_OPERATION, false,
                 Arrays.asList(agent2.getID().ID)));
 
         // add agent
         var agent3 = new ComputingAgent();
         agent3.setup(new MultiTreeMap().addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, "ws://localhost:agent3"));
         fMas2.registerEntity(agent3);
-        fMas2.route(new OperationCallWave(null, pylon2.getID(), RegisterOperation.REGISTER_OPERATION_NAME, false,
+        fMas2.route(new OperationCallWave(null, pylon2.getID(), RegisterOperation.REGISTER_OPERATION, false,
                 Arrays.asList(agent3.getID().ID)));
         node2.addEntity(agent3);
 
@@ -99,12 +99,12 @@ public class WebSocketPylonTest {
         // agent1(node1) calls an agent3(node2) operation
         List<Object> argumentValues = new ArrayList<>();
         argumentValues.add("simple message");
-        var operationCall = new OperationCallWave(agent1.getID(), agent2.getID(), RECEIVE_OPERATION_NAME, false,
+        var operationCall = new OperationCallWave(agent1.getID(), agent2.getID(), RECEIVE_OPERATION, false,
                 argumentValues);
         agent1.callOperation(operationCall);
 
         // agent1(node1) calls an agent3(node2) operation
-        var multiplyOpCall = new OperationCallWave(agent1.getID(), agent3.getID(), MULTIPLY_OPERATION_NAME, true,
+        var multiplyOpCall = new OperationCallWave(agent1.getID(), agent3.getID(), MULTIPLY_OPERATION, true,
                 List.of(1.3d, 24.5d, 65.8d));
         agent1.callOperationWithResult(multiplyOpCall, x -> System.out.println("The result of the multiply operation is " + x));
 

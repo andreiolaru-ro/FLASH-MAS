@@ -12,7 +12,7 @@ public class RegisterOperation implements Operation {
     /**
      * The operation to register an entity, for routing entities that need entities to be registered.
      */
-    public static final String REGISTER_OPERATION_NAME = "REGISTER";
+    public static final String REGISTER_OPERATION = "REGISTER";
 
     /**
      * The arguments list.
@@ -21,7 +21,7 @@ public class RegisterOperation implements Operation {
 
     @Override
     public String getName() {
-        return REGISTER_OPERATION_NAME;
+        return REGISTER_OPERATION;
     }
 
     @Override

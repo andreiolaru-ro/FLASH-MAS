@@ -225,7 +225,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
             return;
         }
 
-        if (getOperation(operationName) == null && operationCallWave.getResult() == null) {
+        if (getOperation(operationName) == null) {
             lw("The [] operation is not supported by the [] entity", operationName, entityID);
             return;
         }
@@ -245,6 +245,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
             var result = createRelation(relation) ? APPROVED : REJECTED;
             sendRelationChangeResult(relationChangeWave, result);
         } else if (REMOVE.equals(changeType)) {
+            entityAPI.handleRelationChange(REMOVE, relation);
             removeRelation(relation);
         }
     }

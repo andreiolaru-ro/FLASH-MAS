@@ -9,7 +9,7 @@ public class ReceiveOperation implements Operation {
     /**
      * The name of the operation.
      */
-    public static final String RECEIVE_OPERATION_NAME = "RECEIVE";
+    public static final String RECEIVE_OPERATION = "RECEIVE";
 
     /**
      * The arguments list.
@@ -33,7 +33,7 @@ public class ReceiveOperation implements Operation {
 
     @Override
     public String getName() {
-        return RECEIVE_OPERATION_NAME;
+        return RECEIVE_OPERATION;
     }
 
     @Override

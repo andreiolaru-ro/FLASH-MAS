@@ -10,7 +10,7 @@ public class RouteOperation implements Operation {
     /**
      * The name of the operation.
      */
-    public static final String ROUTE_OPERATION_NAME = "ROUTE";
+    public static final String ROUTE_OPERATION = "ROUTE";
 
     /**
      * The arguments list.
@@ -33,7 +33,7 @@ public class RouteOperation implements Operation {
     }
     @Override
     public String getName() {
-        return ROUTE_OPERATION_NAME;
+        return ROUTE_OPERATION;
     }
 
     @Override

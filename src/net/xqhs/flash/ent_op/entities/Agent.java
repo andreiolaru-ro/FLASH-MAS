@@ -1,6 +1,6 @@
 package net.xqhs.flash.ent_op.entities;
 
-import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
 
 import net.xqhs.flash.ent_op.impl.operations.ReceiveOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
@@ -38,7 +38,7 @@ public class Agent extends EntityCore {
 
     @Override
     public Object handleIncomingOperationCall(OperationCallWave operationCall) {
-        if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION_NAME)) {
+        if (operationCall.getTargetOperation().equals(RECEIVE_OPERATION)) {
             var message = operationCall.getArgumentValues().get(0).toString();
             var sender = operationCall.getSourceEntity().ID;
             li("############ received message: [] from []", message, sender);

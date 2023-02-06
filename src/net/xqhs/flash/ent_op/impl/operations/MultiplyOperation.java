@@ -7,11 +7,11 @@ import java.util.Set;
 
 public class MultiplyOperation implements Operation {
 
-    public static final String MULTIPLY_OPERATION_NAME = "MULTIPLY";
+    public static final String MULTIPLY_OPERATION = "MULTIPLY";
 
     @Override
     public String getName() {
-        return MULTIPLY_OPERATION_NAME;
+        return MULTIPLY_OPERATION;
     }
 
     @Override

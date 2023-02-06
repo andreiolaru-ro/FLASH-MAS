@@ -76,7 +76,7 @@ public class DefaultLocalRouterImpl extends EntityCore implements LocalRouter {
 		routerEntities.stream().filter(ent -> ent.canRoute(wave.getTargetEntity())).findFirst()
 				.ifPresentOrElse((ent) -> {
 					ent.handleIncomingOperationCall(new OperationCallWave(null, null,
-							RouteOperation.ROUTE_OPERATION_NAME, false, Arrays.asList(wave)));
+							RouteOperation.ROUTE_OPERATION, false, Arrays.asList(wave)));
 					li("The wave was successfully routed. Found a [] pylon to route the wave to [].", ent.getID(),
 							targetEntity);
 				}, () -> {

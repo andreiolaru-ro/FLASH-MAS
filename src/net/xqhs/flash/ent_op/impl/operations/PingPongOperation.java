@@ -9,7 +9,7 @@ public class PingPongOperation implements Operation {
     /**
      * The name of the ping pong operation.
      */
-    public static final String PING_PONG_OPERATION_NAME = "PING-PONG";
+    public static final String PING_PONG_OPERATION = "PING-PONG";
 
     /**
      * The arguments list.
@@ -33,7 +33,7 @@ public class PingPongOperation implements Operation {
 
     @Override
     public String getName() {
-        return PING_PONG_OPERATION_NAME;
+        return PING_PONG_OPERATION;
     }
 
     @Override

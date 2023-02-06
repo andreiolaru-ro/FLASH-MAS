@@ -257,12 +257,12 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 			return Boolean.FALSE;
 		JSONObject messageToServer = new JSONObject();
 		switch (operationCallWave.getTargetOperation()) {
-			case RegisterOperation.REGISTER_OPERATION_NAME:
+			case RegisterOperation.REGISTER_OPERATION:
 				messageToServer.put(MESSAGE_NODE_KEY, nodeName);
 				messageToServer.put(MESSAGE_ENTITY_KEY, operationCallWave.getArgumentValues().get(0));
 				webSocketClient.send(messageToServer.toString());
 				return Boolean.TRUE;
-			case RouteOperation.ROUTE_OPERATION_NAME:
+			case RouteOperation.ROUTE_OPERATION:
 				Wave embeddedWave = (Wave) operationCallWave.getArgumentValues().get(0);
 				messageToServer.put(MESSAGE_NODE_KEY, nodeName);
 				messageToServer.put(MESSAGE_SOURCE_KEY, embeddedWave.getSourceEntity().ID);

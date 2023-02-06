@@ -1,6 +1,6 @@
 package gabi.entityOperationTest;
 
-import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION_NAME;
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
 
 import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.operations.MultiplyOperation;
@@ -21,7 +21,7 @@ public class ComputingAgent extends Agent {
         super.handleIncomingOperationCall(operationCall);
         var result = 0d;
 
-        if (operationCall.getTargetOperation().equals(MULTIPLY_OPERATION_NAME)) {
+        if (operationCall.getTargetOperation().equals(MULTIPLY_OPERATION)) {
             result = operationCall.getArgumentValues().stream()
                     .filter(x -> x instanceof Number)
                     .map(Object::toString)
