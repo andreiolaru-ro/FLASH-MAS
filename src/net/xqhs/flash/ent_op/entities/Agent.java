@@ -1,13 +1,12 @@
 package net.xqhs.flash.ent_op.entities;
 
-import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
-
 import net.xqhs.flash.ent_op.impl.operations.ReceiveOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.OutboundEntityTools;
 import net.xqhs.flash.ent_op.model.Relation;
-import net.xqhs.flash.ent_op.model.ResultReceiver;
+
+import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
 
 public class Agent extends EntityCore {
 	@Override
@@ -56,18 +55,4 @@ public class Agent extends EntityCore {
         return false;
     }
 
-	// TODO: remove / move to an extending class
-    public void callOperation(OperationCallWave operationCallWave) {
-		framework.handleOutgoingWave(operationCallWave);
-    }
-
-	// TODO: remove / move to an extending class
-    public void callOperationWithResult(OperationCallWave operationCallWave, ResultReceiver callBack) {
-		framework.handleOutgoingWave(operationCallWave, callBack);
-    }
-
-	// TODO: remove / move to an extending class
-    public void callRelationChange(Relation.RelationChangeType changeType, Relation relation) {
-		framework.changeRelation(changeType, relation);
-    }
 }

@@ -1,19 +1,19 @@
 package gabi.entityOperationTest;
 
-import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
-
 import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.operations.MultiplyOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.OutboundEntityTools;
 
+import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
+
 public class ComputingAgent extends Agent {
     @Override
-	public boolean connectTools(OutboundEntityTools entityTools) {
-		super.connectTools(entityTools);
-		var multiplyOp = new MultiplyOperation();
-		framework.createOperation(multiplyOp);
-		return true;
+    public boolean connectTools(OutboundEntityTools entityTools) {
+        super.connectTools(entityTools);
+        var multiplyOp = new MultiplyOperation();
+        framework.createOperation(multiplyOp);
+        return true;
     }
 
     @Override

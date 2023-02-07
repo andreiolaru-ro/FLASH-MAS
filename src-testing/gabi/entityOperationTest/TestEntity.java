@@ -25,7 +25,7 @@ public class TestEntity extends EntityCore implements EntityAPI {
     public boolean start() {
         // does nothing, only changes the entity's state
         isRunning = true;
-		li("started");
+        li("started");
         return true;
     }
 
@@ -37,7 +37,7 @@ public class TestEntity extends EntityCore implements EntityAPI {
     @Override
     public Object handleIncomingOperationCall(OperationCallWave operationCallWave) {
         if (!isRunning) {
-			le("is not running");
+            le("is not running");
             return null;
         }
         if ("PRINT".equals(operationCallWave.getTargetOperation())) {

@@ -1,12 +1,5 @@
 package gabi.entityOperationTest;
 
-import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.Agent;
 import net.xqhs.flash.ent_op.impl.operations.PingPongOperation;
@@ -15,6 +8,13 @@ import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.Operation;
 import net.xqhs.flash.ent_op.model.OutboundEntityTools;
 import net.xqhs.flash.ent_op.model.Relation;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static net.xqhs.flash.ent_op.impl.operations.PingPongOperation.PING_PONG_OPERATION;
 
 public class PingPongAgent extends Agent {
 
@@ -51,18 +51,17 @@ public class PingPongAgent extends Agent {
     protected Operation pingPong;
 
 
-
     @Override
     public boolean setup(MultiTreeMap configuration) {
-		super.setup(configuration);
-		if(configuration.isSet(DEST_AGENT_PARAMETER_NAME))
-			otherAgents = configuration.getValues(DEST_AGENT_PARAMETER_NAME);
-		return true;
-	}
-	
-	@Override
-	public boolean connectTools(OutboundEntityTools entityTools) {
-		super.connectTools(entityTools);
+        super.setup(configuration);
+        if (configuration.isSet(DEST_AGENT_PARAMETER_NAME))
+            otherAgents = configuration.getValues(DEST_AGENT_PARAMETER_NAME);
+        return true;
+    }
+
+    @Override
+    public boolean connectTools(OutboundEntityTools entityTools) {
+        super.connectTools(entityTools);
         pingPong = new PingPongOperation();
         entityTools.createOperation(pingPong);
         return true;
@@ -71,7 +70,7 @@ public class PingPongAgent extends Agent {
     @Override
     public boolean start() {
         isRunning = true;
-		li("Agent started");
+        li("Agent started");
         if (otherAgents != null) {
             pingTimer = new Timer();
             pingTimer.schedule(new TimerTask() {
@@ -105,14 +104,14 @@ public class PingPongAgent extends Agent {
 
     public boolean stop() {
         pingTimer.cancel();
-		li("Agent stopped");
+        li("Agent stopped");
         return true;
     }
 
     @Override
     public Object handleIncomingOperationCall(OperationCallWave operationCall) {
         if (!isRunning) {
-			le("entity is not running");
+            le("entity is not running");
             return null;
         }
         if (operationCall.getTargetOperation().equals(PING_PONG_OPERATION)) {
@@ -147,6 +146,6 @@ public class PingPongAgent extends Agent {
     }
 
     public void callOperation(OperationCallWave operationCall) {
-		framework.handleOutgoingWave(operationCall);
+        framework.handleOutgoingWave(operationCall);
     }
 }
