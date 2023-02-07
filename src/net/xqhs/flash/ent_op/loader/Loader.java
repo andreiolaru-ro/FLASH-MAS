@@ -7,7 +7,7 @@ import gabi.entityOperationTest.scenario.agents.HeatingAgent;
 import gabi.entityOperationTest.scenario.agents.LightningAgent;
 import gabi.entityOperationTest.scenario.agents.PhoneAgent;
 import gabi.entityOperationTest.scenario.agents.ProjectorAgent;
-import gabi.entityOperationTest.scenario.agents.SimpleAgent;
+import gabi.entityOperationTest.SimpleAgent;
 import gabi.entityOperationTest.scenario.agents.SmartBoardAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ent_op.entities.Agent;

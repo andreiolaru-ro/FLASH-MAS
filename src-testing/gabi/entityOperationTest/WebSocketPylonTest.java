@@ -1,6 +1,5 @@
 package gabi.entityOperationTest;
 
-import gabi.entityOperationTest.scenario.agents.SimpleAgent;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
