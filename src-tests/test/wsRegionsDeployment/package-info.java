@@ -15,6 +15,8 @@
  * For each script, the distributed version contains additional synchronization mechanisms so that exchanges start
  * virtually at the same time.
  * 
+ * The output of the scripts is the log-monitoring file containing time-marked events.
+ * 
  * Running the scripts on multiple machines (on Windows / Linux):
  * <p>
  * <code>

@@ -274,7 +274,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 			String new_agent = (String) mesg.get("source");
 			lf("Received REGISTER message from new agent ", new_agent);
 			if(agentsList.put(new_agent,
-					new AgentStatus(new_agent, webSocket, AgentStatus.Status.ONLINE, getUnitName())) != null)
+					new AgentStatus(new_agent, webSocket, AgentStatus.Status.HOME, getUnitName())) != null)
 				le("An agent with the name [] already existed!", new_agent);
 			printStatus();
 		}
@@ -285,7 +285,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 			if(!agentsList.containsKey(arrived_agent)) {
 				if(!mobileAgents.containsKey(arrived_agent)) {
 					mobileAgents.put(arrived_agent,
-							new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.TRANSITION, getUnitName()));
+							new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.REMOTE, getUnitName()));
 					String homeServer = (arrived_agent.split("-"))[1];
 					if(clients.containsKey(homeServer)) {
 						Map<String, String> data = new HashMap<>();
@@ -299,10 +299,10 @@ public class RegionServer extends Unit implements Entity<Node> {
 				lf("Agent [] did not change regions", arrived_agent);
 				AgentStatus ag = agentsList.get(arrived_agent);
 				if(ag.getStatus() == AgentStatus.Status.OFFLINE) {
-					ag.setStatus(AgentStatus.Status.ONLINE);
+					ag.setStatus(AgentStatus.Status.HOME);
 					ag.setClientConnection(webSocket);
 					ag.setLastLocation(getUnitName());
-					while(ag.getStatus() == Status.ONLINE && !ag.getMessages().isEmpty()) {
+					while(ag.getStatus() == Status.HOME && !ag.getMessages().isEmpty()) {
 						String saved = ag.getMessages().pop();
 						li("Sending to online agent [] saved message []", arrived_agent, saved);
 						sendMessage(ag.getClientConnection(), arrived_agent, saved);
@@ -320,7 +320,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 			AgentStatus agm = mobileAgents.get(target);
 			if(ag != null) {
 				switch(ag.getStatus()) {
-				case ONLINE:
+				case HOME:
 					lf("Send message [] directly to []", mesg.get("content"), target);
 					sendMessage(ag.getClientConnection(), target, message);
 					break;
@@ -328,7 +328,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 					lf("Saved message [] for []", mesg.get("content"), target);
 					ag.addMessage(message);
 					break;
-				case TRANSITION:
+				case REMOTE:
 					String lastServer = ag.getLastLocation();
 					lf("Send message [] to agent [] located on []", mesg.get("content"), target, lastServer);
 					sendMessage(clients.get(lastServer).client, lastServer, message);
@@ -410,10 +410,10 @@ public class RegionServer extends Unit implements Entity<Node> {
 			if(ag != null) {
 				lf("Agent [] arrived in []. It has [] saved messages.", movedAgent, new_location,
 						ag.getMessages().size());
-				ag.setStatus(AgentStatus.Status.TRANSITION);
+				ag.setStatus(AgentStatus.Status.REMOTE);
 				ag.setLastLocation(new_location);
 				if(clients.containsKey(new_location)) {
-					while(ag.getStatus() == Status.TRANSITION && !ag.getMessages().isEmpty()) {
+					while(ag.getStatus() == Status.REMOTE && !ag.getMessages().isEmpty()) {
 						String saved = ag.getMessages().pop();
 						lf("Sending to remote agent [] saved message []", movedAgent, saved);
 						sendMessage(clients.get(new_location).client, new_location, saved);

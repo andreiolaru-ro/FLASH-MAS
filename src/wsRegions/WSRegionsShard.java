@@ -27,8 +27,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import wsRegions.MessageFactory.MessageType;
 
-public class WSRegionsShard extends NameBasedMessagingShard
-		implements MobilityAwareMessagingShard {
+public class WSRegionsShard extends NameBasedMessagingShard implements MobilityAwareMessagingShard {
 	/**
 	 * the Websocket object connected to Region server.
 	 */
@@ -48,7 +47,7 @@ public class WSRegionsShard extends NameBasedMessagingShard
 		};
 	}
 	
-	public void startShadowAgentShard(MessageType connection_type) {
+	public void startShard(MessageType connection_type) {
 		setUnitName(getAgent().getEntityName());
 		setLoggerType(PlatformUtils.platformLogType());
 		wsClient = new WSClient(serverURI, 10, 10000, this.getLogger()) {
@@ -93,12 +92,12 @@ public class WSRegionsShard extends NameBasedMessagingShard
 	public String getName() {
 		return getAgent().getEntityName();
 	}
-
+	
 	@Override
 	public String getAgentAddress() {
 		return this.getName();
 	}
-
+	
 	@Override
 	public boolean sendMessage(String source, String target, String content) {
 		// String notify_content = createMonitorNotification(ActionType.SEND_MESSAGE, content,
@@ -139,12 +138,12 @@ public class WSRegionsShard extends NameBasedMessagingShard
 				// String.valueOf(new Timestamp(System.currentTimeMillis())));
 				// pylon.send(this.getName(), pylon.getEntityName(), notify_content);
 				// pylon.register(entityName, inbox); // already done in AbstractMessagingShard
-				startShadowAgentShard(MessageType.CONNECT);
+				startShard(MessageType.CONNECT);
 				// System.out.println();
 			}
 			else {
 				this.register(getAgent().getEntityName());
-				startShadowAgentShard(MessageType.REGISTER);
+				startShard(MessageType.REGISTER);
 			}
 			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
 			break;
@@ -215,7 +214,7 @@ public class WSRegionsShard extends NameBasedMessagingShard
 			le("Unknown type");
 		}
 	}
-
+	
 	@Override
 	protected void receiveMessage(String source, String destination, String content) {
 		Object obj = JSONValue.parse(content);

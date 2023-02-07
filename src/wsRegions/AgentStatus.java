@@ -30,7 +30,7 @@ public class AgentStatus {
         /**
          * The agent can receive messages anytime.
          */
-        ONLINE,
+        HOME,
         /**
          * The agent is disconnected and the messages will be saved for it.
          */
@@ -38,7 +38,7 @@ public class AgentStatus {
         /**
          * The agent is moved on another region, but it is ONLINE and can receive messages.
          */
-        TRANSITION,
+        REMOTE,
     }
 
     public AgentStatus(String name, WebSocket webSocket, Status status, String lastLocation) {
