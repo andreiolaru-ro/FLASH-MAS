@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package shadowProtocolDeployment;
+package test.wsRegionsDeployment;
 
 import net.xqhs.flash.FlashBoot;
 import net.xqhs.util.logging.MasterLog;
@@ -27,13 +27,10 @@ public class Boot
 	 */
 	public static void main(String[] args_)
 	{
-		// TestClass test = new
-		// TestClass("src-testing/shadowProtocolDeployment/RandomTestCases/topology1_2_servers_2_pylons_2_agents.json");
-
 		String args = "";
 
 		args += " -load_order monitor;pylon;agent";
-		args += " -package wsRegions testing src-testing.shadowProtocolDeployment.Scripts -loader agent:mobileComposite ";
+		args += " -package wsRegions testing src-tests.test.wsRegionsDeployment.Script -loader agent:mobileComposite ";
 
 		args += " -node node1-localhost:8885 -monitor time:";
 		args += " -pylon WSRegions:Pylon1 isServer:localhost:8885";
@@ -42,13 +39,6 @@ public class Boot
 		args += " -node node2-localhost:8885";
 		args += " -pylon WSRegions:Pylon2 connectTo:localhost:8885";
 
-		// args += " -node node2";
-		// args += " -pylon Pylon-Two classpath:net.xqhs.flash.shadowProtocol.ShadowPylon connectTo:ws://localhost:8886
-		// serverPort:8886 servers:" + String.join("|", test.regionServersList) + " pylon_name:Pylon-Two";
-		// args += " -agent two-localhost:8886 classpath:shadowProtocolDeployment.CompositeAgentTest -shard messaging
-		// ShadowAgentShard connectTo:ws://localhost:8886 agent_name:two-localhost:8886 -shard SendMessageShard
-		// agent_name:two-localhost:8886";
-		
 		MasterLog.enablePerformanceModeTools(500);
 		// MasterLog.activateGlobalPerformanceMode();
 		System.out.println("."); // to activate console output.
