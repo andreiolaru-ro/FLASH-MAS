@@ -17,12 +17,15 @@ public class Boot {
 	 * Tested functionality.
 	 */
 	public static final String FUNCTIONALITY = "MOBILITY";
-	
 	/**
 	 * If <code>true</code>, the mobile agent will ping the other two agents. If <code>false</code>, another agent pings
 	 * the mobile agent.
 	 */
 	static final boolean MOBILE_AGENT_PINGS = true;
+	/**
+	 * Port for the WebSocket server.
+	 */
+	static final String			WS_PORT				= Integer.valueOf(8988).toString();
 	
 	/**
 	 * Arguments for creating agents on nodeA.
@@ -59,11 +62,11 @@ public class Boot {
 		a += prelude;
 		
 		a += " -node nodeA";
-		a += " -pylon webSocket:pylonA serverPort:8888";
+		a += " -pylon webSocket:pylonA serverPort:" + WS_PORT;
 		a += nodeA_agents;
 		
 		a += " -node nodeB";
-		a += " -pylon webSocket:pylonB connectTo:ws://localhost:8888";
+		a += " -pylon webSocket:pylonB connectTo:ws://localhost:" + WS_PORT;
 		a += nodeB_agents;
 		
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(a.split(" ")));

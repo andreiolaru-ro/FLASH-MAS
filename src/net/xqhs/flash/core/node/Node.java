@@ -28,6 +28,7 @@ import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
@@ -88,15 +89,15 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * The name of the node.
 	 */
-	protected String						name				= null;
+	protected String						name						= null;
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their names.
 	 */
-	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
+	protected Map<String, List<Entity<?>>>	registeredEntities			= new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	protected List<Entity<?>>				entityOrder					= new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
@@ -114,6 +115,7 @@ public class Node extends Unit implements Entity<Node> {
 	 * mobile agents which arrive here.
 	 */
 	private PylonProxy						nodePylonProxy;
+	protected String						serverURI					= null;					// FIXME: Remove this
 	
 	/**
 	 * Creates a new {@link Node} instance.
@@ -122,8 +124,10 @@ public class Node extends Unit implements Entity<Node> {
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
 	public Node(MultiTreeMap nodeConfiguration) {
-		if(nodeConfiguration != null)
+		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+			this.serverURI = nodeConfiguration.get("region-server");
+		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 	}
@@ -197,8 +201,9 @@ public class Node extends Unit implements Entity<Node> {
 			else
 				le("failed to start entity [].", entityName);
 		}
-		
 		isRunning = true;
+		if(messagingShard != null)
+			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 		sendStatusUpdate();
 		li("Node [] started.", name);
 		
@@ -287,6 +292,9 @@ public class Node extends Unit implements Entity<Node> {
 				return getName();
 			}
 		});
+		// FIXME: remove this protocol-specific code
+		messagingShard.configure(
+				new MultiTreeMap().addSingleValue("connectTo", this.serverURI).addSingleValue("agent_name", getName()));
 		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}

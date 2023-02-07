@@ -23,7 +23,7 @@ FLASH-MAS contributors:
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
 * Agent mobility
    * Maria-Claudia Buiac
-* Distributed support infrastructure
+* Distributed support infrastructure, wsRegions support infrastructure
    * Monica Pricope
 * Android development (currently a separate project)
    * Daniel Berbece <daniel.berbece97@gmail.com>

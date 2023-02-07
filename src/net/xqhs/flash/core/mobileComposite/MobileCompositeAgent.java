@@ -22,6 +22,7 @@ import net.xqhs.flash.core.node.Node.NodeProxy;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -76,11 +77,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		/**
 		 * The serial UID.
 		 */
-		private static final long	serialVersionUID	= 4212641806365747549L;
-		/**
-		 * The agent
-		 */
-		MobileCompositeAgent		agent;
+		private static final long serialVersionUID = 4212641806365747549L;
 		
 		/**
 		 * @param agent
@@ -91,17 +88,16 @@ public class MobileCompositeAgent extends CompositeAgent {
 		}
 		
 		/**
-		 * Starts the mobility process by posting an {@link AgentEventType#AGENT_STOP} with the indication that the
-		 * agent should become transient.
+		 * Starts the mobility process
 		 * 
 		 * @param destination
 		 *            - the destination of the movement.
+		 * @return <code>true</code> if initiating the migration proceeded correctly and the agent is expected to move
+		 *         at some point in the near future. <code>false</code> if the agent will not move as an effect of this
+		 *         call.
 		 */
-		public void moveTo(String destination) {
-			log("preparing to move to []", destination);
-			postAgentEvent(new AgentEvent(AgentEventType.BEFORE_MOVE));
-			postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP)
-					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER).add(TARGET, destination));
+		public boolean moveTo(String destination) {
+			return ((MobileCompositeAgent) agent).moveTo(destination);
 		}
 		
 		/**
@@ -162,11 +158,15 @@ public class MobileCompositeAgent extends CompositeAgent {
 		// this is the point where the agent has arrived after mobility.
 		loadShards();
 		
-		log("agent has moved successfully");
-		boolean res = postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_START)
-				.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER));
-		postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
-		return res;
+		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
+		boolean shardManagedMigration = msgShard != null && msgShard instanceof MobilityAwareMessagingShard;
+		log("agent has moved successfully; migration managed by []", shardManagedMigration ? "shard" : "agent");
+		if(!postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_START)
+				.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER)))
+			return false;
+		if(!shardManagedMigration)
+			return postAgentEvent(new AgentEvent(AgentEventType.AFTER_MOVE));
+		return true;
 	}
 	
 	/**
@@ -235,6 +235,28 @@ public class MobileCompositeAgent extends CompositeAgent {
 	}
 	
 	/**
+	 * Starts the mobility process. It posts an {@link AgentEventType#AGENT_STOP} event and then either expects the
+	 * {@link MobilityAwareMessagingShard} to issue the stopping event or posts an {@link AgentEventType#AGENT_STOP}
+	 * with the indication that the agent should become transient.
+	 * 
+	 * @param destination
+	 *            - the destination of the movement.
+	 * @return <code>true</code> if initiating the migration proceeded correctly and the agent is expected to move at
+	 *         some point in the near future. <code>false</code> if the agent will not move as an effect of this call.
+	 */
+	protected boolean moveTo(String destination) {
+		AgentShard msgShard = getShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
+		boolean shardManagedMigration = msgShard != null && msgShard instanceof MobilityAwareMessagingShard;
+		log("preparing to move to []; managed by []", destination, shardManagedMigration ? "shard" : "agent");
+		if(!postAgentEvent((AgentEvent) new AgentEvent(AgentEventType.BEFORE_MOVE).add(TARGET, destination)))
+			return false;
+		if(!shardManagedMigration)
+			return postAgentEvent((AgentEvent) new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP)
+					.add(TRANSIENT_EVENT_PARAMETER, MOVE_TRANSIENT_EVENT_PARAMETER).add(TARGET, destination));
+		return true;
+	}
+	
+	/**
 	 * Serializes the current agent after:
 	 * <ul>
 	 * <li>sorting the shards between serializable and non-serializable
@@ -295,7 +317,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 * @return the proxy to the current node, if any; <code>null</code> otherwise.
 	 */
 	public NodeProxy getNodeProxyContext() {
-		for(var context : agentContext)
+		for(EntityProxy<? extends Entity<?>> context : agentContext)
 			if(context instanceof NodeProxy)
 				return (NodeProxy) context;
 		return null;

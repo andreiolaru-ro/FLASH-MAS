@@ -48,8 +48,8 @@ public class PingBackTestShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
-			if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
-				break;
+			// if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
+			// break;
 			String replyContent = ((AgentWave) event).getContent() + " reply";
 			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
 			break;

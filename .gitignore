@@ -3,3 +3,6 @@
 .idea
 .xml
 *.iml
+/log-*.yaml
+/APDescription.txt
+/MTPs-Container-*.txt
