@@ -1,4 +1,4 @@
 /bin/
 .idea
 .xml
-Flash-MAS.iml
+*.iml
