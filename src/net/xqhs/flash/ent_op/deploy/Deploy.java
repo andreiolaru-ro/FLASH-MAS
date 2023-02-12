@@ -1,4 +1,4 @@
-package net.xqhs.flash.ent_op.loader;
+package net.xqhs.flash.ent_op.deploy;
 
 import gabi.entityOperationTest.ComputingAgent;
 import gabi.entityOperationTest.scenario.agents.CoolingAgent;
@@ -26,7 +26,7 @@ import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_PYLO
 import static net.xqhs.flash.ent_op.impl.websocket.WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME;
 import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 
-public class Loader {
+public class Deploy {
 
     public enum AgentType {
         COOLING_AGENT, COMPUTING_AGENT, DOOR_AGENT, HEATING_AGENT, LIGHTNING_AGENT, PHONE_AGENT, PROJECTOR_AGENT, SIMPLE_AGENT, SMART_BOARD_AGENT
@@ -40,10 +40,8 @@ public class Loader {
     }
 
     public static Node createNode(FMas fMas, String nodeId) {
-        var node = new Node();
-        node.setup(new MultiTreeMap().addFirstValue(ENTITY_ID_ATTRIBUTE_NAME, nodeId));
-        fMas.registerEntity(node);
-        return node;
+        var configuration = new MultiTreeMap().addFirstValue(ENTITY_ID_ATTRIBUTE_NAME, nodeId);
+        return createNode(fMas, configuration);
     }
 
     public static Pylon createPylon(FMas fMas, Node node, MultiTreeMap configuration) {
@@ -56,27 +54,13 @@ public class Loader {
     }
 
     public static Pylon createPylon(FMas fMas, Node node, String pylonId, String nodeId) {
-        var pylon = new WebSocketPylon();
-        pylon.setup(new MultiTreeMap().addSingleValue(WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
+        var configuration = new MultiTreeMap().addSingleValue(WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
                 .addSingleValue(WEBSOCKET_PYLON_NAME, pylonId)
-                .addSingleValue(NODE_NAME, nodeId));
-        fMas.registerEntity(pylon);
-        node.addEntity(pylon);
-        pylon.start();
-        return pylon;
+                .addSingleValue(NODE_NAME, nodeId);
+        return createPylon(fMas, node, configuration);
     }
 
-    public static Agent createAgent(FMas fMas, Node node, Pylon pylon, AgentType agentType, String agentId) {
-        var agent = instantiateAgent(agentType);
-        agent.setup(new MultiTreeMap().addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, agentId));
-        fMas.registerEntity(agent);
-        fMas.route(new OperationCallWave(null, pylon.getID(), RegisterOperation.REGISTER_OPERATION, false,
-                List.of(agent.getID().ID)));
-        node.addEntity(agent);
-        return agent;
-    }
-
-    public static Agent createAgent(FMas fMas, Node node, Pylon pylon, AgentType agentType, String agentId, MultiTreeMap configuration) {
+    public static Agent createAgent(FMas fMas, Node node, Pylon pylon, AgentType agentType, MultiTreeMap configuration) {
         var agent = instantiateAgent(agentType);
         agent.setup(configuration);
         fMas.registerEntity(agent);
@@ -84,6 +68,11 @@ public class Loader {
                 List.of(agent.getID().ID)));
         node.addEntity(agent);
         return agent;
+    }
+
+    public static Agent createAgent(FMas fMas, Node node, Pylon pylon, AgentType agentType, String agentId) {
+        var configuration = new MultiTreeMap().addSingleValue(ENTITY_ID_ATTRIBUTE_NAME, agentId);
+        return createAgent(fMas, node, pylon, agentType, configuration);
     }
 
     public static WebSocketServerEntity createWebSocketServer(int serverPort) {

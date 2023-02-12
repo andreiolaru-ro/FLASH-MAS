@@ -8,12 +8,12 @@ import java.util.List;
 
 import static net.xqhs.flash.ent_op.impl.operations.MultiplyOperation.MULTIPLY_OPERATION;
 import static net.xqhs.flash.ent_op.impl.operations.ReceiveOperation.RECEIVE_OPERATION;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.COMPUTING_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.SIMPLE_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.createAgent;
-import static net.xqhs.flash.ent_op.loader.Loader.createNode;
-import static net.xqhs.flash.ent_op.loader.Loader.createPylon;
-import static net.xqhs.flash.ent_op.loader.Loader.createWebSocketServer;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.COMPUTING_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.SIMPLE_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createAgent;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createNode;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createPylon;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createWebSocketServer;
 
 public class WebSocketPylonTest {
 

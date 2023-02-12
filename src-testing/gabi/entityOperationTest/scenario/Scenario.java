@@ -2,15 +2,15 @@ package gabi.entityOperationTest.scenario;
 
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.DOOR_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.HEATING_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.PHONE_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.PROJECTOR_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.AgentType.SMART_BOARD_AGENT;
-import static net.xqhs.flash.ent_op.loader.Loader.createAgent;
-import static net.xqhs.flash.ent_op.loader.Loader.createNode;
-import static net.xqhs.flash.ent_op.loader.Loader.createPylon;
-import static net.xqhs.flash.ent_op.loader.Loader.createWebSocketServer;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.DOOR_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.HEATING_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.PHONE_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.PROJECTOR_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.SMART_BOARD_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createAgent;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createNode;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createPylon;
+import static net.xqhs.flash.ent_op.deploy.Deploy.createWebSocketServer;
 
 public class Scenario {
 
