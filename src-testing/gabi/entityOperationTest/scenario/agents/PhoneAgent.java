@@ -1,11 +1,11 @@
 package gabi.entityOperationTest.scenario.agents;
 
-import net.xqhs.flash.ent_op.entities.Agent;
+import gabi.entityOperationTest.SimpleAgent;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.ResultReceiver;
 
-public class PhoneAgent extends Agent {
+public class PhoneAgent extends SimpleAgent {
     public void callOperation(OperationCallWave operationCallWave) {
         framework.handleOutgoingWave(operationCallWave);
     }

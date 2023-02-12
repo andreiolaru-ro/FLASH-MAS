@@ -16,7 +16,7 @@ public class DoubleValue implements Operation.Value {
 
     @Override
     public String getType() {
-        return Double.class.getName();
+        return Double.class.getSimpleName();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package net.xqhs.flash.ent_op.model;
 
+import java.util.Objects;
+
 @SuppressWarnings("javadoc")
 public class Relation {
 	public enum RelationChangeType {
@@ -38,6 +40,19 @@ public class Relation {
 
 	public String getRelationName() {
 		return relationName;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Relation relation = (Relation) o;
+		return Objects.equals(from, relation.from) && Objects.equals(to, relation.to) && Objects.equals(relationName, relation.relationName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(from, to, relationName);
 	}
 
 	@Override

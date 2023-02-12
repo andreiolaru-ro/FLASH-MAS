@@ -1,6 +1,6 @@
 package gabi.entityOperationTest.scenario.operations;
 
-import gabi.entityOperationTest.scenario.values.BooleanValue;
+import gabi.entityOperationTest.scenario.values.StringValue;
 import net.xqhs.flash.ent_op.model.Operation;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class TurnOffOperation implements Operation {
 
     @Override
     public Value getResultType() {
-        return new BooleanValue("The result of the turn off operation.");
+        return new StringValue("The result of the turn off operation.");
     }
 
     @Override

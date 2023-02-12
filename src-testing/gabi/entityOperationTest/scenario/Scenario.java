@@ -1,9 +1,22 @@
 package gabi.entityOperationTest.scenario;
 
+import gabi.entityOperationTest.scenario.agents.ManagementAgent;
+import gabi.entityOperationTest.scenario.agents.PhoneAgent;
+import gabi.entityOperationTest.scenario.operations.TurnOnOperation;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
+import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
+import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
+import net.xqhs.flash.ent_op.model.Relation;
 
+import java.util.List;
+
+import static gabi.entityOperationTest.scenario.operations.GetOperation.GET_OPERATION;
+import static gabi.entityOperationTest.scenario.operations.SetOperation.SET_OPERATION;
+import static gabi.entityOperationTest.scenario.operations.TurnOnOperation.TURN_ON_OPERATION;
+import static gabi.entityOperationTest.scenario.relations.PrecisRelation.TEACHER;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.DOOR_AGENT;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.HEATING_AGENT;
+import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.MANAGEMENT_AGENT;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.PHONE_AGENT;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.PROJECTOR_AGENT;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.SMART_BOARD_AGENT;
@@ -11,6 +24,7 @@ import static net.xqhs.flash.ent_op.deploy.Deploy.createAgent;
 import static net.xqhs.flash.ent_op.deploy.Deploy.createNode;
 import static net.xqhs.flash.ent_op.deploy.Deploy.createPylon;
 import static net.xqhs.flash.ent_op.deploy.Deploy.createWebSocketServer;
+import static net.xqhs.flash.ent_op.model.Relation.RelationChangeType.CREATE;
 
 public class Scenario {
 
@@ -22,7 +36,7 @@ public class Scenario {
         var phoneFMas = new DefaultFMasImpl();
         var phoneNode = createNode(phoneFMas, "phoneNode");
         var phonePylon = createPylon(phoneFMas, phoneNode, "phonePylon", "phoneNode");
-        var phoneAgent = createAgent(phoneFMas, phoneNode, phonePylon, PHONE_AGENT, "ws://localhost:phoneAgent");
+        var phoneAgent = (PhoneAgent) createAgent(phoneFMas, phoneNode, phonePylon, PHONE_AGENT, "ws://localhost:phoneAgent");
         phoneNode.start();
 
 
@@ -30,6 +44,7 @@ public class Scenario {
         var precis1FMas = new DefaultFMasImpl();
         var precis1Node = createNode(precis1FMas, "precis1Node");
         var precis1Pylon = createPylon(precis1FMas, precis1Node, "precis1Pylon", "precis1Node");
+        var precis1ManagementAgent = (ManagementAgent) createAgent(precis1FMas, precis1Node, precis1Pylon, MANAGEMENT_AGENT, "ws://localhost:precis1ManagementAgent");
         var precis1HeatingAgent = createAgent(precis1FMas, precis1Node, precis1Pylon, HEATING_AGENT, "ws://localhost:precis1HeatingAgent");
         var precis1DoorAgent = createAgent(precis1FMas, precis1Node, precis1Pylon, DOOR_AGENT, "ws://localhost:precis1DoorAgent");
         var precis1SmartBoardAgent = createAgent(precis1FMas, precis1Node, precis1Pylon, SMART_BOARD_AGENT, "ws://localhost:precis1SmartBoardAgent");
@@ -47,6 +62,17 @@ public class Scenario {
         var precis2ProjectorAgent = createAgent(precis2FMas, precis2Node, precis2Pylon, PROJECTOR_AGENT, "ws://localhost:precis2ProjectorAgent");
         var precis2LightningAgent = createAgent(precis2FMas, precis2Node, precis2Pylon, PROJECTOR_AGENT, "ws://localhost:precis2LightningAgent");
         precis2Node.start();
+
+        // *********************************************** relations ********************************************** //
+        precis1ManagementAgent.callRelationChange(CREATE, new Relation(phoneAgent.getID(), precis1HeatingAgent.getID(), TEACHER.name()));
+
+        // ************************************************ op call *********************************************** //
+        var turnHeatingOnOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), TURN_ON_OPERATION, true, null);
+        var getTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), GET_OPERATION, true, null);
+        var setTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), SET_OPERATION, true, List.of(22.0));
+        phoneAgent.callOperationWithResult(turnHeatingOnOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(getTempOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(setTempOpCall, System.out::println);
 
     }
 }

@@ -1,36 +1,29 @@
 package gabi.entityOperationTest.scenario.operations;
 
-import gabi.entityOperationTest.scenario.values.StringValue;
 import net.xqhs.flash.ent_op.model.Operation;
 
 import java.util.List;
 import java.util.Set;
 
-public class TurnOnOperation implements Operation {
-
-    /**
-     * The name of the operation.
-     */
-    public static final String TURN_ON_OPERATION = "TURN_ON";
-
+public class StartPresentationOperation implements Operation {
     @Override
     public String getName() {
-        return TURN_ON_OPERATION;
+        return null;
     }
 
     @Override
     public Description getDescription() {
-        return () -> "The turn on operation supported by an agent. The system corresponding to the agent is started by this operation.";
+        return null;
     }
 
     @Override
     public boolean hasResult() {
-        return true;
+        return false;
     }
 
     @Override
     public Value getResultType() {
-        return new StringValue("The result of the turn on operation.");
+        return null;
     }
 
     @Override

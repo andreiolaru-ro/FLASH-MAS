@@ -1,6 +1,7 @@
 package net.xqhs.flash.ent_op.deploy;
 
 import gabi.entityOperationTest.ComputingAgent;
+import gabi.entityOperationTest.scenario.agents.ManagementAgent;
 import gabi.entityOperationTest.scenario.agents.CoolingAgent;
 import gabi.entityOperationTest.scenario.agents.DoorAgent;
 import gabi.entityOperationTest.scenario.agents.HeatingAgent;
@@ -29,7 +30,7 @@ import static net.xqhs.flash.ent_op.model.EntityID.ENTITY_ID_ATTRIBUTE_NAME;
 public class Deploy {
 
     public enum AgentType {
-        COOLING_AGENT, COMPUTING_AGENT, DOOR_AGENT, HEATING_AGENT, LIGHTNING_AGENT, PHONE_AGENT, PROJECTOR_AGENT, SIMPLE_AGENT, SMART_BOARD_AGENT
+        COOLING_AGENT, COMPUTING_AGENT, DOOR_AGENT, HEATING_AGENT, LIGHTNING_AGENT, MANAGEMENT_AGENT, PHONE_AGENT, PROJECTOR_AGENT, SIMPLE_AGENT, SMART_BOARD_AGENT
     }
 
     public static Node createNode(FMas fMas, MultiTreeMap configuration) {
@@ -94,6 +95,8 @@ public class Deploy {
                 return new HeatingAgent();
             case LIGHTNING_AGENT:
                 return new LightningAgent();
+            case MANAGEMENT_AGENT:
+                return new ManagementAgent();
             case PHONE_AGENT:
                 return new PhoneAgent();
             case PROJECTOR_AGENT:
