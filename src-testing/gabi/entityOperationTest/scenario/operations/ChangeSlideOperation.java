@@ -7,10 +7,14 @@ import java.util.Set;
 
 public class ChangeSlideOperation implements Operation {
 
+    /**
+     * The name of the operation.
+     */
+    public static final String CHANGE_SLIDE_OPERATION = "CHANGE_SLIDE";
 
     @Override
     public String getName() {
-        return null;
+        return CHANGE_SLIDE_OPERATION;
     }
 
     @Override

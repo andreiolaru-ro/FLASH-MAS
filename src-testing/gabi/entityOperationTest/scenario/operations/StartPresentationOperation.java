@@ -6,9 +6,15 @@ import java.util.List;
 import java.util.Set;
 
 public class StartPresentationOperation implements Operation {
+
+    /**
+     * The name of the operation.
+     */
+    public static final String START_PRESENTATION_OPERATION = "START_PRESENTATION";
+
     @Override
     public String getName() {
-        return null;
+        return START_PRESENTATION_OPERATION;
     }
 
     @Override

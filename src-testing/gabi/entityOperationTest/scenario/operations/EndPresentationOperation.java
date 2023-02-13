@@ -6,9 +6,15 @@ import java.util.List;
 import java.util.Set;
 
 public class EndPresentationOperation implements Operation {
+
+    /**
+     * The name of the operation.
+     */
+    public static final String END_PRESENTATION_OPERATION = "END_PRESENTATION";
+
     @Override
     public String getName() {
-        return null;
+        return END_PRESENTATION_OPERATION;
     }
 
     @Override

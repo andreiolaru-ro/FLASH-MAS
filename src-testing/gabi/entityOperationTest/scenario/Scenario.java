@@ -2,16 +2,10 @@ package gabi.entityOperationTest.scenario;
 
 import gabi.entityOperationTest.scenario.agents.ManagementAgent;
 import gabi.entityOperationTest.scenario.agents.PhoneAgent;
-import gabi.entityOperationTest.scenario.operations.TurnOnOperation;
 import net.xqhs.flash.ent_op.impl.DefaultFMasImpl;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
-import net.xqhs.flash.ent_op.impl.waves.RelationChangeWave;
 import net.xqhs.flash.ent_op.model.Relation;
 
-import java.util.List;
-
-import static gabi.entityOperationTest.scenario.operations.GetOperation.GET_OPERATION;
-import static gabi.entityOperationTest.scenario.operations.SetOperation.SET_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.TurnOnOperation.TURN_ON_OPERATION;
 import static gabi.entityOperationTest.scenario.relations.PrecisRelation.TEACHER;
 import static net.xqhs.flash.ent_op.deploy.Deploy.AgentType.DOOR_AGENT;
@@ -65,14 +59,18 @@ public class Scenario {
 
         // *********************************************** relations ********************************************** //
         precis1ManagementAgent.callRelationChange(CREATE, new Relation(phoneAgent.getID(), precis1HeatingAgent.getID(), TEACHER.name()));
+        precis1ManagementAgent.callRelationChange(CREATE, new Relation(precis1ManagementAgent.getID(), precis1ProjectorAgent.getID(), "MANAGER"));
 
         // ************************************************ op call *********************************************** //
-        var turnHeatingOnOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), TURN_ON_OPERATION, true, null);
-        var getTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), GET_OPERATION, true, null);
-        var setTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), SET_OPERATION, true, List.of(22.0));
-        phoneAgent.callOperationWithResult(turnHeatingOnOpCall, System.out::println);
-        phoneAgent.callOperationWithResult(getTempOpCall, System.out::println);
-        phoneAgent.callOperationWithResult(setTempOpCall, System.out::println);
+//        var turnHeatingOnOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), TURN_ON_OPERATION, true, null);
+//        var getTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), GET_OPERATION, true, null);
+//        var setTempOpCall = new OperationCallWave(phoneAgent.getID(), precis1HeatingAgent.getID(), SET_OPERATION, true, List.of(22.0));
+//        phoneAgent.callOperationWithResult(turnHeatingOnOpCall, System.out::println);
+//        phoneAgent.callOperationWithResult(getTempOpCall, System.out::println);
+//        phoneAgent.callOperationWithResult(setTempOpCall, System.out::println);
 
+        var turnProjectorOnOpCall = new OperationCallWave(phoneAgent.getID(), precis1ProjectorAgent.getID(), TURN_ON_OPERATION, true, null);
+
+        phoneAgent.callOperationWithResult(turnProjectorOnOpCall, System.out::println);
     }
 }
