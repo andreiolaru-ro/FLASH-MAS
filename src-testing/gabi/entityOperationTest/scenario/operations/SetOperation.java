@@ -48,7 +48,7 @@ public class SetOperation implements Operation {
         arguments.add(new Value() {
             @Override
             public String getType() {
-                return Double.class.getName();
+                return Double.class.getSimpleName();
             }
 
             @Override

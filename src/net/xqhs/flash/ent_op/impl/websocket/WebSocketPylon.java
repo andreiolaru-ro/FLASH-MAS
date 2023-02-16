@@ -32,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import static net.xqhs.flash.ent_op.model.Relation.RelationType.EXECUTES_ON;
+
 public class WebSocketPylon extends EntityCore implements Pylon {
 	
 	/**
@@ -163,7 +165,7 @@ public class WebSocketPylon extends EntityCore implements Pylon {
 	@Override
 	public boolean handleRelationChange(RelationChangeType changeType, Relation relation) {
 		super.handleRelationChange(changeType, relation);
-		if (changeType == RelationChangeType.CREATE && relation.getRelationName() == Node.EXECUTES_ON_RELATION)
+		if (changeType == RelationChangeType.CREATE && relation.getRelationName().equals(EXECUTES_ON.toString()))
 			nodeName = relation.getTo().ID;
 		li("Registered the node name []", nodeName);
 		return true;

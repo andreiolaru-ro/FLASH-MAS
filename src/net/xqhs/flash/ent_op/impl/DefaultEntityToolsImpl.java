@@ -232,7 +232,7 @@ public class DefaultEntityToolsImpl extends Unit implements EntityTools {
 
         var result = entityAPI.handleIncomingOperationCall(operationCallWave);
 
-        if (operationCallWave.isSendReturnValue()) {
+        if (operationCallWave.isSendReturnValue() && result != null) {
             sendResult(operationCallWave, result);
         }
     }

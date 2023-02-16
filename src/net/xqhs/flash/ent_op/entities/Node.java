@@ -8,10 +8,10 @@ import net.xqhs.flash.ent_op.model.EntityID;
 import net.xqhs.flash.ent_op.model.Relation;
 import net.xqhs.flash.ent_op.model.Relation.RelationChangeType;
 
+import static net.xqhs.flash.ent_op.model.Relation.RelationType.EXECUTES_ON;
+
 public class Node extends EntityCore implements EntityAPI {
 
-	public static final String EXECUTES_ON_RELATION = "EXECUTES-ON";
-	
     /**
      * All added entities.
      */
@@ -20,16 +20,14 @@ public class Node extends EntityCore implements EntityAPI {
     @Override
     public boolean start() {
 		super.start();
-		entities.forEach((key, entity) -> {
-			entity.start();
-		});
+		entities.forEach((key, entity) -> entity.start());
         return true;
     }
 
 	public boolean addEntity(EntityAPI entityAPI) {
 		entities.put(entityAPI.getID(), entityAPI);
 		framework.changeRelation(RelationChangeType.CREATE,
-				new Relation(this.getID(), entityAPI.getID(), EXECUTES_ON_RELATION));
+				new Relation(this.getID(), entityAPI.getID(), EXECUTES_ON.toString()));
 		return true;
     }
 }
