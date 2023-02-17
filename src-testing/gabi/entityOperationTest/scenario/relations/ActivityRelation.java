@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum ActivityRelation {
+
     CLOUD_COMPUTING, OPERATING_SYSTEMS;
 
     public static List<String> getAllActivities() {

@@ -42,21 +42,21 @@ public class DoorAgent extends RemoteSmartHomeAgent {
     private String handleOpenOperation() {
         if (doorState == SystemState.CLOSED) {
             doorState = SystemState.OPEN;
-            return getID() + " door was opened.";
+            return getID() + " The door was opened.";
         }
-        return getID() + " door is already open.";
+        return getID() + " The door is already open.";
     }
 
     private String handleCloseOperation() {
         if (doorState == SystemState.OPEN) {
             doorState = SystemState.CLOSED;
-            return getID() + " door was closed.";
+            return getID() + " The door was closed.";
         }
-        return getID() + " door is already closed.";
+        return getID() + " The door is already closed.";
     }
 
     private String handleGetDoorStateOperation() {
-        return getID() + " door is " + doorState.toString();
+        return getID() + " The door is " + doorState.toString();
     }
 
 }

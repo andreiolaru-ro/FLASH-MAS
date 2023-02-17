@@ -88,46 +88,46 @@ public class ProjectorAgent extends SmartHomeAgent {
     private String handleTurnOnOperation() {
         if (state == SystemState.OFF) {
             state = SystemState.ON;
-            return getID() + " projector was turned on.";
+            return getID() + " The projector was turned on.";
         }
-        return getID() + " projector is already on.";
+        return getID() + " The projector is already on.";
     }
 
     private String handleTurnOffOperation() {
         if (state == SystemState.ON) {
             state = SystemState.OFF;
-            return getID() + " projector was turned off.";
+            return getID() + " The projector was turned off.";
         }
-        return getID() + " projector is already off.";
+        return getID() + " The projector is already off.";
     }
 
     private String handleStartPresentationOperation(String filePath) {
         if (state == SystemState.OFF) {
-            return getID() + " projector is turned off. Turn on the projector to start the presentation.";
+            return getID() + " The projector is turned off. Turn on the projector to start the presentation.";
         }
         presentationState = SystemState.OPEN;
-        return getID() + " " + filePath + " presentation has started.";
+        return getID() + " " + filePath + " The presentation has started.";
     }
 
     private String handleChangeSlideOperation(int slideNumber) {
         if (state == SystemState.OFF) {
-            return getID() + " projector is turned off. Turn on the projector to start a presentation.";
+            return getID() + " The projector is turned off. Turn on the projector to start a presentation.";
         }
         if (presentationState == SystemState.CLOSED) {
-            return getID() + " can't change the slide. There is currently no presentation in progress.";
+            return getID() + " Can't change the slide. There is currently no presentation in progress.";
         }
-        return getID() + " the presentation was changed to slide " + slideNumber + ".";
+        return getID() + " The presentation was changed to slide " + slideNumber + ".";
     }
 
     private String handleEndPresentationOperation() {
         if (state == SystemState.OFF) {
-            return getID() + " projector is turned off. Turn on the projector to start a presentation.";
+            return getID() + " The projector is turned off. Turn on the projector to start a presentation.";
         }
         if (presentationState == SystemState.CLOSED) {
-            return getID() + " can't end the presentation. There is currently no presentation in progress.";
+            return getID() + " Can't end the presentation. There is currently no presentation in progress.";
         }
         presentationState = SystemState.CLOSED;
-        return getID() + " the current presentation has ended.";
+        return getID() + " The current presentation has ended.";
     }
 
 }

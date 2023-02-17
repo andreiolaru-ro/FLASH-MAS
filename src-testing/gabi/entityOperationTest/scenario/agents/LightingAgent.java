@@ -39,8 +39,8 @@ public class LightingAgent extends RemoteSmartHomeAgent {
             case GET_OPERATION:
                 return handleGetLuminosityOperation();
             case SET_OPERATION:
-                var targetTemperature = Double.parseDouble(operationCall.getArgumentValues().get(0).toString());
-                return handleSetLuminosityOperation(targetTemperature);
+                var targetLuminosity = Double.parseDouble(operationCall.getArgumentValues().get(0).toString());
+                return handleSetLuminosityOperation(targetLuminosity);
         }
 
         return operation + " operation is not supported by the " + getUnitName() + "entity.";
@@ -49,29 +49,29 @@ public class LightingAgent extends RemoteSmartHomeAgent {
     private String handleTurnOnOperation() {
         if (state == SystemState.OFF) {
             state = SystemState.ON;
-            return getID() + " lighting was turned on.";
+            return getID() + " The lighting was turned on.";
         }
-        return getID() + " lighting is already on.";
+        return getID() + " The lighting is already on.";
     }
 
     private String handleTurnOffOperation() {
         if (state == SystemState.ON) {
             state = SystemState.OFF;
-            return getID() + " lighting was turned off.";
+            return getID() + " The lighting was turned off.";
         }
-        return getID() + " lighting is already off.";
+        return getID() + " The lighting is already off.";
     }
 
     private String handleGetLuminosityOperation() {
-        return getID() + " lighting is " + luminosity + "%.";
+        return getID() + " The luminosity is " + luminosity + "%.";
     }
 
     private String handleSetLuminosityOperation(double targetLuminosity) {
-        if (state == SystemState.ON) {
-            luminosity = targetLuminosity;
-            return getID() + " luminosity was set to " + targetLuminosity + "%.";
+        if (state == SystemState.OFF) {
+            return getID() + " The lighting is turned off. Turn on the lighting to set the luminosity.";
         }
-        return getID() + " lighting is turned off. Turn on the lighting to set the luminosity.";
+        luminosity = targetLuminosity;
+        return getID() + " The luminosity was set to " + targetLuminosity + "%.";
     }
 
 }

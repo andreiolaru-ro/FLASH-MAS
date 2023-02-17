@@ -11,6 +11,7 @@ import java.util.List;
 import static gabi.entityOperationTest.scenario.operations.ChangeSlideOperation.CHANGE_SLIDE_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.CloseOperation.CLOSE_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.EndPresentationOperation.END_PRESENTATION_OPERATION;
+import static gabi.entityOperationTest.scenario.operations.ExportOperation.EXPORT_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.GetOperation.GET_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.OpenOperation.OPEN_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.SetOperation.SET_OPERATION;
@@ -127,11 +128,23 @@ public class Scenario {
         phoneAgent.callOperationWithResult(startPresentationOpCall, System.out::println);
         phoneAgent.callOperationWithResult(changeSlideOpCall, System.out::println);
 
+        // turn on the smart board and export the screen as a PDF file
+        var turnSmartBoardOnOpCall = new OperationCallWave(phoneAgent.getID(), precis1SmartBoardAgent.getID(), TURN_ON_OPERATION, true, null);
+        var setSmartBoardLuminosityOpCall = new OperationCallWave(phoneAgent.getID(), precis1SmartBoardAgent.getID(), SET_OPERATION, true, List.of(80));
+        var exportFileOpCall = new OperationCallWave(phoneAgent.getID(), precis1SmartBoardAgent.getID(), EXPORT_OPERATION, true, List.of("PDF"));
+        phoneAgent.callOperationWithResult(turnSmartBoardOnOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(setSmartBoardLuminosityOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(exportFileOpCall, System.out::println);
+
         // end the presentation and turn off the projector
         var endPresentationOpCall = new OperationCallWave(phoneAgent.getID(), precis1ProjectorAgent.getID(), END_PRESENTATION_OPERATION, true, null);
         var turnProjectorOffOpCall = new OperationCallWave(phoneAgent.getID(), precis1ProjectorAgent.getID(), TURN_OFF_OPERATION, true, null);
         phoneAgent.callOperationWithResult(endPresentationOpCall, System.out::println);
         phoneAgent.callOperationWithResult(turnProjectorOffOpCall, System.out::println);
+
+        // turn off the smart board
+        var turnSmartBoardOffOpCall = new OperationCallWave(phoneAgent.getID(), precis1SmartBoardAgent.getID(), TURN_OFF_OPERATION, true, null);
+        phoneAgent.callOperationWithResult(turnSmartBoardOffOpCall, System.out::println);
 
         // Andreea leaves the precis1 classroom
         Thread.sleep(1000);

@@ -49,29 +49,29 @@ public class HeatingAgent extends RemoteSmartHomeAgent {
     private String handleTurnOnOperation() {
         if (state == SystemState.OFF) {
             state = SystemState.ON;
-            return getID() + " heating was turned on.";
+            return getID() + " The heating was turned on.";
         }
-        return getID() + " heating is already on.";
+        return getID() + " The heating is already on.";
     }
 
     private String handleTurnOffOperation() {
         if (state == SystemState.ON) {
             state = SystemState.OFF;
-            return getID() + " heating was turned off.";
+            return getID() + " The heating was turned off.";
         }
-        return getID() + " heating is already off.";
+        return getID() + " The heating is already off.";
     }
 
     private String handleGetTemperatureOperation() {
-        return getID() + " temperature is " + temperature + " degrees Celsius.";
+        return getID() + " The temperature is " + temperature + " degrees Celsius.";
     }
 
     private String handleSetTemperatureOperation(double targetTemperature) {
         if (state == SystemState.OFF) {
-            return getID() + " heating is turned off. Turn on the heating to set the temperature.";
+            return getID() + " The heating is turned off. Turn on the heating to set the temperature.";
         }
         temperature = targetTemperature;
-        return getID() + " temperature was set to " + targetTemperature + " degrees Celsius.";
+        return getID() + " The temperature was set to " + targetTemperature + " degrees Celsius.";
     }
 
 }
