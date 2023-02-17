@@ -34,7 +34,7 @@ There are several targets that should make FLASH-MAS a good option for MAS devel
 
 The current phase of FLASH-MAS (branch `master`) uses  an older type of entities, which interact by means of references and proxies -- call this **Nested-entity model**
 
-The future phase of FLASH-MAS uses the ***entity-operation*** model, in which entities interact only via the framework.
+The future phase of FLASH-MAS uses the ***entity-operation*** model, in which entities interact only via the framework. See, for instance, branch [`opmodel`](https://github.com/andreiolaru-ro/FLASH-MAS/tree/opmodel-gabi).
 
 ## Understanding FLASH-MAS
 
