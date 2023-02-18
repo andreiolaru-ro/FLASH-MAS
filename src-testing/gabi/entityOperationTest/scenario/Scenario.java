@@ -18,6 +18,7 @@ import static gabi.entityOperationTest.scenario.operations.SetOperation.SET_OPER
 import static gabi.entityOperationTest.scenario.operations.StartPresentationOperation.START_PRESENTATION_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.TurnOffOperation.TURN_OFF_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.TurnOnOperation.TURN_ON_OPERATION;
+import static gabi.entityOperationTest.scenario.relations.ActivityRelation.CLOUD_COMPUTING;
 import static gabi.entityOperationTest.scenario.relations.ActivityRelation.OPERATING_SYSTEMS;
 import static gabi.entityOperationTest.scenario.relations.PrecisRelation.INSIDE_CLASSROOM;
 import static gabi.entityOperationTest.scenario.relations.PrecisRelation.MANAGER;
@@ -96,6 +97,9 @@ public class Scenario {
 
         // precis2ManagementAgent
         precis2ManagementAgent.callRelationChange(CREATE, new Relation(precis2ManagementAgent.getID(), precis2ProjectorAgent.getID(), MANAGER.name()));
+        precis2ManagementAgent.callRelationChange(CREATE, new Relation(precis2ManagementAgent.getID(), precis2SmartBoardAgent.getID(), MANAGER.name()));
+        precis2ManagementAgent.callRelationChange(CREATE, new Relation(precis2ManagementAgent.getID(), phoneAgent.getID(), CLOUD_COMPUTING.name()));
+
 
         // *********************************************** op calls *********************************************** //
         // turn on the heating in precis1 classroom
@@ -157,5 +161,21 @@ public class Scenario {
         // close the door
         var closeDoorOpCall = new OperationCallWave(phoneAgent.getID(), precis1DoorAgent.getID(), CLOSE_OPERATION, true, null);
         phoneAgent.callOperationWithResult(closeDoorOpCall, System.out::println);
+
+        // Andreea enters the precis2 classroom
+        precis2ManagementAgent.callRelationChange(CREATE, new Relation(precis2ManagementAgent.getID(), phoneAgent.getID(), INSIDE_CLASSROOM.name()));
+        Thread.sleep(1000);
+
+        // turn on the projector and start the presentation
+        var turnPrecis2ProjectorOnOpCall = new OperationCallWave(phoneAgent.getID(), precis2ProjectorAgent.getID(), TURN_ON_OPERATION, true, null);
+        var startCCPresentationOpCall = new OperationCallWave(phoneAgent.getID(), precis2ProjectorAgent.getID(), START_PRESENTATION_OPERATION, true, List.of("CloudComputingProject.pptx"));
+        var exportPresentationOpCall = new OperationCallWave(phoneAgent.getID(), precis2ProjectorAgent.getID(), EXPORT_OPERATION, true, List.of("PDF"));
+        phoneAgent.callOperationWithResult(turnPrecis2ProjectorOnOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(startCCPresentationOpCall, System.out::println);
+        phoneAgent.callOperationWithResult(exportPresentationOpCall, System.out::println);
+
+        // Andreea leaves the precis2 classroom
+        Thread.sleep(1000);
+        precis2ManagementAgent.callRelationChange(REMOVE, new Relation(precis2ManagementAgent.getID(), phoneAgent.getID(), INSIDE_CLASSROOM.name()));
     }
 }

@@ -2,6 +2,7 @@ package gabi.entityOperationTest.scenario.agents;
 
 import gabi.entityOperationTest.scenario.operations.ChangeSlideOperation;
 import gabi.entityOperationTest.scenario.operations.EndPresentationOperation;
+import gabi.entityOperationTest.scenario.operations.ExportOperation;
 import gabi.entityOperationTest.scenario.operations.StartPresentationOperation;
 import net.xqhs.flash.ent_op.impl.waves.OperationCallWave;
 import net.xqhs.flash.ent_op.impl.waves.ResultWave;
@@ -14,6 +15,7 @@ import java.util.List;
 import static gabi.entityOperationTest.scenario.operations.AuthOperation.AUTH_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.ChangeSlideOperation.CHANGE_SLIDE_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.EndPresentationOperation.END_PRESENTATION_OPERATION;
+import static gabi.entityOperationTest.scenario.operations.ExportOperation.EXPORT_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.StartPresentationOperation.START_PRESENTATION_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.TurnOffOperation.TURN_OFF_OPERATION;
 import static gabi.entityOperationTest.scenario.operations.TurnOnOperation.TURN_ON_OPERATION;
@@ -30,6 +32,7 @@ public class ProjectorAgent extends SmartHomeAgent {
         super.connectTools(entityTools);
         entityTools.createOperation(new StartPresentationOperation());
         entityTools.createOperation(new EndPresentationOperation());
+        entityTools.createOperation(new ExportOperation());
         entityTools.createOperation(new ChangeSlideOperation());
         return true;
     }
@@ -71,6 +74,10 @@ public class ProjectorAgent extends SmartHomeAgent {
                         var slideNumber = Integer.parseInt(operationCall.getArgumentValues().get(0).toString());
                         response = handleChangeSlideOperation(slideNumber);
                         break;
+                    case EXPORT_OPERATION:
+                        var fileFormat = operationCall.getArgumentValues().get(0).toString();
+                        response = handleExportOperation(fileFormat);
+                        break;
                     case END_PRESENTATION_OPERATION:
                         response = handleEndPresentationOperation();
                         break;
@@ -106,7 +113,7 @@ public class ProjectorAgent extends SmartHomeAgent {
             return getID() + " The projector is turned off. Turn on the projector to start the presentation.";
         }
         presentationState = SystemState.OPEN;
-        return getID() + " " + filePath + " The presentation has started.";
+        return getID() + " The " + filePath + " presentation has started.";
     }
 
     private String handleChangeSlideOperation(int slideNumber) {
@@ -117,6 +124,13 @@ public class ProjectorAgent extends SmartHomeAgent {
             return getID() + " Can't change the slide. There is currently no presentation in progress.";
         }
         return getID() + " The presentation was changed to slide " + slideNumber + ".";
+    }
+
+    private String handleExportOperation(String fileFormat) {
+        if (presentationState == SystemState.CLOSED) {
+            return getID() + " Can't export the presentation. There is currently no presentation in progress.";
+        }
+        return getID() + " The current presentation was exported as a " + fileFormat + " file.";
     }
 
     private String handleEndPresentationOperation() {
