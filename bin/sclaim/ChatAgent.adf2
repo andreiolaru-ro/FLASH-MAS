@@ -1,0 +1,44 @@
+(agent ChatAgent ?otherAgent
+
+(behavior
+	
+	(initial startclock
+		(addK (struct knowledge sequence 0))		// sequence will be useful to sort messages
+	)
+		
+	(reactive snd
+		(input messageinput ?sendMessage)						// the agent is notified that there is a message to send
+		(readK (struct knowledge sequence ?sequence))				// read the sequence number from the knowledge base
+		(removeK (struct knowledge sequence ?sequence))				// remove the stored sequence
+		(addK (struct knoweldge msg sent ?sequence ?sendMessage))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		(increment ?sequence ?newsequence)							// increment the sequence
+		(addK (struct knowledge sequence ?newsequence))				// store the sequence
+		
+		(send ?otherAgent (struct message newchat ?sendMessage))	// send the message
+		
+		(send this (struct message update))							// send an update indication to itself
+	)
+	
+	(reactive rcv
+		(receive (struct message newchat ?rcvMessage))				// receive a message of type 'newchat', store the content in ?rcvMessage
+		(readK (struct knowledge sequence ?sequence))				// read the sequence number from the knowledge base
+		(removeK (struct knowledge sequence ?sequence))				// remove the stored sequence
+		(addK (struct knoweldge msg rcvd ?sequence ?rcvMessage))	// store the message in the knowledge base, together with the type (received/sent) and the sequence
+		
+		(increment ?sequence ?newsequence)							// increment the sequence
+		(addK (struct knowledge sequence ?newsequence))				// store the sequence
+		
+		(send this (struct message update))							// send an update indication to itself
+	)
+	
+	(reactive update
+		(receive (struct message update))								// activation with the internal message 'update'
+		(initOutput ??output)											// will init output to an empty string
+		(forAllK (struct knowledge msg ??direction ??sequence ??message)	// go through all messages
+			(assembleOutput ??direction ??sequence ??message ??output)		// put them in the ?output variable; ARTIFICIAL: ?output will be overwritten
+		)
+		(output chatlog ??output 1)										// display
+	)
+		
+)
+)
