@@ -61,7 +61,7 @@ public class MobileAgent extends Agent {
 	@Override
 	protected void afterMove() {
 		super.afterMove();
-		if(cycle < 20)
+		if(cycle < 100)
 			// addBehaviour(new WakerBehaviour(this, 5) {
 			addBehaviour(new OneShotBehaviour() {
 				@Override

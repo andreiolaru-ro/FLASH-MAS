@@ -72,7 +72,10 @@ public class Launcher {
 		for(int i = index < 0 ? 0 : index; i < (index < 0 ? launcher.length : index + 1); i++) {
 			launcher[j] = new Launcher();
 			launcher[j].setupPlatform(base, 1099, srv, 1099 + (index < 0 ? i : 0), index < 0 ? i : index, i == 0);
-			launcher[j].addAgent(names[i], i == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
+			// make additional agents to avoid linux hosts where agent instantiation fails
+			for(int k : new Integer[] { 0, 1 }) // -1 for index = 3
+				launcher[j].addAgent(names[i + k],
+						i + k == 0 ? MobileAgent.class.getName() : MessagingAgent.class.getName(),
 					new Object[] { "A", "51" });
 			j++;
 		}
