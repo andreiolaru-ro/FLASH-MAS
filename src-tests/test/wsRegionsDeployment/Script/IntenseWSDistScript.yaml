@@ -1,0 +1,70 @@
+script:
+ A1:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "BOOTING A1"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A9", with: "start"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A3", with: "start"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A5", with: "start"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A7", with: "start"} }
+ 
+  - { action: "MARK", trigger: "DELAY", arg: 5220, arguments: {with: "A1"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A8", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A8", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A3:
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A3"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A12", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A12", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A5:
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A5"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A14", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A14", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A7: 
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A7"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A2", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A16", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ 
+ 
+ A9:
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "NEXT", arguments: {with: "BOOTING A9"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A11", with: "start"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A13", with: "start"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A15", with: "start"} }
+
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A9"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A16", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A10", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A11:
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A11"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A4", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A4", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A13:
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A13"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A6", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A6", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A15: 
+  actions:
+  - { action: "NOP", trigger: "EVENT", arg: "AGENT_WAVE" }
+  - { action: "MARK", trigger: "DELAY", arg: 5000, arguments: {with: "A15"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A10", with: "check"} }
+  - { times: 100, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A8", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" } 
+ 

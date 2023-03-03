@@ -28,7 +28,7 @@ public class BootIntenseWS {
 		String args = "";
 		boolean dist = true;
 		
-		String script = "IntenseWS";
+		String script = "IntenseWS" + (dist ? "Dist" : "");
 		String[] names = new String[16];
 		for(int i = 1; i <= 16; i++)
 			names[i - 1] = Integer.valueOf(i).toString();
