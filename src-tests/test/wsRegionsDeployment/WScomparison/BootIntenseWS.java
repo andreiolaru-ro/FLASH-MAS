@@ -26,7 +26,7 @@ public class BootIntenseWS {
 	 */
 	public static void main(String[] args_) {
 		String args = "";
-		boolean dist = false;
+		boolean dist = true;
 		
 		String script = "IntenseWS";
 		String[] names = new String[16];
@@ -39,6 +39,7 @@ public class BootIntenseWS {
 		args += " -package webSocket testing src-tests.test.wsRegionsDeployment.Script test.simplePingPong -loader agent:mobileComposite ";
 		
 		int index = -1;
+		// index = 3;
 		if(args_.length > 0)
 			index = Integer.parseInt(args_[0]);
 		
