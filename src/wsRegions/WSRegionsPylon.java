@@ -44,7 +44,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		
 		@Override
 		public boolean register(String entityName, MessageReceiver receiver) {
-			lf("On pylon " + getEntityName() + " arrived the agent " + entityName);
+			lf("Registered entity" + entityName);
 			if(!agentList.containsKey(entityName)) {
 				agentList.put(entityName, receiver);
 			}
