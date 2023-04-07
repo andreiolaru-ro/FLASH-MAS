@@ -90,12 +90,11 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	/**
 	 * Reference to the local Websocket pylon.
 	 */
-	protected MessagingPylonProxy		pylon				= null;
-	
+	transient protected MessagingPylonProxy	pylon	= null;
 	/**
 	 * The proxy to this shard, to be used by the pylon.
 	 */
-	protected transient MessageReceiver	inbox				= null;
+	protected transient MessageReceiver		inbox	= null;
 	
 	/**
 	 * No-argument constructor.
