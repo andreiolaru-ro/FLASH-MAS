@@ -86,7 +86,7 @@ public class AgentPingPong extends Unit implements Agent {
 	}
 	
 	@Override
-	public boolean start(String stringString stringString string) {
+	public boolean start() {
 		if(otherAgents != null) {
 			pingTimer = new Timer();
 			pingTimer.schedule(new TimerTask() {
