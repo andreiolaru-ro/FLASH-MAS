@@ -33,9 +33,9 @@ public class Boot {
 		// Exemplul 1 - MERGE
 
 		test_args += " -node node1";
-		test_args += " -pylon l-runner classpath:MLRunnerPylon";
 		test_args += " -agent composite:AgentA in-context-of:local:default -shard monitoring -shard messaging -shard MLDescriptionShard";
 		test_args += " -agent AgentB classpath:AgentTest otherAgent:AgentA";
+		test_args += " -pylon l-runner classpath:MLRunnerPylon";
         
 
 

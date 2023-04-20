@@ -11,17 +11,41 @@
  ******************************************************************************/
 package net.xqhs.flash.mlModels;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.util.*;
-import org.json.*;
-import org.eclipse.rdf4j.*;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.sparqlbuilder.core.Prefix;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
+import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
@@ -77,17 +101,17 @@ public class MLDescriptionShard extends AgentShardGeneral {
 					break;
 
 				String content = ((AgentWave) event).getContent();
-				JSONObject json = new JSONObject(content);
-				String message_type = json.getString("type");
-				String task = json.getString("task");
+				JSONObject json = (JSONObject) JSONValue.parse(content);
+				String type = (String) json.get("type");
+				String taskString = (String) json.get("task");
 
 				// Ask for model
 				if (type == "ml_ask") {
 					for (LinkedHashModel graph : model_descriptions) {
-						Prefix data = SparqlBuilder.prefix("data", iri("http://example.org#"));
-						Prefix mls  = SparqlBuilder.prefix("mls", iri("http://www.w3.org/ns/mls#"));
+						Prefix data = SparqlBuilder.prefix("data", Rdf.iri("http://example.org#"));
+						Prefix mls = SparqlBuilder.prefix("mls", Rdf.iri("http://www.w3.org/ns/mls#"));
 						Variable task = SparqlBuilder.var("Task");
-						TriplePattern triple = GraphPatterns.tp(task, Rdf.type, data.iri(task));
+						TriplePattern triple = GraphPatterns.tp(task, RDF.TYPE, data.iri(task.getVarName()));
 						
 						if (triple.getQueryString() != null) {
 							sendMessage("YES", SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
@@ -100,16 +124,16 @@ public class MLDescriptionShard extends AgentShardGeneral {
 				// Receive task + load model
 				if (type == "ml_task") {
 					for (LinkedHashModel graph : model_descriptions) {
-						Prefix data = SparqlBuilder.prefix("data", iri("http://example.org#"));
-						Prefix mls  = SparqlBuilder.prefix("mls", iri("http://www.w3.org/ns/mls#"));
+						Prefix data = SparqlBuilder.prefix("data", Rdf.iri("http://example.org#"));
+						Prefix mls = SparqlBuilder.prefix("mls", Rdf.iri("http://www.w3.org/ns/mls#"));
 						Variable task = SparqlBuilder.var("Task");
-						TriplePattern task_name = GraphPatterns.tp(task, Rdf.type, data.iri(task));
+						TriplePattern task_name = GraphPatterns.tp(task, RDF.TYPE, data.iri(task.getVarName()));
 						
 						if (task_name.getQueryString() != null) {
 							Variable name = SparqlBuilder.var("Name");
 							TriplePattern triple = GraphPatterns.tp(data.iri("Name"), mls.iri("HasValue"), name);
 
-							String model = triple.getObject();
+							String model = triple.toString(); // FIXME?
 
 							Map<String, String> parameters = new HashMap<>();
 							parameters.put("model", model);
@@ -129,17 +153,22 @@ public class MLDescriptionShard extends AgentShardGeneral {
 
 							location = location.substring(0, location.length() - 1);
 
-							URL url = new URL(location);
-							HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-							connection.setRequestMethod("GET");
+							try {
+								URL url = new URL(location);
+								HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+								connection.setRequestMethod("GET");
 
-							try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream())))
-							{
-								String line;
-								while ((line = in.readLine()) != null) {
-									System.out.println(line);
+								try (BufferedReader in = new BufferedReader(
+										new InputStreamReader(connection.getInputStream()))) {
+									String line;
+									while((line = in.readLine()) != null) {
+										System.out.println(line);
+									}
+									System.out.println(connection.getResponseCode());
 								}
-								System.out.println(connection.getResponseCode());
+							} catch(IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 						}
 					}
@@ -150,8 +179,22 @@ public class MLDescriptionShard extends AgentShardGeneral {
 				// Transfer model
 				if (type == "ml_transfer") {
 					Path path = Paths.get(localStorage.getAbsolutePath() + "\\model.h5");
-					byte[] data = Files.readAllBytes(path);
-					sendMessage(data, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
+					
+					try {
+						StringBuffer fileData = new StringBuffer();
+						BufferedReader reader = new BufferedReader(new FileReader(path.toString()));
+						char[] buf = new char[1024];
+						int numRead = 0;
+						while((numRead = reader.read(buf)) != -1) {
+							String readData = String.valueOf(buf, 0, numRead);
+							fileData.append(readData);
+						}
+						reader.close();
+						sendMessage(fileData.toString(), SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
+					} catch(IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 
 
@@ -164,19 +207,37 @@ public class MLDescriptionShard extends AgentShardGeneral {
 					localStorage.mkdir();
 				}
 
-				RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
-
+				if(localStorage.listFiles() == null)
+					break;
 				for( File f : localStorage.listFiles()){
-					java.net.URL documentUrl = new URL(f);
-					InputStream inputStream = documentUrl.openStream();
-					RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
-
-					String name = f.getName();
-					int i = name.lastIndexOf('.');
-					String extension = name.substring(i+1);
-
-					if (extension == "rdf")
-						model_descriptions.add(Rio.parse(inputStream, documentUrl.toString(), RDFFormat.TURTLE));
+					URL documentUrl;
+					try {
+						documentUrl = f.toURI().toURL();
+						InputStream inputStream;
+						try {
+							inputStream = documentUrl.openStream();
+							RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
+							
+							String name = f.getName();
+							int i = name.lastIndexOf('.');
+							String extension = name.substring(i + 1);
+							
+							if(extension == "rdf")
+								try {
+									model_descriptions.add((LinkedHashModel) Rio.parse(inputStream,
+											documentUrl.toString(), RDFFormat.TURTLE));
+								} catch(Exception e) {
+									// TODO: handle exception
+								}
+						} catch(IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					} catch(MalformedURLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
 				}
 
 				break;
@@ -199,7 +260,7 @@ public class MLDescriptionShard extends AgentShardGeneral {
 	}
 
 	/**
-	 * Method for excuting a speciefic request
+	 * Method for executing a specific request
 	 */
 	private void executeRequest() {}
 }

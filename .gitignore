@@ -1,4 +1,4 @@
 /bin/
 .idea
 .xml
-src-testing/daniel/semester1Tests
+__pycache__

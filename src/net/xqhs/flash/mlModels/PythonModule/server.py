@@ -1,17 +1,30 @@
 from flask import Flask, request
-from tensorflow import keras
+import base64
 import numpy as np
 import json
-from utils import *
-from frameworks.keras_classification import KerasClassification
-from frameworks.torch_classification import TorchClassification
-import base64
+# from utils import *
+
+
+try:
+	from tensorflow import keras
+	from frameworks.keras_classification import KerasClassification
+except Exception:
+	print("Keras/Tensorflow unavailable.")
+
+try:
+	from frameworks.torch_classification import TorchClassification
+except Exception:
+	print("Torch unavailable.")
 
 app = Flask(__name__)
 
 frameworks = {'Keras': KerasClassification(model_extension='h5'), 'PyTorch': TorchClassification(model_extension='pt', input_size=(64, 1, 28, 28))}
 models = {}
 framework = frameworks['Keras']
+
+@app.route('/')
+def hello():
+    return 'Hello, World!'
 
 @app.route('/load', methods=['GET'])
 def load():
@@ -116,4 +129,5 @@ def save_model():
     return "Invalid arguments", 400
 
 if __name__ == '__main__':
+    print("Starting Flask server")
     app.run(port=5000)

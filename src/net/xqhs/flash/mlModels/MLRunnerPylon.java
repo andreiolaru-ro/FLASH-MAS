@@ -12,8 +12,10 @@
 package net.xqhs.flash.mlModels;
 
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.Set;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -41,10 +43,21 @@ public class MLRunnerPylon implements Pylon {
 		System.out.println("ML PYLON STARTED");
 
 		try {
-			process = Runtime.getRuntime().exec("python PythonModule/server.py");
+			ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
+					+ MLRunnerPylon.class.getPackage().getName().replace('.', '/') + "/PythonModule/server.py");
+			// pb.directory(new File(<directory from where you want to run the command>));
+			// pb.inheritIO();
+			pb.redirectInput(Redirect.INHERIT);
+			pb.redirectOutput(Redirect.INHERIT);
+			pb.redirectError(Redirect.INHERIT);
+			Process p = pb.start();
+			p.waitFor();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
+		} catch(InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return true;
