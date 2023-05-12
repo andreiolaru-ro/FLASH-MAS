@@ -55,5 +55,9 @@ public interface MessagingPylonProxy extends PylonProxy
 	 * @return an indication of success.
 	 */
 	boolean send(String source, String destination, String content);
+	
+	default boolean send(String msg) {
+		return true;
+	}
 }
 
