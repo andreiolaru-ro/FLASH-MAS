@@ -6,3 +6,4 @@
 /log-*.yaml
 /APDescription.txt
 /MTPs-Container-*.txt
+*__pycache__
