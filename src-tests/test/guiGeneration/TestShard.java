@@ -18,6 +18,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.GuiShard;
 
 @SuppressWarnings("javadoc")
@@ -27,10 +28,20 @@ public class TestShard extends AgentShardGeneral {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private Timer timer = null;
+	/**
+	 * The timer for auto counting. If autocount is off, the timer will be <code>null</code>.
+	 */
+	private Timer timer = new Timer();
 	
 	public TestShard() {
 		super(AgentShardDesignation.autoDesignation("Test"));
+	}
+	
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if("off".equals(configuration.getAValue("autocount")))
+			timer = null;
+		return super.configure(configuration);
 	}
 	
 	@Override
@@ -40,24 +51,27 @@ public class TestShard extends AgentShardGeneral {
 		case AGENT_START:
 			((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
 					.sendOutput(new AgentWave(Integer.valueOf(0).toString(), "port1"));
-			timer = new Timer();
-			timer.schedule(new TimerTask() {
-				@SuppressWarnings("synthetic-access")
-				@Override
-				public void run() {
-					int value = Integer
-							.parseInt(((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-									.getInput("port1").get(AgentWave.CONTENT));
-					((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-							.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), "port1"));
-				}
-			}, 0, 2000);
+			if(timer != null)
+				timer.schedule(new TimerTask() {
+					@SuppressWarnings("synthetic-access")
+					@Override
+					public void run() {
+						int value = Integer
+								.parseInt(((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
+										.getInput("port1").get(AgentWave.CONTENT));
+						((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
+								.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), "port1"));
+					}
+				}, 0, 2000);
 			break;
 		case AGENT_STOP:
-			timer.cancel();
+			if(timer != null)
+				timer.cancel();
 			break;
 		case AGENT_WAVE:
 			li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
+			((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI"))).sendOutput(new AgentWave(
+					Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), "port1"));
 			break;
 		default:
 			break;
