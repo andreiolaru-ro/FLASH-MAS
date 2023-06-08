@@ -21,6 +21,8 @@ FLASH-MAS contributors:
       * Cosmin Mihai <yonutix.mc@gmail.com>
 * Monitoring and control
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+* ML model support
+   * Daniel Liurcă 
 * Agent mobility
    * Maria-Claudia Buiac
 * Distributed support infrastructure, wsRegions support infrastructure
