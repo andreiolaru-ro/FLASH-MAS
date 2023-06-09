@@ -310,9 +310,8 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * @return - an indication of success
 	 */
 	private boolean manageOperation(JSONObject jsonObj) {
-		String op = (String) jsonObj.get(OperationUtils.NAME);
-		switch (op){
-			case "status_update":
+		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))){
+			case STATUS_UPDATE:
 				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
 				String value = (String) jsonObj.get(OperationUtils.VALUE);
 				entitiesState.put(params, value);
@@ -328,29 +327,25 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				// });
 				return true;
 
-			case "gui_update":
+			case GUI_UPDATE:
 				String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				Element interfaceContainer = new Element();
 				Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
-				boolean standardCtrls_cloned = false;
-				if(interfaceStructure == null)
-					try {
-						interfaceStructure = (Element) standardCtrls.clone();
-						standardCtrls_cloned = true;
-					} catch(CloneNotSupportedException e) {
-						le("Failed to clone standard controls", e);
-					}
-				entitiesData.get(entity).setGuiSpecification(interfaceStructure);
-				if(!standardCtrls_cloned) {
-					try {
-						entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
-					}
-					catch(CloneNotSupportedException e) {
-						e.printStackTrace();
-					}
+				if (interfaceStructure != null){
+					interfaceContainer.addAllChildren(interfaceStructure.getChildren());
+					//entitiesData.get(entity).insertNewGuiElements(interfaceStructure.getChildren());
 				}
-				return gui.updateGui(entity, interfaceStructure);
+				try {
+					interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
+					//entitiesData.get(entity).setGuiSpecification(clone);
+				} catch (CloneNotSupportedException e) {
+					throw new RuntimeException(e);
+				}
 
-			case "gui_output":
+				//return gui.updateGui(entity, entitiesData.get(entity).getGuiSpecification()	);
+				return gui.updateGui(entity, interfaceContainer);
+
+			case GUI_OUTPUT:
 				String output_entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
 				AgentWave wave;
 				try {
@@ -364,7 +359,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return true;
 
 			default :
-				le("Unknown operation: ", op);
+				le("Unknown operation: ", jsonObj.get(OperationUtils.NAME));
 				return false;
 		}
 	}

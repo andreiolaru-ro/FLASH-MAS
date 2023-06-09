@@ -23,6 +23,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
+import org.yaml.snakeyaml.Yaml;
 
 public class GuiShard extends IOShard {
 	protected interface ComponentConnect {
@@ -63,6 +64,7 @@ public class GuiShard extends IOShard {
 		if(event.getType() == AgentEventType.AGENT_START)
 			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
 				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
+				//monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
 				monitor.addGuiElement(interfaceStructure);
 			}
 	}

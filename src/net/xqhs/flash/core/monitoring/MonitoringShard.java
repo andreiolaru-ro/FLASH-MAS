@@ -131,6 +131,7 @@ public class MonitoringShard extends AgentShardGeneral {
 	 */
 	public void addGuiElement(Element element){
 		this.interfaceSpecification.addAllChildren(element.getChildren());
+		le("Element [] added to interface specification", element, interfaceSpecification);
 		sendGuiUpdate(new Yaml().dump(this.interfaceSpecification));
 	}
 
