@@ -11,11 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.gui.structure;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -58,103 +54,79 @@ public class Element implements Cloneable {
 	 * the type of the block where the element is (global, agent interfaces)
 	 */
 	private String				blockType;
-	/**
-	 * favoriteAgent represents the name of the target agent in quick send message scenario
-	 */
-	private String				favoriteAgent;
-	/**
-	 * messageContent represents the content of the default message sent to the favoriteAgent in quick send scenario
-	 */
-	private String				messageContent;
-	
+
 	public List<Element> getChildren() {
 		return children;
 	}
-	
+
 	public void setChildren(List<Element> children) {
 		this.children = children;
 	}
-	
+
 	public void addChild(Element element) {
 		this.children.add(element);
 	}
-	
+
 	public void addAllChildren(List<Element> _children) {
 		this.children.addAll(_children);
 	}
-	
+
 	public String getId() {
 		return id;
 	}
-	
+
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
 	public String getType() {
 		return type;
 	}
-	
+
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
 	public Map<String, String> getProperties() {
 		return properties;
 	}
-	
+
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
 	}
-	
+
 	public String getPort() {
 		return port;
 	}
-	
+
 	public void setPort(String port) {
 		this.port = port;
 	}
-	
+
 	public String getRole() {
 		return role;
 	}
-	
+
 	public void setRole(String role) {
 		this.role = role;
 	}
-	
+
 	public String getValue() {
 		return value;
 	}
-	
+
 	public void setValue(String value) {
 		this.value = value;
 	}
-	
+
 	public String getBlockType() {
 		return blockType;
 	}
-	
+
 	public void setBlockType(String blockType) {
 		this.blockType = blockType;
 	}
-	
-	public String getFavoriteAgent() {
-		return favoriteAgent;
-	}
-	
-	public void setFavoriteAgent(String favoriteAgent) {
-		this.favoriteAgent = favoriteAgent;
-	}
-	
-	public String getMessageContent() {
-		return messageContent;
-	}
-	
-	public void setMessageContent(String messageContent) {
-		this.messageContent = messageContent;
-	}
-	
+
 	public List<Element> getChildren(String port) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
@@ -162,7 +134,7 @@ public class Element implements Cloneable {
 				result.add(e);
 		return result;
 	}
-	
+
 	public List<Element> getChildren(String port, String role) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
@@ -171,14 +143,14 @@ public class Element implements Cloneable {
 				result.add(e);
 		return result;
 	}
-	
+
 	public Element getChildWithId(String id) {
 		for(Element e : children)
 			if(id.equals(e.getId()))
 				return e;
 		return null;
 	}
-	
+
 	public JSONObject toJSON() {
 		JSONObject result = new JSONObject();
 		result.put("id", id);
@@ -193,7 +165,7 @@ public class Element implements Cloneable {
 				childrenArray.add(child.toJSON());
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		String tab = "\t";
@@ -230,13 +202,28 @@ public class Element implements Cloneable {
 		result.append('\n');
 		return result.toString();
 	}
-	
+
 	protected static String repeat(String str, int count) {
 		StringBuilder res = new StringBuilder();
 		for(int i = 0; i < count; i++) {
 			res.append(str);
 		}
 		return res.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(port, role);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(!(obj instanceof Element))
+			return false;
+		Element other = (Element) obj;
+		return Objects.equals(port, other.port) && Objects.equals(role, other.role);
 	}
 	
 	@Override

@@ -18,6 +18,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.GuiShard;
 
@@ -69,10 +70,14 @@ public class TestShard extends AgentShardGeneral {
 				timer.cancel();
 			break;
 		case AGENT_WAVE:
-			li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
-			((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI"))).sendOutput(new AgentWave(
-					Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), "port1"));
-			break;
+			try {
+				li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
+				((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI"))).sendOutput(new AgentWave(
+						Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), "port1"));
+				break;
+			} catch(NumberFormatException e) {
+				le("Invalid number format: ", event.get(AgentWave.CONTENT));
+			}
 		default:
 			break;
 		}

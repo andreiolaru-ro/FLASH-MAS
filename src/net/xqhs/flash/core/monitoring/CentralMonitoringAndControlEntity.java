@@ -48,39 +48,39 @@ import net.xqhs.util.logging.Unit;
 import web.WebEntity;
 
 public class CentralMonitoringAndControlEntity extends Unit implements Entity<Pylon> {
-	
+
 	protected class EntityData {
 		String		name;
 		String		status;
 		JSONArray	operations;
 		Element		guiSpecification;
-		
+
 		public String getName() {
 			return name;
 		}
-		
+
 		public String getStatus() {
 			return status;
 		}
-		
+
 		public JSONArray getOperations() {
 			return operations;
 		}
-		
+
 		public Element getGuiSpecification() {
 			return guiSpecification;
 		}
-		
+
 		public EntityData setName(String name) {
 			this.name = name;
 			return this;
 		}
-		
+
 		public EntityData setStatus(String status) {
 			this.status = status;
 			return this;
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		public EntityData addOperations(JSONArray ops) {
 			if(operations == null)
@@ -88,12 +88,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			operations.addAll(ops);
 			return this;
 		}
-		
+
 		public EntityData setGuiSpecification(Element guiSpecification) {
 			this.guiSpecification = guiSpecification;
 			return this;
 		}
-		
+
 		public EntityData insertNewGuiElements(List<Element> elements) {
 			int i = 0;
 			List<Element> interfaceElements = guiSpecification.getChildren();
@@ -108,18 +108,18 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			return this;
 		}
 	}
-	
+
 	public class CentralEntityProxy implements ShardContainer {
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation) {
 			return null;
 		}
-		
+
 		@Override
 		public String getEntityName() {
 			return getName();
 		}
-		
+
 		/**
 		 * This is expected to be called by the messaging shard.
 		 */
@@ -134,12 +134,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			}
 		}
 	}
-	
+
 	{
 		setUnitName("M&C");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
-	
+
 	/**
 	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the web interface.
 	 */
@@ -152,63 +152,63 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * Endpoint element for this shard.
 	 */
 	protected static final String	SHARD_ENDPOINT			= ControlShard.SHARD_ENDPOINT;
-	
+
 	/**
 	 * Endpoint element for shards of control.
 	 */
 	protected static final String OTHER_CONTROL_SHARD_ENDPOINT = ControlShard.SHARD_ENDPOINT;
-	
+
 	/**
 	 * Prefix to names of ports inserted by the central entity.
 	 */
 	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
-	
+
 	/**
 	 * Used for unknown entity names, statuses, etc.
 	 */
 	public static final String UNKNOWN = "none";
-	
+
 	private MessagingShard centralMessagingShard;
-	
+
 	private String name;
-	
+
 	private CentralGUI gui;
-	
+
 	private static boolean isRunning;
-	
+
 	/**
 	 * Keeps track of all agents deployed in the system and their {@link List} of operations.
 	 */
 	private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
-	
+
 	/**
 	 * Keeps track of all entities deployed in the system and their {@link JSONArray} of operations.
 	 */
 	private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
-	
+
 	/**
 	 * Keeps track of entities state.
 	 */
 	private HashMap<String, String> entitiesState = new LinkedHashMap<>();
-	
+
 	protected Map<String, EntityData> entitiesData = new HashMap<>();
-	
+
 	protected Element standardCtrls;
-	
+
 	/**
 	 * Keeps track of all nodes deployed in the system, along with their {@link List} of entities, indexed by their
 	 * categories and names.
 	 */
 	private HashMap<String, HashMap<String, List<String>>> allNodeEntities = new LinkedHashMap<>();
-	
+
 	public ShardContainer proxy;
-	
+
 	public CentralMonitoringAndControlEntity(MultiTreeMap configuration) {
 		this.name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		proxy = new CentralEntityProxy();
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue("from", "controls.yml")
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
-		
+
 		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY))
 			switch(iface) {
 			case WEB_INTERFACE_SWITCH: {
@@ -234,9 +234,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				break;
 			}
 			}
-		
+
 	}
-	
+
 	/**
 	 * @param obj
 	 *            - the object received as content through the {@link ShardContainer}
@@ -255,7 +255,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			String entity = wave.popDestinationElement();
 			String port = wave.getValues(AgentWave.DESTINATION_ELEMENT)
 					.get(wave.getValues(AgentWave.DESTINATION_ELEMENT).size() - 1);
-			
+
 			if(port.startsWith(CONTROL_OPERATIONS_PREFIX)) { // actually a control operation
 				ControlOperation op = ControlOperation
 						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));
@@ -301,63 +301,72 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		le("unknown message content from []: ", source, obj);
 		return false;
 	}
-	
+
 	/**
 	 * This analysis the operation received and performs it.
-	 * 
+	 *
 	 * @param jsonObj
 	 *            - the object received as content through the {@link ShardContainer}
 	 * @return - an indication of success
 	 */
 	private boolean manageOperation(JSONObject jsonObj) {
 		String op = (String) jsonObj.get(OperationUtils.NAME);
-		if(op.equals(MonitoringOperation.STATUS_UPDATE.getOperation())) {
-			String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
-			String value = (String) jsonObj.get(OperationUtils.VALUE);
-			entitiesState.put(params, value);
-			lf("Entity [] status is now [].", params, value);
-			// entitiesData.get(params).setStatus(value);
-			// TODO
-			// SwingUtilities.invokeLater(() -> {
-			// try {
-			// gui.updateStateOfEntity(params, value);
-			// } catch (RuntimeException e) {
-			// e.printStackTrace();
-			// }
-			// });
-			return true;
-		}
-		if(op.equals(MonitoringOperation.GUI_UPDATE.getOperation())) {
-			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
-			Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
-			if(interfaceStructure == null)
-				try {
-					interfaceStructure = (Element) standardCtrls.clone();
-				} catch(CloneNotSupportedException e) {
-					le("Failed to clone standard controls", e);
+		switch (op){
+			case "status_update":
+				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				String value = (String) jsonObj.get(OperationUtils.VALUE);
+				entitiesState.put(params, value);
+				lf("Entity [] status is now [].", params, value);
+				// entitiesData.get(params).setStatus(value);
+				// TODO
+				// SwingUtilities.invokeLater(() -> {
+				// try {
+				// gui.updateStateOfEntity(params, value);
+				// } catch (RuntimeException e) {
+				// e.printStackTrace();
+				// }
+				// });
+				return true;
+
+			case "gui_update":
+				String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
+				boolean standardCtrls_cloned = false;
+				if(interfaceStructure == null)
+					try {
+						interfaceStructure = (Element) standardCtrls.clone();
+						standardCtrls_cloned = true;
+					} catch(CloneNotSupportedException e) {
+						le("Failed to clone standard controls", e);
+					}
+				entitiesData.get(entity).setGuiSpecification(interfaceStructure);
+				if(!standardCtrls_cloned) {
+					try {
+						entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
+					}
+					catch(CloneNotSupportedException e) {
+						e.printStackTrace();
+					}
 				}
-			entitiesData.get(entity).setGuiSpecification(interfaceStructure);
-			try {
-				entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
-			} catch(CloneNotSupportedException e) {
-				e.printStackTrace();
-			}
-			return gui.updateGui(entity, interfaceStructure);
-		}
-		if(op.equals(MonitoringOperation.GUI_OUTPUT.getOperation())) {
-			String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
-			AgentWave wave;
-			try {
-				wave = (AgentWave) MultiValueMap.fromSerializedString((String) jsonObj.get(OperationUtils.VALUE));
-			} catch(ClassNotFoundException e) {
-				le("Unable to unpack AgentWave from ", entity);
+				return gui.updateGui(entity, interfaceStructure);
+
+			case "gui_output":
+				String output_entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				AgentWave wave;
+				try {
+					wave = (AgentWave) MultiValueMap.fromSerializedString((String) jsonObj.get(OperationUtils.VALUE));
+				} catch(ClassNotFoundException e) {
+					le("Unable to unpack AgentWave from ", output_entity);
+					return false;
+				}
+				lf("The wave: ", wave);
+				gui.sendOutput(wave);
+				return true;
+
+			default :
+				le("Unknown operation: ", op);
 				return false;
-			}
-			lf("The wave: ", wave);
-			gui.sendOutput(wave);
-			return true;
 		}
-		return false;
 	}
 	
 	private boolean registerEntities(JSONArray ja) {

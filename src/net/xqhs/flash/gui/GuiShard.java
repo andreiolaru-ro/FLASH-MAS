@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yaml.snakeyaml.Yaml;
-
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -29,25 +27,25 @@ import net.xqhs.flash.gui.structure.Element;
 public class GuiShard extends IOShard {
 	protected interface ComponentConnect {
 		void sendOutput(String value);
-		
+
 		String getInput();
 	}
-	
+
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -2769555908800271606L;
-	
+
 	protected Element interfaceStructure;
-	
+
 	protected Map<String, Map<String, List<ComponentConnect>>> portRoleComponents = new HashMap<>();
-	
+
 	protected MonitoringShard monitor = null;
-	
+
 	public GuiShard() {
 		super(StandardAgentShard.GUI.toAgentShardDesignation());
 	}
-	
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
@@ -58,14 +56,14 @@ public class GuiShard extends IOShard {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		if(event.getType() == AgentEventType.AGENT_START)
 			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
 				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
-				monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
+				monitor.addGuiElement(interfaceStructure);
 			}
 	}
 	
