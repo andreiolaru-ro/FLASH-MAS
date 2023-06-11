@@ -333,16 +333,14 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
 				if (interfaceStructure != null){
 					interfaceContainer.addAllChildren(interfaceStructure.getChildren());
-					//entitiesData.get(entity).insertNewGuiElements(interfaceStructure.getChildren());
 				}
 				try {
 					interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
-					//entitiesData.get(entity).setGuiSpecification(clone);
 				} catch (CloneNotSupportedException e) {
 					throw new RuntimeException(e);
 				}
-
-				//return gui.updateGui(entity, entitiesData.get(entity).getGuiSpecification()	);
+				entitiesData.get(entity).setGuiSpecification(interfaceContainer);
+				lf("Interface to [] reset to:", entity, interfaceContainer);
 				return gui.updateGui(entity, interfaceContainer);
 
 			case GUI_OUTPUT:
