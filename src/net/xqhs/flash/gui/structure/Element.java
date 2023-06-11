@@ -11,7 +11,12 @@
  ******************************************************************************/
 package net.xqhs.flash.gui.structure;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,10 +26,8 @@ import org.json.simple.JSONObject;
  */
 public class Element implements Cloneable {
 	public static final String DEFAULT_ROLE = "content";
-	/**
-	 * counter of tabs, used in toString
-	 */
-	private static int			counter		= 0;
+	public static final int		INDENT_SIZE		= 8;
+	
 	/**
 	 * id of the element
 	 */
@@ -174,47 +177,24 @@ public class Element implements Cloneable {
 
 	@Override
 	public String toString() {
-		String tab = "\t";
-		StringBuilder result = new StringBuilder();
-		result.append(repeat(tab, counter));
-		result.append("id: ").append(id).append('\n');
-		result.append(repeat(tab, counter));
-		result.append("type: ").append(type).append('\n');
-		result.append(repeat(tab, counter));
-		result.append("port: ").append(port).append('\n');
-		result.append(repeat(tab, counter));
-		result.append("value: ").append(value).append('\n');
-		result.append(repeat(tab, counter));
-		result.append("role: ").append(role).append('\n');
-		result.append(repeat(tab, counter));
-		if(blockType != null) {
-			result.append("blockType: ").append(blockType).append('\n');
-			result.append(repeat(tab, counter));
-		}
-		result.append("children: ");
-		if(children != null) {
-			if(children.isEmpty()) {
-				result.append("[]").append('\n');
-			}
-			else {
-				result.append('\n');
-				++Element.counter;
-				for(Element child : children) {
-					result.append(child.toString());
-				}
-				--Element.counter;
-			}
-		}
-		result.append('\n');
-		return result.toString();
+		return toString(0).toString();
 	}
-
-	protected static String repeat(String str, int count) {
-		StringBuilder res = new StringBuilder();
-		for(int i = 0; i < count; i++) {
-			res.append(str);
-		}
-		return res.toString();
+	
+	protected StringBuilder toString(int indent) {
+		StringBuilder result = new StringBuilder();
+		result.append(" ".repeat(indent * INDENT_SIZE));
+		result.append(type);
+		if(blockType != null)
+			result.append("|").append(blockType);
+		result.append("#").append(id);
+		result.append(" <").append(port).append("|").append(role);
+		result.append("|").append(value).append("> ");
+		result.append("[");
+		if(children != null && !children.isEmpty())
+			for(Element c : children)
+				result.append("\n").append(c.toString(indent + 1));
+		result.append("]  ");
+		return result;
 	}
 
 	@Override
