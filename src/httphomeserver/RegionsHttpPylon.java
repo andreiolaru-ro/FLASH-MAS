@@ -132,6 +132,10 @@ public class RegionsHttpPylon extends DefaultPylonImplementation
     {
         return serverPort;
     }
+    
+    public String getServerHost() {
+        return serverHostname;
+    }
 
     /**
      * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
@@ -155,15 +159,6 @@ public class RegionsHttpPylon extends DefaultPylonImplementation
                 return false;
             }
             serviceRegistry.remove(entityName);
-            serverEntity.markAsGone(entityName);
-            return true;
-        }
-        
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean send(String message) {
-            serverEntity.processMessage(message);
             return true;
         }
 
@@ -174,49 +169,15 @@ public class RegionsHttpPylon extends DefaultPylonImplementation
          *            - the source endpoint
          * @param destination
          *            - the destination endpoint
-         * @param content
+         * @param message
          *            - the content of the message
          * @return - an indication of success
          */
         
         @Override
         @SuppressWarnings("unchecked")
-        public boolean send(String source, String destination, String content) {
-			// extract the id of the destination without the rest of the endpoint
-        	String destination_base = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
-			if(messageReceivers.containsKey(destination_base)) {
-                messageReceivers.get(destination_base).receive(source, destination, content);
-                return true;
-            }
-            JSONObject messageToServer = new JSONObject();
-            messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
-            messageToServer.put(MESSAGE_SOURCE_KEY, source);
-            messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
-            messageToServer.put(MESSAGE_CONTENT_KEY, content);
-            
-            String remoteDestinationUrl = serviceRegistry.get(destination_base);
-            if (remoteDestinationUrl == null)
-            {
-                le("The remote url of the destination " + destination + " is not known.");
-                return false;
-            }
-            try
-            {
-				String sourceAddress = (isHttps ? HTTPS_PROTOCOL_PREFIX : HTTP_PROTOCOL_PREFIX) + serverHostname + ":"
-						+ serverPort;
-				URI uri = new URI(remoteDestinationUrl + (destination.contains(AgentWave.ADDRESS_SEPARATOR)
-						? destination.substring(destination_base.length())
-						: ""));
-				// lf("sending to []", uri);
-				HttpRequest httpRequest = HttpRequest.newBuilder().header("Content-Type", "text/plain;charset=UTF-8")
-						.header("sourceAddress", sourceAddress).uri(uri)
-						.POST(HttpRequest.BodyPublishers.ofString(messageToServer.toString())).build();
-				httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
-			}
-            catch (URISyntaxException e)
-            {
-                e.printStackTrace();
-            }
+        public boolean send(String source, String destination, String message) {
+            serverEntity.processMessage(message);
             return true;
         }
 
@@ -240,37 +201,35 @@ public class RegionsHttpPylon extends DefaultPylonImplementation
             le("No destination entity received.");
         }
         String destination = (String) jsonObject.get("destination");
-        String localAddr = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
-        if(!messageReceivers.containsKey(localAddr) || messageReceivers.get(localAddr) == null)
+        String localAddr = Helper.extractAgentAddress(destination);
+        if (!messageReceivers.containsKey(localAddr) || messageReceivers.get(localAddr) == null) {
             le("Entity [] does not exist in the scope of this pylon.", localAddr);
+        }
         else {
             String source = (String) jsonObject.get("source");
-            String sourceAddress = (String) jsonObject.get("sourceAddress");
-            String content = (String) jsonObject.get("content");
-            String key = source.split(AgentWave.ADDRESS_SEPARATOR)[0];
-            serviceRegistry.put(key, sourceAddress + "/" + key);
-            messageReceivers.get(localAddr).receive(source, destination, content);
+            messageReceivers.get(localAddr).receive(source, destination, jsonObject.toJSONString());
         }
     }
     
     @Override
     public boolean start() {
-        serverEntity = new RegionsHttpServerEntity(this, isHttps, httpsCertificatePath, httpClient, serviceRegistry);
-        serverEntity.start();
-        
         Properties properties = System.getProperties();
         properties.setProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
-        
+
         HttpClient.Builder builder = HttpClient.newBuilder()
-            .executor(asyncMessagesExecutorService)
-            .version(HttpClient.Version.HTTP_1_1)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .connectTimeout(Duration.ofSeconds(10));
-        
+                .executor(asyncMessagesExecutorService)
+                .version(HttpClient.Version.HTTP_1_1)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(10));
+
         if (trustedCaPath != null) {
             builder.sslContext(initClientSslContext());
         }
         httpClient = builder.build();
+        
+        serverEntity = new RegionsHttpServerEntity(this, isHttps, httpsCertificatePath, httpClient);
+        serverEntity.start();
+        
         return true;
     }
     

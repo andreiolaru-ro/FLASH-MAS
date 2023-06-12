@@ -269,8 +269,14 @@ public class Node extends Unit implements Entity<Node> {
 				switch(event.getType()) {
 				case AGENT_WAVE:
 					String localAddr = ((AgentWave) event).getCompleteDestination();
-					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
+					// fix for http
+					if (localAddr.startsWith("http")) {
+						if (!localAddr.substring(0, localAddr.lastIndexOf("/")).equals(getName())) {
+							break;
+						}
+					} else if (!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName())) {
 						break;
+					}
 					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
 					if(msg == null)
 						break;

@@ -1,10 +1,12 @@
 package httphomeserver;
 
+import httphomeserver.RegionsHttpMessageFactory.MessageType;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobilityAwareMessagingShard;
+import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.util.PlatformUtils;
 import org.json.simple.JSONObject;
@@ -16,7 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class RegionsHttpMessagingShard extends NameBasedMessagingShard implements MobilityAwareMessagingShard {
+import static httphomeserver.RegionsHttpMessageFactory.MessageType.CONTENT;
+
+public class RegionsHttpMessagingShard extends AbstractMessagingShard implements MobilityAwareMessagingShard {
 
     /**
      * The serial UID.
@@ -24,31 +28,17 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
     private static final long serialVersionUID = 10L;
 
     @Override
-    protected void receiveMessage(String source, String destination, String content) {
-        super.receiveMessage(source, destination, content);
-//        Object obj = JSONValue.parse(content);
-//        if(obj == null)
-//            return;
-//        JSONObject mesg = (JSONObject) obj;
-//        String type = (String) mesg.get("action");
-//        switch(MessageFactory.ActionType.valueOf(type)) {
-//            case RECEIVE_MESSAGE:
-//                if(inQueue != null)
-//                    inQueue.add(new AbstractMap.SimpleEntry<>(
-//                            new AbstractMap.SimpleEntry<>(source, destination), (String) mesg.get("content")));
-//                else
-//                    super.receiveMessage(source, destination, (String) mesg.get("content"));
-//                break;
-//            case MOVE_TO_ANOTHER_NODE:
-//            default:
-//                break;
-//        }
+    protected void receiveMessage(String source, String destination, String str) {
+        Object obj = JSONValue.parse(str);
+        JSONObject message = (JSONObject) obj;
+        String type = (String) message.get("type");
+        messageTriggeredBehavior(source, destination, type, (String) message.get("content"));
     }
     transient String													nextMoveTarget;
     LinkedBlockingQueue<Map.Entry<Map.Entry<String, String>, String>> inQueue;
     LinkedBlockingQueue<String>											outQueue;
 
-    public void startShard(RegionsHttpMessageFactory.MessageType connection_type) {
+    public void startShard(MessageType connection_type) {
         setUnitName(getAgent().getEntityName());
         setLoggerType(PlatformUtils.platformLogType());
         while(inQueue != null && !inQueue.isEmpty()) {
@@ -60,9 +50,9 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
             super.receiveMessage(src_dest.getKey(), src_dest.getValue(), entry.getValue());
         }
         inQueue = null;
-        pylon.send(RegionsHttpMessageFactory.createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
+        pylon.send(null, null, RegionsHttpMessageFactory.createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
         while(outQueue != null && !outQueue.isEmpty())
-            pylon.send(outQueue.poll());
+            pylon.send(null, null, outQueue.poll());
         outQueue = null;
         lf("completed startup procedure.");
     }
@@ -84,7 +74,7 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
         data.put("content", content);
         String message = RegionsHttpMessageFactory.createMessage(pylon.getEntityName(), this.getName(),
                 // FIXME: very ugly hack, may fail easily
-                source.contains("node") || target.contains("node") ? RegionsHttpMessageFactory.MessageType.AGENT_CONTENT : RegionsHttpMessageFactory.MessageType.CONTENT,
+                source.contains("node") || target.contains("node") ? MessageType.AGENT_CONTENT : CONTENT,
                 data);
         li("Send message [] from [] to [] []", content, source, target,
                 outQueue != null ? "will queue" : "will not queue");
@@ -97,8 +87,13 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
             // FIXME: does this actually occur anymore?
             return true;
         }
-        pylon.send(message);
+        pylon.send(source, target, message);
         return true;
+    }
+
+    @Override
+    public String extractAgentAddress(String endpoint) {
+        return Helper.extractAgentAddress(endpoint);
     }
 
     @Override
@@ -108,11 +103,11 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
             case AGENT_START:
                 if(event.get(CompositeAgent.TRANSIENT_EVENT_PARAMETER) != null) {
                     li("Agent started after move. Queued messages: [] in / [] out", inQueue.size(), outQueue.size());
-                    startShard(RegionsHttpMessageFactory.MessageType.CONNECT);
+                    startShard(MessageType.CONNECT);
                 }
                 else {
                     this.register(getAgent().getEntityName());
-                    startShard(RegionsHttpMessageFactory.MessageType.REGISTER);
+                    startShard(MessageType.REGISTER);
                 }
                 getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AFTER_MOVE));
                 break;
@@ -123,7 +118,7 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
 
                 nextMoveTarget = event.get("TARGET");
                 lf("Agent " + this.getName() + " wants to move to another node " + nextMoveTarget);
-                pylon.send(RegionsHttpMessageFactory.createMessage(pylon.getEntityName(), this.getName(), RegionsHttpMessageFactory.MessageType.REQ_LEAVE, null));
+                pylon.send(null, null, RegionsHttpMessageFactory.createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
                 break;
             case AFTER_MOVE:
                 // String entityName = getAgent().getEntityName();
@@ -137,21 +132,15 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
         }
     }
 
-    protected void messageTriggeredBehavior(String s) {
-        Object obj = JSONValue.parse(s);
-        if(obj == null)
-            return;
-        JSONObject message = (JSONObject) obj;
-        String str = (String) message.get("type");
-        String content;
-        switch(MessageFactory.MessageType.valueOf(str)) {
+    protected void messageTriggeredBehavior(String source, String destination, String type, String content) {
+        MessageType messageType = type == null ? CONTENT : MessageType.valueOf(type);
+        switch(messageType) {
             case CONTENT:
                 content = RegionsHttpMessageFactory.createMonitorNotification(RegionsHttpMessageFactory.ActionType.RECEIVE_MESSAGE,
-                        (String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
-                li("Message from []: [] []", message.get("source"), message.get("content"),
+                        content, String.valueOf(new Timestamp(System.currentTimeMillis())));
+                li("Message from []: [] []", source, content,
                         inQueue != null ? "will queue" : "will not queue");
-                inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
-                // pylon.send((String) message.get("source"), (String) message.get("destination"), content);
+                super.receiveMessage(source, destination, content);
                 break;
             case REQ_ACCEPT:
                 li("Prepared to leave. Queued messages: [] in / [] out", inQueue.size(), outQueue.size());
@@ -160,11 +149,12 @@ public class RegionsHttpMessagingShard extends NameBasedMessagingShard implement
                         .add(CompositeAgent.TRANSIENT_EVENT_PARAMETER, MobileCompositeAgent.MOVE_TRANSIENT_EVENT_PARAMETER)
                         .add(MobileCompositeAgent.TARGET, nextMoveTarget));
                 nextMoveTarget = null;
+                break;
             case AGENT_CONTENT:
-                li("Received agent from " + message.get("source"));
+                li("Received agent from " + source);
                 AgentEvent arrived_agent = new AgentWave();
-                arrived_agent.add("content", (String) message.get("content"));
-                arrived_agent.add("destination-complete", (String) message.get("destination"));
+                arrived_agent.add("content", content);
+                arrived_agent.add("destination-complete", destination);
                 getAgent().postAgentEvent(arrived_agent);
                 break;
             default:

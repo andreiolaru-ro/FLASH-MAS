@@ -24,6 +24,9 @@ import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.Executors;
 
+import static httphomeserver.RegionsHttpAgentStatus.Status.*;
+import static httphomeserver.RegionsHttpMessageFactory.MessageType.REQ_ACCEPT;
+import static httphomeserver.RegionsHttpMessageFactory.MessageType.REQ_BUFFER;
 import static java.text.MessageFormat.format;
 
 public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
@@ -40,7 +43,7 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
     /**
      * If the server should be deployed with TLS feature or not
      */
-    private boolean isHttps;
+    private final boolean isHttps;
 
     /**
      * The {@link HttpsServer} instance
@@ -54,52 +57,56 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
     /**
      * The pylon associated with this entity
      */
-    private RegionsHttpPylon pylon;
+    private final RegionsHttpPylon pylon;
 
     /**
      * List of agents with the birthplace in this region.
      */
-    private final Map<String, RegionsHttpAgentStatus> agentsList			= Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, RegionsHttpAgentStatus> homeServerAgents = Collections.synchronizedMap(new HashMap<>());
     /**
      * List of the agents that arrived in this region.
      */
     private final Map<String, RegionsHttpAgentStatus>	mobileAgents		= Collections.synchronizedMap(new HashMap<>());
 
-    private Map<String, String> clients				= new HashMap<>();
-
     public void printStatus() {
-        lf("region agents:[] guest agents:[]", agentsList, mobileAgents);
+        lf("region agents:[] guest agents:[]", homeServerAgents, mobileAgents);
     }
 
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
+
+    @Override
+    public String getUnitName() {
+        return "http://" + this.pylon.getServerHost() + ":" + this.pylon.getServerPort();
+    }
      class MessageHandler {
 
          /**
           * A method that checks if the connection is still open before sending a message.
           *
-          * @param entityName
+          * @param url
           *            - the destination name
           * @param message
           *            - the message that will be sent
           */
-        public void sendMessage(String entityName, String message) {
-            URI uri = null;
+        public void sendMessage(String url, String message) {
             try {
-                uri = new URI(entityName);
+                URI uri = new URI(url);
                 HttpRequest httpRequest = HttpRequest.newBuilder().header("Content-Type", "text/plain;charset=UTF-8")
                         .uri(uri)
                         .POST(HttpRequest.BodyPublishers.ofString(message)).build();
                 httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
+            } catch (Exception e) {
+                System.out.println(url);
+                throw e;
             }
         }
 
         public void registerMessageHandler(JSONObject mesg) {
             String new_agent = (String) mesg.get("source");
             lf("Received REGISTER message from new agent ", new_agent);
-            if(agentsList.put(new_agent,
-                    new RegionsHttpAgentStatus(new_agent, RegionsHttpAgentStatus.Status.HOME, getUnitName())) != null) {
+            if (homeServerAgents.containsKey(new_agent)) {
                 le("An agent with the name [] already existed!", new_agent);
             } else {
                 register(new_agent);
@@ -110,26 +117,24 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
         public void connectMessageHandler(JSONObject mesg) {
             String arrived_agent = (String) mesg.get("source");
             lf("Received CONNECT message from mobile agent ", arrived_agent);
-            if(!agentsList.containsKey(arrived_agent)) {
+            if(!homeServerAgents.containsKey(arrived_agent)) {
                 if(!mobileAgents.containsKey(arrived_agent)) {
-                    mobileAgents.put(arrived_agent, new RegionsHttpAgentStatus(arrived_agent, RegionsHttpAgentStatus.Status.REMOTE, getUnitName()));
-                    String homeServer = arrived_agent.substring(0, arrived_agent.lastIndexOf("/"));
+                    mobileAgents.put(arrived_agent, new RegionsHttpAgentStatus(arrived_agent, RegionsHttpAgentStatus.Status.REMOTE, getUnitName() + "/" + Helper.getAgentName(arrived_agent)));
+                    String homeServer = arrived_agent.substring(0, arrived_agent.indexOf("/", 7));
                     addPath(arrived_agent);
-                    if(clients.containsKey(homeServer)) {
-                        Map<String, String> data = new HashMap<>();
-                        data.put("lastLocation", getUnitName());
-                        sendMessage(clients.get(homeServer), RegionsHttpMessageFactory.createMessage("", arrived_agent, RegionsHttpMessageFactory.MessageType.AGENT_UPDATE, data));
-                    }
+                    Map<String, String> data = new HashMap<>();
+                    data.put("lastLocation", getUnitName() + "/" + Helper.getAgentName(arrived_agent));
+                    sendMessage(homeServer + "/" + Helper.getAgentName(arrived_agent), RegionsHttpMessageFactory.createMessage("", arrived_agent, RegionsHttpMessageFactory.MessageType.AGENT_UPDATE, data));
                 }
             }
             else {
                 lf("Agent [] did not change regions", arrived_agent);
-                RegionsHttpAgentStatus ag = agentsList.get(arrived_agent);
-                if(ag.getStatus() == RegionsHttpAgentStatus.Status.OFFLINE) {
-                    ag.setStatus(RegionsHttpAgentStatus.Status.HOME);
+                RegionsHttpAgentStatus ag = homeServerAgents.get(arrived_agent);
+                if(ag.getStatus() == OFFLINE) {
+                    ag.setStatus(HOME);
                     addPath(arrived_agent);
-                    ag.setLastLocation(getUnitName());
-                    while(ag.getStatus() == RegionsHttpAgentStatus.Status.HOME && !ag.getMessages().isEmpty()) {
+                    ag.setLastLocation(getUnitName() + "/" + Helper.getAgentName(ag.getName()));
+                    while (!ag.getMessages().isEmpty()) {
                         String saved = ag.getMessages().pop();
                         li("Sending to online agent [] saved message []", arrived_agent, saved);
                         sendMessage(arrived_agent, saved);
@@ -143,8 +148,8 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
             String target = (String) mesg.get("destination");
             lf("Message to send from [] to [] with content ", mesg.get("source"), target, mesg.get("content"));
             printStatus();
-            RegionsHttpAgentStatus ag = agentsList.get(target);
-            RegionsHttpAgentStatus agm = mobileAgents.get(target);
+            RegionsHttpAgentStatus ag = homeServerAgents.get(Helper.extractAgentAddress(target));
+            RegionsHttpAgentStatus agm = mobileAgents.get(Helper.extractAgentAddress(target));
             if(ag != null) {
                 switch(ag.getStatus()) {
                     case HOME:
@@ -165,18 +170,15 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
                 }
             }
             else {
-                if(agm != null) {
+                if (agm != null) {
                     lf("Send message [] directly to guest agent []", mesg.get("content"), target);
-                    sendMessage(target, message);
+                    pylon.receiveMessage(mesg);
                 }
                 else {
-                    String regServer = target.substring(0, target.lastIndexOf("/"));
+                    String regServer = Helper.extractAgentAddress(target);
                     lf("Agent [] location isn't known. Sending message [] to home Region Server []", target,
                             mesg.get("content"), regServer);
-                    if(clients.containsKey(regServer))
-                        sendMessage(regServer, message);
-                    else
-                        le("Region server [] not connected; known servers: ", regServer, clients.keySet());
+                    sendMessage(regServer, message);
                 }
             }
         }
@@ -184,64 +186,63 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
         public void reqLeaveMessageHandler(JSONObject mesg) {
             String source = (String) mesg.get("source");
             lf("Request to leave from agent []", source);
-            RegionsHttpAgentStatus ag = agentsList.get(source);
-            if(ag != null) {
-                ag.setStatus(RegionsHttpAgentStatus.Status.OFFLINE);
-                sendMessage(source, RegionsHttpMessageFactory.createMessage("", getName(), RegionsHttpMessageFactory.MessageType.REQ_ACCEPT, null));
+            RegionsHttpAgentStatus ag = homeServerAgents.get(source);
+            if (ag != null && ag.getStatus().equals(HOME)) {
+                ag.setStatus(OFFLINE);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("source", getName());
+                jsonObject.put("destination", ag.getName());
+                jsonObject.put("type", REQ_ACCEPT.name());
+                pylon.receiveMessage(jsonObject);
             }
-            else {
-                removePath(source);
-                if(mobileAgents.containsKey(source)) {
-                    String homeServer = source.substring(0, source.lastIndexOf("/"));
-                    if(clients.containsKey(homeServer)) {
-                        Map<String, String> data = new HashMap<>();
-                        data.put("agentName", source);
-                        sendMessage(homeServer, RegionsHttpMessageFactory.createMessage("", getName(), RegionsHttpMessageFactory.MessageType.REQ_BUFFER, data));
-                    }
-                }
+            else if (mobileAgents.containsKey(source)) {
+                String homeServer = source.substring(0, source.indexOf("/", 7));
+                Map<String, String> data = new HashMap<>();
+                data.put("agentName", source);
+                sendMessage(homeServer + "/" + Helper.getAgentName(source), RegionsHttpMessageFactory.createMessage("", getName(), REQ_BUFFER, data));
             }
         }
 
         public void reqBufferMessageHandler(JSONObject mesg) {
             String agentReq = (String) mesg.get("agentName");
             lf("Request to buffer for agent []", agentReq);
-            RegionsHttpAgentStatus ag = agentsList.get(agentReq);
+            RegionsHttpAgentStatus ag = homeServerAgents.get(agentReq);
             if(ag != null) {
-                ag.setStatus(RegionsHttpAgentStatus.Status.OFFLINE);
+                ag.setStatus(OFFLINE);
                 Map<String, String> data = new HashMap<>();
                 data.put("agentName", agentReq);
                 String lastLocation = ag.getLastLocation();
-                if(clients.containsKey(lastLocation)) {
-                    sendMessage(lastLocation, RegionsHttpMessageFactory.createMessage("", getName(), RegionsHttpMessageFactory.MessageType.REQ_ACCEPT, data));
-                }
+                sendMessage(lastLocation, RegionsHttpMessageFactory.createMessage("", getName(), REQ_ACCEPT, data));
             }
         }
 
         public void reqAcceptMessageHandler(JSONObject mesg) {
             String agentResp = (String) mesg.get("agentName");
             lf("Accept request received from agent []", agentResp);
-            RegionsHttpAgentStatus ag = mobileAgents.get(agentResp);
-            if(ag != null) {
-                sendMessage(agentResp, RegionsHttpMessageFactory.createMessage("", getName(), RegionsHttpMessageFactory.MessageType.REQ_ACCEPT, null));
-                mobileAgents.remove(agentResp);
+            RegionsHttpAgentStatus agm = mobileAgents.get(agentResp);
+            if(agm != null) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("source", getName());
+                jsonObject.put("destination", agm.getName());
+                jsonObject.put("type", REQ_ACCEPT.name());
+                pylon.receiveMessage(jsonObject);
+                removePath(agentResp);
             }
         }
 
         public void agentUpdateMessageHandler(JSONObject mesg) {
             String movedAgent = (String) mesg.get("source");
             String new_location = (String) mesg.get("lastLocation");
-            RegionsHttpAgentStatus ag = agentsList.get(movedAgent);
+            RegionsHttpAgentStatus ag = homeServerAgents.get(movedAgent);
             if(ag != null) {
                 lf("Agent [] arrived in []. It has [] saved messages.", movedAgent, new_location,
                         ag.getMessages().size());
                 ag.setStatus(RegionsHttpAgentStatus.Status.REMOTE);
                 ag.setLastLocation(new_location);
-                if(clients.containsKey(new_location)) {
-                    while(ag.getStatus() == RegionsHttpAgentStatus.Status.REMOTE && !ag.getMessages().isEmpty()) {
-                        String saved = ag.getMessages().pop();
-                        lf("Sending to remote agent [] saved message []", movedAgent, saved);
-                        sendMessage(new_location, saved);
-                    }
+                while(!ag.getMessages().isEmpty()) {
+                    String saved = ag.getMessages().pop();
+                    lf("Sending to remote agent [] saved message []", movedAgent, saved);
+                    sendMessage(new_location, saved);
                 }
             }
             else
@@ -249,18 +250,17 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
         }
 
         public void agentContentMessageHandler(JSONObject mesg, String message) {
-            String target = ((String) mesg.get("destination")).split("/")[0];
+            String target = Helper.extractAgentAddress((String) mesg.get("destination"));
             String source = (String) mesg.get("source");
             lf("Agent content to send from [] to []", source, target);
-            RegionsHttpAgentStatus ag = agentsList.get(target);
-            if(ag != null)
-                sendMessage(target, message);
+            RegionsHttpAgentStatus ag = homeServerAgents.get(target);
+            
+            if (ag != null) {
+                pylon.receiveMessage(mesg);
+            }
             else {
-                String regServer = target.substring(0, target.lastIndexOf("/"));
-                le("Node [] location isn't known. Sending message to home Region-Server []", target, regServer);
-                if(clients.containsKey(regServer)) {
-                    sendMessage(regServer, message);
-                }
+                le("Node [] location isn't known. Sending message server []", target, target);
+                sendMessage(target, message);
             }
         }
     }
@@ -272,14 +272,16 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
      */
     public void processMessage(String message) {
         Object obj = JSONValue.parse(message);
-        if(obj == null)
+        if(obj == null) {
             return;
+        }
         JSONObject mesg = (JSONObject) obj;
         String str = (String) mesg.get("type");
         RegionsHttpServerEntity.MessageHandler handler = new MessageHandler();
-        switch(RegionsHttpMessageFactory.MessageType.valueOf(str)) {
+        switch (RegionsHttpMessageFactory.MessageType.valueOf(str)) {
             case REGISTER:
                 handler.registerMessageHandler(mesg);
+                break;
             case CONNECT:
                 handler.connectMessageHandler(mesg);
                 break;
@@ -347,11 +349,9 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
                 os.write(response.getBytes());
                 os.close();
                 
-                jsonObject.put("sourceAddress", exchange.getRequestHeaders().get("sourceAddress").get(0));
                 processMessage(jsonObject.toJSONString());
-                pylon.receiveMessage(jsonObject);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 pylon.le("error when decoding the message", e);
             }
@@ -364,8 +364,7 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
      * @param isHttps if server should be configured with TLS
      * @param certificatePath certificate of the HTTPS server
      */
-    public RegionsHttpServerEntity(RegionsHttpPylon pylon, boolean isHttps, String certificatePath, HttpClient httpClient, Map<String, String> serviceRegistry) {
-        this.clients = serviceRegistry;
+    public RegionsHttpServerEntity(RegionsHttpPylon pylon, boolean isHttps, String certificatePath, HttpClient httpClient) {
         this.httpClient = httpClient;
         setUnitName("http-server-" + pylon.getName().split(" ")[0]);
         this.pylon = pylon;
@@ -379,14 +378,17 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
     }
     
     public void register(String resource) {
-        if (!agentsList.containsKey(resource)) {
-            agentsList.put(resource, new RegionsHttpAgentStatus(resource, RegionsHttpAgentStatus.Status.HOME, getUnitName()));
+        if (!homeServerAgents.containsKey(resource) && resource.startsWith(getUnitName())) {
+            homeServerAgents.put(resource, new RegionsHttpAgentStatus(resource, HOME, getUnitName() + "/" + Helper.getAgentName(resource)));
+            addPath(resource);
         }
-        addPath(resource);
     }
     
     public void addPath(String resource) {
-        String agentName = resource.substring(resource.lastIndexOf("/") + 1);
+        String agentName = resource.substring(resource.indexOf("/", 7) + 1);
+        if (agentName.contains("/")) {
+            agentName = agentName.substring(0, agentName.indexOf("/"));
+        }
         String path = "/" + agentName;
         if (isHttps) {
             httpsServer.createContext(path, new CustomHttpHandler());
@@ -397,21 +399,26 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
     }
     
     public void removePath(String resource) {
-        String path = "/" + resource;
+        String agentName = resource.substring(resource.indexOf("/", 7) + 1);
+        if (agentName.contains("/")) {
+            agentName = agentName.substring(0, agentName.indexOf("/"));
+        }
+        agentName = "/" + agentName;
         try {
             if (this.isHttps) {
-                this.httpsServer.removeContext(path);
+                this.httpsServer.removeContext(agentName);
             } else {
-                this.httpServer.removeContext(path);
+                this.httpServer.removeContext(agentName);
             }
-            li("Removed path []", path);
+            li("Removed path []", agentName);
+            mobileAgents.remove(resource);
         } catch (Exception e) {
-            le("Cannot remove path []. Cause: []", path, e.getMessage());
+            le("Cannot remove path []. Cause: []", agentName, e.getMessage());
         }
     }
 
     public void markAsGone(String resource) {
-        if (agentsList.containsKey(resource)) {
+        if (homeServerAgents.containsKey(resource)) {
             // do not remove because this is the home server for this agent
         } else if (mobileAgents.containsKey(resource)) {
             removePath(resource);
@@ -486,7 +493,7 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
 
     @Override
     public String getName() {
-        return null;
+        return getUnitName();
     }
 
     @Override
