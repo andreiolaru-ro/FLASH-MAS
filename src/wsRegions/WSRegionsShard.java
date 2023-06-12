@@ -200,6 +200,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 					.add(CompositeAgent.TRANSIENT_EVENT_PARAMETER, MobileCompositeAgent.MOVE_TRANSIENT_EVENT_PARAMETER)
 					.add(MobileCompositeAgent.TARGET, nextMoveTarget));
 			nextMoveTarget = null;
+			break;
 		case AGENT_CONTENT:
 			li("Received agent from " + message.get("source"));
 			// content = createMonitorNotification(ActionType.RECEIVE_MESSAGE, (String) message.get("content"),
