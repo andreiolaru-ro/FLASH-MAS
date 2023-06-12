@@ -12,8 +12,8 @@
 package net.xqhs.flash.gui.structure.types;
 
 public enum PortType {
-    ACTIVE("activate"),
-    PASSIVE("passive"),
+    ACTIVE_INPUT("activate"),
+    PASSIVE_INPUT("passive"),
     CONTENT("content"),
     OUTPUT("output"),
     EXTENDED_INTERFACES("extended-interfaces"),

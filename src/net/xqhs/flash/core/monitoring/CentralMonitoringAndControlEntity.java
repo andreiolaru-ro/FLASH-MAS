@@ -12,12 +12,9 @@
 package net.xqhs.flash.core.monitoring;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import net.xqhs.flash.gui.structure.types.PortType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -162,6 +159,16 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * Prefix to names of ports inserted by the central entity.
 	 */
 	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
+
+	/**
+	 * Used for the standard operation of starting entities.
+	 */
+	protected static final String STANDARD_OPERATON_START = "start";
+
+	/**
+	 * Used for the standard operation of stopping entities.
+	 */
+	protected static final String STANDARD_OPERATON_STOP = "stop";
 
 	/**
 	 * Used for unknown entity names, statuses, etc.
@@ -310,10 +317,32 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * @return - an indication of success
 	 */
 	private boolean manageOperation(JSONObject jsonObj) {
-		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))){
+		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))) {
 			case STATUS_UPDATE:
+				li("Status update received: " + jsonObj);
 				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
 				String value = (String) jsonObj.get(OperationUtils.VALUE);
+				try {
+					switch (AgentEvent.AgentEventType.valueOf(value)) {
+						case AGENT_START:
+							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+									.get(0).setRole(PortType.ACTIVE_INPUT.type);
+							break;
+						case AGENT_STOP:
+							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+									.get(0).setRole(PortType.ACTIVE_INPUT.type);
+							gui.updateGui(params, entitiesData.get(params).guiSpecification);
+							break;
+						default:
+							break;
+					}
+				} catch (Exception e) {
+					le("Entity [] is not an agent: ", params, e.getMessage());
+				}
 				entitiesState.put(params, value);
 				lf("Entity [] status is now [].", params, value);
 				// entitiesData.get(params).setStatus(value);

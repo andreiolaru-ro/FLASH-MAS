@@ -27,6 +27,7 @@ import org.json.simple.JSONObject;
 public class Element implements Cloneable {
 	public static final String DEFAULT_ROLE = "content";
 	public static final int		INDENT_SIZE		= 8;
+	public static String DISABLED_ROLE_PREFIX = "disabled-";
 	
 	/**
 	 * id of the element
