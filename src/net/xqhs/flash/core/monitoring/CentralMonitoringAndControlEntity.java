@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import net.xqhs.flash.gui.structure.types.PortType;
+import org.java_websocket.WebSocket;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -319,29 +320,45 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	private boolean manageOperation(JSONObject jsonObj) {
 		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))) {
 			case STATUS_UPDATE:
-				li("Status update received: " + jsonObj);
+				//li("Status update received: " + jsonObj);
 				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
 				String value = (String) jsonObj.get(OperationUtils.VALUE);
 				try {
 					switch (AgentEvent.AgentEventType.valueOf(value)) {
 						case AGENT_START:
-							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
-									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
-							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-									.get(0).setRole(PortType.ACTIVE_INPUT.type);
+							//the first time the agent is started, it's entitiesData is empty
+							if (entitiesData.size() == 0){
+								standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+								standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+							}
+							else {
+								entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+								entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+							}
 							break;
+
 						case AGENT_STOP:
-							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
-							standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+							entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
 									.get(0).setRole(PortType.ACTIVE_INPUT.type);
-							gui.updateGui(params, entitiesData.get(params).guiSpecification);
+							entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
 							break;
+
 						default:
 							break;
 					}
+
+					li("Agent [] button stop is now: ", params, entitiesData.get(params).getGuiSpecification()
+							.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP).get(0).getRole());
+					li("Agent [] button start is now: ", params, entitiesData.get(params).getGuiSpecification()
+							.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START).get(0).getRole());
+
 				} catch (Exception e) {
-					le("Entity [] is not an agent: ", params, e.getMessage());
+					le("Entity [] may not be an agent, or hasn't entitiesData yet. ", params);
 				}
 				entitiesState.put(params, value);
 				lf("Entity [] status is now [].", params, value);
