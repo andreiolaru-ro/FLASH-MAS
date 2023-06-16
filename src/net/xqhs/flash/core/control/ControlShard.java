@@ -71,6 +71,7 @@ public class ControlShard extends AgentShardGeneral {
 					break;
 				case STOP:
 					getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
+					lf("Agent [] was stopped by [].", getAgent().getEntityName(), wave.getCompleteSource());
 					break;
 				default:
 					li("Unhandled control operation [].", operation);

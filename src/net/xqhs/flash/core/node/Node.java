@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import mpi.Op;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -365,7 +366,7 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
 		String op = jo.get(OperationUtils.NAME).getAsString();
-		if(OperationUtils.ControlOperation.START.getOperation().equals(op) || OperationUtils.ControlOperation.KILL.getOperation().equals(op)) {
+		if(OperationUtils.ControlOperation.fromOperation(op) != null) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
 			if(param == null)
 				return;

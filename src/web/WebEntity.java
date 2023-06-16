@@ -298,11 +298,11 @@ public class WebEntity extends CentralGUI {
 			return;
 		}
 		String port = activatedElement.getPort();
-		wave.appendDestination(entityName, StandardAgentShard.GUI.shardName(), port);
 		JsonObject content = new JsonObject();
 		content.put(OperationUtils.PARAMETERS, entityName);
 		content.put(OperationUtils.NAME, msg.getJsonObject("content")
 				.getString(msg.getJsonObject("content").fieldNames().toArray()[0].toString()).toLowerCase());
+		wave.appendDestination(entityName, StandardAgentShard.GUI.shardName(), port);
 		wave.add("content", content.toString());
 		cep.postAgentEvent(wave);
 	}
