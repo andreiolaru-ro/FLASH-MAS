@@ -117,8 +117,8 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
         public void connectMessageHandler(JSONObject mesg) {
             String arrived_agent = (String) mesg.get("source");
             lf("Received CONNECT message from mobile agent ", arrived_agent);
-            if(!homeServerAgents.containsKey(arrived_agent)) {
-                if(!mobileAgents.containsKey(arrived_agent)) {
+            if (!homeServerAgents.containsKey(arrived_agent)) {
+                if (!mobileAgents.containsKey(arrived_agent)) {
                     mobileAgents.put(arrived_agent, new RegionsHttpAgentStatus(arrived_agent, RegionsHttpAgentStatus.Status.REMOTE, getUnitName() + "/" + Helper.getAgentName(arrived_agent)));
                     String homeServer = arrived_agent.substring(0, arrived_agent.indexOf("/", 7));
                     addPath(arrived_agent);
@@ -126,11 +126,11 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
                     data.put("lastLocation", getUnitName() + "/" + Helper.getAgentName(arrived_agent));
                     sendMessage(homeServer + "/" + Helper.getAgentName(arrived_agent), RegionsHttpMessageFactory.createMessage("", arrived_agent, RegionsHttpMessageFactory.MessageType.AGENT_UPDATE, data));
                 }
-            }
+            }   
             else {
                 lf("Agent [] did not change regions", arrived_agent);
                 RegionsHttpAgentStatus ag = homeServerAgents.get(arrived_agent);
-                if(ag.getStatus() == OFFLINE) {
+                if (ag.getStatus() == OFFLINE) {
                     ag.setStatus(HOME);
                     addPath(arrived_agent);
                     ag.setLastLocation(getUnitName() + "/" + Helper.getAgentName(ag.getName()));
@@ -239,7 +239,7 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
                         ag.getMessages().size());
                 ag.setStatus(RegionsHttpAgentStatus.Status.REMOTE);
                 ag.setLastLocation(new_location);
-                while(!ag.getMessages().isEmpty()) {
+                while (!ag.getMessages().isEmpty()) {
                     String saved = ag.getMessages().pop();
                     lf("Sending to remote agent [] saved message []", movedAgent, saved);
                     sendMessage(new_location, saved);
