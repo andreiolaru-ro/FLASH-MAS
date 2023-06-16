@@ -95,7 +95,7 @@ public class GuiShard extends IOShard {
 		}
 		
 		Map<String, List<ComponentConnect>> roleMap = portRoleComponents.get(targetport);
-		
+
 		for(String role : wave.getContentElements())
 			if(roleMap.containsKey(role)) {
 				List<ComponentConnect> targetList = roleMap.get(role);

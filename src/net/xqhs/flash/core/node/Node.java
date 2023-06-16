@@ -43,6 +43,7 @@ import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
+import web.WebEntity;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -187,19 +188,7 @@ public class Node extends Unit implements Entity<Node> {
 	public boolean start() {
 		li("Starting node [] with entities [].", name, entityOrder);
 		for(Entity<?> entity : entityOrder) {
-			String entityName = entity.getName();
-			lf("starting entity []...", entityName);
-			if(entity.start()) {
-				lf("entity [] started successfully.", entityName);
-				EntityProxy<?> ctx = entity.asContext();
-				if(!messagingShardRegistered && getName() != null && messagingShard != null
-						&& (ctx instanceof MessagingPylonProxy)) {
-					messagingShard.register(getName());
-					messagingShardRegistered = true;
-				}
-			}
-			else
-				le("failed to start entity [].", entityName);
+			startEntity(entity);
 		}
 		isRunning = true;
 		if(messagingShard != null)
@@ -211,7 +200,28 @@ public class Node extends Unit implements Entity<Node> {
 			lf("Entities successfully registered to control entity.");
 		return true;
 	}
-	
+
+	/**
+	 * Method to start one entity in the context of this node.
+	 *
+	 * @return boolean - an indication of success.
+	 */
+	public boolean startEntity(Entity<?> entity) {
+		lf("starting entity []...", entity.getName());
+		if(entity.start()) {
+			lf("entity [] started successfully.", entity.getName());
+			EntityProxy<?> ctx = entity.asContext();
+			if(!messagingShardRegistered && getName() != null && messagingShard != null
+					&& (ctx instanceof MessagingPylonProxy)) {
+				messagingShard.register(getName());
+				messagingShardRegistered = true;
+			}
+		}
+		else
+			le("failed to start entity [].", entity.getName());
+		return false;
+	}
+
 	@Override
 	public boolean stop() {
 		li("Stopping node [] with entities [].", name, entityOrder);
@@ -269,9 +279,11 @@ public class Node extends Unit implements Entity<Node> {
 				switch(event.getType()) {
 				case AGENT_WAVE:
 					String localAddr = ((AgentWave) event).getCompleteDestination();
-					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
+					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName())) {
 						break;
+				}
 					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
+					li("message to send: ", msg);
 					if(msg == null)
 						break;
 					parseReceivedMsg(msg);
@@ -356,7 +368,7 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
 		String op = jo.get(OperationUtils.NAME).getAsString();
-		if(OperationUtils.ControlOperation.START.getOperation().equals(op)) {
+		if(OperationUtils.ControlOperation.START.getOperation().equals(op) || OperationUtils.ControlOperation.KILL.getOperation().equals(op)) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
 			if(param == null)
 				return;
@@ -365,10 +377,28 @@ public class Node extends Unit implements Entity<Node> {
 				le("[] entity not found in the context of [].", param, name);
 				return;
 			}
+			switch (ControlOperation.fromOperation(op)) {
+				case START:
+					if(startEntity(entity)) {
+						lf("[] was started by parent [].", param, name);
+						return;
+					}
+					break;
+				case KILL:
+					if(entity.stop()) {
+						lf("[] was stopped by parent [].", param, name);
+						return;
+					}
+					break;
+				default:
+					le("Unknown operation: ", op);
+					break;
+
+			}/*
 			if(entity.start()) {
 				lf("[] was started by parent [].", param, name);
 				return;
-			}
+			}*/
 		}
 		else if(RECEIVE_AGENT_OPERATION.equals(op)) {
 			String agentData = jo.get(OperationUtils.PARAMETERS).getAsString();

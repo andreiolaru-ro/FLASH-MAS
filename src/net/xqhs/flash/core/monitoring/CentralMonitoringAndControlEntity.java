@@ -14,6 +14,7 @@ package net.xqhs.flash.core.monitoring;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.gui.structure.types.PortType;
 import org.java_websocket.WebSocket;
 import org.json.simple.JSONArray;
@@ -162,6 +163,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
 
 	/**
+	 * Used for operations sent to the Node.
+	 */
+	protected static final String NODE_OPERATIONS_PREFIX = "nodeCtrl-";
+
+	/**
 	 * Used for the standard operation of starting entities.
 	 */
 	protected static final String STANDARD_OPERATON_START = "start";
@@ -263,16 +269,24 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			String entity = wave.popDestinationElement();
 			String port = wave.getValues(AgentWave.DESTINATION_ELEMENT)
 					.get(wave.getValues(AgentWave.DESTINATION_ELEMENT).size() - 1);
-
 			if(port.startsWith(CONTROL_OPERATIONS_PREFIX)) { // actually a control operation
 				ControlOperation op = ControlOperation
 						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));
-				AgentWave ctrlWave = new AgentWave(null, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
+				AgentWave ctrlWave = new AgentWave(content, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
+						.addSourceElements(SHARD_ENDPOINT);
+				ctrlWave.add(OperationUtils.NAME, wave.getValue(OperationUtils.NAME));
+				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
+						ctrlWave.getSerializedContent());
+
+			} else if (port.startsWith(NODE_OPERATIONS_PREFIX)) {
+				ControlOperation op = ControlOperation
+						.fromOperation(port.substring(NODE_OPERATIONS_PREFIX.length()));
+				AgentWave ctrlWave = new AgentWave(content, getParentNode(entity), ControlShard.SHARD_ENDPOINT, op.getOperation())
 						.addSourceElements(SHARD_ENDPOINT);
 				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
 						ctrlWave.getSerializedContent());
-			}
-			else { // normal input
+
+			} else { // normal input
 				wave.removeFirstDestinationElement().recomputeCompleteDestination()
 						.prependDestination(MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation())
 						.prependDestination(MonitoringShard.SHARD_ENDPOINT).prependDestination(entity);
@@ -320,7 +334,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	private boolean manageOperation(JSONObject jsonObj) {
 		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))) {
 			case STATUS_UPDATE:
-				//li("Status update received: " + jsonObj);
+				li("Status update received: " + jsonObj);
 				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
 				String value = (String) jsonObj.get(OperationUtils.VALUE);
 				try {
@@ -328,34 +342,43 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 						case AGENT_START:
 							//the first time the agent is started, it's entitiesData is empty
 							if (entitiesData.size() == 0){
-								standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+								standardCtrls.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
 										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
 								standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
 										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+								standardCtrls.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+										.get(0).setRole(PortType.ACTIVE_INPUT.type);
 							}
 							else {
-								entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+								entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
 										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
 								entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+								entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
 										.get(0).setRole(PortType.ACTIVE_INPUT.type);
 							}
 							break;
 
 						case AGENT_STOP:
-							entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
+							entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
 									.get(0).setRole(PortType.ACTIVE_INPUT.type);
 							entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
 									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+							entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+
 							break;
 
 						default:
 							break;
 					}
 
-					li("Agent [] button stop is now: ", params, entitiesData.get(params).getGuiSpecification()
+					li("Agent [] start button is now: ", params, entitiesData.get(params).getGuiSpecification()
+							.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START).get(0).getRole());
+					li("Agent [] stop button is now: ", params, entitiesData.get(params).getGuiSpecification()
 							.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP).get(0).getRole());
-					li("Agent [] button start is now: ", params, entitiesData.get(params).getGuiSpecification()
-							.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_START).get(0).getRole());
+					li("Agent [] kill button is now: ", params, entitiesData.get(params).getGuiSpecification()
+							.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP).get(0).getRole());
 
 				} catch (Exception e) {
 					le("Entity [] may not be an agent, or hasn't entitiesData yet. ", params);
@@ -378,7 +401,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				Element interfaceContainer = new Element();
 				Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
 				if (interfaceStructure != null){
-					interfaceContainer.addAllChildren(interfaceStructure.getChildren());
+					// must avoid adding it twice
+					for (Element child : interfaceStructure.getChildren()) {
+						if (!interfaceContainer.getChildren().contains(child))
+							interfaceContainer.addChild(child);
+					}
 				}
 				try {
 					interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
@@ -538,6 +565,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * @return - an indication of success
 	 */
 	private boolean sendMessage(String destination, String content) {
+		li("Sending message to []: []", destination, content);
 		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
 	}

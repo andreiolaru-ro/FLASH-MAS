@@ -172,6 +172,8 @@ public class SwingGuiShard extends GuiShard {
 				portRoleComponents.put(port, new HashMap<>());
 			if(!portRoleComponents.get(port).containsKey(role))
 				portRoleComponents.get(port).put(role, new ArrayList<>());
+			if(portRoleComponents.get(port).get(role).size() != 0)
+				portRoleComponents.get(port).get(role).remove(0);
 			portRoleComponents.get(port).get(role).add(connector);
 		}
 	}

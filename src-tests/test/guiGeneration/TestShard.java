@@ -66,8 +66,10 @@ public class TestShard extends AgentShardGeneral {
 				}, 0, 2000);
 			break;
 		case AGENT_STOP:
-			if(timer != null)
+			if(timer != null) {
 				timer.cancel();
+				timer = new Timer();
+			}
 			break;
 		case AGENT_WAVE:
 			try {

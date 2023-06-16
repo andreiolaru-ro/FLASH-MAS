@@ -131,12 +131,6 @@ public class Element implements Cloneable {
 		this.blockType = blockType;
 	}
 
-	public List<Element> getChildrenCopy() throws CloneNotSupportedException {
-		List<Element> result = new ArrayList<>();
-		for(Element e : children)
-			result.add((Element) e.clone());
-		return result;
-	}
 	public List<Element> getChildren(String port) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)

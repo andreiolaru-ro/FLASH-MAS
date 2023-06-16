@@ -26,6 +26,10 @@ public class OperationUtils {
 		 */
 		STOP,
 		/**
+		 * Operation where the Node stop the agent.
+		 */
+		KILL,
+		/**
 		 * Operation for pausing the simulation.
 		 */
 		PAUSE_SIMULATION,

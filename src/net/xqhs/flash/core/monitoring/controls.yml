@@ -18,9 +18,13 @@ children:
     port: control-status
   - type: button
     value: Start
-    port: control-start
+    port: nodeCtrl-start
     role: activate
   - type: button
     value: Stop
     port: control-stop
+    role: activate
+  - type: button
+    value: Kill
+    port: nodeCtrl-stop
     role: activate
