@@ -43,7 +43,6 @@ import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
-import web.WebEntity;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -279,11 +278,9 @@ public class Node extends Unit implements Entity<Node> {
 				switch(event.getType()) {
 				case AGENT_WAVE:
 					String localAddr = ((AgentWave) event).getCompleteDestination();
-					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName())) {
+					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
 						break;
-				}
 					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
-					li("message to send: ", msg);
 					if(msg == null)
 						break;
 					parseReceivedMsg(msg);

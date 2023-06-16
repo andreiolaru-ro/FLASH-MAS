@@ -274,7 +274,6 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));
 				AgentWave ctrlWave = new AgentWave(content, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
 						.addSourceElements(SHARD_ENDPOINT);
-				ctrlWave.add(OperationUtils.NAME, wave.getValue(OperationUtils.NAME));
 				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
 						ctrlWave.getSerializedContent());
 
@@ -565,7 +564,6 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * @return - an indication of success
 	 */
 	private boolean sendMessage(String destination, String content) {
-		li("Sending message to []: []", destination, content);
 		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
 	}
