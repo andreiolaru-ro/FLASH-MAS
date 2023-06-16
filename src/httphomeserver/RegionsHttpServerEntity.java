@@ -22,7 +22,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static httphomeserver.RegionsHttpAgentStatus.Status.*;
 import static httphomeserver.RegionsHttpMessageFactory.MessageType.REQ_ACCEPT;
@@ -78,6 +81,22 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
     public String getUnitName() {
         return "http://" + this.pylon.getServerHost() + ":" + this.pylon.getServerPort();
     }
+
+
+    public void processResponse(CompletableFuture<HttpResponse<String>> responseWrapper, String url, String message) {
+        Runnable runnable = () -> {
+            try {
+                HttpResponse<String> resp = responseWrapper.get();
+                if (resp.statusCode() != 200) {
+                    le("Status code different than 200 when calling url []. Message: []. Response body: [].", url, message, resp.body());
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                le("Error when calling url []. Message: [].", url, message);
+            }
+        };
+        Thread t = new Thread(runnable);
+        t.start();
+    }
      class MessageHandler {
 
          /**
@@ -94,11 +113,12 @@ public class RegionsHttpServerEntity extends Unit implements Entity<Node> {
                 HttpRequest httpRequest = HttpRequest.newBuilder().header("Content-Type", "text/plain;charset=UTF-8")
                         .uri(uri)
                         .POST(HttpRequest.BodyPublishers.ofString(message)).build();
-                httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+                CompletableFuture<HttpResponse<String>> resp = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+                processResponse(resp, url, message);
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                System.out.println(url);
+                le("Error when calling url " + url);
                 throw e;
             }
         }
