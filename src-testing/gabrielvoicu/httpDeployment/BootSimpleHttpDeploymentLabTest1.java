@@ -33,8 +33,10 @@ public class BootSimpleHttpDeploymentLabTest1 {
         }
         String[] pylonNames = {"A", "B", "C"};
         String[] serverPorts = {"8885", "8886", "8887"};
-        String[] nodeNames = { "http://localhost:8885/nodeA", "http://localhost:8886/nodeB", "http://localhost:8887/nodeC" };
-        String[] agentNames = { "http://localhost:8885/agentA", "http://localhost:8886/agentB", "http://localhost:8887/agentC" };
+//        String[] nodeNames = { "http://localhost:8885/nodeA", "http://localhost:8886/nodeB", "http://localhost:8887/nodeC" };
+//        String[] agentNames = { "http://localhost:8885/agentA", "http://localhost:8886/agentB", "http://localhost:8887/agentC" };
+        String[] nodeNames = { "http://172.19.3.120:8885/nodeA", "http://172.19.3.209:8886/nodeB", "http://172.19.3.51:8887/nodeC" };
+        String[] agentNames = { "http://172.19.3.120:8885/agentA", "http://172.19.3.209:8886/agentB", "http://172.19.3.51:8887/agentC" };
 
         for(int i = index < 0 ? 0 : index; i < (index < 0 ? 3 : index + 1); i++) {
             a += " -node "  + nodeNames[i] + " -monitor time: -pylon RegionsHttp:Pylon" + pylonNames[i] + " serverPort:" + serverPorts[i];
