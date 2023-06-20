@@ -11,6 +11,7 @@
  ******************************************************************************/
 package web;
 
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.util.OperationUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -298,12 +299,22 @@ public class WebEntity extends CentralGUI {
 			return;
 		}
 		String port = activatedElement.getPort();
-		JsonObject content = new JsonObject();
-		content.put(OperationUtils.PARAMETERS, entityName);
-		content.put(OperationUtils.NAME, msg.getJsonObject("content")
-				.getString(msg.getJsonObject("content").fieldNames().toArray()[0].toString()).toLowerCase());
 		wave.appendDestination(entityName, StandardAgentShard.GUI.shardName(), port);
-		wave.add("content", content.toString());
+		JsonObject content = new JsonObject();
+		if (msg.getString("subject").split("_")[1].contains(CentralMonitoringAndControlEntity.getNodeOperationsPrefix())) {
+			content.put(OperationUtils.PARAMETERS, entityName);
+			content.put(OperationUtils.NAME, msg.getJsonObject("content")
+					.getString(msg.getJsonObject("content").fieldNames().toArray()[0].toString()).toLowerCase());
+			wave.add("content", content.toString());
+		}
+		else {
+			Element entityElement = entityGUIs.get(entityName);
+			content = msg.getJsonObject("content");
+			for(Element element : entityElement.getChildren(port)) {
+				if(content.containsKey(element.getId()))
+					wave.add(element.getRole(), content.getString(element.getId()));
+			}
+		}
 		cep.postAgentEvent(wave);
 	}
 

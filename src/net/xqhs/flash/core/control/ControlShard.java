@@ -11,14 +11,18 @@
  ******************************************************************************/
 package net.xqhs.flash.core.control;
 
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.monitoring.MonitoringShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.gui.GUILoad;
+import net.xqhs.flash.gui.structure.Element;
 
 public class ControlShard extends AgentShardGeneral {
 	/**
@@ -30,6 +34,13 @@ public class ControlShard extends AgentShardGeneral {
 	 * Endpoint element for this shard.
 	 */
 	public static final String SHARD_ENDPOINT = StandardAgentShard.CONTROL.shardName();
+
+	/**
+	 * The interface structure required by this shard.
+	 */
+	protected Element standartBtn;
+
+	protected MonitoringShard monitor = null;
 	
 	/**
 	 * Cache for the name of this agent.
@@ -50,8 +61,17 @@ public class ControlShard extends AgentShardGeneral {
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		return super.configure(configuration);
+		super.configure(configuration);
+		standartBtn = GUILoad.load(new MultiTreeMap().addOneValue("from", "controlBtn.yml")
+				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
+		if(standartBtn == null) {
+			le("Interface load failed");
+			return false;
+		}
+		return true;
 	}
+
+
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
@@ -78,6 +98,11 @@ public class ControlShard extends AgentShardGeneral {
 					break;
 				}
 			break;
+		case AGENT_START:
+			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
+				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
+				monitor.addGuiElement(standartBtn);
+			}
 		default:
 			// nothing to do.
 			break;

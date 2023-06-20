@@ -14,9 +14,7 @@ package net.xqhs.flash.core.monitoring;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.gui.structure.types.PortType;
-import org.java_websocket.WebSocket;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -162,10 +160,18 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
 
+	public static String getControlOperationsPrefix() {
+		return CONTROL_OPERATIONS_PREFIX;
+	}
+
 	/**
 	 * Used for operations sent to the Node.
 	 */
 	protected static final String NODE_OPERATIONS_PREFIX = "nodeCtrl-";
+
+	public static String getNodeOperationsPrefix() {
+		return NODE_OPERATIONS_PREFIX;
+	}
 
 	/**
 	 * Used for the standard operation of starting entities.
@@ -269,18 +275,13 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			String entity = wave.popDestinationElement();
 			String port = wave.getValues(AgentWave.DESTINATION_ELEMENT)
 					.get(wave.getValues(AgentWave.DESTINATION_ELEMENT).size() - 1);
-			if(port.startsWith(CONTROL_OPERATIONS_PREFIX)) { // actually a control operation
-				ControlOperation op = ControlOperation
-						.fromOperation(port.substring(CONTROL_OPERATIONS_PREFIX.length()));
-				AgentWave ctrlWave = new AgentWave(content, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
-						.addSourceElements(SHARD_ENDPOINT);
-				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
-						ctrlWave.getSerializedContent());
+			if (port.startsWith(NODE_OPERATIONS_PREFIX))
+				entity = getParentNode(entity);
 
-			} else if (port.startsWith(NODE_OPERATIONS_PREFIX)) {
+			if (port.startsWith(NODE_OPERATIONS_PREFIX) || port.startsWith(CONTROL_OPERATIONS_PREFIX)) {
 				ControlOperation op = ControlOperation
-						.fromOperation(port.substring(NODE_OPERATIONS_PREFIX.length()));
-				AgentWave ctrlWave = new AgentWave(content, getParentNode(entity), ControlShard.SHARD_ENDPOINT, op.getOperation())
+						.fromOperation(port.split("-")[1]);
+				AgentWave ctrlWave = new AgentWave(content, entity, ControlShard.SHARD_ENDPOINT, op.getOperation())
 						.addSourceElements(SHARD_ENDPOINT);
 				centralMessagingShard.sendMessage(ctrlWave.getCompleteSource(), ctrlWave.getCompleteDestination(),
 						ctrlWave.getSerializedContent());
@@ -291,6 +292,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 						.prependDestination(MonitoringShard.SHARD_ENDPOINT).prependDestination(entity);
 				wave.addSourceElementFirst(getName());
 			}
+			li("wave: ", wave);
 			centralMessagingShard.sendMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
 					wave.getSerializedContent());
 			return true;
