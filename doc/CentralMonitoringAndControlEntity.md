@@ -14,12 +14,12 @@ If there is a given target entity in the received operation, the operation is pa
 When the target entity is an agent, the content of the operation received contains a specific prefix, so we know if the operation needs to be executed by the agent shard or the node.
 This class define 2 prefixes to know where to send commands, depending on the received operation:
 
-- ``CONTROL_OPERATIONS_PREFIX``, is for an operation targeting the controlShard of an agent. This kind of command will be executed by the controlShard of the agent. It must be a command an agent is able to execute by itself.\
+- ``CONTROL_OPERATIONS_PREFIX``, is for an operation targeting the controlShard of an agent. This kind of command will be executed by the controlShard of the agent. It must be a command an agent is able to execute by itself.
 - ``NODE_OPERATIONS_PREFIX``, is for an operation targeting the parent node of an agent. This kind of command is used if we don't want to work from the agent, or if the agent isn't able to do it by itself (if the agent has been stopped for example).
 
-If there are no target entity, the operation will be managed by this class, depending on its type:\
-- A status update of an agent, in which case we disable and enable this agent's button on the interface to match its status.\
-- A gui update, where we try to add or remove elements from the web interface by using the interface specification saved in this class to call the gui update method.\
+If there are no target entity, the operation will be managed by this class, depending on its type:
+- A status update of an agent, in which case we disable and enable this agent's button on the interface to match its status.
+- A gui update, where we try to add or remove elements from the web interface by using the interface specification saved in this class to call the gui update method.
 - An output from the gui.
 
  
