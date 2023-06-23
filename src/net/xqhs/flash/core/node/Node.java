@@ -122,7 +122,7 @@ public class Node extends Unit implements Entity<Node> {
 	 * Creates a new {@link Node} instance.
 	 * 
 	 * @param nodeConfiguration
-	 *            the configuration of the node. Can be <code>null</code>.
+	 *            the configuration of the node. Can be {@code null}.
 	 */
 	public Node(MultiTreeMap nodeConfiguration) {
 		if(nodeConfiguration != null) {
@@ -203,6 +203,9 @@ public class Node extends Unit implements Entity<Node> {
 
 	/**
 	 * Method to start one entity in the context of this node.
+	 *
+	 * @param entity
+	 * 		  - the entity to start.
 	 *
 	 * @return boolean - an indication of success.
 	 */

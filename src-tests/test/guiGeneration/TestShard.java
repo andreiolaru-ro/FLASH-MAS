@@ -33,7 +33,10 @@ public class TestShard extends AgentShardGeneral {
 	 * The timer for auto counting. If autocount is off, the timer will be <code>null</code>.
 	 */
 	private Timer timer = new Timer();
-	
+
+    /**
+     * No-argument constructor.
+     */
 	public TestShard() {
 		super(AgentShardDesignation.autoDesignation("Test"));
 	}

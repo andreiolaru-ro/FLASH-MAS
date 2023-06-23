@@ -30,7 +30,17 @@ public abstract class CentralGUI extends GuiShard {
 	private static final long serialVersionUID = -8874092747023941934L;
 	
 	protected Map<String, Element> entityGUIs = new HashMap<>();
-	
+
+	/**
+	 * Command to update the GUI for a given entity.
+	 *
+	 * @param entity
+	 *   	  - the entity for which the GUI is updated.
+	 * @param guiSpecification
+	 * 		- the GUI specification.
+	 *
+	 * @return - true if the update was successful.
+	 */
 	public boolean updateGui(String entity, Element guiSpecification) {
 		// lf("Update for []: ", entity, interfaceStructure);
 		// lf("Update processed for []: ", entity, interfaceStructure);

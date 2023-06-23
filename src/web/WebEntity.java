@@ -37,6 +37,9 @@ import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
 
+/**
+ * Web entity for the connection between the MAS and the web interface.
+ */
 public class WebEntity extends CentralGUI {
 	
 	class ServerVerticle extends AbstractVerticle {
