@@ -25,8 +25,14 @@ import org.json.simple.JSONObject;
  * Element class represents an element from GUI interface (e.g. button, label, container, text box, spinner)
  */
 public class Element implements Cloneable {
+	/**
+	 * the default role of an element
+	 */
 	public static final String DEFAULT_ROLE = "content";
 	public static final int		INDENT_SIZE		= 8;
+	/**
+	 * prefix for elemnts that are disabled
+	 */
 	public static String DISABLED_ROLE_PREFIX = "disabled-";
 	
 	/**
@@ -59,78 +65,180 @@ public class Element implements Cloneable {
 	 */
 	private String				blockType;
 
+	/**
+	 * @return
+	 * 		- the list of child elements
+	 */
 	public List<Element> getChildren() {
 		return children;
 	}
 
+	/**
+	 * Set the children of the element with the given list
+	 *
+	 * @param children
+	 * 		- the list of child elements
+	 */
 	public void setChildren(List<Element> children) {
 		this.children = children;
 	}
 
+	/**
+	 * Add a child element to the list of children
+	 *
+	 * @param element
+	 * 		- the child element to be added
+	 */
 	public void addChild(Element element) {
 		this.children.add(element);
 	}
 
+	/**
+	 * Add a list of child elements to the list of children
+	 *
+	 * @param _children
+	 * 		- the list of child elements to be added
+	 */
 	public void addAllChildren(List<Element> _children) {
 		this.children.addAll(_children);
 	}
 
+	/**
+	 * @return
+	 * 		- the id of the element
+	 */
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * Set the id of the element
+	 *
+	 * @param id
+	 * 		- the id of the element
+	 */
 	public void setId(String id) {
 		this.id = id;
 	}
 
+	/**
+	 * @return
+	 * 		- the type of the element
+	 */
 	public String getType() {
 		return type;
 	}
 
+	/**
+	 * Set the type of the element
+	 *
+	 * @param type
+	 * 		- the type of the element
+	 */
 	public void setType(String type) {
 		this.type = type;
 	}
 
+	/**
+	 * @return
+	 *       - the properties of the element
+	 */
 	public Map<String, String> getProperties() {
 		return properties;
 	}
 
+	/**
+	 * Set the properties of the element
+	 *
+	 * @param properties
+	 * 		- the properties of the element
+	 */
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
 	}
 
+	/**
+	 *
+	 * @return
+	 * 		- the port of the element
+	 */
 	public String getPort() {
 		return port;
 	}
 
+	/**
+	 * Set the port of the element
+	 *
+	 * @param port
+	 * 		- the port of the element
+	 */
 	public void setPort(String port) {
 		this.port = port;
 	}
 
+	/**
+	 * @return
+	 * 		- the role of the element
+	 */
 	public String getRole() {
 		return role;
 	}
 
+	/**
+	 * Set the role of the element
+	 *
+	 * @param role
+	 * 		- the role of the element
+	 */
 	public void setRole(String role) {
 		this.role = role;
 	}
 
+	/**
+	 * @return
+	 * 		- the value of the element
+	 */
 	public String getValue() {
 		return value;
 	}
 
+	/**
+	 * Set the value of the element
+	 *
+	 * @param value
+	 * 		- the value of the element
+	 */
 	public void setValue(String value) {
 		this.value = value;
 	}
 
+	/**
+	 * @return
+	 * 		- the type of the block where the element is
+	 */
 	public String getBlockType() {
 		return blockType;
 	}
 
+	/**
+	 * Set the type of the block where the element is
+	 *
+	 * @param blockType
+	 * 		- the type of the block where the element is
+	 */
 	public void setBlockType(String blockType) {
 		this.blockType = blockType;
 	}
 
+	/**
+	 * Return the children of the element if they match the given port
+	 *
+	 * @param port
+	 * 		- the port to match
+	 *
+	 * @return
+	 * 		- the list of children that match the given port
+	 */
 	public List<Element> getChildren(String port) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
@@ -139,6 +247,17 @@ public class Element implements Cloneable {
 		return result;
 	}
 
+	/**
+	 * Return the children of the element if they match the given port and role
+	 *
+	 * @param port
+	 * 		- the port to match
+	 * @param role
+	 * 		- the role to match
+	 *
+	 * @return
+	 * 		- the list of children that match the given port and role
+	 */
 	public List<Element> getChildren(String port, String role) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
@@ -148,6 +267,15 @@ public class Element implements Cloneable {
 		return result;
 	}
 
+	/**
+	 * Return the child of the element if it matches the given id
+	 *
+	 * @param id
+	 * 		- the id to match
+	 *
+	 * @return
+	 * 		- the child that matches the given id
+	 */
 	public Element getChildWithId(String id) {
 		for(Element e : children)
 			if(id.equals(e.getId()))
@@ -155,6 +283,12 @@ public class Element implements Cloneable {
 		return null;
 	}
 
+	/**
+	 * Create a {@link JSONObject} from the element
+	 *
+	 * @return
+	 *        - a {@link JSONObject} representation of the element
+	 */
 	public JSONObject toJSON() {
 		JSONObject result = new JSONObject();
 		result.put("id", id);

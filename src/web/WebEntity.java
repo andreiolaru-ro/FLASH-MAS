@@ -226,7 +226,10 @@ public class WebEntity extends CentralGUI {
 		super.parentChangeNotifier(oldParent);
 		cep = (CentralEntityProxy) getAgent();
 	}
-	
+
+	/**
+	 * @return a {@link JSONObject} containing the specifications of all entities.
+	 */
 	public JSONObject getEntities() {
 		System.out.println("entities get.");
 		JSONObject specifications = new JSONObject();

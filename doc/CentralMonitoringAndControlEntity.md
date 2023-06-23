@@ -2,12 +2,11 @@
 
 The CentralMonitoringAndControlEntity class is here to supervise the behaviour of the agents in the system, and the connection between the web interface and the system. It also keeps tracks of all the nodes and agents deployed in the system.
 
-\
-***Interface Specifications***\
+
+## Interface Specifications
 This class regroups all the specifications used for the creation of the web interface. When we want to update the gui from the shard controller or the monitoring shard for example, we send a message to the central monitoring with the changes wanted, then it will be parsed and added to the interface specification of the class. Finally, the updateGui method is called to make the changes in the web interface.
 
-\
-***Monitoring***\
+## Monitoring
 The class receives operations from the web, and depending on the operation's information it will either send it to a target entity, or either manage it by itself.
 
 If there is a given target entity in the received operation, the operation is parsed to send the proper command to the target entity.

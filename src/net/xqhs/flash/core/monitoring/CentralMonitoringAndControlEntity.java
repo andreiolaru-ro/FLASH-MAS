@@ -44,6 +44,9 @@ import net.xqhs.flash.gui.structure.GlobalConfiguration;
 import net.xqhs.util.logging.Unit;
 import web.WebEntity;
 
+/**
+ * This class is used to monitor and control the MAS.
+ */
 public class CentralMonitoringAndControlEntity extends Unit implements Entity<Pylon> {
 
 	protected class EntityData {
@@ -106,6 +109,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		}
 	}
 
+    /**
+     * The central entity is a singleton.
+     */
 	public class CentralEntityProxy implements ShardContainer {
 		@Override
 		public AgentShard getAgentShard(AgentShardDesignation designation) {
@@ -160,6 +166,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	protected static final String CONTROL_OPERATIONS_PREFIX = "control-";
 
+    /**
+     * Allow to get the control operation prefix from outside.
+     *
+     * @return the control operation prefix
+     */
 	public static String getControlOperationsPrefix() {
 		return CONTROL_OPERATIONS_PREFIX;
 	}
@@ -169,6 +180,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	protected static final String NODE_OPERATIONS_PREFIX = "nodeCtrl-";
 
+    /**
+     * Allow to get the node operation prefix from outside.
+     *
+     * @return the node operation prefix
+     */
 	public static String getNodeOperationsPrefix() {
 		return NODE_OPERATIONS_PREFIX;
 	}
@@ -223,6 +239,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 
 	public ShardContainer proxy;
 
+    /**
+     * Creates a new instance of this class.
+     *
+     * @param configuration
+     *            the configuration for this entity.
+     */
 	public CentralMonitoringAndControlEntity(MultiTreeMap configuration) {
 		this.name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		proxy = new CentralEntityProxy();
@@ -258,10 +280,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	}
 
 	/**
-	 * @param obj
-	 *            - the object received as content through the {@link ShardContainer}
-	 * @param source
-	 *            - the source of the message
+     * Parses the received message and calls the appropriate method.
+     *
+	 * @param wave
+     *          - the {@link AgentWave} to be parsed
+     *
 	 * @return - an indication of success
 	 */
 	public boolean parseReceivedMsg(AgentWave wave) {
@@ -544,7 +567,16 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		}
 		return true;
 	}
-	
+
+    /**
+     * Returns the {@link JSONObject} corresponding to the operation of the given entity.
+     *
+     * @param entity
+     *            - the name of the entity
+     * @param command
+     *            - the name of the command
+     * @return - the {@link JSONObject} of the operation
+     */
 	private JSONObject getOperationFromEntity(String entity, String command) {
 		JSONArray ja = entitiesToOp.get(entity);
 		if(ja == null)
@@ -569,7 +601,16 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
 	}
-	
+
+    /**
+     * Sends a message to a specific agent
+     *
+     * @param agent
+     *        - the name of the agent
+     * @param content
+     *       - the content to be sent
+     * @return - an indication of success
+     */
 	public boolean sendAgentMessage(String agent, String content) {
 		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(agent, "messaging"), content);

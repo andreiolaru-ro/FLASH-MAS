@@ -15,7 +15,10 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class OperationUtils {
-	
+
+	/**
+	 * Possible control operations.
+	 */
 	public static enum ControlOperation {
 		/**
 		 * Operation for starting an agent.
@@ -43,11 +46,24 @@ public class OperationUtils {
 		STOP_SIMULATION,
 
 		;
-		
+
+		/**
+		 * Get the operation name.
+		 *
+		 * @return - operation name.
+		 */
 		public String getOperation() {
 			return name().toLowerCase();
 		}
-		
+
+		/**
+		 * Return the operation matching the operation name given as parameter. If no operation matches the name, null
+		 *
+		 * @param name
+		 *            - operation name.
+		 *
+		 * @return - operation matching the name.
+		 */
 		public static ControlOperation fromOperation(String name) {
 			try {
 				return valueOf(name.toUpperCase());
@@ -56,7 +72,10 @@ public class OperationUtils {
 			}
 		}
 	}
-	
+
+	/**
+	 * Possible operations when performing monitoring.
+	 */
 	public static enum MonitoringOperation {
 		/**
 		 * Operation for updating the status of an entity.
@@ -72,11 +91,24 @@ public class OperationUtils {
 		GUI_INPUT_TO_ENTITY,
 		
 		;
-		
+
+		/**
+		 * Get the operation name.
+		 *
+		 * @return - operation name.
+		 */
 		public String getOperation() {
 			return name().toLowerCase();
 		}
-		
+
+		/**
+		 * Return the operation matching the operation name given as parameter. If no operation matches the name, null
+		 *
+		 * @param name
+		 * 			   - operation name.
+		 *
+		 * @return - operation matching the name.
+		 */
 		public static MonitoringOperation fromOperation(String name) {
 			try {
 				return valueOf(name.toUpperCase());

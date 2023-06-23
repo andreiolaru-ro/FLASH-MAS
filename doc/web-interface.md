@@ -6,12 +6,12 @@ If the interface is not available when the system is deployed, make sure the boo
 
 
 
-**Interface organisation**\
+## Interface organisation
 The web interface is a web page that allows the user to interact with the system when it is deployed. 
 It is composed of a main part containing global command buttons, and a list of each of the entities deployed in the system. 
 Each entity can be selected to display its own commands. At this point of development, only the agent entities' commands are fully implemented.
 
-**Agent commands**\
+## Agent commands
 When you select an agent, a new part of the interface appears, containing the commands available for this agent. 
 The available commands depend on the shard this agent contains, and the type of boot you are running but the main commands are:
 - ``Start``: Starts the agent.

@@ -181,7 +181,13 @@ public class MonitoringShard extends AgentShardGeneral {
 				"", interfaceSpecification, getAgent().getEntityName());
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
-	
+
+	/**
+	 * send a gui output to the central monitoring entity
+	 *
+	 * @param output
+	 *            the output to send
+	 */
 	public void sendOutput(AgentWave output) {
 		JSONObject update = new JSONObject();
 		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperation.GUI_OUTPUT.getOperation());
