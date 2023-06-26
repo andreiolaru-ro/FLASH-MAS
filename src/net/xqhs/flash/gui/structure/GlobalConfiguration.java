@@ -19,34 +19,58 @@ public class GlobalConfiguration {
     private List<Element> global;
     private List<Element> interfaces;
 
+    /**
+     * @return the node
+     */
     public Element getNode() {
         return node;
     }
 
+    /**
+     * @param node the node to set
+     */
     public void setNode(Element node) {
         this.node = node;
     }
 
+    /**
+     * @return the layout
+     */
     public String getLayout() {
         return layout;
     }
 
+    /**
+     * @param layout the layout to set
+     */
     public void setLayout(String layout) {
         this.layout = layout;
     }
 
+    /**
+     * @return the global
+     */
     public List<Element> getGlobal() {
         return global;
     }
 
+    /**
+     * @param global the global to set
+     */
     public void setGlobal(List<Element> global) {
         this.global = global;
     }
 
+    /**
+     * @return the interfaces
+     */
     public List<Element> getInterfaces() {
         return interfaces;
     }
 
+    /**
+     * @param interfaces the interfaces to set
+     */
     public void setInterfaces(List<Element> interfaces) {
         this.interfaces = interfaces;
     }

@@ -43,6 +43,9 @@ public class GuiShard extends IOShard {
 
 	protected MonitoringShard monitor = null;
 
+	/**
+	 * No-argument constructor.
+	 */
 	public GuiShard() {
 		super(StandardAgentShard.GUI.toAgentShardDesignation());
 	}

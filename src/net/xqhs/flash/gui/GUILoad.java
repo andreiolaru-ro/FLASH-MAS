@@ -27,6 +27,15 @@ import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.util.logging.Logger;
 
 public class GUILoad {
+	/**
+	 * Loads a GUI from a configuration from a .yml or .yaml file, and associates it with a logger.
+	 *
+	 * @param configuration
+	 *                          - the configuration.
+	 * @param log
+	 *                          - the logger.
+	 * @return the GUI.
+	 */
 	public static Element load(MultiTreeMap configuration, Logger log) {
 		String config = configuration.getFirstValue("from");
 		if(config == null)
@@ -58,11 +67,29 @@ public class GUILoad {
 			}
 		return null;
 	}
-	
+
+	/**
+	 *  Parses a YAML file from a FileInputStream and converts it into an instance of the Element class.
+	 *
+	 * @param input
+	 *          - A FileInputStream object representing the YAML file to be parsed.
+	 *
+	 * @return
+	 * 		- An instance of the Element class representing the parsed YAML file.
+	 */
 	public static Element fromYaml(FileInputStream input) {
 		return new Yaml().loadAs(input, Element.class);
 	}
-	
+
+	/**
+	 * Parses YAML data from a String and converts it into an instance of the Element class.
+	 *
+	 * @param input
+	 * 		- A String object representing the YAML data to be parsed.
+	 *
+	 * @return
+	 * 		- An instance of the Element class representing the parsed YAML data.
+	 */
 	public static Element fromYaml(String input) {
 		return new Yaml().loadAs(input, Element.class);
 	}

@@ -23,11 +23,36 @@ public class ElementIdManager {
 	
 	protected Map<String, Element>	idToElement	= new HashMap<>();
 	protected Map<String, String>	idToEntity	= new HashMap<>();
-	
+
+	/**
+	 * Create the ID for an element using the given parameters.
+	 *
+	 * @param entity
+	 *  		- the entity for which the ID is created. Can be null.
+	 * @param port
+	 *  		- the port of the entity for which the ID is created. Cannot be null.
+	 * @param role
+	 * 		- the role of the entity for which the ID is created. Cannot be null.
+	 *
+	 * @return
+	 * 		- A string of the ID.
+	 */
 	public String makeID(String entity, String port, String role) {
 		return (entity != null ? entity + "_" : "") + port + "_" + role + "_";
 	}
-	
+
+	/**
+	 * Retrieves a list of IDs that match the given entity, port, and role combination.
+	 *
+	 * @param entity
+	 * 		- the entity name
+	 * @param port
+	 * 		- the port name
+	 * @param role
+	 * 		- the role name
+	 *
+	 * @return a list of IDs that match the given combination of entity, port, and role
+	 */
 	public List<String> getIDs(String entity, String port, String role) {
 		String prefix = makeID(entity, port, role);
 		List<String> result = new LinkedList<>();
@@ -58,7 +83,16 @@ public class ElementIdManager {
 		if(entity != null)
 			idToEntity.put(element.getId(), entity);
 	}
-	
+
+	/**
+	 * Insert IDs into the given element and all its children.
+	 *
+	 * @param element
+	 * 		- the element into which to insert the IDs.
+	 *
+	 * @return
+	 * 		- the element with the IDs inserted.
+	 */
 	public Element insertIdsInto(Element element) {
 		insertIdInto(element, null);
 		if(element.getChildren() != null && !element.getChildren().isEmpty()) {
@@ -68,7 +102,18 @@ public class ElementIdManager {
 		}
 		return element;
 	}
-	
+
+	/**
+	 * Insert IDs into the given element and all its children.
+	 *
+	 * @param element
+	 * 		- the element into which to insert the IDs.
+	 * @param entity
+	 * 		- the entity for which the IDs are inserted.
+	 *
+	 * @return
+	 * 		- the element with the IDs inserted.
+	 */
 	public Element insertIdsInto(Element element, String entity) {
 		insertIdInto(element, entity);
 		if(element.getChildren() != null && !element.getChildren().isEmpty()) {
@@ -78,7 +123,13 @@ public class ElementIdManager {
 		}
 		return element;
 	}
-	
+
+	/**
+	 * Remove all IDs that start with the given prefix.
+	 *
+	 * @param prefix
+	 * 		- the prefix of the IDs to remove.
+	 */
 	public void removeIdsWithPrefix(String prefix) {
 		Set<String> toRemove = new HashSet<>();
 		for(String key : idCounter.keySet())
@@ -89,11 +140,30 @@ public class ElementIdManager {
 			idToElement.remove(key);
 		}
 	}
-	
+
+	/**
+	 * Get the element with the given ID.
+	 *
+	 * @param id
+	 *    - the ID of the element.
+	 *
+	 * @return
+	 * 	  - the element with the given ID.
+	 */
 	public Element getElement(String id) {
 		return idToElement.get(id);
 	}
-	
+
+/**
+	 * Get the entity with the given ID.
+	 *
+	 * @param id
+	 *    - the ID of the entity.
+	 *
+	 * @return
+	 * 	  - a string of the entity with the given ID.
+	 */
+
 	public String getEntity(String id) {
 		return idToEntity.get(id);
 	}

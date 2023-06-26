@@ -31,7 +31,7 @@ public class Element implements Cloneable {
 	public static final String DEFAULT_ROLE = "content";
 	public static final int		INDENT_SIZE		= 8;
 	/**
-	 * prefix for elemnts that are disabled
+	 * prefix for elements that are disabled
 	 */
 	public static String DISABLED_ROLE_PREFIX = "disabled-";
 	
@@ -50,10 +50,12 @@ public class Element implements Cloneable {
 	private String				type		= ElementType.BLOCK.type;
 	/**
 	 * port where is the element
+	 * Used to identify an element in the GUI with the role.
 	 */
 	private String				port;
 	/**
 	 * the role of the element in its port
+	 * Used to identify an element in the GUI with the port.
 	 */
 	private String				role;
 	/**
