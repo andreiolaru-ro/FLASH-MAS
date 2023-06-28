@@ -1,20 +1,24 @@
-from flask import Flask, request
 import base64
-import numpy as np
 import json
 # from utils import *
 
 
+try: from flask import Flask, request 
+except Exception as e:
+	print("Flask unavailable (use pip install flask ): ", e)
+	exit(1)
+
+try: import numpy as np
+except Exception as e: print("Numpy unavailable (use pip install numpy ): ", e)
+
 try:
 	from tensorflow import keras
 	from frameworks.keras_classification import KerasClassification
-except Exception:
-	print("Keras/Tensorflow unavailable.")
+except Exception as e:
+	print("Keras/Tensorflow unavailable (use pip install tensorflow rdflib ):", e)
 
-try:
-	from frameworks.torch_classification import TorchClassification
-except Exception:
-	print("Torch unavailable.")
+try: from frameworks.torch_classification import TorchClassification
+except Exception as e: print("Torch unavailable (use pip install torch torchvision torchaudio torchsummary ):", e)
 
 app = Flask(__name__)
 
