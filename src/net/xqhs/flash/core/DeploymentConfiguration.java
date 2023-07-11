@@ -28,6 +28,7 @@ import net.xqhs.util.XML.XMLTree.XMLNode;
 import net.xqhs.util.XML.XMLTree.XMLNode.XMLAttribute;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponentExt;
 
 /**
@@ -63,7 +64,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Separator for elements in the load order setting.
 	 */
-	public static final String	LOAD_ORDER_SEPARATOR			= " ";
+	public static final String	LOAD_ORDER_SEPARATOR			= ";";
 	/**
 	 * The name of nodes containing parameters.
 	 */
@@ -143,7 +144,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
 	 */
-	public static boolean isCentralNode = true;
+	public static final String CENTRAL_NODE_KEY = "central";
 	
 	/**
 	 * Type for net.xqhs.flash.core.monitoring and control entity.
@@ -210,7 +211,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		// default schema
 		deployment.addSingleValue(CategoryName.SCHEMA.s(), "src-schema/deployment-schema.xsd");
 		// default load order
-		deployment.addSingleValue(CategoryName.LOAD_ORDER.s(), "pylon agent");
+		deployment.addSingleValue(CategoryName.LOAD_ORDER.s(),
+				CategoryName.PYLON.s() + LOAD_ORDER_SEPARATOR + CategoryName.AGENT.s());
 		// automatically integrate the composite agent loader
 		// MultiTreeMap compositeLoader = new MultiTreeMap();
 		// compositeLoader.addOneValue(CategoryName.LOADER.nameParts()[0], CategoryName.AGENT.s());
@@ -260,7 +262,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt("settings load")
-				.setLoggerType(PlatformUtils.platformLogType());
+				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -346,7 +348,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
-		log.lf("final config:", this);
+		log.li("final config:", this);
 		
 		log.doExit();
 		lock();

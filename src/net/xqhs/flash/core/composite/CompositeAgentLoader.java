@@ -19,6 +19,7 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -46,31 +47,36 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	/**
 	 * Name of XML nodes in the scenario representing shards.
 	 */
-	private static final String		SHARD_NODE_NAME			= "shard";
+	protected static final String	SHARD_NODE_NAME				= "shard";
 	/**
 	 * The name of the attribute representing the class of the shard in the shard node. The class may not be specified,
 	 * it the shard is standard and its class is specified by the corresponding {@link StandardAgentShard} entry.
 	 */
-	private static final String		SHARD_CLASS_PARAMETER	= SimpleLoader.CLASSPATH_KEY;
+	protected static final String	SHARD_CLASS_PARAMETER		= SimpleLoader.CLASSPATH_KEY;
 	
 	/**
 	 * Logger to use during the loading process.
 	 */
-	Logger			log;
+	protected Logger				log;
 	/**
 	 * The {@link ClassFactory} instance to use for loading classes.
 	 */
-	ClassFactory	classLoader;
+	protected ClassFactory			classLoader;
 	/**
 	 * The packages configured in the deployment.
 	 */
-	List<String>	packages;
+	protected List<String>			packages;
+	/**
+	 * The simple loader to use in order to load custom CompositeAgent instances, if it is the case.
+	 */
+	protected Loader<Entity<?>>		privateSimpleLoaderInstance	= new SimpleLoader();
 	
 	@Override
 	public boolean configure(MultiTreeMap config, Logger loaderLog, ClassFactory classFactory) {
 		log = loaderLog;
 		classLoader = classFactory;
 		packages = config.getValues(CategoryName.PACKAGE.s());
+		privateSimpleLoaderInstance.configure(config, loaderLog, classFactory);
 		return true;
 	}
 	
@@ -97,9 +103,8 @@ public class CompositeAgentLoader implements Loader<Agent> {
 		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
 				: "<agent>") + ": ";
 		if(agentConfiguration.isSet(SimpleLoader.CLASSPATH_KEY))
-			// agent should be loaded from a class path
-			return log.ler(false, logPre + "Classpath present: []; deferring to other loader.",
-					agentConfiguration.getValue(SimpleLoader.CLASSPATH_KEY));
+			if(!privateSimpleLoaderInstance.preload(agentConfiguration, context))
+				return false;
 		if(agentConfiguration.isSet(SHARD_NODE_NAME))
 			for(String shardName : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTreeKeys()) {
 				for(MultiTreeMap shardConfig : agentConfiguration.getSingleTree(SHARD_NODE_NAME).getTrees(shardName)) {
@@ -122,10 +127,10 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	 * @param logPre
 	 *            - prefix to add to log entries.
 	 */
-	protected void preloadShard(String shardName, MultiTreeMap shardConfig,
+	public void preloadShard(String shardName, MultiTreeMap shardConfig,
 			List<EntityProxy<? extends Entity<?>>> context, String logPre) {
 		// get shard class
-		String shardClass = shardConfig.get(SHARD_CLASS_PARAMETER);
+		String shardClass = shardConfig == null ? null : shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
 		List<String> checked = new LinkedList<>();
 		// test given class, if any
 		if(shardClass != null)
@@ -167,9 +172,12 @@ public class CompositeAgentLoader implements Loader<Agent> {
 		
 		if(classLoader.canLoadClass(shardClass)) {
 			log.lf(logPre + "shard [" + shardName + "] can be loaded");
-			if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
-				shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
-			shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
+			if(shardConfig != null)
+			{
+				if(shardConfig.containsKey(SHARD_CLASS_PARAMETER))
+					shardConfig.removeKey(SHARD_CLASS_PARAMETER); // workaround lacking addFirstValue
+				shardConfig.setValue(SHARD_CLASS_PARAMETER, shardClass); // changes the type of the parameter
+			}
 		}
 		else {
 			log.le(logPre + "Shard class [" + shardName + " | " + shardClass + "] not found; it will not be loaded.");
@@ -198,11 +206,20 @@ public class CompositeAgentLoader implements Loader<Agent> {
 			List<MultiTreeMap> subordinateEntities) {
 		String logPre = (agentConfiguration.isSimple(NAME_ATTRIBUTE_NAME) ? agentConfiguration.get(NAME_ATTRIBUTE_NAME)
 				: "<agent>") + ": ";
-		if(agentConfiguration.isSet(SimpleLoader.CLASSPATH_KEY))
+		CompositeAgentModel agent = null;
+		if(agentConfiguration.isSet(SimpleLoader.CLASSPATH_KEY)) {
 			// agent should be loaded from a class path
-			return (Agent) log.lr(null, logPre + "Classpath [] present; deferring to other loader.",
-					agentConfiguration.getValue(SimpleLoader.CLASSPATH_KEY));
-		CompositeAgent agent = new CompositeAgent(agentConfiguration);
+			Entity<?> built = privateSimpleLoaderInstance.load(agentConfiguration);
+			if(built instanceof CompositeAgentModel)
+				agent = (CompositeAgentModel) built;
+			else
+				return (Agent) log.lr(null,
+						logPre + "Instance built from classpath [] not instance of CompositeAgentModel",
+						agentConfiguration.getValue(SimpleLoader.CLASSPATH_KEY));
+			
+		}
+		else
+			agent = createAgentInstance(agentConfiguration);
 		String agentName = agentConfiguration.getValue(NAME_ATTRIBUTE_NAME);
 		
 		if(context != null)
@@ -220,11 +237,23 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	}
 	
 	/**
+	 * Creates a new instance of {@link CompositeAgent}. This can be overridden to use a different class.
+	 * 
+	 * @param configuration
+	 *            - the configuration for the agent.
+	 * @return the agent instance.
+	 */
+	@SuppressWarnings("static-method")
+	protected CompositeAgentModel createAgentInstance(MultiTreeMap configuration) {
+		return new CompositeAgent(configuration);
+	}
+	
+	/**
 	 * Loads an {@link AgentShard} to be added to a {@link CompositeAgent}.
 	 * 
 	 * @param shardName
 	 *            - the name of the shard.
-	 * @param shardConfig
+	 * @param shardConfig_arg
 	 *            - the configuration of the shard.
 	 * @param logPre
 	 *            - prefix to add to log entries.
@@ -232,7 +261,8 @@ public class CompositeAgentLoader implements Loader<Agent> {
 	 *            - the name of the agent that will contain the shard, used for logging only.
 	 * @return the loaded shard, if successful, <code>null</code> otherwise.
 	 */
-	protected AgentShard loadShard(String shardName, MultiTreeMap shardConfig, String logPre, String agentName) {
+	public AgentShard loadShard(String shardName, MultiTreeMap shardConfig_arg, String logPre, String agentName) {
+		MultiTreeMap shardConfig = shardConfig_arg == null ? new MultiTreeMap() : shardConfig_arg;
 		String shardClass = shardConfig.getSingleValue(SHARD_CLASS_PARAMETER);
 		shardConfig.addAll(CategoryName.PACKAGE.s(), packages);
 		if(shardClass != null)

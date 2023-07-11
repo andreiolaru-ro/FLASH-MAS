@@ -102,13 +102,12 @@ public class EchoAgent extends Unit implements Agent
 	@Override
 	public <C extends Entity<Pylon>> EntityProxy<C> asContext()
 	{
-		throw new UnsupportedOperationException("The EchoAgent cannot be a context for other entities.");
+		return null;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 	

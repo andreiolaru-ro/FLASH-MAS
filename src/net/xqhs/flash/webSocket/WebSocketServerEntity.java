@@ -49,15 +49,15 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	/**
 	 * Timeout for stopping the server (sent directly to {@link WebSocketServer#stop(int)}.
 	 */
-	private static final int	SERVER_STOP_TIME	= 10;
+	private static final int				SERVER_STOP_TIME	= 10;
 	/**
 	 * The {@link WebSocketServer} instance.
 	 */
-	private WebSocketServer		webSocketServer;
+	private WebSocketServer					webSocketServer;
 	/**
 	 * <code>true</code> if the server is currently running.
 	 */
-	private boolean				running;
+	private boolean							running;
 	
 	/**
 	 * Map all entities to their {@link WebSocket}.
@@ -79,7 +79,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 *            - the port on which to start the server.
 	 */
 	public WebSocketServerEntity(int serverPort) {
-		li("Starting websocket server on port: ", Integer.valueOf(serverPort));
+		lf("Starting websocket server on port: ", Integer.valueOf(serverPort));
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -117,10 +117,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				JSONObject message = (JSONObject) obj;
 				
 				// message in transit through the server
-				if(message.get("destination") != null && routeMessage(message))
+				if(message.get(WebSocketPylon.MESSAGE_DESTINATION_KEY) != null && routeMessage(message))
 					return;
 				
-				if(message.get("nodeName") == null) {
+				if(message.get(WebSocketPylon.MESSAGE_NODE_KEY) == null) {
 					lw("nodeName is null");
 				}
 				String nodeName = (String) message.get("nodeName");
@@ -131,18 +131,34 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				if(!nodeToWebSocket.containsKey(nodeName)) {
 					nodeToWebSocket.put(nodeName, webSocket);
 					nodeToEntities.put(nodeName, new ArrayList<>());
-					li("Registered node []. ", nodeName);
+					lf("Registered node []. ", nodeName);
 				}
 				
 				// entity registration message
-				String newEntity;
-				if(message.get("entityName") != null) {
-					newEntity = (String) message.get("entityName");
-					if(!entityToWebSocket.containsKey(newEntity)) {
-						entityToWebSocket.put(newEntity, webSocket);
-						nodeToEntities.get(nodeName).add(newEntity);
+				String entityName;
+				if(message.get(WebSocketPylon.MESSAGE_ENTITY_KEY) != null) {
+					// TODO: corner case when an entity is registered from the same WSPylon but a different node??
+					// TODO: unregister old location?
+					entityName = (String) message.get(WebSocketPylon.MESSAGE_ENTITY_KEY);
+					if(message.containsKey(WebSocketPylon.UNREGISTER_KEY)) {
+						if(!entityToWebSocket.containsKey(entityName))
+							lw("Entity [] not registered on this server.", entityName);
+						else if(entityToWebSocket.get(entityName) != webSocket)
+							lw("Entity [] not registered on this server under that pylon.", entityName, webSocket);
+						else {
+							entityToWebSocket.remove(entityName, webSocket);
+							nodeToEntities.get(nodeName).remove(entityName);
+							lf("Unregistered entity [] on []. ", entityName, nodeName);
+						}
 					}
-					li("Registered entity []. ", newEntity);
+					else {
+						if(!entityToWebSocket.containsKey(entityName)
+								|| entityToWebSocket.get(entityName) != webSocket) {
+							entityToWebSocket.put(entityName, webSocket);
+							nodeToEntities.get(nodeName).add(entityName);
+						}
+						lf("Registered entity [] on []. ", entityName, nodeName);
+					}
 					printState();
 					return;
 				}
@@ -170,7 +186,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 * @return - an indication of success.
 	 */
 	private boolean routeMessage(JSONObject message) {
-		String destination = (String) message.get("destination");
+		String destination = (String) message.get(WebSocketPylon.MESSAGE_DESTINATION_KEY);
 		String destEntity = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
 		
 		WebSocket destinationWebSocket;
@@ -260,6 +276,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	}
 	
 	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
+	
+	@Override
 	protected void li(String message, Object... arguments) {
 		super.li(message, arguments);
 	}
@@ -267,10 +288,5 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	@Override
 	protected void lw(String message, Object... arguments) {
 		super.lw(message, arguments);
-	}
-	
-	@Override
-	protected void le(String message, Object... arguments) {
-		super.le(message, arguments);
 	}
 }

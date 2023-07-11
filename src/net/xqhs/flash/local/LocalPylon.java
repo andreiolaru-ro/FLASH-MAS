@@ -15,18 +15,15 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.RunnableEntity;
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -38,8 +35,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * <p>
  * There are two ways in which this implementation can work.
  * <p>
- * In the <i>direct</i> method (when a thread is <b>not</b> used), the
- * {@link SimpleLocalMessaging#send(String, String, String)} leads directly to a call of the
+ * In the <i>direct</i> method (when a thread is <b>not</b> used), the send method leads directly to a call of the
  * {@link MessageReceiver#receive(String, String, String)} method of the shard in the destination agent.
  * <p>
  * In the <i>queued</i> method, a thread is used (as configured by means of the {@link #USE_THREAD_PARAM_NAME} parameter
@@ -49,8 +45,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * For the safety and reliability of implementations which just want to use the default pylon, the default method is the
  * queued method, so deadlocks are avoided.
  * <p>
- * <b>Warning:</b> in this method, the {@link SimpleLocalMessaging#send(String, String, String)} always returns
- * <code>true</code>, but it is no guaranteed that the message has reached its destination.
+ * <b>Warning:</b> when using a thread, the {#send(String, String, String)} method always returns <code>true</code>, but
+ * it is no guaranteed that the message has reached its destination.
  * <p>
  * TODO: implement keeping undeliverable messages (see {@link #KEEP_UNDELIVERABLE_PARAM_NAME} and
  * {@link #RETRY_EVERY_PARAM_NAME}).
@@ -59,76 +55,16 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  */
 public class LocalPylon extends DefaultPylonImplementation implements RunnableEntity<Node> {
 	/**
-	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
-	 * 
-	 * @author Andrei Olaru
+	 * An alias for {@link NameBasedMessagingShard}.
 	 */
-	public static class SimpleLocalMessaging extends AbstractNameBasedMessagingShard {
+	public static class SimpleLocalMessaging extends NameBasedMessagingShard {
 		/**
-		 * The serial UID.
+		 * Serial version UID.
 		 */
-		private static final long	serialVersionUID	= 1L;
-		/**
-		 * Reference to the local pylon proxy.
-		 */
-		private MessagingPylonProxy	pylon;
-		/**
-		 * The {@link MessageReceiver} instance of this shard.
-		 */
-		public MessageReceiver		inbox;
-		
-		/**
-		 * Default constructor.
-		 */
-		public SimpleLocalMessaging() {
-			super();
-			inbox = new MessageReceiver() {
-				@Override
-				public void receive(String source, String destination, String content) {
-					receiveMessage(source, destination, content);
-				}
-			};
-		}
-		
-		/**
-		 * Relay for the supertype method.
-		 */
-		@Override
-		protected void receiveMessage(String source, String destination, String content) {
-			super.receiveMessage(source, destination, content);
-		}
-		
-		@Override
-		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-			if(!(context instanceof MessagingPylonProxy))
-				return false;
-			pylon = (MessagingPylonProxy) context;
-			return true;
-		}
-		
-		@Override
-		public boolean sendMessage(String source, String destination, String content) {
-			if(pylon == null) { // FIXME: use logging
-				System.out.println("No pylon added as context.");
-				return false;
-			}
-			pylon.send(source, destination, content);
-			return true;
-		}
-
-		@Override
-		public void register(String entityName) {
-			pylon.register(entityName, inbox);
-		}
-
-		@Override
-		public void signalAgentEvent(AgentEvent event) {
-			super.signalAgentEvent(event);
-			if(event.getType().equals(AgentEvent.AgentEventType.AGENT_START))
-				pylon.register(getAgent().getEntityName(), inbox);
-		}
+		private static final long serialVersionUID = 1L;
+		// nothing to add, but kept for compatibility with older tests and such.
 	}
-	
+
 	/**
 	 * The thread that manages the message queue.
 	 * 
@@ -140,7 +76,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			processQueue();
 		}
 	}
-
+	
 	/**
 	 * The proxy to this entity.
 	 */
@@ -155,6 +91,11 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		public boolean register(String entityName, MessageReceiver receiver) {
 			messageReceivers.put(entityName, receiver);
 			return true;
+		}
+		
+		@Override
+		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+			return messageReceivers.remove(entityName, registeredReceiver);
 		}
 
 		@Override
@@ -360,7 +301,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
 		if(shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
-			return SimpleLocalMessaging.class.getName();
+			return NameBasedMessagingShard.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
 

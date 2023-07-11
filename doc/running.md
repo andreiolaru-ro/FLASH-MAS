@@ -10,16 +10,18 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
 
+Since the libraries have been organized on directories, there is a script that gathers all jars in a single directory. The script should be run from the project root and si at script/make-lib-all.sh.
+
 Running FLASH-MAS should be as simple as:
 
 * in Linux:
   
   ```bash
-  java -cp "bin:lib/*" quick.Boot <args>
+  java -cp "bin:lib-all/*" quick.Boot <args>
   ```
 
-* in WIndows:
+* in Windows:
   
   ```bash
-  java -cp "bin;lib/*" quick.Boot <args>
+  java -cp "bin;lib-all/*" quick.Boot <args>
   ```

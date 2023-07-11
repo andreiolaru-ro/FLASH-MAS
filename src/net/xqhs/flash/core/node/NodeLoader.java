@@ -11,12 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -24,6 +22,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
+import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -137,7 +136,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		
 		// ============================================================================== get loaders
 		// loaders are stored as entity -> kind -> loaders
-		Map<String, Map<String, List<Loader<?>>>> loaders = new HashMap<>();
+		Map<String, Map<String, List<Loader<?>>>> loaders = new LinkedHashMap<>();
 		MultiTreeMap loader_configs = nodeConfiguration.getSingleTree(CategoryName.LOADER.s());
 		if(loader_configs != null) {
 			if(!loader_configs.getSimpleNames().isEmpty()) // just a warning
@@ -165,7 +164,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
 						// add to map
 						if(!loaders.containsKey(entity))
-							loaders.put(entity, new HashMap<String, List<Loader<?>>>());
+							loaders.put(entity, new LinkedHashMap<String, List<Loader<?>>>());
 						if(!loaders.get(entity).containsKey(kind))
 							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
 						loaders.get(entity).get(kind).add(loader);
@@ -212,7 +211,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			return null;
 		}
 		
-		Map<String, Entity<?>> loaded = new HashMap<>();
+		Map<String, Entity<?>> loaded = new LinkedHashMap<>();
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
 		
@@ -220,8 +219,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");
 		else {
-			li("Loading: ", toLoad);
-			Set<MessagingPylonProxy> messagingProxies = new HashSet<>();
+			lf("Loading order: ", toLoad);
+			List<MessagingPylonProxy> messagingProxies = new LinkedList<>();
 			for(String catName : toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR)) {
 				CategoryName cat = CategoryName.byName(catName);
 				List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(subordinateEntities,
@@ -230,7 +229,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					li("No [] entities defined.", catName);
 					continue;
 				}
-				li("Loading: ", catName);
+				lf("Loading category: ", catName);
 				
 				for(MultiTreeMap entityConfig : entities) {
 					// TODO add comments & notes about what names, kinds and ids really are.
@@ -265,8 +264,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
 					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { // if the category in loader
-																							// list
+					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { 
+						// if the category in loader list
 						log_catLoad = catName;
 						if(loaders.get(catName).containsKey(kind)) { // get loaders for this kind
 							loaderList = loaders.get(catName).get(kind);
@@ -279,7 +278,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							}
 							else { // get loaders for the first kind
 								loaderList = loaders.get(catName).values().iterator().next();
-								log_kindLoad = "first(" + loaders.get(catName).keySet().iterator().next() + ")";
+								log_kindLoad = "first (" + loaders.get(catName).keySet().iterator().next() + ")";
 							}
 						}
 					}
@@ -330,7 +329,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							entity = defaultLoader.load(entityConfig, context, subEntities);
 					}
 					if(entity != null) {
-						li("Entity []/[] of type [] loaded.", name, local_id, catName);
+						li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						
@@ -348,30 +347,32 @@ public class NodeLoader extends Unit implements Loader<Node> {
 				}
 			}
 			
-			li("Other configuration:");
+			lf("Other configuration:");
 			
 			if(messagingProxies.isEmpty())
 				return node;
 			MessagingPylonProxy pylon = messagingProxies.stream().findFirst().get();
 			node.addGeneralContext(pylon);
 			
-			if(!DeploymentConfiguration.isCentralNode)
+			if(!nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY))
 				return node;
 				
 			// delegate the central node
 			// and register the central monitoring and control entity in its context
 			li("Node [] is central node.", node.getName());
 			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
-					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+					new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
+							.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
+									nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
 			centralEntity.addGeneralContext(pylon);
 			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 			
-			li("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 					DeploymentConfiguration.MONITORING_TYPE);
-			DeploymentConfiguration.isCentralNode = false;
 			
-			li("Loading done.");
+			li("Loading node [] completed.", node.getName());
 		}
 		return node;
 	}

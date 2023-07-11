@@ -23,6 +23,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import net.xqhs.flash.core.CategoryName;
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -138,10 +139,19 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		setUnitName("M&C");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
+	
+	/**
+	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the web interface.
+	 */
+	public static final String		WEB_INTERFACE_SWITCH	= "web";
+	/**
+	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the swing interface.
+	 */
+	public static final String		SWING_INTERFACE_SWITCH	= "swing";
 	/**
 	 * Endpoint element for this shard.
 	 */
-	protected static final String SHARD_ENDPOINT = ControlShard.SHARD_ENDPOINT;
+	protected static final String	SHARD_ENDPOINT			= ControlShard.SHARD_ENDPOINT;
 	
 	/**
 	 * Endpoint element for shards of control.
@@ -193,31 +203,38 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	
 	public ShardContainer proxy;
 	
-	public CentralMonitoringAndControlEntity(String name) {
-		this.name = name;
-		
-		// TODO mock config -- to be added in deployment configuration?
-		MultiTreeMap config = new MultiTreeMap().addOneValue("file", "interface-files/model-page/web-page.yml");
-		GlobalConfiguration representation = null; // GUILoad.loadGlobalRepresentation(config);
-		
+	public CentralMonitoringAndControlEntity(MultiTreeMap configuration) {
+		this.name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		proxy = new CentralEntityProxy();
-		gui = new WebEntity(representation);
-		gui.addContext(proxy);
-		if(gui.start()) // starts now in order to be available before starting entities
-			li("web gui started");
-		
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue("from", "controls.yml")
-				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackageName()), getLogger());
+				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
 		
-		// TODO Swing GUI
-		// gui = new GUIBoard(new CentralEntityProxy());
-		// SwingUtilities.invokeLater(() -> {
-		// try {
-		// gui.setVisible(true);
-		// } catch (RuntimeException e) {
-		// e.printStackTrace();
-		// }
-		// });
+		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY))
+			switch(iface) {
+			case WEB_INTERFACE_SWITCH: {
+				// TODO mock config -- to be added in deployment configuration?
+				MultiTreeMap config = new MultiTreeMap().addOneValue("file", "interface-files/model-page/web-page.yml");
+				GlobalConfiguration representation = null; // GUILoad.loadGlobalRepresentation(config);
+				gui = new WebEntity(representation);
+				gui.addContext(proxy);
+				if(gui.start()) // starts now in order to be available before starting entities
+					li("web gui started");
+				break;
+			}
+			case SWING_INTERFACE_SWITCH: {
+				// TODO Swing GUI
+				// gui = new GUIBoard(new CentralEntityProxy());
+				// SwingUtilities.invokeLater(() -> {
+				// try {
+				// gui.setVisible(true);
+				// } catch (RuntimeException e) {
+				// e.printStackTrace();
+				// }
+				// });
+				break;
+			}
+			}
+		
 	}
 	
 	/**

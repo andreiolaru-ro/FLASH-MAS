@@ -48,7 +48,7 @@
 	            <path location="src-examples" />
 	        </sourcepath>
 			<header>
-			Copyright (C) 2021 Andrei Olaru and the FLASH-MAS project under the GNU General Public License. See &lt;a href="http://www.gnu.org/licenses/"&gt;http://www.gnu.org/licenses/&lt;/a&gt;.
+			Copyright (C) 2022 Andrei Olaru and the FLASH-MAS project under the GNU General Public License. See &lt;a href="http://www.gnu.org/licenses/"&gt;http://www.gnu.org/licenses/&lt;/a&gt;.
 			</header>
 		</javadoc>
 	</target>

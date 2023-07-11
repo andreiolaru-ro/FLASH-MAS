@@ -44,24 +44,34 @@ public class AgentEvent extends MultiValueMap
 		AGENT_START(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
-		 * Event occurs when the agent must be destroyed and components need to close.
+		 * Event occurs when the agent must be destroyed (or serialized) and components need to close.
 		 */
 		AGENT_STOP(AgentSequenceType.DESTRUCTIVE),
-		
-		/**
-		 * Event occurs when the agent must move to a different machine.
-		 */
-		BEFORE_MOVE(AgentSequenceType.DESTRUCTIVE),
-		
-		/**
-		 * Event occurs when the agent has just moved to a different machine.
-		 */
-		AFTER_MOVE(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
 		 * Event occurs when the agent has received a message, an input, or another type of (generally external) event.
 		 */
 		AGENT_WAVE(AgentSequenceType.UNORDERED),
+		
+		/**
+		 * Event occurs when the agent must move to a different machine.
+		 * <p>
+		 * Currently, it is posted immediately before the corresponding {@link #AGENT_STOP} event.
+		 * <p>
+		 * NOTE: this event may be removed eventually, as it has the same meaning as an {@link #AGENT_STOP} event with a
+		 * {@link CompositeAgent#TRANSIENT_EVENT_PARAMETER}.
+		 */
+		BEFORE_MOVE(AgentSequenceType.DESTRUCTIVE),
+		
+		/**
+		 * Event occurs when the agent has just moved to a different machine.
+		 * <p>
+		 * Currently, it is posted immediately after the corresponding {@link #AGENT_START} event.
+		 * <p>
+		 * NOTE: this event may be removed eventually, as it has the same meaning as an {@link #AGENT_START} event with
+		 * a {@link CompositeAgent#TRANSIENT_EVENT_PARAMETER}.
+		 */
+		AFTER_MOVE(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
 		 * Event occurs when the start of the simulation is requested by the user.
@@ -166,6 +176,10 @@ public class AgentEvent extends MultiValueMap
 	 */
 	public static final String EVENT_TYPE_PARAMETER_NAME = "EVENT_TYPE";
 	
+	/**
+	 * The keys which have special meanings in the wave and are not part of actual content. Used in classes extending
+	 * {@link AgentEvent}.
+	 */
 	protected static final String[] specialKeys = { EVENT_TYPE_PARAMETER_NAME };
 	
 	/**

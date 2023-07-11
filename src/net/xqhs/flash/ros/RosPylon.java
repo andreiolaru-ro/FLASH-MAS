@@ -19,12 +19,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.AbstractNameBasedMessagingShard;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -125,85 +124,37 @@ public class RosPylon extends DefaultPylonImplementation {
         public String getEntityName() {
             return getName();
         }
+																
+																@Override
+																public boolean unregister(String entityName,
+																		MessageReceiver registeredReceiver) {
+																	// TODO Auto-generated method stub
+																	return false;
+																}
     };
 
     /**
-     * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
-     *
-     * @author Andrei Olaru
-     */
-    public static class SimpleLocalMessaging extends AbstractNameBasedMessagingShard {
-        /**
-         * The serial UID.
-         */
-        private static final long	serialVersionUID	= 1L;
-        /**
-         * Reference to the local pylon proxy.
-         */
-        private MessagingPylonProxy	pylon;
-        /**
-         * The {@link MessageReceiver} instance of this shard.
-         */
-        public MessageReceiver		inbox;
-
-
-        public RosBridge bridge;
-
-        /**
-         * Default constructor.
-         */
-        public SimpleLocalMessaging() {
-            super();
-
-
-            inbox = new MessageReceiver() {
-                @Override
-                public void receive(String source, String destination, String content) {
-                    receiveMessage(source, destination, content);
-                }
-            };
-        }
-
-        /**
-         * Relay for the supertype method.
-         */
-        @Override
-        protected void receiveMessage(String source, String destination, String content) {
-            super.receiveMessage(source, destination, content);
-
-        }
-
-        @Override
-        public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-            if(!(context instanceof MessagingPylonProxy))
-                throw new IllegalStateException("Pylon Context is not of expected type.");
-            pylon = (MessagingPylonProxy) context;
-			register(getAgent().getEntityName());
-            return true;
-        }
-
-        @Override
-        public boolean sendMessage(String source, String destination, String content) {
-            if(pylon == null) { // FIXME: use logging
-                System.out.println("No pylon added as context.");
-                return false;
-            }
-            pylon.send(source, destination, content);
-
-            return true;
-        }
+	 * Simple implementation of {@link AbstractMessagingShard}, that uses agents' names as their addresses.
+	 *
+	 * @author Andrei Olaru
+	 */
+	public static class SimpleLocalMessaging extends NameBasedMessagingShard {
+		/**
+		 * The serial UID.
+		 */
+		private static final long serialVersionUID = 1L;
 		
 		@Override
-		public void register(String entityName) {
-			pylon.register(entityName, inbox);
+		protected void receiveMessage(String source, String destination, String content) {
+			super.receiveMessage(source, destination, content);
 		}
-    }
-
-    /**
-     * The thread that manages the message queue.
-     *
-     * @author Andrei Olaru
-     */
+	}
+	
+	/**
+	 * The thread that manages the message queue.
+	 *
+	 * @author Andrei Olaru
+	 */
     class MessageThread implements Runnable {
         @Override
         public void run() {
@@ -247,7 +198,7 @@ public class RosPylon extends DefaultPylonImplementation {
      * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this queue is used to gather
      * messages.
      */
-    protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>	messageQueue		= null;
+	protected LinkedBlockingQueue<Map.Entry<SimpleLocalMessaging, Vector<String>>>	messageQueue		= null;
 
 	@Override
 	public boolean configure(MultiTreeMap configuration)

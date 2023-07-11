@@ -219,7 +219,7 @@ public enum CategoryName {
 		boolean						visibleOnPath		= false;
 		
 		/**
-		 * Default constructor, does nothing.
+		 * No-argument constructor, does nothing.
 		 */
 		public CatPar()
 		{

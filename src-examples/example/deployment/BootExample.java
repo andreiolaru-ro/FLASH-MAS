@@ -57,7 +57,7 @@ public class BootExample {
 		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_WEBSOCKET_PYLON);
 		// // the pylon will be automatically added
 		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_NODE);
-		// // everything is explicitely defined in the scenario
+		// // everything is explicitly defined in the scenario
 		// args = version0(DEFINE_AGENT_A | DEFINE_AGENT_B | DEFINE_NODE | DEFINE_LOCAL_PYLON);
 		// args = version1();
 		// args = THIS_DIRECTORY + "complexDeployment.xml";
@@ -73,7 +73,7 @@ public class BootExample {
 	public static String version0(int mask) {
 		String args = "";
 		if((mask & (DEFINE_AGENT_A | DEFINE_AGENT_B)) > 0)
-			args += " -package example.simplePingPong";
+			args += " -package test.simplePingPong";
 		if((mask & DEFINE_NODE) > 0)
 			args += " -node node1";
 		if((mask & DEFINE_LOCAL_PYLON) > 0)

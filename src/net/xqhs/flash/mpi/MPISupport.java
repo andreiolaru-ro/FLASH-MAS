@@ -20,6 +20,11 @@ public class MPISupport extends DefaultPylonImplementation {
         }
 
         @Override
+		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+			return messageReceivers.remove(entityName, registeredReceiver);
+		}
+
+		@Override
         public boolean send(String source, String destination, String content) {
             try {
                 byte[] msg = content.getBytes();

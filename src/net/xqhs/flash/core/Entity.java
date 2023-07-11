@@ -45,14 +45,14 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * Normally, before being started, {@link Entity} instances are created by {@link Loader} instances.
  * <p>
  * It is recommended that an entity receives its configuration via a {@link MultiTreeMap}. This can be done via a
- * constructor which takes a {@link MultiTreeMap} as argument, or using a default constructor and a method that takes a
- * {@link MultiTreeMap} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
+ * constructor which takes a {@link MultiTreeMap} as argument, or using a no-argument constructor and a method that
+ * takes a {@link MultiTreeMap} as argument. For the latter, the {@link ConfigurableEntity} interface can be used.
  * 
  * @param <P>
  *            - the type of the entity that can contain (be the context of) this entity.
- * 
+ * 			
  * @see RunnableEntity
- * 
+ * 			
  * @author andreiolaru
  */
 public interface Entity<P extends Entity<?>>

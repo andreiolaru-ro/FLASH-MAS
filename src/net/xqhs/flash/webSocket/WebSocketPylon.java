@@ -74,129 +74,74 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	/**
 	 * The key in the JSON object which is assigned to the source of the message.
 	 */
-	public static final String	MESSAGE_SOURCE_KEY		= "source";
+	public static final String											MESSAGE_SOURCE_KEY				= "source";
 	/**
 	 * The key in the JSON object which is assigned to the name of the node on which an entity executes (for
 	 * registration messages).
 	 */
-	public static final String	MESSAGE_NODE_KEY		= "nodeName";
+	public static final String											MESSAGE_NODE_KEY				= "nodeName";
 	/**
 	 * The key in the JSON object which is assigned to the name of the entity (for registration messages).
 	 */
-	public static final String	MESSAGE_ENTITY_KEY		= "entityName";
+	public static final String											MESSAGE_ENTITY_KEY				= "entityName";
 	/**
 	 * The key in the JSON object which is assigned to the destination of the message.
 	 */
-	public static final String	MESSAGE_DESTINATION_KEY	= "destination";
+	public static final String											MESSAGE_DESTINATION_KEY			= "destination";
+	/**
+	 * If this key is present, the entity will be unregistered.
+	 */
+	public static final String											UNREGISTER_KEY					= "unregister";
 	/**
 	 * The key in the JSON object which is assigned to the content of the message.
 	 */
-	public static final String	MESSAGE_CONTENT_KEY		= "content";
+	public static final String											MESSAGE_CONTENT_KEY				= "content";
 	
 	/**
 	 * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
 	 */
-	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-		/**
-		 * The entity is both: - registered within the local instance which is useful for routing a message back to the
-		 * the {@link MessageReceiver} instance when it arrives from the server - registered to the
-		 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local client
-		 *
-		 * @param entityName
-		 *            - the name of the entity
-		 * @param receiver
-		 *            - the {@link MessageReceiver} instance to receive messages
-		 * @return - an indication of success
-		 */
-		@Override
-		@SuppressWarnings("unchecked")
-		public boolean register(String entityName, MessageReceiver receiver) {
-			messageReceivers.put(entityName, receiver);
-			JSONObject messageToServer = new JSONObject();
-			messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
-			messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
-			webSocketClient.send(messageToServer.toString());
-			return true;
-		}
-		
-		/**
-		 * Send a message to the server.
-		 *
-		 * @param source
-		 *            - the source endpoint
-		 * @param destination
-		 *            - the destination endpoint
-		 * @param content
-		 *            - the content of the message
-		 * @return - an indication of success
-		 */
-		@Override
-		@SuppressWarnings("unchecked")
-		public boolean send(String source, String destination, String content) {
-			if(messageReceivers.containsKey(destination)) {
-				messageReceivers.get(destination).receive(source, destination, content);
-				return true;
-			}
-			JSONObject messageToServer = new JSONObject();
-			messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
-			messageToServer.put(MESSAGE_SOURCE_KEY, source);
-			messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
-			messageToServer.put(MESSAGE_CONTENT_KEY, content);
-			webSocketClient.send(messageToServer.toString());
-			return true;
-		}
-		
-		@Override
-		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-			return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
-		}
-		
-		@Override
-		public String getEntityName() {
-			return getName();
-		}
-	};
+	public MessagingPylonProxy											messagingProxy					= null;
 	
 	/**
 	 * The attribute name of server address of this instance.
 	 */
-	public static final String	WEBSOCKET_SERVER_ADDRESS_NAME	= "connectTo";
+	public static final String											WEBSOCKET_SERVER_ADDRESS_NAME	= "connectTo";
 	/**
 	 * The attribute name for the server port.
 	 */
-	public static final String	WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
+	public static final String											WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
 	/**
 	 * The prefix for Websocket server address.
 	 */
-	public static final String	WS_PROTOCOL_PREFIX				= "ws://";
+	public static final String											WS_PROTOCOL_PREFIX				= "ws://";
 	
 	/**
 	 * <code>true</code> if there is a Websocket server configured on the local node.
 	 */
-	protected boolean hasServer;
+	protected boolean													hasServer;
 	
 	/**
 	 * For the case in which a server must be created on this node, the port the server is bound to.
 	 */
-	protected int					serverPort	= -1;
+	protected int														serverPort						= -1;
 	/**
 	 * For the case in which a server must be created on this node, the entity that represents the server.
 	 */
-	protected WebSocketServerEntity	serverEntity;
+	protected WebSocketServerEntity										serverEntity;
 	
 	/**
 	 * The address of the Websocket server that the client should connect to.
 	 */
-	protected String			webSocketServerAddress;
+	protected String													webSocketServerAddress;
 	/**
 	 * The {@link WebSocketClient} instance to use.
 	 */
-	protected WebSocketClient	webSocketClient;
+	protected WebSocketClient											webSocketClient;
 	/**
 	 * For the entities in the scope of this pylon, the correspondence between their names and their
 	 * {@link MessageReceiver} instances.
 	 */
-	protected HashMap<String, MessageReceiver>	messageReceivers	= new HashMap<>();
+	protected HashMap<String, MessageReceiver>							messageReceivers				= new HashMap<>();
 	
 	/**
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
@@ -207,7 +152,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
 	 */
-	protected boolean													useThread	= true;
+	protected boolean													useThread						= true;
 	/**
 	 * The queue of messages to process to be processed by the {@link #messageThread}.
 	 */
@@ -216,6 +161,89 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The thread processing the messages in the {@link #messageQueue}.
 	 */
 	protected Thread													messageThread;
+	
+	/**
+	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
+	 */
+	public WebSocketPylon() {
+		messagingProxy = new MessagingPylonProxy() {
+			/**
+			 * The entity is both: - registered within the local instance which is useful for routing a message back to
+			 * the the {@link MessageReceiver} instance when it arrives from the server - registered to the
+			 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
+			 * client
+			 *
+			 * @param entityName
+			 *            - the name of the entity
+			 * @param receiver
+			 *            - the {@link MessageReceiver} instance to receive messages
+			 * @return - an indication of success
+			 */
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean register(String entityName, MessageReceiver receiver) {
+				if(messageReceivers.containsKey(entityName))
+					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
+				messageReceivers.put(entityName, receiver);
+				JSONObject messageToServer = new JSONObject();
+				messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
+				messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
+				webSocketClient.send(messageToServer.toString());
+				lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
+				return true;
+			}
+			
+			@Override
+			public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+				if(!messageReceivers.remove(entityName, registeredReceiver))
+					return false;
+				JSONObject messageToServer = new JSONObject();
+				messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
+				messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
+				messageToServer.put(UNREGISTER_KEY, UNREGISTER_KEY);
+				webSocketClient.send(messageToServer.toString());
+				lf("Unregistered entity [] from this pylon []: ", entityName, thisPylon(), messageToServer);
+				return true;
+			}
+			
+			/**
+			 * Send a message to the server.
+			 *
+			 * @param source
+			 *            - the source endpoint
+			 * @param destination
+			 *            - the destination endpoint
+			 * @param content
+			 *            - the content of the message
+			 * @return - an indication of success
+			 */
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean send(String source, String destination, String content) {
+				if(messageReceivers.containsKey(destination)) {
+					messageReceivers.get(destination).receive(source, destination, content);
+					return true;
+				}
+				JSONObject messageToServer = new JSONObject();
+				messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
+				messageToServer.put(MESSAGE_SOURCE_KEY, source);
+				messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
+				messageToServer.put(MESSAGE_CONTENT_KEY, content);
+				webSocketClient.send(messageToServer.toString());
+				return true;
+			}
+			
+			@Override
+			public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
+				return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
+			}
+			
+			@Override
+			public String getEntityName() {
+				return getName();
+			}
+		};
+	}
 	
 	/**
 	 * Starts the {@link WebSocketServerEntity} if the pylon was delegated from the deployment. Now the entity is ready
@@ -235,11 +263,12 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			long spaceBetweenTries = 1000;
 			while(tries > 0) {
 				try {
-					li("Trying connection to WS server ", webSocketServerAddress);
+					lf("Trying connection to WS server [] tries left: []", webSocketServerAddress,
+							Integer.valueOf(tries));
 					webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
 						@Override
 						public void onOpen(ServerHandshake serverHandshake) {
-							li("new connection to server opened.");
+							lf("connected to []", getURI());
 						}
 						
 						/**
@@ -266,7 +295,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 							String destination = (String) jsonObject.get("destination");
 							String localAddr = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
 							if(!messageReceivers.containsKey(localAddr) || messageReceivers.get(localAddr) == null)
-								le("Entity [] does not exist in the scope of this pylon.", localAddr);
+								le("Entity [] does not exist in the scope of this pylon [].", localAddr, thisPylon());
 							else {
 								String source = (String) jsonObject.get("source");
 								String content = (String) jsonObject.get("content");
@@ -292,7 +321,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 					break;
 				Thread.sleep(spaceBetweenTries);
 				tries--;
-				System.out.println("Tries:" + tries);
 			}
 		} catch(InterruptedException e) {
 			e.printStackTrace();
@@ -306,7 +334,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			messageThread = new Thread(new MessageThread());
 			messageThread.start();
 		}
-		li("Started" + (useThread ? " with thread." : ""));
+		li("Started" + (useThread ? " [with thread]." : "[without thread]"));
 		return true;
 	}
 	
@@ -387,5 +415,22 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	@Override
 	protected void li(String message, Object... arguments) {
 		super.li(message, arguments);
+	}
+	
+	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
+	
+	@Override
+	protected boolean ler(boolean ret, String message, Object... arguments) {
+		return super.ler(ret, message, arguments);
+	}
+	
+	/**
+	 * @return this pylon, to be provided to embedded instances.
+	 */
+	WebSocketPylon thisPylon() {
+		return this;
 	}
 }

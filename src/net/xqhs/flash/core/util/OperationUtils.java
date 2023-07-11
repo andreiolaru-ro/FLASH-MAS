@@ -36,7 +36,9 @@ public class OperationUtils {
 		/**
 		 * Operation for stopping the simulation.
 		 */
-		STOP_SIMULATION;
+		STOP_SIMULATION,
+
+		;
 		
 		public String getOperation() {
 			return name().toLowerCase();

@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
@@ -20,7 +21,7 @@ import net.xqhs.util.logging.Debug.DebugItem;
 
 /**
  * Prototype class for shards offering messaging functionality, containing some general implementation-independent
- * methods.
+ * methods. it also manages the relation with the {@link MessagingPylonProxy}.
  * 
  * <h2>Extending this class</h2> The abstract class implements some basic methods for working with slash-delimited
  * addresses, and offers the method for registering message handlers. The class also eases the task of posting agent
@@ -29,15 +30,13 @@ import net.xqhs.util.logging.Debug.DebugItem;
  * <p>
  * Basically, a class extending {@link AbstractMessagingShard} should implement the following:
  * <ul>
- * <li>if the messaging system uses agent names as their addresses, then it is recommended to extend the
- * {@link AbstractNameBasedMessagingShard} class.
- * <li>it should implement the {@link #sendMessage(String, String, String)} method that sends a message to another
- * agent.
+ * <li>if the messaging system uses agent names (as opposed to addresses with slashes) as their addresses, then it is
+ * recommended to extend the {@link NameBasedMessagingShard} class. agent.
  * <li>it should implement the {@link #extractAgentAddress(String)} which extracts the address of the agent from a
  * complete endpoint.
- * <li>it should implement the {@link #getAgentAddress()} which retrieves the address of the current agent.
- * <li>when a message is received, the implementation should call the {@link #receiveMessage} of this class, which will
- * pack the information into an {@link AgentWave} and post it in the event queue.
+ * <li>it should implement the {@link #getAgentAddress()} which retrieves the address of the current agent. pack the
+ * information into an {@link AgentWave} and post it in the event queue.
+ * <li>any other functionality that works differently than this standard implementation.
  * </ul>
  * 
  * @author Andrei Olaru
@@ -63,8 +62,6 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		boolean isset;
 		
 		/**
-		 * Default constructor.
-		 * 
 		 * @param set
 		 *                - activation state.
 		 */
@@ -86,11 +83,72 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	private static final long serialVersionUID = -7541956285166819418L;
 	
 	/**
-	 * Default constructor.
+	 * Endpoint name for this shard (see {@link AgentWave}).
+	 */
+	protected static final String		SHARD_ENDPOINT		= "messaging";
+	
+	/**
+	 * Reference to the local Websocket pylon.
+	 */
+	transient protected MessagingPylonProxy	pylon	= null;
+	/**
+	 * The proxy to this shard, to be used by the pylon.
+	 */
+	protected transient MessageReceiver		inbox	= null;
+	
+	/**
+	 * No-argument constructor.
 	 */
 	public AbstractMessagingShard()
 	{
 		super(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING));
+	}
+	
+	/**
+	 * @return a standard {@link MessageReceiver} implementation which relays all received messages to the method in
+	 *         {@link AbstractMessagingShard}.
+	 */
+	protected MessageReceiver buildMessageReceiver() {
+		return new MessageReceiver() {
+			@Override
+			public void receive(String source, String destination, String content) {
+				receiveMessage(source, destination, content);
+			}
+		};
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		if(!(context instanceof MessagingPylonProxy)) {
+			return false;
+		}
+		if(inbox == null)
+			inbox = buildMessageReceiver();
+		pylon = (MessagingPylonProxy) context;
+		return true;
+	}
+	
+	@Override
+	public void register(String entityName) {
+		pylon.register(entityName, inbox);
+	}
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
+		super.signalAgentEvent(event);
+		switch(event.getType()) {
+		case AGENT_START:
+			if(pylon == null)
+				throw new IllegalStateException("Shard is not currently added within a pylon");
+			pylon.register(getAgent().getEntityName(), inbox);
+			break;
+		case AGENT_STOP:
+			if(pylon != null)
+				pylon.unregister(getAgent().getEntityName(), inbox);
+			break;
+		default:
+			break;
+		}
 	}
 	
 	/**
@@ -133,6 +191,11 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		getAgent().postAgentEvent(wave);
 	}
 	
+	@Override
+	public boolean sendMessage(String target, String source, String content) {
+		return pylon.send(target, source, content);
+	}
+
 	/**
 	 * The method extracts, from a complete endpoint address, the internal path. It should always begin with a slash.
 	 * <p>
@@ -163,7 +226,4 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public abstract String getAgentAddress();
-	
-	@Override
-	public abstract boolean sendMessage(String source, String target, String content);
 }

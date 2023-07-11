@@ -1,4 +1,11 @@
 /bin/
+/lib-all/
 .idea
 .xml
 __pycache__
+.xml
+*.iml
+/log-*.yaml
+/APDescription.txt
+/MTPs-Container-*.txt
+*__pycache__

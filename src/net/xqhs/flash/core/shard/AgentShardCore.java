@@ -63,7 +63,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	/**
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
-	private ShardContainer			parentAgent;
+	private transient ShardContainer	parentAgent;
 	/**
 	 * Indicates the state of the shard.
 	 */
@@ -142,6 +142,13 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 			shardConfiguration = configuration;
 		}
 		return true;
+	}
+	
+	/**
+	 * @return the shard configuration stored at {@link #configure(MultiTreeMap)} time.
+	 */
+	public MultiTreeMap getShardConfiguration() {
+		return shardConfiguration;
 	}
 	
 	/**
@@ -277,15 +284,15 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
-		return false;
+		// not supported here, but extending classes may call this because of good practice.
+		return true;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
 	{
-		lw("No general context supported for shards by default.");
-		return false;
+		// not supported here, but extending classes may call this because of good practice.
+		return true;
 	}
 	
 	/**

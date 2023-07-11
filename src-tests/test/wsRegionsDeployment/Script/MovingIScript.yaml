@@ -1,0 +1,188 @@
+script:
+ A-localhost:8885:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "A-localhost:8885"} }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node1-localhost:8885"}, trigger: "NEXT"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node2-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node3-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node0-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node1-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node2-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node3-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node0-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node1-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node2-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node3-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node0-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node1-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node2-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node3-localhost:8886"},  trigger: "EVENT", arg: "AFTER_MOVE"  }
+  - { action: "MOVE_TO_NODE", arguments: {to: "node0-localhost:8885"},  trigger: "EVENT", arg: "AFTER_MOVE"  } 
+  - { action: "MARK", trigger: "EVENT", arg: "AFTER_MOVE", arguments: {with: "A-localhost:8885 DONE"} }
+ B-localhost:8885:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "B-localhost:8885"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "B-localhost:8885", with: "conversation B"}}
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {with: "B-localhost:8885 DONE"} }
+ C-localhost:8886:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "C-localhost:8886"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "C-localhost:8886", with: "conversation C"}}
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {with: "C-localhost:8886 DONE"} }
+ D-localhost:8886:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 5000, arguments: {with: "D-localhost:8886"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 00"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 01"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 02"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 03"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 04"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 05"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 06"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 07"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 08"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 09"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 10"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 11"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 12"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 13"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 14"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 15"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 16"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 17"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 18"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 19"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 20"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 21"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 22"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 23"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 24"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 25"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 26"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 27"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 28"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 29"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 30"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 31"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 32"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 33"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 34"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 35"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 36"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 37"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 38"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 39"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 40"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 41"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 42"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 43"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 44"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 45"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 46"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 47"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 48"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 49"}}
+  - { action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A-localhost:8885", from: "D-localhost:8886", with: "conversation D 50"}}
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {with: "D-localhost:8886 DONE"} }
+ X:
+  actions:
