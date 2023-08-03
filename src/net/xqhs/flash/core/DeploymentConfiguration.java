@@ -62,6 +62,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String	NAME_SEPARATOR					= ":";
 	/**
+	 * Separator for multiple values of the same parameter.
+	 */
+	public static final String	VALUE_SEPARATOR		= ";";
+	// cannot use : because many values are URLs and contain ':'
+	/**
 	 * Separator for elements in the load order setting.
 	 */
 	public static final String	LOAD_ORDER_SEPARATOR			= ";";
@@ -923,6 +928,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			log.le("Name [] already present as hierarchical name.", par);
 		else if(asSingleton)
 			node.setValue(par, val);
+		else if(val != null && val.contains(VALUE_SEPARATOR))
+			for(String oneval : val.split(VALUE_SEPARATOR))
+				node.addOneValue(par, oneval);
 		else
 			node.addOneValue(par, val);
 	}
