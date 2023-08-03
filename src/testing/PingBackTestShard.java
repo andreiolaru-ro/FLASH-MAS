@@ -12,17 +12,18 @@
 package testing;
 
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import test.compositePingPong.Boot;
 
 /**
- * An {@link AgentShard} implementation that initially sends a message to another agent, it this agent is designated as
- * initiator.
+ * An {@link AgentShard} implementation that waits for a ping message, then sends back a reply.
  * <p>
- * Otherwise, it waits for a ping message, that it then sends back.
+ * If a message beginning with "ping-last" is received, it will instruct the agent to terminate.
  * 
  * @author Andrei Olaru
  */
@@ -35,6 +36,14 @@ public class PingBackTestShard extends AgentShardGeneral {
 	 * Endpoint element for this shard.
 	 */
 	public static final String	SHARD_ENDPOINT		= "pong";
+	/**
+	 * Suffix to add when replying to messages.
+	 */
+	public static final String	REPLY_SUFFIX		= " reply";
+	/**
+	 * If the agent should be kept alive after the last ping is received.
+	 */
+	boolean						keep				= false;
 	
 	/**
 	 * No-argument constructor
@@ -44,14 +53,25 @@ public class PingBackTestShard extends AgentShardGeneral {
 	}
 	
 	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration.containsKey(PingTestShard.KEEP_PARAMETER_NAME))
+			keep = true;
+		return true;
+	}
+	
+	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
 			// if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
 			// break;
-			String replyContent = ((AgentWave) event).getContent() + " reply";
+			String replyContent = ((AgentWave) event).getContent() + REPLY_SUFFIX;
 			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
+			if(replyContent.startsWith(PingTestShard.PING_PRE_LAST) && !keep)
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 			break;
 		default:
 			break;
