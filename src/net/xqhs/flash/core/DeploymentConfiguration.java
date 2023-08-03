@@ -135,7 +135,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Local IDs of default created entities.
 	 */
-	protected List<String> autoCreated = new LinkedList<>();
+	protected List<String>			autoCreated	= new LinkedList<>();
 	/**
 	 * The correspondence between names and local IDs, used to assign contexts by names.
 	 */
@@ -567,9 +567,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				return false;
 			}
 			if(tree.isHierarchical(child))
-				for(MultiTreeMap subTree : tree.getTrees(child))
-					if(!allPortable(subTree, caller, log))
+				if(tree.isSingleton(child)) {
+					if(!allPortable(tree.getATree(child), caller, log))
 						return false;
+				}
+				else
+					for(MultiTreeMap subTree : tree.getTrees(child))
+						if(!allPortable(subTree, caller, log))
+							return false;
 		}
 		return true;
 	}
@@ -973,7 +978,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * @param autoCreated
 	 *            - the list of entity IDs that have been created automatically (that were not given in the deployment
 	 *            scenario).
-	 * @param name_ids 
+	 * @param name_ids
 	 *            - correspondence between names and local IDs.
 	 * @param log
 	 *            - the {@link Logger} to use.
