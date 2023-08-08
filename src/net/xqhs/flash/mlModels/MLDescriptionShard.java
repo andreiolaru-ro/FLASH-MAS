@@ -11,21 +11,17 @@
  ******************************************************************************/
 package net.xqhs.flash.mlModels;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -47,6 +43,8 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.PlatformUtils;
+
+import javax.imageio.ImageIO;
 
 /**
  * The {@link MLDescriptionShard} class manages the SPARQL queries and transfering of ML models.
@@ -206,6 +204,10 @@ public class MLDescriptionShard extends AgentShardGeneral {
 				if (!localStorage.exists()) {
 					localStorage.mkdir();
 				}
+				System.out.println("load model");
+				loadModel("MobileNetV2");  //TODO remove this line and the upper one
+				System.out.println("predict");
+				predict("MobileNetV2", "src/net/xqhs/flash/mlModels/dog.jpg"); //TODO remove this line and the upper one
 
 				if(localStorage.listFiles() == null)
 					break;
@@ -251,6 +253,141 @@ public class MLDescriptionShard extends AgentShardGeneral {
 				break;
 		}
 	}
+
+	/**
+	 * Methode to load a model from the python server.
+	 * It takes A string of the model name as parameter, and return its ID if it exists.
+	 * The server send a success message if the model is loaded, and an error message if it is not.
+	 *
+	 * @param model
+	 * 			The name of the model to load
+	 *
+	 * @return The ID of the model
+	 */
+	public String loadModel(String model) {
+
+		//TODO need to check if the asked model exists in our model list
+
+		String location = "http://localhost:5000/load_model";
+
+		try {
+			URL url = new URL(location);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("POST");
+			connection.setDoOutput(true);
+
+			// Set the form data (model_name)
+			String postData = "model_name=" + URLEncoder.encode(model, "UTF-8");
+
+			// Send the form data to the server
+			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+				wr.writeBytes(postData);
+				wr.flush();
+			}
+
+			// Check the response code
+			int responseCode = connection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				// The model was successfully loaded
+				try (BufferedReader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream()))) {
+					String line;
+					while ((line = in.readLine()) != null) {
+						System.out.println(line);
+					}
+				}
+			} else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				// The model was not found, handle the error
+				try (BufferedReader in = new BufferedReader(
+						new InputStreamReader(connection.getErrorStream()))) {
+					String error;
+					while ((error = in.readLine()) != null) {
+						System.err.println(error);
+					}
+				}
+			} else {
+				// Other error occurred, handle it accordingly
+				System.err.println("Error: " + responseCode);
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+
+		return model.toLowerCase();
+	}
+
+	/**
+	 * Methode to predict a result from a model. It gives to the server the model ID and the data to predict.
+	 * It returns the result of the prediction, or an error message if the prediction failed.
+	 * Currently, the data to predict is an image, encoded in base64.
+	 *
+	 * @param model
+	 * 			The ID of the model to use
+	 * @param data_path
+	 * 			The path for the file we use to predict
+	 *
+	 * @return The result of the prediction
+	 */
+	public String predict(String model, String data_path) {
+		try {
+			// Read and encode the image data
+			BufferedImage image = ImageIO.read(new File(data_path));
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(image, "jpeg", baos);
+			byte[] imageData = baos.toByteArray();
+			String imageBase64 = Base64.getEncoder().encodeToString(imageData);
+
+			// Create the request data
+			String postData = "model_name=" + URLEncoder.encode(model, "UTF-8");
+			postData += "&input_data=" + URLEncoder.encode(imageBase64, "UTF-8");
+
+			// Set up the connection
+			String location = "http://localhost:5000/predict";
+			URL url = new URL(location);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("POST");
+			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			connection.setDoOutput(true);
+
+			// Write the data to the connection
+			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+				wr.write(postData.getBytes());
+				wr.flush();
+			}
+
+			// Check the response code
+			String response = "";
+			int responseCode = connection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				try (BufferedReader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream()))) {
+					String line;
+					while ((line = in.readLine()) != null) {
+						response += line;
+					}
+				}
+			} else {
+				System.err.println("Error: " + responseCode);
+			}
+
+			//return the result of the prediction
+			System.out.println(response);
+			return response;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private String encodeData(Object data) {
+		// Implement your data encoding logic here
+		// For example, if data is an image file path, you can read and encode the image data
+		// and return the base64 encoded string
+		return "";
+	}
+
 
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent) {
