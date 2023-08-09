@@ -92,7 +92,7 @@ public class TestingShard extends AgentShardGeneral {
 			return false;
 		if(configuration.getAValue("agent_name") != null) {
 			TestClass test = new TestClass(
-					"src-testing/shadowProtocolDeployment/RandomTestCases/topology1_2_servers_2_pylons_2_agents.json");
+					"src-experiments/shadowProtocolDeployment/RandomTestCases/topology1_2_servers_2_pylons_2_agents.json");
 			List<Action> testCase = test.generateTest(5, 0);
 			Map<String, List<Action>> sortActions = test.filterActionsBySources(testCase);
 			actions = sortActions.get(configuration.getAValue("agent_name"));
