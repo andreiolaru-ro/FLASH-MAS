@@ -12,11 +12,16 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -49,6 +54,11 @@ import net.xqhs.util.logging.Unit;
  * may exist on the same machine.
  * <p>
  * There should be no "higher"-context entity than the node.
+ * <p>
+ * The node will stop when there are no more active entities in its registered entity list. By default, active entities
+ * are the ones in {@link #DEFAULT_ACTIVE_ENTITIES}. All entities can be specified as active by passing the
+ * <code>active:*</code> parameter in the configuration deployment of the node, leading to the node (most likely) never
+ * stopping by default.
  * 
  * @author Andrei Olaru
  */
@@ -80,18 +90,34 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * The endpoint for messages sent between nodes.
 	 */
-	private static final String	SHARD_ENDPOINT			= "node";
+	private static final String		SHARD_ENDPOINT				= "node";
 	/**
 	 * The name of the operation in which a node receives a mobile agent.
 	 */
-	public static final String	RECEIVE_AGENT_OPERATION	= "receive_agent";
+	public static final String		RECEIVE_AGENT_OPERATION		= "receive_agent";
+	/**
+	 * The name of the operation in which a node receives a mobile agent.
+	 */
+	public static final String		ACTIVE_PARAMETER_NAME		= "active";
+	/**
+	 * Value for the active parameter indicating that all entities are active entities.
+	 */
+	public static final String		ACTIVE_ALWAYS_VALUE			= "*";
+	/**
+	 * The default "active" entities, which keep the node running while they are running.
+	 */
+	public static final String[]	DEFAULT_ACTIVE_ENTITIES	= new String[] { "agent" };
+	/**
+	 * Global (implementation-wide) switch to kill the node when there are no more running active entities.
+	 */
+	public static final boolean		EXIT_ON_NO_ACTIVE_ENTITIES	= true;
 	
 	/**
 	 * The name of the node.
 	 */
 	protected String						name						= null;
 	/**
-	 * A collection of all entities added in the context of this node, indexed by their names.
+	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
 	protected Map<String, List<Entity<?>>>	registeredEntities			= new HashMap<>();
 	/**
@@ -111,6 +137,15 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	private boolean							isRunning;
 	/**
+	 * The set of entity types considered as "active" and keeping the node from exiting.
+	 */
+	protected Set<String>					activeEntities				= new HashSet<>(
+			Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	/**
+	 * Monitors if all active entities still running.
+	 */
+	protected Timer							activeMonitor				= null;
+	/**
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
@@ -126,10 +161,13 @@ public class Node extends Unit implements Entity<Node> {
 	public Node(MultiTreeMap nodeConfiguration) {
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
+				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
 			this.serverURI = nodeConfiguration.get("region-server");
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		li("Active entitites:", activeEntities);
 	}
 	
 	/**
@@ -209,6 +247,17 @@ public class Node extends Unit implements Entity<Node> {
 		
 		if(getName() != null && registerEntitiesToCentralEntity())
 			lf("Entities successfully registered to control entity.");
+		
+		if(EXIT_ON_NO_ACTIVE_ENTITIES) {
+			activeMonitor = new Timer();
+			activeMonitor.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					checkRunning();
+				}
+			}, 2000, 1000);
+		}
+		
 		return true;
 	}
 	
@@ -318,6 +367,21 @@ public class Node extends Unit implements Entity<Node> {
 	@Override
 	public EntityProxy<Node> asContext() {
 		return new NodeProxy();
+	}
+	
+	protected void checkRunning() {
+		boolean allActive = (activeEntities.size() == 1)
+				&& activeEntities.iterator().next().equals(ACTIVE_ALWAYS_VALUE);
+		for(String type : registeredEntities.keySet())
+			if(activeEntities.contains(type) || allActive)
+				for(Entity<?> e : registeredEntities.get(type))
+					if(e.isRunning())
+						// found an active entity still running
+						return;
+		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
+				activeEntities);
+		activeMonitor.cancel();
+		stop();
 	}
 	
 	/**
