@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src-examples"/>
 	<classpathentry kind="src" path="src-tests"/>
-	<classpathentry kind="src" path="src-testing"/>
+	<classpathentry kind="src" path="src-experiments"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
