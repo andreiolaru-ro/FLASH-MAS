@@ -191,9 +191,11 @@ public interface Loader<T extends Entity<?>>
 	 *            class. This classpath will also be searched in the list of packages.
 	 * @param upper_name
 	 *            - the upper name in the kind hierarchy of the entity (should not be <code>null</code> if the
-	 *            <code>given_cp</code> is <code>null</code>).
+	 *            <code>given_cp</code> is <code>null</code>). When attempting to use it as a package name,
+	 *            {@link #toPackageName(String)} is used.
 	 * @param lower_name
-	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>).
+	 *            - the upper name in the kind hierarchy of the entity (can be <code>null</code>). When attempting to
+	 *            use it as a package name, {@link #toPackageName(String)} is used.
 	 * @param entity
 	 *            - the name of the entity for which a class is searched (should not be <code>null</code>).
 	 * @param checkedPaths
@@ -280,6 +282,7 @@ public interface Loader<T extends Entity<?>>
 	 */
 	static String autoFind(List<String> given_packages, String given_cp, String upper_name, String lower_name,
 			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
+		// delimiter between elements in the package hierarchy
 		String D = searchType == SearchItemType.CLASS ? "." : "/";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();
 		paths.clear();
@@ -325,15 +328,15 @@ public interface Loader<T extends Entity<?>>
 			roots.addAll(packages);
 		roots.add(DeploymentConfiguration.ROOT_PACKAGE);
 		roots.add(DeploymentConfiguration.CORE_PACKAGE);
-		for(String cls : clsNames)
-			for(String r : roots)
-			{
-				paths.add(r + D + upper_name + D + cls);
-				if(lower_name != null)
-				{
-					paths.add(r + D + upper_name + D + lower_name + D + cls);
-					paths.add(r + D + lower_name + D + upper_name + D + cls);
-					paths.add(r + D + lower_name + D + cls);
+		for(String r : roots)
+			for(String cls : clsNames) {
+				String upper_package = toPackageName(upper_name);
+				String lower_package = lower_name != null ? toPackageName(lower_name) : null;
+				paths.add(r + D + upper_package + D + cls);
+				if(lower_name != null) {
+					paths.add(r + D + upper_package + D + lower_package + D + cls);
+					paths.add(r + D + lower_package + D + upper_package + D + cls);
+					paths.add(r + D + lower_package + D + cls);
 				}
 				paths.add(r + D + cls);
 			}
@@ -353,5 +356,20 @@ public interface Loader<T extends Entity<?>>
 	static String capitalize(String s)
 	{
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
+	}
+	
+	/**
+	 * Attempts to create a package name out of a name.
+	 * <p>
+	 * If the name is all-upper-case, it lower-cases it; otherwise, it lower-cases only the first letter.
+	 * 
+	 * @param s
+	 *            - the given string.
+	 * @return the attempted package name.
+	 */
+	static String toPackageName(String s) {
+		if(s.equals(s.toUpperCase())) // name is all-caps
+			return s.toLowerCase();
+		return s.substring(0, 1).toLowerCase() + s.substring(1);
 	}
 }

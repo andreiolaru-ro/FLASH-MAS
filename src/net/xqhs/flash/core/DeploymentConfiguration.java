@@ -135,7 +135,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Directories containing source files (especially for looking up various files).
 	 */
-	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
+	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-experiments", "src-tests",
+			"src-examples" };
 	
 	/**
 	 * Local IDs of default created entities.
