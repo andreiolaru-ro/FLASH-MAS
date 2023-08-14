@@ -5,7 +5,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.util.logging.Unit;
 
-public class MLDriverPylon extends Unit implements Entity<Node>, EntityProxy<MLDriverPylon> {
+public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver> {
 	
 	@Override
 	public boolean start() {
@@ -66,7 +66,7 @@ public class MLDriverPylon extends Unit implements Entity<Node>, EntityProxy<MLD
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public EntityProxy<MLDriverPylon> asContext() {
+	public EntityProxy<MLDriver> asContext() {
 		return this;
 	}
 	

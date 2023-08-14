@@ -5,7 +5,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.ml.MLDriverPylon;
+import net.xqhs.flash.ml.MLDriver;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
 
@@ -21,9 +21,9 @@ public class MLTesting extends AgentShardGeneral {
 	transient UnitComponent		locallog			= null;
 	
 	/**
-	 * The node-local {@link MLDriverPylon} instance.
+	 * The node-local {@link MLDriver} instance.
 	 */
-	MLDriverPylon driver;
+	MLDriver driver;
 	
 	/**
 	 * No-argument constructor
@@ -47,10 +47,10 @@ public class MLTesting extends AgentShardGeneral {
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		super.addGeneralContext(context);
-		if(!(context instanceof MLDriverPylon)) {
+		if(!(context instanceof MLDriver)) {
 			return false;
 		}
-		driver = (MLDriverPylon) context;
+		driver = (MLDriver) context;
 		locallog.li("ML Driver detected");
 		return true;
 	}

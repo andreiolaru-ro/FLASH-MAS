@@ -33,10 +33,12 @@ public class Boot
 	{
 		String args = "";
 		
-		args += " -package aifolk.ml_driver -package net.xqhs.flash.ml -loader agent:composite";
-		args += " -pylon MLDriver:mldriver";
+		args += " -load_order driver;pylon;agent";
+		args += " -package aifolk.ml_driver testing -loader agent:composite";
+		args += " -node node1";
+		args += " -driver ML:mldriver";
 		args += " -pylon local:default";
-		args += " -agent composite:AgentA in-context-of:MLDriver:mldriver -shard messaging -shard EchoTesting -shard MLTesting";
+		args += " -agent composite:AgentA -shard messaging -shard EchoTesting -shard MLTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}
