@@ -28,7 +28,7 @@ public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver
 	@Override
 	public boolean start() {
 		// TODO Auto-generated method stub
-		/**
+
 		// start the python server, capture the server's stdin, stdout, stderr
 		System.out.println("ML PYLON STARTED");
 		try {
@@ -43,30 +43,9 @@ public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-		}**/
+		}
 
-		/**
-		 * this is a test for the predict and addModel methods
-		 * when the tests are done this must be removed.
-		 */
-		predict("ResNet18", "src/net/xqhs/flash/ml/dog.jpg");
-		Map<String, Object> modelConfig = new HashMap<>();
 
-		modelConfig.put("cuda", true);
-		modelConfig.put("input_space", "RGB");
-		modelConfig.put("input_size", List.of(224, 224));
-		modelConfig.put("norm_std", List.of(0.229, 0.224, 0.225));
-		modelConfig.put("norm_mean", List.of(0.485, 0.456, 0.406));
-
-		List<String> classNames = List.of(
-				"apple", "atm card", "cat", "banana", "bangle",
-				"battery", "bottle", "broom", "bulb", "calender", "camera"
-		);
-		modelConfig.put("class_names", classNames);
-		addModel("C:\\Users\\valen\\Desktop\\Prog\\Java\\Romania Internship\\dev\\aifolk-project\\ML-Server\\models\\resnet18.pth", modelConfig);
-		/**
-		 * end of test
-		 */
 
 		return true;
 	}
@@ -89,13 +68,17 @@ public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver
 	@Override
 	public boolean isRunning() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public boolean serverIsRunning() {
+		return serverProcess!=null;
 	}
 
 	/**
