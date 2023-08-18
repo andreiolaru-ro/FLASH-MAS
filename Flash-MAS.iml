@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-testing" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-tests" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-experiments" isTestSource="false" />
+    </content>
+  </component>
   <component name="EclipseModuleManager">
     <libelement value="jar://$MODULE_DIR$/lib/json-simple-1.1.1.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/websocket-client-9.4.3.v20170317.jar!/" />

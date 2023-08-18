@@ -5,7 +5,7 @@ import net.xqhs.flash.core.support.*;
 
 import mpi.*;
 import java.util.HashMap;
-import static stefania.TreasureHunt.util.Constants.*;
+import static stefania.TreasureHunt.util.Constants.MPITagValue;
 
 public class MPISupport extends DefaultPylonImplementation {
     public static final String					MPI_SUPPORT_NAME	= "MPI pylon";
