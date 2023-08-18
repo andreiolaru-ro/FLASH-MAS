@@ -264,6 +264,7 @@ public class Node extends Unit implements Entity<Node> {
 	@Override
 	public boolean stop() {
 		li("Stopping node [] with entities [].", name, entityOrder);
+		activeMonitor.cancel();
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
@@ -380,7 +381,6 @@ public class Node extends Unit implements Entity<Node> {
 						return;
 		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
 				activeEntities);
-		activeMonitor.cancel();
 		stop();
 	}
 	
