@@ -1,6 +1,7 @@
 package aifolk.ml_driver;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -32,8 +33,6 @@ public class MLTesting extends AgentShardGeneral {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
-	// when agent starts, it loads some models, than [after some time] does several predictions, saves the model, etc
-	
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
@@ -53,5 +52,17 @@ public class MLTesting extends AgentShardGeneral {
 		driver = (MLDriver) context;
 		locallog.li("ML Driver detected");
 		return true;
+	}
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
+		super.signalAgentEvent(event);
+		switch(event.getType()) {
+		case AGENT_START:
+			// TODO testing code here
+			// loads some models, than [after some time] does several predictions, saves the model, etc
+		default:
+			break;
+		}
 	}
 }

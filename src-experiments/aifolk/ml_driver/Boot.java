@@ -37,8 +37,8 @@ public class Boot
 		args += " -package aifolk.ml_driver testing -loader agent:composite";
 		args += " -node node1";
 		args += " -driver ML:mldriver";
-		args += " -pylon local:default";
-		args += " -agent composite:AgentA -shard messaging -shard EchoTesting -shard MLTesting";
+		args += " -pylon local:pylon1";
+		args += " -agent composite:AgentA -shard messaging -shard EchoTesting exit:5 -shard MLTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}
