@@ -1,5 +1,11 @@
+import os
+import shutil
+import sys
+
+print("<ML server> loading prerequisites...")
+
 import torch
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 import yaml
 from torchvision import transforms
 from PIL import Image
@@ -62,16 +68,81 @@ def load_models_from_config(config_file):
     return models
 
 app = Flask(__name__)
-models = load_models_from_config("config.yaml")
+# models = load_models_from_config("config.yaml")
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
     model_name = request.form.get('model_name')
-    model_file = request.files.get('model_file')
+    model_file = request.form.get('model_file')
+
+    #check if it already exist
+    new_model_path = 'models/' + model_name + '.pth'
+    if os.path.exists(new_model_path):
+        return jsonify({'message': f'Model "{model_name}" already exists.'})
+
+    #configure the details for the model with the client's information
+    model_config = request.form.get('model_config')
+    model_config = json.loads(model_config)
+    cuda = model_config['cuda'] and torch.cuda.is_available()
+    device = 'cuda:0' if cuda else 'cpu'
 
     if model_name and model_file:
-        model = torch.load(model_file)
-        models[model_name] = model
+
+        model = torch.load(model_file,  map_location = device)
+        if cuda:
+            model = model.cuda()
+        else:
+            model = model.cpu()
+        transform = None
+        if model_config['input_space'] == "RGB":
+            list_of_transforms = []
+            if 'input_size' in model_config:
+                input_size = model_config['input_size']
+                list_of_transforms.append(transforms.Resize(size=input_size))
+            list_of_transforms.append(transforms.ToTensor())
+            if 'norm_mean' in model_config and 'norm_std' in model_config:
+                mean = model_config['norm_mean']
+                std = model_config['norm_std']
+                list_of_transforms.append(transforms.Normalize(mean, std))
+            transform = transforms.Compose(list_of_transforms)
+
+        models[model_name] = {
+            'model': model,
+            'input_size': model_config['input_size'],
+            'cuda': cuda,
+            'transform': transform
+        }
+        if 'class_names' in model_config:
+            models[model_name]['class_names'] = model_config['class_names']
+
+        #might want to change this to a relative path
+        with open('config.yaml', 'r') as config_file:
+            config_data =  yaml.safe_load(config_file)
+
+        # Define the new model to add
+        new_model = {
+            "name": model_name,
+            "path": "models/" + model_name + ".pth",
+            "cuda": cuda,
+            "input_space": model_config['input_space'],
+            "input_size": model_config['input_size'],
+            "normalization": {
+                "mean": model_config['norm_mean'],
+                "std": model_config['norm_std']
+            },
+            "class_names": model_config['class_names']
+        }
+
+        # Append the new model to the existing models list
+        config_data["MODELS"].append(new_model)
+
+        # Write the updated data back to the YAML file
+        with open('config.yaml', 'w') as config_file:
+            yaml.dump(config_data, config_file)
+
+        #save the file in the models directory
+        torch.save(model_name, new_model_path)
+
         return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
@@ -82,7 +153,7 @@ def load_model():
 
     if model_name in models:
         model = models[model_name]
-        model.eval()
+        #model.eval()
         return jsonify({'message': f'Model "{model_name}" has been successfully loaded.'})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
@@ -120,4 +191,5 @@ def export_model():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 if __name__ == '__main__':
+    print("<ML server> starting...")
     app.run()

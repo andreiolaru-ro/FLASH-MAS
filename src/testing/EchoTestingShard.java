@@ -11,18 +11,25 @@
  ******************************************************************************/
 package testing;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
 
 /**
  * An {@link AgentShard} implementation that monitors all agent events.
+ * <p>
+ * It also allows to set a time after which the agent should exit, via the {@value #EXIT_PARAMETER_NAME} argument for
+ * this shard (in seconds).
  * 
  * @author Andrei Olaru
  */
@@ -32,13 +39,26 @@ public class EchoTestingShard extends AgentShardCore {
 	 */
 	private static final long	serialVersionUID	= 5214882018809437402L;
 	/**
+	 * Shard designation.
+	 */
+	public static final String		DESIGNATION			= "test/monitoring";
+	/**
+	 * The name of the parameter that indicates after how many seconds the agnt should exit..
+	 */
+	protected static final String	EXIT_PARAMETER_NAME	= "exit";
+	
+	/**
 	 * The log.
 	 */
 	transient UnitComponent		locallog			= null;
 	/**
-	 * Shard designation.
+	 * Number of seconds after which the agent should exit. Negative numbers or a zero value are ignored.
 	 */
-	public static final String	DESIGNATION			= "test/monitoring";
+	protected int			exitAfter	= -1;
+	/**
+	 * The timer for closing the agent.
+	 */
+	protected Timer			exitTimer	= null;
 	
 	/**
 	 * No-argument constructor
@@ -48,14 +68,42 @@ public class EchoTestingShard extends AgentShardCore {
 	}
 	
 	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration.containsKey(EXIT_PARAMETER_NAME))
+			exitAfter = Integer.parseInt(configuration.getFirstValue(EXIT_PARAMETER_NAME));
+		return true;
+	}
+	
+	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		String eventMessage = "agent [" + getAgent().getEntityName() + "] event: [" + event.toString() + "]";
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
-		if(event.getType() == AgentEventType.AGENT_STOP)
+		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
+			exitTimer = new Timer();
+			exitTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					askExit();
+				}
+			}, exitAfter * 1000);
+		}
+		if(event.getType() == AgentEventType.AGENT_STOP) {
+			exitTimer.cancel();
 			locallog.doExit();
+		}
+	}
+	
+	/**
+	 * Ask the parent agent to exit.
+	 */
+	protected void askExit() {
+		locallog.li("Asking agent to stop since [] seconds have elapsed since start.", Integer.valueOf(exitAfter));
+		getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package aifolk.ml_driver;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -8,6 +9,10 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ml.MLDriver;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MLTesting extends AgentShardGeneral {
 	
@@ -32,8 +37,6 @@ public class MLTesting extends AgentShardGeneral {
 		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
 	}
 	
-	// when agent starts, it loads some models, than [after some time] does several predictions, saves the model, etc
-	
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
@@ -53,5 +56,36 @@ public class MLTesting extends AgentShardGeneral {
 		driver = (MLDriver) context;
 		locallog.li("ML Driver detected");
 		return true;
+	}
+	
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
+		super.signalAgentEvent(event);
+		switch(event.getType()) {
+		case AGENT_START:
+			// TODO testing code here
+			/**
+			driver.predict("ResNet18", "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
+			Map<String, Object> modelConfig = new HashMap<>();
+
+			modelConfig.put("cuda", true);
+			modelConfig.put("input_space", "RGB");
+			modelConfig.put("input_size", List.of(224, 224));
+			modelConfig.put("norm_std", List.of(0.229, 0.224, 0.225));
+			modelConfig.put("norm_mean", List.of(0.485, 0.456, 0.406));
+
+			List<String> classNames = List.of(
+					"apple", "atm card", "cat", "banana", "bangle",
+					"battery", "bottle", "broom", "bulb", "calender", "camera"
+			);
+			modelConfig.put("class_names", classNames);
+			driver.addModel("src/net/xqhs/flash/ml/python_module/models/resnet18.pth", modelConfig);
+			 **/
+
+
+			// loads some models, than [after some time] does several predictions, saves the model, etc
+		default:
+			break;
+		}
 	}
 }
