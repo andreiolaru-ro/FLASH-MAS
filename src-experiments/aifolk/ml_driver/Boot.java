@@ -38,7 +38,7 @@ public class Boot
 		args += " -node node1";
 		args += " -driver ML:mldriver";
 		args += " -pylon local:pylon1";
-		args += " -agent composite:AgentA -shard messaging -shard EchoTesting exit:10 -shard MLTesting";
+		args += " -agent composite:AgentA -shard messaging -shard EchoTesting exit:30 -shard MLTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}

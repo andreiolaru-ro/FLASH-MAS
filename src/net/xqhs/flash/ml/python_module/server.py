@@ -2,6 +2,8 @@ import os
 import shutil
 import sys
 
+print("<ML server> loading prerequisites...")
+
 import torch
 from flask import Flask, request, jsonify, json
 import yaml
@@ -9,10 +11,6 @@ from torchvision import transforms
 from PIL import Image
 import io
 import base64
-try: import ruamel.yaml
-except Exception as e:
-    print("ruamel is unavailable (use pip install ruamel.yaml): ", e)
-    exit(1)
 
 
 REGENERATE = False
@@ -70,7 +68,7 @@ def load_models_from_config(config_file):
     return models
 
 app = Flask(__name__)
-models = load_models_from_config("config.yaml")
+# models = load_models_from_config("config.yaml")
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
@@ -117,11 +115,9 @@ def add_model():
         if 'class_names' in model_config:
             models[model_name]['class_names'] = model_config['class_names']
 
-        #update the config file, and save the new model
-        yaml = ruamel.yaml.YAML(typ='safe')
         #might want to change this to a relative path
         with open('config.yaml', 'r') as config_file:
-            config_data = yaml.load(config_file)
+            config_data =  yaml.safe_load(config_file)
 
         # Define the new model to add
         new_model = {
@@ -195,4 +191,5 @@ def export_model():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 if __name__ == '__main__':
+    print("<ML server> starting...")
     app.run()

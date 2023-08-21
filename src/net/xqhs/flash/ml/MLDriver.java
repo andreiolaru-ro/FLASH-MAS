@@ -1,24 +1,32 @@
 package net.xqhs.flash.ml;
 
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Base64;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+
 import com.google.gson.Gson;
+
+import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.mlModels.MLRunnerPylon;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.*;
-
-
-public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver> {
+public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityProxy<MLDriver> {
 
 	/**
 	 * Use this to store the server process, to stop iit when needed.
@@ -26,14 +34,20 @@ public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver
 	private Process serverProcess;
 
 	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		setUnitName(configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
+		return true;
+	}
+	
+	@Override
 	public boolean start() {
 		// TODO Auto-generated method stub
 
 		// start the python server, capture the server's stdin, stdout, stderr
-		System.out.println("ML PYLON STARTED");
+		li("starting Python ML server...");
 		try {
 			ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
-					+ MLRunnerPylon.class.getPackage().getName().replace('.', '/') + "/PythonModule/server.py");
+					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/python_module/server.py");
 			// pb.directory(new File(<directory from where you want to run the command>));
 			// pb.inheritIO();
 			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
@@ -44,9 +58,6 @@ public class MLDriver extends Unit implements Entity<Node>, EntityProxy<MLDriver
 			e.printStackTrace();
 			return false;
 		}
-
-
-
 		return true;
 	}
 	
