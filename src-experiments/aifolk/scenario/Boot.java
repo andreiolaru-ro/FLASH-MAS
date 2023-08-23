@@ -28,11 +28,17 @@ public class Boot {
     {
 		String a = "";
 
-		a += " -pylon local:";
-		a += " -scenario Exp";
-		a += " -agent A -shard ExpDriver -shard messaging";
-		a += " -agent B -shard ExpDriver -shard messaging";
-		a += " -agent C -shard ExpDriver -shard messaging";
+		a += " -load_order driver;pylon;agent";
+		a += " -package testing net.xqhs.flash.ml " + Boot.class.getPackageName() + " -loader agent:composite";
+		
+		a += " -node node1";
+		a += " -driver ML:mldriver";
+		a += " -driver Scenario:scen";
+		a += " -driver Ontology:ont";
+		a += " -pylon local:pylon1";
+		
+		for(String name : new String[] { "A", "B", "C" })
+			a += " -agent " + name + " -shard scenario -shard MLPipeline -shard MLManagement -shard messaging -shard EchoTesting exit:20";
 
 		FlashBoot.main(a.split(" "));
     }
