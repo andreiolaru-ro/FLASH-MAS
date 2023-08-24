@@ -2,11 +2,13 @@ import os
 import shutil
 import sys
 
+from ruamel import yaml
+
 print("<ML server> loading prerequisites...")
 
 import torch
 from flask import Flask, request, jsonify, json
-import yaml
+#import yaml
 from torchvision import transforms
 from PIL import Image
 import io
@@ -20,7 +22,7 @@ if REGENERATE:
 	import requests
 	model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
 	model.eval()
-	torch.save(model, 'models/mobilenetv2.pth')
+	torch.save(model, 'src/net/xqhs/flash/ml/python_module/models/mobilenetv2.pth')
 	exit(0)
 
 
@@ -68,15 +70,16 @@ def load_models_from_config(config_file):
     return models
 
 app = Flask(__name__)
-# models = load_models_from_config("config.yaml")
+models = load_models_from_config("src/net/xqhs/flash/ml/python_module/config.yaml")
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
+    return jsonify({'message': 'Model added successfully.'})
     model_name = request.form.get('model_name')
     model_file = request.form.get('model_file')
 
     #check if it already exist
-    new_model_path = 'models/' + model_name + '.pth'
+    new_model_path = 'src/net/xqhs/flash/ml/python_module/models/' + model_name + '.pth'
     if os.path.exists(new_model_path):
         return jsonify({'message': f'Model "{model_name}" already exists.'})
 

@@ -54,6 +54,14 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
 			this.serverProcess = pb.start();
+			// wait for the server to start
+			// TODO: find a better way to do this
+			try {
+				Thread.sleep(5000);
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -67,6 +75,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 		if (this.serverProcess != null) {
 			try {
 				this.serverProcess.destroy();
+				this.serverProcess = null;
 				return true;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -113,7 +122,9 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 */
 	public String addModel(String model_path, Map<String, Object> model_config) {
 
-		String model_name = model_path.split("\\\\")[model_path.split("\\\\").length - 1];
+		//here we split both with "/" and "\\" in case the path is given with the wrong slash
+		String model_name = model_path.split("/")[model_path.split("/").length - 1];
+		model_name = model_name.split("\\\\")[model_path.split("\\\\").length - 1];
 		model_name = model_name.split("\\.")[0].toLowerCase();
 
 		try {
