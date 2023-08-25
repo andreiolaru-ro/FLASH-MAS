@@ -74,11 +74,11 @@ models = load_models_from_config("src/net/xqhs/flash/ml/python_module/config.yam
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
-    return jsonify({'message': 'Model added successfully.'})
     model_name = request.form.get('model_name')
     model_file = request.form.get('model_file')
 
     #check if it already exist
+    #might want to change this to a relative path
     new_model_path = 'src/net/xqhs/flash/ml/python_module/models/' + model_name + '.pth'
     if os.path.exists(new_model_path):
         return jsonify({'message': f'Model "{model_name}" already exists.'})
@@ -119,7 +119,8 @@ def add_model():
             models[model_name]['class_names'] = model_config['class_names']
 
         #might want to change this to a relative path
-        with open('config.yaml', 'r') as config_file:
+        confif_path = 'src/net/xqhs/flash/ml/python_module/config.yaml'
+        with open(confif_path, 'r') as config_file:
             config_data =  yaml.safe_load(config_file)
 
         # Define the new model to add
@@ -140,7 +141,7 @@ def add_model():
         config_data["MODELS"].append(new_model)
 
         # Write the updated data back to the YAML file
-        with open('config.yaml', 'w') as config_file:
+        with open(confif_path, 'w') as config_file:
             yaml.dump(config_data, config_file)
 
         #save the file in the models directory
