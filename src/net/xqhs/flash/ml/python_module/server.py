@@ -70,7 +70,8 @@ def load_models_from_config(config_file):
     return models
 
 app = Flask(__name__)
-models = load_models_from_config("src/net/xqhs/flash/ml/python_module/config.yaml")
+ml_directory_path = 'src/net/xqhs/flash/ml/python_module/'
+models = load_models_from_config(ml_directory_path + "config.yaml")
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
@@ -78,8 +79,7 @@ def add_model():
     model_file = request.form.get('model_file')
 
     #check if it already exist
-    #might want to change this to a relative path
-    new_model_path = 'src/net/xqhs/flash/ml/python_module/models/' + model_name + '.pth'
+    new_model_path = ml_directory_path + 'models/' + model_name + '.pth'
     if os.path.exists(new_model_path):
         return jsonify({'message': f'Model "{model_name}" already exists.'})
 
@@ -118,8 +118,7 @@ def add_model():
         if 'class_names' in model_config:
             models[model_name]['class_names'] = model_config['class_names']
 
-        #might want to change this to a relative path
-        confif_path = 'src/net/xqhs/flash/ml/python_module/config.yaml'
+        confif_path = ml_directory_path + 'config.yaml'
         with open(confif_path, 'r') as config_file:
             config_data =  yaml.safe_load(config_file)
 
