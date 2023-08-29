@@ -71,7 +71,8 @@ def load_models_from_config(config_file):
 
 app = Flask(__name__)
 ml_directory_path = 'src/net/xqhs/flash/ml/python_module/'
-models = load_models_from_config(ml_directory_path + "config.yaml")
+print("<ML server> working directory: " + ml_directory_path)
+models = load_models_from_config((ml_directory_path + "config.yaml"))
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
@@ -86,47 +87,18 @@ def add_model():
     #configure the details for the model with the client's information
     model_config = request.form.get('model_config')
     model_config = json.loads(model_config)
-    cuda = model_config['cuda'] and torch.cuda.is_available()
-    device = 'cuda:0' if cuda else 'cpu'
 
     if model_name and model_file:
 
-        model = torch.load(model_file,  map_location = device)
-        if cuda:
-            model = model.cuda()
-        else:
-            model = model.cpu()
-        transform = None
-        if model_config['input_space'] == "RGB":
-            list_of_transforms = []
-            if 'input_size' in model_config:
-                input_size = model_config['input_size']
-                list_of_transforms.append(transforms.Resize(size=input_size))
-            list_of_transforms.append(transforms.ToTensor())
-            if 'norm_mean' in model_config and 'norm_std' in model_config:
-                mean = model_config['norm_mean']
-                std = model_config['norm_std']
-                list_of_transforms.append(transforms.Normalize(mean, std))
-            transform = transforms.Compose(list_of_transforms)
-
-        models[model_name] = {
-            'model': model,
-            'input_size': model_config['input_size'],
-            'cuda': cuda,
-            'transform': transform
-        }
-        if 'class_names' in model_config:
-            models[model_name]['class_names'] = model_config['class_names']
-
-        confif_path = ml_directory_path + 'config.yaml'
-        with open(confif_path, 'r') as config_file:
+        config_path = ml_directory_path + 'config.yaml'
+        with open(config_path, 'r') as config_file:
             config_data =  yaml.safe_load(config_file)
 
         # Define the new model to add
         new_model = {
             "name": model_name,
-            "path": "models/" + model_name + ".pth",
-            "cuda": cuda,
+            "path": new_model_path,
+            "cuda": model_config['cuda'],
             "input_space": model_config['input_space'],
             "input_size": model_config['input_size'],
             "normalization": {
@@ -140,11 +112,14 @@ def add_model():
         config_data["MODELS"].append(new_model)
 
         # Write the updated data back to the YAML file
-        with open(confif_path, 'w') as config_file:
+        with open(config_path, 'w') as config_file:
             yaml.dump(config_data, config_file)
 
         #save the file in the models directory
-        torch.save(model_name, new_model_path)
+        shutil.copyfile(model_file, new_model_path)
+
+        #reload the models
+        load_models_from_config(config_path)
 
         return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
     else:

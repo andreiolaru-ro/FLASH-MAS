@@ -57,7 +57,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			// wait for the server to start
 			// TODO: find a better way to do this
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(5000);
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
