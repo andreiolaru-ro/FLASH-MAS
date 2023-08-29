@@ -64,6 +64,12 @@ public class MLTesting extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			// TODO testing code here
+			/**
+			 * An easy way to make tests here once we run this once already is to
+			 * delete the newly added model form the /models directory, and restore the config file
+			 * this will cause the model to be downloaded again, and the config file to be re-written
+			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
+			 */
 
 			driver.predict("ResNet18", "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
 
