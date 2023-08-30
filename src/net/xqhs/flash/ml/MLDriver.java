@@ -2,18 +2,18 @@ package net.xqhs.flash.ml;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
 import com.google.gson.Gson;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -21,6 +21,8 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -127,7 +129,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * 			- cuda: if the model is on cuda or not
 	 * 		    - class_names: the name of the classes
 	 *
-	 * @return The ID of the model
+	 * @return The Id of the model if it is properly added, null if it is not
 	 */
 	public String addModel(String model_path, Map<String, Object> model_config) {
 
@@ -172,6 +174,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 					}
 				}
 				setModelsList();
+				return model_name;
 			} else {
 				// Other error occurred, handle it accordingly
 				System.err.println("Error: " + responseCode);
@@ -180,7 +183,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			e.printStackTrace();
 		}
 
-		return model_name;
+		return null;
 	}
 
 	/**
@@ -192,8 +195,11 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * 			The ID of the model to use
 	 * @param data_path
 	 * 			The path for the file we use to predict
+	 *
+	 * @return
+	 * 			The prediction result, as a list of double
 	 */
-	public void predict(String model, String data_path) {
+	public ArrayList<Double> predict(String model, String data_path) {
 		try {
 			// Read and encode the image data
 			BufferedImage image = ImageIO.read(new File(data_path));
@@ -232,16 +238,28 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 						response += line;
 					}
 				}
+				JsonParser jsonParser = new JsonParser();
+				JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
+				String prediction = jsonObject.get("prediction").toString();
+				prediction = prediction.substring(2, prediction.length() - 2);
+
+				ArrayList<Double> prediction_list = new ArrayList();
+				String[] split_pred = prediction.split(",");
+				for (String s : split_pred) {
+					prediction_list.add(Double.parseDouble(s));
+				}
+
+				li("Prediction: " + prediction_list);
+				return prediction_list;
+
 			} else {
 				System.err.println("Error: " + responseCode);
 			}
 
-			//show the result of the prediction
-			System.out.println(response);
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	/**
