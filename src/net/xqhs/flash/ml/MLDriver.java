@@ -1,16 +1,13 @@
 package net.xqhs.flash.ml;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -24,6 +21,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
+import org.yaml.snakeyaml.Yaml;
 
 
 public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityProxy<MLDriver> {
@@ -32,6 +30,16 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * Use this to store the server process, to stop iit when needed.
 	 */
 	private Process serverProcess;
+
+	/**
+	 * list of available models and their paths
+	 */
+	private Map<String, String> models = new HashMap<String, String>();
+
+	/**
+	 * path to the .yaml config file
+	 */
+	protected static final String MODEL_CONFIG_FILE = "src/net/xqhs/flash/ml/python_module/config.yaml";
 
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -54,6 +62,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
 			this.serverProcess = pb.start();
+
 			// wait for the server to start
 			// TODO: find a better way to do this
 			try {
@@ -61,7 +70,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
-
+			setModelsList();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -162,6 +171,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 						System.out.println(line);
 					}
 				}
+				setModelsList();
 			} else {
 				// Other error occurred, handle it accordingly
 				System.err.println("Error: " + responseCode);
@@ -232,6 +242,76 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Methode to get all the models' data from the config file.
+	 * This takes the form of a list of maps, each map containing the data of a model.
+	 *
+	 * @return
+	 * 			The list of the models' data
+	 */
+	protected ArrayList<Map<String, Object>> getYamlData(){
+		try (InputStream inputStream = new FileInputStream(MODEL_CONFIG_FILE)) {
+			Yaml yaml = new Yaml();
+			Map<String, Object> yamlData = yaml.load(inputStream);
+			ArrayList<Map<String, Object>> models = (ArrayList<Map<String, Object>>) yamlData.get("MODELS");
+			return models;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * Methode to set the list of the available models.
+	 * it reads the config file and add the name and the path of the models to the list.
+	 */
+	public void setModelsList() {
+		ArrayList<Map<String, Object>> models_data = getYamlData();
+
+		for (Map<String, Object> model : models_data) {
+			String name = (String) model.get("name");
+			String path = (String) model.get("path");
+			this.models.put(name, path);
+		}
+		lf("available models: ", this.models.keySet().toString());
+	}
+
+	public Map<String, String> getModels() {
+		return models;
+	}
+
+	/**
+	 * Methode to get the data of a model from its name.
+	 * It returns a map containing the configuration datas of the model
+	 *
+	 * @param model_name
+	 * 			The name of the model we want to get the data
+	 *
+	 * @return
+	 * 			The map containing the configuration datas of the model
+	 * 			for now it has the following structure:
+	 * 			-name: the name of the model
+	 * 			-path: the path of the model
+	 * 		    -cuda: true if the model use cuda, false otherwise
+	 * 		    -input_size: the size of the input data
+	 * 		    -input_space: the space of the input data
+	 * 		    -normization: the normization of the input data
+	 * 		    -class_names: the classes of the model
+	 *
+	 */
+	public Map<String,Object> getConfigForModel(String model_name){
+		ArrayList<Map<String, Object>> models_data = getYamlData();
+
+		for (Map<String, Object> model : models_data) {
+			String name = (String) model.get("name");
+			if (name.equals(model_name)) {
+				return model;
+			}
+		}
+		le("model not found: " + model_name);
+		return null;
 	}
 	
 	// TODO other methods

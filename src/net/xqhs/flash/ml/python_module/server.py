@@ -76,6 +76,7 @@ models = load_models_from_config((ml_directory_path + "config.yaml"))
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
+    global models
     model_name = request.form.get('model_name')
     model_file = request.form.get('model_file')
 
@@ -115,11 +116,11 @@ def add_model():
         with open(config_path, 'w') as config_file:
             yaml.dump(config_data, config_file)
 
-        #save the file in the models directory
+        # save the file in the models directory
         shutil.copyfile(model_file, new_model_path)
 
-        #reload the models
-        load_models_from_config(config_path)
+        # reload the models
+        models = load_models_from_config(config_path)
 
         return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
     else:
@@ -138,6 +139,7 @@ def load_model():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    global models
     model_name = request.form.get('model_name')
     input_data = request.form.get('input_data')
 
