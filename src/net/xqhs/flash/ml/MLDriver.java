@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
@@ -43,6 +44,11 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 */
 	protected static final String MODEL_CONFIG_FILE = "src/net/xqhs/flash/ml/python_module/config.yaml";
 
+	/**
+	 * url of the python server
+	 */
+	protected static final String SERVER_URL = "http://localhost:5000/";
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		setUnitName(configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
@@ -68,7 +74,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			// wait for the server to start
 			// TODO: find a better way to do this
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -113,6 +119,48 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	}
 
 	/**
+	 * Method to set up the connection to the python server
+	 * At the moment, the request property is always the same, but it could change in the future
+	 * In such case, the method would take the request property as parameter
+	 *
+	 * @param route_endpoint
+	 * 			The endpoint of the route to connect to
+	 *
+	 * @return
+	 * 			The connection to the server
+	 */
+	protected HttpURLConnection setupConnection(String route_endpoint) throws IOException {
+		String location = SERVER_URL + route_endpoint;
+		URL url = new URL(location);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("POST");
+		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		connection.setDoOutput(true);
+		return connection;
+	}
+
+	protected String checkResponse(HttpURLConnection connection) throws IOException {
+		String response = "";
+		int responseCode = connection.getResponseCode();
+		if (responseCode == HttpURLConnection.HTTP_OK) {
+			// The model was successfully loaded
+			try (BufferedReader in = new BufferedReader(
+					new InputStreamReader(connection.getInputStream()))) {
+				String line;
+				while ((line = in.readLine()) != null) {
+					response += line;
+				}
+			}
+			lf("Response: " + response);
+			return response;
+		} else {
+			// Other error occurred, handle it accordingly
+			le("Error: " + responseCode);
+		}
+		return null;
+	}
+
+	/**
 	 * Methode to add a model to the python server.
 	 * It takes A string of the model path as parameter, and return its ID if it exists.
 	 * The ID is created by splitting the model path, to keep only the name of the model
@@ -149,12 +197,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			postData += "&model_config=" + URLEncoder.encode(jsonConfig, "UTF-8");
 
 			// Set up the connection
-			String location = "http://localhost:5000/add_model";
-			URL url = new URL(location);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST");
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			connection.setDoOutput(true);
+			HttpURLConnection connection = setupConnection("add_model");
 
 			// Send the form data to the server
 			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -162,23 +205,12 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 				wr.flush();
 			}
 
-			// Check the response code
-			int responseCode = connection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				// The model was successfully loaded
-				try (BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getInputStream()))) {
-					String line;
-					while ((line = in.readLine()) != null) {
-						System.out.println(line);
-					}
-				}
+			// Check the response
+			if (checkResponse(connection) != null) {
 				setModelsList();
 				return model_name;
-			} else {
-				// Other error occurred, handle it accordingly
-				System.err.println("Error: " + responseCode);
 			}
+
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -214,12 +246,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			postData += "&input_data=" + URLEncoder.encode(imageBase64, "UTF-8");
 
 			// Set up the connection
-			String location = "http://localhost:5000/predict";
-			URL url = new URL(location);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST");
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			connection.setDoOutput(true);
+			HttpURLConnection connection = setupConnection("predict");
 
 			// Write the data to the connection
 			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -227,17 +254,9 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 				wr.flush();
 			}
 
-			// Check the response code
-			String response = "";
-			int responseCode = connection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				try (BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getInputStream()))) {
-					String line;
-					while ((line = in.readLine()) != null) {
-						response += line;
-					}
-				}
+			// Check the response
+			String response = checkResponse(connection);
+			if (response != null) {
 				JsonParser jsonParser = new JsonParser();
 				JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
 				String prediction = jsonObject.get("prediction").toString();
@@ -251,9 +270,6 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 
 				li("Prediction: " + prediction_list);
 				return prediction_list;
-
-			} else {
-				System.err.println("Error: " + responseCode);
 			}
 
 		} catch (IOException e) {
@@ -283,7 +299,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 
 	/**
 	 * Methode to set the list of the available models.
-	 * it reads the config file and add the name and the path of the models to the list.
+	 * it uses models' data from the config file to add the name and the path of the models to the list.
 	 */
 	public void setModelsList() {
 		ArrayList<Map<String, Object>> models_data = getYamlData();
@@ -293,7 +309,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			String path = (String) model.get("path");
 			this.models.put(name, path);
 		}
-		lf("available models: ", this.models.keySet().toString());
+		li("available models: ", this.models.keySet().toString());
 	}
 
 	public Map<String, String> getModels() {
@@ -315,7 +331,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * 		    -cuda: true if the model use cuda, false otherwise
 	 * 		    -input_size: the size of the input data
 	 * 		    -input_space: the space of the input data
-	 * 		    -normization: the normization of the input data
+	 * 		    -normalization: the normalization of the input data
 	 * 		    -class_names: the classes of the model
 	 *
 	 */

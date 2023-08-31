@@ -71,7 +71,7 @@ public class MLTesting extends AgentShardGeneral {
 			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
 			 */
 
-			driver.predict("ResNet18", "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
+			driver.predict("MobileNetV2", "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
 
 			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
