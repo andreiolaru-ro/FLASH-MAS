@@ -8,24 +8,22 @@ print("<ML server> loading prerequisites...")
 
 import torch
 from flask import Flask, request, jsonify, json
-#import yaml
+# import yaml
 from torchvision import transforms
 from PIL import Image
 import io
 import base64
 
-
 REGENERATE = False
 # REGENERATE = True # normally comment this
 
 if REGENERATE:
-	import requests
-	model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
-	model.eval()
-	torch.save(model, 'src/net/xqhs/flash/ml/python_module/models/mobilenetv2.pth')
-	exit(0)
+    import requests
 
-
+    model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
+    model.eval()
+    torch.save(model, 'src/net/xqhs/flash/ml/python_module/models/mobilenetv2.pth')
+    exit(0)
 
 
 def load_models_from_config(config_file):
@@ -39,7 +37,7 @@ def load_models_from_config(config_file):
         cuda = model_config['cuda'] and torch.cuda.is_available()
         device = 'cuda:0' if cuda else 'cpu'
 
-        model = torch.load(model_path,  map_location = device)
+        model = torch.load(model_path, map_location=device)
         if cuda:
             model = model.cuda()
         else:
@@ -69,10 +67,12 @@ def load_models_from_config(config_file):
 
     return models
 
+
 app = Flask(__name__)
 ml_directory_path = 'src/net/xqhs/flash/ml/python_module/'
 print("<ML server> working directory: " + ml_directory_path)
 models = load_models_from_config((ml_directory_path + "config.yaml"))
+
 
 @app.route('/add_model', methods=['POST'])
 def add_model():
@@ -80,12 +80,12 @@ def add_model():
     model_name = request.form.get('model_name')
     model_file = request.form.get('model_file')
 
-    #check if it already exist
+    # check if it already exist
     new_model_path = ml_directory_path + 'models/' + model_name + '.pth'
     if os.path.exists(new_model_path):
         return jsonify({'message': f'Model "{model_name}" already exists.'})
 
-    #configure the details for the model with the client's information
+    # configure the details for the model with the client's information
     model_config = request.form.get('model_config')
     model_config = json.loads(model_config)
 
@@ -93,7 +93,7 @@ def add_model():
 
         config_path = ml_directory_path + 'config.yaml'
         with open(config_path, 'r') as config_file:
-            config_data =  yaml.safe_load(config_file)
+            config_data = yaml.safe_load(config_file)
 
         # Define the new model to add
         new_model = {
@@ -126,16 +126,18 @@ def add_model():
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
 
+
 @app.route('/load_model', methods=['POST'])
 def load_model():
     model_name = request.form.get('model_name')
 
     if model_name in models:
         model = models[model_name]
-        #model.eval()
+        # model.eval()
         return jsonify({'message': f'Model "{model_name}" has been successfully loaded.'})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -158,6 +160,31 @@ def predict():
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
+
+@app.route('/get_models', methods=['GET'])
+def get_models():
+    global models
+    #models = load_models_from_config((ml_directory_path + "config.yaml"))
+    return jsonify({'models': list(models.keys())})
+
+
+@app.route('/get_model_config', methods=['POST'])
+def get_model_config():
+    global models
+    config_path = ml_directory_path + 'config.yaml'
+    #models = load_models_from_config((ml_directory_path + "config.yaml"))
+    model_name = request.form.get('model_name')
+
+    if model_name in models:
+        returned_model = dict(models[model_name])
+        del returned_model['model']
+        #change 'transform' to a string
+        returned_model['transform'] = str(returned_model['transform'])
+        return jsonify({'model_name': model_name, 'model_config': returned_model})
+    else:
+        return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+
+
 @app.route('/export_model', methods=['POST'])
 def export_model():
     model_name = request.form.get('model_name')
@@ -169,6 +196,7 @@ def export_model():
         return jsonify({'message': f'Model "{model_name}" has been successfully exported.'})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+
 
 if __name__ == '__main__':
     print("<ML server> starting...")

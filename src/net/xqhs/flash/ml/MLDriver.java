@@ -2,9 +2,7 @@ package net.xqhs.flash.ml;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
@@ -22,8 +20,6 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -37,7 +33,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	/**
 	 * list of available models and their paths
 	 */
-	private Map<String, String> models = new HashMap<String, String>();
+	private ArrayList<String> models = new ArrayList<String>();
 
 	/**
 	 * path to the .yaml config file
@@ -78,7 +74,8 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
-			setModelsList();
+			//setModelsFromYAML();   //choose whether to load the models from the .yaml file or from the server
+			setModelsFromServer();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -125,15 +122,17 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 *
 	 * @param route_endpoint
 	 * 			The endpoint of the route to connect to
+	 * @param request_method
+	 * 			The request method to use
 	 *
 	 * @return
 	 * 			The connection to the server
 	 */
-	protected HttpURLConnection setupConnection(String route_endpoint) throws IOException {
+	protected HttpURLConnection setupConnection(String route_endpoint, String request_method) throws IOException {
 		String location = SERVER_URL + route_endpoint;
 		URL url = new URL(location);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("POST");
+		connection.setRequestMethod(request_method);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setDoOutput(true);
 		return connection;
@@ -156,6 +155,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 		} else {
 			// Other error occurred, handle it accordingly
 			le("Error: " + responseCode);
+			le("Error: " + connection.getResponseMessage());
 		}
 		return null;
 	}
@@ -197,7 +197,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			postData += "&model_config=" + URLEncoder.encode(jsonConfig, "UTF-8");
 
 			// Set up the connection
-			HttpURLConnection connection = setupConnection("add_model");
+			HttpURLConnection connection = setupConnection("add_model", "POST");
 
 			// Send the form data to the server
 			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -207,7 +207,8 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 
 			// Check the response
 			if (checkResponse(connection) != null) {
-				setModelsList();
+				//setModelsFromYAML();   //choose whether to load the models from the .yaml file or from the server
+				setModelsFromServer();
 				return model_name;
 			}
 
@@ -246,7 +247,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			postData += "&input_data=" + URLEncoder.encode(imageBase64, "UTF-8");
 
 			// Set up the connection
-			HttpURLConnection connection = setupConnection("predict");
+			HttpURLConnection connection = setupConnection("predict", "POST");
 
 			// Write the data to the connection
 			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -289,8 +290,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 		try (InputStream inputStream = new FileInputStream(MODEL_CONFIG_FILE)) {
 			Yaml yaml = new Yaml();
 			Map<String, Object> yamlData = yaml.load(inputStream);
-			ArrayList<Map<String, Object>> models = (ArrayList<Map<String, Object>>) yamlData.get("MODELS");
-			return models;
+			return (ArrayList<Map<String, Object>>) yamlData.get("MODELS");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -298,21 +298,52 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	}
 
 	/**
-	 * Methode to set the list of the available models.
-	 * it uses models' data from the config file to add the name and the path of the models to the list.
+	 * Methode to set the list of the available models from the yaml config file.
+	 * it uses models' data from the config file to add the name of the models to the list.
 	 */
-	public void setModelsList() {
+	public void setModelsFromYAML() {
 		ArrayList<Map<String, Object>> models_data = getYamlData();
 
 		for (Map<String, Object> model : models_data) {
 			String name = (String) model.get("name");
-			String path = (String) model.get("path");
-			this.models.put(name, path);
+			if (!this.models.contains(name))
+				this.models.add(name);
 		}
-		li("available models: ", this.models.keySet().toString());
+		li("available models: ", this.models.toString());
 	}
 
-	public Map<String, String> getModels() {
+	/**
+	 * Alternative method to get the models list directly from the server.
+	 */
+	public void setModelsFromServer() {
+		try {
+			// Set up the connection
+			HttpURLConnection connection = setupConnection("get_models", "GET");
+
+			// Check the response
+			String response = checkResponse(connection);
+			if (response != null) {
+				JsonParser jsonParser = new JsonParser();
+				JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
+				String models = jsonObject.get("models").toString();
+				models = models.substring(1, models.length() - 1);
+
+				ArrayList<String> models_list = new ArrayList<>();
+				String[] split_models = models.split(",");
+				for (String s : split_models)
+					//remove the \" around each name
+					models_list.add(s.substring(1, s.length() - 1));
+
+				this.models = models_list;
+				li("available models: ", this.models);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public ArrayList<String> getModels() {
 		return models;
 	}
 
@@ -335,7 +366,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * 		    -class_names: the classes of the model
 	 *
 	 */
-	public Map<String,Object> getConfigForModel(String model_name){
+	public Map<String,Object> getConfigFromYAML(String model_name){
 		ArrayList<Map<String, Object>> models_data = getYamlData();
 
 		for (Map<String, Object> model : models_data) {
@@ -345,6 +376,50 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			}
 		}
 		le("model not found: " + model_name);
+		return null;
+	}
+
+	/**
+	 * Alternative method to get the model's data directly from the server.
+	 */
+	public Map<String,Object> getConfigFromServer(String model_name){
+		try {
+			// Set up the connection
+			HttpURLConnection connection = setupConnection("get_model_config", "POST");
+
+			// Write the data to the connection
+			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+				wr.write(("model_name=" + URLEncoder.encode(model_name, "UTF-8")).getBytes());
+				wr.flush();
+			}
+
+			// Check the response
+			String response = checkResponse(connection);
+			if (response != null) {
+				JsonParser jsonParser = new JsonParser();
+				JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
+				String config = jsonObject.get("model_config").toString();
+				config = config.substring(1, config.length() - 1);
+				li("model config: ", config);
+/**
+				Map<String, Object> config_map = new HashMap<>();
+				String[] split_config = config.split(",");
+				for (String s : split_config) {
+					String[] split_s = s.split(":");
+					String key = split_s[0].substring(1, split_s[0].length() - 1);
+					String value = split_s[1].substring(1, split_s[1].length() - 1);
+					config_map.put(key, value);
+				}
+
+				li("model config: ", config_map.toString());
+				return config_map;*/
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		le("model not found: " + model_name);
+		le("available models: " + this.models);
 		return null;
 	}
 	

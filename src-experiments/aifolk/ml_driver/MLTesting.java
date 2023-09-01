@@ -86,7 +86,8 @@ public class MLTesting extends AgentShardGeneral {
 			modelConfig.put("class_names", classNames);
 			driver.addModel("src/net/xqhs/flash/ml/python_module/data/resnet18-bis.pth", modelConfig);
 			driver.predict(("resnet18-bis"), "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
-			System.out.println(driver.getConfigForModel("resnet18-bis"));
+			System.out.println(driver.getConfigFromYAML("resnet18-bis"));
+			System.out.println(driver.getConfigFromServer("ResNet18"));
 			System.out.println(driver.getModels());
 
 
