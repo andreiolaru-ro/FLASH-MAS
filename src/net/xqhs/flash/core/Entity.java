@@ -100,8 +100,9 @@ public interface Entity<P extends Entity<?>>
 	 * times (with no {@link #removeContext} operations in between) should have no effect.
 	 * 
 	 * @param context
-	 *                    - a reference to the higher-level entity.
-	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise. Depending on
+	 *         implementation, success may signify that there has indeed been a change in context.
 	 */
 	public boolean addContext(EntityProxy<P> context);
 	
@@ -109,8 +110,9 @@ public interface Entity<P extends Entity<?>>
 	 * Removes the link from a subordinate entity to an entity containing it in some way.
 	 * 
 	 * @param context
-	 *                    - a reference to the higher-level entity.
-	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise. Depending on
+	 *         implementation, success may signify that there has indeed been a change in context.
 	 */
 	public boolean removeContext(EntityProxy<P> context);
 
@@ -134,8 +136,9 @@ public interface Entity<P extends Entity<?>>
 	 * times (with no {@link #removeContext} operations in between) should have no effect.
 	 * 
 	 * @param context
-	 *                    - a reference to the higher-level entity.
-	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise. Depending on
+	 *         implementation, success may signify that there has indeed been a change in context.
 	 */
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
@@ -143,8 +146,9 @@ public interface Entity<P extends Entity<?>>
 	 * Removes the from a subordinate entity to the specified context.
 	 * 
 	 * @param context
-	 *                    - a reference to the higher-level entity.
-	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise.
+	 *            - a reference to the higher-level entity.
+	 * @return <code>true</code> if the operation was successful. <code>false</code> otherwise. Depending on
+	 *         implementation, success may signify that there has indeed been a change in context.
 	 */
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context);
 	
