@@ -2,28 +2,32 @@ import os
 import shutil
 import sys
 
-from ruamel import yaml
+#from ruamel import yaml
 
 print("<ML server> loading prerequisites...")
 
-import torch
-from flask import Flask, request, jsonify, json
-# import yaml
-from torchvision import transforms
+try: import torch
+except Exception as e:
+    print("PyTorch unavailable (use pip install torch ):", e)
+    print("If there is a problem with MobileNetV2, try tu run the Regenerate.py script in "
+          "src-experiments\aifolk\ml_driver")
+    exit(1)
+try: from flask import Flask, request, jsonify, json
+except Exception as e:
+    print("Flask unavailable (use pip install flask ): ", e)
+    exit(1)
+try: import yaml
+except Exception as e:
+    print("Yaml unavailable (use pip install pyyaml ):", e)
+    exit(1)
+try: from torchvision import transforms
+except Exception as e:
+    print("Torchvision unavailable (use pip install torchvision ):", e)
+    exit(1)
 from PIL import Image
 import io
 import base64
 
-REGENERATE = False
-# REGENERATE = True # normally comment this
-
-if REGENERATE:
-    import requests
-
-    model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
-    model.eval()
-    torch.save(model, 'src/net/xqhs/flash/ml/python_module/models/mobilenetv2.pth')
-    exit(0)
 
 
 def load_models_from_config(config_file):
