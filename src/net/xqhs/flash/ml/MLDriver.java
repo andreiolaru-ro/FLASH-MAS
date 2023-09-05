@@ -124,17 +124,31 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 * 			The endpoint of the route to connect to
 	 * @param request_method
 	 * 			The request method to use
+	 * @param params
+	 * 			The parameters to send to the server. If null, no parameters are sent
 	 *
 	 * @return
 	 * 			The connection to the server
 	 */
-	protected HttpURLConnection setupConnection(String route_endpoint, String request_method) throws IOException {
+	protected HttpURLConnection setupConnection(String route_endpoint, String request_method, Map<String, String> params)
+			throws IOException {
 		String location = SERVER_URL + route_endpoint;
 		URL url = new URL(location);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod(request_method);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setDoOutput(true);
+
+		if (params != null) {
+			String PostData = "";
+			for (Map.Entry<String, String> param : params.entrySet()) {
+				PostData += param.getKey() + "=" + URLEncoder.encode(param.getValue(), "UTF-8") + "&";
+			}
+			DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+			wr.writeBytes(PostData);
+			wr.flush();
+		}
+
 		return connection;
 	}
 
@@ -192,23 +206,18 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			String jsonConfig = gson.toJson(model_config);
 
 			// Set up the form data
-			String postData = "model_name=" + URLEncoder.encode(model_name, "UTF-8");
-			postData += "&model_file=" + URLEncoder.encode(model_path, "UTF-8");
-			postData += "&model_config=" + URLEncoder.encode(jsonConfig, "UTF-8");
+			Map<String, String> postData = new HashMap<>();
+			postData.put("model_name", model_name);
+			postData.put("model_file", model_path);
+			postData.put("model_config", jsonConfig);
 
 			// Set up the connection
-			HttpURLConnection connection = setupConnection("add_model", "POST");
-
-			// Send the form data to the server
-			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-				wr.writeBytes(postData);
-				wr.flush();
-			}
+			HttpURLConnection connection = setupConnection("add_model", "POST", postData);
 
 			// Check the response
 			if (checkResponse(connection) != null) {
-				//setModelsFromYAML();   //choose whether to load the models from the .yaml file or from the server
-				setModelsFromServer();
+				setModelsFromYAML();   //choose whether to load the models from the .yaml file or from the server
+				//setModelsFromServer();
 				return model_name;
 			}
 
@@ -243,17 +252,12 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			String imageBase64 = Base64.getEncoder().encodeToString(imageData);
 
 			// Create the request data
-			String postData = "model_name=" + URLEncoder.encode(model, "UTF-8");
-			postData += "&input_data=" + URLEncoder.encode(imageBase64, "UTF-8");
+			Map<String, String> postData = new HashMap<>();
+			postData.put("model_name", model);
+			postData.put("input_data", imageBase64);
 
 			// Set up the connection
-			HttpURLConnection connection = setupConnection("predict", "POST");
-
-			// Write the data to the connection
-			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-				wr.write(postData.getBytes());
-				wr.flush();
-			}
+			HttpURLConnection connection = setupConnection("predict", "POST", postData);
 
 			// Check the response
 			String response = checkResponse(connection);
@@ -318,7 +322,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	public void setModelsFromServer() {
 		try {
 			// Set up the connection
-			HttpURLConnection connection = setupConnection("get_models", "GET");
+			HttpURLConnection connection = setupConnection("get_models", "GET", null);
 
 			// Check the response
 			String response = checkResponse(connection);
@@ -384,14 +388,11 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	 */
 	public Map<String,Object> getConfigFromServer(String model_name){
 		try {
-			// Set up the connection
-			HttpURLConnection connection = setupConnection("get_model_config", "POST");
+			Map<String, String> postData = new HashMap<>();
+			postData.put("model_name", model_name);
 
-			// Write the data to the connection
-			try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-				wr.write(("model_name=" + URLEncoder.encode(model_name, "UTF-8")).getBytes());
-				wr.flush();
-			}
+			// Set up the connection
+			HttpURLConnection connection = setupConnection("get_model_config", "POST", postData);
 
 			// Check the response
 			String response = checkResponse(connection);
@@ -401,18 +402,18 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 				String config = jsonObject.get("model_config").toString();
 				config = config.substring(1, config.length() - 1);
 				li("model config: ", config);
-/**
-				Map<String, Object> config_map = new HashMap<>();
-				String[] split_config = config.split(",");
-				for (String s : split_config) {
-					String[] split_s = s.split(":");
-					String key = split_s[0].substring(1, split_s[0].length() - 1);
-					String value = split_s[1].substring(1, split_s[1].length() - 1);
-					config_map.put(key, value);
-				}
 
-				li("model config: ", config_map.toString());
-				return config_map;*/
+				//Map<String, Object> config_map = new HashMap<>();
+				//String[] split_config = config.split(",");
+	 			//for (String s : split_config) {
+	 			//	String[] split_s = s.split(":");
+				//	String key = split_s[0].substring(1, split_s[0].length() - 1);
+				//	String value = split_s[1].substring(1, split_s[1].length() - 1);
+				//	config_map.put(key, value);
+				//}
+
+				//li("model config: ", config_map.toString());
+				//return config_map;
 			}
 
 		} catch (IOException e) {
