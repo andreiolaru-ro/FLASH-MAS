@@ -2,32 +2,51 @@ import os
 import shutil
 import sys
 
-#from ruamel import yaml
+# from ruamel import yaml
+
+# constants:
+SERVER_URL = "http://localhost:5000/";
+ML_SRC_PATH = "src/net/xqhs/flash/ml/";
+ML_DIRECTORY_PATH = "ml-directory/";
+SERVER_FILE = "python_module/server.py";
+MODEL_CONFIG_FILE = "config.yaml";
+MODELS_DIRECTORY = "models/";
+MODEL_ENDPOINT = ".pth";
+ADD_MODEL = "add_model";
+PREDICT = "predict";
+GET_MODELS = "get_models";
+MODEL_NAME_PARAM = "model_name";
+MODEL_FILE_PARAM = "model_file";
+MODEL_CONFIG_PARAM = "model_config";
+INPUT_DATA_PARAM = "input_data";
 
 print("<ML server> loading prerequisites...")
 
-try: import torch
+try:
+    import torch
 except Exception as e:
     print("PyTorch unavailable (use pip install torch ):", e)
     print("If there is a problem with MobileNetV2, try tu run the Regenerate.py script in "
           "src-experiments\aifolk\ml_driver")
     exit(1)
-try: from flask import Flask, request, jsonify, json
+try:
+    from flask import Flask, request, jsonify, json
 except Exception as e:
     print("Flask unavailable (use pip install flask ): ", e)
     exit(1)
-try: import yaml
+try:
+    import yaml
 except Exception as e:
     print("Yaml unavailable (use pip install pyyaml ):", e)
     exit(1)
-try: from torchvision import transforms
+try:
+    from torchvision import transforms
 except Exception as e:
     print("Torchvision unavailable (use pip install torchvision ):", e)
     exit(1)
 from PIL import Image
 import io
 import base64
-
 
 
 def load_models_from_config(config_file):
@@ -73,29 +92,28 @@ def load_models_from_config(config_file):
 
 
 app = Flask(__name__)
-ml_directory_path = 'src/net/xqhs/flash/ml/python_module/'
-print("<ML server> working directory: " + ml_directory_path)
-models = load_models_from_config((ml_directory_path + "config.yaml"))
+print("<ML server> working directory: " + ML_DIRECTORY_PATH)
+models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
 
 
-@app.route('/add_model', methods=['POST'])
+@app.route('/' + ADD_MODEL, methods=['POST'])
 def add_model():
     global models
-    model_name = request.form.get('model_name')
-    model_file = request.form.get('model_file')
+    model_name = request.form.get(MODEL_NAME_PARAM)
+    model_file = request.form.get(MODEL_FILE_PARAM)
 
     # check if it already exist
-    new_model_path = ml_directory_path + 'models/' + model_name + '.pth'
+    new_model_path = ML_DIRECTORY_PATH + MODELS_DIRECTORY + model_name + MODEL_ENDPOINT
     if os.path.exists(new_model_path):
-        return jsonify({'message': f'Model "{model_name}" already exists.'})
+        return jsonify({'error': f'Model "{model_name}" already exists.'}), 409
 
     # configure the details for the model with the client's information
-    model_config = request.form.get('model_config')
+    model_config = request.form.get(MODEL_CONFIG_PARAM)
     model_config = json.loads(model_config)
 
     if model_name and model_file:
 
-        config_path = ml_directory_path + 'config.yaml'
+        config_path = ML_DIRECTORY_PATH + MODEL_CONFIG_FILE
         with open(config_path, 'r') as config_file:
             config_data = yaml.safe_load(config_file)
 
@@ -126,14 +144,14 @@ def add_model():
         # reload the models
         models = load_models_from_config(config_path)
 
-        return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
+        return jsonify({'message': f'Model "{model_name}" has been successfully added.', 'model': new_model})
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
 
 
 @app.route('/load_model', methods=['POST'])
 def load_model():
-    model_name = request.form.get('model_name')
+    model_name = request.form.get(MODEL_NAME_PARAM)
 
     if model_name in models:
         model = models[model_name]
@@ -143,11 +161,11 @@ def load_model():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/' + PREDICT, methods=['POST'])
 def predict():
     global models
-    model_name = request.form.get('model_name')
-    input_data = request.form.get('input_data')
+    model_name = request.form.get(MODEL_NAME_PARAM)
+    input_data = request.form.get(INPUT_DATA_PARAM)
 
     if model_name in models:
         model = models[model_name]['model']
@@ -165,33 +183,29 @@ def predict():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 
-@app.route('/get_models', methods=['GET'])
+@app.route('/' + GET_MODELS, methods=['GET'])
 def get_models():
-    global models
-    #models = load_models_from_config((ml_directory_path + "config.yaml"))
-    return jsonify({'models': list(models.keys())})
-
-
-@app.route('/get_model_config', methods=['POST'])
-def get_model_config():
-    global models
-    config_path = ml_directory_path + 'config.yaml'
-    #models = load_models_from_config((ml_directory_path + "config.yaml"))
-    model_name = request.form.get('model_name')
-
-    if model_name in models:
-        returned_model = dict(models[model_name])
-        del returned_model['model']
-        #change 'transform' to a string
-        returned_model['transform'] = str(returned_model['transform'])
-        return jsonify({'model_name': model_name, 'model_config': returned_model})
-    else:
-        return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+    returned_models = {}
+    with open(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE, 'r') as config_file:
+        config_data = yaml.safe_load(config_file)
+    for model in config_data['MODELS']:
+        returned_models[model['name']] = {
+            'path': model['path'],
+            'cuda': model['cuda'],
+            'input_space': model['input_space'],
+            'input_size': model['input_size'],
+            'normalization': {
+                'mean': model['normalization']['mean'],
+                'std': model['normalization']['std']
+            },
+            'class_names': model['class_names']
+        }
+    return jsonify({'models': returned_models})
 
 
 @app.route('/export_model', methods=['POST'])
 def export_model():
-    model_name = request.form.get('model_name')
+    model_name = request.form.get(MODEL_NAME_PARAM)
     export_file = request.form.get('export_file')
 
     if model_name in models:
