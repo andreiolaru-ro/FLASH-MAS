@@ -106,11 +106,6 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	private Process serverProcess;
 
 	/**
-	 * list of available models
-	 */
-	private ArrayList<String> models = new ArrayList<>();
-
-	/**
 	 * Map of available models, and their config
 	 */
 	private Map<String, Map<String, Object>> modelsList = new HashMap<>();
@@ -145,7 +140,6 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
-			//setModelsFromYAML();   //choose whether to load the models from the .yaml file or from the server
 			syncServerConfig();
 		} catch (IOException e) {
 			e.printStackTrace();
