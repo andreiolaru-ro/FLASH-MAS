@@ -31,11 +31,11 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	/**
 	 * The running state of the entity.
 	 */
-	boolean	running	= false;
+	protected boolean	running	= false;
 	/**
 	 * The name provided in the configuration.
 	 */
-	String	name	= null;
+	protected String	name	= null;
 	
 	/**
 	 * The <i>main</i> context of this entity.
@@ -67,6 +67,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	public boolean start() {
 		if(running)
 			return false;
+		lf("[] starting", name);
 		running = true;
 		return true;
 	}
@@ -79,6 +80,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	public boolean stop() {
 		if(!running)
 			return false;
+		lf("[] stopped", name);
 		running = false;
 		return true;
 	}
@@ -99,7 +101,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	@Override
 	public boolean addContext(EntityProxy<P> context) {
 		mainContext = context;
-		addGeneralContext(context);
+		fullContext.add(context);
 		return true;
 	}
 	
@@ -108,7 +110,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 		if(mainContext != context)
 			return false;
 		mainContext = null;
-		removeGeneralContext(context);
+		fullContext.remove(context);
 		return true;
 	}
 	
@@ -117,7 +119,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	 * 
 	 * @see #addContext(net.xqhs.flash.core.Entity.EntityProxy) and {@link #isMainContext(Object)}.
 	 */
-	EntityProxy<P> getContext() {
+	protected EntityProxy<P> getContext() {
 		return mainContext;
 	}
 	
@@ -126,7 +128,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	 * class is parameterized.
 	 * <p>
 	 * Extending classes may return any value if they do not need to differentiate between "main" context and general
-	 * context elements.
+	 * context elements. They should <b>not</b> call the overridden method.
 	 * <p>
 	 * The implementation works if this method remains unimplemented, but main context will not be recognized as such by
 	 * {@link #addGeneralContext(net.xqhs.flash.core.Entity.EntityProxy)} and

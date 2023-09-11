@@ -52,6 +52,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  *            - the type of the entity that can contain (be the context of) this entity.
  * 			
  * @see RunnableEntity
+ * @see EntityCore
  * 			
  * @author andreiolaru
  */

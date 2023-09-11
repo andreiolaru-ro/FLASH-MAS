@@ -15,11 +15,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.xqhs.flash.core.CategoryName;
-import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.Node.NodeProxy;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -31,21 +30,11 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class DefaultPylonImplementation extends Unit implements Pylon {
+public class DefaultPylonImplementation extends EntityCore<Node> implements Pylon {
 	/**
 	 * The default name for instances of this implementation.
 	 */
 	protected static final String DEFAULT_NAME = "Default";
-	
-	/**
-	 * Indicates whether the implementation is currently running.
-	 */
-	protected boolean isRunning = false;
-
-	/**
-	 * The name of this instance.
-	 */
-	protected String name = DEFAULT_NAME;
 	
 	/**
 	 * The name of the node in the context of which this pylon is placed.
@@ -53,52 +42,18 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	protected String nodeName;
 	
 	@Override
-	public boolean configure(MultiTreeMap configuration) {
-		name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		this.setUnitName(getName());
-		return true;
-	}
-	
-	@Override
 	public String getName() {
 		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.PYLON.s();
 	}
 	
 	@Override
-	public boolean start() {
-		// does nothing, only changes state.
-		isRunning = true;
-		lf("[] started", name);
-		return true;
-	}
-	
-	@Override
-	public boolean stop() {
-		// does nothing, only changes state.
-		isRunning = false;
-		lf("[] stopped", name);
-		return true;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return isRunning;
-	}
-	
-	@Override
 	public boolean addContext(EntityProxy<Node> context) {
+		super.addContext(context);
 		nodeName = context.getEntityName();
 		lf("Added node context:", nodeName);
 		return true;
 	}
 	
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context) {
-		if(context instanceof Node.NodeProxy)
-			return addContext((Node.NodeProxy) context);
-		return false;
-	}
-
 	@Override
 	public boolean removeContext(EntityProxy<Node> context) {
 		if(nodeName == null)
@@ -109,14 +64,12 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	}
 	
 	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(context instanceof Node.NodeProxy)
-			return removeContext((Node.NodeProxy) context);
-		return false;
+	public boolean isMainContext(Object context) {
+		return context instanceof NodeProxy;
 	}
-
+	
 	/**
-	 * The loader recommends no particular implementation for any shard.
+	 * The pylon recommends no particular implementation for any shard.
 	 */
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardDesignation) {
@@ -126,10 +79,5 @@ public class DefaultPylonImplementation extends Unit implements Pylon {
 	@Override
 	public Set<String> getSupportedServices() {
 		return new HashSet<>();
-	}
-
-	@Override
-	public <C extends Entity<Node>> EntityProxy<C> asContext() {
-		return null;
 	}
 }
