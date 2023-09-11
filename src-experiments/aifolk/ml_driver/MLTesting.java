@@ -71,7 +71,7 @@ public class MLTesting extends AgentShardGeneral {
 			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
 			 */
 
-			driver.predict("MobileNetV2", "src-experiments/aifolk/ml_driver/data/dog.jpg");
+			driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg");
 
 			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
@@ -84,9 +84,9 @@ public class MLTesting extends AgentShardGeneral {
 					"battery", "bottle", "broom", "bulb", "calender", "camera"
 			);
 			modelConfig.put("class_names", classNames);
-			driver.addModel("Resnet18-bis", "src-experiments/aifolk/ml_driver/data/resnet18-bis.pth", modelConfig);
+			//driver.addModel("Resnet18-bis", "src-experiments/aifolk/ml_driver/data/resnet18-bis.pth", modelConfig);
 			driver.predict(("Resnet18-bis"), "src-experiments/aifolk/ml_driver/data/dog.jpg");
-			System.out.println(driver.getModels().keySet());
+			li(driver.getModels().keySet().toString());
 
 
 			// loads some models, than [after some time] does several predictions, saves the model, etc

@@ -21,7 +21,6 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
-import org.yaml.snakeyaml.Yaml;
 
 
 public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityProxy<MLDriver> {
@@ -176,12 +175,8 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 		return null;
 	}
 
-	public boolean serverIsRunning() {
-		return serverProcess!=null;
-	}
-
 	/**
-	 * Method to set up the connection to the python server, and send the request
+	 * Method to set up the connection to the python server, and send the request.
 	 * At the moment, the request property is always the same, but it could change in the future
 	 * In such case, the method would take the request property as parameter
 	 *
@@ -299,9 +294,9 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 
 	/**
 	 * Methode to add a model to the python server.
-	 * It takes A string of the model path as parameter, and return its ID if it exists.
-	 * The ID is created by splitting the model path, to keep only the name of the model
+	 * It takes strings of the model path and its name as parameter, and return its ID if it exists.
 	 * The server send a success message if the model is properly added, and an error message if it is not.
+	 * Adding a model also add it to the modelsList attribute, with its configuration.
 	 *
 	 * @param model_id
 	 * 			The Id of the model to add
