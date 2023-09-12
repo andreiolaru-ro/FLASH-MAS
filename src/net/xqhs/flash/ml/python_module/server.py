@@ -2,28 +2,51 @@ import os
 import shutil
 import sys
 
+# from ruamel import yaml
+
+# constants:
+SERVER_URL = "http://localhost:5000/";
+ML_SRC_PATH = "src/net/xqhs/flash/ml/";
+ML_DIRECTORY_PATH = "ml-directory/";
+SERVER_FILE = "python_module/server.py";
+MODEL_CONFIG_FILE = "config.yaml";
+MODELS_DIRECTORY = "models/";
+MODEL_ENDPOINT = ".pth";
+ADD_MODEL = "add_model";
+PREDICT = "predict";
+GET_MODELS = "get_models";
+MODEL_NAME_PARAM = "model_name";
+MODEL_FILE_PARAM = "model_file";
+MODEL_CONFIG_PARAM = "model_config";
+INPUT_DATA_PARAM = "input_data";
+
 print("<ML server> loading prerequisites...")
 
-import torch
-from flask import Flask, request, jsonify, json
-import yaml
-from torchvision import transforms
+try:
+    import torch
+except Exception as e:
+    print("PyTorch unavailable (use pip install torch ):", e)
+    print("If there is a problem with MobileNetV2, try tu run the Regenerate.py script in "
+          "src-experiments\aifolk\ml_driver")
+    exit(1)
+try:
+    from flask import Flask, request, jsonify, json
+except Exception as e:
+    print("Flask unavailable (use pip install flask ): ", e)
+    exit(1)
+try:
+    import yaml
+except Exception as e:
+    print("Yaml unavailable (use pip install pyyaml ):", e)
+    exit(1)
+try:
+    from torchvision import transforms
+except Exception as e:
+    print("Torchvision unavailable (use pip install torchvision ):", e)
+    exit(1)
 from PIL import Image
 import io
 import base64
-
-
-REGENERATE = False
-# REGENERATE = True # normally comment this
-
-if REGENERATE:
-	import requests
-	model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
-	model.eval()
-	torch.save(model, 'models/mobilenetv2.pth')
-	exit(0)
-
-
 
 
 def load_models_from_config(config_file):
@@ -37,7 +60,7 @@ def load_models_from_config(config_file):
         cuda = model_config['cuda'] and torch.cuda.is_available()
         device = 'cuda:0' if cuda else 'cpu'
 
-        model = torch.load(model_path,  map_location = device)
+        model = torch.load(model_path, map_location=device)
         if cuda:
             model = model.cuda()
         else:
@@ -67,63 +90,38 @@ def load_models_from_config(config_file):
 
     return models
 
+
 app = Flask(__name__)
-# models = load_models_from_config("config.yaml")
+print("<ML server> working directory: " + ML_DIRECTORY_PATH)
+models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
 
-@app.route('/add_model', methods=['POST'])
+
+@app.route('/' + ADD_MODEL, methods=['POST'])
 def add_model():
-    model_name = request.form.get('model_name')
-    model_file = request.form.get('model_file')
+    global models
+    model_name = request.form.get(MODEL_NAME_PARAM)
+    model_file = request.form.get(MODEL_FILE_PARAM)
 
-    #check if it already exist
-    new_model_path = 'models/' + model_name + '.pth'
+    # check if it already exist
+    new_model_path = ML_DIRECTORY_PATH + MODELS_DIRECTORY + model_name + MODEL_ENDPOINT
     if os.path.exists(new_model_path):
-        return jsonify({'message': f'Model "{model_name}" already exists.'})
+        return jsonify({'error': f'Model "{model_name}" already exists.'}), 409
 
-    #configure the details for the model with the client's information
-    model_config = request.form.get('model_config')
+    # configure the details for the model with the client's information
+    model_config = request.form.get(MODEL_CONFIG_PARAM)
     model_config = json.loads(model_config)
-    cuda = model_config['cuda'] and torch.cuda.is_available()
-    device = 'cuda:0' if cuda else 'cpu'
 
     if model_name and model_file:
 
-        model = torch.load(model_file,  map_location = device)
-        if cuda:
-            model = model.cuda()
-        else:
-            model = model.cpu()
-        transform = None
-        if model_config['input_space'] == "RGB":
-            list_of_transforms = []
-            if 'input_size' in model_config:
-                input_size = model_config['input_size']
-                list_of_transforms.append(transforms.Resize(size=input_size))
-            list_of_transforms.append(transforms.ToTensor())
-            if 'norm_mean' in model_config and 'norm_std' in model_config:
-                mean = model_config['norm_mean']
-                std = model_config['norm_std']
-                list_of_transforms.append(transforms.Normalize(mean, std))
-            transform = transforms.Compose(list_of_transforms)
-
-        models[model_name] = {
-            'model': model,
-            'input_size': model_config['input_size'],
-            'cuda': cuda,
-            'transform': transform
-        }
-        if 'class_names' in model_config:
-            models[model_name]['class_names'] = model_config['class_names']
-
-        #might want to change this to a relative path
-        with open('config.yaml', 'r') as config_file:
-            config_data =  yaml.safe_load(config_file)
+        config_path = ML_DIRECTORY_PATH + MODEL_CONFIG_FILE
+        with open(config_path, 'r') as config_file:
+            config_data = yaml.safe_load(config_file)
 
         # Define the new model to add
         new_model = {
             "name": model_name,
-            "path": "models/" + model_name + ".pth",
-            "cuda": cuda,
+            "path": new_model_path,
+            "cuda": model_config['cuda'],
             "input_space": model_config['input_space'],
             "input_size": model_config['input_size'],
             "normalization": {
@@ -137,31 +135,37 @@ def add_model():
         config_data["MODELS"].append(new_model)
 
         # Write the updated data back to the YAML file
-        with open('config.yaml', 'w') as config_file:
+        with open(config_path, 'w') as config_file:
             yaml.dump(config_data, config_file)
 
-        #save the file in the models directory
-        torch.save(model_name, new_model_path)
+        # save the file in the models directory
+        shutil.copyfile(model_file, new_model_path)
 
-        return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
+        # reload the models
+        models = load_models_from_config(config_path)
+
+        return jsonify({'message': f'Model "{model_name}" has been successfully added.', 'model': new_model})
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
 
+
 @app.route('/load_model', methods=['POST'])
 def load_model():
-    model_name = request.form.get('model_name')
+    model_name = request.form.get(MODEL_NAME_PARAM)
 
     if model_name in models:
         model = models[model_name]
-        #model.eval()
+        # model.eval()
         return jsonify({'message': f'Model "{model_name}" has been successfully loaded.'})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
-@app.route('/predict', methods=['POST'])
+
+@app.route('/' + PREDICT, methods=['POST'])
 def predict():
-    model_name = request.form.get('model_name')
-    input_data = request.form.get('input_data')
+    global models
+    model_name = request.form.get(MODEL_NAME_PARAM)
+    input_data = request.form.get(INPUT_DATA_PARAM)
 
     if model_name in models:
         model = models[model_name]['model']
@@ -178,9 +182,30 @@ def predict():
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
+
+@app.route('/' + GET_MODELS, methods=['GET'])
+def get_models():
+    returned_models = {}
+    with open(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE, 'r') as config_file:
+        config_data = yaml.safe_load(config_file)
+    for model in config_data['MODELS']:
+        returned_models[model['name']] = {
+            'path': model['path'],
+            'cuda': model['cuda'],
+            'input_space': model['input_space'],
+            'input_size': model['input_size'],
+            'normalization': {
+                'mean': model['normalization']['mean'],
+                'std': model['normalization']['std']
+            },
+            'class_names': model['class_names']
+        }
+    return jsonify({'models': returned_models})
+
+
 @app.route('/export_model', methods=['POST'])
 def export_model():
-    model_name = request.form.get('model_name')
+    model_name = request.form.get(MODEL_NAME_PARAM)
     export_file = request.form.get('export_file')
 
     if model_name in models:
@@ -189,6 +214,7 @@ def export_model():
         return jsonify({'message': f'Model "{model_name}" has been successfully exported.'})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+
 
 if __name__ == '__main__':
     print("<ML server> starting...")

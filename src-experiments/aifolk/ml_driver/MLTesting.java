@@ -65,22 +65,28 @@ public class MLTesting extends AgentShardGeneral {
 		case AGENT_START:
 			// TODO testing code here
 			/**
-			driver.predict("ResNet18", "src/net/xqhs/flash/ml/python_module/data/dog.jpg");
-			Map<String, Object> modelConfig = new HashMap<>();
+			 * An easy way to make tests here once we run this once already is to
+			 * delete the newly added model form the /models directory, and restore the config file
+			 * this will cause the model to be downloaded again, and the config file to be re-written
+			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
+			 */
 
+			driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg");
+
+			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
 			modelConfig.put("input_space", "RGB");
 			modelConfig.put("input_size", List.of(224, 224));
 			modelConfig.put("norm_std", List.of(0.229, 0.224, 0.225));
 			modelConfig.put("norm_mean", List.of(0.485, 0.456, 0.406));
-
 			List<String> classNames = List.of(
 					"apple", "atm card", "cat", "banana", "bangle",
 					"battery", "bottle", "broom", "bulb", "calender", "camera"
 			);
 			modelConfig.put("class_names", classNames);
-			driver.addModel("src/net/xqhs/flash/ml/python_module/models/resnet18.pth", modelConfig);
-			 **/
+			//driver.addModel("Resnet18-bis", "src-experiments/aifolk/ml_driver/data/resnet18-bis.pth", modelConfig);
+			driver.predict(("Resnet18-bis"), "src-experiments/aifolk/ml_driver/data/dog.jpg");
+			li(driver.getModels().keySet().toString());
 
 
 			// loads some models, than [after some time] does several predictions, saves the model, etc
