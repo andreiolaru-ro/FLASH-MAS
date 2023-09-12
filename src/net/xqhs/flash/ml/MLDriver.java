@@ -1,29 +1,34 @@
 package net.xqhs.flash.ml;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import com.google.gson.Gson;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.xqhs.flash.core.ConfigurableEntity;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.util.logging.Unit;
 
 
-public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityProxy<MLDriver> {
+public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> {
 
 	/**
 	 * url of the python server
@@ -111,15 +116,9 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 
 
 	@Override
-	public boolean configure(MultiTreeMap configuration) {
-		setUnitName(configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
-		return true;
-	}
-	
-	@Override
 	public boolean start() {
-		// TODO Auto-generated method stub
-
+		if(!super.start())
+			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
 		try {
@@ -149,7 +148,8 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 	
 	@Override
 	public boolean stop() {
-		// TODO Auto-generated method stub
+		if(!super.stop())
+			return false;
 		if (this.serverProcess != null) {
 			try {
 				this.serverProcess.destroy();
@@ -160,19 +160,7 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 				return false;
 			}
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		// TODO Auto-generated method stub
 		return true;
-	}
-	
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**
@@ -406,28 +394,6 @@ public class MLDriver extends Unit implements ConfigurableEntity<Node>, EntityPr
 			return prediction_list;
 		}
 		return null;
-	}
-
-	// TODO other methods
-	
-	@Override
-	public boolean addContext(EntityProxy<Node> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
 	}
 	
 	@SuppressWarnings("unchecked")
