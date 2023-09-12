@@ -21,7 +21,7 @@ public class Boot {
 	 * If <code>true</code>, the mobile agent will ping the other two agents. If <code>false</code>, another agent pings
 	 * the mobile agent.
 	 */
-	static final boolean MOBILE_AGENT_PINGS = true;
+	static final boolean		MOBILE_AGENT_PINGS	= true;
 	/**
 	 * Port for the WebSocket server.
 	 */
@@ -42,13 +42,13 @@ public class Boot {
 	
 	static {
 		nodeA_agents += " -agent mobileComposite:agentA1 -shard messaging -shard EchoTesting -shard MobilityTest to:nodeB time:5000";
-		nodeA_agents += MOBILE_AGENT_PINGS ? " -shard PingTest every:500 otherAgent:agentB1 otherAgent:agentA2"
+		nodeA_agents += MOBILE_AGENT_PINGS ? " -shard PingTest every:500 n:10 otherAgent:agentB1 otherAgent:agentA2"
 				: " -shard PingBackTest";
 		nodeA_agents += " -agent agentA2 -shard messaging -shard EchoTesting -shard PingBackTest";
 		
 		nodeB_agents += " -agent agentB1 -shard messaging -shard EchoTesting";
 		nodeB_agents += MOBILE_AGENT_PINGS ? " -shard PingBackTest"
-				: " -shard PingTest otherAgent:agentA1 otherAgent:agentA2";
+				: " -shard PingTest otherAgent:agentA1 otherAgent:agentA2 n:10";
 	}
 	
 	/**
