@@ -26,7 +26,7 @@ public class MLManagementShard extends AgentShardGeneral {
 		if(!super.addGeneralContext(context))
 			return false;
 		// TODO
-		// if context is an MLDriver, retain reference
+		// retain reference to MLDriver and OntologyDriver
 		return true;
 	}
 	
