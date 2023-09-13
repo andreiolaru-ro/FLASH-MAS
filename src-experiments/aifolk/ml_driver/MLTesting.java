@@ -87,6 +87,7 @@ public class MLTesting extends AgentShardGeneral {
 			//driver.addModel("Resnet18-bis", "src-experiments/aifolk/ml_driver/data/resnet18-bis.pth", modelConfig);
 			driver.predict(("Resnet18-bis"), "src-experiments/aifolk/ml_driver/data/dog.jpg");
 			li(driver.getModels().keySet().toString());
+			//driver.exportModel("ResNet18", "src-experiments/aifolk/ml_driver/test_export_destination");
 
 
 			// loads some models, than [after some time] does several predictions, saves the model, etc

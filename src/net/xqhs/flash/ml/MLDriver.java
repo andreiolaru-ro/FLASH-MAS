@@ -61,15 +61,19 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	/**
 	 * endpoint for the server route
 	 */
-	public static String ADD_MODEL;
+	public static String ADD_MODEL_SERVICE;
 	/**
 	 * endpoint for the server route
 	 */
-	public static String PREDICT;
+	public static String PREDICT_SERVICE;
 	/**
 	 * endpoint for the server route
 	 */
-	public static String GET_MODELS;
+	public static String GET_MODELS_SERVICE;
+	/**
+	 * endpoint for the server route
+	 */
+	public static String EXPORT_MODEL_SERVICE;
 	/**
 	 * parameter for the model name
 	 */
@@ -86,6 +90,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * parameter for the input data
 	 */
 	public static String INPUT_DATA_PARAM;
+	/**
+	 * parameter for the export path
+	 */
+	public static String EXPORT_PATH_PARAM;
 
 	{
 		SERVER_URL = "http://localhost:5000/";
@@ -95,13 +103,16 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		MODEL_CONFIG_FILE = "config.yaml";
 		MODELS_DIRECTORY = "models/";
 		MODEL_ENDPOINT = ".pth";
-		ADD_MODEL = "add_model";
-		PREDICT = "predict";
-		GET_MODELS = "get_models";
+		ADD_MODEL_SERVICE = "add_model";
+		PREDICT_SERVICE = "predict";
+		GET_MODELS_SERVICE = "get_models";
+		EXPORT_MODEL_SERVICE = "export_model";
 		MODEL_NAME_PARAM = "model_name";
 		MODEL_FILE_PARAM = "model_file";
 		MODEL_CONFIG_PARAM = "model_config";
 		INPUT_DATA_PARAM = "input_data";
+		EXPORT_PATH_PARAM = "export_directory_path";
+
 	}
 
 	/**
@@ -219,26 +230,18 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		try {
 			String response = "";
 			int responseCode = connection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				try (BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getInputStream()))) {
-					String line;
-					while ((line = in.readLine()) != null) {
-						response += line;
-					}
-				}
-				lf("Response: " + response);
-				return response;
-			} else {
-				BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getErrorStream()));
+			boolean iserror = responseCode >= 400;
+			try (BufferedReader in = new BufferedReader(
+					new InputStreamReader(!iserror ? connection.getInputStream() : connection.getErrorStream()))) {
 				String line;
 				while ((line = in.readLine()) != null) {
 					response += line;
 				}
-				le("Error: " + responseCode + " " + connection.getResponseMessage());
-				le("Response: " + response);
-				return null;
+				if(iserror)
+					le("Error: [][]. Response: ",responseCode, connection.getResponseMessage(), response);
+				else
+					li("Response: " + response);
+				return !iserror ? response : null;
 			}
 
 		} catch (IOException e) {
@@ -255,7 +258,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 */
 	public void syncServerConfig() {
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(GET_MODELS, "GET", null);
+		HttpURLConnection connection = setupConnection(GET_MODELS_SERVICE, "GET", null);
 
 		// Check the response
 		String response = checkResponse(connection);
@@ -314,7 +317,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		postData.put(MODEL_CONFIG_PARAM, jsonConfig);
 
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_MODEL, "POST", postData);
+		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
 		if (connection == null) {
 			le("Error: connection is null");
 			return null;
@@ -374,7 +377,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		postData.put(INPUT_DATA_PARAM, imageBase64);
 
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(PREDICT, "POST", postData);
+		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
 		if (connection == null) {
 			le("Error: connection is null");
 			return null;
@@ -395,7 +398,43 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Method to export a model from the server.
+	 * When exporting a model, it creates a config file with the model's configuration, and a .pth file with the model's weights.
+	 * It takes the model ID and the export directory as parameter, and return the path to the exported model.
+	 *
+	 * @param model_id
+	 * 			The ID of the model to export
+	 * @param export_directory
+	 * 			The directory where to export the model
+	 *
+	 * @return
+	 * 			The path to the exported model
+	 */
+	public String exportModel(String model_id, String export_directory) {
+
+		// Set up the form data
+		Map<String, String> postData = new HashMap<>();
+		postData.put(MODEL_NAME_PARAM, model_id);
+		postData.put(EXPORT_PATH_PARAM, export_directory);
+
+		// Set up the connection
+		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
+		if (connection == null) {
+			le("Error: connection is null");
+			return null;
+		}
+
+		// Check the response
+		String response = checkResponse(connection);
+		if (response != null) {
+			lf("Model " + model_id + " exported successfully");
+			return export_directory + "/" + model_id + MODEL_ENDPOINT;
+		}
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<MLDriver> asContext() {

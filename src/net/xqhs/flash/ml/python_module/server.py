@@ -12,13 +12,15 @@ SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config.yaml";
 MODELS_DIRECTORY = "models/";
 MODEL_ENDPOINT = ".pth";
-ADD_MODEL = "add_model";
-PREDICT = "predict";
-GET_MODELS = "get_models";
+ADD_MODEL_SERVICE = "add_model";
+PREDICT_SERVICE = "predict";
+GET_MODELS_SERVICE = "get_models";
+EXPORT_MODEL_SERVICE = "export_model";
 MODEL_NAME_PARAM = "model_name";
 MODEL_FILE_PARAM = "model_file";
 MODEL_CONFIG_PARAM = "model_config";
 INPUT_DATA_PARAM = "input_data";
+EXPORT_PATH_PARAM = "export_directory_path";
 
 print("<ML server> loading prerequisites...")
 
@@ -30,6 +32,11 @@ except Exception as e:
           "src-experiments\aifolk\ml_driver")
     exit(1)
 try:
+    from torchvision import transforms
+except Exception as e:
+    print("Torchvision unavailable (use pip install torchvision ):", e)
+    exit(1)
+try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
     print("Flask unavailable (use pip install flask ): ", e)
@@ -38,11 +45,6 @@ try:
     import yaml
 except Exception as e:
     print("Yaml unavailable (use pip install pyyaml ):", e)
-    exit(1)
-try:
-    from torchvision import transforms
-except Exception as e:
-    print("Torchvision unavailable (use pip install torchvision ):", e)
     exit(1)
 from PIL import Image
 import io
@@ -96,7 +98,7 @@ print("<ML server> working directory: " + ML_DIRECTORY_PATH)
 models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
 
 
-@app.route('/' + ADD_MODEL, methods=['POST'])
+@app.route('/' + ADD_MODEL_SERVICE, methods=['POST'])
 def add_model():
     global models
     model_name = request.form.get(MODEL_NAME_PARAM)
@@ -161,7 +163,7 @@ def load_model():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 
-@app.route('/' + PREDICT, methods=['POST'])
+@app.route('/' + PREDICT_SERVICE, methods=['POST'])
 def predict():
     global models
     model_name = request.form.get(MODEL_NAME_PARAM)
@@ -183,7 +185,7 @@ def predict():
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
 
-@app.route('/' + GET_MODELS, methods=['GET'])
+@app.route('/' + GET_MODELS_SERVICE, methods=['GET'])
 def get_models():
     returned_models = {}
     with open(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE, 'r') as config_file:
@@ -203,15 +205,31 @@ def get_models():
     return jsonify({'models': returned_models})
 
 
-@app.route('/export_model', methods=['POST'])
+@app.route('/' + EXPORT_MODEL_SERVICE, methods=['POST'])
 def export_model():
     model_name = request.form.get(MODEL_NAME_PARAM)
-    export_file = request.form.get('export_file')
+    export_directory_path = request.form.get(EXPORT_PATH_PARAM)
+
+    model_config = {}
 
     if model_name in models:
-        model = models[model_name]
-        torch.save(model, export_file)
-        return jsonify({'message': f'Model "{model_name}" has been successfully exported.'})
+        config_path = ML_DIRECTORY_PATH + MODEL_CONFIG_FILE
+        with open(config_path, 'r') as config_file:
+            config_data = yaml.safe_load(config_file)
+        for model in config_data['MODELS']:
+            if model['name'] == model_name:
+                model_config = dict(model)
+                break
+        #now create a new config file and fill it with the model's data to export
+        config_data = {'MODELS': [model_config]}
+        config_path = export_directory_path + '/' + model_name + '_' + MODEL_CONFIG_FILE
+        with open(config_path, 'w') as config_file:
+            yaml.dump(config_data, config_file)
+        #now copy the model file
+        export_file = export_directory_path + '/' + model_name + MODEL_ENDPOINT
+        torch.save(models[model_name]['model'], export_file)
+
+        return jsonify({'message': f'Model "{model_name}" has been successfully exported.', 'destination': export_directory_path})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
