@@ -10,10 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
@@ -252,6 +249,28 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	}
 
 	/**
+	 * Method to parse the json response from the server.
+	 * It takes the response, and the key of the data to parse.
+	 * It returns the parsed data as an object, which can be casted to the appropriate type
+	 *
+	 * @param key
+	 * 			The key of the data to parse in the returned json
+	 * @param repsonse
+	 * 			The json response from the server
+	 *
+	 * @return
+	 * 			The parsed data as an object
+	 */
+	public Object parseResponse(String key, String repsonse) {
+		JsonParser jsonParser = new JsonParser();
+		JsonObject jsonObject = jsonParser.parse(repsonse).getAsJsonObject();
+		JsonElement jsonElement = jsonObject.get(key);
+		Gson gson = new Gson();
+		Object obj = gson.fromJson(jsonElement, Object.class);
+		return obj;
+	}
+
+	/**
 	 * Method to sync the models and their configurations available on the server and the client.
 	 * It sends a request to the server, and update the modelsList attribute with the response.
 	 * The response is a map of maps, each map containing the data of a model associated with its ID.
@@ -263,12 +282,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement models = jsonObject.get("models");
-			Gson gson = new Gson();
-			this.modelsList = gson.fromJson(models, Map.class);
-
+			this.modelsList = (Map<String, Map<String, Object>>) parseResponse("models", response);
 			li("available models: ", this.modelsList.keySet());
 		}
 	}
@@ -305,7 +319,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * @return The Id of the model if it is properly added, null if it is not
 	 */
 	public String addModel(String model_id, String model_path, Map<String, Object> model_config) {
-
 		// Convert the model_config to a JSON string
 		Gson gson = new Gson();
 		String jsonConfig = gson.toJson(model_config);
@@ -327,10 +340,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		String response = checkResponse(connection);
 		if (response != null) {
 			lf("Model " + model_id + " added successfully");
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement model_info = jsonObject.get("model");
-			Map<String, Object> values = gson.fromJson(model_info, Map.class);
+			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
 			values.remove("name");
 			this.modelsList.put(model_id, values);
 
@@ -354,8 +364,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The prediction result, as a list of double
 	 */
 	public ArrayList<Double> predict(String model, String data_path) {
-
-		String imageBase64 = null;
+		String imageBase64;
 		try {
 			// Read and encode the image data
 			BufferedImage image = ImageIO.read(new File(data_path));
@@ -386,11 +395,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement prediction_json = jsonObject.get("prediction");
-			Gson gson = new Gson();
-			ArrayList<ArrayList<Double>> prediction_gson = gson.fromJson(prediction_json, ArrayList.class);
+			ArrayList<ArrayList<Double>> prediction_gson = (ArrayList<ArrayList<Double>>) parseResponse("prediction", response);
 			ArrayList<Double> prediction_list = prediction_gson.get(0);
 
 			li("Prediction: " + prediction_list);
@@ -413,7 +418,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The path to the exported model
 	 */
 	public String exportModel(String model_id, String export_directory) {
-
 		// Set up the form data
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model_id);
@@ -425,7 +429,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			le("Error: connection is null");
 			return null;
 		}
-
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
