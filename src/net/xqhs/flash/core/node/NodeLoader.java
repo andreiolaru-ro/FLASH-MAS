@@ -81,8 +81,10 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
-			Node node = load(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
-					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)));
+			Node node = loadNode(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
+					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)),
+					DeploymentConfiguration.filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null)
+							.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE));
 			if(node != null) {
 				nodes.add(node);
 				lf("node loaded: []", node.getName());
@@ -112,7 +114,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			List<MultiTreeMap> subordinateEntities) {
 		if(context != null && context.size() > 0)
 			lw("nodes don't support context");
-		return load(nodeConfiguration, subordinateEntities);
+		return loadNode(nodeConfiguration, subordinateEntities, null);
 	}
 	
 	/**
@@ -123,9 +125,12 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	 * @param subordinateEntities
 	 *            - the entities that should be loaded inside the node, as specified by
 	 *            {@link Loader#load(MultiTreeMap, List, List)}.
+	 * @param deploymentID
+	 *            - the local ID of the {@link CategoryName#DEPLOYMENT} entity, used to no issue context item errors for
+	 *            the deployment itself. Can be <code>null</code>.
 	 * @return the {@link Node} the was loaded.
 	 */
-	public Node load(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities) {
+	public Node loadNode(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities, String deploymentID) {
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
@@ -291,7 +296,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 								if(loaded.get(contextItem).asContext() != null)
 									context.add(loaded.get(contextItem).asContext());
 							}
-							else
+							else if(!contextItem.equals(deploymentID))
 								lw("Context item [] for [] []/[]/[] not found as a loaded entity.", contextItem,
 										catName, name, kind, local_id);
 							
