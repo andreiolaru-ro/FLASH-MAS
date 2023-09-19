@@ -330,15 +330,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		readCLIArgs(it, new CtxtTriple(CategoryName.DEPLOYMENT.s(), deploymentCat, deployment), this, autoCreated,
 				name_ids, log);
 		log.lf("after CLI tree parse:", this);
+		log.li("name ids:", name_ids);
 		
 		// ====================================== port portables, move elements to correct parents
 		
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
 		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<String>(), this, autoCreated, name_ids, log);
+				new LinkedList<>(), this, autoCreated, name_ids, log);
 		
-		addContext(deployment, new LinkedList<String>(), name_ids);
+		addContext(deployment, new LinkedList<>(), name_ids);
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);

@@ -9,12 +9,14 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 
 public class MLPipelineShard extends AgentShardGeneral {
-	
-
 	/**
 	 * The serial UID
 	 */
-	private static final long serialVersionUID = 4668752071930508849L;
+	private static final long	serialVersionUID	= 4668752071930508849L;
+	/**
+	 * The node-local {@link MLDriver} instance.
+	 */
+	MLDriver					mlDriver;
 	
 	public MLPipelineShard() {
 		super(AgentShardDesignation.customShard("ML:Pipeline"));
@@ -24,8 +26,11 @@ public class MLPipelineShard extends AgentShardGeneral {
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(!super.addGeneralContext(context))
 			return false;
-		// TODO
-		// if context is an MLDriver, retain reference
+		if(context instanceof MLDriver) {
+			mlDriver = (MLDriver) context;
+			li("ML Driver detected");
+			return true;
+		}
 		return true;
 	}
 	

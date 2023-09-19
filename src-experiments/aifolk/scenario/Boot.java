@@ -38,7 +38,8 @@ public class Boot {
 		a += " -pylon local:pylon1";
 		
 		for(String name : new String[] { "A", "B", "C" })
-			a += " -agent " + name + " -shard scenario -shard MLPipeline -shard MLManagement -shard messaging -shard EchoTesting exit:20";
+			a += " -agent " + name
+					+ "  in-context-of:ML:mldriver in-context-of:Scenario:scen -shard scenario -shard MLPipeline -shard MLManagement -shard messaging -shard EchoTesting exit:20";
 
 		FlashBoot.main(a.split(" "));
     }

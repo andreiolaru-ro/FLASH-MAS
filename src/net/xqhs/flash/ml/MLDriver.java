@@ -22,7 +22,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.node.Node;
@@ -121,28 +120,28 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
-		try {
-			ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
-					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
-			// pb.directory(new File(<directory from where you want to run the command>));
-			// pb.inheritIO();
-			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-			this.serverProcess = pb.start();
-
-			// wait for the server to start
-			// TODO: find a better way to do this
-			try {
-				Thread.sleep(10000);
-			} catch(InterruptedException e) {
-				e.printStackTrace();
-			}
-			syncServerConfig();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+		// try {
+		// ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
+		// + MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
+		// // pb.directory(new File(<directory from where you want to run the command>));
+		// // pb.inheritIO();
+		// pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+		// pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		// pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+		// this.serverProcess = pb.start();
+		//
+		// // wait for the server to start
+		// // TODO: find a better way to do this
+		// try {
+		// Thread.sleep(10000);
+		// } catch(InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// syncServerConfig();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// return false;
+		// }
 		return true;
 	}
 	
