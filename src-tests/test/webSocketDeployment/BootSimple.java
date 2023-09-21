@@ -133,12 +133,13 @@ public class BootSimple
 			messagingShard = shard;
 			shard.addContext(new ShardContainer() {
 				@Override
-				public void postAgentEvent(AgentEvent event)
+				public boolean postAgentEvent(AgentEvent event)
 				{
 					if(event instanceof AgentWave)
 						System.out.println(
 								((AgentWave) event).getContent() + " from " + ((AgentWave) event).getCompleteSource()
 										+ " to " + ((AgentWave) event).getCompleteDestination());
+					return true;
 				}
 				
 				@Override

@@ -75,8 +75,8 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		}
 		
 		@Override
-		public void postAgentEvent(AgentEvent event) {
-			agent.postAgentEvent(event);
+		public boolean postAgentEvent(AgentEvent event) {
+			return agent.postAgentEvent(event);
 		}
 		
 		@Override

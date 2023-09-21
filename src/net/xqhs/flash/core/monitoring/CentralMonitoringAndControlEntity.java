@@ -124,13 +124,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		 * This is expected to be called by the messaging shard.
 		 */
 		@Override
-		public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 			switch(event.getType()) {
 			case AGENT_WAVE:
-				parseReceivedMsg((AgentWave) event);
-				break;
+				return parseReceivedMsg((AgentWave) event);
 			default:
-				break;
+				return false;
 			}
 		}
 	}
