@@ -7,13 +7,13 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
-import net.xqhs.util.logging.UnitComponent;
 
 public class MLManagementShard extends AgentShardGeneral {
 	/**
 	 * The serial UID
 	 */
 	private static final long serialVersionUID = 3728868349364945506L;
+	private static final String	DESIGNATION			= "ML:Management";
 	/**
 	 * The node-local {@link MLDriver} instance.
 	 */
@@ -22,13 +22,9 @@ public class MLManagementShard extends AgentShardGeneral {
 	 * The node-local {@link OntologyDriver} instance.
 	 */
 	OntologyDriver				ontDriver;
-	/**
-	 * The log. TODO: use the agent's log
-	 */
-	transient UnitComponent		locallog			= null;
 	
 	public MLManagementShard() {
-		super(AgentShardDesignation.customShard("ML:Management"));
+		super(AgentShardDesignation.customShard(DESIGNATION));
 	}
 	
 	@Override
