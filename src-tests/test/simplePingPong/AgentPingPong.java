@@ -117,13 +117,15 @@ public class AgentPingPong extends Unit implements Agent {
 	 * @param event
 	 *            - the event received.
 	 */
-	protected void postAgentEvent(AgentEvent event) {
+	protected boolean postAgentEvent(AgentEvent event) {
 		li("received: " + event.toString());
 		if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgents == null) {
 			String replyContent = ((AgentWave) event).getContent() + " reply";
-			msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT), ((AgentWave) event).getCompleteSource(),
+			return msgShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+					((AgentWave) event).getCompleteSource(),
 					replyContent);
 		}
+		return false;
 	}
 
 	@Override
@@ -164,9 +166,9 @@ public class AgentPingPong extends Unit implements Agent {
 			}
 
 			@Override
-			public void postAgentEvent(AgentEvent event)
+			public boolean postAgentEvent(AgentEvent event)
 			{
-				AgentPingPong.this.postAgentEvent(event);
+				return AgentPingPong.this.postAgentEvent(event);
 			}
 
 			@Override
