@@ -48,6 +48,16 @@ public class MultiTreeMap extends MultiValueMap {
 	private static final long serialVersionUID = 4361796924244682172L;
 	
 	/**
+	 * The leftmost indent when printing a {@link MultiTreeMap}.
+	 */
+	protected static final String INITIAL_INDENT = "   ";
+	
+	/**
+	 * The indentation for each level when printing a {@link MultiTreeMap}.
+	 */
+	protected static final String INDENTATION = ".     ";
+	
+	/**
 	 * Keys that have String values.
 	 */
 	protected Set<String>	simpleKeys		= new LinkedHashSet<>();
@@ -884,12 +894,12 @@ public class MultiTreeMap extends MultiValueMap {
 	 * @return the String rendition of this tree.
 	 */
 	public String toString(int depth, boolean shorter) {
-		return toString(shorter ? " " : "   ", shorter ? "" : "      ", depth, shorter);
+		return toString(shorter ? " " : INITIAL_INDENT, shorter ? "" : INDENTATION, depth, shorter);
 	}
 	
 	@Override
 	public String toString() {
-		return toString("   ", "      ", -1, false);
+		return toString(INITIAL_INDENT, INDENTATION, -1, false);
 	}
 	
 	/**
