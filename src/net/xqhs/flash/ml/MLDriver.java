@@ -309,6 +309,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The path for the model to load
 	 * @param model_config
 	 * 			a dictionary containing the model configuration if needed. For now, it has to contain:
+	 * 			- transformation_op: the transformation to apply to the input
 	 * 			- input_space: the input space of the model
 	 * 			- input_size: the input size of the model
 	 * 			- norm_mean: the mean of the normalization
