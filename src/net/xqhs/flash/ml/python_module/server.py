@@ -1,5 +1,6 @@
 import os
 import shutil
+import importlib
 import sys
 
 # from ruamel import yaml
@@ -8,6 +9,7 @@ import sys
 SERVER_URL = "http://localhost:5000/";
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 ML_DIRECTORY_PATH = "ml-directory/";
+OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config.yaml";
 MODELS_DIRECTORY = "models/";
@@ -21,6 +23,9 @@ MODEL_FILE_PARAM = "model_file";
 MODEL_CONFIG_PARAM = "model_config";
 INPUT_DATA_PARAM = "input_data";
 EXPORT_PATH_PARAM = "export_directory_path";
+OPERATION_MODULE_PARAM = "operation_module";
+TRANSFORM_OP_PARAM = "transform_op";
+PREDICT_OP_PARAM = "predict_op";
 
 print("<ML server> loading prerequisites...")
 
@@ -37,6 +42,16 @@ except Exception as e:
     print("Torchvision unavailable (use pip install torchvision ):", e)
     exit(1)
 try:
+    import torchaudio
+except Exception as e:
+    print("Torchaudio unavailable (use pip install torchaudio ):", e)
+    exit(1)
+try:
+    from omegaconf import OmegaConf
+except Exception as e:
+    print("OmegaConf unavailable (use pip install omegaconf ):", e)
+    exit(1)
+try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
     print("Flask unavailable (use pip install flask ): ", e)
@@ -46,9 +61,7 @@ try:
 except Exception as e:
     print("Yaml unavailable (use pip install pyyaml ):", e)
     exit(1)
-from PIL import Image
-import io
-import base64
+
 
 
 def load_models_from_config(config_file):
@@ -62,30 +75,32 @@ def load_models_from_config(config_file):
         cuda = model_config['cuda'] and torch.cuda.is_available()
         device = 'cuda:0' if cuda else 'cpu'
 
-        model = torch.load(model_path, map_location=device)
+        # look if the model needs to be loaded with jit
+        if 'jit' in model_config and model_config['jit']:
+            model = torch.jit.load(model_path, map_location=device)
+        else:
+            model = torch.load(model_path, map_location=device)
         if cuda:
             model = model.cuda()
         else:
             model = model.cpu()
 
         transform = None
-        if model_config['input_space'] == "RGB":
-            list_of_transforms = []
-            if 'input_size' in model_config:
-                input_size = model_config['input_size']
-                list_of_transforms.append(transforms.Resize(size=input_size))
-            list_of_transforms.append(transforms.ToTensor())
-            if 'normalization' in model_config:
-                mean = model_config['normalization']['mean']
-                std = model_config['normalization']['std']
-                list_of_transforms.append(transforms.Normalize(mean, std))
-            transform = transforms.Compose(list_of_transforms)
+        # Read configuration, get transformation identifier
+        op_module_identifier = model_config[OPERATION_MODULE_PARAM]
+
+        # Dynamically import the corresponding function
+        if model_config['transform']:
+            transformation_module = importlib.import_module(f"{OP_MODULE_PACKAGE}.{op_module_identifier}")
+            transformation_function = getattr(transformation_module, TRANSFORM_OP_PARAM)
+            transform = transformation_function(model_config)
+
 
         models[model_name] = {
             'model': model,
-            'input_size': input_size,
             'cuda': cuda,
-            'transform': transform
+            'transform': transform,
+            'op_module_identifier': op_module_identifier
         }
         if 'class_names' in model_config:
             models[model_name]['class_names'] = model_config['class_names']
@@ -121,17 +136,13 @@ def add_model():
 
         # Define the new model to add
         new_model = {
-            "name": model_name,
-            "path": new_model_path,
-            "cuda": model_config['cuda'],
-            "input_space": model_config['input_space'],
-            "input_size": model_config['input_size'],
-            "normalization": {
-                "mean": model_config['norm_mean'],
-                "std": model_config['norm_std']
-            },
-            "class_names": model_config['class_names']
+            #for each key in the model_config, add it to the new model
+            key: model_config[key] for key in model_config
         }
+        new_model['name'] = model_name
+        new_model['path'] = new_model_path
+        if new_model['cuda'] is None:
+            new_model['cuda'] = False
 
         # Append the new model to the existing models list
         config_data["MODELS"].append(new_model)
@@ -170,17 +181,12 @@ def predict():
     input_data = request.form.get(INPUT_DATA_PARAM)
 
     if model_name in models:
-        model = models[model_name]['model']
-        input_bytes = base64.b64decode(input_data)
-        input_tensor = Image.open(io.BytesIO(input_bytes))
-        if models[model_name]['transform']:
-            input_tensor = models[model_name]['transform'](input_tensor)
-        input_batch = input_tensor.unsqueeze(0)
-        if models[model_name]['cuda']:
-            input_batch = input_batch.cuda()
-        output = model(input_batch)
-        class_names = models[model_name]['class_names']
-        return jsonify({'prediction': output.tolist(), 'class_names': class_names})
+        op_module_identifier = models[model_name]['op_module_identifier']
+        module = importlib.import_module(f"{OP_MODULE_PACKAGE}.{op_module_identifier}")
+        predict_function = getattr(module, PREDICT_OP_PARAM)
+        output = predict_function(model_name, input_data, models)
+
+        return jsonify({'prediction': output})
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
@@ -192,15 +198,8 @@ def get_models():
         config_data = yaml.safe_load(config_file)
     for model in config_data['MODELS']:
         returned_models[model['name']] = {
-            'path': model['path'],
-            'cuda': model['cuda'],
-            'input_space': model['input_space'],
-            'input_size': model['input_size'],
-            'normalization': {
-                'mean': model['normalization']['mean'],
-                'std': model['normalization']['std']
-            },
-            'class_names': model['class_names']
+            #for each key in the model_config, add it to the new model
+            key: model[key] for key in model
         }
     return jsonify({'models': returned_models})
 

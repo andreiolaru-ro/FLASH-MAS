@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import javax.imageio.ImageIO;
@@ -298,6 +300,35 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	}
 
 	/**
+	 * Method to encode the data to send to the server. It takes the path of the data to encode,
+	 * and returns the encoded data as a string
+	 *
+	 * @param dataPath
+	 * 			The path of the data to encode
+	 *
+	 * @return
+	 * 			The encoded data
+	 */
+	private String encodeImage(String dataPath) {
+		String encodedData;
+		try {
+			// Read and encode the image data
+			BufferedImage image = ImageIO.read(new File(dataPath));
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(image, "jpeg", baos);
+			byte[] imageData = baos.toByteArray();
+			encodedData = Base64.getEncoder().encodeToString(imageData);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			le("Error: could not read the image file");
+			return null;
+		}
+		return encodedData;
+	}
+
+	/**
 	 * Methode to add a model to the python server.
 	 * It takes strings of the model path and its name as parameter, and return its ID if it exists.
 	 * The server send a success message if the model is properly added, and an error message if it is not.
@@ -308,13 +339,13 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * @param model_path
 	 * 			The path for the model to load
 	 * @param model_config
-	 * 			a dictionary containing the model configuration if needed. For now, it has to contain:
-	 * 			- input_space: the input space of the model
-	 * 			- input_size: the input size of the model
-	 * 			- norm_mean: the mean of the normalization
-	 * 			- norm_std: the standard deviation of the normalization
-	 * 			- cuda: if the model is on cuda or not
-	 * 		    - class_names: the name of the classes
+	 * 			a dictionary containing the model configuration if needed. Some information are required, such as:
+	 * 		- "cuda": true if the model is to be run on GPU, false otherwise
+	 * 	    - "transform": true if the model requires a transformation operation on the input data, false otherwise
+	 * 	    - "operation_module": the name of the module containing the operation specific to the model
+	 * 	    (e.g. "imageInput" for the models that require an image as input)
+	 * 	    Other information can be added to the configuration, depending on the model. Be carefull to give information
+	 * 	    that are relevant to the model, and to the operation module
 	 *
 	 * @return The Id of the model if it is properly added, null if it is not
 	 */
@@ -363,27 +394,17 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * @return
 	 * 			The prediction result, as a list of double
 	 */
-	public ArrayList<Double> predict(String model, String data_path) {
-		String imageBase64;
-		try {
-			// Read and encode the image data
-			BufferedImage image = ImageIO.read(new File(data_path));
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(image, "jpeg", baos);
-			byte[] imageData = baos.toByteArray();
-			imageBase64 = Base64.getEncoder().encodeToString(imageData);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-			le("Error: could not read the image file");
-			return null;
+	public ArrayList<Object> predict(String model, String data_path, Boolean needEncode) {
+		String toPredict = data_path;
+		if (needEncode) {
+			// Encode the data
+			toPredict = encodeImage(data_path);
 		}
 
 		// Create the request data
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model);
-		postData.put(INPUT_DATA_PARAM, imageBase64);
+		postData.put(INPUT_DATA_PARAM, toPredict);
 
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
@@ -395,8 +416,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
-			ArrayList<ArrayList<Double>> prediction_gson = (ArrayList<ArrayList<Double>>) parseResponse("prediction", response);
-			ArrayList<Double> prediction_list = prediction_gson.get(0);
+			ArrayList<Object> prediction_list = (ArrayList<Object>) parseResponse("prediction", response);
 
 			li("Prediction: " + prediction_list);
 			return prediction_list;
