@@ -93,11 +93,28 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * parameter for the export path
 	 */
 	public static String EXPORT_PATH_PARAM;
+	/**
+	 * package name for the operations modules
+	 */
+	public static String OP_MODULE_PACKAGE;
+	/**
+	 * parameter for the operation module
+	 */
+	public static String OPERATION_MODULE_PARAM;
+	/**
+	 * parameter for the transform operation
+	 */
+	public static String TRANSFORM_OP_PARAM;
+	/**
+	 * parameter for the predict operation
+	 */
+	public static String PREDICT_OP_PARAM;
 
 	{
 		SERVER_URL = "http://localhost:5000/";
 		ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 		ML_DIRECTORY_PATH = "ml-directory/";
+		OP_MODULE_PACKAGE = "operations-modules";
 		SERVER_FILE = "python_module/server.py";
 		MODEL_CONFIG_FILE = "config.yaml";
 		MODELS_DIRECTORY = "models/";
@@ -111,6 +128,9 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		MODEL_CONFIG_PARAM = "model_config";
 		INPUT_DATA_PARAM = "input_data";
 		EXPORT_PATH_PARAM = "export_directory_path";
+		OPERATION_MODULE_PARAM = "operation_module";
+		TRANSFORM_OP_PARAM = "transform_op";
+		PREDICT_OP_PARAM = "predict_op";
 
 	}
 
