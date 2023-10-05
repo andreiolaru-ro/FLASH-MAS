@@ -52,6 +52,11 @@ except Exception as e:
     print("OmegaConf unavailable (use pip install omegaconf ):", e)
     exit(1)
 try:
+    import soundfile
+except Exception as e:
+    print("Soundfile unavailable (use pip install soundfile ):", e)
+    exit(1)
+try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
     print("Flask unavailable (use pip install flask ): ", e)

@@ -71,7 +71,7 @@ public class MLTesting extends AgentShardGeneral {
 			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
 			 *
 			 * Since the silero_stt model is too big to be uploaded to github,
-			 * so it has to be downloaded manually, you have to execute the following code in a python file:
+			 * it has to be downloaded manually, you have to execute the following code in a python file:
 			 *
 			 * device = torch.device('cpu')  # gpu also works, but our models are fast enough for CPU
 			 * model, decoder, utils = torch.hub.load(repo_or_dir='snakers4/silero-models',
