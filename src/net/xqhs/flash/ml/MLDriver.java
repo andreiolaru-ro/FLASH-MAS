@@ -6,13 +6,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -156,18 +158,44 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
 			// pb.directory(new File(<directory from where you want to run the command>));
 			// pb.inheritIO();
-			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-			this.serverProcess = pb.start();
-
-			// wait for the server to start
-			// TODO: find a better way to do this
-			try {
-				Thread.sleep(10000);
-			} catch(InterruptedException e) {
-				e.printStackTrace();
+			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+			serverProcess = pb.start();
+			try (InputStream output = serverProcess.getInputStream()) {
+				int initialtries = 50, tries = initialtries;
+				int spaceBetweenTries = 200;
+				boolean started = false;
+				while(!started && tries-- >= 0) {
+					try { // wait for the process to start.
+						Thread.sleep(spaceBetweenTries);
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+					if(output.available() > 0) {
+						System.out.println("/" + new String(output.readNBytes(output.available())) + "/");
+						pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+						started = true;
+						try { // wait for the process to die, in case there was an error.
+							Thread.sleep(spaceBetweenTries);
+						} catch(InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					if(!serverProcess.isAlive())
+						break;
+				}
+				if(!serverProcess.isAlive()) {
+					le("Python server failed to start, error [].", Integer.valueOf(serverProcess.exitValue()));
+					return false;
+				}
+				if(!started) {
+					serverProcess.destroyForcibly();
+					le("Python server could not start in the given time [].",
+							Integer.valueOf(initialtries * spaceBetweenTries));
+					return false;
+				}
 			}
+			li("Python server is up");
 			syncServerConfig();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -209,6 +237,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The connection to the server
 	 */
 	protected HttpURLConnection setupConnection(String route_endpoint, String request_method, Map<String, String> params) {
+		if(serverProcess == null || !serverProcess.isAlive()) {
+			le("Server process not active.");
+			return null;
+		}
 		try {
 			String location = SERVER_URL + route_endpoint;
 			URL url = new URL(location);
@@ -246,6 +278,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The response from the server, if the response code is OK. Null otherwise
 	 */
 	protected String checkResponse(HttpURLConnection connection) {
+		if(connection == null)
+			return null;
 		try {
 			String response = "";
 			int responseCode = connection.getResponseCode();
@@ -382,11 +416,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
-		if (connection == null) {
-			le("Error: connection is null");
-			return null;
-		}
-
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
@@ -428,11 +457,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
-		if (connection == null) {
-			le("Error: connection is null");
-			return null;
-		}
-
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
@@ -465,10 +489,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
-		if (connection == null) {
-			le("Error: connection is null");
-			return null;
-		}
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {

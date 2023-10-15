@@ -33,7 +33,7 @@ try:
     import torch
 except Exception as e:
     print("PyTorch unavailable (use pip install torch ):", e)
-    print("If there is a problem with MobileNetV2, try tu run the Regenerate.py script in "
+    print("If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
           "src-experiments\aifolk\ml_driver")
     exit(1)
 try:
@@ -50,12 +50,12 @@ try:
     from omegaconf import OmegaConf
 except Exception as e:
     print("OmegaConf unavailable (use pip install omegaconf ):", e)
-    exit(1)
+    # exit(1)
 try:
     import soundfile
 except Exception as e:
     print("Soundfile unavailable (use pip install soundfile ):", e)
-    exit(1)
+    # exit(1)
 try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
@@ -113,6 +113,7 @@ def load_models_from_config(config_file):
     return models
 
 
+print("<ML server> prerequisites loaded; starting server... ")
 app = Flask(__name__)
 print("<ML server> working directory: " + ML_DIRECTORY_PATH)
 models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
