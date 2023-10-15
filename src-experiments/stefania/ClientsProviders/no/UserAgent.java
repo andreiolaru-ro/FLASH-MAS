@@ -1,5 +1,10 @@
 package stefania.ClientsProviders.no;
 
+import static stefania.ClientsProviders.no.Constants.PROVIDER_COUNT;
+import static stefania.ClientsProviders.no.Constants.USERS_COUNT;
+
+import java.util.HashMap;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -11,10 +16,6 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
-
-import static stefania.ClientsProviders.no.Constants.*;
-
-import java.util.HashMap;
 
 public class UserAgent implements Agent {
 
@@ -42,7 +43,7 @@ public class UserAgent implements Agent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 
             if(event instanceof AgentWave) {
                 printMessage(event);
@@ -74,6 +75,7 @@ public class UserAgent implements Agent {
                  * Ar trebui sa gasesc o solutie, diferita de HM, ca toate serviciile sa fie marcate
                  * ca indeplinite sau nu*/
             }
+			return true;
 
         }
 

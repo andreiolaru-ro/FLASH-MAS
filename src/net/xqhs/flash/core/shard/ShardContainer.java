@@ -29,8 +29,10 @@ public interface ShardContainer extends EntityProxy<Agent>
 	 * 
 	 * @param event
 	 *            - the event to be signaled to the agent.
+	 * @return <code>true</code> if posting was successful (the container accepted new events); <code>false</code>
+	 *         otherwise.
 	 */
-	void postAgentEvent(AgentEvent event);
+	boolean postAgentEvent(AgentEvent event);
 	
 	/**
 	 * Returns the agent shard corresponding to the given designation.

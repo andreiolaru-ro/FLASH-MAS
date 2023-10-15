@@ -1,5 +1,12 @@
 package stefania.TreasureHunt.agents.asynchonous;
 
+import static stefania.TreasureHunt.util.Constants.MASTER;
+import static stefania.TreasureHunt.util.Constants.PLAYER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -11,12 +18,6 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
 import stefania.TreasureHunt.util.Coord;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static stefania.TreasureHunt.util.Constants.*;
 
 public class AsynchronousPlayerAgent implements Agent {
     private String					name;
@@ -31,7 +32,7 @@ public class AsynchronousPlayerAgent implements Agent {
 
     public ShardContainer proxy	= new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 //            AgentWave wave = (AgentWave) event.getObject(KEY);
             if (event instanceof AgentWave) {
                 AgentWave wave = (AgentWave) event;
@@ -44,6 +45,7 @@ public class AsynchronousPlayerAgent implements Agent {
                     }
                 }
             }
+			return true;
         }
 
         @Override

@@ -37,7 +37,7 @@ public class EchoTestingShard extends AgentShardCore {
 	/**
 	 * The UID.
 	 */
-	private static final long	serialVersionUID	= 5214882018809437402L;
+	private static final long		serialVersionUID	= 5214882018809437402L;
 	/**
 	 * Shard designation.
 	 */
@@ -46,19 +46,18 @@ public class EchoTestingShard extends AgentShardCore {
 	 * The name of the parameter that indicates after how many seconds the agnt should exit..
 	 */
 	protected static final String	EXIT_PARAMETER_NAME	= "exit";
-	
 	/**
 	 * The log.
 	 */
-	transient UnitComponent		locallog			= null;
+	transient UnitComponent			locallog			= null;
 	/**
 	 * Number of seconds after which the agent should exit. Negative numbers or a zero value are ignored.
 	 */
-	protected int			exitAfter	= -1;
+	protected int					exitAfter			= -1;
 	/**
 	 * The timer for closing the agent.
 	 */
-	protected Timer			exitTimer	= null;
+	protected Timer					exitTimer			= null;
 	
 	/**
 	 * No-argument constructor
@@ -93,7 +92,8 @@ public class EchoTestingShard extends AgentShardCore {
 			}, exitAfter * 1000);
 		}
 		if(event.getType() == AgentEventType.AGENT_STOP) {
-			exitTimer.cancel();
+			if(exitTimer != null)
+				exitTimer.cancel();
 			locallog.doExit();
 		}
 	}

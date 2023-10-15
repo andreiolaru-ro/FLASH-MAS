@@ -11,6 +11,9 @@
  ******************************************************************************/
 package florina.monitoringAndControlTest;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
@@ -27,10 +30,6 @@ import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
-import test.simplePingPong.AgentPingPong;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 
 /**
@@ -158,9 +157,10 @@ public class AgentTest extends Unit implements Agent
 			}
 
 			@Override
-			public void postAgentEvent(AgentEvent event)
+			public boolean postAgentEvent(AgentEvent event)
 			{
 				AgentTest.this.postAgentEvent(event);
+				return true; // not checked
 			}
 
 			@Override

@@ -22,7 +22,7 @@ class TestAgent implements Agent
 	private MessagingPylonProxy		pylon;
 	public ShardContainer			proxy	= new ShardContainer() {
 		@Override
-		public void postAgentEvent(AgentEvent event)
+												public boolean postAgentEvent(AgentEvent event)
 		{
 			if(event instanceof AgentWave)
 				System.out.println(((AgentWave) event).getContent() + " de la "
@@ -47,6 +47,7 @@ class TestAgent implements Agent
 				};
 				eventThread.run();
 			}
+													return true;
 		}
 
 		@Override

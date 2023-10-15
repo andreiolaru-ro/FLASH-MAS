@@ -319,7 +319,7 @@ public class Node extends Unit implements Entity<Node> {
 		}
 		messagingShard.addContext(new ShardContainer() {
 			@Override
-			public void postAgentEvent(AgentEvent event) {
+			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
 				case AGENT_WAVE:
 					String localAddr = ((AgentWave) event).getCompleteDestination();
@@ -333,6 +333,7 @@ public class Node extends Unit implements Entity<Node> {
 				default:
 					break;
 				}
+				return true; // FIXME it always returns true
 			}
 			
 			@Override

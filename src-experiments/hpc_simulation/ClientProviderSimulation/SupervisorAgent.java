@@ -1,7 +1,6 @@
 package hpc_simulation.ClientProviderSimulation;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -41,7 +40,7 @@ public class SupervisorAgent implements RunnableAgent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
             if(messageFromUser(event)) {
                 messagesFromUsers++;
                 synchronized (supervisorLock) {
@@ -54,6 +53,7 @@ public class SupervisorAgent implements RunnableAgent {
                 }
 
             }
+			return true;
         }
 
         @Override
