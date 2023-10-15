@@ -111,6 +111,10 @@ public class Node extends Unit implements Entity<Node> {
 	 * Global (implementation-wide) switch to kill the node when there are no more running active entities.
 	 */
 	public static final boolean		EXIT_ON_NO_ACTIVE_ENTITIES	= true;
+	/**
+	 * The time after which to perform the first check of active entities.
+	 */
+	public static final int			INITIAL_ACTIVE_CHECK		= 5000;
 	
 	/**
 	 * The name of the node.
@@ -255,7 +259,7 @@ public class Node extends Unit implements Entity<Node> {
 				public void run() {
 					checkRunning();
 				}
-			}, 2000, 1000);
+			}, INITIAL_ACTIVE_CHECK, 1000);
 		}
 		
 		return true;
