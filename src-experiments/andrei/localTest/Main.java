@@ -33,7 +33,7 @@ class TestAgent implements Agent {
 	
 	public ShardContainer proxy = new ShardContainer() {
 		@Override
-		public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 			if(event instanceof AgentWave)
 				System.out
 						.println(((AgentWave) event).getContent() + " de la " + ((AgentWave) event).getCompleteSource()
@@ -49,6 +49,7 @@ class TestAgent implements Agent {
 				};
 				eventThread.run();
 			}
+			return true;
 		}
 		
 		@Override

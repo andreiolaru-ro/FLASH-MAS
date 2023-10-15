@@ -1,5 +1,13 @@
 package stefania.ClientProvider;
 
+import static stefania.ClientProvider.Constants.NO;
+import static stefania.ClientProvider.Constants.PROVIDER_COUNT;
+import static stefania.ClientProvider.Constants.USERS_COUNT;
+import static stefania.ClientProvider.Constants.YES;
+
+import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -7,15 +15,9 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
-
-import java.sql.Time;
-import java.util.HashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import static stefania.ClientProvider.Constants.*;
 
 
 public class UserAgent implements Agent {
@@ -47,7 +49,7 @@ public class UserAgent implements Agent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 //            AgentWave wave = (AgentWave) event.getObject(KEY);
             if (event instanceof AgentWave) {
                 AgentWave wave = (AgentWave) event;
@@ -78,6 +80,7 @@ public class UserAgent implements Agent {
 //                    }
                 }
             }
+			return true;
         }
 
 //        @Override

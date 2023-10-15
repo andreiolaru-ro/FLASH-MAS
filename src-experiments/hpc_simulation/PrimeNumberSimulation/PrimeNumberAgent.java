@@ -25,7 +25,7 @@ public class PrimeNumberAgent implements RunnableAgent {
     private int primeNumbersLimit;
     public ShardContainer			primeNumberProxy	= new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event)
+        public boolean postAgentEvent(AgentEvent event)
         {
             if(event.containsKey(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT)) {
                 primeNumbersCount = Integer.parseInt(event.get(PrimeNumberCalculatorShard.PRIME_NUMBERS_COUNT));
@@ -36,6 +36,7 @@ public class PrimeNumberAgent implements RunnableAgent {
                         ((AgentWave) event).getContent());
                 isWaitng = false;
             }
+            return true;
         }
 
         @Override

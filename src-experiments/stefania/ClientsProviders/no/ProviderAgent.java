@@ -1,5 +1,8 @@
 package stefania.ClientsProviders.no;
 
+import java.security.InvalidParameterException;
+import java.util.HashMap;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -11,9 +14,6 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
-
-import java.security.InvalidParameterException;
-import java.util.HashMap;
 
 public class ProviderAgent implements Agent {
 
@@ -43,7 +43,7 @@ public class ProviderAgent implements Agent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 
             synchronized (providerLock){
 
@@ -55,12 +55,12 @@ public class ProviderAgent implements Agent {
                     /* If the provider is not available, send a deny to the user */
                     if (!isAvailable()) {
                         declineJob(event, " { Busy } ");
-                        return;
+						return false;
                     }
                     /* If the provider doesn't have the requested service, send a deny to the user */
                     if (!hasService(((AgentWave) event).getContent())){
                         declineJob(event, " { No service } ");
-                        return;
+						return false;
                     }
 
                     /* Otherwise, notify the user that this provider will take the job and start processing*/
@@ -84,6 +84,7 @@ public class ProviderAgent implements Agent {
                     messagingShard.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
                 }
             }
+			return true;
         }
 
         @Override
