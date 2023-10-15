@@ -188,12 +188,17 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				JSONObject messageToServer = new JSONObject();
 				messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
 				messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
-				webSocketClient.send(messageToServer.toString());
+				try {
+					webSocketClient.send(messageToServer.toString());
+				} catch(Exception e) {
+					le("Failed to send message:", (Object[]) e.getStackTrace());
+				}
 				lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
 				return true;
 			}
 			
 			@Override
+			@SuppressWarnings("unchecked")
 			public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
 				if(!messageReceivers.remove(entityName, registeredReceiver))
 					return false;
@@ -201,7 +206,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				messageToServer.put(MESSAGE_NODE_KEY, getNodeName());
 				messageToServer.put(MESSAGE_ENTITY_KEY, entityName);
 				messageToServer.put(UNREGISTER_KEY, UNREGISTER_KEY);
-				webSocketClient.send(messageToServer.toString());
+				try {
+					webSocketClient.send(messageToServer.toString());
+				} catch(Exception e) {
+					le("Failed to send message:", (Object[]) e.getStackTrace());
+				}
 				lf("Unregistered entity [] from this pylon []: ", entityName, thisPylon(), messageToServer);
 				return true;
 			}
@@ -229,7 +238,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				messageToServer.put(MESSAGE_SOURCE_KEY, source);
 				messageToServer.put(MESSAGE_DESTINATION_KEY, destination);
 				messageToServer.put(MESSAGE_CONTENT_KEY, content);
-				webSocketClient.send(messageToServer.toString());
+				try {
+					webSocketClient.send(messageToServer.toString());
+				} catch(Exception e) {
+					le("Failed to send message:", (Object[]) e.getStackTrace());
+				}
 				return true;
 			}
 			
