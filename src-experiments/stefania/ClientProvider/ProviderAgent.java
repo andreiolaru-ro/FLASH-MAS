@@ -47,7 +47,7 @@ public class ProviderAgent implements Agent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 //            AgentWave wave = (AgentWave) event.getObject(KEY);
             if (event instanceof AgentWave) {
                 AgentWave wave = (AgentWave) event;
@@ -86,6 +86,7 @@ public class ProviderAgent implements Agent {
 //                    }
 //                }
             }
+			return true;
         }
 
 //        @Override

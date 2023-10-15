@@ -3,6 +3,8 @@ MODELS:
   -
     name: "MobileNetV2"
     path: "ml-directory/models/mobilenetv2.pth"
+    operation_module: "imageInput"
+    transform: true
     cuda: false
     input_space: RGB
     input_size: [224, 224]
@@ -13,6 +15,8 @@ MODELS:
   -
     name: "ResNet18"
     path: "ml-directory/models/resnet18.pth"
+    operation_module: "imageInput"
+    transform: true
     cuda: true
     input_space: RGB
     input_size: [224, 224]
@@ -20,4 +24,10 @@ MODELS:
       mean: [0.485, 0.456, 0.406]
       std:  [0.229, 0.224, 0.225]
     class_names: ['apple','atm card','cat','banana','bangle','battery','bottle','broom','bulb','calender','camera']
-
+  -
+    name: "silero_stt"
+    path: "ml-directory/models/silero_stt.pth"
+    operation_module: "audioInput"
+    transform: false
+    cuda: true
+    jit: true

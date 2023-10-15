@@ -69,24 +69,31 @@ public class MLTesting extends AgentShardGeneral {
 			 * delete the newly added model form the /models directory, and restore the config file
 			 * this will cause the model to be downloaded again, and the config file to be re-written
 			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
+			 *
+			 * Since the silero_stt model is too big to be uploaded to github,
+			 * it has to be downloaded manually, you have to execute the following code in a python file:
+			 *
+			 * device = torch.device('cpu')  # gpu also works, but our models are fast enough for CPU
+			 * model, decoder, utils = torch.hub.load(repo_or_dir='snakers4/silero-models',
+			 *                                        model='silero_stt',
+			 *                                        language='en', # also available 'de', 'es'
+			 *                                        device=device)
+			 * torch.jit.save(model, 'silero_stt.pth')
+			 *
 			 */
 
-			driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg");
+			driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg", true);
 
 			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
-			modelConfig.put("input_space", "RGB");
-			modelConfig.put("input_size", List.of(224, 224));
-			modelConfig.put("norm_std", List.of(0.229, 0.224, 0.225));
-			modelConfig.put("norm_mean", List.of(0.485, 0.456, 0.406));
-			List<String> classNames = List.of(
-					"apple", "atm card", "cat", "banana", "bangle",
-					"battery", "bottle", "broom", "bulb", "calender", "camera"
-			);
-			modelConfig.put("class_names", classNames);
-			//driver.addModel("Resnet18-bis", "src-experiments/aifolk/ml_driver/data/resnet18-bis.pth", modelConfig);
-			driver.predict(("Resnet18-bis"), "src-experiments/aifolk/ml_driver/data/dog.jpg");
+			modelConfig.put("transform", false);
+			modelConfig.put("operation_module", "audioInput");
+			modelConfig.put("jit", true);
+			//driver.addModel("silero_stt_test", "src-experiments/aifolk/ml_driver/data/silero_stt.pth", modelConfig);
+			driver.addModel("ResNet18", "ml-directory/models/resnet18.pth", modelConfig);
+			driver.predict(("silero_stt"), "src-experiments/aifolk/ml_driver/data/pronunciation.wav", false);
 			li(driver.getModels().keySet().toString());
+			driver.exportModel("ResNet18", "src-experiments/aifolk/ml_driver/test_export_destination");
 
 
 			// loads some models, than [after some time] does several predictions, saves the model, etc

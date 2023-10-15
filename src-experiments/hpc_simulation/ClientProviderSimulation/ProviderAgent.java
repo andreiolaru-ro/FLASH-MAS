@@ -43,7 +43,7 @@ public class ProviderAgent implements RunnableAgent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 
             synchronized (providerLock){
 
@@ -55,12 +55,12 @@ public class ProviderAgent implements RunnableAgent {
                     /* If the provider is not available, send a deny to the user */
                     if (!isAvailable()) {
                         declineJob(event, " { Busy } ");
-                        return;
+						return false;
                     }
                     /* If the provider doesn't have the requested service, send a deny to the user */
                     if (!hasService(((AgentWave) event).getContent())){
                         declineJob(event, " { No service } ");
-                        return;
+						return false;
                     }
 
                     /* Otherwise, notify the user that this provider will take the job and start processing*/
@@ -82,6 +82,7 @@ public class ProviderAgent implements RunnableAgent {
                     providerLock.notify();
                     setSTOP(true);
                 }
+				return true;
             }
         }
 

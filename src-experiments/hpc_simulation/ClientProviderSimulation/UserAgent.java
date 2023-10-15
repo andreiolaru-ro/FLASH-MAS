@@ -3,7 +3,6 @@ package hpc_simulation.ClientProviderSimulation;
 import java.util.HashMap;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -42,7 +41,7 @@ public class UserAgent implements RunnableAgent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 
             if(event instanceof AgentWave) {
                 printMessage(event);
@@ -73,7 +72,7 @@ public class UserAgent implements RunnableAgent {
                   * Ar trebui sa gasesc o solutie, diferita de HM, ca toate serviciile sa fie marcate
                   * ca indeplinite sau nu*/
             }
-
+			return true;
         }
 
         @Override

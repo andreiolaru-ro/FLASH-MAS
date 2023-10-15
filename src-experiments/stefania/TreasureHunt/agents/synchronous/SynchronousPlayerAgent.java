@@ -1,5 +1,11 @@
 package stefania.TreasureHunt.agents.synchronous;
 
+import static stefania.TreasureHunt.util.Constants.MASTER;
+import static stefania.TreasureHunt.util.Constants.PLAYER;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -11,10 +17,6 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.synchronous.SynchronousMPIMessaging;
 import stefania.TreasureHunt.util.Coord;
-import static stefania.TreasureHunt.util.Constants.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SynchronousPlayerAgent implements Agent {
     private String					name;
@@ -28,7 +30,9 @@ public class SynchronousPlayerAgent implements Agent {
 
     public ShardContainer proxy	= new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event) { }
+		public boolean postAgentEvent(AgentEvent event) {
+			return false;
+		}
 
         @Override
         public String getEntityName()

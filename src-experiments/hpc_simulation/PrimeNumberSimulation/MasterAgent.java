@@ -3,7 +3,6 @@ package hpc_simulation.PrimeNumberSimulation;
 import java.util.ArrayList;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -27,11 +26,11 @@ public class MasterAgent implements RunnableAgent {
     private ArrayList<Integer> limits = new ArrayList<>();
     private ShardContainer masterProxy = new ShardContainer() {
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 
             if(event.containsKey(ControlSlaveAgentsShard.SIMULATION_START_TIME)) {
                 startTime = Long.parseLong(event.get(ControlSlaveAgentsShard.SIMULATION_START_TIME));
-                return;
+                return true;
             }
 
             if(event.containsKey(ControlSlaveAgentsShard.LIMIT)) {
@@ -43,7 +42,7 @@ public class MasterAgent implements RunnableAgent {
                         getMessagingShard().sendMessage("Master", Integer.toString(i), Integer.toString(limits.get(i)));
                     }
                 }
-                return;
+				return true;
             }
 
             decrement();
@@ -52,7 +51,7 @@ public class MasterAgent implements RunnableAgent {
                 long elapsedTime = System.nanoTime() - startTime;
                 System.out.println("Simulation time " + elapsedTime + " " + slaveAgentsCount);
             }
-
+			return true;
 
         }
 

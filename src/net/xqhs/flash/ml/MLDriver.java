@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -22,6 +23,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.node.Node;
@@ -60,15 +62,19 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	/**
 	 * endpoint for the server route
 	 */
-	public static String ADD_MODEL;
+	public static String ADD_MODEL_SERVICE;
 	/**
 	 * endpoint for the server route
 	 */
-	public static String PREDICT;
+	public static String PREDICT_SERVICE;
 	/**
 	 * endpoint for the server route
 	 */
-	public static String GET_MODELS;
+	public static String GET_MODELS_SERVICE;
+	/**
+	 * endpoint for the server route
+	 */
+	public static String EXPORT_MODEL_SERVICE;
 	/**
 	 * parameter for the model name
 	 */
@@ -85,22 +91,49 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * parameter for the input data
 	 */
 	public static String INPUT_DATA_PARAM;
+	/**
+	 * parameter for the export path
+	 */
+	public static String EXPORT_PATH_PARAM;
+	/**
+	 * package name for the operations modules
+	 */
+	public static String OP_MODULE_PACKAGE;
+	/**
+	 * parameter for the operation module
+	 */
+	public static String OPERATION_MODULE_PARAM;
+	/**
+	 * parameter for the transform operation
+	 */
+	public static String TRANSFORM_OP_PARAM;
+	/**
+	 * parameter for the predict operation
+	 */
+	public static String PREDICT_OP_PARAM;
 
 	{
 		SERVER_URL = "http://localhost:5000/";
 		ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 		ML_DIRECTORY_PATH = "ml-directory/";
+		OP_MODULE_PACKAGE = "operations-modules";
 		SERVER_FILE = "python_module/server.py";
 		MODEL_CONFIG_FILE = "config.yaml";
 		MODELS_DIRECTORY = "models/";
 		MODEL_ENDPOINT = ".pth";
-		ADD_MODEL = "add_model";
-		PREDICT = "predict";
-		GET_MODELS = "get_models";
+		ADD_MODEL_SERVICE = "add_model";
+		PREDICT_SERVICE = "predict";
+		GET_MODELS_SERVICE = "get_models";
+		EXPORT_MODEL_SERVICE = "export_model";
 		MODEL_NAME_PARAM = "model_name";
 		MODEL_FILE_PARAM = "model_file";
 		MODEL_CONFIG_PARAM = "model_config";
 		INPUT_DATA_PARAM = "input_data";
+		EXPORT_PATH_PARAM = "export_directory_path";
+		OPERATION_MODULE_PARAM = "operation_module";
+		TRANSFORM_OP_PARAM = "transform_op";
+		PREDICT_OP_PARAM = "predict_op";
+
 	}
 
 	/**
@@ -120,28 +153,54 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
-		// try {
-		// ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
-		// + MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
-		// // pb.directory(new File(<directory from where you want to run the command>));
-		// // pb.inheritIO();
-		// pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-		// pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-		// pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-		// this.serverProcess = pb.start();
-		//
-		// // wait for the server to start
-		// // TODO: find a better way to do this
-		// try {
-		// Thread.sleep(10000);
-		// } catch(InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// syncServerConfig();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// return false;
-		// }
+		try {
+			ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
+					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
+			// pb.directory(new File(<directory from where you want to run the command>));
+			// pb.inheritIO();
+			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+			serverProcess = pb.start();
+			try (InputStream output = serverProcess.getInputStream()) {
+				int initialtries = 50, tries = initialtries;
+				int spaceBetweenTries = 200;
+				boolean started = false;
+				while(!started && tries-- >= 0) {
+					try { // wait for the process to start.
+						Thread.sleep(spaceBetweenTries);
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+					if(output.available() > 0) {
+						System.out.println("/" + new String(output.readNBytes(output.available())) + "/");
+						pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+						started = true;
+						try { // wait for the process to die, in case there was an error.
+							Thread.sleep(spaceBetweenTries);
+						} catch(InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					if(!serverProcess.isAlive())
+						break;
+				}
+				if(!serverProcess.isAlive()) {
+					le("Python server failed to start, error [].", Integer.valueOf(serverProcess.exitValue()));
+					return false;
+				}
+				if(!started) {
+					serverProcess.destroyForcibly();
+					le("Python server could not start in the given time [].",
+							Integer.valueOf(initialtries * spaceBetweenTries));
+					return false;
+				}
+			}
+			li("Python server is up");
+			syncServerConfig();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 		return true;
 	}
 	
@@ -178,6 +237,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The connection to the server
 	 */
 	protected HttpURLConnection setupConnection(String route_endpoint, String request_method, Map<String, String> params) {
+		if(serverProcess == null || !serverProcess.isAlive()) {
+			le("Server process not active.");
+			return null;
+		}
 		try {
 			String location = SERVER_URL + route_endpoint;
 			URL url = new URL(location);
@@ -215,29 +278,23 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			The response from the server, if the response code is OK. Null otherwise
 	 */
 	protected String checkResponse(HttpURLConnection connection) {
+		if(connection == null)
+			return null;
 		try {
 			String response = "";
 			int responseCode = connection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				try (BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getInputStream()))) {
-					String line;
-					while ((line = in.readLine()) != null) {
-						response += line;
-					}
-				}
-				lf("Response: " + response);
-				return response;
-			} else {
-				BufferedReader in = new BufferedReader(
-						new InputStreamReader(connection.getErrorStream()));
+			boolean iserror = responseCode >= 400;
+			try (BufferedReader in = new BufferedReader(
+					new InputStreamReader(!iserror ? connection.getInputStream() : connection.getErrorStream()))) {
 				String line;
 				while ((line = in.readLine()) != null) {
 					response += line;
 				}
-				le("Error: " + responseCode + " " + connection.getResponseMessage());
-				le("Response: " + response);
-				return null;
+				if(iserror)
+					le("Error: [][]. Response: ",responseCode, connection.getResponseMessage(), response);
+				else
+					li("Response: " + response);
+				return !iserror ? response : null;
 			}
 
 		} catch (IOException e) {
@@ -248,23 +305,40 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	}
 
 	/**
+	 * Method to parse the json response from the server.
+	 * It takes the response, and the key of the data to parse.
+	 * It returns the parsed data as an object, which can be casted to the appropriate type
+	 *
+	 * @param key
+	 * 			The key of the data to parse in the returned json
+	 * @param repsonse
+	 * 			The json response from the server
+	 *
+	 * @return
+	 * 			The parsed data as an object
+	 */
+	public Object parseResponse(String key, String repsonse) {
+		JsonParser jsonParser = new JsonParser();
+		JsonObject jsonObject = jsonParser.parse(repsonse).getAsJsonObject();
+		JsonElement jsonElement = jsonObject.get(key);
+		Gson gson = new Gson();
+		Object obj = gson.fromJson(jsonElement, Object.class);
+		return obj;
+	}
+
+	/**
 	 * Method to sync the models and their configurations available on the server and the client.
 	 * It sends a request to the server, and update the modelsList attribute with the response.
 	 * The response is a map of maps, each map containing the data of a model associated with its ID.
 	 */
 	public void syncServerConfig() {
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(GET_MODELS, "GET", null);
+		HttpURLConnection connection = setupConnection(GET_MODELS_SERVICE, "GET", null);
 
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement models = jsonObject.get("models");
-			Gson gson = new Gson();
-			this.modelsList = gson.fromJson(models, Map.class);
-
+			this.modelsList = (Map<String, Map<String, Object>>) parseResponse("models", response);
 			li("available models: ", this.modelsList.keySet());
 		}
 	}
@@ -280,6 +354,35 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	}
 
 	/**
+	 * Method to encode the data to send to the server. It takes the path of the data to encode,
+	 * and returns the encoded data as a string
+	 *
+	 * @param dataPath
+	 * 			The path of the data to encode
+	 *
+	 * @return
+	 * 			The encoded data
+	 */
+	private String encodeImage(String dataPath) {
+		String encodedData;
+		try {
+			// Read and encode the image data
+			BufferedImage image = ImageIO.read(new File(dataPath));
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(image, "jpeg", baos);
+			byte[] imageData = baos.toByteArray();
+			encodedData = Base64.getEncoder().encodeToString(imageData);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			le("Error: could not read the image file");
+			return null;
+		}
+		return encodedData;
+	}
+
+	/**
 	 * Methode to add a model to the python server.
 	 * It takes strings of the model path and its name as parameter, and return its ID if it exists.
 	 * The server send a success message if the model is properly added, and an error message if it is not.
@@ -290,18 +393,17 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * @param model_path
 	 * 			The path for the model to load
 	 * @param model_config
-	 * 			a dictionary containing the model configuration if needed. For now, it has to contain:
-	 * 			- input_space: the input space of the model
-	 * 			- input_size: the input size of the model
-	 * 			- norm_mean: the mean of the normalization
-	 * 			- norm_std: the standard deviation of the normalization
-	 * 			- cuda: if the model is on cuda or not
-	 * 		    - class_names: the name of the classes
+	 * 			a dictionary containing the model configuration if needed. Some information are required, such as:
+	 * 		- "cuda": true if the model is to be run on GPU, false otherwise
+	 * 	    - "transform": true if the model requires a transformation operation on the input data, false otherwise
+	 * 	    - "operation_module": the name of the module containing the operation specific to the model
+	 * 	    (e.g. "imageInput" for the models that require an image as input)
+	 * 	    Other information can be added to the configuration, depending on the model. Be carefull to give information
+	 * 	    that are relevant to the model, and to the operation module
 	 *
 	 * @return The Id of the model if it is properly added, null if it is not
 	 */
 	public String addModel(String model_id, String model_path, Map<String, Object> model_config) {
-
 		// Convert the model_config to a JSON string
 		Gson gson = new Gson();
 		String jsonConfig = gson.toJson(model_config);
@@ -313,20 +415,12 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		postData.put(MODEL_CONFIG_PARAM, jsonConfig);
 
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_MODEL, "POST", postData);
-		if (connection == null) {
-			le("Error: connection is null");
-			return null;
-		}
-
+		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
 			lf("Model " + model_id + " added successfully");
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement model_info = jsonObject.get("model");
-			Map<String, Object> values = gson.fromJson(model_info, Map.class);
+			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
 			values.remove("name");
 			this.modelsList.put(model_id, values);
 
@@ -349,52 +443,61 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * @return
 	 * 			The prediction result, as a list of double
 	 */
-	public ArrayList<Double> predict(String model, String data_path) {
-
-		String imageBase64 = null;
-		try {
-			// Read and encode the image data
-			BufferedImage image = ImageIO.read(new File(data_path));
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(image, "jpeg", baos);
-			byte[] imageData = baos.toByteArray();
-			imageBase64 = Base64.getEncoder().encodeToString(imageData);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-			le("Error: could not read the image file");
-			return null;
+	public ArrayList<Object> predict(String model, String data_path, Boolean needEncode) {
+		String toPredict = data_path;
+		if (needEncode) {
+			// Encode the data
+			toPredict = encodeImage(data_path);
 		}
 
 		// Create the request data
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model);
-		postData.put(INPUT_DATA_PARAM, imageBase64);
+		postData.put(INPUT_DATA_PARAM, toPredict);
 
 		// Set up the connection
-		HttpURLConnection connection = setupConnection(PREDICT, "POST", postData);
-		if (connection == null) {
-			le("Error: connection is null");
-			return null;
-		}
-
+		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
 		// Check the response
 		String response = checkResponse(connection);
 		if (response != null) {
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-			JsonElement prediction_json = jsonObject.get("prediction");
-			Gson gson = new Gson();
-			ArrayList<ArrayList<Double>> prediction_gson = gson.fromJson(prediction_json, ArrayList.class);
-			ArrayList<Double> prediction_list = prediction_gson.get(0);
+			ArrayList<Object> prediction_list = (ArrayList<Object>) parseResponse("prediction", response);
 
 			li("Prediction: " + prediction_list);
 			return prediction_list;
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Method to export a model from the server.
+	 * When exporting a model, it creates a config file with the model's configuration, and a .pth file with the model's weights.
+	 * It takes the model ID and the export directory as parameter, and return the path to the exported model.
+	 *
+	 * @param model_id
+	 * 			The ID of the model to export
+	 * @param export_directory
+	 * 			The directory where to export the model
+	 *
+	 * @return
+	 * 			The path to the exported model
+	 */
+	public String exportModel(String model_id, String export_directory) {
+		// Set up the form data
+		Map<String, String> postData = new HashMap<>();
+		postData.put(MODEL_NAME_PARAM, model_id);
+		postData.put(EXPORT_PATH_PARAM, export_directory);
+
+		// Set up the connection
+		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
+		// Check the response
+		String response = checkResponse(connection);
+		if (response != null) {
+			lf("Model " + model_id + " exported successfully");
+			return export_directory + "/" + model_id + MODEL_ENDPOINT;
+		}
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<MLDriver> asContext() {

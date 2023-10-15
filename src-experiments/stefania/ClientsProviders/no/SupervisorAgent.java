@@ -1,5 +1,8 @@
 package stefania.ClientsProviders.no;
 
+import static stefania.ClientsProviders.no.Constants.PROVIDER_COUNT;
+import static stefania.ClientsProviders.no.Constants.USERS_COUNT;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -11,8 +14,6 @@ import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.mpi.asynchronous.AsynchronousMPIMessaging;
-
-import static stefania.ClientsProviders.no.Constants.*;
 
 public class SupervisorAgent implements Agent {
 
@@ -42,7 +43,7 @@ public class SupervisorAgent implements Agent {
         }
 
         @Override
-        public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
             if(messageFromUser(event)) {
                 messagesFromUsers++;
                 synchronized (supervisorLock) {
@@ -64,6 +65,7 @@ public class SupervisorAgent implements Agent {
                 }
 
             }
+			return true;
         }
 
         @Override
