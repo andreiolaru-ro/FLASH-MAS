@@ -109,7 +109,7 @@ public class AgentTest extends Unit implements Agent
 	 * @param event
 	 *            - the event received.
 	 */
-	protected void postAgentEvent(AgentEvent event) {
+	protected boolean postAgentEvent(AgentEvent event) {
 		li("received: " + event.toString());
 		if(event.getType().equals(AgentEventType.AGENT_WAVE)) {
 			String content = ((AgentWave) event).getContent();
@@ -118,6 +118,7 @@ public class AgentTest extends Unit implements Agent
 			else if(content.equals("stop"))
 				stop();
 		}
+		return true;
 	}
 	
 	@Override
@@ -163,9 +164,9 @@ public class AgentTest extends Unit implements Agent
 			}
 
 			@Override
-			public void postAgentEvent(AgentEvent event)
+			public boolean postAgentEvent(AgentEvent event)
 			{
-				AgentTest.this.postAgentEvent(event);
+				return AgentTest.this.postAgentEvent(event);
 			}
 
 			@Override
