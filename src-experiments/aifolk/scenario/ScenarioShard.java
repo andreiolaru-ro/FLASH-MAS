@@ -12,12 +12,13 @@ import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.ml.MLPipelineShard;
 import net.xqhs.flash.ml.OntologyDriver;
 
+@SuppressWarnings("javadoc")
 public class ScenarioShard extends AgentShardGeneral {
 	/**
 	 * The serial UID
 	 */
 	private static final long	serialVersionUID	= -4891703380660803677L;
-	private static final String	DESIGNATION			= "Scenario";
+	public static final String	DESIGNATION			= "Scenario";
 	/**
 	 * The node-local {@link OntologyDriver} instance.
 	 */
@@ -41,16 +42,18 @@ public class ScenarioShard extends AgentShardGeneral {
 	}
 	
 	public void initiateAgentEvent(Object input, long eventID) {
+		// TODO event IDs are specific to the agent and should be mananged internally
 		AgentWave event = new AgentWave(null, MLPipelineShard.DESIGNATION);
+		event.addSourceElementFirst(DESIGNATION);
 		event.add("ID", Long.valueOf(eventID).toString()).addObject("input", input);
 		if(!getAgent().postAgentEvent(event))
-			le("Post event with ID [] failed.", eventID);
+			le("Post event with ID [] failed.", Long.valueOf(eventID));
 	}
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		if(event.getType() == AgentEventType.AGENT_WAVE
+		if(AgentEventType.AGENT_WAVE.equals(event.getType())
 				&& MLPipelineShard.DESIGNATION.equals(event.getValue(AgentWave.SOURCE_ELEMENT))) {
 			String inputID = event.get("ID");
 			scenarioDriver.receiveAgentOutput(event.getObject(AgentWave.CONTENT), Long.parseLong(inputID));
