@@ -1,13 +1,18 @@
 /**
  * 
  */
-package aifolk_core;
+package aifolk.core;
 
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import aifolk.onto.OntologyDriver;
+import aifolk.onto.Query;
+import aifolk.onto.QueryResult;
 import aifolk.scenario.ScenarioShard;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -83,7 +88,14 @@ public class MLManagementShard extends AgentShardGeneral {
 				// wave is from the MLManagementShard of a different agent
 				JsonObject jsonObj = JsonParser.parseString(event.get(AgentWave.CONTENT)).getAsJsonObject();
 				String messageType = jsonObj.get(AIFolkProtocol.FOLK_PROTOCOL).getAsString();
+				JsonArray arguments = jsonObj.get(AIFolkProtocol.FOLK_ARGUMENTS).getAsJsonArray();
 				switch(messageType) {
+				case AIFolkProtocol.FOLK_SEARCH:
+					String queryString = arguments.get(0).getAsString();
+					QueryResult[] results = ontDriver.runQuery(new Query(queryString));
+					AgentWave reply = ((AgentWave) event).createReply(new Gson().toJson(results));
+					sendMessage(reply);
+					break;
 				// TODO
 				default:
 					le("Unknown protocol []", messageType);

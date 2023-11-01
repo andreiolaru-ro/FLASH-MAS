@@ -3,7 +3,7 @@
  */
 package aifolk.scenario;
 
-import aifolk_core.OntologyDriver;
+import aifolk.onto.OntologyDriver;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
