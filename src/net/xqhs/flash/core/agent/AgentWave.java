@@ -84,7 +84,7 @@ public class AgentWave extends AgentEvent {
 	 * <p>
 	 * This is used for MPI support.
 	 */
-	public final String			VALUE					= "value";
+	public static final String	VALUE					= "value";
 	
 	/**
 	 * The keys which have special meanings in the wave and are not part of actual content.
@@ -108,13 +108,13 @@ public class AgentWave extends AgentEvent {
 	 * This is used for MPI support.
 	 * 
 	 * @param content
-	 *            - the content of the wave.
+	 *            - the content of the wave. If <code>null</code>, no content is added. <code>null</code> content can be
+	 *            added using {@link #add(String, String)}.
 	 */
 	public AgentWave(String content) {
-		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
+		this(content, null);
 	}
-
+	
 	/**
 	 * Creates an agent wave with <b>no</b> destination.
 	 * <p>
@@ -123,26 +123,27 @@ public class AgentWave extends AgentEvent {
 	 * This is used for MPI support.
 	 *
 	 * @param content
-	 *            - the content of the wave.
+	 *            - the content of the wave. If <code>null</code>, no content is added. <code>null</code> content can be
+	 *            added using {@link #add(String, String)}.
 	 * @param value
 	 *            - the value of the wave.
 	 */
 	public AgentWave(String content, int value) {
-		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
+		this(content);
 		add(VALUE, String.valueOf(value));
 	}
-
+	
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
 	 * A <i>complete</i> destination will be added by assembling the elements of the destination.
 	 * <p>
-	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if so,
-	 * the content will be unpacked accordingly.
+	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if
+	 * so, the content will be unpacked accordingly.
 	 * 
 	 * @param content
-	 *            - the content of the wave, that can be the result of previous serialization.
+	 *            - the content of the wave, that can be the result of previous serialization. If <code>null</code>, no
+	 *            content is added. <code>null</code> content can be added using {@link #add(String, String)}.
 	 * @param destinationRoot
 	 *            - the first element of the destination endpoint.
 	 * @param destinationElements
@@ -269,7 +270,8 @@ public class AgentWave extends AgentEvent {
 	public AgentWave resetDestination(String destinationRoot, String... destinationElements) {
 		if(isSet(DESTINATION_ELEMENT))
 			removeKey(DESTINATION_ELEMENT);
-		add(DESTINATION_ELEMENT, destinationRoot);
+		if(destinationRoot != null)
+			add(DESTINATION_ELEMENT, destinationRoot);
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		return recomputeCompleteDestination();
 	}
@@ -320,17 +322,16 @@ public class AgentWave extends AgentEvent {
 	public String getContent() {
 		return getValue(CONTENT);
 	}
-
+	
 	/**
 	 * @return the value of the wave.
 	 */
-	public int getValue()
-	{
+	public int getValue() {
 		return Integer.parseInt(getValue(VALUE));
 	}
 	
 	/**
-	 * @return all the keys in this {@link MultiValueMap} which are not realted to routing or agent event type. The
+	 * @return all the keys in this {@link MultiValueMap} which are not related to routing or agent event type. The
 	 *         {@value #CONTENT} key is added as the first key.
 	 */
 	public List<String> getContentElements() {
@@ -343,7 +344,7 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Creates a {@link String} that represents the serialization of all of the waves <b>content</b> (the keys returned
+	 * Creates a {@link String} that represents the serialization of all <b>content</b> in the wave (the keys returned
 	 * by {@link #getContentElements()}). This string can be given to {@link #fromSerializedContent(String)} or to the
 	 * {@link #AgentWave(String, String, String...)} constructor.
 	 * 
@@ -369,6 +370,27 @@ public class AgentWave extends AgentEvent {
 	@SuppressWarnings({ "static-method" })
 	public AgentWave fromSerializedContent(String serializedContent) {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * @return same as {@link #createReply(String)}, but without adding any content.
+	 */
+	public AgentWave createReply() {
+		return createReply(null);
+	}
+	
+	/**
+	 * Creates an {@link AgentWave} based on the given content, reversing the source and destination elements of this
+	 * wave. Only values for the {@link #SOURCE_ELEMENT} and {@link #DESTINATION_ELEMENT} keys of this wave are
+	 * considered.
+	 * 
+	 * @param content
+	 *            - the content to add to the wave (see {@link AgentWave#AgentWave(String, String, String...)}.
+	 * @return the new {@link AgentWave} to serve as a reply to this wave.
+	 */
+	public AgentWave createReply(String content) {
+		return ((AgentWave) new AgentWave(content).addAll(SOURCE_ELEMENT, getValues(DESTINATION_ELEMENT))
+				.addAll(DESTINATION_ELEMENT, getValues(SOURCE_ELEMENT))).recomputeCompleteDestination();
 	}
 	
 	/**
