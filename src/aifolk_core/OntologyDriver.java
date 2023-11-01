@@ -1,4 +1,4 @@
-package net.xqhs.flash.ml;
+package aifolk_core;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;

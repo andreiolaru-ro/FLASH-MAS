@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.xqhs.flash.ml;
+package aifolk_core;
 
 import java.util.List;
 
@@ -15,6 +15,7 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.ml.MLDriver;
 
 /**
  * Shard to manage the use of ML models, according to the AI Folk methodology.
@@ -28,10 +29,6 @@ public class MLManagementShard extends AgentShardGeneral {
 	 * {@link AgentShardDesignation}.
 	 */
 	private static final String		DESIGNATION			= "ML:Management";
-	/**
-	 * The key indicating the protocol of the message.
-	 */
-	protected static final String	FOLK_PROTOCOL		= "protocol";
 	
 	/**
 	 * The node-local {@link MLDriver} instance.
@@ -85,7 +82,7 @@ public class MLManagementShard extends AgentShardGeneral {
 					&& DESIGNATION.equals(sources.get(1))) {
 				// wave is from the MLManagementShard of a different agent
 				JsonObject jsonObj = JsonParser.parseString(event.get(AgentWave.CONTENT)).getAsJsonObject();
-				String messageType = jsonObj.get(FOLK_PROTOCOL).getAsString();
+				String messageType = jsonObj.get(AIFolkProtocol.FOLK_PROTOCOL).getAsString();
 				switch(messageType) {
 				// TODO
 				default:

@@ -3,6 +3,7 @@
  */
 package aifolk.scenario;
 
+import aifolk_core.OntologyDriver;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -10,7 +11,6 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.ml.MLPipelineShard;
-import net.xqhs.flash.ml.OntologyDriver;
 
 @SuppressWarnings("javadoc")
 public class ScenarioShard extends AgentShardGeneral {
