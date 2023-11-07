@@ -13,6 +13,9 @@ package daniel.mlModelsTest;
 
 import net.xqhs.flash.FlashBoot;
 
+/**
+ * This does not work anymore because the sources have been moved to old-deployment.
+ */
 public class Boot {
 
     /**
