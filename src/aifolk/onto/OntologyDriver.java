@@ -32,6 +32,7 @@ public class OntologyDriver extends EntityCore<Node> implements EntityProxy<Onto
 	
 	// TODO
 	// Query buildQuery(Set<Criteria>)
+	
 	public QueryResult[] runQuery(Query query) {
 		// TODO
 		return null;

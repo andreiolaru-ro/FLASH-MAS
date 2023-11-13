@@ -78,8 +78,10 @@ public class MLManagementShard extends AgentShardGeneral {
 		
 		if(ScenarioShard.DESIGNATION.equals(event.getValue(AgentWave.SOURCE_ELEMENT))) {
 			// it is an input for the ML pipeline
-			// TODO recognize situation
+			// TODO recognize situation -- run scripts, evaluate props of current input window
 			// TODO match with current model description
+			// TODO if insufficient match, build query
+			// TODO send query to other agents
 		}
 		else {
 			List<String> sources = event.getValues(AgentWave.SOURCE_ELEMENT);
