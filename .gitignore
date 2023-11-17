@@ -10,3 +10,4 @@ __pycache__
 /MTPs-Container-*.txt
 *__pycache__
 /.pydevproject
+/target/

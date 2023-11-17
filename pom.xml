@@ -1,0 +1,210 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.xqhs.flash</groupId>
+  <artifactId>Flash-MAS</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Flash MAS</name>
+  <description>Flash MAS project</description>
+  
+  <properties>
+	  <jarlib>${basedir}/lib</jarlib>
+  </properties>
+  
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>src-tests</testSourceDirectory>
+    
+    <pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			  	<version>2.22.2</version>
+			  	<configuration>
+		        	<useSystemClassLoader>false</useSystemClassLoader>
+		        	<testFailureIgnore>true</testFailureIgnore>
+		        </configuration>
+			</plugin>
+		</plugins>
+	</pluginManagement>
+    
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+		  <groupId>org.codehaus.mojo</groupId>
+		  <artifactId>build-helper-maven-plugin</artifactId>
+		  <version>3.0.0</version>
+	      <executions>
+	        <execution>
+	            <phase>generate-sources</phase>
+	            <goals>
+	                <goal>add-source</goal>
+	            </goals>
+	            <configuration>
+	                <sources>
+	                    <source>src-examples</source>
+	                    <source>src-tests</source>
+	                    <source>src-experiments</source>
+	                </sources>
+	            </configuration>
+	        </execution>
+	      </executions>
+	  </plugin>
+      
+    </plugins>
+  </build>
+  
+  <dependencies>
+	<!-- ROS Dependencies -->
+    <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-client</artifactId>
+        <version>9.4.3.v20170317</version>
+    </dependency>
+    <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-common</artifactId>
+        <version>9.4.3.v20170317</version>
+    </dependency>
+
+    <!-- MPI -->
+    <dependency>
+        <groupId>mpi</groupId>
+        <artifactId>mpi</artifactId>
+        <version>1.0</version>
+        <scope>system</scope>
+        <systemPath>${jarlib}/mpi/mpi.jar</systemPath>
+    </dependency>
+
+    <!-- Core Dependencies -->
+    <dependency>
+        <groupId>core</groupId>
+        <artifactId>Config</artifactId>
+        <version>1.0</version>
+        <scope>system</scope>
+        <systemPath>${jarlib}/core/Config.jar</systemPath>
+    </dependency>
+    <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.8.6</version>
+    </dependency>
+    
+    <!-- net.xqhs.XML (Local File) -->
+    <dependency>
+        <groupId>net.xqhs</groupId>
+        <artifactId>XML</artifactId>
+        <version>1.0</version>
+        <scope>system</scope>
+        <systemPath>${basedir}/lib/core/net.xqhs.XML.jar</systemPath>
+    </dependency>
+
+    <!-- Logging-modern (Local File) -->
+    <dependency>
+        <groupId>core</groupId>
+        <artifactId>Logging-modern</artifactId>
+        <version>1.0</version>
+        <scope>system</scope>
+        <systemPath>${basedir}/lib/core/Logging-modern.jar</systemPath>
+    </dependency>
+    <!-- Add other core dependencies similarly -->
+
+    <!-- GUI -->
+    <dependency>
+        <groupId>gui</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>1.25</version>
+        <scope>system</scope>
+        <systemPath>${basedir}/lib/gui/snakeyaml-1.25.jar</systemPath>
+    </dependency>
+
+    <!-- Webserver Dependencies -->
+    <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.1.47.Final</version>
+    </dependency>
+    <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-core</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-web</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-web-common</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-bridge-common</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-tcp-eventbus-bridge</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>2.10.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>2.10.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.10.2</version>
+    </dependency>
+    
+    <!-- RDF4J -->
+    <!--<dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-client</artifactId>
+        <version>4.0.0-M1</version>
+    </dependency>-->
+
+    <!-- Other Dependencies -->
+    <dependency>
+        <groupId>com.googlecode.json-simple</groupId>
+        <artifactId>json-simple</artifactId>
+        <version>1.1.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.java-websocket</groupId>
+        <artifactId>Java-WebSocket</artifactId>
+        <version>1.4.0</version>
+    </dependency>
+	
+	
+	<!-- AI Folk ontology deps -->
+	<dependency>
+		<groupId>fr.inria.corese</groupId>
+		<artifactId>corese-core</artifactId>
+		<version>4.4.0</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>fr.inria.corese</groupId>
+		<artifactId>corese-rdf4j</artifactId>
+		<version>4.4.0</version>
+	</dependency>
+  </dependencies>
+</project>
