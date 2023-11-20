@@ -24,7 +24,7 @@ public class Boot {
      * @param args
      *                 - not used.
      */
-    public static void main(String[] args)
+    public static void main(final String[] args)
     {
 		String a = "";
 
@@ -37,7 +37,7 @@ public class Boot {
 		a += " -driver Ontology:ont";
 		a += " -pylon local:pylon1";
 		
-		for(String name : new String[] { "A", "B", "C" })
+		for(final String name : new String[] { "A", "B", "C" })
 			a += " -agent " + name
 					+ "  in-context-of:ML:mldriver in-context-of:Scenario:scen -shard scenario -shard MLPipeline -shard MLManagement -shard messaging -shard EchoTesting exit:20";
 

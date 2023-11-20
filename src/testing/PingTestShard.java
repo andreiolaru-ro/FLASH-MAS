@@ -22,7 +22,6 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import test.compositePingPong.Boot;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
@@ -100,6 +99,10 @@ public class PingTestShard extends AgentShardGeneral {
 	 * Number of pings.
 	 */
 	protected static final int		DEFAULT_NUMBER				= 5;
+	/**
+	 * Tested functionality.
+	 */
+	protected static final String FUNCTIONALITY = "MOBILITY";
 	
 	/**
 	 * Timer for pinging.
@@ -134,7 +137,7 @@ public class PingTestShard extends AgentShardGeneral {
 	 * No-argument constructor
 	 */
 	public PingTestShard() {
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(FUNCTIONALITY));
 	}
 	
 	@Override

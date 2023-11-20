@@ -18,7 +18,6 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import test.compositePingPong.Boot;
 
 /**
  * An {@link AgentShard} implementation that waits for a ping message, then sends back a reply.
@@ -46,10 +45,15 @@ public class PingBackTestShard extends AgentShardGeneral {
 	boolean						keep				= false;
 	
 	/**
+	 * Tested functionality.
+	 */
+	public static final String FUNCTIONALITY = "MOBILITY";
+	
+	/**
 	 * No-argument constructor
 	 */
 	public PingBackTestShard() {
-		super(AgentShardDesignation.customShard(Boot.FUNCTIONALITY));
+		super(AgentShardDesignation.customShard(FUNCTIONALITY));
 	}
 	
 	@Override
