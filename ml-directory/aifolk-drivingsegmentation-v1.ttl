@@ -1,0 +1,636 @@
+@prefix : <http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation> .
+
+<http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation> rdf:type owl:Ontology ;
+                                                               owl:versionIRI <http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation/1.0.0> ;
+                                                               owl:imports <http://aimas.cs.pub.ro/ai-folk/ontology/core/2.0.0> .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasEnvironmentCondition
+:hasEnvironmentCondition rdf:type owl:ObjectProperty ;
+                         rdfs:domain :DrivingSceneContext ;
+                         rdfs:range :EnvironmentCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasSceneCategory
+:hasSceneCategory rdf:type owl:ObjectProperty ;
+                  rdfs:domain :DrivingSceneContext ;
+                  rdfs:range :DrivingSceneCategory .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasAbsentLaneMarkingsPercentage
+:hasAbsentLaneMarkingsPercentage rdf:type owl:DatatypeProperty ;
+                                 rdfs:subPropertyOf owl:topDataProperty ;
+                                 rdf:type owl:FunctionalProperty ;
+                                 rdfs:domain :DrivingSceneContext ;
+                                 rdfs:range xsd:double .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasAvgNumCrossIntersections
+:hasAvgNumCrossIntersections rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdf:type owl:FunctionalProperty ;
+                             rdfs:domain :DrivingSceneContext ;
+                             rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasAvgNumPedestrians
+:hasAvgNumPedestrians rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdf:type owl:FunctionalProperty ;
+                      rdfs:domain :DrivingSceneContext ;
+                      rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasAvgNumTIntersections
+:hasAvgNumTIntersections rdf:type owl:DatatypeProperty ;
+                         rdfs:subPropertyOf owl:topDataProperty ;
+                         rdf:type owl:FunctionalProperty ;
+                         rdfs:domain :DrivingSceneContext ;
+                         rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasAvgNumTrafficParticipants
+:hasAvgNumTrafficParticipants rdf:type owl:DatatypeProperty ;
+                              rdfs:subPropertyOf owl:topDataProperty ;
+                              rdf:type owl:FunctionalProperty ;
+                              rdfs:domain :DrivingSceneContext ;
+                              rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMaxNumCrossIntersections
+:hasMaxNumCrossIntersections rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdf:type owl:FunctionalProperty ;
+                             rdfs:domain :DrivingSceneContext ;
+                             rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMaxNumPedestrians
+:hasMaxNumPedestrians rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdf:type owl:FunctionalProperty ;
+                      rdfs:domain :DrivingSceneContext ;
+                      rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMaxNumTIntersections
+:hasMaxNumTIntersections rdf:type owl:DatatypeProperty ;
+                         rdfs:subPropertyOf owl:topDataProperty ;
+                         rdf:type owl:FunctionalProperty ;
+                         rdfs:domain :DrivingSceneContext ;
+                         rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMaxNumTrafficParticipants
+:hasMaxNumTrafficParticipants rdf:type owl:DatatypeProperty ;
+                              rdfs:subPropertyOf owl:topDataProperty ;
+                              rdf:type owl:FunctionalProperty ;
+                              rdfs:domain :DrivingSceneContext ;
+                              rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumCrossIntersections
+:hasMinNumCrossIntersections rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdf:type owl:FunctionalProperty ;
+                             rdfs:domain :DrivingSceneContext ;
+                             rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumPedestrians
+:hasMinNumPedestrians rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdf:type owl:FunctionalProperty ;
+                      rdfs:domain :DrivingSceneContext ;
+                      rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumTIntersections
+:hasMinNumTIntersections rdf:type owl:DatatypeProperty ;
+                         rdfs:subPropertyOf owl:topDataProperty ;
+                         rdf:type owl:FunctionalProperty ;
+                         rdfs:domain :DrivingSceneContext ;
+                         rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumTrafficPartcipants
+:hasMinNumTrafficPartcipants rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdf:type owl:FunctionalProperty ;
+                             rdfs:domain :DrivingSceneContext ;
+                             rdfs:range xsd:int .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasParkingLotPercentage
+:hasParkingLotPercentage rdf:type owl:DatatypeProperty ;
+                         rdfs:subPropertyOf owl:topDataProperty ;
+                         rdf:type owl:FunctionalProperty ;
+                         rdfs:domain :DrivingSceneContext ;
+                         rdfs:range xsd:double .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasPedestrianSegmentationMaskRatio
+:hasPedestrianSegmentationMaskRatio rdf:type owl:DatatypeProperty ;
+                                    rdfs:subPropertyOf owl:topDataProperty ;
+                                    rdf:type owl:FunctionalProperty ;
+                                    rdfs:domain :DrivingSceneContext ;
+                                    rdfs:range xsd:double .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasPercentRepresentation
+:hasPercentRepresentation rdf:type owl:DatatypeProperty ;
+                          rdfs:domain :EnvironmentCondition ;
+                          rdfs:comment "Indicates the percentwise proportion of a particular EnvironmentCondition in the data of a Task." .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasRoadSegmentationMaskRatio
+:hasRoadSegmentationMaskRatio rdf:type owl:DatatypeProperty ;
+                              rdfs:subPropertyOf owl:topDataProperty ;
+                              rdf:type owl:FunctionalProperty ;
+                              rdfs:domain :DrivingSceneContext ;
+                              rdfs:range xsd:double .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasTrafficParticipantSegmentationMaskRatio
+:hasTrafficParticipantSegmentationMaskRatio rdf:type owl:DatatypeProperty ;
+                                            rdfs:subPropertyOf owl:topDataProperty ;
+                                            rdf:type owl:FunctionalProperty ;
+                                            rdfs:domain :DrivingSceneContext ;
+                                            rdfs:range xsd:double .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#City
+:City rdf:type owl:Class ;
+      rdfs:subClassOf :DrivingSceneCategory .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#DawnCondition
+:DawnCondition rdf:type owl:Class ;
+               rdfs:subClassOf :IlluminationCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#DaylightCondition
+:DaylightCondition rdf:type owl:Class ;
+                   rdfs:subClassOf :IlluminationCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#DrivingSceneCategory
+:DrivingSceneCategory rdf:type owl:Class ;
+                      rdfs:comment "General categorization of the driving scene into urban, rural, highway or parking conditions." .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#DrivingSceneContext
+:DrivingSceneContext rdf:type owl:Class ;
+                     rdfs:subClassOf <http://aimas.cs.pub.ro/ai-folk/ontology/core#DataContext> ;
+                     rdfs:comment "Placeholder context concept for a Driving Scene segmentation task. It describes the content that is to be segmented (road, people, vehicles) and important attributes of these targets - e.g. ratios of targets to image resolution, shape of intersections, average number of targets per frame." .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#DuskCondition
+:DuskCondition rdf:type owl:Class ;
+               rdfs:subClassOf :IlluminationCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#EnvironmentCondition
+:EnvironmentCondition rdf:type owl:Class ;
+                      rdfs:comment "Principal class denoting the environment conditions encountered in the DataContext of a task." .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#Highway
+:Highway rdf:type owl:Class ;
+         rdfs:subClassOf :DrivingSceneCategory .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#IlluminationCondition
+:IlluminationCondition rdf:type owl:Class ;
+                       rdfs:subClassOf :EnvironmentCondition ;
+                       owl:disjointWith :WeatherCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#MeanIoU
+:MeanIoU rdf:type owl:Class ;
+         rdfs:subClassOf <http://w3id.org/annett-o/Metric> .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#NightCondition
+:NightCondition rdf:type owl:Class ;
+                rdfs:subClassOf :IlluminationCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#OvercastCondition
+:OvercastCondition rdf:type owl:Class ;
+                   rdfs:subClassOf :WeatherCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#Parking
+:Parking rdf:type owl:Class ;
+         rdfs:subClassOf :DrivingSceneCategory .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#RainyCondition
+:RainyCondition rdf:type owl:Class ;
+                rdfs:subClassOf :WeatherCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#Rural
+:Rural rdf:type owl:Class ;
+       rdfs:subClassOf :DrivingSceneCategory .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#SunnyCondition
+:SunnyCondition rdf:type owl:Class ;
+                rdfs:subClassOf :WeatherCondition .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#WeatherCondition
+:WeatherCondition rdf:type owl:Class ;
+                  rdfs:subClassOf :EnvironmentCondition .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#CityScapes_test
+:CityScapes_test rdf:type owl:NamedIndividual ,
+                          <http://w3id.org/annett-o/Dataset> ;
+                 <http://aimas.cs.pub.ro/ai-folk/ontology/core#appliesToDomain> <http://aimas.cs.pub.ro/ai-folk/ontology/core#AutonomousDriving> ;
+                 <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDataContext> :cityscapes_test_daylight_ctx ,
+                                                                               :cityscapes_test_dusk_ctx .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#CountrySide
+:CountrySide rdf:type owl:NamedIndividual ,
+                      :Rural .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#MountainRoad
+:MountainRoad rdf:type owl:NamedIndividual ,
+                       :Highway .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#MultiLaneHighway
+:MultiLaneHighway rdf:type owl:NamedIndividual ,
+                           :Highway .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ResidentialBlocks
+:ResidentialBlocks rdf:type owl:NamedIndividual ,
+                            :City .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ResidentialBlocksParking
+:ResidentialBlocksParking rdf:type owl:NamedIndividual ,
+                                   :Parking .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ResidentialHouses
+:ResidentialHouses rdf:type owl:NamedIndividual ,
+                            :City .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ResidentialMixed
+:ResidentialMixed rdf:type owl:NamedIndividual ,
+                           :City .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ShoppingIndoorParking
+:ShoppingIndoorParking rdf:type owl:NamedIndividual ,
+                                :Parking .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#ShoppingOutdoorParking
+:ShoppingOutdoorParking rdf:type owl:NamedIndividual ,
+                                 :Parking .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#SingleLaneHighway
+:SingleLaneHighway rdf:type owl:NamedIndividual ,
+                            :Highway .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#UrbanHighRise
+:UrbanHighRise rdf:type owl:NamedIndividual ,
+                        :City .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#afternoon_city_drive
+:afternoon_city_drive rdf:type owl:NamedIndividual ,
+                               <http://aimas.cs.pub.ro/ai-folk/ontology/core#Scenario> ;
+                      <http://aimas.cs.pub.ro/ai-folk/ontology/core#containsTask> :afternoon_city_drive_segmentation .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#afternoon_city_drive_segmentation
+:afternoon_city_drive_segmentation rdf:type owl:NamedIndividual ,
+                                            <http://w3id.org/annett-o/TaskCharacterization> ;
+                                   <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDataContext> :driving_context_node1 ;
+                                   <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDomain> <http://aimas.cs.pub.ro/ai-folk/ontology/core#AutonomousDriving> .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#cityscapes_test_daylight_ctx
+:cityscapes_test_daylight_ctx rdf:type owl:NamedIndividual ,
+                                       :DrivingSceneContext ;
+                              :hasEnvironmentCondition :daylight_light_cond_cityscapes ,
+                                                       :overcast_weather_cond_cityscapes ,
+                                                       :sunny_weather_cond_cityscapes ;
+                              :hasSceneCategory :UrbanHighRise ;
+                              :hasAbsentLaneMarkingsPercentage 0 ;
+                              :hasAvgNumCrossIntersections 12 ;
+                              :hasAvgNumPedestrians 73 ;
+                              :hasAvgNumTIntersections 12 ;
+                              :hasAvgNumTrafficParticipants 105 ;
+                              :hasMaxNumCrossIntersections 28 ;
+                              :hasMaxNumPedestrians 215 ;
+                              :hasMaxNumTIntersections 15 ;
+                              :hasMaxNumTrafficParticipants 200 ;
+                              :hasMinNumCrossIntersections 0 ;
+                              :hasMinNumPedestrians 5 ;
+                              :hasMinNumTIntersections 0 ;
+                              :hasMinNumTrafficPartcipants 10 ;
+                              :hasParkingLotPercentage 0 ;
+                              :hasPedestrianSegmentationMaskRatio 0.15 ;
+                              :hasRoadSegmentationMaskRatio 0.25 ;
+                              :hasTrafficParticipantSegmentationMaskRatio 0.25 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#cityscapes_test_dusk_ctx
+:cityscapes_test_dusk_ctx rdf:type owl:NamedIndividual ,
+                                   :DrivingSceneContext ;
+                          :hasEnvironmentCondition :dusk_light_cond_cityscapes ,
+                                                   :overcast_weather_cond_cityscapes_19 ,
+                                                   :sunny_weather_cond_cityscapes_81 ;
+                          :hasSceneCategory :ResidentialBlocks ;
+                          :hasSceneCategory :ResidentialBlocksParking ;
+                          # add all the data properties here
+                          :hasAbsentLaneMarkingsPercentage 0 ;
+                          :hasAvgNumCrossIntersections 10 ;
+                          :hasAvgNumPedestrians 100 ;
+                          :hasAvgNumTIntersections 10 ;
+                          :hasAvgNumTrafficParticipants 100 ;
+                          :hasMaxNumCrossIntersections 20 ;
+                          :hasMaxNumPedestrians 200 ;
+                          :hasMaxNumTIntersections 20 ;
+                          :hasMaxNumTrafficParticipants 200 ;
+                          :hasMinNumCrossIntersections 0 ;
+                          :hasMinNumPedestrians 76 ;
+                          :hasMinNumTIntersections 4 ;
+                          :hasMinNumTrafficPartcipants 56 ;
+                          :hasParkingLotPercentage 50 ;
+                          :hasPedestrianSegmentationMaskRatio 0.2 ;
+                          :hasRoadSegmentationMaskRatio 0.3 ;
+                          :hasTrafficParticipantSegmentationMaskRatio 0.42 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#daylight_light_cond_cityscapes
+:daylight_light_cond_cityscapes rdf:type owl:NamedIndividual ,
+                                         :DaylightCondition ;
+                                :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#daylight_light_cond_node1
+:daylight_light_cond_node1 rdf:type owl:NamedIndividual ,
+                                    :DaylightCondition ;
+                           :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#daylight_light_cond_node2
+:daylight_light_cond_node2 rdf:type owl:NamedIndividual ,
+                                    :DaylightCondition ;
+                           :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#driving_context_node1
+:driving_context_node1 rdf:type owl:NamedIndividual ,
+                                :DrivingSceneContext ;
+                       :hasEnvironmentCondition :daylight_light_cond_node1 ,
+                                                :sunny_weather_cond_node1 ;
+                       :hasSceneCategory :UrbanHighRise ;
+                       :hasAbsentLaneMarkingsPercentage 0 ;
+                       :hasAvgNumCrossIntersections 3 ;
+                       :hasAvgNumPedestrians 50 ;
+                       :hasAvgNumTIntersections 0 ;
+                       :hasAvgNumTrafficParticipants 10 ;
+                       :hasMaxNumCrossIntersections 6 ;
+                       :hasMaxNumPedestrians 200 ;
+                       :hasMaxNumTIntersections 0 ;
+                       :hasMaxNumTrafficParticipants 15 ;
+                       :hasMinNumCrossIntersections 0 ;
+                       :hasMinNumPedestrians 4 ;
+                       :hasMinNumTIntersections 0 ;
+                       :hasMinNumTrafficPartcipants 8 ;
+                       :hasParkingLotPercentage 2 ;
+                       :hasPedestrianSegmentationMaskRatio 0.12 ;
+                       :hasRoadSegmentationMaskRatio 0.2 ;
+                       :hasTrafficParticipantSegmentationMaskRatio 0.28 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#driving_context_node2_daylight
+:driving_context_node2_daylight rdf:type owl:NamedIndividual ,
+                                         :DrivingSceneContext ;
+                                :hasEnvironmentCondition :daylight_light_cond_node2 ,
+                                                         :overcast_weather_cond_node2 ,
+                                                         :sunny_weather_cond_node2 ;
+                                :hasSceneCategory :ResidentialBlocks ;
+                                :hasAbsentLaneMarkingsPercentage 0 ;
+                                :hasAvgNumCrossIntersections 0 ;
+                                :hasAvgNumPedestrians 40 ;
+                                :hasAvgNumTIntersections 8 ;
+                                :hasAvgNumTrafficParticipants 14 ;
+                                :hasMaxNumCrossIntersections 0 ;
+                                :hasMaxNumPedestrians 100 ;
+                                :hasMaxNumTIntersections 10 ;
+                                :hasMaxNumTrafficParticipants 23 ;
+                                :hasMinNumCrossIntersections 0 ;
+                                :hasMinNumPedestrians 4 ;
+                                :hasMinNumTIntersections 4 ;
+                                :hasMinNumTrafficPartcipants 12 ;
+                                :hasParkingLotPercentage 20 ;
+                                :hasPedestrianSegmentationMaskRatio 0.23 ;
+                                :hasRoadSegmentationMaskRatio 0.36 ;
+                                :hasTrafficParticipantSegmentationMaskRatio 0.31 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#driving_context_node2_dusk
+:driving_context_node2_dusk rdf:type owl:NamedIndividual ,
+                                     :DrivingSceneContext ;
+                            :hasEnvironmentCondition :dusk_light_cond_node2 ,
+                                                     :overcast_weather_cond_node2_parking_100 ;
+                            :hasSceneCategory :ResidentialBlocksParking ;
+                            :hasAbsentLaneMarkingsPercentage 0 ;
+                            :hasAvgNumCrossIntersections 0 ;
+                            :hasAvgNumPedestrians 70 ;
+                            :hasAvgNumTIntersections 15 ;
+                            :hasAvgNumTrafficParticipants 28 ;
+                            :hasMaxNumCrossIntersections 0 ;
+                            :hasMaxNumPedestrians 200 ;
+                            :hasMaxNumTIntersections 20 ;
+                            :hasMaxNumTrafficParticipants 30 ;
+                            :hasMinNumCrossIntersections 0 ;
+                            :hasMinNumPedestrians 10 ;
+                            :hasMinNumTIntersections 10 ;
+                            :hasMinNumTrafficPartcipants 24 ;
+                            :hasParkingLotPercentage 70 ;
+                            :hasPedestrianSegmentationMaskRatio 0.28 ;
+                            :hasRoadSegmentationMaskRatio 0.39 ;
+                            :hasTrafficParticipantSegmentationMaskRatio 0.33 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#dusk_light_cond_cityscapes
+:dusk_light_cond_cityscapes rdf:type owl:NamedIndividual ,
+                                     :DuskCondition ;
+                            :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#dusk_light_cond_node2
+:dusk_light_cond_node2 rdf:type owl:NamedIndividual ,
+                                :DuskCondition ;
+                       :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#evening_home_drive
+:evening_home_drive rdf:type owl:NamedIndividual ,
+                             <http://aimas.cs.pub.ro/ai-folk/ontology/core#Scenario> ;
+                    <http://aimas.cs.pub.ro/ai-folk/ontology/core#containsTask> :evening_home_drive_segmentation .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#evening_home_drive_segmentation
+:evening_home_drive_segmentation rdf:type owl:NamedIndividual ,
+                                          <http://w3id.org/annett-o/TaskCharacterization> ;
+                                 <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDataContext> :driving_context_node2_daylight ,
+                                                                                               :driving_context_node2_dusk ;
+                                 <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDomain> <http://aimas.cs.pub.ro/ai-folk/ontology/core#AutonomousDriving> .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#model_node1_eval_result_iou
+:model_node1_eval_result_iou rdf:type owl:NamedIndividual ,
+                                      <http://w3id.org/annett-o/EvaluationResult> .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#model_node_1
+:model_node_1 rdf:type owl:NamedIndividual ,
+                       <http://aimas.cs.pub.ro/ai-folk/ontology/core#Model> ;
+              <http://aimas.cs.pub.ro/ai-folk/ontology/core#evaluatedBy> :model_node_1_eval ;
+              <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasReferenceURI> "http://aimas.cs.pub.ro/ai-folk/mlmodels/model_node_1"^^xsd:anyURI .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#model_node_1_eval
+:model_node_1_eval rdf:type owl:NamedIndividual ,
+                            <http://aimas.cs.pub.ro/ai-folk/ontology/core#ModelEvaluation> ;
+                   <http://aimas.cs.pub.ro/ai-folk/ontology/core#usesDataset> :CityScapes_test ;
+                   <http://w3id.org/annett-o/hasMetric> :model_node_1_eval_mIoU ;
+                   <http://w3id.org/annett-o/eval_date> "2023-10-30T19:18:00"^^xsd:dateTime ;
+                   <http://w3id.org/annett-o/eval_score> "0.72"^^xsd:double .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#model_node_1_eval_mIoU
+:model_node_1_eval_mIoU rdf:type owl:NamedIndividual ,
+                                 :MeanIoU .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#overcast_weather_cond_cityscapes
+:overcast_weather_cond_cityscapes rdf:type owl:NamedIndividual ,
+                                           :OvercastCondition ;
+                                  :hasPercentRepresentation 20 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#overcast_weather_cond_cityscapes_19
+:overcast_weather_cond_cityscapes_19 rdf:type owl:NamedIndividual ,
+                                              :OvercastCondition ;
+                                     :hasPercentRepresentation 19 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#overcast_weather_cond_node2
+:overcast_weather_cond_node2 rdf:type owl:NamedIndividual ,
+                                      :OvercastCondition ;
+                             :hasPercentRepresentation 25 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#overcast_weather_cond_node2_parking_100
+:overcast_weather_cond_node2_parking_100 rdf:type owl:NamedIndividual ,
+                                                  :OvercastCondition ;
+                                         :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#sunny_weather_cond_cityscapes
+:sunny_weather_cond_cityscapes rdf:type owl:NamedIndividual ,
+                                        :SunnyCondition ;
+                               :hasPercentRepresentation 80 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#sunny_weather_cond_cityscapes_81
+:sunny_weather_cond_cityscapes_81 rdf:type owl:NamedIndividual ,
+                                           :SunnyCondition ;
+                                  :hasPercentRepresentation 81 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#sunny_weather_cond_node1
+:sunny_weather_cond_node1 rdf:type owl:NamedIndividual ,
+                                   :SunnyCondition ;
+                          :hasPercentRepresentation 100 .
+
+
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#sunny_weather_cond_node2
+:sunny_weather_cond_node2 rdf:type owl:NamedIndividual ,
+                                   :SunnyCondition ;
+                          :hasPercentRepresentation 75 .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :City
+                :Highway
+                :Parking
+                :Rural
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :DawnCondition
+                :DaylightCondition
+                :DuskCondition
+                :NightCondition
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :MeanIoU
+                <http://w3id.org/annett-o/Accuracy>
+                <http://w3id.org/annett-o/LogLikelihood>
+                <http://w3id.org/annett-o/MeanSquaredError>
+                <http://w3id.org/annett-o/Precision>
+                <http://w3id.org/annett-o/Recall>
+                <http://w3id.org/annett-o/TrueOrFalseExamples>
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :OvercastCondition
+                :RainyCondition
+                :SunnyCondition
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi

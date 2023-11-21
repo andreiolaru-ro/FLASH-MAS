@@ -1,5 +1,6 @@
 package aifolk.onto;
 
+import aifolk.onto.vocab.ModelDescription;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;

@@ -17,7 +17,7 @@ import fr.inria.corese.sparql.exceptions.EngineException;
 
 public class ModelDescription extends ExtractableDescription {
     
-    // Model Rerenfece URI
+	// Model Reference URI
     private String modelReferenceURI;
 
     // List of model evaluations
@@ -210,7 +210,7 @@ public class ModelDescription extends ExtractableDescription {
 
     // make main method for simple testing purposes
     public static void main(final String[] args) throws LoadException {
-      final String modelDescriptionFilePath = "/home/alex/work/AI-MAS/projects/2022-AI-Folk/dev/aifolk-project/ontology/aifolk-drivingsegmentation-v1.ttl";
+      final String modelDescriptionFilePath = "ml-directory/aifolk-drivingsegmentation-v1.ttl";
       final ModelDescription md = ModelDescription.getFromFile(modelDescriptionFilePath);
 
       final String modelNode = md.getModelNodeURI();
