@@ -4,7 +4,9 @@
 
 Importing the project in Eclipse is trivial because the root directory contains a `.project` and a `.classpath` file.
 
-## Intellij
+Just use Import project, Java project, and give the root directory of the project.
+
+## IntelliJ IDEA
 
 ### Importing the project as an Eclipse Project
 
