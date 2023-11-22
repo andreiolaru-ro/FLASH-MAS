@@ -86,16 +86,15 @@ public class MLTesting extends AgentShardGeneral {
 
 			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
-			modelConfig.put("transform", false);
-			modelConfig.put("operation_module", "audioInput");
-			modelConfig.put("jit", true);
-			//driver.addModel("silero_stt_test", "src-experiments/aifolk/ml_driver/data/silero_stt.pth", modelConfig);
-			driver.addModel("ResNet18", "ml-directory/models/resnet18.pth", modelConfig);
-			driver.predict(("silero_stt"), "src-experiments/aifolk/ml_driver/data/pronunciation.wav", false);
+			modelConfig.put("transform", "datasets.transform.CityscapesTransform");
+			modelConfig.put("task", "semantic segmentation");
+			modelConfig.put("dataset", "Cityscapes");
+			modelConfig.put("input_space", "RGB");
+			driver.addModel("DeepLabV3Plus", "ml-directory/models/deeplabv3plus_cityscapes.pth", modelConfig);
 			li(driver.getModels().keySet().toString());
 			driver.exportModel("ResNet18", "src-experiments/aifolk/ml_driver/test_export_destination");
 
-
+			driver.addDataset("cityscapes", "[\"class1\", \"class2\"]");
 			// loads some models, than [after some time] does several predictions, saves the model, etc
 		default:
 			break;
