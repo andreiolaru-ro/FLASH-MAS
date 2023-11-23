@@ -17,7 +17,7 @@ import fr.inria.corese.sparql.exceptions.EngineException;
 
 public class ModelDescription extends ExtractableDescription {
     
-	// Model Reference URI
+    // Model Rerenfece URI
     private String modelReferenceURI;
 
     // List of model evaluations
@@ -96,7 +96,7 @@ public class ModelDescription extends ExtractableDescription {
     }
 
 
-    private String getModelReferenceURI(final Graph modelDescriptionGraph, final String mainNodeURI) {
+    private static String getModelReferenceURI(final Graph modelDescriptionGraph, final String mainNodeURI) {
       final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
       final String query = "select ?modelReferenceURI where { <" + mainNodeURI + "> <" + CoreVocabulary.HAS_REFERENCE_URI.stringValue() + "> ?modelReferenceURI }";
 
@@ -118,7 +118,7 @@ public class ModelDescription extends ExtractableDescription {
     }
 
 
-    private List<ModelEvaluationDescription> getModelEvaluations(final Graph modelDescriptionGraph, final String mainNodeURI) {
+    private static List<ModelEvaluationDescription> getModelEvaluations(final Graph modelDescriptionGraph, final String mainNodeURI) {
       final List<ModelEvaluationDescription> modelEvaluations = new ArrayList<>();
 
       final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
@@ -147,6 +147,7 @@ public class ModelDescription extends ExtractableDescription {
     }
 
     /** Get the instance of the Model as a graph node in the model description graph.
+     * @param modelDescriptionGraph The model description graph.
      * @return The URI of the model node.
      */
     private static String getModelNodeURI(final Graph modelDescriptionGraph) {
@@ -222,7 +223,7 @@ public class ModelDescription extends ExtractableDescription {
 
     // make main method for simple testing purposes
     public static void main(final String[] args) throws LoadException {
-      final String modelDescriptionFilePath = "ml-directory/aifolk-drivingsegmentation-v1.ttl";
+      final String modelDescriptionFilePath = "/home/alex/work/AI-MAS/projects/2022-AI-Folk/dev/aifolk-project/ontology/aifolk-drivingsegmentation-v1.ttl";
       final ModelDescription md = ModelDescription.getFromFile(modelDescriptionFilePath);
 
       final String modelNode = md.getModelNodeURI();
@@ -231,5 +232,6 @@ public class ModelDescription extends ExtractableDescription {
       System.out.println("Model description: ");
       System.out.println(md.getSerializedModelDescription());
     }
+
 
 }
