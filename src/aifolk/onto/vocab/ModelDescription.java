@@ -21,7 +21,7 @@ public class ModelDescription extends ExtractableDescription {
     private String modelReferenceURI;
 
     // List of model evaluations
-    private List<EvaluationDescription> modelEvaluations;
+    private List<ModelEvaluationDescription> modelEvaluations;
 
 
 	  private ModelDescription(final Graph modelDescriptionGraph, final String modelNodeURI) {
@@ -60,7 +60,7 @@ public class ModelDescription extends ExtractableDescription {
     /**
      * @return The list of model evaluations.
      */
-    public List<EvaluationDescription> getModelEvaluations() {
+    public List<ModelEvaluationDescription> getModelEvaluations() {
       // return an empty list if the model description graph is null or if the model node is null or if the model node has no model evaluations
       if (modelDescriptionGraph == null || mainNodeURI == null || modelEvaluations == null) {
         return new ArrayList<>();
@@ -69,8 +69,20 @@ public class ModelDescription extends ExtractableDescription {
       return modelEvaluations;
     }
 
+    @Override
+    public void populateDescription(final boolean forceUpdate) {
+      // first call the super method
+      super.populateDescription(forceUpdate);
 
-     @Override
+      // then call populateDescription on the model evaluations
+      if (modelEvaluations != null) {
+        for (final ModelEvaluationDescription evaluation : modelEvaluations) {
+          evaluation.populateDescription(forceUpdate);
+        }
+      }
+    }
+
+    @Override
     protected void extractDescription() {
       if (modelDescriptionGraph == null || mainNodeURI == null) {
         return;
@@ -106,8 +118,8 @@ public class ModelDescription extends ExtractableDescription {
     }
 
 
-    private List<EvaluationDescription> getModelEvaluations(final Graph modelDescriptionGraph, final String mainNodeURI) {
-      final List<EvaluationDescription> modelEvaluations = new ArrayList<>();
+    private List<ModelEvaluationDescription> getModelEvaluations(final Graph modelDescriptionGraph, final String mainNodeURI) {
+      final List<ModelEvaluationDescription> modelEvaluations = new ArrayList<>();
 
       final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
       final String query = "select ?evaluationNode where { <" + mainNodeURI + "> <" + CoreVocabulary.EVALUATED_BY.stringValue() + "> ?evaluationNode }";
@@ -121,7 +133,7 @@ public class ModelDescription extends ExtractableDescription {
         else {
           for (final IDatatype nodeVal : map.getValue("?evaluationNode")) {
             final String evaluationNodeURI = nodeVal.getLabel();
-            final EvaluationDescription evaluation = new EvaluationDescription(modelDescriptionGraph, evaluationNodeURI);
+            final ModelEvaluationDescription evaluation = new ModelEvaluationDescription(modelDescriptionGraph, evaluationNodeURI);
 
             modelEvaluations.add(evaluation);
           }
@@ -220,6 +232,4 @@ public class ModelDescription extends ExtractableDescription {
       System.out.println(md.getSerializedModelDescription());
     }
 
-
-   
 }

@@ -1,5 +1,6 @@
 package aifolk.onto;
 
+import aifolk.onto.vocab.ModelDescription;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
@@ -9,7 +10,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class OntologyDriver extends EntityCore<Node> implements EntityProxy<OntologyDriver> {
 	
 	@Override
-	public boolean configure(MultiTreeMap configuration) {
+	public boolean configure(final MultiTreeMap configuration) {
 		setUnitName(configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
 		return true;
 	}
@@ -33,12 +34,12 @@ public class OntologyDriver extends EntityCore<Node> implements EntityProxy<Onto
 	// TODO
 	// Query buildQuery(Set<Criteria>)
 	
-	public QueryResult[] runQuery(Query query) {
+	public QueryResult[] runQuery(final Query query) {
 		// TODO
 		return null;
 	}
 	
-	public boolean addModelDescription(String modelID, ModelDescription descr) {
+	public boolean addModelDescription(final String modelID, final ModelDescription descr) {
 		// TODO
 		return true;
 	}

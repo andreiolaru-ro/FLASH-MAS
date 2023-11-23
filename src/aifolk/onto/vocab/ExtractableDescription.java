@@ -1,7 +1,15 @@
 package aifolk.onto.vocab;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.inria.corese.core.Graph;
+import fr.inria.corese.core.query.QueryProcess;
 import fr.inria.corese.kgram.api.core.Node;
+import fr.inria.corese.kgram.core.Mapping;
+import fr.inria.corese.kgram.core.Mappings;
+import fr.inria.corese.sparql.api.IDatatype;
+import fr.inria.corese.sparql.exceptions.EngineException;
 
 /**
  * This class represents a description of a model, dataset, or data context. It is used to extract the description from the RDF model.
@@ -11,7 +19,7 @@ public abstract class ExtractableDescription {
   protected Graph modelDescriptionGraph;
   protected String mainNodeURI;
   
-  private boolean populated = false;
+  protected boolean populated = false;
 
   /**
    * Constructor
@@ -31,12 +39,26 @@ public abstract class ExtractableDescription {
     return modelDescriptionGraph;
   }
 
+  /*
+   * Setter for the Corese Graph object that will be used to store the model description
+   */
+  public void setModelDescriptionGraph(final Graph modelDescriptionGraph) {
+    this.modelDescriptionGraph = modelDescriptionGraph;
+  }
+
   /**
    * Get the URI of the main node of the description
    * @return the URI of the main node of the description
    */
   public String getMainNodeURI() {
     return mainNodeURI;
+  }
+
+  /**
+   * Set the URI of the main node of the description
+   */
+  public void setMainNodeURI(final String mainNodeURI) {
+    this.mainNodeURI = mainNodeURI;
   }
 
   /**
@@ -71,4 +93,88 @@ public abstract class ExtractableDescription {
    * Extract the description from the RDF model
    */
   protected abstract void extractDescription();
+
+  private static IDatatype extractSingleObject(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+    final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
+    final String query = "SELECT ?object WHERE { <" + subjectURI + "> <" + propertyURI + "> ?object }";
+
+    try {
+      final Mappings map = exec.query(query);
+      
+      if (map.size() == 0) {
+        System.err.println("No object found in graph " + modelDescriptionGraph.getName() + " for subject " + subjectURI + " and property " + propertyURI + ".");
+      }
+      else {
+        return map.get(0).getValue("?object");
+      }
+
+    } catch (final EngineException e) {
+      System.err.println("Error while executing query " + query + " on graph " + modelDescriptionGraph.getName() + ".");
+      System.err.println(e.getMessage());
+    }
+
+    return null;
+  }
+
+  public static String extractSingleObjectURI(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+    final IDatatype object = extractSingleObject(modelDescriptionGraph, subjectURI, propertyURI);
+    if (object != null) {
+      return object.getLabel();
+    }
+    return null;
+  }
+
+
+  public static IDatatype extractSingleObjectLiteral(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+    final IDatatype object = extractSingleObject(modelDescriptionGraph, subjectURI, propertyURI);
+    if (object == null) {
+      return null;
+    }
+    
+    if (object.isLiteral()) {
+      return object;
+    }
+    
+    System.err.println("Object " + object.toString() + " found in graph " + modelDescriptionGraph.getName() + " for subject " + subjectURI + " and property " + propertyURI + " is not a literal.");
+    return null;
+  }
+  
+  private static List<IDatatype> extractObjects(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+    final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
+    final String query = "SELECT ?object WHERE { <" + subjectURI + "> <" + propertyURI + "> ?object }";
+
+    try {
+      final Mappings mappings = exec.query(query);
+      
+      if (mappings.size() == 0) {
+        System.err.println("No objects found in graph " + modelDescriptionGraph.getName() + " for subject " + subjectURI + " and property " + propertyURI + ".");
+      }
+      else {
+        final List<IDatatype> objects = new ArrayList<>();
+        for (final Mapping m: mappings) {
+          objects.add(m.getValue("?object"));
+        }
+      }
+
+    } catch (final EngineException e) {
+      System.err.println("Error while executing query " + query + " on graph " + modelDescriptionGraph.getName() + ".");
+      System.err.println(e.getMessage());
+    }
+
+    return null;
+  }
+
+  public static List<String> extractObjectURIs(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+    final List<IDatatype> objects = extractObjects(modelDescriptionGraph, subjectURI, propertyURI);
+    if (objects != null) {
+      final List<String> objectURIs = new ArrayList<>();
+      for (final IDatatype object: objects) {
+        objectURIs.add(object.getLabel());
+      }
+      return objectURIs;
+    }
+    
+    return null;
+  }
+  
 }

@@ -43,7 +43,7 @@ public class CoreVocabulary {
     public static final IRI HAS_DATA_CONTEXT = createIRI("hasDataContext");
     public static final IRI HAS_DOMAIN = createIRI("hasDomain");
     public static final IRI HAS_EVALUATION_RESULT = createIRI("hasEvaluationResult");
-    // ... (add other object properties)
+    public static final IRI USES_DATASET = createIRI("usesDataset");
 
     // Data Properties
     public static final IRI BATCH_SIZE = createIRI("batch_size");
@@ -57,7 +57,10 @@ public class CoreVocabulary {
     public static final IRI DERIVED_FROM = createIRI(ANNETTO_NAMESPACE, "derivedFrom");
     public static final IRI DERIVED_TEST_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTestDatasetFrom");
     public static final IRI DERIVED_TRAINING_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTrainingDatasetFrom");
-    // ... (add other properties from the Annetto namespace)
+    public static final IRI HAS_METRIC = createIRI(ANNETTO_NAMESPACE, "hasMetric");
+    public static final IRI EVAL_SCORE = createIRI(ANNETTO_NAMESPACE, "evalScore");
+    public static final IRI EVAL_DATE = createIRI(ANNETTO_NAMESPACE, "evalDate");
+    
 
     private static IRI createIRI(final String localName) {
         return factory.createIRI(CORE_NAMESPACE, localName);
