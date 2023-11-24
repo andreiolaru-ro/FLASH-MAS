@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.inria.corese.core.Graph;
+import fr.inria.corese.core.logic.RDF;
+import fr.inria.corese.core.logic.RDFS;
 import fr.inria.corese.core.query.QueryProcess;
 import fr.inria.corese.kgram.api.core.Node;
 import fr.inria.corese.kgram.core.Mapping;
@@ -20,6 +22,20 @@ public abstract class ExtractableDescription {
   protected String mainNodeURI;
   
   protected boolean populated = false;
+
+  /**
+   * Constructor - used to create a description that will be populated later by a Builder
+   */
+  public ExtractableDescription() {
+  }
+
+  /**
+   * Constructor used to create a description that will be populated later by a Builder
+   * @param mainNodeURI - the URI of the main node of the description
+   */
+  public ExtractableDescription(final String mainNodeURI) {
+    this.mainNodeURI = mainNodeURI;
+  }
 
   /**
    * Constructor
@@ -94,7 +110,7 @@ public abstract class ExtractableDescription {
    */
   protected abstract void extractDescription();
 
-  private static IDatatype extractSingleObject(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+  public static IDatatype extractSingleObject(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
     final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
     final String query = "SELECT ?object WHERE { <" + subjectURI + "> <" + propertyURI + "> ?object }";
 
@@ -139,7 +155,7 @@ public abstract class ExtractableDescription {
     return null;
   }
   
-  private static List<IDatatype> extractObjects(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
+  public static List<IDatatype> extractObjects(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
     final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
     final String query = "SELECT ?object WHERE { <" + subjectURI + "> <" + propertyURI + "> ?object }";
 
@@ -175,6 +191,28 @@ public abstract class ExtractableDescription {
     }
     
     return null;
+  }
+
+  /**
+   * Check if the main node has a given type (which may be a superclass of the immediate type) using a property path SPAQRL ASK query
+   * @param modelDescriptionGraph - the Corese Graph object that contains the model description
+   * @param mainNodeURI - the URI of the main node for which the type is checked
+   * @param superClassURI - the URI of the type that is checked
+   * @return true if the main node has the given type, false otherwise
+   */
+  public static boolean checkClassType(final Graph modelDescriptionGraph, final String mainNodeURI, final String superClassURI) {
+    final String propertyPath = "<" + RDF.TYPE + " / " + RDFS.SUBCLASSOF + "*" + ">";
+    final String query = "ASK WHERE { <" + mainNodeURI + "> " + propertyPath + " <" + superClassURI + "> }";
+    final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
+    
+    try {
+      final Mappings m = exec.query(query);
+      return !m.isEmpty();
+    } catch (final Exception e) {
+      System.err.println("Error while executing the query: " + query);
+    }
+
+    return false;
   }
   
 }
