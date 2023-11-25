@@ -222,6 +222,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 				le("Python server failed to start, error [].", Integer.valueOf(serverProcess.exitValue()));
 				return false;
 			}
+			if(!connected) {
+				le("Python server connection failed; no server available.");
+				return false;
+			}
 			li("Python server is up");
 			syncServerConfig();
 		} catch(IOException e) {

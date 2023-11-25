@@ -1,5 +1,8 @@
 package aifolk.ml_driver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -9,10 +12,6 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ml.MLDriver;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.UnitComponent;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MLTesting extends AgentShardGeneral {
 	
@@ -82,7 +81,7 @@ public class MLTesting extends AgentShardGeneral {
 			 *
 			 */
 
-			driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg", true);
+			li("Prediction result:", driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg", true));
 
 			Map<String, Object> modelConfig = new HashMap<>();
 			modelConfig.put("cuda", true);
@@ -91,7 +90,7 @@ public class MLTesting extends AgentShardGeneral {
 			modelConfig.put("dataset", "Cityscapes");
 			modelConfig.put("input_space", "RGB");
 			driver.addModel("DeepLabV3Plus", "ml-directory/models/deeplabv3plus_cityscapes.pth", modelConfig);
-			li(driver.getModels().keySet().toString());
+			li("Models list:", driver.getModels().keySet().toString());
 			driver.exportModel("ResNet18", "src-experiments/aifolk/ml_driver/test_export_destination");
 
 			driver.addDataset("cityscapes", "[\"class1\", \"class2\"]");
