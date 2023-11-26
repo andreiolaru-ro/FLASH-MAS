@@ -6,6 +6,9 @@ import base64
 from PIL import Image
 import io
 import json
+from builtins import isinstance
+
+head = "<ML server> "
 
 # from ruamel import yaml
 
@@ -34,48 +37,53 @@ PREDICT_OP_PARAM = "predict_op";
 DATASET_NAME_PARAM = "dataset_name";
 DATASET_CLASSES_PARAM = "dataset_classes";
 
-print("<ML server> loading prerequisites...")
+print(head + "loading prerequisites...")
 
 try:
     import torch
 except Exception as e:
-    print("PyTorch unavailable (use pip install torch ):", e)
-    print("If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
+    print(head + "PyTorch unavailable (use pip install torch ):", e)
+    print("head + If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
           "src-experiments\aifolk\ml_driver")
     exit(1)
 try:
     from torchvision import transforms
 except Exception as e:
-    print("Torchvision unavailable (use pip install torchvision ):", e)
+    print(head + "Torchvision unavailable (use pip install torchvision ):", e)
     exit(1)
 try:
     import torchaudio
 except Exception as e:
-    print("Torchaudio unavailable (use pip install torchaudio ):", e)
+    print(head + "Torchaudio unavailable (use pip install torchaudio ):", e)
     exit(1)
 try:
     from omegaconf import OmegaConf
 except Exception as e:
-    print("OmegaConf unavailable (use pip install omegaconf ):", e)
+    print(head + "OmegaConf unavailable (use pip install omegaconf ):", e)
     # exit(1)
 try:
     import soundfile
 except Exception as e:
-    print("Soundfile unavailable (use pip install soundfile ):", e)
+    print(head + "Soundfile unavailable (use pip install soundfile ):", e)
+    # exit(1)
+try:
+    from ultralytics import YOLO
+except Exception as e:
+    print(head + "YOLO unavailable (use pip install ultralytics ):", e)
     # exit(1)
 try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
-    print("Flask unavailable (use pip install flask ): ", e)
+    print(head + "Flask unavailable (use pip install flask ): ", e)
     exit(1)
 try:
     import yaml
 except Exception as e:
-    print("Yaml unavailable (use pip install pyyaml ):", e)
+    print(head + "Yaml unavailable (use pip install pyyaml ):", e)
     exit(1)
 
 
-def import_transform(name):
+def import_functionality(name):
     components = name.split('.')
     mod = __import__(components[0])
     for comp in components[1:]:
@@ -83,25 +91,56 @@ def import_transform(name):
     return mod
 
 def get_model(model_config):
-    model_name = model_config['name']
+    global model_map
     model_path = model_config['path']
     cuda = model_config['cuda'] and torch.cuda.is_available()
     device = 'cuda:0' if cuda else 'cpu'
 
-    model = torch.load(model_path,  map_location = device)
-    if cuda:
-        model = model.cuda()
+    if model_path in model_map: # reuse existing loaded model?
+        model = model_map[model_path]
     else:
-        model = model.cpu()
+        model = {
+            "torch": torch.load(model_path,  map_location = device),
+            "yolo": YOLO(model_path),
+            }[model_config.get("type", "torch")]
+        model_map[model_path] = model
+    try:
+        if cuda:
+            model = model.cuda()
+        else:
+            model = model.cpu()
+    except Exception as e:
+        print(f"{head} Could not call model.{'cuda' if cuda else 'cpu'}() because {e}")
     if 'transform' in model_config:
-        transform_class = import_transform(model_config['transform'])
+        transform_class = import_functionality(model_config['transform'])
         transform = transform_class()
         input_size = transform.input_size
     else:
         transform = None
         input_size = None
-    model.eval()
-    return model, transform, input_size
+    if 'output' in model_config:
+        output_class = import_functionality(model_config['output'])
+        output = output_class()
+    else:
+        output = None
+    # try:
+    #     model.eval() # what was the point of this?
+    # except Exception as e:
+    #     print(f"{head} Could not call model.eval() because {e}")
+    return model, transform, input_size, output
+
+def load_model(config):
+    model, transform, input_size, output = get_model(config)
+    entry = {
+        'model': model,
+        'transform': transform,
+        'input_size': input_size,
+        'output': output,
+        'cuda': config.get('cuda', None) and torch.cuda.is_available(),
+        'task': config.get('task', None),
+        'dataset': config.get('dataset', None),
+    }
+    return entry
 
 def load_models_from_config(config_file):
     with open(config_file, 'r') as f:
@@ -109,20 +148,7 @@ def load_models_from_config(config_file):
 
     models = {}
     for model_config in config['MODELS']:
-        model_name = model_config['name']
-        model_path = model_config['path']
-        cuda = model_config['cuda'] and torch.cuda.is_available()
-        model, transform, input_size = get_model(model_config)
-        task = model_config['task']
-        dataset = model_config['dataset']
-        models[model_name] = {
-            'model': model,
-            'input_size': input_size,
-            'cuda': cuda,
-            'transform': transform,
-            'task': task,
-            'dataset': dataset
-        }
+        models[model_config['name']] = load_model(model_config)
 
     return models
 
@@ -134,9 +160,10 @@ def load_datasets_from_config(config_file):
         datasets[dataset['name']] = {'class_names': dataset['class_names']}
     return datasets
 
-print("<ML server> prerequisites loaded; starting server... ")
+print(f"{head} prerequisites loaded; starting server... ")
 app = Flask(__name__)
-print("<ML server> working directory: " + ML_DIRECTORY_PATH)
+print(f"{head} working directory: " + ML_DIRECTORY_PATH)
+model_map = {}
 models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
 datasets = load_datasets_from_config(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE)
 
@@ -148,20 +175,8 @@ def add_model():
     model_properties = request.form.get(MODEL_CONFIG_PARAM)
     if model_name and model_path:
         model_properties = json.loads(model_properties)
-        model_properties['name'] = model_name
         model_properties['path'] = model_path
-        model, transform, input_size = get_model(model_properties)
-        cuda = model_properties['cuda'] and torch.cuda.is_available()
-        task = model_properties['task']
-        dataset = model_properties['dataset']
-        models[model_name] = {
-            'model': model,
-            'input_size': input_size,
-            'cuda': cuda,
-            'transform': transform,
-            'task': task,
-            'dataset': dataset
-        }
+        models[model_name] = load_model(model_properties)
         return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
@@ -191,16 +206,21 @@ def predict():
 
     if model_name in models:
         model = models[model_name]['model']
-        input_bytes = base64.b64decode(input_data)
-        input_tensor = Image.open(io.BytesIO(input_bytes))
         if models[model_name]['transform']:
+            input_bytes = base64.b64decode(input_data)
+            input_tensor = Image.open(io.BytesIO(input_bytes))
             input_tensor = models[model_name]['transform'].transform(input_tensor)
-        input_batch = input_tensor.unsqueeze(0)
-        if models[model_name]['cuda']:
-            input_batch = input_batch.cuda()
-        output = model(input_batch)
+            input_batch = input_tensor.unsqueeze(0)
+            if models[model_name]['cuda']:
+                input_batch = input_batch.cuda()
+            output = model(input_batch)
+        else:
+            output = model(input_data)
         dataset = models[model_name]['dataset']
-        response = {'prediction': output.tolist()}
+        response = {'prediction': output if isinstance(output, list) else output.tolist()}
+        # print("Response:", response)
+        if models[model_name]["output"]:
+            response['prediction'] = models[model_name]['output'].process_output(response['prediction'])
         if dataset in datasets:
             response['class_names'] = datasets[dataset]['class_names']
         response['task'] = models[model_name]['task']
@@ -255,5 +275,5 @@ def export_model():
 
 
 if __name__ == '__main__':
-    print("<ML server> starting...")
+    print(f"{head} starting...")
     app.run()

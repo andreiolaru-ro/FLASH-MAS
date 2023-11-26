@@ -16,6 +16,13 @@ MODELS:
     transform: "datasets.transform.ImageNetTransform"
     task: "classification"
     dataset: "Custom Dataset" 
+  -
+    name: "YOLOv8-pedestrians"
+    type: "yolo"
+    path: "ml-directory/models/yolov8n-seg.pt"
+    cuda: true
+    output: "datasets.transform.YOLOGetPedestrians"
+     
 DATASETS:
   -
     name: "Custom Dataset"

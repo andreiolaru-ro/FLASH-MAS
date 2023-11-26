@@ -181,7 +181,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			serverProcess = pb.start();
 			int initialtries = 10, tries = initialtries;
-			int spaceBetweenTries = 1000;
+			int spaceBetweenTries = 4000;
 			boolean started = false, connected = false;
 			while(!started && tries-- >= 0) {
 				try { // wait for the process to start.
@@ -483,7 +483,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			
 	 * @return The prediction result, as a list of double
 	 */
-	public ArrayList<Object> predict(String model, String data_path, Boolean needEncode) {
+	public ArrayList<Object> predict(String model, String data_path, boolean needEncode) {
 		String toPredict = data_path;
 		if(needEncode) {
 			// Encode the data

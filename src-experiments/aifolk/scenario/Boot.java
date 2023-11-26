@@ -29,11 +29,11 @@ public class Boot {
 		String a = "";
 
 		a += " -load_order driver;pylon;agent";
-		a += " -package testing net.xqhs.flash.ml " + Boot.class.getPackageName() + " -loader agent:composite";
-		
+		a += " -package testing net.xqhs.flash.ml " + Boot.class.getPackageName() + " src-experiments."
+				+ Boot.class.getPackageName() + " aifolk.core aifolk.onto -loader agent:composite";
 		a += " -node node1";
 		a += " -driver ML:mldriver";
-		a += " -driver Scenario:scen";
+		a += " -driver Scenario:scen script:script";
 		a += " -driver Ontology:ont";
 		a += " -pylon local:pylon1";
 		
