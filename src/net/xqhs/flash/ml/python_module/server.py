@@ -2,6 +2,13 @@ import os
 import shutil
 import importlib
 import sys
+import base64
+from PIL import Image
+import io
+import json
+from builtins import isinstance
+
+head = "<ML server> "
 
 # from ruamel import yaml
 
@@ -15,6 +22,7 @@ MODEL_CONFIG_FILE = "config.yaml";
 MODELS_DIRECTORY = "models/";
 MODEL_ENDPOINT = ".pth";
 ADD_MODEL_SERVICE = "add_model";
+ADD_DATASET_SERVICE = "add_dataset";
 PREDICT_SERVICE = "predict";
 GET_MODELS_SERVICE = "get_models";
 EXPORT_MODEL_SERVICE = "export_model";
@@ -26,48 +34,113 @@ EXPORT_PATH_PARAM = "export_directory_path";
 OPERATION_MODULE_PARAM = "operation_module";
 TRANSFORM_OP_PARAM = "transform_op";
 PREDICT_OP_PARAM = "predict_op";
+DATASET_NAME_PARAM = "dataset_name";
+DATASET_CLASSES_PARAM = "dataset_classes";
 
-print("<ML server> loading prerequisites...")
+print(head + "loading prerequisites...")
 
 try:
     import torch
 except Exception as e:
-    print("PyTorch unavailable (use pip install torch ):", e)
-    print("If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
+    print(head + "PyTorch unavailable (use pip install torch ):", e)
+    print("head + If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
           "src-experiments\aifolk\ml_driver")
     exit(1)
 try:
     from torchvision import transforms
 except Exception as e:
-    print("Torchvision unavailable (use pip install torchvision ):", e)
+    print(head + "Torchvision unavailable (use pip install torchvision ):", e)
     exit(1)
 try:
     import torchaudio
 except Exception as e:
-    print("Torchaudio unavailable (use pip install torchaudio ):", e)
+    print(head + "Torchaudio unavailable (use pip install torchaudio ):", e)
     exit(1)
 try:
     from omegaconf import OmegaConf
 except Exception as e:
-    print("OmegaConf unavailable (use pip install omegaconf ):", e)
+    print(head + "OmegaConf unavailable (use pip install omegaconf ):", e)
     # exit(1)
 try:
     import soundfile
 except Exception as e:
-    print("Soundfile unavailable (use pip install soundfile ):", e)
+    print(head + "Soundfile unavailable (use pip install soundfile ):", e)
+    # exit(1)
+try:
+    from ultralytics import YOLO
+except Exception as e:
+    print(head + "YOLO unavailable (use pip install ultralytics ):", e)
     # exit(1)
 try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
-    print("Flask unavailable (use pip install flask ): ", e)
+    print(head + "Flask unavailable (use pip install flask ): ", e)
     exit(1)
 try:
     import yaml
 except Exception as e:
-    print("Yaml unavailable (use pip install pyyaml ):", e)
+    print(head + "Yaml unavailable (use pip install pyyaml ):", e)
     exit(1)
 
 
+def import_functionality(name):
+    components = name.split('.')
+    mod = __import__(components[0])
+    for comp in components[1:]:
+        mod = getattr(mod, comp)
+    return mod
+
+def get_model(model_config):
+    global model_map
+    model_path = model_config['path']
+    cuda = model_config['cuda'] and torch.cuda.is_available()
+    device = 'cuda:0' if cuda else 'cpu'
+
+    if model_path in model_map: # reuse existing loaded model?
+        model = model_map[model_path]
+    else:
+        model = {
+            "torch": torch.load(model_path,  map_location = device),
+            "yolo": YOLO(model_path),
+            }[model_config.get("type", "torch")]
+        model_map[model_path] = model
+    try:
+        if cuda:
+            model = model.cuda()
+        else:
+            model = model.cpu()
+    except Exception as e:
+        print(f"{head} Could not call model.{'cuda' if cuda else 'cpu'}() because {e}")
+    if 'transform' in model_config:
+        transform_class = import_functionality(model_config['transform'])
+        transform = transform_class()
+        input_size = transform.input_size
+    else:
+        transform = None
+        input_size = None
+    if 'output' in model_config:
+        output_class = import_functionality(model_config['output'])
+        output = output_class()
+    else:
+        output = None
+    # try:
+    #     model.eval() # what was the point of this?
+    # except Exception as e:
+    #     print(f"{head} Could not call model.eval() because {e}")
+    return model, transform, input_size, output
+
+def load_model(config):
+    model, transform, input_size, output = get_model(config)
+    entry = {
+        'model': model,
+        'transform': transform,
+        'input_size': input_size,
+        'output': output,
+        'cuda': config.get('cuda', None) and torch.cuda.is_available(),
+        'task': config.get('task', None),
+        'dataset': config.get('dataset', None),
+    }
+    return entry
 
 def load_models_from_config(config_file):
     with open(config_file, 'r') as f:
@@ -75,124 +148,84 @@ def load_models_from_config(config_file):
 
     models = {}
     for model_config in config['MODELS']:
-        model_name = model_config['name']
-        model_path = model_config['path']
-        cuda = model_config['cuda'] and torch.cuda.is_available()
-        device = 'cuda:0' if cuda else 'cpu'
-
-        # look if the model needs to be loaded with jit
-        if 'jit' in model_config and model_config['jit']:
-            model = torch.jit.load(model_path, map_location=device)
-        else:
-            model = torch.load(model_path, map_location=device)
-        if cuda:
-            model = model.cuda()
-        else:
-            model = model.cpu()
-
-        transform = None
-        # Read configuration, get transformation identifier
-        op_module_identifier = model_config[OPERATION_MODULE_PARAM]
-
-        # Dynamically import the corresponding function
-        if model_config['transform']:
-            transformation_module = importlib.import_module(f"{OP_MODULE_PACKAGE}.{op_module_identifier}")
-            transformation_function = getattr(transformation_module, TRANSFORM_OP_PARAM)
-            transform = transformation_function(model_config)
-
-
-        models[model_name] = {
-            'model': model,
-            'cuda': cuda,
-            'transform': transform,
-            'op_module_identifier': op_module_identifier
-        }
-        if 'class_names' in model_config:
-            models[model_name]['class_names'] = model_config['class_names']
+        models[model_config['name']] = load_model(model_config)
 
     return models
 
+def load_datasets_from_config(config_file):
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f)
+    datasets = {}
+    for dataset in config['DATASETS']:
+        datasets[dataset['name']] = {'class_names': dataset['class_names']}
+    return datasets
 
-print("<ML server> prerequisites loaded; starting server... ")
+print(f"{head} prerequisites loaded; starting server... ")
 app = Flask(__name__)
-print("<ML server> working directory: " + ML_DIRECTORY_PATH)
+print(f"{head} working directory: " + ML_DIRECTORY_PATH)
+model_map = {}
 models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
-
+datasets = load_datasets_from_config(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE)
 
 @app.route('/' + ADD_MODEL_SERVICE, methods=['POST'])
 def add_model():
     global models
     model_name = request.form.get(MODEL_NAME_PARAM)
-    model_file = request.form.get(MODEL_FILE_PARAM)
-
-    # check if it already exist
-    new_model_path = ML_DIRECTORY_PATH + MODELS_DIRECTORY + model_name + MODEL_ENDPOINT
-    if os.path.exists(new_model_path):
-        return jsonify({'error': f'Model "{model_name}" already exists.'}), 409
-
-    # configure the details for the model with the client's information
-    model_config = request.form.get(MODEL_CONFIG_PARAM)
-    model_config = json.loads(model_config)
-
-    if model_name and model_file:
-
-        config_path = ML_DIRECTORY_PATH + MODEL_CONFIG_FILE
-        with open(config_path, 'r') as config_file:
-            config_data = yaml.safe_load(config_file)
-
-        # Define the new model to add
-        new_model = {
-            #for each key in the model_config, add it to the new model
-            key: model_config[key] for key in model_config
-        }
-        new_model['name'] = model_name
-        new_model['path'] = new_model_path
-        if new_model['cuda'] is None:
-            new_model['cuda'] = False
-
-        # Append the new model to the existing models list
-        config_data["MODELS"].append(new_model)
-
-        # Write the updated data back to the YAML file
-        with open(config_path, 'w') as config_file:
-            yaml.dump(config_data, config_file)
-
-        # save the file in the models directory
-        shutil.copyfile(model_file, new_model_path)
-
-        # reload the models
-        models = load_models_from_config(config_path)
-
-        return jsonify({'message': f'Model "{model_name}" has been successfully added.', 'model': new_model})
+    model_path = request.form.get(MODEL_FILE_PARAM)
+    model_properties = request.form.get(MODEL_CONFIG_PARAM)
+    if model_name and model_path:
+        model_properties = json.loads(model_properties)
+        model_properties['path'] = model_path
+        models[model_name] = load_model(model_properties)
+        return jsonify({'message': f'Model "{model_name}" has been successfully added.'})
     else:
         return jsonify({'error': 'Model name and/or model file are missing.'}), 400
 
 
-@app.route('/load_model', methods=['POST'])
-def load_model():
-    model_name = request.form.get(MODEL_NAME_PARAM)
-
-    if model_name in models:
-        model = models[model_name]
-        # model.eval()
-        return jsonify({'message': f'Model "{model_name}" has been successfully loaded.'})
+@app.route('/' + ADD_DATASET_SERVICE, methods=['POST'])
+def add_dataset():
+    global datasets
+    dataset_name = request.form.get(DATASET_NAME_PARAM)
+    dataset_classes = request.form.get(DATASET_CLASSES_PARAM)
+    classes = json.loads(dataset_classes)
+    if dataset_name and classes:
+        if dataset_name in datasets:
+            return jsonify({'error': f'Dataset "{dataset_name}" already exists.'}), 404
+        datasets[dataset_name] = {'class_names': classes}
+        return jsonify({'message': f'Dataset "{dataset_name}" has been successfully added.'})
     else:
-        return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
+        return jsonify({'error': 'Dataset name and/or class names are missing.'}), 400
 
 
 @app.route('/' + PREDICT_SERVICE, methods=['POST'])
 def predict():
     global models
+    global datasets
     model_name = request.form.get(MODEL_NAME_PARAM)
     input_data = request.form.get(INPUT_DATA_PARAM)
 
     if model_name in models:
-        op_module_identifier = models[model_name]['op_module_identifier']
-        module = importlib.import_module(f"{OP_MODULE_PACKAGE}.{op_module_identifier}")
-        predict_function = getattr(module, PREDICT_OP_PARAM)
-        output = predict_function(model_name, input_data, models)
-
-        return jsonify({'prediction': output})
+        model = models[model_name]['model']
+        if models[model_name]['transform']:
+            input_bytes = base64.b64decode(input_data)
+            input_tensor = Image.open(io.BytesIO(input_bytes))
+            input_tensor = models[model_name]['transform'].transform(input_tensor)
+            input_batch = input_tensor.unsqueeze(0)
+            if models[model_name]['cuda']:
+                input_batch = input_batch.cuda()
+            output = model(input_batch)
+        else:
+            output = model(input_data)
+        dataset = models[model_name]['dataset']
+        response = {'prediction': output if isinstance(output, list) else output.tolist()}
+        # print("Response:", response)
+        if models[model_name]["output"]:
+            response['prediction'] = models[model_name]['output'].process_output(response['prediction'])
+        if dataset in datasets:
+            response['class_names'] = datasets[dataset]['class_names']
+        response['task'] = models[model_name]['task']
+        response['dataset'] = models[model_name]['dataset']
+        return jsonify(response)
     else:
         return jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 
@@ -227,6 +260,8 @@ def export_model():
                 break
         #now create a new config file and fill it with the model's data to export
         config_data = {'MODELS': [model_config]}
+        if not os.path.exists(export_directory_path):
+            os.makedirs(export_directory_path)
         config_path = export_directory_path + '/' + model_name + '_' + MODEL_CONFIG_FILE
         with open(config_path, 'w') as config_file:
             yaml.dump(config_data, config_file)
@@ -240,5 +275,5 @@ def export_model():
 
 
 if __name__ == '__main__':
-    print("<ML server> starting...")
+    print(f"{head} starting...")
     app.run()

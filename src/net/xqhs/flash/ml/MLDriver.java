@@ -74,6 +74,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 */
 	public static String	EXPORT_MODEL_SERVICE;
 	/**
+	 * endpoint for the server route
+	 */
+	public static String	ADD_DATASET_SERVICE;
+	/**
 	 * parameter for the model name
 	 */
 	public static String	MODEL_NAME_PARAM;
@@ -109,6 +113,16 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * parameter for the predict operation
 	 */
 	public static String	PREDICT_OP_PARAM;
+
+	/**
+	 * parameter for the dataset name
+	 */
+	public static String	DATASET_NAME_PARAM;
+
+	/**
+	 * parameter for the dataset classes
+	 */
+	public static String	DATASET_CLASSES_PARAM;
 	
 	{
 		SERVER_URL = "http://localhost:5000/";
@@ -120,6 +134,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		MODELS_DIRECTORY = "models/";
 		MODEL_ENDPOINT = ".pth";
 		ADD_MODEL_SERVICE = "add_model";
+		ADD_DATASET_SERVICE = "add_dataset";
 		PREDICT_SERVICE = "predict";
 		GET_MODELS_SERVICE = "get_models";
 		EXPORT_MODEL_SERVICE = "export_model";
@@ -131,7 +146,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		OPERATION_MODULE_PARAM = "operation_module";
 		TRANSFORM_OP_PARAM = "transform_op";
 		PREDICT_OP_PARAM = "predict_op";
-		
+		DATASET_NAME_PARAM = "dataset_name";
+		DATASET_CLASSES_PARAM = "dataset_classes";
 	}
 	
 	/**
@@ -143,6 +159,11 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * Map of available models, and their config
 	 */
 	private Map<String, Map<String, Object>> modelsList = new HashMap<>();
+
+	/**
+	 * Map of available datasets, and their config
+	 */
+	private Map<String, Map<String, Object>> datasetsList = new HashMap<>();
 	
 	@Override
 	public boolean start() {
@@ -160,7 +181,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			serverProcess = pb.start();
 			int initialtries = 10, tries = initialtries;
-			int spaceBetweenTries = 1000;
+			int spaceBetweenTries = 4000;
 			boolean started = false, connected = false;
 			while(!started && tries-- >= 0) {
 				try { // wait for the process to start.
@@ -199,6 +220,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			}
 			if(!serverProcess.isAlive()) {
 				le("Python server failed to start, error [].", Integer.valueOf(serverProcess.exitValue()));
+				return false;
+			}
+			if(!connected) {
+				le("Python server connection failed; no server available.");
 				return false;
 			}
 			li("Python server is up");
@@ -409,7 +434,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		postData.put(MODEL_NAME_PARAM, model_id);
 		postData.put(MODEL_FILE_PARAM, model_path);
 		postData.put(MODEL_CONFIG_PARAM, jsonConfig);
-		
+
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
 		// Check the response
@@ -417,11 +442,31 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		if(response != null) {
 			lf("Model " + model_id + " added successfully");
 			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
-			values.remove("name");
 			this.modelsList.put(model_id, values);
 			
 			li("available models: " + this.modelsList.keySet());
 			return model_id;
+		}
+		return null;
+	}
+
+	public String addDataset(String dataset_name, String classes) {
+		// Set up the form data
+		Map<String, String> postData = new HashMap<>();
+		postData.put(DATASET_NAME_PARAM, dataset_name);
+		postData.put(DATASET_CLASSES_PARAM, classes);
+
+		// Set up the connection
+		HttpURLConnection connection = setupConnection(ADD_DATASET_SERVICE, "POST", postData);
+		// Check the response
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Dataset " + dataset_name + " added successfully");
+			Map<String, Object> values = (Map<String, Object>) parseResponse("dataset", response);
+			this.datasetsList.put(dataset_name, values);
+
+			li("Available datasets: " + this.datasetsList.keySet());
+			return dataset_name;
 		}
 		return null;
 	}
@@ -438,7 +483,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * 			
 	 * @return The prediction result, as a list of double
 	 */
-	public ArrayList<Object> predict(String model, String data_path, Boolean needEncode) {
+	public ArrayList<Object> predict(String model, String data_path, boolean needEncode) {
 		String toPredict = data_path;
 		if(needEncode) {
 			// Encode the data

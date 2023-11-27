@@ -79,6 +79,9 @@ public class MLManagementShard extends AgentShardGeneral {
 		if(ScenarioShard.DESIGNATION.equals(event.getValue(AgentWave.SOURCE_ELEMENT))) {
 			// it is an input for the ML pipeline
 			// TODO recognize situation -- run scripts, evaluate props of current input window
+			
+			// situation element: no of pedestrians
+			li("Result:", mlDriver.predict("YOLOv8-pedestrians", (String) event.getObject("input"), false));
 			// TODO match with current model description
 			// TODO if insufficient match, build query
 			// TODO send query to other agents
