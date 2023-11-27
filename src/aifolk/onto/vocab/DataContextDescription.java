@@ -8,7 +8,7 @@ import fr.inria.corese.kgram.api.core.Node;
  * It is used to give dommain-specific details about the data present in a Dataset or a scenario TaskCharacterization.
  * All instances will make reference to a model graph and a main node URI.
  */
-public abstract class DataContextDescription extends ExtractableDescription {
+public abstract class DataContextDescription extends ExtractableDescription implements ExportableDescription {
   
   protected DataContextDescription() {
     super();

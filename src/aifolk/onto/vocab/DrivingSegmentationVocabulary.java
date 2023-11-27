@@ -29,7 +29,7 @@ public class DrivingSegmentationVocabulary {
     public static final IRI hasMinNumCrossIntersections = createIRI("hasMinNumCrossIntersections");
     public static final IRI hasMinNumPedestrians = createIRI("hasMinNumPedestrians");
     public static final IRI hasMinNumTIntersections = createIRI("hasMinNumTIntersections");
-    public static final IRI hasMinNumTrafficPartcipants = createIRI("hasMinNumTrafficPartcipants");
+    public static final IRI hasMinNumTrafficParticipants = createIRI("hasMinNumTrafficParticipants");
     public static final IRI hasParkingLotPercentage = createIRI("hasParkingLotPercentage");
     public static final IRI hasPedestrianSegmentationMaskRatio = createIRI("hasPedestrianSegmentationMaskRatio");
     public static final IRI hasPercentRepresentation = createIRI("hasPercentRepresentation");

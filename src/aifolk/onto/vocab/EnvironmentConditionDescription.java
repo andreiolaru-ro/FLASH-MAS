@@ -16,7 +16,7 @@ import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Cons
  * It is used to extract the description from the RDF model.
  * All instances will make reference to a model graph and a main node URI.
  */
-public class EnvironmentConditionDescription extends ExtractableDescription {
+public class EnvironmentConditionDescription extends ExtractableDescription implements ExportableDescription {
   /**
    * The URI of the environment condition type node (e.g. Daylight illumination, Overcast weather) 
    */
@@ -163,6 +163,26 @@ public class EnvironmentConditionDescription extends ExtractableDescription {
             return desc;
         }
     }
+
+  @Override
+  public Graph exportToGraph() {
+    final Graph exportGraph = Graph.create();
+
+    // define the nodes
+    final Node conditionNode = exportGraph.addResource(mainNodeURI);
+    final Node conditionTypeNode = exportGraph.addResource(conditionTypeURI);
+    final Node representationPercentageLiteral = exportGraph.addLiteral(representationPercentage);
+
+    // define the properties
+    final Node rdfType = exportGraph.addProperty(RDF.TYPE);
+    final Node hasPercentRepresentation = exportGraph.addProperty(DrivingSegmentationVocabulary.hasPercentRepresentation.stringValue());
+
+    // add the triples
+    exportGraph.addEdge(conditionNode, rdfType, conditionTypeNode);
+    exportGraph.addEdge(conditionNode, hasPercentRepresentation, representationPercentageLiteral);
+
+    return exportGraph;
+  }
 
   
 }

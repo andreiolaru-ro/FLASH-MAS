@@ -10,7 +10,7 @@ import fr.inria.corese.core.logic.RDF;
 import fr.inria.corese.kgram.api.core.Node;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 
-public class SceneCategoryDescription extends ExtractableDescription {
+public class SceneCategoryDescription extends ExtractableDescription implements ExportableDescription {
 
     protected String sceneTypeURI;
 
@@ -90,5 +90,22 @@ public class SceneCategoryDescription extends ExtractableDescription {
             operations.forEach(op -> op.accept(desc));
             return desc;
         }
+    }
+
+    @Override
+    public Graph exportToGraph() {
+      final Graph exportGraph = Graph.create();
+
+      // define the nodes
+      final Node sceneCategoryNode = exportGraph.addResource(mainNodeURI);
+      final Node sceneTypeNode = exportGraph.addResource(sceneTypeURI);
+
+      // define the properties
+      final Node rdfType = exportGraph.addProperty(RDF.TYPE);
+
+      // add the triples
+      exportGraph.addEdge(sceneCategoryNode, rdfType, sceneTypeNode);
+      
+      return exportGraph;
     }
 }

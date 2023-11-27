@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.semarglproject.vocab.core.RDF;
+
 import fr.inria.corese.core.Graph;
 import fr.inria.corese.kgram.api.core.Node;
 import fr.inria.corese.sparql.api.IDatatype;
@@ -246,7 +248,7 @@ public class DrivingSceneContextDescription extends DataContextDescription {
    */
   private void extractSpecifics() {
     // ========== extract the min/avg/max number of traffic participants ==========
-    final IDatatype minNumTrafficPartcipantsVal = extractSingleObjectLiteral(modelDescriptionGraph, mainNodeURI, DrivingSegmentationVocabulary.hasMinNumTrafficPartcipants.stringValue());
+    final IDatatype minNumTrafficPartcipantsVal = extractSingleObjectLiteral(modelDescriptionGraph, mainNodeURI, DrivingSegmentationVocabulary.hasMinNumTrafficParticipants.stringValue());
     if (minNumTrafficPartcipantsVal != null) {
        minNumTrafficParticipants = Optional.of(Integer.valueOf(minNumTrafficPartcipantsVal.intValue()));
     }
@@ -453,5 +455,138 @@ public class DrivingSceneContextDescription extends DataContextDescription {
       operations.forEach(op -> op.accept(ctx));
       return ctx;
     }
+  }
+
+  @Override
+  public Graph exportToGraph() {
+    final Graph exportGraph = Graph.create();
+
+    // define the nodes
+    final Node drivingSceneContextNode = exportGraph.addResource(mainNodeURI);
+    final Node drivingSceneType = exportGraph.addResource(DrivingSegmentationVocabulary.DrivingSceneContext.stringValue());
+
+    // define the properties
+    final Node rdfType = exportGraph.addProperty(RDF.TYPE);
+    final Node hasEnvironmentCondition = exportGraph.addProperty(DrivingSegmentationVocabulary.hasEnvironmentCondition.stringValue());
+    final Node hasSceneCategory = exportGraph.addProperty(DrivingSegmentationVocabulary.hasSceneCategory.stringValue());
+
+    // add the triples defining the main node, the environment conditions and scene categories. the latter ones
+    // are merged from the environment conditions and scene categories descriptions
+    exportGraph.addEdge(drivingSceneContextNode, rdfType, drivingSceneType);
+    for (final EnvironmentConditionDescription envConditionDescription : representedEnvConditions) {
+      final Node envConditionNode = exportGraph.addResource(envConditionDescription.getMainNodeURI());
+      exportGraph.addEdge(drivingSceneContextNode, hasEnvironmentCondition, envConditionNode);
+
+      // merge the environment condition triples
+      exportGraph.merge(envConditionDescription.exportToGraph());
+    }
+
+    for (final SceneCategoryDescription sceneCategoryDescription : representedSceneCategories) {
+      final Node sceneCategoryNode = exportGraph.addResource(sceneCategoryDescription.getMainNodeURI());
+      exportGraph.addEdge(drivingSceneContextNode, hasSceneCategory, sceneCategoryNode);
+
+      // merge the scene category triples
+      exportGraph.merge(sceneCategoryDescription.exportToGraph());
+    }
+
+    // add the triples defining the specifics, depending on whether they are present or not
+    // for the min/avg/max number of cross intersections
+    if (minNumCrossIntersections.isPresent()) {
+      final Node minNumCrossIntersectionsNode = exportGraph.addLiteral(minNumCrossIntersections.get().intValue());
+      final Node hasMinNumCrossIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMinNumCrossIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMinNumCrossIntersections, minNumCrossIntersectionsNode);
+    }
+
+    if (avgNumCrossIntersections.isPresent()) {
+      final Node avgNumCrossIntersectionsNode = exportGraph.addLiteral(avgNumCrossIntersections.get().intValue());
+      final Node hasAvgNumCrossIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasAvgNumCrossIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasAvgNumCrossIntersections, avgNumCrossIntersectionsNode);
+    }
+
+    if (maxNumCrossIntersections.isPresent()) {
+      final Node maxNumCrossIntersectionsNode = exportGraph.addLiteral(maxNumCrossIntersections.get().intValue());
+      final Node hasMaxNumCrossIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMaxNumCrossIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMaxNumCrossIntersections, maxNumCrossIntersectionsNode);
+    }
+
+    // for the min/avg/max number of T intersections
+    if (minNumTIntersections.isPresent()) {
+      final Node minNumTIntersectionsNode = exportGraph.addLiteral(minNumTIntersections.get().intValue());
+      final Node hasMinNumTIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMinNumTIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMinNumTIntersections, minNumTIntersectionsNode);
+    }
+
+    if (avgNumTIntersections.isPresent()) {
+      final Node avgNumTIntersectionsNode = exportGraph.addLiteral(avgNumTIntersections.get().intValue());
+      final Node hasAvgNumTIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasAvgNumTIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasAvgNumTIntersections, avgNumTIntersectionsNode);
+    }
+
+    if (maxNumTIntersections.isPresent()) {
+      final Node maxNumTIntersectionsNode = exportGraph.addLiteral(maxNumTIntersections.get().intValue());
+      final Node hasMaxNumTIntersections = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMaxNumTIntersections.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMaxNumTIntersections, maxNumTIntersectionsNode);
+    }
+
+    // for the min/avg/max number of pedestrians
+    if (minNumPedestrians.isPresent()) {
+      final Node minNumPedestriansNode = exportGraph.addLiteral(minNumPedestrians.get().intValue());
+      final Node hasMinNumPedestrians = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMinNumPedestrians.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMinNumPedestrians, minNumPedestriansNode);
+    }
+
+    if (avgNumPedestrians.isPresent()) {
+      final Node avgNumPedestriansNode = exportGraph.addLiteral(avgNumPedestrians.get().intValue());
+      final Node hasAvgNumPedestrians = exportGraph.addProperty(DrivingSegmentationVocabulary.hasAvgNumPedestrians.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasAvgNumPedestrians, avgNumPedestriansNode);
+    }
+
+    if (maxNumPedestrians.isPresent()) {
+      final Node maxNumPedestriansNode = exportGraph.addLiteral(maxNumPedestrians.get().intValue());
+      final Node hasMaxNumPedestrians = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMaxNumPedestrians.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMaxNumPedestrians, maxNumPedestriansNode);
+    }
+
+    // for the min/avg/max number of traffic participants
+    if (minNumTrafficParticipants.isPresent()) {
+      final Node minNumTrafficParticipantsNode = exportGraph.addLiteral(minNumTrafficParticipants.get().intValue());
+      final Node hasMinNumTrafficParticipants = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMinNumTrafficParticipants.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMinNumTrafficParticipants, minNumTrafficParticipantsNode);
+    }
+
+    if (avgNumTrafficParticipants.isPresent()) {
+      final Node avgNumTrafficParticipantsNode = exportGraph.addLiteral(avgNumTrafficParticipants.get().intValue());
+      final Node hasAvgNumTrafficParticipants = exportGraph.addProperty(DrivingSegmentationVocabulary.hasAvgNumTrafficParticipants.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasAvgNumTrafficParticipants, avgNumTrafficParticipantsNode);
+    }
+
+    if (maxNumTrafficParticipants.isPresent()) {
+      final Node maxNumTrafficParticipantsNode = exportGraph.addLiteral(maxNumTrafficParticipants.get().intValue());
+      final Node hasMaxNumTrafficParticipants = exportGraph.addProperty(DrivingSegmentationVocabulary.hasMaxNumTrafficParticipants.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasMaxNumTrafficParticipants, maxNumTrafficParticipantsNode);
+    }
+
+    // for the traffic participant segmentation mask ratio
+    if (trafficParticipantSegmentationMaskRatio.isPresent()) {
+      final Node trafficParticipantSegmentationMaskRatioNode = exportGraph.addLiteral(trafficParticipantSegmentationMaskRatio.get().doubleValue());
+      final Node hasTrafficParticipantSegmentationMaskRatio = exportGraph.addProperty(DrivingSegmentationVocabulary.hasTrafficParticipantSegmentationMaskRatio.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasTrafficParticipantSegmentationMaskRatio, trafficParticipantSegmentationMaskRatioNode);
+    }
+
+    // for the pedestrian segmentation mask ratio
+    if (pedestrianSegmentationMaskRatio.isPresent()) {
+      final Node pedestrianSegmentationMaskRatioNode = exportGraph.addLiteral(pedestrianSegmentationMaskRatio.get().doubleValue());
+      final Node hasPedestrianSegmentationMaskRatio = exportGraph.addProperty(DrivingSegmentationVocabulary.hasPedestrianSegmentationMaskRatio.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasPedestrianSegmentationMaskRatio, pedestrianSegmentationMaskRatioNode);
+    }
+
+    // for the parking lot percentage
+    if (parkingLotPercentage.isPresent()) {
+      final Node parkingLotPercentageNode = exportGraph.addLiteral(parkingLotPercentage.get().doubleValue());
+      final Node hasParkingLotPercentage = exportGraph.addProperty(DrivingSegmentationVocabulary.hasParkingLotPercentage.stringValue());
+      exportGraph.addEdge(drivingSceneContextNode, hasParkingLotPercentage, parkingLotPercentageNode);
+    }
+
+    return exportGraph;
   }
 }
