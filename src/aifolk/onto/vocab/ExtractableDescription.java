@@ -144,6 +144,7 @@ public abstract class ExtractableDescription {
   public static IDatatype extractSingleObjectLiteral(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
     final IDatatype object = extractSingleObject(modelDescriptionGraph, subjectURI, propertyURI);
     if (object == null) {
+      System.err.println("No literal found in graph " + modelDescriptionGraph.getName() + " for subject " + subjectURI + " and property " + propertyURI + ".");
       return null;
     }
     
@@ -170,8 +171,9 @@ public abstract class ExtractableDescription {
         for (final Mapping m: mappings) {
           objects.add(m.getValue("?object"));
         }
-      }
 
+        return objects;
+      }
     } catch (final EngineException e) {
       System.err.println("Error while executing query " + query + " on graph " + modelDescriptionGraph.getName() + ".");
       System.err.println(e.getMessage());
@@ -201,7 +203,7 @@ public abstract class ExtractableDescription {
    * @return true if the main node has the given type, false otherwise
    */
   public static boolean checkClassType(final Graph modelDescriptionGraph, final String mainNodeURI, final String superClassURI) {
-    final String propertyPath = "<" + RDF.TYPE + " / " + RDFS.SUBCLASSOF + "*" + ">";
+    final String propertyPath = "<" + RDF.TYPE + ">" + "/" + "<" + RDFS.SUBCLASSOF + ">" + "*";
     final String query = "ASK WHERE { <" + mainNodeURI + "> " + propertyPath + " <" + superClassURI + "> }";
     final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
     
@@ -209,7 +211,8 @@ public abstract class ExtractableDescription {
       final Mappings m = exec.query(query);
       return !m.isEmpty();
     } catch (final Exception e) {
-      System.err.println("Error while executing the query: " + query);
+      System.err.println("Error while executing the query: " + query + ". Reason: " + e);
+    
     }
 
     return false;

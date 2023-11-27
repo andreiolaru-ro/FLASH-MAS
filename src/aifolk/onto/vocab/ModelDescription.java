@@ -12,7 +12,6 @@ import fr.inria.corese.core.load.LoadException;
 import fr.inria.corese.core.query.QueryProcess;
 import fr.inria.corese.kgram.api.core.Node;
 import fr.inria.corese.kgram.core.Mappings;
-import fr.inria.corese.sparql.api.IDatatype;
 import fr.inria.corese.sparql.exceptions.EngineException;
 
 public class ModelDescription extends ExtractableDescription {
@@ -120,27 +119,13 @@ public class ModelDescription extends ExtractableDescription {
 
     private static List<ModelEvaluationDescription> getModelEvaluations(final Graph modelDescriptionGraph, final String mainNodeURI) {
       final List<ModelEvaluationDescription> modelEvaluations = new ArrayList<>();
-
-      final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);
-      final String query = "select ?evaluationNode where { <" + mainNodeURI + "> <" + CoreVocabulary.EVALUATED_BY.stringValue() + "> ?evaluationNode }";
-
-      try {
-        final Mappings map = exec.query(query);
-        
-        if (map.size() == 0) {
-          System.err.println("No model evaluations found for the model node " + mainNodeURI + ".");
+      
+      final List<String> modelEvaluationURIs = extractObjectURIs(modelDescriptionGraph, mainNodeURI, CoreVocabulary.EVALUATED_BY.stringValue());
+      if (modelEvaluationURIs != null) {
+        for (final String modelEvaluationURI : modelEvaluationURIs) {
+          final ModelEvaluationDescription evaluation = new ModelEvaluationDescription(modelDescriptionGraph, modelEvaluationURI);
+          modelEvaluations.add(evaluation);
         }
-        else {
-          for (final IDatatype nodeVal : map.getValue("?evaluationNode")) {
-            final String evaluationNodeURI = nodeVal.getLabel();
-            final ModelEvaluationDescription evaluation = new ModelEvaluationDescription(modelDescriptionGraph, evaluationNodeURI);
-
-            modelEvaluations.add(evaluation);
-          }
-        }
-
-      } catch (final EngineException e) {
-        e.printStackTrace();
       }
 
       return modelEvaluations;
@@ -225,6 +210,7 @@ public class ModelDescription extends ExtractableDescription {
     public static void main(final String[] args) throws LoadException {
       final String modelDescriptionFilePath = "/home/alex/work/AI-MAS/projects/2022-AI-Folk/dev/aifolk-project/ontology/aifolk-drivingsegmentation-v1.ttl";
       final ModelDescription md = ModelDescription.getFromFile(modelDescriptionFilePath);
+      md.populateDescription(true);
 
       final String modelNode = md.getModelNodeURI();
       System.out.println("Model node: " + modelNode);

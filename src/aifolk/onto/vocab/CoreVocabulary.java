@@ -58,8 +58,8 @@ public class CoreVocabulary {
     public static final IRI DERIVED_TEST_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTestDatasetFrom");
     public static final IRI DERIVED_TRAINING_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTrainingDatasetFrom");
     public static final IRI HAS_METRIC = createIRI(ANNETTO_NAMESPACE, "hasMetric");
-    public static final IRI EVAL_SCORE = createIRI(ANNETTO_NAMESPACE, "evalScore");
-    public static final IRI EVAL_DATE = createIRI(ANNETTO_NAMESPACE, "evalDate");
+    public static final IRI EVAL_SCORE = createIRI(ANNETTO_NAMESPACE, "eval_score");
+    public static final IRI EVAL_DATE = createIRI(ANNETTO_NAMESPACE, "eval_date");
     
 
     private static IRI createIRI(final String localName) {
