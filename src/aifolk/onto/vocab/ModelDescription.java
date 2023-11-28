@@ -1,13 +1,9 @@
 package aifolk.onto.vocab;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.inria.corese.core.Graph;
-import fr.inria.corese.core.api.Loader;
-import fr.inria.corese.core.load.Load;
 import fr.inria.corese.core.load.LoadException;
 import fr.inria.corese.core.query.QueryProcess;
 import fr.inria.corese.kgram.api.core.Node;
@@ -170,17 +166,10 @@ public class ModelDescription extends ExtractableDescription {
      * @throws LoadException
      */
     public static ModelDescription getFromFile(final String modelDescriptionFilePath) throws LoadException {
-        // Load the corese graph from the file
-        final Graph modelDescriptionGraph = Graph.create();
-        modelDescriptionGraph.init();
-        
-        final Load ld = Load.create(modelDescriptionGraph);
-        ld.parse(modelDescriptionFilePath);
+      final Graph modelDescriptionGraph = getGraphFromFile(modelDescriptionFilePath);  
+      final String modelNodeURI = getSingleConceptURI(modelDescriptionGraph, CoreVocabulary.MODEL.stringValue());
 
-        // get the model node URI
-        final String modelNodeURI = getModelNodeURI(modelDescriptionGraph);
-
-        return new ModelDescription(modelDescriptionGraph, modelNodeURI);
+      return new ModelDescription(modelDescriptionGraph, modelNodeURI);
     }
 
     /**
@@ -190,18 +179,8 @@ public class ModelDescription extends ExtractableDescription {
      * @throws LoadException
      */
     public static ModelDescription getFromString(final String serializedModelDescription) throws LoadException {
-        // Load the corese graph from the string serialization
-        final Graph modelDescriptionGraph = Graph.create();
-        modelDescriptionGraph.init();
-        
-        // Create a Load instance to parse the string, by creating an InputStream from the string
-        final InputStream sis = new ByteArrayInputStream(serializedModelDescription.getBytes());
-
-        final Load ld = Load.create(modelDescriptionGraph);
-        ld.parse(sis, Loader.TURTLE_FORMAT);
-
-        // get the model node URI
-        final String modelNodeURI = getModelNodeURI(modelDescriptionGraph);
+        final Graph modelDescriptionGraph = getGraphFromString(serializedModelDescription);  
+      final String modelNodeURI = getSingleConceptURI(modelDescriptionGraph, CoreVocabulary.MODEL.stringValue());
 
         return new ModelDescription(modelDescriptionGraph, modelNodeURI);
     }

@@ -1,9 +1,14 @@
 package aifolk.onto.vocab;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.inria.corese.core.Graph;
+import fr.inria.corese.core.api.Loader;
+import fr.inria.corese.core.load.Load;
+import fr.inria.corese.core.load.LoadException;
 import fr.inria.corese.core.logic.RDF;
 import fr.inria.corese.core.logic.RDFS;
 import fr.inria.corese.core.query.QueryProcess;
@@ -109,6 +114,87 @@ public abstract class ExtractableDescription {
    * Extract the description from the RDF model
    */
   protected abstract void extractDescription();
+
+  
+  // ================================== STATIC HELPER METHODS ==================================
+  /**
+   * Get the Graph of AI Folk concepts from a file.
+   * @param filePath - the path to the file containing the serialized model in Turtle format
+   * @return The Graph object.
+   * @throws LoadException
+   */
+  public static Graph getGraphFromFile(final String filePath) throws LoadException {
+    // Load the corese graph from the file
+    final Graph modelDescriptionGraph = Graph.create();
+    modelDescriptionGraph.init();
+    
+    final Load ld = Load.create(modelDescriptionGraph);
+    ld.parse(filePath);
+
+    return modelDescriptionGraph;
+  }
+
+  /**
+   * Get the Graph of AI Folk concepts from a string serialization.
+   * @param serializedGraph - the string serialization of the model in Turtle format 
+   * @return The Graph object.
+   * @throws LoadException
+   */
+  public static Graph getGraphFromString(final String serializedGraph) throws LoadException {
+    // Load the corese graph from the string serialization
+    final Graph modelDescriptionGraph = Graph.create();
+    modelDescriptionGraph.init();
+    
+    // Create a Load instance to parse the string, by creating an InputStream from the string
+    final InputStream sis = new ByteArrayInputStream(serializedGraph.getBytes());
+
+    final Load ld = Load.create(modelDescriptionGraph);
+    ld.parse(sis, Loader.TURTLE_FORMAT);
+
+    return modelDescriptionGraph;
+  }
+
+  public static List<String> getAllConceptInstanceURIs(final Graph descriptionGraph, final String conceptTypeURI) {
+    final QueryProcess exec = QueryProcess.create(descriptionGraph);
+    final String query = "SELECT ?concept WHERE { ?concept <" + RDF.TYPE + "> <" + conceptTypeURI + "> }";
+
+    try {
+      final Mappings map = exec.query(query);
+      
+      if (map.size() == 0) {
+        System.err.println("No concept instance found in graph " + descriptionGraph.getName() + " for concept type " + conceptTypeURI + ".");
+      }
+      else {
+        final List<String> conceptURIs = new ArrayList<>();
+        for (final Mapping m: map) {
+          conceptURIs.add(m.getValue("?concept").getLabel());
+        }
+
+        return conceptURIs;
+      }
+
+    } catch (final EngineException e) {
+      System.err.println("Error while executing query " + query + " on graph " + descriptionGraph.getName() + ".");
+      System.err.println(e.getMessage());
+    }
+
+    return null;
+  }
+
+  public static String getSingleConceptURI(final Graph descriptionGraph, final String conceptTypeURI) {
+    final List<String> conceptURIs = getAllConceptInstanceURIs(descriptionGraph, conceptTypeURI);
+    if (conceptURIs != null) {
+      if (conceptURIs.size() >= 1) {
+        return conceptURIs.get(0);
+      }
+      else {
+        System.err.println("More than one concept instance found in graph " + descriptionGraph.getName() + " for concept type " + conceptTypeURI + ".");
+      }
+    }
+    return null;
+  }
+  
+
 
   public static IDatatype extractSingleObject(final Graph modelDescriptionGraph, final String subjectURI, final String propertyURI) {
     final QueryProcess exec = QueryProcess.create(modelDescriptionGraph);

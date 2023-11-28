@@ -54,6 +54,7 @@ public class CoreVocabulary {
     // ... (add other data properties)
 
     // Annetto Namespace
+    public static final IRI TASK_CHARACTERIZATION = createIRI(ANNETTO_NAMESPACE, "TaskCharacterization");
     public static final IRI DERIVED_FROM = createIRI(ANNETTO_NAMESPACE, "derivedFrom");
     public static final IRI DERIVED_TEST_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTestDatasetFrom");
     public static final IRI DERIVED_TRAINING_DATASET_FROM = createIRI(ANNETTO_NAMESPACE, "derivedTrainingDatasetFrom");
