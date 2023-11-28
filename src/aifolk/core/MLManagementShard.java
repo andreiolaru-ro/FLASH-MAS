@@ -18,7 +18,6 @@ import aifolk.onto.vocab.CoreVocabulary;
 import aifolk.onto.vocab.DrivingSceneContextDescription;
 import aifolk.onto.vocab.ExportableDescription;
 import aifolk.onto.vocab.ExtractableDescription;
-import aifolk.onto.vocab.ModelDescription;
 import aifolk.onto.vocab.TaskDescription;
 import aifolk.scenario.ScenarioShard;
 import fr.inria.corese.core.Graph;
@@ -111,9 +110,13 @@ public class MLManagementShard extends AgentShardGeneral {
 				final TaskDescription extractedTaskDesc = new TaskDescription(taskDescGraph, taskDescInstanceURI);
 				extractedTaskDesc.populateDescription(false);
 
-				final ModelDescription modelDesc = ModelDescription.getFromFile("");
-				modelDesc.populateDescription(true);
-				((DrivingSceneContextDescription)modelDesc.getModelEvaluations().get(0).getDatasetDescription().getDataContextDescriptions().get(0)).getAvgNumPedestrians();
+				// access the get average num pedestrians
+				final int extractedAvgNumPedestrians = ((DrivingSceneContextDescription)extractedTaskDesc.getDataContextDescriptions().get(0)).getAvgNumPedestrians().get();
+
+				// Example of how to do it by parsing a Model from the 
+				// final ModelDescription modelDesc = ModelDescription.getFromFile("");
+				// modelDesc.populateDescription(true);
+				// ((DrivingSceneContextDescription)modelDesc.getModelEvaluations().get(0).getDatasetDescription().getDataContextDescriptions().get(0)).getAvgNumPedestrians();
 
 			} catch (final LoadException e) {
 				// TODO Auto-generated catch block
