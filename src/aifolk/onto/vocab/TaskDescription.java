@@ -106,10 +106,10 @@ public class TaskDescription extends ExtractableDescription implements Exportabl
   @Override
   protected void extractDescription() {
     // extract the task type URI by getting the RDF type of the main node
-    final String taskTypeURI = extractSingleObjectURI(modelDescriptionGraph, mainNodeURI, RDF.TYPE);
-    if (taskTypeURI != null) {
-      this.taskTypeURI = taskTypeURI;
-      this.taskTypeName = SimpleValueFactory.getInstance().createIRI(taskTypeURI).getLocalName();
+    final String extractedTaskTypeURI = extractSingleObjectURI(modelDescriptionGraph, mainNodeURI, RDF.TYPE);
+    if (extractedTaskTypeURI != null) {
+      this.taskTypeURI = extractedTaskTypeURI;
+      this.taskTypeName = SimpleValueFactory.getInstance().createIRI(extractedTaskTypeURI).getLocalName();
     }
 
     // extract the domain URI
