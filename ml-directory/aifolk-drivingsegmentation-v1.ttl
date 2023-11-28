@@ -8,7 +8,7 @@
 
 <http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation> rdf:type owl:Ontology ;
                                                                owl:versionIRI <http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation/1.0.0> ;
-                                                               owl:imports <http://aimas.cs.pub.ro/ai-folk/ontology/core/2.0.0> .
+                                                               owl:imports <http://aimas.cs.pub.ro/ai-folk/ontology/core> .
 
 #################################################################
 #    Object Properties
@@ -126,8 +126,8 @@
                          rdfs:range xsd:int .
 
 
-###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumTrafficPartcipants
-:hasMinNumTrafficPartcipants rdf:type owl:DatatypeProperty ;
+###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#hasMinNumTrafficParticipants
+:hasMinNumTrafficParticipants rdf:type owl:DatatypeProperty ;
                              rdfs:subPropertyOf owl:topDataProperty ;
                              rdf:type owl:FunctionalProperty ;
                              rdfs:domain :DrivingSceneContext ;
@@ -338,7 +338,7 @@
 
 ###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#afternoon_city_drive_segmentation
 :afternoon_city_drive_segmentation rdf:type owl:NamedIndividual ,
-                                            <http://w3id.org/annett-o/TaskCharacterization> ;
+                                            <http://aimas.cs.pub.ro/ai-folk/ontology/core#SemanticSegmentation> ;
                                    <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDataContext> :driving_context_node1 ;
                                    <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDomain> <http://aimas.cs.pub.ro/ai-folk/ontology/core#AutonomousDriving> .
 
@@ -362,7 +362,7 @@
                               :hasMinNumCrossIntersections 0 ;
                               :hasMinNumPedestrians 5 ;
                               :hasMinNumTIntersections 0 ;
-                              :hasMinNumTrafficPartcipants 10 ;
+                              :hasMinNumTrafficParticipants 10 ;
                               :hasParkingLotPercentage 0 ;
                               :hasPedestrianSegmentationMaskRatio 0.15 ;
                               :hasRoadSegmentationMaskRatio 0.25 ;
@@ -375,9 +375,8 @@
                           :hasEnvironmentCondition :dusk_light_cond_cityscapes ,
                                                    :overcast_weather_cond_cityscapes_19 ,
                                                    :sunny_weather_cond_cityscapes_81 ;
-                          :hasSceneCategory :ResidentialBlocks ;
-                          :hasSceneCategory :ResidentialBlocksParking ;
-                          # add all the data properties here
+                          :hasSceneCategory :ResidentialBlocks ,
+                                            :ResidentialBlocksParking ;
                           :hasAbsentLaneMarkingsPercentage 0 ;
                           :hasAvgNumCrossIntersections 10 ;
                           :hasAvgNumPedestrians 100 ;
@@ -390,7 +389,7 @@
                           :hasMinNumCrossIntersections 0 ;
                           :hasMinNumPedestrians 76 ;
                           :hasMinNumTIntersections 4 ;
-                          :hasMinNumTrafficPartcipants 56 ;
+                          :hasMinNumTrafficParticipants 56 ;
                           :hasParkingLotPercentage 50 ;
                           :hasPedestrianSegmentationMaskRatio 0.2 ;
                           :hasRoadSegmentationMaskRatio 0.3 ;
@@ -433,7 +432,7 @@
                        :hasMinNumCrossIntersections 0 ;
                        :hasMinNumPedestrians 4 ;
                        :hasMinNumTIntersections 0 ;
-                       :hasMinNumTrafficPartcipants 8 ;
+                       :hasMinNumTrafficParticipants 8 ;
                        :hasParkingLotPercentage 2 ;
                        :hasPedestrianSegmentationMaskRatio 0.12 ;
                        :hasRoadSegmentationMaskRatio 0.2 ;
@@ -459,7 +458,7 @@
                                 :hasMinNumCrossIntersections 0 ;
                                 :hasMinNumPedestrians 4 ;
                                 :hasMinNumTIntersections 4 ;
-                                :hasMinNumTrafficPartcipants 12 ;
+                                :hasMinNumTrafficParticipants 12 ;
                                 :hasParkingLotPercentage 20 ;
                                 :hasPedestrianSegmentationMaskRatio 0.23 ;
                                 :hasRoadSegmentationMaskRatio 0.36 ;
@@ -484,7 +483,7 @@
                             :hasMinNumCrossIntersections 0 ;
                             :hasMinNumPedestrians 10 ;
                             :hasMinNumTIntersections 10 ;
-                            :hasMinNumTrafficPartcipants 24 ;
+                            :hasMinNumTrafficParticipants 24 ;
                             :hasParkingLotPercentage 70 ;
                             :hasPedestrianSegmentationMaskRatio 0.28 ;
                             :hasRoadSegmentationMaskRatio 0.39 ;
@@ -511,7 +510,7 @@
 
 ###  http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#evening_home_drive_segmentation
 :evening_home_drive_segmentation rdf:type owl:NamedIndividual ,
-                                          <http://w3id.org/annett-o/TaskCharacterization> ;
+                                          <http://aimas.cs.pub.ro/ai-folk/ontology/core#SemanticSegmentation> ;
                                  <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDataContext> :driving_context_node2_daylight ,
                                                                                                :driving_context_node2_dusk ;
                                  <http://aimas.cs.pub.ro/ai-folk/ontology/core#hasDomain> <http://aimas.cs.pub.ro/ai-folk/ontology/core#AutonomousDriving> .
