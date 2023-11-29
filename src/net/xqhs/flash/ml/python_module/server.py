@@ -1,4 +1,4 @@
-import os
+import os, pathlib
 import shutil
 import importlib
 import sys
@@ -10,12 +10,19 @@ from builtins import isinstance
 
 head = "<ML server> "
 
+# getting the libraries
+#  python -m venv .
+# .\Scripts\activate.bat
+# .\Scripts\pip.exe install ultralytics
+
+
 # from ruamel import yaml
 
 # constants:
 SERVER_URL = "http://localhost:5000/";
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 ML_DIRECTORY_PATH = "ml-directory/";
+PYTHONLIB_PATH = ML_DIRECTORY_PATH + "pythonlib/Lib/site-packages/"
 OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config.yaml";
@@ -38,6 +45,9 @@ DATASET_NAME_PARAM = "dataset_name";
 DATASET_CLASSES_PARAM = "dataset_classes";
 
 print(head + "loading prerequisites...")
+pylib_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.parent.parent.absolute()
+pylib_path = str(pylib_path) + "/" + PYTHONLIB_PATH
+sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
 
 try:
     import torch
@@ -55,7 +65,7 @@ try:
     import torchaudio
 except Exception as e:
     print(head + "Torchaudio unavailable (use pip install torchaudio ):", e)
-    exit(1)
+    # exit(1)
 try:
     from omegaconf import OmegaConf
 except Exception as e:
