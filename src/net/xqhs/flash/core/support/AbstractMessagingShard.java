@@ -11,6 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -103,6 +106,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * {@link #classicInbox} and {@link #waveInbox} can be not <code>null</code>.
 	 */
 	protected transient WaveReceiver				waveInbox		= null;
+	/**
+	 * Outgoing message hooks.
+	 */
+	protected transient Set<OutgoingMessageHook>	outgoingHooks	= new HashSet<>();
 	
 	/**
 	 * No-argument constructor.
@@ -268,6 +275,11 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		if(!endpoint.startsWith(externalPath))
 			throw new IllegalStateException("Endpoint address does not start with agent address");
 		return endpoint.substring(externalPath.length());
+	}
+	
+	@Override
+	public void addOutgoingMessageHook(OutgoingMessageHook hook) {
+		outgoingHooks.add(hook);
 	}
 	
 	/**

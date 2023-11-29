@@ -19,7 +19,10 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.MessagingShard.OutgoingMessageHook;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
@@ -33,7 +36,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class EchoTestingShard extends AgentShardCore {
+public class EchoTestingShard extends AgentShardCore implements OutgoingMessageHook {
 	/**
 	 * The UID.
 	 */
@@ -84,6 +87,9 @@ public class EchoTestingShard extends AgentShardCore {
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
+			((MessagingShard) getAgent()
+					.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
+							.addOutgoingMessageHook(this);
 			exitTimer = new Timer();
 			exitTimer.schedule(new TimerTask() {
 				@Override
@@ -123,5 +129,10 @@ public class EchoTestingShard extends AgentShardCore {
 			locallog.doExit();
 			locallog = null;
 		}
+	}
+	
+	@Override
+	public void sendingMessage(String source, String destination, String content) {
+		locallog.li("Sending a message from [] to [] with content [].", source, destination, content);
 	}
 }

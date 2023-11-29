@@ -150,22 +150,6 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Creates an {@link AgentWave} with the source and destination of this wave, reversed, and with the given content,
-	 * if any. No other fields are created.
-	 * 
-	 * @param content
-	 *            - if not <code>null</code>, it is used as content for the reply.
-	 * 			
-	 * @return the reply to this agent wave.
-	 */
-	public AgentWave createReply(String content) {
-		AgentWave reply = new AgentWave(content);
-		reply.addSourceElements(getDestinationElements());
-		reply.resetDestination(null, this.getSourceElements());
-		return reply;
-	}
-	
-	/**
 	 * Appends elements to the list of source endpoint elements.
 	 * 
 	 * @param sourceElements
@@ -378,6 +362,27 @@ public class AgentWave extends AgentEvent {
 	@SuppressWarnings({ "static-method" })
 	public AgentWave fromSerializedContent(String serializedContent) {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * @return same as {@link #createReply(String)}, but without adding any content.
+	 */
+	public AgentWave createReply() {
+		return createReply(null);
+	}
+	
+	/**
+	 * Creates an {@link AgentWave} based on the given content, reversing the source and destination elements of this
+	 * wave. Only values for the {@link #SOURCE_ELEMENT} and {@link #DESTINATION_ELEMENT} keys of this wave are
+	 * considered.
+	 * 
+	 * @param content
+	 *            - the content to add to the wave (see {@link AgentWave#AgentWave(String, String, String...)}.
+	 * @return the new {@link AgentWave} to serve as a reply to this wave.
+	 */
+	public AgentWave createReply(String content) {
+		return ((AgentWave) new AgentWave(content).addAll(SOURCE_ELEMENT, getValues(DESTINATION_ELEMENT))
+				.addAll(DESTINATION_ELEMENT, getValues(SOURCE_ELEMENT))).recomputeCompleteDestination();
 	}
 	
 	/**
