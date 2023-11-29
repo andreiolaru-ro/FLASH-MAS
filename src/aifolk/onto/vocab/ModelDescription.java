@@ -17,9 +17,16 @@ public class ModelDescription extends ExtractableDescription {
 
     // List of model evaluations
     private List<ModelEvaluationDescription> modelEvaluations;
+	
+	protected ModelDescription() {
+		super();
+	}
+	
+	protected ModelDescription(final String modelNodeURI) {
+		super(modelNodeURI);
+	}
 
-
-	  private ModelDescription(final Graph modelDescriptionGraph, final String modelNodeURI) {
+	public ModelDescription(final Graph modelDescriptionGraph, final String modelNodeURI) {
       super(modelDescriptionGraph, modelNodeURI);
     }
 

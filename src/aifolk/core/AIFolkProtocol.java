@@ -16,4 +16,16 @@ public class AIFolkProtocol {
 	 * SEARCH message
 	 */
 	protected static final String	FOLK_SEARCH		= "aifolk-search";
+	/**
+	 * LISTING message
+	 */
+	protected static final String	FOLK_LISTING	= "aifolk-listing";
+	/**
+	 * REQUEST message
+	 */
+	protected static final String	FOLK_REQUEST	= "aifolk-request";
+	/**
+	 * TRANSFER message
+	 */
+	protected static final String	FOLK_TRANSFER	= "aifolk-transfer";
 }

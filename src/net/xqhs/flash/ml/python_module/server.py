@@ -11,9 +11,12 @@ from builtins import isinstance
 head = "<ML server> "
 
 # getting the libraries
+# in ml-directory/pythonlib:
 #  python -m venv .
 # .\Scripts\activate.bat
 # .\Scripts\pip.exe install ultralytics
+# .\Scripts\pip.exe install shapely
+
 
 
 # from ruamel import yaml
