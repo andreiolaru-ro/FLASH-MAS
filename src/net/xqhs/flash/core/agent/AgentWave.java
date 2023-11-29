@@ -362,17 +362,6 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Unimplemented.
-	 * 
-	 * @param serializedContent
-	 * @return the wave itself.
-	 */
-	@SuppressWarnings({ "static-method" })
-	public AgentWave fromSerializedContent(String serializedContent) {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-	
-	/**
 	 * @return same as {@link #createReply(String)}, but without adding any content.
 	 */
 	public AgentWave createReply() {

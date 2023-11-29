@@ -28,6 +28,20 @@ import net.xqhs.flash.core.shard.AgentShard;
 public interface MessagingShard extends AgentShard
 {
 	/**
+	 * Mechanism to allow other shards to intercept outgoing messages.
+	 */
+	public interface OutgoingMessageHook {
+		/**
+		 * method to be called whenever a message is being sent by the agent.
+		 * 
+		 * @param source - the source of the message
+		 * @param destination - the destination of the message
+		 * @param content - the content of the message
+		 */
+		public void sendingMessage(String source, String destination, String content);
+	}
+	
+	/**
 	 * Sends a message to another agent, according to the specific implementation.
 	 * 
 	 * @param source
@@ -53,4 +67,15 @@ public interface MessagingShard extends AgentShard
 	 *            - the name of entity to be registered
 	 */
 	public void register(String entityName);
+	
+	/**
+	 * Method to be called by other shards in case they need to monitor outgoing messages.
+	 * <p>
+	 * Depending on the implementation of the {@link MessagingShard}, hooks may need to be re-added after agent
+	 * movement.
+	 * 
+	 * @param hook
+	 *            - the {@link OutgoingMessageHook} instance.
+	 */
+	public void addOutgoingMessageHook(OutgoingMessageHook hook);
 }

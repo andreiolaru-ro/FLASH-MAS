@@ -11,6 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -95,6 +98,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * The proxy to this shard, to be used by the pylon.
 	 */
 	protected transient MessageReceiver		inbox	= null;
+	/**
+	 * Outgoing message hooks.
+	 */
+	protected transient Set<OutgoingMessageHook>	outgoingHooks	= new HashSet<>();
 	
 	/**
 	 * No-argument constructor.
@@ -192,8 +199,12 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
-	public boolean sendMessage(String target, String source, String content) {
-		return pylon.send(target, source, content);
+	public boolean sendMessage(String source, String target, String content) {
+		String fullsource = source.startsWith(getAgentAddress()) ? source
+				: AgentWave.makePath(getAgentAddress(), source);
+		for(OutgoingMessageHook hook : outgoingHooks)
+			hook.sendingMessage(fullsource, target, content);
+		return pylon.send(fullsource, target, content);
 	}
 
 	/**
@@ -212,6 +223,11 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		if(!endpoint.startsWith(externalPath))
 			throw new IllegalStateException("Endpoint address does not start with agent address");
 		return endpoint.substring(externalPath.length());
+	}
+	
+	@Override
+	public void addOutgoingMessageHook(OutgoingMessageHook hook) {
+		outgoingHooks.add(hook);
 	}
 	
 	/**
