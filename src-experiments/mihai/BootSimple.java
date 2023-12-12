@@ -30,7 +30,7 @@ public class BootSimple {
 		
 		args += " -node nodeD-localhost:8885";
 		args += " -pylon WSRegions:pylonD connectTo:localhost:8885";
-		args += " -agent composite:agentD-localhost:8885 -shard messaging -shard PingBack -shard EchoTesting";
+		args += " -agent composite:agentD-localhost:8885 -shard messaging -shard PingBackTest -shard EchoTesting";
 
 		FlashBoot.main(args.split(" "));
 	}
