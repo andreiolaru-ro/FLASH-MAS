@@ -15,30 +15,21 @@ public class BootBridgeAgent {
 	public static void main(String[] args_) {
 		String args = "";
 		
-		args += " -package testing wsRegions src-experiments.mihai -loader agent:mobileComposite";
+		args += " -package testing wsRegions src-experiments.mihai -loader agent:BridgeAgent -loader agent:composite";
 		
 		args += " -node nodeA-localhost:8885";
-		args += " -pylon WSRegions:pylonA isServer:localhost:8885";
-		// args += " -agent :agentA-localhost:8885 -shard messaging -shard EchoTesting -shard PingTest
-		// otherAgent:agentD-localhost:8885";
-		args += " -agent :agentA-localhost:8885 -shard messaging  -shard EchoTesting exit:20 -shard ScriptTesting from:Simple";
+		args += " -pylon WSRegions:pylonA1 isServer:localhost:8885";
+		args += " -pylon webSocket:pylonA2 serverPort:8886";
+		args += " -agent BridgeAgent:agentA-localhost:8885 ping:nodeD pong:nodeB-localhost:8885 -shard EchoTesting exit:40";
 		
 		args += " -node nodeB-localhost:8885";
-		args += " -pylon WSRegions:pylonB1 connectTo:localhost:8885";
-		// args += " -pylon webSocket:pylonB2 serverPort:8886";
-		args += " -agent :agentB-localhost:8885 -shard messaging -shard EchoTesting exit:20";
+		args += " -pylon WSRegions:pylonB connectTo:localhost:8885";
+		args += " -agent composite:agentB-localhost:8885 -shard messaging -shard EchoTesting exit:40";
 		
-		args += " -node nodeC-localhost:8885";
-		args += " -pylon WSRegions:pylonC connectTo:localhost:8885";
-		args += " -agent :agentC-localhost:8885 -shard messaging -shard EchoTesting exit:20";
+		args += " -node nodeD";
+		args += " -pylon webSocket:pylonD connectTo:ws://localhost:8886";
+		args += " -agent agentD classpath:AgentPingPong sendTo:nodeA-localhost:8885 -shard EchoTesting exit:40";
 		
-		args += " -node nodeD-localhost:8885";
-		args += " -pylon WSRegions:pylonD connectTo:localhost:8885";
-		// args += " -agent :agentD-localhost:8885 -shard messaging -shard EchoTesting -shard PingBackTest";
-		args += " -agent :agentD-localhost:8885 -shard messaging -shard EchoTesting exit:20 -shard ScriptTesting from:Simple";
-		
-		// MasterLog.enablePerformanceModeTools(500);
-		// System.out.println("."); // to activate console output.
 		FlashBoot.main(args.split(" "));
 	}
 }
