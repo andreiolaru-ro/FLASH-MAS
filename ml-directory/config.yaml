@@ -22,7 +22,13 @@ MODELS:
     path: "ml-directory/models/yolov8n-seg.pt"
     cuda: true
     output: "datasets.transform.YOLOGetPedestrians"
-     
+  -
+    cuda: true
+    input_space: RGB
+    task: semantic segmentation,
+    transform: "datasets.transform.CityscapesTransform"
+    dataset: Cityscapes
+
 DATASETS:
   -
     name: "Custom Dataset"

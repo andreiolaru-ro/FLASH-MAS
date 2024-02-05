@@ -34,7 +34,7 @@ public class Boot {
 		a += " -node node1";
 		a += " -driver ML:mldriver";
 		a += " -driver Scenario:scen script:script";
-		a += " -driver Ontology:ont load:aifolk-drivingsegmentation-v1.ttl";
+		a += " -driver Ontology:ont load:aifolk-drivingsegmentation-v1-exp.ttl";
 		a += " -pylon local:pylon1";
 		
 		for(final String name : new String[] { "A", "B", "C" })

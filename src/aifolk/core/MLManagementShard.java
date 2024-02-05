@@ -3,7 +3,6 @@
  */
 package aifolk.core;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +11,6 @@ import com.google.gson.Gson;
 import aifolk.onto.OntologyDriver;
 import aifolk.onto.Query;
 import aifolk.onto.QueryResult;
-import aifolk.onto.vocab.DrivingSceneContextDescription;
 import aifolk.onto.vocab.ExportableDescription;
 import aifolk.onto.vocab.ModelDescription;
 import aifolk.onto.vocab.TaskDescription;
@@ -23,6 +21,7 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ml.MLDriver;
 
 /**
@@ -31,6 +30,10 @@ import net.xqhs.flash.ml.MLDriver;
 public class MLManagementShard extends AgentShardGeneral {
 	static class DataContext {
 		// nothing to specify
+	}
+	
+	public interface Feature {
+		
 	}
 	
 	/**
@@ -60,6 +63,11 @@ public class MLManagementShard extends AgentShardGeneral {
 	}
 	
 	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		Loader.auto_find();
+	}
+
+	@Override
 	public boolean addGeneralContext(final EntityProxy<? extends Entity<?>> context) {
 		if(!super.addGeneralContext(context))
 			return false;
@@ -88,57 +96,19 @@ public class MLManagementShard extends AgentShardGeneral {
 			// it is an input for the ML pipeline
 			// recognize situation -- run scripts, evaluate props of current input window
 			
-			// situation element: no of pedestrians
-			ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", (String) event.getObject("input"), false);
-			li("Result:", result);
-			((DrivingDataContext) currentDataContext)
-					.addPedestrianNumberData(Long.valueOf(Math.round(((Double) result.get(0)).doubleValue())));
-			
-			// match with current model description
-			ModelDescription modelDesc = new ModelDescription(ontDriver.getGraph(),
-					"http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#model_node_1");
-			modelDesc.populateDescription(true);
-			Integer pedestriansInModel = ((DrivingSceneContextDescription) modelDesc.getModelEvaluations().get(0)
-					.getDatasetDescription()
-					.getDataContextDescriptions().get(0)).getAvgNumPedestrians().get();
-			li("pedestrians in model:", pedestriansInModel);
-			//
-			// Graph taskDescGraph = ontDriver.getGraph();
-			// String taskDescInstanceURI = ExtractableDescription.getSingleConceptURI(taskDescGraph,
-			// "http://aimas.cs.pub.ro/ai-folk/mlmodels/model_node_1");
-			// TaskDescription extractedTaskDesc = new TaskDescription(taskDescGraph, taskDescInstanceURI);
-			// extractedTaskDesc.populateDescription(false);
-			// // access the get average num pedestrians
-			// Integer pedestriansInModel = ((DrivingSceneContextDescription) extractedTaskDesc
-			// .getDataContextDescriptions().get(0)).getAvgNumPedestrians().get();
-			
-			// Integer pedestriansInModel = Integer.valueOf(1);
-			
-			if(pedestriansInModel.intValue() < ((DrivingDataContext) currentDataContext).getMaxPedestrians()
-					.intValue()) {
-				// time to change model
-				li("must change model");
-				final DrivingSceneContextDescription.Builder dataContextBuilder = DrivingSceneContextDescription.Builder
-						.create("http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#my_data_context_1");
-				dataContextBuilder.withAvgNumPedestrians(150);
-				final DrivingSceneContextDescription dataContextDesc = dataContextBuilder.build();
-				
-				final TaskDescription.Builder taskBuilder = TaskDescription.Builder.create(
-						"http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#my_task_1",
-						"http://aimas.cs.pub.ro/ai-folk/ontology/core#SemanticSegmentation");
-				taskBuilder
-						.setDomainURI("http://aimas.cs.pub.ro/ai-folk/ontology/drivingSegmentation#AutonomousDriving");
-				taskBuilder.addDataContextDescription(dataContextDesc);
-				final TaskDescription taskDesc = taskBuilder.build();
-				
+			TaskDescription taskDescr = feature.modelAlternate();
+			if(taskDescr != null) {
 				// TODO send task description to other agents by first getting a String serialization of it
 				final Optional<String> taskDescStr = ExportableDescription.graphToString(taskDesc.exportToGraph());
+
 				// FIXME check if optional ok
 				// FIXME the list of friends is fixed
-				AgentWave message = (AgentWave) new AgentWave(taskDescStr.get()).addSourceElements(DESIGNATION)
+				for(String friend : new String[] { "B", "C" }) {
+					AgentWave message = (AgentWave) new AgentWave(taskDescStr.get()).addSourceElements(DESIGNATION)
 						.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_SEARCH);
-				message.resetDestination("B", DESIGNATION);
-				sendMessage(message);
+					message.resetDestination(friend, DESIGNATION);
+					sendMessage(message);
+				}
 			}
 			
 			// TODO send query to other agents
@@ -156,8 +126,9 @@ public class MLManagementShard extends AgentShardGeneral {
 					lf("received [] for []", messageType, query);
 					
 					QueryResult[] results = ontDriver.runQuery(new Query(query));
-					AgentWave reply = ((AgentWave) event).createReply(new Gson().toJson(results));
-					// TODO add protocol
+					AgentWave reply = (AgentWave) ((AgentWave) event).createReply(new Gson().toJson(results))
+							.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_LISTING);
+					// TODO find model
 					
 					sendMessage(reply);
 					break;
