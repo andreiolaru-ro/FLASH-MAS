@@ -1,4 +1,4 @@
-package mihai;
+package test.simplePingPong;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
