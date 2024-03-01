@@ -44,7 +44,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	
 	public RegionServer(int serverPort, ArrayList<String> servers, String server_name) {
 		{
-			setUnitName(server_name);
+			setUnitName("WSRegion server " + server_name);
 			setLoggerType(PlatformUtils.platformLogType());
 		}
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
