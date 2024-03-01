@@ -85,7 +85,7 @@ public class BridgeAgent extends Unit implements Agent {
 				msgShard = messagingShards.get(WSRegionsShard.class.getName());
 				if (msgShard == null)
 					throw new IllegalStateException("No WSRegions messaging shard present");
-				target = AgentWave.makePath(pongAgents.get(0), "pong");
+				target = AgentWave.makePath(pongAgents.get(0));
 			}
 
 			if (source.equals(AgentWave.makePath(pongAgents.get(0), PONG_AGENT_PARAMETER_NAME))) {
