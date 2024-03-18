@@ -222,6 +222,11 @@ def predict():
 
     if model_name in models:
         model = models[model_name]['model']
+        if len(input_data) < 1024 and os.path.isfile(input_data) and models[model_name]['transform']:
+            buffered = io.BytesIO()
+            image = Image.open(input_data)
+            image.save(buffered, format="JPEG")
+            input_data = base64.b64encode(buffered.getvalue()).decode('utf-8')
         if models[model_name]['transform']:
             input_bytes = base64.b64decode(input_data)
             input_tensor = Image.open(io.BytesIO(input_bytes))

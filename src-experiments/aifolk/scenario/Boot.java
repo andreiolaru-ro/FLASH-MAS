@@ -39,7 +39,7 @@ public class Boot {
 		
 		for(final String name : new String[] { "A", "B", "C" })
 			a += " -agent " + name
-					+ "  in-context-of:ML:mldriver in-context-of:Scenario:scen -shard scenario -shard MLPipeline -shard MLManagement -shard messaging -shard EchoTesting exit:20";
+					+ "  in-context-of:ML:mldriver in-context-of:Scenario:scen -shard scenario -shard MLPipeline -shard MLManagement feature:AutoDrive -shard messaging -shard EchoTesting exit:20";
 
 		FlashBoot.main(a.split(" "));
     }

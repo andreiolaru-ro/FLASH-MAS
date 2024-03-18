@@ -87,7 +87,7 @@ public class ScenarioDriver extends EntityCore<Node> implements EntityProxy<Scen
 	}
 	
 	public void receiveAgentOutput(Object output, long ID) {
-		li("Obtained output for ID ", ID);
+		li("Obtained output for ID []: ", ID, output);
 		// TODO evaluate
 	}
 	

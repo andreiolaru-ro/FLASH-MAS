@@ -23,6 +23,8 @@ MODELS:
     cuda: true
     output: "datasets.transform.YOLOGetPedestrians"
   -
+    name: "deeplabv3plus_cityscapes"
+    path: "ml-directory/models/deeplabv3plus_cityscapes.pth"
     cuda: true
     input_space: RGB
     task: semantic segmentation,

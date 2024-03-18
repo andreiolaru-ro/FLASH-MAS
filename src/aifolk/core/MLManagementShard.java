@@ -3,6 +3,7 @@
  */
 package aifolk.core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,24 +16,34 @@ import aifolk.onto.vocab.ExportableDescription;
 import aifolk.onto.vocab.ModelDescription;
 import aifolk.onto.vocab.TaskDescription;
 import aifolk.scenario.ScenarioShard;
+import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.ml.MLDriver;
+import net.xqhs.flash.ml.MLPipelineShard;
+import net.xqhs.util.logging.Logger;
 
 /**
  * Shard to manage the use of ML models, according to the AI Folk methodology.
  */
 public class MLManagementShard extends AgentShardGeneral {
-	static class DataContext {
+	public static class DataContext {
 		// nothing to specify
 	}
 	
+	@SuppressWarnings("javadoc")
 	public interface Feature {
+		static final String FEATURE_KEY = "feature";
+		
+		TaskDescription modelAlternate(String input, MLDriver mlDriver, OntologyDriver ontDriver,
+				DataContext dataContext, Logger log);
 		
 	}
 	
@@ -54,6 +65,7 @@ public class MLManagementShard extends AgentShardGeneral {
 	 */
 	OntologyDriver	ontDriver;
 	DataContext		currentDataContext	= new DrivingDataContext();
+	Feature			feature				= null;
 	
 	/**
 	 * The constructor.
@@ -64,9 +76,21 @@ public class MLManagementShard extends AgentShardGeneral {
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		Loader.auto_find();
+		for(String file : configuration.getValues(Feature.FEATURE_KEY)) {
+			try {
+				String cls = Loader.autoFind(PlatformUtils.getClassFactory(),
+						configuration.getValues(CategoryName.PACKAGE.s()), file, file, null, Feature.FEATURE_KEY, null);
+				// currently only supporting one feature at a time
+				feature = (Feature) PlatformUtils.getClassFactory().loadClassInstance(cls, null, false);
+			} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+					| InvocationTargetException e) {
+				le("Feature load failed for feature [] with exception", file, e);
+				// e.printStackTrace();
+			}
+		}
+		return true;
 	}
-
+	
 	@Override
 	public boolean addGeneralContext(final EntityProxy<? extends Entity<?>> context) {
 		if(!super.addGeneralContext(context))
@@ -96,19 +120,23 @@ public class MLManagementShard extends AgentShardGeneral {
 			// it is an input for the ML pipeline
 			// recognize situation -- run scripts, evaluate props of current input window
 			
-			TaskDescription taskDescr = feature.modelAlternate();
-			if(taskDescr != null) {
+			TaskDescription taskDesc = feature.modelAlternate((String) event.getObject("input"), mlDriver, ontDriver,
+					currentDataContext, this.getLogger());
+			if(taskDesc != null) {
 				// TODO send task description to other agents by first getting a String serialization of it
 				final Optional<String> taskDescStr = ExportableDescription.graphToString(taskDesc.exportToGraph());
-
+				
 				// FIXME check if optional ok
 				// FIXME the list of friends is fixed
 				for(String friend : new String[] { "B", "C" }) {
 					AgentWave message = (AgentWave) new AgentWave(taskDescStr.get()).addSourceElements(DESIGNATION)
-						.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_SEARCH);
+							.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_SEARCH);
 					message.resetDestination(friend, DESIGNATION);
-					sendMessage(message);
+					// sendMessage(message);
 				}
+				((MLPipelineShard) getAgent()
+						.getAgentShard(AgentShardDesignation.customShard(MLPipelineShard.DESIGNATION)))
+								.setTaskModel("segmentation", "deeplabv3plus_cityscapes");
 			}
 			
 			// TODO send query to other agents
@@ -134,11 +162,11 @@ public class MLManagementShard extends AgentShardGeneral {
 					break;
 				}
 				case AIFolkProtocol.FOLK_LISTING: {
-//					List<QueryResult> results = new ArrayList<>();
-//					for(int i = 0; i < arguments.size(); i++) {
-//						results.add(new Gson().fromJson(arguments.get(i), QueryResult.class));
-//						// TODO manage result
-// }
+					// List<QueryResult> results = new ArrayList<>();
+					// for(int i = 0; i < arguments.size(); i++) {
+					// results.add(new Gson().fromJson(arguments.get(i), QueryResult.class));
+					// // TODO manage result
+					// }
 					break;
 				}
 				case AIFolkProtocol.FOLK_REQUEST: {
