@@ -95,7 +95,7 @@ public class BridgeAgent extends Unit implements Agent {
 				target = AgentWave.makePath(pingAgents.get(0), "ping");
 			}
 
-			String replyContent = ((AgentWave) event).getContent() + " reply";
+			String replyContent = ((AgentWave) event).getContent() + "";
 			return msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
 					target, replyContent);
 		}
