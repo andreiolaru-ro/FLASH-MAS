@@ -1,6 +1,28 @@
 PORT: 5000
 MODELS:
   -
+    name: "MobileNetV2"
+    path: "ml-directory/models/mobilenetv2.pth"
+    transform: "datasets.transform.ImageNetTransform"
+    cuda: false
+    input_space: RGB
+    task: "classification"
+    dataset: "ImageNet" 
+  -
+    name: "ResNet18"
+    path: "ml-directory/models/resnet18.pth"
+    cuda: true
+    input_space: RGB
+    transform: "datasets.transform.ImageNetTransform"
+    task: "classification"
+    dataset: "Custom Dataset" 
+  -
+    name: "YOLOv8-pedestrians"
+    type: "yolo"
+    path: "ml-directory/models/yolov8n-seg.pt"
+    cuda: true
+    output: "datasets.transform.YOLOGetPedestrians"
+  -
     name: "deeplabv3plus_cityscapes"
     path: "ml-directory/models/deeplabv3plus_cityscapes.pth"
     cuda: true
