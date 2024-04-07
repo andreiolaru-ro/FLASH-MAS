@@ -7,6 +7,7 @@ from PIL import Image
 import io
 import json
 from builtins import isinstance
+import torch
 
 head = "<ML server> "
 
@@ -116,6 +117,8 @@ def get_model(model_config):
     if model_path in model_map: # reuse existing loaded model?
         model = model_map[model_path]
     else:
+
+        print("../../../../../../"+model_path)
         model = {
             "torch": torch.load("../../../../../../"+model_path,  map_location = device),
             "yolo": None, #YOLO("../../../../../../"+model_path)
@@ -165,6 +168,8 @@ def load_models_from_config(config_file):
 
     models = {}
     for model_config in config['MODELS']:
+        print(model_config)
+        print("!!")
         models[model_config['name']] = load_model(model_config)
 
     return models
@@ -311,5 +316,22 @@ if __name__ == '__main__':
     print(f"{head} starting...")
     # app.run()
     predict("deeplabv3plus_cityscapes", ML_DIRECTORY_PATH + "input/ADE_val_00000793.jpg")
+    """  prediction = torch.tensor(response['prediction'])
     
+        prediction = prediction.max(1)[1].cpu().numpy()[0]
+        dict1 = {}
+        for x in prediction:
+        	for y in x:
+        		if y > 0:
+        			if y in dict1:
+        				dict1[y] += 1
+	        		else:
+	        			dict1[y] = 1
+	        		
+	        		
+        print(dict1)        	
+        if 15 in dict1:
+        	suma +=	dict1[15]
+        if 7 in dict1:
+        	suma2 += dict1[7]"""
     
