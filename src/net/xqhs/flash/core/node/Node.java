@@ -47,6 +47,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.rmi.NodeCLI;
+import net.xqhs.flash.rmi.NodeCLI.NodeInterface;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -168,10 +170,27 @@ public class Node extends Unit implements Entity<Node> {
 			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
 				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
 			this.serverURI = nodeConfiguration.get("region-server");
+			
+			if(nodeConfiguration.containsKey(NodeCLI.NODE_CLI_PARAM)) {
+				new NodeCLI(new NodeInterface() {
+					@Override
+					public boolean stopEntity(String entityName) {
+						// TODO Auto-generated method stub
+						return false;
+					}
+					
+					@Override
+					public Map<String, String> listEntities() {
+						// TODO Auto-generated method stub
+						return null;
+					}
+				});
+			}
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 		li("Active entitites:", activeEntities);
+		
 	}
 	
 	/**
