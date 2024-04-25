@@ -17,30 +17,31 @@ import net.xqhs.flash.FlashBoot;
  * Runs scenario.
  */
 public class Boot {
-
-    /**
-     * Performs test.
-     *
-     * @param args
-     *                 - not used.
-     */
-    public static void main(final String[] args)
-    {
+	
+	/**
+	 * Performs test.
+	 *
+	 * @param args
+	 *            - not used.
+	 */
+	public static void main(final String[] args) {
 		String a = "";
-
+		int n = 1;
+		String[][] agents = new String[][] { new String[] { "A", "B", "C" } };
+		
 		a += " -load_order driver;pylon;agent";
 		a += " -package testing net.xqhs.flash.ml " + Boot.class.getPackageName() + " src-experiments."
 				+ Boot.class.getPackageName() + " aifolk.core aifolk.onto -loader agent:composite";
-		a += " -node node1";
+		a += " -node node" + n;
 		a += " -driver ML:mldriver";
 		a += " -driver Scenario:scen script:script";
 		a += " -driver Ontology:ont load:aifolk-drivingsegmentation-v1-exp.ttl";
 		a += " -pylon local:pylon1";
 		
-		for(final String name : new String[] { "A", "B", "C" })
+		for(String name : agents[n - 1])
 			a += " -agent " + name
 					+ "  in-context-of:ML:mldriver in-context-of:Scenario:scen -shard scenario -shard MLPipeline -shard MLManagement feature:AutoDrive -shard messaging -shard EchoTesting exit:20";
-
+		
 		FlashBoot.main(a.split(" "));
-    }
+	}
 }

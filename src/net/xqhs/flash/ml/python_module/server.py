@@ -27,7 +27,7 @@ head = "<ML server> "
 SERVER_URL = "http://localhost:5000/";
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 ML_DIRECTORY_PATH = "ml-directory/";
-PYTHONLIB_PATH = ML_DIRECTORY_PATH + "pythonlib/lib/site-packages/"
+PYTHONLIB_PATH = ML_DIRECTORY_PATH + "pythonlib/Lib/site-packages/"
 OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config.yaml";
@@ -52,6 +52,7 @@ DATASET_CLASSES_PARAM = "dataset_classes";
 print(head + "loading prerequisites...")
 pylib_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.parent.parent.absolute()
 pylib_path = str(pylib_path) + "/" + PYTHONLIB_PATH
+pylib_path = pylib_path.replace("/", "\\")
 sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
 print(sys.path)
 
