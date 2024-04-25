@@ -1,7 +1,7 @@
-package wsRegions;
+package net.xqhs.flash.wsRegions;
 
-import static wsRegions.MessageFactory.createMessage;
-import static wsRegions.MessageFactory.createMonitorNotification;
+import static net.xqhs.flash.wsRegions.MessageFactory.createMessage;
+import static net.xqhs.flash.wsRegions.MessageFactory.createMonitorNotification;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,7 +25,7 @@ import net.xqhs.flash.core.support.MessageReceiver;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import wsRegions.MessageFactory.MessageType;
+import net.xqhs.flash.wsRegions.MessageFactory.MessageType;
 
 public class WSRegionsShard extends NameBasedMessagingShard implements MobilityAwareMessagingShard {
 	/**

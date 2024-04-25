@@ -44,8 +44,8 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.GlobalConfiguration;
+import net.xqhs.flash.web.WebEntity;
 import net.xqhs.util.logging.Unit;
-import web.WebEntity;
 
 public class CentralMonitoringAndControlEntity extends Unit implements Entity<Pylon> {
 	

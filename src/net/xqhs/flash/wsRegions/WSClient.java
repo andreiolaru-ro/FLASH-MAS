@@ -1,4 +1,4 @@
-package wsRegions;
+package net.xqhs.flash.wsRegions;
 
 import java.net.URI;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package wsRegions;
+package net.xqhs.flash.wsRegions;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

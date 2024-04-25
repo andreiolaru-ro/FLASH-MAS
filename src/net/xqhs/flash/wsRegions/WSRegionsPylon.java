@@ -1,6 +1,6 @@
-package wsRegions;
+package net.xqhs.flash.wsRegions;
 
-import static wsRegions.MessageFactory.createMessage;
+import static net.xqhs.flash.wsRegions.MessageFactory.createMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +18,8 @@ import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.webSocket.WebSocketPylon;
-import wsRegions.MessageFactory.ActionType;
-import wsRegions.MessageFactory.MessageType;
+import net.xqhs.flash.wsRegions.MessageFactory.ActionType;
+import net.xqhs.flash.wsRegions.MessageFactory.MessageType;
 
 public class WSRegionsPylon extends DefaultPylonImplementation {
 	

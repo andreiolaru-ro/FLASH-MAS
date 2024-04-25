@@ -1,6 +1,6 @@
-package wsRegions;
+package net.xqhs.flash.wsRegions;
 
-import static wsRegions.MessageFactory.createMessage;
+import static net.xqhs.flash.wsRegions.MessageFactory.createMessage;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -21,8 +21,8 @@ import org.json.simple.JSONValue;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.wsRegions.AgentStatus.Status;
 import net.xqhs.util.logging.Unit;
-import wsRegions.AgentStatus.Status;
 
 public class RegionServer extends Unit implements Entity<Node> {
 	
