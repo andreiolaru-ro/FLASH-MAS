@@ -114,7 +114,7 @@ public class AgentWave extends AgentEvent {
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
 	}
-
+	
 	/**
 	 * Creates an agent wave with <b>no</b> destination.
 	 * <p>
@@ -132,14 +132,14 @@ public class AgentWave extends AgentEvent {
 		add(CONTENT, content);
 		add(VALUE, String.valueOf(value));
 	}
-
+	
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
 	 * A <i>complete</i> destination will be added by assembling the elements of the destination.
 	 * <p>
-	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if so,
-	 * the content will be unpacked accordingly.
+	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if
+	 * so, the content will be unpacked accordingly.
 	 * 
 	 * @param content
 	 *            - the content of the wave, that can be the result of previous serialization.
@@ -236,7 +236,8 @@ public class AgentWave extends AgentEvent {
 			throw new IllegalArgumentException("Argument is null");
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
 		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + String.join(ADDRESS_SEPARATOR, destinationElements));
 		return this;
 	}
@@ -251,7 +252,8 @@ public class AgentWave extends AgentEvent {
 	public AgentWave prependDestination(String destinationElement) {
 		addFirst(DESTINATION_ELEMENT, destinationElement);
 		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
 		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
 		return this;
 	}
@@ -320,12 +322,11 @@ public class AgentWave extends AgentEvent {
 	public String getContent() {
 		return getValue(CONTENT);
 	}
-
+	
 	/**
 	 * @return the value of the wave.
 	 */
-	public int getValue()
-	{
+	public int getValue() {
 		return Integer.parseInt(getValue(VALUE));
 	}
 	
@@ -413,7 +414,9 @@ public class AgentWave extends AgentEvent {
 	 * @return the elements of the path, excluding the prefix.
 	 */
 	public static String[] pathToElements(String path, String prefixToRemove) {
-		String barePath = path.startsWith(prefixToRemove) ? path.substring(prefixToRemove.length()) : path;
+		String barePath = prefixToRemove != null && path.startsWith(prefixToRemove)
+				? path.substring(prefixToRemove.length())
+				: path;
 		return (barePath.startsWith(ADDRESS_SEPARATOR) ? barePath.substring(1) : barePath).split(ADDRESS_SEPARATOR);
 	}
 	
@@ -433,7 +436,7 @@ public class AgentWave extends AgentEvent {
 	 */
 	public static String[] pathToElementsWith(String path, String prefix) {
 		String[] elements = pathToElements(path, prefix);
-		if(!path.startsWith(prefix))
+		if(prefix == null || !path.startsWith(prefix))
 			return elements;
 		String[] ret = new String[elements.length + 1];
 		ret[0] = prefix;

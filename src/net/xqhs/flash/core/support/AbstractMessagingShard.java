@@ -21,7 +21,7 @@ import net.xqhs.util.logging.Debug.DebugItem;
 
 /**
  * Prototype class for shards offering messaging functionality, containing some general implementation-independent
- * methods. it also manages the relation with the {@link MessagingPylonProxy}.
+ * methods. It also manages the relation with the {@link MessagingPylonProxy}.
  * 
  * <h2>Extending this class</h2> The abstract class implements some basic methods for working with slash-delimited
  * addresses, and offers the method for registering message handlers. The class also eases the task of posting agent
@@ -31,18 +31,16 @@ import net.xqhs.util.logging.Debug.DebugItem;
  * Basically, a class extending {@link AbstractMessagingShard} should implement the following:
  * <ul>
  * <li>if the messaging system uses agent names (as opposed to addresses with slashes) as their addresses, then it is
- * recommended to extend the {@link NameBasedMessagingShard} class. agent.
+ * recommended to extend the {@link NameBasedMessagingShard} class.
  * <li>it should implement the {@link #extractAgentAddress(String)} which extracts the address of the agent from a
  * complete endpoint.
- * <li>it should implement the {@link #getAgentAddress()} which retrieves the address of the current agent. pack the
- * information into an {@link AgentWave} and post it in the event queue.
+ * <li>it should implement the {@link #getAgentAddress()} which retrieves the address of the current agent.
  * <li>any other functionality that works differently than this standard implementation.
  * </ul>
  * 
  * @author Andrei Olaru
  */
-public abstract class AbstractMessagingShard extends AgentShardCore implements MessagingShard
-{
+public abstract class AbstractMessagingShard extends AgentShardCore implements MessagingShard {
 	/**
 	 * Debugging settings for messaging shards.
 	 * 
@@ -63,16 +61,14 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		
 		/**
 		 * @param set
-		 *                - activation state.
+		 *            - activation state.
 		 */
-		private MessagingDebug(boolean set)
-		{
+		private MessagingDebug(boolean set) {
 			isset = set;
 		}
 		
 		@Override
-		public boolean toBool()
-		{
+		public boolean toBool() {
 			return isset;
 		}
 	}
@@ -85,47 +81,64 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	/**
 	 * Endpoint name for this shard (see {@link AgentWave}).
 	 */
-	protected static final String		SHARD_ENDPOINT		= "messaging";
+	protected static final String SHARD_ENDPOINT = "messaging";
 	
 	/**
-	 * Reference to the local Websocket pylon.
+	 * Reference to the pylon, if the pylon does not support wave messaging. At most one of {@link #pylon} and
+	 * {@link #wavePylon} can be not <code>null</code>.
 	 */
-	transient protected MessagingPylonProxy	pylon	= null;
+	transient protected MessagingPylonProxy		pylon		= null;
 	/**
-	 * The proxy to this shard, to be used by the pylon.
+	 * Reference to the pylon, if the pylon supports wave messaging. At most one of {@link #pylon} and
+	 * {@link #wavePylon} can be not <code>null</code>.
 	 */
-	protected transient MessageReceiver		inbox	= null;
+	transient protected WaveMessagingPylonProxy	wavePylon	= null;
+	/**
+	 * The proxy to this shard, to be used by the pylon, if the pylon does not support wave messaging. At most one of
+	 * {@link #inbox} and {@link #waveInbox} can be not <code>null</code>.
+	 */
+	protected transient MessageReceiver			inbox		= null;
+	/**
+	 * The proxy to this shard, to be used by the pylon, if the pylon supports wave messaging. At most one of
+	 * {@link #inbox} and {@link #waveInbox} can be not <code>null</code>.
+	 */
+	protected transient WaveReceiver			waveInbox	= null;
 	
 	/**
 	 * No-argument constructor.
 	 */
-	public AbstractMessagingShard()
-	{
+	public AbstractMessagingShard() {
 		super(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING));
-	}
-	
-	/**
-	 * @return a standard {@link MessageReceiver} implementation which relays all received messages to the method in
-	 *         {@link AbstractMessagingShard}.
-	 */
-	protected MessageReceiver buildMessageReceiver() {
-		return new MessageReceiver() {
-			@Override
-			public void receive(String source, String destination, String content) {
-				receiveMessage(source, destination, content);
-			}
-		};
 	}
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(!(context instanceof MessagingPylonProxy)) {
-			return false;
+		if(context instanceof MessagingPylonProxy) {
+			pylon = (MessagingPylonProxy) context;
+			inbox = new MessageReceiver() {
+				@Override
+				public void receive(String source, String destination, String content) {
+					receiveMessage(source, destination, content);
+				}
+			};
+			wavePylon = null;
+			waveInbox = null;
+			return true;
 		}
-		if(inbox == null)
-			inbox = buildMessageReceiver();
-		pylon = (MessagingPylonProxy) context;
-		return true;
+		else if(context instanceof WaveMessagingPylonProxy) {
+			wavePylon = (WaveMessagingPylonProxy) context;
+			waveInbox = new WaveReceiver() {
+				@Override
+				public void receive(AgentWave wave) {
+					receiveWave(wave);
+				}
+			};
+			pylon = null;
+			inbox = null;
+			return true;
+		}
+		else
+			return false;
 	}
 	
 	@Override
@@ -153,33 +166,50 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	/**
 	 * Extending classes should call this method to defer to {@link AbstractMessagingShard} the effort of packing
-	 * message data into an {@link AgentEvent} and posting that event in the agent event queue.
+	 * message data into an {@link AgentEvent} and posting that event in the agent event queue. It calls
+	 * {@link #receiveWave(AgentWave)} for necessary checks and posting the agent event.
 	 * 
 	 * @param source
-	 *                        - the source of the message, as a complete endpoint
+	 *            - the source of the message, as a complete endpoint
 	 * @param destination
-	 *                        - the destination of the message, as complete endpoint (must begin with the agent's
-	 *                        address).
+	 *            - the destination of the message, as complete endpoint (must begin with the agent's address).
 	 * @param content
-	 *                        - the content of the message
+	 *            - the content of the message
 	 */
-	protected void receiveMessage(String source, String destination, String content)
-	{
-		String localAddr = getAgentAddress();
-		if(!destination.startsWith(localAddr))
-			throw new IllegalStateException("Destination endpoint (" + destination
-					+ ") does not start with the address of this agent (" + localAddr + ")");
+	protected void receiveMessage(String source, String destination, String content) {
+		AgentWave wave = new AgentWave(content).appendDestination(AgentWave.pathToElements(destination, null))
+				.addSourceElements(AgentWave.pathToElementsWith(source, null));
+		receiveWave(wave);
 		
-		AgentWave wave = new AgentWave(content, localAddr, AgentWave.pathToElements(destination, localAddr));
+	}
+	
+	/**
+	 * Extending classes should call this method to check a received wave.
+	 * <p>
+	 * Only the {@link AgentWave#DESTINATION_ELEMENT} key will be considered for destination information.
+	 * <p>
+	 * Checks are:
+	 * <ul>
+	 * the first destination element is this agent.
+	 * <li>
+	 * </ul>
+	 * 
+	 * @param wave
+	 *            - the received wave.
+	 */
+	protected void receiveWave(AgentWave wave) {
+		if(!getAgentAddress().equals(wave.getFirstDestinationElement()))
+			throw new IllegalStateException("Destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT)
+					+ ") does not start with the address of this agent (" + getAgentAddress() + ")");
+		
 		// already routed to this agent
 		wave.removeFirstDestinationElement();
 		
-		String senderAddr = extractAgentAddress(source);
-		if(!source.startsWith(senderAddr))
+		if(!wave.getCompleteSource().startsWith(extractAgentAddress(wave.getCompleteSource())))
 			// FIXME use log
-			throw new IllegalStateException("Source endpoint (" + source
-					+ ") does not start with the address of this agent (" + senderAddr + ")");
-		wave.addSourceElements(AgentWave.pathToElementsWith(source, senderAddr));
+			throw new IllegalStateException(
+					"Source endpoint (" + wave.getCompleteSource() + ") does not start with the address of this agent ("
+							+ extractAgentAddress(wave.getCompleteSource()) + ")");
 		
 		/**
 		 * TODO: logging
@@ -187,15 +217,30 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		 * getAgentLog().dbg(MessagingDebug.DEBUG_MESSAGING, "Received message from [] to [] with content [].", source,
 		 * destination, content);
 		 */
-		
 		getAgent().postAgentEvent(wave);
 	}
 	
 	@Override
-	public boolean sendMessage(String target, String source, String content) {
-		return pylon.send(target, source, content);
+	public boolean sendMessage(String destination, String source, String content) {
+		if(pylon != null)
+			return pylon.send(destination, source, content);
+		else if(wavePylon != null)
+			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination, null))
+					.addSourceElements(AgentWave.pathToElementsWith(source, null)));
+		else
+			return false;
 	}
-
+	
+	@Override
+	public boolean sendMessage(AgentWave wave) {
+		if(wavePylon != null)
+			return wavePylon.send(wave);
+		else if(pylon != null)
+			return pylon.send(wave.getCompleteSource(), wave.getCompleteDestination(), wave.getSerializedContent());
+		else
+			return false;
+	}
+	
 	/**
 	 * The method extracts, from a complete endpoint address, the internal path. It should always begin with a slash.
 	 * <p>
@@ -203,11 +248,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * in the endpoint. Specific implementations may do this more efficiently.
 	 * 
 	 * @param endpoint
-	 *                     - the complete endpoint address.
+	 *            - the complete endpoint address.
 	 * @return the internal part of the endpoint address.
 	 */
-	public String extractInternalAddress(String endpoint)
-	{
+	public String extractInternalAddress(String endpoint) {
 		String externalPath = extractAgentAddress(endpoint);
 		if(!endpoint.startsWith(externalPath))
 			throw new IllegalStateException("Endpoint address does not start with agent address");
@@ -219,7 +263,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * identified by the endpoint.
 	 * 
 	 * @param endpoint
-	 *                     - the complete endpoint address.
+	 *            - the complete endpoint address.
 	 * @return the external path, or address of the agent.
 	 */
 	public abstract String extractAgentAddress(String endpoint);

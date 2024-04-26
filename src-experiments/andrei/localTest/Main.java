@@ -21,7 +21,8 @@ import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.json.AgentWaveJson;
+import net.xqhs.flash.local.LocalPylon;
+import net.xqhs.flash.local.LocalPylon.SimpleLocalMessaging;
 
 @SuppressWarnings("javadoc")
 class TestAgent implements Agent {
@@ -137,33 +138,18 @@ class TestAgent implements Agent {
 public class Main {
 	
 	public static void main(String[] args) {
+		LocalPylon pylon = new LocalPylon();
 		
-		AgentWaveJson wave = new AgentWaveJson();
-		wave.add("a", "1");
-		wave.add("b", "2");
-		wave.add("a", "3");
-		wave.add("a", "4");
-		System.out.println(wave.getJson());
-		wave.removeFirst("a");
-		System.out.println(wave.getJson());
-		wave.add("c", "5");
-		System.out.println(wave.getJson());
-		wave.removeKey("b");
-		System.out.println(wave.getJson());
+		TestAgent one = new TestAgent("One");
+		one.addContext(pylon.asContext());
+		TestAgent two = new TestAgent("Two");
+		two.addContext(pylon.asContext());
 		
-		// LocalPylon pylon = new LocalPylon();
-		//
-		// TestAgent one = new TestAgent("One");
-		// one.addContext(pylon.asContext());
-		// TestAgent two = new TestAgent("Two");
-		// two.addContext(pylon.asContext());
-		//
-		// one.addMessagingShard(new SimpleLocalMessaging());
-		// two.addMessagingShard(new SimpleLocalMessaging());
-		//
-		// one.start();
-		// two.start();
+		one.addMessagingShard(new SimpleLocalMessaging());
+		two.addMessagingShard(new SimpleLocalMessaging());
 		
+		one.start();
+		two.start();
 	}
 	
 }

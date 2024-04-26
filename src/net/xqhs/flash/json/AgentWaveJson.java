@@ -16,13 +16,17 @@ import net.xqhs.flash.core.util.PlatformUtils;
  * {@link MultiValueMap}.
  */
 public class AgentWaveJson extends AgentWave {
-	JsonObject json;
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = -9093494937192523540L;
+	
+	JsonObject json = null;
 	
 	public static final String IS_SERIALIZED_OBJECT = "is-serialized-object";
 	
 	public AgentWaveJson() {
 		super();
-		json = new JsonObject();
 	}
 	
 	public JsonObject getJson() {
@@ -33,10 +37,12 @@ public class AgentWaveJson extends AgentWave {
 	protected MultiValueMap addItem(String name, Object value, boolean insertFirst) {
 		// TODO it is a multi-value map, must add a value
 		super.addItem(name, value, insertFirst);
+		if(json == null)
+			json = new JsonObject();
 		Object toAdd;
 		
 		if(value instanceof String)
-			toAdd = (String) value;
+			toAdd = value;
 		else if(value instanceof Serializable) {
 			JsonObject serial = new JsonObject();
 			serial.addProperty(IS_SERIALIZED_OBJECT, PlatformUtils.serializeObject(value));
@@ -53,16 +59,20 @@ public class AgentWaveJson extends AgentWave {
 				array.add((JsonObject) toAdd);
 			if(json.has(name))
 				array.addAll(json.getAsJsonArray(name));
+			json.add(name, array);
 		}
 		else {
-			array = json.has(name) ? json.get(name).getAsJsonArray() : new JsonArray();
+			if(json.has(name))
+				array = json.get(name).getAsJsonArray();
+			else {
+				array = new JsonArray();
+				json.add(name, array);
+			}
 			if(toAdd instanceof String)
 				array.add((String) toAdd);
 			else
 				array.add((JsonObject) toAdd);
 		}
-		if(insertFirst)
-			json.add(name, array);
 		return this;
 	}
 	
