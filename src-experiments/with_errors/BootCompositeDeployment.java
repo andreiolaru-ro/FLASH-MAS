@@ -24,6 +24,10 @@ public class BootCompositeDeployment {
 		/**
 		 * 
 		 */
+		ALL_GOOD,
+		/**
+		 * 
+		 */
 		MISSING_NODE2,
 		/**
 		* 
@@ -55,8 +59,8 @@ public class BootCompositeDeployment {
 	 *            - not used.
 	 */
 	public static void main(String[] args_) {
-		Scenario scenario;
-		scenario = Scenario.MISSING_NODE2;
+		Scenario scenario = Scenario.ALL_GOOD;
+		// scenario = Scenario.MISSING_NODE2;
 		// scenario = Scenario.PYLON_MISCONFIG;
 		// scenario = Scenario.AG1_EXISTS;
 		// scenario = Scenario.AG2_EXISTS;
@@ -85,9 +89,10 @@ public class BootCompositeDeployment {
 			args = pkg + " -node node1" + pylon1 + agent1wExit + " -node node2" + pylon2 + agent2;
 			break;
 		case AG2_EXISTS:
-			args = pkg + " -node node1" + pylon1 + " -node node2" + pylon2 + agent2wExit;
+			args = pkg + " -node node1" + pylon1 + agent1 + " -node node2" + pylon2 + agent2wExit;
 			break;
 		default:
+			args = pkg + " -node node1" + pylon1 + agent1 + " -node node2" + pylon2 + agent2;
 			break;
 		}
 		FlashBoot.main(args.split(" "));
