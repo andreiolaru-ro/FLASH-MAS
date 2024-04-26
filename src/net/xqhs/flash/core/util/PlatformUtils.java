@@ -11,9 +11,13 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Vector;
 
 import net.xqhs.flash.pc.PCClassFactory;
@@ -30,32 +34,29 @@ import net.xqhs.util.logging.LogWrapper.LoggerType;
  * @author Andrei Olaru
  * 
  */
-public class PlatformUtils
-{
+public class PlatformUtils {
 	/**
 	 * This enumeration contains all supported platforms.
 	 * 
 	 * @author Andrei Olaru
 	 */
 	public static enum Platform {
-	/**
-	 * The current machine runs an OS that contains a standard Java VM.
-	 */
-	PC,
-	
-	/**
-	 * The current machine runs an OS that uses the Dalvik VM.
-	 */
-	ANDROID,
+		/**
+		 * The current machine runs an OS that contains a standard Java VM.
+		 */
+		PC,
+		
+		/**
+		 * The current machine runs an OS that uses the Dalvik VM.
+		 */
+		ANDROID,
 	}
 	
 	/**
 	 * @return the current platform, as an instance of {@link Platform}.
 	 */
-	public static Platform getPlatform()
-	{
-		if(System.getProperty("java.vm.name").equals("Dalvik"))
-		{
+	public static Platform getPlatform() {
+		if(System.getProperty("java.vm.name").equals("Dalvik")) {
 			
 			return Platform.ANDROID;
 		}
@@ -66,8 +67,7 @@ public class PlatformUtils
 	/**
 	 * @return the type of log (on of {@link LoggerType}) appropriate for the current platform.
 	 */
-	public static LoggerType platformLogType()
-	{
+	public static LoggerType platformLogType() {
 		// return LoggerType.GLOBAL;
 		return LoggerType.MODERN;
 	}
@@ -82,10 +82,8 @@ public class PlatformUtils
 	/**
 	 * @return a {@link ClassFactory} instance to create new instances.
 	 */
-	public static ClassFactory getClassFactory()
-	{
-		switch(getPlatform())
-		{
+	public static ClassFactory getClassFactory() {
+		switch(getPlatform()) {
 		case PC:
 			return new PCClassFactory();
 		default:
@@ -97,11 +95,9 @@ public class PlatformUtils
 	/**
 	 * @return the class for the Simulation Manager GUI.
 	 */
-	public static String getSimulationGuiClass()
-	{
+	public static String getSimulationGuiClass() {
 		String platformName = getPlatform().toString();
-		switch(getPlatform())
-		{
+		switch(getPlatform()) {
 		case PC:
 			return "tatami." + platformName.toLowerCase() + ".agent.visualization." + platformName.toUpperCase()
 					+ "SimulationGui";
@@ -112,14 +108,31 @@ public class PlatformUtils
 	}
 	
 	/**
+	 * Creates a {@link String} which results from the serialization of the {@link Object} instance.
+	 * 
+	 * @param obj
+	 *            - the object.
+	 * @return the serialized version.
+	 */
+	public static String serializeObject(Object obj) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+			oos.writeObject(obj);
+			oos.close();
+		} catch(IOException e) {
+			throw new RuntimeException("Serialization failed", e);
+		}
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+	
+	/**
 	 * Converts the arguments into a {@link Vector} containing all arguments passed to the method.
 	 * 
 	 * @param arguments
 	 *            the arguments to assemble into the vector.
 	 * @return the vector containing all arguments.
 	 */
-	public static Vector<Object> toVector(Object... arguments)
-	{
+	public static Vector<Object> toVector(Object... arguments) {
 		return new Vector<>(Arrays.asList(arguments));
 	}
 	
@@ -130,8 +143,7 @@ public class PlatformUtils
 	 *            - the exception.
 	 * @return a {@link String} containing all details of the exception.
 	 */
-	public static String printException(Exception e)
-	{
+	public static String printException(Exception e) {
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
@@ -143,8 +155,7 @@ public class PlatformUtils
 	 * @param exitCode
 	 *            - the exit code.
 	 */
-	public static void systemExit(int exitCode)
-	{
+	public static void systemExit(int exitCode) {
 		System.exit(0);
 	}
 	
