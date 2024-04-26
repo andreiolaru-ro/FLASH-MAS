@@ -26,10 +26,10 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.wsRegions.WSRegionsPylon;
+import net.xqhs.flash.wsRegions.WSRegionsShard;
 import shadowProtocolDeployment.Action.Actions;
 import testing.EchoTestingShard;
-import wsRegions.WSRegionsShard;
-import wsRegions.WSRegionsPylon;
 
 /**
  * Class that generates and execute tests.
