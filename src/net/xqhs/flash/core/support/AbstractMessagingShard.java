@@ -151,13 +151,18 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_START:
-			if(pylon == null)
+			if(pylon == null && wavePylon == null)
 				throw new IllegalStateException("Shard is not currently added within a pylon");
-			pylon.register(getAgent().getEntityName(), inbox);
+			if(pylon != null)
+				pylon.register(getAgent().getEntityName(), inbox);
+			else
+				wavePylon.register(getAgent().getEntityName(), waveInbox);
 			break;
 		case AGENT_STOP:
 			if(pylon != null)
 				pylon.unregister(getAgent().getEntityName(), inbox);
+			if(wavePylon != null)
+				wavePylon.unregister(getAgent().getEntityName(), waveInbox);
 			break;
 		default:
 			break;
@@ -180,7 +185,6 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		AgentWave wave = new AgentWave(content).appendDestination(AgentWave.pathToElements(destination, null))
 				.addSourceElements(AgentWave.pathToElementsWith(source, null));
 		receiveWave(wave);
-		
 	}
 	
 	/**
@@ -221,18 +225,21 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
-	public boolean sendMessage(String destination, String source, String content) {
+	public boolean sendMessage(String source, String destination, String content) {
 		if(pylon != null)
-			return pylon.send(destination, source, content);
-		else if(wavePylon != null)
-			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination, null))
-					.addSourceElements(AgentWave.pathToElementsWith(source, null)));
+			return pylon.send(source, destination, content);
+		else if(wavePylon != null) {
+			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
+					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
+		}
 		else
 			return false;
 	}
 	
 	@Override
 	public boolean sendMessage(AgentWave wave) {
+		if(!getAgentAddress().equals(wave.getFirstSource()))
+			wave.addSourceElementFirst(getAgentAddress());
 		if(wavePylon != null)
 			return wavePylon.send(wave);
 		else if(pylon != null)
