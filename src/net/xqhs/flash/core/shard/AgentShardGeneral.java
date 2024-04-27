@@ -90,4 +90,19 @@ public class AgentShardGeneral extends AgentShardCore
 		return msd.sendMessage(AgentWave.makePath(msd.getAgentAddress(), sourceInternalEndpoint),
 				AgentWave.makePath(targetAgent, targetPathElements), content);
 	}
+	
+	/**
+	 * Uses the {@link MessagingShard} to send a message.
+	 * 
+	 * @param wave
+	 *            - the wave to send. The {@link AgentWave#SOURCE_ELEMENT}s can contain only the internal endpoint, as
+	 *            the agent's address should be added by the messaging shard.
+	 * @return <code>true</code> if the message has been successfully sent (as reported by the {@link MessagingShard}.
+	 * @throws UnsupportedOperationException
+	 *             if no usable {@link MessagingShard} has been found.
+	 */
+	protected boolean sendMessage(AgentWave wave) {
+		MessagingShard msd = getMessagingShard();
+		return msd.sendMessage(wave);
+	}
 }

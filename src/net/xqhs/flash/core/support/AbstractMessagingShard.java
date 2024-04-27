@@ -84,25 +84,25 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	protected static final String SHARD_ENDPOINT = "messaging";
 	
 	/**
-	 * Reference to the pylon, if the pylon does not support wave messaging. At most one of {@link #pylon} and
+	 * Reference to the pylon, if the pylon does not support wave messaging. At most one of {@link #classicPylon} and
 	 * {@link #wavePylon} can be not <code>null</code>.
 	 */
-	transient protected MessagingPylonProxy		pylon		= null;
+	transient protected ClassicMessagingPylonProxy	classicPylon	= null;
 	/**
-	 * Reference to the pylon, if the pylon supports wave messaging. At most one of {@link #pylon} and
+	 * Reference to the pylon, if the pylon supports wave messaging. At most one of {@link #classicPylon} and
 	 * {@link #wavePylon} can be not <code>null</code>.
 	 */
-	transient protected WaveMessagingPylonProxy	wavePylon	= null;
+	transient protected WaveMessagingPylonProxy		wavePylon		= null;
 	/**
 	 * The proxy to this shard, to be used by the pylon, if the pylon does not support wave messaging. At most one of
-	 * {@link #inbox} and {@link #waveInbox} can be not <code>null</code>.
+	 * {@link #classicInbox} and {@link #waveInbox} can be not <code>null</code>.
 	 */
-	protected transient MessageReceiver			inbox		= null;
+	protected transient ClassicMessageReceiver		classicInbox	= null;
 	/**
 	 * The proxy to this shard, to be used by the pylon, if the pylon supports wave messaging. At most one of
-	 * {@link #inbox} and {@link #waveInbox} can be not <code>null</code>.
+	 * {@link #classicInbox} and {@link #waveInbox} can be not <code>null</code>.
 	 */
-	protected transient WaveReceiver			waveInbox	= null;
+	protected transient WaveReceiver				waveInbox		= null;
 	
 	/**
 	 * No-argument constructor.
@@ -113,9 +113,9 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(context instanceof MessagingPylonProxy) {
-			pylon = (MessagingPylonProxy) context;
-			inbox = new MessageReceiver() {
+		if(context instanceof ClassicMessagingPylonProxy) {
+			classicPylon = (ClassicMessagingPylonProxy) context;
+			classicInbox = new ClassicMessageReceiver() {
 				@Override
 				public void receive(String source, String destination, String content) {
 					receiveMessage(source, destination, content);
@@ -133,8 +133,8 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 					receiveWave(wave);
 				}
 			};
-			pylon = null;
-			inbox = null;
+			classicPylon = null;
+			classicInbox = null;
 			return true;
 		}
 		else
@@ -143,7 +143,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public void register(String entityName) {
-		pylon.register(entityName, inbox);
+		if(classicPylon != null)
+			classicPylon.register(entityName, classicInbox);
+		if(wavePylon != null)
+			wavePylon.register(entityName, waveInbox);
 	}
 	
 	@Override
@@ -151,16 +154,16 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_START:
-			if(pylon == null && wavePylon == null)
+			if(classicPylon == null && wavePylon == null)
 				throw new IllegalStateException("Shard is not currently added within a pylon");
-			if(pylon != null)
-				pylon.register(getAgent().getEntityName(), inbox);
+			if(classicPylon != null)
+				classicPylon.register(getAgent().getEntityName(), classicInbox);
 			else
 				wavePylon.register(getAgent().getEntityName(), waveInbox);
 			break;
 		case AGENT_STOP:
-			if(pylon != null)
-				pylon.unregister(getAgent().getEntityName(), inbox);
+			if(classicPylon != null)
+				classicPylon.unregister(getAgent().getEntityName(), classicInbox);
 			if(wavePylon != null)
 				wavePylon.unregister(getAgent().getEntityName(), waveInbox);
 			break;
@@ -226,8 +229,8 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
-		if(pylon != null)
-			return pylon.send(source, destination, content);
+		if(classicPylon != null)
+			return classicPylon.send(source, destination, content);
 		else if(wavePylon != null) {
 			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
 					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
@@ -242,8 +245,9 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 			wave.addSourceElementFirst(getAgentAddress());
 		if(wavePylon != null)
 			return wavePylon.send(wave);
-		else if(pylon != null)
-			return pylon.send(wave.getCompleteSource(), wave.getCompleteDestination(), wave.getSerializedContent());
+		else if(classicPylon != null)
+			return classicPylon.send(wave.getCompleteSource(), wave.getCompleteDestination(),
+					wave.getSerializedContent());
 		else
 			return false;
 	}

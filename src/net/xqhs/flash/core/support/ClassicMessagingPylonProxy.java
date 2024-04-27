@@ -1,12 +1,9 @@
 package net.xqhs.flash.core.support;
 
-import net.xqhs.flash.core.agent.AgentWave;
-
 /**
- * This interface should be used as proxy by pylons which are able to work directly with {@link AgentWave}s, without the
- * need to transform them to a source/destination/content triple.
+ * This interface should be used as proxy by pylons which represent messages as source/destination/content triples.
  */
-public interface WaveMessagingPylonProxy extends MessagingPylonProxy {
+public interface ClassicMessagingPylonProxy extends MessagingPylonProxy {
 	/**
 	 * Registers an entity with the specified name, associating with it a {@link ClassicMessageReceiver} instance.
 	 * 
@@ -16,7 +13,7 @@ public interface WaveMessagingPylonProxy extends MessagingPylonProxy {
 	 *            - the {@link ClassicMessageReceiver} instance to receive messages.
 	 * @return an indication of success.
 	 */
-	boolean register(String entityName, WaveReceiver receiver);
+	boolean register(String entityName, ClassicMessageReceiver receiver);
 	
 	/**
 	 * Unregistered the entity with the specified name, de-associating it from this pylon.
@@ -30,14 +27,18 @@ public interface WaveMessagingPylonProxy extends MessagingPylonProxy {
 	 *            - the {@link ClassicMessageReceiver} previously associated with the entity.
 	 * @return an indication of success (e.g. return <code>false</code> if the entity had not been registered).
 	 */
-	boolean unregister(String entityName, WaveReceiver registeredReceiver);
+	boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver);
 	
 	/**
 	 * Requests to the pylon to send a message.
 	 * 
-	 * @param wave
-	 *            - the wave to send.
+	 * @param source
+	 *            - the source endpoint.
+	 * @param destination
+	 *            - the destination endpoint.
+	 * @param content
+	 *            - the content of the message.
 	 * @return an indication of success.
 	 */
-	boolean send(AgentWave wave);
+	boolean send(String source, String destination, String content);
 }

@@ -13,7 +13,7 @@ import org.json.simple.JSONValue;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -33,7 +33,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	/**
 	 * Agents list, that are located on this node.
 	 */
-	protected Map<String, MessageReceiver> agentList = new HashMap<>();
+	protected Map<String, ClassicMessageReceiver> agentList = new HashMap<>();
 	
 	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
 		
@@ -43,7 +43,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		}
 		
 		@Override
-		public boolean register(String entityName, MessageReceiver receiver) {
+		public boolean register(String entityName, ClassicMessageReceiver receiver) {
 			lf("Registered entity" + entityName);
 			if(!agentList.containsKey(entityName)) {
 				agentList.put(entityName, receiver);
@@ -58,7 +58,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		}
 		
 		@Override
-		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+		public boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver) {
 			lf("Agent " + entityName + " is leaving");
 			agentList.remove(entityName);
 			// FIXME: return false if entity did not exist?

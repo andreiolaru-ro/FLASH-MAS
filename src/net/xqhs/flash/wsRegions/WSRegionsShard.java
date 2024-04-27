@@ -21,7 +21,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobilityAwareMessagingShard;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -38,8 +38,8 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 	LinkedBlockingQueue<String>											outQueue;
 	
 	@Override
-	protected MessageReceiver buildMessageReceiver() {
-		return new MessageReceiver() {
+	protected ClassicMessageReceiver buildMessageReceiver() {
+		return new ClassicMessageReceiver() {
 			@Override
 			public void receive(String source, String destination, String content) {
 				receiveMessage(source, destination, content);
@@ -66,7 +66,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 			super.receiveMessage(src_dest.getKey(), src_dest.getValue(), entry.getValue());
 		}
 		inQueue = null;
-		wsClient.send(createMessage(pylon.getEntityName(), this.getName(), connection_type, null));
+		wsClient.send(createMessage(classicPylon.getEntityName(), this.getName(), connection_type, null));
 		while(outQueue != null && !outQueue.isEmpty())
 			wsClient.send(outQueue.poll());
 		outQueue = null;
@@ -107,7 +107,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 		Map<String, String> data = new HashMap<>();
 		data.put("destination", target);
 		data.put("content", content);
-		String message = createMessage(pylon.getEntityName(), this.getName(),
+		String message = createMessage(classicPylon.getEntityName(), this.getName(),
 				// FIXME: very ugly hack, may fail easily
 				source.contains("node") || target.contains("node") ? MessageType.AGENT_CONTENT : MessageType.CONTENT,
 				data);
@@ -158,7 +158,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 			// String.valueOf(new Timestamp(System.currentTimeMillis())));
 			// pylon.send(this.getName(), event.get("pylon_destination"), notify_content);
 			// pylon.unregister(getName(), inbox); // already done in AbstractMessagingShard
-			wsClient.send(createMessage(pylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
+			wsClient.send(createMessage(classicPylon.getEntityName(), this.getName(), MessageType.REQ_LEAVE, null));
 			break;
 		case AFTER_MOVE:
 			// String entityName = getAgent().getEntityName();
@@ -185,7 +185,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 					(String) message.get("content"), String.valueOf(new Timestamp(System.currentTimeMillis())));
 			li("Message from []: [] []", message.get("source"), message.get("content"),
 					inQueue != null ? "will queue" : "will not queue");
-			inbox.receive((String) message.get("source"), (String) message.get("destination"), content);
+			classicInbox.receive((String) message.get("source"), (String) message.get("destination"), content);
 			// pylon.send((String) message.get("source"), (String) message.get("destination"), content);
 			break;
 		case REQ_ACCEPT:

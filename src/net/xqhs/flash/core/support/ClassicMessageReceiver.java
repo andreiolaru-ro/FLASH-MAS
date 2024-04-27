@@ -20,7 +20,7 @@ package net.xqhs.flash.core.support;
  * 
  * @author Andrei Olaru
  */
-public interface MessageReceiver {
+public interface ClassicMessageReceiver {
 	/**
 	 * The method to be called when a message is received.
 	 * 

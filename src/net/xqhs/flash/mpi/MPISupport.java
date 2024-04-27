@@ -9,18 +9,18 @@ import static stefania.TreasureHunt.util.Constants.*;
 
 public class MPISupport extends DefaultPylonImplementation {
     public static final String					MPI_SUPPORT_NAME	= "MPI pylon";
-    protected HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
+    protected HashMap<String, ClassicMessageReceiver> messageReceivers	= new HashMap<>();
 
     public MessagingPylonProxy messagingProxy		= new MessagingPylonProxy() {
 
         @Override
-        public boolean register(String agentName, MessageReceiver receiver) {
+        public boolean register(String agentName, ClassicMessageReceiver receiver) {
             messageReceivers.put(agentName, receiver);
             return true;
         }
 
         @Override
-		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+		public boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver) {
 			return messageReceivers.remove(entityName, registeredReceiver);
 		}
 

@@ -20,7 +20,6 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
@@ -130,7 +129,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
 	 * used.
 	 * <p>
-	 * If a thread is used, {@link MessagingPylonProxy#send(String, String, String)} will always return true.
+	 * If a thread is used, {@link WaveMessagingPylonProxy#send(AgentWave)} will always return true.
 	 * <p>
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.

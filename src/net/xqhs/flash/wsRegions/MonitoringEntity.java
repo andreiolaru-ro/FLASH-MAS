@@ -3,7 +3,7 @@ package net.xqhs.flash.wsRegions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
@@ -19,7 +19,7 @@ import java.util.*;
 
 public class MonitoringEntity extends Unit implements Entity {
 
-    public MessageReceiver inbox;
+    public ClassicMessageReceiver inbox;
     private FileWriter myWriter;
     private Yaml yaml;
     private final Object lock = new Object();
@@ -29,7 +29,7 @@ public class MonitoringEntity extends Unit implements Entity {
             setUnitName(name);
             setLoggerType(PlatformUtils.platformLogType());
         }
-        inbox = new MessageReceiver() {
+        inbox = new ClassicMessageReceiver() {
             @Override
             public void receive(String source, String destination, String content) {
                 Object obj = JSONValue.parse(content);

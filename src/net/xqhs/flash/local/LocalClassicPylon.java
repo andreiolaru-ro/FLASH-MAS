@@ -20,9 +20,9 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessagingPylonProxy;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -36,7 +36,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * There are two ways in which this implementation can work.
  * <p>
  * In the <i>direct</i> method (when a thread is <b>not</b> used), the send method leads directly to a call of the
- * {@link MessageReceiver#receive(String, String, String)} method of the shard in the destination agent.
+ * {@link ClassicMessageReceiver#receive(String, String, String)} method of the shard in the destination agent.
  * <p>
  * In the <i>queued</i> method, a thread is used (as configured by means of the {@link #USE_THREAD_PARAM_NAME} parameter
  * in the configuration), which processes a queue to which messages are added, and from which messages are taken to be
@@ -80,7 +80,7 @@ public class LocalClassicPylon extends DefaultPylonImplementation implements Run
 	/**
 	 * The proxy to this entity.
 	 */
-	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
+	public ClassicMessagingPylonProxy messagingProxy = new ClassicMessagingPylonProxy() {
 		
 		@Override
 		public boolean send(String source, String destination, String content) {
@@ -88,13 +88,13 @@ public class LocalClassicPylon extends DefaultPylonImplementation implements Run
 		}
 		
 		@Override
-		public boolean register(String entityName, MessageReceiver receiver) {
+		public boolean register(String entityName, ClassicMessageReceiver receiver) {
 			messageReceivers.put(entityName, receiver);
 			return true;
 		}
 		
 		@Override
-		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+		public boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver) {
 			return messageReceivers.remove(entityName, registeredReceiver);
 		}
 		
@@ -131,7 +131,7 @@ public class LocalClassicPylon extends DefaultPylonImplementation implements Run
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
 	 * used.
 	 * <p>
-	 * If a thread is used, {@link MessagingPylonProxy#send(String, String, String)} will always return true.
+	 * If a thread is used, {@link ClassicMessagingPylonProxy#send(String, String, String)} will always return true.
 	 * <p>
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
@@ -150,7 +150,7 @@ public class LocalClassicPylon extends DefaultPylonImplementation implements Run
 	/**
 	 * The receivers for each agent.
 	 */
-	protected HashMap<String, MessageReceiver> messageReceivers = new HashMap<>();
+	protected HashMap<String, ClassicMessageReceiver> messageReceivers = new HashMap<>();
 	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this is a reference to that

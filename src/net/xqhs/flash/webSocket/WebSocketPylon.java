@@ -29,7 +29,7 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -139,9 +139,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected WebSocketClient											webSocketClient;
 	/**
 	 * For the entities in the scope of this pylon, the correspondence between their names and their
-	 * {@link MessageReceiver} instances.
+	 * {@link ClassicMessageReceiver} instances.
 	 */
-	protected HashMap<String, MessageReceiver>							messageReceivers				= new HashMap<>();
+	protected HashMap<String, ClassicMessageReceiver>							messageReceivers				= new HashMap<>();
 	
 	/**
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
@@ -169,19 +169,19 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		messagingProxy = new MessagingPylonProxy() {
 			/**
 			 * The entity is both: - registered within the local instance which is useful for routing a message back to
-			 * the the {@link MessageReceiver} instance when it arrives from the server - registered to the
+			 * the the {@link ClassicMessageReceiver} instance when it arrives from the server - registered to the
 			 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
 			 * client
 			 *
 			 * @param entityName
 			 *            - the name of the entity
 			 * @param receiver
-			 *            - the {@link MessageReceiver} instance to receive messages
+			 *            - the {@link ClassicMessageReceiver} instance to receive messages
 			 * @return - an indication of success
 			 */
 			@Override
 			@SuppressWarnings("unchecked")
-			public boolean register(String entityName, MessageReceiver receiver) {
+			public boolean register(String entityName, ClassicMessageReceiver receiver) {
 				if(messageReceivers.containsKey(entityName))
 					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
 				messageReceivers.put(entityName, receiver);
@@ -199,7 +199,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			
 			@Override
 			@SuppressWarnings("unchecked")
-			public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+			public boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver) {
 				if(!messageReceivers.remove(entityName, registeredReceiver))
 					return false;
 				JSONObject messageToServer = new JSONObject();
@@ -287,7 +287,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 						/**
 						 * Receives a message from the server. The message was previously routed to this websocket
 						 * client address and it is further routed to a specific entity using the
-						 * {@link MessageReceiver} instance. The entity is searched within the context of this support.
+						 * {@link ClassicMessageReceiver} instance. The entity is searched within the context of this support.
 						 *
 						 * @param s
 						 *            - the JSON string containing a message and routing information
