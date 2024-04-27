@@ -112,7 +112,15 @@ public class AgentWave extends AgentEvent {
 	 */
 	public AgentWave(String content) {
 		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
+		try {
+			// is this a serialized content?
+			MultiValueMap contentMap = MultiValueMap.fromSerializedString(content);
+			for(String key : contentMap.getKeys())
+				addAll(key, contentMap.getValues(key));
+		} catch(Exception e) {
+			// not a serialized content
+			add(CONTENT, content);
+		}
 	}
 	
 	/**
@@ -175,7 +183,7 @@ public class AgentWave extends AgentEvent {
 	 * @return the reply to this agent wave.
 	 */
 	public AgentWave createReply(String content) {
-		AgentWave reply = new AgentWave();
+		AgentWave reply = new AgentWave(content);
 		reply.addSourceElements(getDestinationElements());
 		reply.resetDestination(null, this.getSourceElements());
 		return reply;

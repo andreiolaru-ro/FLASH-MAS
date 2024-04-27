@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -21,35 +22,37 @@ public class AgentWaveJson extends AgentWave {
 	 */
 	private static final long serialVersionUID = -9093494937192523540L;
 	
+	/**
+	 * A parallel storage of the information in this wave.
+	 */
 	JsonObject json = null;
 	
+	/**
+	 * Special key meaning that the value is actually a serialized object.
+	 */
 	public static final String IS_SERIALIZED_OBJECT = "is-serialized-object";
 	
+	/**
+	 * Constructor.
+	 */
 	public AgentWaveJson() {
 		super();
 	}
 	
+	/**
+	 * @return the {@link JsonObject} containing the information in this {@link AgentWave}.
+	 */
 	public JsonObject getJson() {
 		return json;
 	}
 	
 	@Override
 	protected MultiValueMap addItem(String name, Object value, boolean insertFirst) {
-		// TODO it is a multi-value map, must add a value
 		super.addItem(name, value, insertFirst);
 		if(json == null)
 			json = new JsonObject();
-		Object toAdd;
+		Object toAdd = valueToJson(value);
 		
-		if(value instanceof String)
-			toAdd = value;
-		else if(value instanceof Serializable) {
-			JsonObject serial = new JsonObject();
-			serial.addProperty(IS_SERIALIZED_OBJECT, PlatformUtils.serializeObject(value));
-			toAdd = serial;
-		}
-		else
-			toAdd = value.toString();
 		JsonArray array;
 		if(insertFirst) {
 			array = new JsonArray();
@@ -112,5 +115,77 @@ public class AgentWaveJson extends AgentWave {
 					}
 		}
 		return this;
+	}
+	
+	/**
+	 * Create a {@link JsonObject} containing all the information in the {@link AgentWave}.
+	 * <p>
+	 * The event type is not included.
+	 * 
+	 * @param wave
+	 *            - the {@link AgentWave}.
+	 * @return the {@link JsonObject}.
+	 */
+	public static JsonObject toJson(AgentWave wave) {
+		JsonObject res = new JsonObject();
+		for(String key : wave.getKeys())
+			if(!key.equals(AgentEvent.EVENT_TYPE_PARAMETER_NAME)) {
+				JsonArray array = new JsonArray();
+				res.add(key, array);
+				for(Object value : wave.getObjects(key)) {
+					Object toAdd = valueToJson(value);
+					if(toAdd instanceof String)
+						array.add((String) toAdd);
+					else
+						array.add((JsonObject) toAdd);
+				}
+			}
+		return res;
+	}
+	
+	/**
+	 * Create an {@link AgentWave} containing all the information in the {@link JsonObject}.
+	 * 
+	 * @param json
+	 *            - the {@link JsonObject}.
+	 * @return the {@link AgentWave}.
+	 */
+	public static AgentWave toAgentWave(JsonObject json) {
+		AgentWave res = new AgentWave();
+		for(String key : json.keySet())
+			for(Iterator<JsonElement> it = json.get(key).getAsJsonArray().iterator(); it.hasNext();) {
+				JsonElement value = it.next();
+				if(value.isJsonObject() && value.getAsJsonObject().has(IS_SERIALIZED_OBJECT))
+					res.addObject(key, PlatformUtils
+							.deserializeObject(value.getAsJsonObject().get(IS_SERIALIZED_OBJECT).getAsString()));
+				else
+					res.add(key, value.getAsString());
+			}
+		return res;
+	}
+	
+	/**
+	 * Computes the object to add to a Json structure, depending on the type of the value.
+	 * <ul>
+	 * <li>if the value is a {@link String}, it is added as such.
+	 * <li>if the value is a serialized object, the serialized form is added inside a one-key dictionary, under the key
+	 * {@link #IS_SERIALIZED_OBJECT}.
+	 * <li>otherwise, a string is added, as returned by {@link Object#toString()}.
+	 * </ul>
+	 * 
+	 * @param value
+	 *            - the value it is wished to add to the Json structure.
+	 * @return a {@link String} of a {@link JsonObject}.
+	 */
+	static Object valueToJson(Object value) {
+		if(value instanceof String)
+			return value;
+		else if(value instanceof Serializable) {
+			JsonObject serial = new JsonObject();
+			serial.addProperty(IS_SERIALIZED_OBJECT, PlatformUtils.serializeObject(value));
+			return serial;
+		}
+		else
+			return value.toString();
 	}
 }

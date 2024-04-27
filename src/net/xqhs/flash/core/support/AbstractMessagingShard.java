@@ -206,8 +206,9 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 */
 	protected void receiveWave(AgentWave wave) {
 		if(!getAgentAddress().equals(wave.getFirstDestinationElement()))
-			throw new IllegalStateException("Destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT)
-					+ ") does not start with the address of this agent (" + getAgentAddress() + ")");
+			throw new IllegalStateException(
+					"The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT)
+							+ ") is not the address of this agent (" + getAgentAddress() + ")");
 		
 		// already routed to this agent
 		wave.removeFirstDestinationElement();

@@ -11,8 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -123,6 +125,26 @@ public class PlatformUtils {
 			throw new RuntimeException("Serialization failed", e);
 		}
 		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+	
+	/**
+	 * Deserializes an object.
+	 * 
+	 * @param serial
+	 *            - the serialization of the object.
+	 * @return the object.
+	 */
+	public static Object deserializeObject(String serial) {
+		byte[] data = Base64.getDecoder().decode(serial);
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
+			Object o = ois.readObject();
+			ois.close();
+			return o;
+		} catch(IOException e) {
+			throw new RuntimeException("Serialization failed", e);
+		} catch(ClassNotFoundException e) {
+			throw new RuntimeException("Class not found", e);
+		}
 	}
 	
 	/**

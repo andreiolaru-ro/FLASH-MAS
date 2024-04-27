@@ -123,7 +123,7 @@ public class AgentPingPong extends Unit implements Agent {
 		li("received: " + event.toString());
 		if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgents == null) {
 			String replyContent = ((AgentWave) event).getContent() + " reply";
-			li("sending reply", ((AgentWave) event).createReply(replyContent));
+			li("sending reply ", ((AgentWave) event).createReply(replyContent));
 			return msgShard.sendMessage(((AgentWave) event).createReply(replyContent));
 		}
 		return false;
