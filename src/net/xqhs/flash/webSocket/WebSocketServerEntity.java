@@ -227,39 +227,6 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	}
 	
 	/**
-	 * Tries to find a target Websocket client and sends the message to it.
-	 * 
-	 * @param message
-	 *            - the message to be sent. Must contain a <code>destination</code> field.
-	 * @return - an indication of success.
-	 */
-	private boolean routeMessage(JsonObject message) {
-		String destination;
-		try {
-			destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-		} catch(Exception e) {
-			return false;
-		}
-		WebSocket destinationWebSocket;
-		destinationWebSocket = entityToWebSocket.get(destination);
-		if(destinationWebSocket != null) {
-			destinationWebSocket.send(message.toString());
-			lf("Sent to agent: []. ", message);
-			return true;
-		}
-		
-		destinationWebSocket = nodeToWebSocket.get(destination);
-		if(destinationWebSocket != null) {
-			destinationWebSocket.send(message.toString());
-			lf("Sent to node: []. ", message);
-			return true;
-		}
-		
-		le("Failed to find websocket for the entity [].", destination);
-		return false;
-	}
-	
-	/**
 	 * Logs (fine level) the state of the server, as the lists of entities known, nodes known, and correspondence
 	 * between nodes and entities.
 	 */
