@@ -1,7 +1,5 @@
 package net.xqhs.flash.wsRegions;
 
-import static net.xqhs.flash.wsRegions.MessageFactory.createMessage;
-
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,44 +7,81 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.wsRegions.AgentStatus.Status;
+import net.xqhs.flash.wsRegions.Constants.Dbg;
+import net.xqhs.flash.wsRegions.Constants.MessageType;
 import net.xqhs.util.logging.Unit;
 
+/**
+ * The server in a WSRegions deployment.
+ * 
+ * @author Monica Pricope
+ * @author Andrei Olaru
+ */
 public class RegionServer extends Unit implements Entity<Node> {
+	/**
+	 * The delay between calling the {@link #stop()} method and the server shutting down.
+	 */
+	protected static final int		SERVER_STOP_TIME	= 10;
+	/**
+	 * Unit names for servers are prefixed with this prefix.
+	 */
+	protected static final String	SERVER_LOG_PREFIX	= "server@";
 	
-	private static final int				SERVER_STOP_TIME	= 10;
-	private final WebSocketServer			webSocketServer;
+	/**
+	 * The field storing the {@link #isRunning()} state of the entity.
+	 */
 	private boolean							running;
 	/**
-	 * List of agents with the birthplace in this region.
+	 * The name of this server.
 	 */
-	private final Map<String, AgentStatus>	agentsList			= Collections.synchronizedMap(new HashMap<>());
+	protected String						serverName;
 	/**
-	 * List of the agents that arrived in this region.
+	 * The {@link WebSocketServer}.
 	 */
-	private final Map<String, AgentStatus>	mobileAgents		= new HashMap<>();
+	private final WebSocketServer			webSocketServer;
 	/**
-	 * Connections with others servers
+	 * List of agents with their home server in this region.
 	 */
-	private final Map<String, WSClient>		clients				= Collections.synchronizedMap(new HashMap<>());
+	private final Map<String, AgentStatus>	regionHomeAgents	= Collections.synchronizedMap(new HashMap<>());
+	/**
+	 * List of the agents that arrived in this region (have the home server in other regions).
+	 */
+	private final Map<String, AgentStatus>	guestAgents			= new HashMap<>();
+	/**
+	 * Connections with others servers.
+	 */
+	private final Map<String, WSClient>		homeServers			= Collections.synchronizedMap(new HashMap<>());
 	
+	/**
+	 * @param serverPort
+	 *            - the port to listen on.
+	 * @param servers
+	 *            - other region servers to connect to.
+	 * @param server_name
+	 *            - the name of this server.
+	 */
 	public RegionServer(int serverPort, ArrayList<String> servers, String server_name) {
-		{
-			setUnitName(server_name);
-			setLoggerType(PlatformUtils.platformLogType());
-		}
+		setUnitName(SERVER_LOG_PREFIX + server_name);
+		setLoggerType(PlatformUtils.platformLogType());
+		serverName = server_name;
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -76,17 +111,21 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		webSocketServer.setReuseAddr(true);
 		
+		// FIXME why a thread?
 		new Thread() {
 			@Override
 			public void run() {
-				for(String server : servers) {
-					if(!clients.containsKey(server)) {
+				for(String server : servers)
+					if(!homeServers.containsKey(server))
 						try {
 							ServerClient(new URI("ws://" + server), server);
 						} catch(URISyntaxException e) {
 							e.printStackTrace();
 						}
-					}
+				try {
+					this.join();
+				} catch(InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
 		}.start();
@@ -101,7 +140,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 *            - server name
 	 */
 	public void ServerClient(URI serverURI, String nickname) {
-		clients.put(nickname, createWebsocketClient(serverURI, nickname));
+		homeServers.put(nickname, createWebsocketClient(serverURI, nickname));
 	}
 	
 	private WSClient createWebsocketClient(URI serverURI, @SuppressWarnings("unused") String server) {
@@ -113,11 +152,10 @@ public class RegionServer extends Unit implements Entity<Node> {
 			
 			@Override
 			public void onMessage(String s) {
-				Object obj = JSONValue.parse(s);
-				if(obj == null)
+				JsonObject json = JsonParser.parseString(s).getAsJsonObject();
+				if(json == null)
 					return;
-				JSONObject message = (JSONObject) obj;
-				li("Message from server []", message.get("source"));
+				li("Message from server []", json.get(AgentWave.SOURCE_ELEMENT));
 			}
 		};
 	}
@@ -128,41 +166,42 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param message
 	 * @param webSocket
 	 */
-	private void processMessage(String message, WebSocket webSocket) {
-		Object obj = JSONValue.parse(message);
-		if(obj == null)
-			return;
-		JSONObject mesg = (JSONObject) obj;
-		String str = (String) mesg.get("type");
-		MessageHandler handler = new MessageHandler();
-		switch(MessageFactory.MessageType.valueOf(str)) {
-		case REGISTER:
-			handler.registerMessageHandler(mesg, webSocket);
-			break;
-		case CONNECT:
-			handler.connectMessageHandler(mesg, webSocket);
-			break;
-		case CONTENT:
-			handler.contentMessageHandler(mesg, message);
-			break;
-		case REQ_LEAVE:
-			handler.reqLeaveMessageHandler(mesg);
-			break;
-		case REQ_BUFFER:
-			handler.reqBufferMessageHandler(mesg);
-			break;
-		case REQ_ACCEPT:
-			handler.reqAcceptMessageHandler(mesg);
-			break;
-		case AGENT_UPDATE:
-			handler.agentUpdateMessageHandler(mesg);
-			break;
-		case AGENT_CONTENT:
-			handler.agentContentMessageHandler(mesg, message);
-			break;
-		default:
-			le("Unknown type");
+	void processMessage(String message, WebSocket webSocket) {
+		JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+		dbg(Dbg.DEBUG_WSREGIONS, "received message: ", json);
+		String destination = json.has(AgentWave.COMPLETE_DESTINATION)
+				? json.get(AgentWave.COMPLETE_DESTINATION).getAsString()
+				: null;
+		if(destination == null || destination.contains(Constants.PROTOCOL)) {
+			String type = json.get(Constants.EVENT_TYPE_KEY).getAsString();
+			switch(MessageType.valueOf(type)) {
+			case REGISTER:
+				registerMessageHandler(json, webSocket);
+				break;
+			case CONNECT:
+				connectMessageHandler(json, webSocket);
+				break;
+			case CONTENT:
+				contentMessageHandler(json, message);
+				break;
+			case REQ_LEAVE:
+				reqLeaveMessageHandler(json);
+				break;
+			case REQ_BUFFER:
+				reqBufferMessageHandler(json);
+				break;
+			case REQ_ACCEPT:
+				reqAcceptMessageHandler(json);
+				break;
+			case AGENT_UPDATE:
+				agentUpdateMessageHandler(json);
+				break;
+			default:
+				le("Unknown type [] in message: ", type, json);
+			}
 		}
+		else
+			contentMessageHandler(json, message);
 	}
 	
 	@Override
@@ -191,7 +230,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	
 	@Override
 	public String getName() {
-		return getUnitName();
+		return serverName;
 	}
 	
 	@Override
@@ -221,7 +260,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	}
 	
 	public void printStatus() {
-		lf("region agents:[] guest agents:[] known servers: []", agentsList, mobileAgents, clients.keySet());
+		lf("region agents:[] guest agents:[] known servers: []", regionHomeAgents, guestAgents, homeServers.keySet());
 	}
 	
 	@Override
@@ -244,201 +283,286 @@ public class RegionServer extends Unit implements Entity<Node> {
 		super.le(message, arguments);
 	}
 	
-	@Override
-	protected String getUnitName() {
-		return super.getUnitName();
+	/**
+	 * A method that checks if the connection is still open before sending a message. Uses
+	 * {@link #sendMessage(WebSocket, String, String)}.
+	 * 
+	 * @param webSocket
+	 *            - the connection with the destination.
+	 * @param message
+	 *            - the message that will be sent.
+	 */
+	public void sendMessage(WebSocket webSocket, AgentWaveJson message) {
+		if(message.getSourceElements().length == 0)
+			message.addSourceElements(getName());
+		sendMessage(webSocket, message.getFirstDestinationElement(), message.getJson().toString());
 	}
 	
 	/**
-	 * Class that handles messages according to their type.
+	 * Sends a message through one of the WebSocket connections.
+	 * 
+	 * @param webSocket
+	 *            - the connection with the destination.
+	 * @param destination
+	 *            - the destination, used only for error displaying.
+	 * @param rawMessage
+	 *            - the message that will be sent, as a {@link String}.
 	 */
-	class MessageHandler {
-		/**
-		 * A method that checks if the connection is still open before sending a message.
-		 * 
-		 * @param webSocket
-		 *            - the connection with the destination
-		 * @param entityName
-		 *            - the destination name
-		 * @param message
-		 *            - the message that will be sent
-		 */
-		public void sendMessage(WebSocket webSocket, String entityName, String message) {
-			if(webSocket.isOpen())
-				webSocket.send(message);
+	protected void sendMessage(WebSocket webSocket, String destination, String rawMessage) {
+		if(webSocket.isOpen())
+			webSocket.send(rawMessage);
+		else
+			le("Connection closed with entity [], unable to send message: ", destination, rawMessage);
+	}
+	
+	/**
+	 * Extracts the source of a message.
+	 * 
+	 * @param json
+	 *            - the message.
+	 * @return the source entity
+	 */
+	protected String extractSource(JsonObject json) {
+		try {
+			return json.get(AgentWave.SOURCE_ELEMENT).getAsJsonArray().get(0).getAsString();
+		} catch(Exception e) {
+			le("Unable to extract source from []: []", json, e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Extracts the home region in an endpoint.
+	 * 
+	 * @param endpoint
+	 * @return the home region
+	 */
+	protected String extractHomeRegion(String endpoint) {
+		try {
+			return endpoint.split("-")[1];
+		} catch(Exception e) {
+			le("Unable to parse endpoint for home region []", endpoint);
+			return null;
+		}
+	}
+	
+	/**
+	 * Handles the case when a new agent registers in this region as its home region.
+	 * 
+	 * @param msg
+	 *            - the message received.
+	 * @param webSocket
+	 *            - the connection on which the message was received.
+	 */
+	public void registerMessageHandler(JsonObject msg, WebSocket webSocket) {
+		String entity = extractSource(msg);
+		lf("Received REGISTER message from new agent ", entity);
+		if(regionHomeAgents.put(entity,
+				new AgentStatus(entity, webSocket, AgentStatus.Status.HOME, getName())) != null)
+			le("An agent with the name [] already existed!", entity);
+		printStatus();
+	}
+	
+	/**
+	 * Handles the case when a mobile agent registers in this region when arriving from another region.
+	 * 
+	 * @param msg
+	 *            - the message received.
+	 * @param webSocket
+	 *            - the connection on which the message was received.
+	 */
+	public void connectMessageHandler(JsonObject msg, WebSocket webSocket) {
+		String entity = extractSource(msg);
+		lf("Received CONNECT message from mobile agent ", entity);
+		if(!regionHomeAgents.containsKey(entity)) {
+			if(!guestAgents.containsKey(entity)) {
+				guestAgents.put(entity, new AgentStatus(entity, webSocket, AgentStatus.Status.REMOTE, getName()));
+				String homeServer = extractHomeRegion(entity);
+				if(homeServers.containsKey(homeServer)) {
+					sendMessage(homeServers.get(homeServer).client,
+							(AgentWaveJson) new AgentWaveJson().add(AgentWave.CONTENT, entity)
+									.add(Constants.EVENT_TYPE_KEY, MessageType.AGENT_UPDATE.toString()));
+				}
+				else
+					le("Agent [] arrived but was not able to identify its home server []", entity, homeServer);
+			}
+		}
+		else {
+			lf("Agent [] is still in home region.", entity);
+			AgentStatus ag = regionHomeAgents.get(entity);
+			if(ag.getStatus() == AgentStatus.Status.OFFLINE) {
+				ag.setClientConnection(webSocket);
+				ag.setLastLocation(getName());
+				ag.setStatus(AgentStatus.Status.HOME);
+				while(ag.getStatus() == Status.HOME && !ag.getMessages().isEmpty()) {
+					String saved = ag.getMessages().pop();
+					li("Sending to online agent [] saved message []", entity, saved);
+					sendMessage(ag.getClientConnection(), entity, saved);
+				}
+			}
+		}
+		printStatus();
+	}
+	
+	/**
+	 * Handles the case in which an agent in this region requests to leave its current location.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 */
+	public void reqLeaveMessageHandler(JsonObject msg) {
+		String entity = extractSource(msg);
+		AgentStatus ag = regionHomeAgents.get(entity);
+		lf("Request to leave from agent [] -> ", entity, ag != null ? "will accept" : "will relay");
+		if(ag != null) {
+			ag.setStatus(AgentStatus.Status.OFFLINE);
+			AgentWaveJson wave = (AgentWaveJson) new AgentWaveJson().appendDestination(entity, Constants.PROTOCOL)
+					.add(Constants.EVENT_TYPE_KEY, MessageType.REQ_ACCEPT.toString());
+			for(Iterator<JsonElement> it = msg.get(AgentWave.SOURCE_ELEMENT).getAsJsonArray().iterator(); it.hasNext();)
+				wave.addSourceElements(it.next().getAsString());
+			sendMessage(ag.getClientConnection(), wave);
+		}
+		else if(guestAgents.containsKey(entity)) {
+			String homeServer = extractHomeRegion(entity);
+			if(homeServers.containsKey(homeServer))
+				sendMessage(homeServers.get(homeServer).client,
+						(AgentWaveJson) new AgentWaveJson().add(AgentWave.CONTENT, entity).add(Constants.EVENT_TYPE_KEY,
+								MessageType.REQ_BUFFER.toString()));
 			else
-				le("Connection closed with entity ", entityName);
+				le("Region server [] not connected; known servers: ", homeServer, homeServers.keySet());
 		}
-		
-		public void registerMessageHandler(JSONObject mesg, WebSocket webSocket) {
-			String new_agent = (String) mesg.get("source");
-			lf("Received REGISTER message from new agent ", new_agent);
-			if(agentsList.put(new_agent,
-					new AgentStatus(new_agent, webSocket, AgentStatus.Status.HOME, getUnitName())) != null)
-				le("An agent with the name [] already existed!", new_agent);
+		else
+			le("unable to identify agent [].", entity);
+	}
+	
+	/**
+	 * Handles the case in which an agent with its home in this region, currently remote, needs to leave its current
+	 * location.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 */
+	public void reqBufferMessageHandler(JsonObject msg) {
+		String entity = msg.get(AgentWave.CONTENT).getAsString(); // the entity that will move.
+		lf("Request to buffer for agent []", entity);
+		printStatus();
+		AgentStatus ag = regionHomeAgents.get(entity);
+		if(ag != null) {
+			ag.setStatus(AgentStatus.Status.OFFLINE);
+			sendMessage(homeServers.get(ag.getLastLocation()).client, (AgentWaveJson) new AgentWaveJson()
+					.add(AgentWave.CONTENT, entity).add(Constants.EVENT_TYPE_KEY, MessageType.REQ_ACCEPT.toString()));
+		}
+		else
+			le("Agent [] is not originary from this region.", entity);
+	}
+	
+	/**
+	 * Handles an acceptance of a request to move, as received from the home region of the entity.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 */
+	public void reqAcceptMessageHandler(JsonObject msg) {
+		String entity = msg.get(AgentWave.CONTENT).getAsString(); // the entity that will move.
+		lf("Accept request received from agent []", entity);
+		AgentStatus ag = guestAgents.get(entity);
+		if(ag != null) {
+			sendMessage(ag.getClientConnection(),
+					(AgentWaveJson) new AgentWaveJson().appendDestination(entity, Constants.PROTOCOL)
+							.add(Constants.EVENT_TYPE_KEY, MessageType.REQ_ACCEPT.toString()));
+			guestAgents.remove(entity);
+		}
+		else
+			le("Agent [] is currently in this region.", entity);
+	}
+	
+	/**
+	 * Handles a location update related to an entity with its origin in this region.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 */
+	public void agentUpdateMessageHandler(JsonObject msg) {
+		String location = extractSource(msg);
+		String entity = msg.get(AgentWave.CONTENT).getAsString();
+		AgentStatus ag = regionHomeAgents.get(entity);
+		if(ag != null) {
+			lf("Agent [] arrived in region []. It has [] saved messages.", entity, location,
+					Integer.valueOf(ag.getMessages().size()));
+			ag.setLastLocation(location);
+			ag.setStatus(AgentStatus.Status.REMOTE);
+			if(homeServers.containsKey(location)) {
+				while(ag.getStatus() == Status.REMOTE && !ag.getMessages().isEmpty()) {
+					String saved = ag.getMessages().pop();
+					lf("Sending to remote agent [] saved message []", entity, saved);
+					sendMessage(homeServers.get(location).client, entity, saved);
+				}
+			}
+		}
+		else
+			le("Agent [] (now in []) does not belong to this home server.", entity, location);
+	}
+	
+	/**
+	 * handler for normal messages between entities.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 * @param message
+	 *            - the raw message, as a {@link String}.
+	 */
+	public void contentMessageHandler(JsonObject msg, String message) {
+		String target = null;
+		try {
+			target = msg.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+		} catch(Exception e) {
+			le("Unable to determine destination of message []: ", msg, e);
+			return;
+		}
+		dbg(Dbg.DEBUG_WSREGIONS, "Message to send from [] to [] with content ", msg.get(AgentWave.SOURCE_ELEMENT),
+				target, msg.get(AgentWave.CONTENT));
+		if(Dbg.DEBUG_WSREGIONS.toBool())
 			printStatus();
-		}
-		
-		public void connectMessageHandler(JSONObject mesg, WebSocket webSocket) {
-			String arrived_agent = (String) mesg.get("source");
-			lf("Received CONNECT message from mobile agent ", arrived_agent);
-			if(!agentsList.containsKey(arrived_agent)) {
-				if(!mobileAgents.containsKey(arrived_agent)) {
-					mobileAgents.put(arrived_agent,
-							new AgentStatus(arrived_agent, webSocket, AgentStatus.Status.REMOTE, getUnitName()));
-					String homeServer = (arrived_agent.split("-"))[1];
-					if(clients.containsKey(homeServer)) {
-						Map<String, String> data = new HashMap<>();
-						data.put("lastLocation", getUnitName());
-						sendMessage(clients.get(homeServer).client, homeServer,
-								createMessage("", arrived_agent, MessageFactory.MessageType.AGENT_UPDATE, data));
-					}
-				}
-			}
-			else {
-				lf("Agent [] did not change regions", arrived_agent);
-				AgentStatus ag = agentsList.get(arrived_agent);
-				if(ag.getStatus() == AgentStatus.Status.OFFLINE) {
-					ag.setStatus(AgentStatus.Status.HOME);
-					ag.setClientConnection(webSocket);
-					ag.setLastLocation(getUnitName());
-					while(ag.getStatus() == Status.HOME && !ag.getMessages().isEmpty()) {
-						String saved = ag.getMessages().pop();
-						li("Sending to online agent [] saved message []", arrived_agent, saved);
-						sendMessage(ag.getClientConnection(), arrived_agent, saved);
-					}
-				}
-			}
-			printStatus();
-		}
-		
-		public void contentMessageHandler(JSONObject mesg, String message) {
-			String target = (String) mesg.get("destination");
-			lf("Message to send from [] to [] with content ", mesg.get("source"), target, mesg.get("content"));
-			printStatus();
-			AgentStatus ag = agentsList.get(target);
-			AgentStatus agm = mobileAgents.get(target);
-			if(ag != null) {
-				switch(ag.getStatus()) {
-				case HOME:
-					lf("Send message [] directly to []", mesg.get("content"), target);
-					sendMessage(ag.getClientConnection(), target, message);
-					break;
-				case OFFLINE:
-					lf("Saved message [] for []", mesg.get("content"), target);
-					ag.addMessage(message);
-					break;
-				case REMOTE:
-					String lastServer = ag.getLastLocation();
-					lf("Send message [] to agent [] located on []", mesg.get("content"), target, lastServer);
-					sendMessage(clients.get(lastServer).client, lastServer, message);
-					break;
-				default:
-					// can't reach here
-				}
-			}
-			else {
-				if(agm != null) {
-					lf("Send message [] directly to guest agent []", mesg.get("content"), target);
-					sendMessage(agm.getClientConnection(), target, message);
-				}
-				else {
-					String regServer = (target.split("-"))[1];
-					lf("Agent [] location isn't known. Sending message [] to home Region Server []", target,
-							mesg.get("content"), regServer);
-					if(clients.containsKey(regServer))
-						sendMessage(clients.get(regServer).client, regServer, message);
-					else
-						le("Region server [] not connected; known servers: ", regServer, clients.keySet());
-				}
-			}
-		}
-		
-		public void reqLeaveMessageHandler(JSONObject mesg) {
-			String source = (String) mesg.get("source");
-			lf("Request to leave from agent []", source);
-			AgentStatus ag = agentsList.get(source);
-			if(ag != null) {
-				ag.setStatus(AgentStatus.Status.OFFLINE);
-				sendMessage(ag.getClientConnection(), source,
-						createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
-			}
-			else {
-				if(mobileAgents.containsKey(source)) {
-					String homeServer = (source.split("-"))[1];
-					if(clients.containsKey(homeServer)) {
-						Map<String, String> data = new HashMap<>();
-						data.put("agentName", source);
-						sendMessage(clients.get(homeServer).client, homeServer,
-								createMessage("", getName(), MessageFactory.MessageType.REQ_BUFFER, data));
-					}
-				}
-			}
-		}
-		
-		public void reqBufferMessageHandler(JSONObject mesg) {
-			String agentReq = (String) mesg.get("agentName");
-			lf("Request to buffer for agent []", agentReq);
-			AgentStatus ag = agentsList.get(agentReq);
-			if(ag != null) {
-				ag.setStatus(AgentStatus.Status.OFFLINE);
-				Map<String, String> data = new HashMap<>();
-				data.put("agentName", agentReq);
-				String lastLocation = ag.getLastLocation();
-				if(clients.containsKey(lastLocation)) {
-					sendMessage(clients.get(lastLocation).client, lastLocation,
-							createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, data));
-				}
-			}
-		}
-		
-		public void reqAcceptMessageHandler(JSONObject mesg) {
-			String agentResp = (String) mesg.get("agentName");
-			lf("Accept request received from agent []", agentResp);
-			AgentStatus ag = mobileAgents.get(agentResp);
-			if(ag != null) {
-				sendMessage(ag.getClientConnection(), agentResp,
-						createMessage("", getName(), MessageFactory.MessageType.REQ_ACCEPT, null));
-				mobileAgents.remove(agentResp);
-			}
-		}
-		
-		public void agentUpdateMessageHandler(JSONObject mesg) {
-			String movedAgent = (String) mesg.get("source");
-			String new_location = (String) mesg.get("lastLocation");
-			AgentStatus ag = agentsList.get(movedAgent);
-			if(ag != null) {
-				lf("Agent [] arrived in []. It has [] saved messages.", movedAgent, new_location,
-						ag.getMessages().size());
-				ag.setStatus(AgentStatus.Status.REMOTE);
-				ag.setLastLocation(new_location);
-				if(clients.containsKey(new_location)) {
-					while(ag.getStatus() == Status.REMOTE && !ag.getMessages().isEmpty()) {
-						String saved = ag.getMessages().pop();
-						lf("Sending to remote agent [] saved message []", movedAgent, saved);
-						sendMessage(clients.get(new_location).client, new_location, saved);
-					}
-				}
-			}
-			else
-				lf("Agent [] arrived in [].", movedAgent, new_location);
-		}
-		
-		public void agentContentMessageHandler(JSONObject mesg, String message) {
-			String target = ((String) mesg.get("destination")).split("/")[0];
-			String source = (String) mesg.get("source");
-			lf("Agent content to send from [] to []", source, target);
-			AgentStatus ag = agentsList.get(target);
-			if(ag != null)
+		AgentStatus ag = regionHomeAgents.get(target);
+		AgentStatus agm = guestAgents.get(target);
+		if(ag != null) {
+			switch(ag.getStatus()) {
+			case HOME:
+				dbg(Dbg.DEBUG_WSREGIONS, "Sending message directly to []", target);
 				sendMessage(ag.getClientConnection(), target, message);
-			else {
-				String[] getRegServer = target.split("-");
-				String regServer = getRegServer[getRegServer.length - 1];
-				le("Node [] location isn't known. Sending message to home Region-Server []", target, regServer);
-				if(clients.containsKey(regServer)) {
-					sendMessage(clients.get(regServer).client, regServer, message);
-				}
+				break;
+			case OFFLINE:
+				dbg(Dbg.DEBUG_WSREGIONS, "Saved message for []", target);
+				ag.addMessage(message);
+				break;
+			case REMOTE:
+				String lastServer = ag.getLastLocation();
+				dbg(Dbg.DEBUG_WSREGIONS, "Send message for [] to []", target, lastServer);
+				sendMessage(homeServers.get(lastServer).client, lastServer, message);
+				break;
+			default:
+				// can't reach here
 			}
 		}
+		else if(agm != null) {
+			dbg(Dbg.DEBUG_WSREGIONS, "Send message directly to guest agent []", target);
+			sendMessage(agm.getClientConnection(), target, message);
+		}
+		else {
+			String regServer = null;
+			try {
+				regServer = extractHomeRegion(target);
+			} catch(Exception e) {
+				le("Unable to parse destination []", target);
+				return;
+			}
+			dbg(Dbg.DEBUG_WSREGIONS, "Agent [] location isn't known. Sending message to home Region Server []", target,
+					regServer);
+			if(homeServers.containsKey(regServer))
+				sendMessage(homeServers.get(regServer).client, target, message);
+			else
+				le("Region server [] not connected; known servers: ", regServer, homeServers.keySet());
+		}
+		
 	}
 }

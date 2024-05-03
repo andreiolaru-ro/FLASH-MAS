@@ -42,7 +42,9 @@ public abstract class WSClient {
 				// just try again
 			}
 		}
-		if(!client.isOpen()) {
+		if(client.isOpen())
+			log.li("<WSClient> Connected successfully to [].", server);
+		else {
 			// client.close();
 			state = ConnectionState.INITIAL_CONNECTION_FAILED;
 			log.le("<WSClient> Connection to [] FAILED.", server);

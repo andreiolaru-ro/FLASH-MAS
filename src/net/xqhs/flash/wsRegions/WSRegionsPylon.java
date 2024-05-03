@@ -1,41 +1,41 @@
 package net.xqhs.flash.wsRegions;
 
-import static net.xqhs.flash.wsRegions.MessageFactory.createMessage;
-
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.ClassicMessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
+import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.webSocket.WebSocketPylon;
-import net.xqhs.flash.wsRegions.MessageFactory.ActionType;
-import net.xqhs.flash.wsRegions.MessageFactory.MessageType;
 
+/**
+ * {@link Pylon} for the WS Regions protocol.
+ * 
+ * @author Monica Pricope
+ */
 public class WSRegionsPylon extends DefaultPylonImplementation {
-	
-	static class MessageThread implements Runnable {
-		@Override
-		public void run() {
-			
-		}
-	}
+	/**
+	 * Agent list, that are located on this node.
+	 */
+	protected Map<String, WaveReceiver> agentList = new HashMap<>();
 	
 	/**
-	 * Agents list, that are located on this node.
+	 * The proxy offered by this pylon.
 	 */
-	protected Map<String, ClassicMessageReceiver> agentList = new HashMap<>();
-	
-	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
+	public WaveMessagingPylonProxy messagingProxy = new WaveMessagingPylonProxy() {
 		
 		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
@@ -43,49 +43,59 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		}
 		
 		@Override
-		public boolean register(String entityName, ClassicMessageReceiver receiver) {
-			lf("Registered entity" + entityName);
-			if(!agentList.containsKey(entityName)) {
-				agentList.put(entityName, receiver);
-			}
-			// FIXME: return false if entity already existed?
-			Map<String, String> data = new HashMap<>();
-			data.put("server", HomeServerAddressName);
-			data.put("action", String.valueOf(ActionType.RECEIVE_MESSAGE));
-			receiver.receive(getEntityName(), entityName,
-					createMessage(getEntityName(), entityName, MessageType.CONTENT, data));
-			return true;
-		}
-		
-		@Override
-		public boolean unregister(String entityName, ClassicMessageReceiver registeredReceiver) {
-			lf("Agent " + entityName + " is leaving");
-			agentList.remove(entityName);
-			// FIXME: return false if entity did not exist?
-			return true;
-		}
-		
-		@Override
-		public boolean send(String source, String destination, String content) {
-			Object obj = JSONValue.parse(content);
-			if(obj == null)
+		public boolean register(String entityName, WaveReceiver receiver) {
+			if(agentList.containsKey(entityName)) {
+				lw("Entity [] was already registered.", entityName);
 				return false;
-			JSONObject mesg = (JSONObject) obj;
-			String type = (String) mesg.get("action");
-			switch(MessageFactory.ActionType.valueOf(type)) {
-			case RECEIVE_MESSAGE:
-			case SEND_MESSAGE:
-			case ARRIVED_ON_NODE:
-				monitor.inbox.receive(source, destination, content);
-				break;
-			case MOVE_TO_ANOTHER_NODE:
-				monitor.inbox.receive(source, destination, content);
-				
-				break;
-			default:
-				break;
 			}
-			return false;
+			agentList.put(entityName, receiver);
+			lf("Registered entity [].", entityName);
+			printStatus();
+			
+			// Map<String, String> data = new HashMap<>();
+			// data.put("server", HomeServerAddressName);
+			// data.put("action", String.valueOf(ActionType.RECEIVE_MESSAGE));
+			// receiver.receive(new AgentWave(
+			// MessageFactory.createMessage(getEntityName(), entityName, MessageType.CONTENT, data), entityName));
+			return true;
+		}
+		
+		@Override
+		public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
+			if(!agentList.containsKey(entityName)) {
+				lw("Entity [] was not registered but tried to unregister.", entityName);
+				printStatus();
+				return false;
+			}
+			agentList.remove(entityName);
+			lf("Entity [] unregistered.", entityName);
+			printStatus();
+			return true;
+		}
+		
+		@Override
+		public boolean send(AgentWave wave) {
+			return WSRegionsPylon.this.send(wave);
+			
+			// FIXME this is monitoring actions, fix later.
+			// Object obj = JSONValue.parse(content);
+			// if(obj == null)
+			// return false;
+			// JSONObject mesg = (JSONObject) obj;
+			// String type = (String) mesg.get("action");
+			// switch(MessageFactory.ActionType.valueOf(type)) {
+			// case RECEIVE_MESSAGE:
+			// case SEND_MESSAGE:
+			// case ARRIVED_ON_NODE:
+			// monitor.inbox.receive(source, destination, content);
+			// break;
+			// case MOVE_TO_ANOTHER_NODE:
+			// monitor.inbox.receive(source, destination, content);
+			//
+			// break;
+			// default:
+			// break;
+			// }
 		}
 		
 		@Override
@@ -108,11 +118,12 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	protected RegionServer		serverEntity			= null;
 	protected ArrayList<String>	serverList				= null;
 	public String				HomeServerAddressName	= null;
+	protected WSClient			wsClient				= null;
 	
-	protected boolean	useThread		= true;
-	protected Thread	messageThread	= null;
+	// protected boolean useThread = true;
+	// protected Thread messageThread = null;
 	
-	protected MonitoringEntity monitor = null;
+	// protected MonitoringEntity monitor = null;
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -154,33 +165,36 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			serverEntity.start();
 		}
 		
-		if(monitor == null) {
-			monitor = new MonitoringEntity(getName() + "-monitor");
-			monitor.start();
-		}
+		// if(monitor == null) {
+		// monitor = new MonitoringEntity(getName() + "-monitor");
+		// monitor.start();
+		// }
 		
 		if(!super.start())
 			return false;
 		
-		if(useThread) {
-			messageThread = new Thread(new MessageThread());
-			messageThread.start();
-		}
+		wsClient = new WSClient(URI.create(HomeServerAddressName), 10, 10000, getLogger()) {
+			@Override
+			public void onMessage(String message) {
+				processMessage(message);
+			}
+		};
+		printStatus();
 		
-		// li("Started" + (useThread ? " with thread." : ""));
 		return true;
 	}
 	
 	@Override
 	public boolean stop() {
 		super.stop();
-		if(useThread) {
-			useThread = false;
-			messageThread = null;
-		}
+		// if(useThread) {
+		// useThread = false;
+		// messageThread = null;
+		// }
 		if(hasServer)
 			serverEntity.stop();
-		monitor.stop();
+		// monitor.stop();
+		printStatus();
 		return true;
 	}
 	
@@ -188,7 +202,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	public boolean addContext(EntityProxy<Node> context) {
 		if(!super.addContext(context))
 			return false;
-		String nodeName = context.getEntityName();
+		// String nodeName = context.getEntityName();
 		// lf("Added node context ", nodeName);
 		return true;
 	}
@@ -207,8 +221,71 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		return super.getRecommendedShardImplementation(shardName);
 	}
 	
+	protected void processMessage(String jsonString) {
+		JsonObject json;
+		try {
+			json = JsonParser.parseString(jsonString).getAsJsonObject();
+		} catch(JsonSyntaxException e) {
+			le("Exception [] when parsing []", e.getStackTrace(), jsonString);
+			return;
+		}
+		
+		String destination;
+		try {
+			destination = json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+		} catch(Exception e) {
+			le("Unable to parse destination in ", json);
+			return;
+		}
+		if(!agentList.containsKey(destination) || agentList.get(destination) == null)
+			le("Entity [] does not exist in the scope of this pylon. Current entities: ", destination,
+					agentList.keySet());
+		else {
+			AgentWave wave;
+			try {
+				wave = AgentWaveJson.toAgentWave(json);
+			} catch(Exception e) {
+				le("Unable to convert message to AgentWave because []: []", e, json);
+				return;
+			}
+			agentList.get(destination).receive(wave);
+		}
+	}
+	
+	protected boolean send(AgentWave wave) {
+		JsonObject json = wave instanceof AgentWaveJson ? ((AgentWaveJson) wave).getJson() : AgentWaveJson.toJson(wave);
+		wsClient.send(json.toString());
+		return true;
+	}
+	
+	/**
+	 * Prints the status of this pylon.
+	 */
+	protected void printStatus() {
+		lf("Current state: [] [] client: []. Current entities: ", isRunning() ? "RUNNING" : "STOPPED",
+				hasServer ? "server: " + (serverEntity.isRunning() ? "RUNNING" : "STOPPED") : "no server",
+				wsClient.client.getReadyState(),
+				agentList.keySet());
+	}
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<Pylon> asContext() {
 		return messagingProxy;
+	}
+	
+	@Override
+	protected void lf(String message, Object... arguments) {
+		super.lf(message, arguments);
+	}
+	
+	@Override
+	protected void li(String message, Object... arguments) {
+		super.li(message, arguments);
+	}
+	
+	@Override
+	protected void lw(String message, Object... arguments) {
+		super.lw(message, arguments);
 	}
 }

@@ -222,7 +222,9 @@ public class Node extends Unit implements Entity<Node> {
 				entities.add(ent);
 			}
 		});
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
+		return false;
+		// TODO revert to this when a monitoring entity is actually created.
+		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
 	
 	@Override
@@ -411,10 +413,11 @@ public class Node extends Unit implements Entity<Node> {
 	private boolean sendStatusUpdate() {
 		if(getName() == null)
 			return false;
-		String status = isRunning ? "RUNNING" : "STOPPED";
-		JSONObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
+		// String status = isRunning ? "RUNNING" : "STOPPED";
+		// JSONObject update = OperationUtils.operationToJSON(
+		// OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
+		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
+		return false;
 	}
 	
 	/**
@@ -424,6 +427,8 @@ public class Node extends Unit implements Entity<Node> {
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
+		if(!jo.has(OperationUtils.NAME))
+			return;
 		String op = jo.get(OperationUtils.NAME).getAsString();
 		if(OperationUtils.ControlOperation.START.getOperation().equals(op)) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
