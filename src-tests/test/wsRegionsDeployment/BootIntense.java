@@ -12,7 +12,6 @@
 package test.wsRegionsDeployment;
 
 import net.xqhs.flash.FlashBoot;
-import net.xqhs.util.logging.MasterLog;
 
 /**
  * Deployment testing.
@@ -42,7 +41,7 @@ public class BootIntense {
 		//*/
 		
 		args += " -load_order monitor;pylon;agent";
-		args += " -package wsRegions testing src-tests.test.wsRegionsDeployment.Script test.simplePingPong -loader agent:mobileComposite ";
+		args += " -package net.xqhs.flash.wsRegions testing src-tests.test.wsRegionsDeployment.Script -loader agent:mobileComposite ";
 		
 		int index = -1;
 		if(args_.length > 0)
@@ -65,8 +64,8 @@ public class BootIntense {
 		}
 		
 		// MasterLog.setDefaultLogLevel(Level.OFF);
-		MasterLog.enablePerformanceModeTools(500);
-		MasterLog.activateGlobalPerformanceMode();
+		// MasterLog.enablePerformanceModeTools(500);
+		// MasterLog.activateGlobalPerformanceMode();
 		System.out.println("."); // to activate console output.
 		
 		FlashBoot.main(args.split(" "));

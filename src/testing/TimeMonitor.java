@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
@@ -40,6 +41,7 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 	protected String												nodeName;
 	private static FileWriter										writer;
 	protected static Logger											log;
+	protected boolean												running				= false;
 	protected static boolean										useThread			= true;
 	protected static Thread											processingThread	= null;
 	/**
@@ -68,11 +70,14 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 			processingThread = new Thread(new MessageThread());
 			processingThread.start();
 		}
+		running = true;
+		li("started [] thread.", useThread ? "with" : "without");
 		return true;
 	}
 	
 	@Override
 	public boolean stop() {
+		li("stopping");
 		if(writer != null)
 			try {
 				writer.close();
@@ -95,6 +100,7 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 			processingQueue = null;
 			processingThread = null;
 		}
+		running = false;
 		doExit();
 		return true;
 	}
@@ -110,7 +116,7 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 			if(processingQueue.isEmpty())
 				try {
 					synchronized(processingQueue) {
-						processingQueue.wait();
+						processingQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 					}
 				} catch(InterruptedException e) {
 					// do nothing
@@ -123,12 +129,12 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 	
 	@Override
 	public boolean isRunning() {
-		return false;
+		return running;
 	}
 	
 	@Override
 	public String getName() {
-		return null;
+		return getUnitName();
 	}
 	
 	@Override
@@ -204,9 +210,8 @@ public class TimeMonitor extends Unit implements Entity<Node>, EntityProxy<TimeM
 	protected static boolean processEntry(long time, Object... prints) {
 		String line = time + " : [";
 		line += "\"" + new Timestamp(time) + "\", ";
-		line += String.join(", ",
-				Arrays.asList(prints).stream().map(obj -> obj != null ? "\"" + obj.toString() + "\"" : "\"-\"")
-						.collect(Collectors.toList()));
+		line += String.join(", ", Arrays.asList(prints).stream()
+				.map(obj -> obj != null ? "\"" + obj.toString() + "\"" : "\"-\"").collect(Collectors.toList()));
 		line += "]\n";
 		try {
 			writer.write(line);

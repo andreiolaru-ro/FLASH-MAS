@@ -9,36 +9,27 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.webSocketDeployment;
-
-import net.xqhs.flash.FlashBoot;
+package net.xqhs.flash.core.support;
 
 /**
- * Tests WebSocket support works in a deployment of non-composite agents.
+ * This interface should be implemented by any entity which is able to receive messages from a support infrastructure
+ * (and, more concretely, from a {@link Pylon}).
+ * <p>
+ * In practice, instances of this interface should allow the link between a {@link Pylon} and a {@link MessagingShard},
+ * without exposing to the Pylon a reference to the shard.
+ * 
+ * @author Andrei Olaru
  */
-public class BootSimpleDeployment
-{
+public interface ClassicMessageReceiver {
 	/**
-	 * Performs test.
+	 * The method to be called when a message is received.
 	 * 
-	 * @param args_
-	 *            - not used.
+	 * @param source
+	 *                        - the source of the message.
+	 * @param destination
+	 *                        - the destination of the message.
+	 * @param content
+	 *                        - the content of the message.
 	 */
-	public static void main(String[] args_)
-	{
-		String args = "";
-		
-		args += " -package testing";
-		
-		args += " -node node1";
-		args += " -pylon webSocket:pylon1 serverPort:8885";
-		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
-		
-		args += " -node node2";
-		args += " -pylon webSocket:pylon2 connectTo:ws://localhost:8885";
-		args += " -agent AgentB classpath:AgentPingPong";
-		
-		FlashBoot.main(args.split(" "));
-	}
-	
+	public void receive(String source, String destination, String content);
 }

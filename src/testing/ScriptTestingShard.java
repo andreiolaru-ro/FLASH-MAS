@@ -77,28 +77,32 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	/**
 	 * The approximate time of boot.
 	 */
-	protected static final long								boot_time				= System.currentTimeMillis();
+	protected static final long	boot_time			= System.currentTimeMillis();
 	/**
 	 * The serial UID.
 	 */
-	private static final long								serialVersionUID		= -3151844526556248974L;
+	private static final long	serialVersionUID	= -3151844526556248974L;
 	/**
 	 * Shard designation.
 	 */
-	public static final String								DESIGNATION				= "test/script";
+	public static final String	DESIGNATION			= "test/script";
 	/**
 	 * The parameter that indicates the file to get the script from.
 	 */
-	public static final String								FROM_PARAMETER			= "from";
+	public static final String	FROM_PARAMETER		= "from";
+	/**
+	 * The parameter that indicates the agent should not be closed after the script is completed.
+	 */
+	public static final String	NO_EXIT_PARAMETER	= "noclose";
 	
 	/**
 	 * The entire testing script, which may include actions for other entities.
 	 */
-	protected TestingScript									entireScript;
+	protected TestingScript			entireScript;
 	/**
 	 * The script for this agent.
 	 */
-	protected List<ScriptElement>							agentScript;
+	protected List<ScriptElement>	agentScript;
 	
 	/**
 	 * Timer for delayed actions.
@@ -117,6 +121,10 @@ public class ScriptTestingShard extends AgentShardGeneral {
 	 * If <code>true</code>, no further attempts to schedule actions are performed.
 	 */
 	boolean													scriptCompleted			= false;
+	/**
+	 * If <code>true</code>, an {@link AgentEventType#AGENT_STOP} will be posted when the script is completed.
+	 */
+	boolean													closeOnComplete			= true;
 	/**
 	 * If <code>true</code>, calls to {@link #scheduleNextAction(AgentEvent)} should not schedule any actions, because
 	 * the script is waiting for the completion of a delay, before scheduling any further actions.
@@ -138,6 +146,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			return false;
 		if(!configuration.isSimple(FROM_PARAMETER))
 			return false;
+		if(configuration.isSimple(NO_EXIT_PARAMETER))
+			closeOnComplete = false;
 		scriptCompleted = true;
 		String file = configuration.getAValue(FROM_PARAMETER);
 		List<String> paths = new LinkedList<>();
@@ -235,6 +245,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		if(a == null) {
 			lf("Script completed.");
 			scriptCompleted = true;
+			if(closeOnComplete)
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 			return;
 		}
 		long delay = 0;
@@ -245,6 +257,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			//$FALL-THROUGH$
 		case DELAY:
 			// next action is scheduled
+			if(actionTimer != null)
+				actionTimer.cancel();
 			actionTimer = new Timer();
 			delay += a.getDelay();
 			delay = Math.max(delay, 0);
@@ -252,6 +266,8 @@ public class ScriptTestingShard extends AgentShardGeneral {
 			actionTimer.schedule(new ScriptTimerTask(a, isNextActionDelayed) {
 				@Override
 				public void run() {
+					if(actionTimer != null)
+						actionTimer.cancel();
 					actionTimer = null;
 					delayTriggeredAction = null;
 					nextActionScheduled = false;
@@ -322,10 +338,10 @@ public class ScriptTestingShard extends AgentShardGeneral {
 		case MOVE_TO_NODE:
 			// FIXME check if all fields are present
 			if(args != null)
-			if(getAgent() instanceof MobileCompositeAgentShardContainer)
-				((MobileCompositeAgentShardContainer) getAgent()).moveTo(args.get(FIELD.to));
-			else
-				le("Agent is not mobile.");
+				if(getAgent() instanceof MobileCompositeAgentShardContainer)
+					((MobileCompositeAgentShardContainer) getAgent()).moveTo(args.get(FIELD.to));
+				else
+					le("Agent is not mobile.");
 			break;
 		case PRINT:
 			li("ECHO ", args != null ? args.get(FIELD.with) : null);

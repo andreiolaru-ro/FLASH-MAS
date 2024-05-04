@@ -69,7 +69,7 @@ public class PingBackTestShard extends AgentShardGeneral {
 			// if(!(((AgentWave) event).getFirstDestinationElement()).equals(SHARD_ENDPOINT))
 			// break;
 			String replyContent = ((AgentWave) event).getContent() + REPLY_SUFFIX;
-			sendMessage(replyContent, SHARD_ENDPOINT, ((AgentWave) event).getCompleteSource());
+			sendMessage(((AgentWave) event).createReply(replyContent));
 			if(replyContent.startsWith(PingTestShard.PING_PRE_LAST) && !keep)
 				getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 			break;

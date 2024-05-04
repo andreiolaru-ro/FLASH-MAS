@@ -25,7 +25,7 @@ public class Boot {
 	/**
 	 * Port for the WebSocket server.
 	 */
-	static final String			WS_PORT				= Integer.valueOf(8988).toString();
+	static final String			WS_PORT				= Integer.toString(8988);
 	
 	/**
 	 * Arguments for creating agents on nodeA.

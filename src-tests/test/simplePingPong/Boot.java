@@ -28,7 +28,7 @@ public class Boot
 	{
 		String test_args = "";
 		
-		test_args += " -package test.simplePingPong";
+		test_args += " -package testing";
 		test_args += " -node main";
 		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		test_args += " -agent AgentB classpath:AgentPingPong";
