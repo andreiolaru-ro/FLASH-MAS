@@ -40,7 +40,6 @@ import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -132,10 +131,6 @@ public class Node extends Unit implements Entity<Node> {
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
 	protected MessagingShard				messagingShard;
-	/**
-	 * monitors if the messaging shard has been registered with its pylon.
-	 */
-	protected boolean						messagingShardRegistered	= false;
 	/**
 	 * An indication if this entity is running.
 	 */
@@ -233,15 +228,8 @@ public class Node extends Unit implements Entity<Node> {
 		for(Entity<?> entity : entityOrder) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
-			if(entity.start()) {
+			if(entity.start())
 				lf("entity [] started successfully.", entityName);
-				EntityProxy<?> ctx = entity.asContext();
-				if(!messagingShardRegistered && getName() != null && messagingShard != null
-						&& (ctx instanceof MessagingPylonProxy)) {
-					messagingShard.register(getName());
-					messagingShardRegistered = true;
-				}
-			}
 			else
 				le("failed to start entity [].", entityName);
 		}

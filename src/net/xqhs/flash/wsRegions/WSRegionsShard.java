@@ -106,7 +106,7 @@ public class WSRegionsShard extends NameBasedMessagingShard implements MobilityA
 			}
 			else {
 				// shard initially booting.
-				register(getName());
+				// register(getName());
 				startShard(Constants.MessageType.REGISTER);
 			}
 			break;
