@@ -30,7 +30,7 @@ import net.xqhs.flash.wsRegions.Constants.MessageType;
 import net.xqhs.util.logging.Unit;
 
 /**
- * The server in a WSRegions deployment.
+ * The region server in a WSRegions deployment.
  * 
  * @author Monica Pricope
  * @author Andrei Olaru
@@ -56,19 +56,23 @@ public class RegionServer extends Unit implements Entity<Node> {
 	/**
 	 * The {@link WebSocketServer}.
 	 */
-	private final WebSocketServer			webSocketServer;
+	protected final WebSocketServer				webSocketServer;
 	/**
 	 * List of agents with their home server in this region.
 	 */
-	private final Map<String, AgentStatus>	regionHomeAgents	= Collections.synchronizedMap(new HashMap<>());
+	protected final Map<String, AgentStatus>	regionHomeAgents	= Collections.synchronizedMap(new HashMap<>());
 	/**
 	 * List of the agents that arrived in this region (have the home server in other regions).
 	 */
-	private final Map<String, AgentStatus>	guestAgents			= new HashMap<>();
+	protected final Map<String, AgentStatus>	guestAgents			= new HashMap<>();
 	/**
 	 * Connections with others servers.
 	 */
-	private final Map<String, WSClient>		homeServers			= Collections.synchronizedMap(new HashMap<>());
+	protected final Map<String, WSClient>		homeServers			= Collections.synchronizedMap(new HashMap<>());
+	/**
+	 * The thread used to establish connections to other region servers.
+	 */
+	protected Thread							starterThread;
 	
 	/**
 	 * @param serverPort
@@ -111,8 +115,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		
 		webSocketServer.setReuseAddr(true);
 		
-		// FIXME why a thread?
-		new Thread() {
+		starterThread = new Thread() {
 			@Override
 			public void run() {
 				for(String server : servers)
@@ -122,13 +125,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 						} catch(URISyntaxException e) {
 							e.printStackTrace();
 						}
-				try {
-					this.join();
-				} catch(InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
-		}.start();
+		};
+		starterThread.start();
 	}
 	
 	/**
@@ -143,7 +142,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		homeServers.put(nickname, createWebsocketClient(serverURI, nickname));
 	}
 	
-	private WSClient createWebsocketClient(URI serverURI, @SuppressWarnings("unused") String server) {
+	protected WSClient createWebsocketClient(URI serverURI, @SuppressWarnings("unused") String server) {
 		return new WSClient(serverURI, 10, 10000, this.getLogger()) {
 			@Override
 			public void onOpen(ServerHandshake serverHandshake) {
@@ -166,7 +165,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param message
 	 * @param webSocket
 	 */
-	void processMessage(String message, WebSocket webSocket) {
+	protected void processMessage(String message, WebSocket webSocket) {
 		JsonObject json = JsonParser.parseString(message).getAsJsonObject();
 		dbg(Dbg.DEBUG_WSREGIONS, "received message: ", json);
 		String destination = json.has(AgentWave.COMPLETE_DESTINATION)
@@ -215,6 +214,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	public boolean stop() {
 		try {
 			webSocketServer.stop(SERVER_STOP_TIME);
+			starterThread.join();
 			running = false;
 			return true;
 		} catch(InterruptedException e) {
@@ -259,7 +259,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		return false;
 	}
 	
-	public void printStatus() {
+	protected void printStatus() {
 		lf("region agents:[] guest agents:[] known servers: []", regionHomeAgents, guestAgents, homeServers.keySet());
 	}
 	
@@ -292,7 +292,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param message
 	 *            - the message that will be sent.
 	 */
-	public void sendMessage(WebSocket webSocket, AgentWaveJson message) {
+	protected void sendMessage(WebSocket webSocket, AgentWaveJson message) {
 		if(message.getSourceElements().length == 0)
 			message.addSourceElements(getName());
 		sendMessage(webSocket, message.getFirstDestinationElement(), message.getJson().toString());
@@ -354,7 +354,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param webSocket
 	 *            - the connection on which the message was received.
 	 */
-	public void registerMessageHandler(JsonObject msg, WebSocket webSocket) {
+	protected void registerMessageHandler(JsonObject msg, WebSocket webSocket) {
 		String entity = extractSource(msg);
 		lf("Received REGISTER message from new agent ", entity);
 		if(regionHomeAgents.put(entity,
@@ -371,7 +371,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param webSocket
 	 *            - the connection on which the message was received.
 	 */
-	public void connectMessageHandler(JsonObject msg, WebSocket webSocket) {
+	protected void connectMessageHandler(JsonObject msg, WebSocket webSocket) {
 		String entity = extractSource(msg);
 		lf("Received CONNECT message from mobile agent ", entity);
 		if(!regionHomeAgents.containsKey(entity)) {
@@ -410,7 +410,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param msg
 	 *            - the message.
 	 */
-	public void reqLeaveMessageHandler(JsonObject msg) {
+	protected void reqLeaveMessageHandler(JsonObject msg) {
 		String entity = extractSource(msg);
 		AgentStatus ag = regionHomeAgents.get(entity);
 		lf("Request to leave from agent [] -> ", entity, ag != null ? "will accept" : "will relay");
@@ -442,7 +442,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param msg
 	 *            - the message.
 	 */
-	public void reqBufferMessageHandler(JsonObject msg) {
+	protected void reqBufferMessageHandler(JsonObject msg) {
 		String entity = msg.get(AgentWave.CONTENT).getAsString(); // the entity that will move.
 		lf("Request to buffer for agent []", entity);
 		printStatus();
@@ -462,7 +462,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param msg
 	 *            - the message.
 	 */
-	public void reqAcceptMessageHandler(JsonObject msg) {
+	protected void reqAcceptMessageHandler(JsonObject msg) {
 		String entity = msg.get(AgentWave.CONTENT).getAsString(); // the entity that will move.
 		lf("Accept request received from agent []", entity);
 		AgentStatus ag = guestAgents.get(entity);
@@ -482,7 +482,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param msg
 	 *            - the message.
 	 */
-	public void agentUpdateMessageHandler(JsonObject msg) {
+	protected void agentUpdateMessageHandler(JsonObject msg) {
 		String location = extractSource(msg);
 		String entity = msg.get(AgentWave.CONTENT).getAsString();
 		AgentStatus ag = regionHomeAgents.get(entity);
@@ -511,7 +511,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * @param message
 	 *            - the raw message, as a {@link String}.
 	 */
-	public void contentMessageHandler(JsonObject msg, String message) {
+	protected void contentMessageHandler(JsonObject msg, String message) {
 		String target = null;
 		try {
 			target = msg.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();

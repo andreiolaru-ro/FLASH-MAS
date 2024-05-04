@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Vector;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.LogWrapper.LoggerType;
@@ -53,6 +54,12 @@ public class PlatformUtils {
 		 */
 		ANDROID,
 	}
+	
+	/**
+	 * The argument for {@link LinkedBlockingQueue#wait(long)}, as wait without arguments does no wake, even if
+	 * notified, if the state f the queue does not change.
+	 */
+	public static final long GLOBAL_WAITING_TIME = 1000;
 	
 	/**
 	 * @return the current platform, as an instance of {@link Platform}.

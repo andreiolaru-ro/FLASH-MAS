@@ -33,11 +33,11 @@ public class Boot
 		args += " -load_order monitor;pylon;agent";
 		args += " -package net.xqhs.flash.wsRegions testing src-tests.test.wsRegionsDeployment.Script -loader agent:mobileComposite ";
 
-		args += " -node node1-localhost:8885 active:* -monitor time:";
+		args += " -node node1-localhost:8885 -monitor time:";
 		args += " -pylon WSRegions:Pylon1 isServer:localhost:8885";
 		args += " -agent :one-localhost:8885 -shard messaging -shard EchoTesting" + script;
 		args += " -agent :two-localhost:8885 -shard messaging -shard EchoTesting" + script;
-		args += " -node node2-localhost:8885 active:*";
+		args += " -node node2-localhost:8885 keep:10";
 		args += " -pylon WSRegions:Pylon2 connectTo:localhost:8885";
 
 		// MasterLog.enablePerformanceModeTools(500);

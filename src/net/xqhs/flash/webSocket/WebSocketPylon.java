@@ -62,7 +62,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				if(messageQueue.isEmpty())
 					try {
 						synchronized(messageQueue) {
-							messageQueue.wait();
+							messageQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 						}
 					} catch(InterruptedException e) {
 						// do nothing

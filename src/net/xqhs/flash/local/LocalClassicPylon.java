@@ -26,6 +26,7 @@ import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -285,7 +286,7 @@ public class LocalClassicPylon extends DefaultPylonImplementation implements Run
 			if(messageQueue.isEmpty())
 				try {
 					synchronized(messageQueue) {
-						messageQueue.wait();
+						messageQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 					}
 				} catch(InterruptedException e) {
 					// do nothing
