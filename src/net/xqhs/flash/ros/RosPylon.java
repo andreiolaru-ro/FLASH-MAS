@@ -23,10 +23,10 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.NameBasedMessagingShard;
-import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.ClassicMessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.ClassicMessagingPylonProxy;
+import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ros.rosBridge.Publisher;
@@ -55,7 +55,7 @@ public class RosPylon extends DefaultPylonImplementation {
     /**
      * The proxy to this entity.
      */
-    public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
+	public ClassicMessagingPylonProxy messagingProxy = new ClassicMessagingPylonProxy() {
         /**
 		 * @param source
 		 *            - the source endpoint.

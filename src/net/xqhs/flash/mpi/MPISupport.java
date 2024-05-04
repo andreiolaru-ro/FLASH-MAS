@@ -1,17 +1,22 @@
 package net.xqhs.flash.mpi;
 
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.*;
+import static stefania.TreasureHunt.util.Constants.MPITagValue;
 
-import mpi.*;
 import java.util.HashMap;
-import static stefania.TreasureHunt.util.Constants.*;
+
+import mpi.MPI;
+import mpi.MPIException;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessagingPylonProxy;
+import net.xqhs.flash.core.support.DefaultPylonImplementation;
+import net.xqhs.flash.core.support.Pylon;
 
 public class MPISupport extends DefaultPylonImplementation {
     public static final String					MPI_SUPPORT_NAME	= "MPI pylon";
     protected HashMap<String, ClassicMessageReceiver> messageReceivers	= new HashMap<>();
 
-    public MessagingPylonProxy messagingProxy		= new MessagingPylonProxy() {
+	public ClassicMessagingPylonProxy messagingProxy = new ClassicMessagingPylonProxy() {
 
         @Override
         public boolean register(String agentName, ClassicMessageReceiver receiver) {
