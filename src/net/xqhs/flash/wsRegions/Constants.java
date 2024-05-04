@@ -46,23 +46,16 @@ public class Constants {
 	 */
 	public enum MessageType {
 		/**
-		 * Message sent from new created agent to the Region-Server from their birth region. Contains the next fields:
-		 * type, node (pylon name), source (sender agent name)
+		 * Message sent from new created agent to their home Region-Server. The registered agent is the source of the
+		 * message.
 		 */
 		REGISTER,
 		/**
-		 * Message sent from new arrived agent to the Region-Server. Contains the next fields: type, node (pylon name),
-		 * source (sender agent name)
+		 * Message sent from new arrived agent to its host Region-Server.
 		 */
 		CONNECT,
 		/**
-		 * Standard message, sent from one agent to another agent. Contains the next fields: type, node (pylon name),
-		 * source (sender agent name), destination (receiver agent name), content (message content)
-		 */
-		CONTENT,
-		/**
-		 * Message sent from agent to the Region-Server, when it wants to leave to another node. Contains the next
-		 * fields: type, node (pylon name), source (sender agent name)
+		 * Message sent from agent to the Region-Server, when it wants to leave to another node.
 		 */
 		REQ_LEAVE,
 		/**
@@ -76,14 +69,9 @@ public class Constants {
 		 */
 		AGENT_UPDATE,
 		/**
-		 * Message sent from Region-Server to the agent Contains the next fields: type, node (pylon name), source
-		 * (sender server name)
+		 * Message sent from Region-Server to the agent that wants to leave.
 		 */
 		REQ_ACCEPT,
-		/**
-		 * Message sent from a Node to another Node Contains the agent in serialized form
-		 */
-		AGENT_CONTENT,
 	}
 	
 	/**

@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import com.google.gson.JsonElement;
@@ -27,6 +26,7 @@ import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.wsRegions.AgentStatus.Status;
 import net.xqhs.flash.wsRegions.Constants.Dbg;
 import net.xqhs.flash.wsRegions.Constants.MessageType;
+import net.xqhs.util.logging.LoggerClassic;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -118,45 +118,26 @@ public class RegionServer extends Unit implements Entity<Node> {
 		starterThread = new Thread() {
 			@Override
 			public void run() {
-				for(String server : servers)
-					if(!homeServers.containsKey(server))
+				for(String otherServerName : servers)
+					if(!homeServers.containsKey(otherServerName))
 						try {
-							ServerClient(new URI("ws://" + server), server);
+							URI serverURI = new URI("ws://" + otherServerName);
+							WSClient client = new WSClient(serverURI, 10, 10000, getLogger()) {
+								@Override
+								public void onMessage(String s) {
+									JsonObject json = JsonParser.parseString(s).getAsJsonObject();
+									if(json == null)
+										return;
+									li("Message from server []", json.get(AgentWave.SOURCE_ELEMENT));
+								}
+							};
+							homeServers.put(otherServerName, client);
 						} catch(URISyntaxException e) {
 							e.printStackTrace();
 						}
 			}
 		};
 		starterThread.start();
-	}
-	
-	/**
-	 * Create connections using Websocket Clients to others servers.
-	 * 
-	 * @param serverURI
-	 *            - server address
-	 * @param nickname
-	 *            - server name
-	 */
-	public void ServerClient(URI serverURI, String nickname) {
-		homeServers.put(nickname, createWebsocketClient(serverURI, nickname));
-	}
-	
-	protected WSClient createWebsocketClient(URI serverURI, @SuppressWarnings("unused") String server) {
-		return new WSClient(serverURI, 10, 10000, this.getLogger()) {
-			@Override
-			public void onOpen(ServerHandshake serverHandshake) {
-				li("New region-to-region connection to server", server);
-			}
-			
-			@Override
-			public void onMessage(String s) {
-				JsonObject json = JsonParser.parseString(s).getAsJsonObject();
-				if(json == null)
-					return;
-				li("Message from server []", json.get(AgentWave.SOURCE_ELEMENT));
-			}
-		};
 	}
 	
 	/**
@@ -179,9 +160,6 @@ public class RegionServer extends Unit implements Entity<Node> {
 				break;
 			case CONNECT:
 				connectMessageHandler(json, webSocket);
-				break;
-			case CONTENT:
-				contentMessageHandler(json, message);
 				break;
 			case REQ_LEAVE:
 				reqLeaveMessageHandler(json);
@@ -259,6 +237,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 		return false;
 	}
 	
+	/**
+	 * Prints the status of the server to the log.
+	 */
 	protected void printStatus() {
 		lf("region agents:[] guest agents:[] known servers: []", regionHomeAgents, guestAgents, homeServers.keySet());
 	}
@@ -281,6 +262,11 @@ public class RegionServer extends Unit implements Entity<Node> {
 	@Override
 	protected void le(String message, Object... arguments) {
 		super.le(message, arguments);
+	}
+	
+	@Override
+	protected LoggerClassic getLogger() {
+		return super.getLogger();
 	}
 	
 	/**

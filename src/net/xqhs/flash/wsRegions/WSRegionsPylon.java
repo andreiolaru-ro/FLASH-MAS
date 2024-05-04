@@ -25,6 +25,7 @@ import net.xqhs.flash.webSocket.WebSocketPylon;
  * {@link Pylon} for the WS Regions protocol.
  * 
  * @author Monica Pricope
+ * @author Andrei Olaru
  */
 public class WSRegionsPylon extends DefaultPylonImplementation {
 	/**
@@ -51,12 +52,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			agentList.put(entityName, receiver);
 			lf("Registered entity [].", entityName);
 			printStatus();
-			
-			// Map<String, String> data = new HashMap<>();
-			// data.put("server", HomeServerAddressName);
-			// data.put("action", String.valueOf(ActionType.RECEIVE_MESSAGE));
-			// receiver.receive(new AgentWave(
-			// MessageFactory.createMessage(getEntityName(), entityName, MessageType.CONTENT, data), entityName));
 			return true;
 		}
 		
@@ -76,26 +71,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		@Override
 		public boolean send(AgentWave wave) {
 			return WSRegionsPylon.this.send(wave);
-			
-			// FIXME this is monitoring actions, fix later.
-			// Object obj = JSONValue.parse(content);
-			// if(obj == null)
-			// return false;
-			// JSONObject mesg = (JSONObject) obj;
-			// String type = (String) mesg.get("action");
-			// switch(MessageFactory.ActionType.valueOf(type)) {
-			// case RECEIVE_MESSAGE:
-			// case SEND_MESSAGE:
-			// case ARRIVED_ON_NODE:
-			// monitor.inbox.receive(source, destination, content);
-			// break;
-			// case MOVE_TO_ANOTHER_NODE:
-			// monitor.inbox.receive(source, destination, content);
-			//
-			// break;
-			// default:
-			// break;
-			// }
 		}
 		
 		@Override
@@ -107,41 +82,58 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	/**
 	 * The attribute name of server address of this instance.
 	 */
-	public static final String	HOME_SERVER_ADDRESS_NAME	= "connectTo";
+	public static final String	REGION_SERVER_PARAMETER	= "connectTo";
 	/**
 	 * The attribute name for the server port.
 	 */
-	public static final String	HOME_SERVER_PORT_NAME		= "isServer";
+	public static final String	IS_SERVER_PARAMETER		= "isServer";
+	/**
+	 * The attribute name for the list of other servers.
+	 */
+	public static final String	OTHER_SERVERS_PARAMETER	= "servers";
 	
+	/**
+	 * <code>true</code> if a server should be created.
+	 */
 	protected boolean			hasServer				= false;
+	/**
+	 * The port on which to open the server.
+	 */
 	protected int				serverPort				= -1;
+	/**
+	 * The WS Regions server.
+	 */
 	protected RegionServer		serverEntity			= null;
+	/**
+	 * The other region servers the server should connect to.
+	 */
 	protected ArrayList<String>	serverList				= null;
+	/**
+	 * The address of this server.
+	 */
 	public String				HomeServerAddressName	= null;
+	/**
+	 * The wrapper over the WebSocket client.
+	 */
 	protected WSClient			wsClient				= null;
-	
-	// protected boolean useThread = true;
-	// protected Thread messageThread = null;
-	
-	// protected MonitoringEntity monitor = null;
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
 		
-		if(configuration.isSimple(HOME_SERVER_PORT_NAME)) {
+		if(configuration.isSimple(IS_SERVER_PARAMETER)) {
 			hasServer = true;
-			HomeServerAddressName = configuration.getAValue(HOME_SERVER_PORT_NAME);
+			HomeServerAddressName = configuration.getAValue(IS_SERVER_PARAMETER);
 			serverPort = Integer.parseInt(HomeServerAddressName.split(":")[1]);
 			HomeServerAddressName = WebSocketPylon.WS_PROTOCOL_PREFIX + HomeServerAddressName;
 		}
-		else if(configuration.isSimple(HOME_SERVER_ADDRESS_NAME)) {
+		else if(configuration.isSimple(REGION_SERVER_PARAMETER)) {
 			HomeServerAddressName = WebSocketPylon.WS_PROTOCOL_PREFIX
-					+ configuration.getAValue(HOME_SERVER_ADDRESS_NAME);
+					+ configuration.getAValue(REGION_SERVER_PARAMETER);
 		}
-		if(configuration.isSimple("servers")) {
-			String s = configuration.getAValue("servers");
+		if(configuration.isSimple(OTHER_SERVERS_PARAMETER)) {
+			String s = configuration.getAValue(OTHER_SERVERS_PARAMETER);
 			// s = s.substring(1, s.length()-1);
 			serverList = new ArrayList<>(Arrays.asList(s.split("\\|")));
 			String nickname = null;
@@ -154,7 +146,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			serverList = new ArrayList<>(0);
 		}
 		setUnitName(getName());
-		// setLoggerType(PlatformUtils.platformLogType());
 		return true;
 	}
 	
@@ -164,12 +155,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			serverEntity = new RegionServer(serverPort, serverList, (HomeServerAddressName.split("//"))[1]);
 			serverEntity.start();
 		}
-		
-		// if(monitor == null) {
-		// monitor = new MonitoringEntity(getName() + "-monitor");
-		// monitor.start();
-		// }
-		
 		if(!super.start())
 			return false;
 		
@@ -187,13 +172,8 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	@Override
 	public boolean stop() {
 		super.stop();
-		// if(useThread) {
-		// useThread = false;
-		// messageThread = null;
-		// }
 		if(hasServer)
 			serverEntity.stop();
-		// monitor.stop();
 		printStatus();
 		return true;
 	}
@@ -202,8 +182,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	public boolean addContext(EntityProxy<Node> context) {
 		if(!super.addContext(context))
 			return false;
-		// String nodeName = context.getEntityName();
-		// lf("Added node context ", nodeName);
 		return true;
 	}
 	
@@ -221,12 +199,17 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		return super.getRecommendedShardImplementation(shardName);
 	}
 	
-	protected void processMessage(String jsonString) {
+	/**
+	 * Processes a message received on the WebSocket connection.
+	 * 
+	 * @param message
+	 */
+	protected void processMessage(String message) {
 		JsonObject json;
 		try {
-			json = JsonParser.parseString(jsonString).getAsJsonObject();
+			json = JsonParser.parseString(message).getAsJsonObject();
 		} catch(JsonSyntaxException e) {
-			le("Exception [] when parsing []", e.getStackTrace(), jsonString);
+			le("Exception [] when parsing []", e.getStackTrace(), message);
 			return;
 		}
 		
@@ -252,6 +235,13 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		}
 	}
 	
+	/**
+	 * Sends a message through the WebSocket connection.
+	 * 
+	 * @param wave
+	 *            - the message to send (will be sent as a JSON).
+	 * @return an indication of success.
+	 */
 	protected boolean send(AgentWave wave) {
 		JsonObject json = wave instanceof AgentWaveJson ? ((AgentWaveJson) wave).getJson() : AgentWaveJson.toJson(wave);
 		wsClient.send(json.toString());
@@ -264,8 +254,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	protected void printStatus() {
 		lf("Current state: [] [] client: []. Current entities: ", isRunning() ? "RUNNING" : "STOPPED",
 				hasServer ? "server: " + (serverEntity.isRunning() ? "RUNNING" : "STOPPED") : "no server",
-				wsClient.client.getReadyState(),
-				agentList.keySet());
+				wsClient.client.getReadyState(), agentList.keySet());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -277,11 +266,6 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	@Override
 	protected void lf(String message, Object... arguments) {
 		super.lf(message, arguments);
-	}
-	
-	@Override
-	protected void li(String message, Object... arguments) {
-		super.li(message, arguments);
 	}
 	
 	@Override

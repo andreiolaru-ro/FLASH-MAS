@@ -314,10 +314,10 @@ public class TestClass {
 				// CREATE PYLON
 				WSRegionsPylon pylon_elem = new WSRegionsPylon();
 				MultiTreeMap config = new MultiTreeMap()
-						.addSingleValue(WSRegionsPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
+						.addSingleValue(WSRegionsPylon.REGION_SERVER_PARAMETER, "ws://" + server_name)
 						.addSingleValue("pylon_name", pylon_name);
 				if(isRegionServer) {
-					config.addSingleValue(WSRegionsPylon.HOME_SERVER_PORT_NAME, port_value).addSingleValue("servers",
+					config.addSingleValue(WSRegionsPylon.IS_SERVER_PARAMETER, port_value).addSingleValue("servers",
 							String.join("|", regionServersList));
 					isRegionServer = false;
 				}

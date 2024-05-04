@@ -12,7 +12,6 @@
 package test.wsRegionsDeployment;
 
 import net.xqhs.flash.FlashBoot;
-import net.xqhs.util.logging.MasterLog;
 
 /**
  * Deployment testing.
@@ -65,7 +64,7 @@ public class BootIntense {
 		}
 		
 		// MasterLog.setDefaultLogLevel(Level.OFF);
-		MasterLog.enablePerformanceModeTools(500);
+		// MasterLog.enablePerformanceModeTools(500);
 		// MasterLog.activateGlobalPerformanceMode();
 		System.out.println("."); // to activate console output.
 		
