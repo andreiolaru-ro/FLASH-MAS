@@ -16,6 +16,8 @@ public class BootBridgeAgent {
 	public static void main(String[] args_) {
 		String args = "";
 
+		// schimba ca numele agentB sa fie pentru BridgeAgent si sa se trimita de la A
+		// la C
 		args += " -package wsRegions mihai -loader agent:composite";
 
 		args += " -node nodeA-localhost:8885";
