@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,6 +30,7 @@ import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
@@ -159,86 +161,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
 	 */
 	public WebSocketPylon() {
-		messagingProxy = new WaveMessagingPylonProxy() {
-			/**
-			 * The entity is both: - registered within the local instance which is useful for routing a message back to
-			 * the the {@link ClassicMessageReceiver} instance when it arrives from the server - registered to the
-			 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
-			 * client
-			 *
-			 * @param entityName
-			 *            - the name of the entity
-			 * @param receiver
-			 *            - the {@link ClassicMessageReceiver} instance to receive messages
-			 * @return - an indication of success
-			 */
-			@Override
-			public boolean register(String entityName, WaveReceiver receiver) {
-				if(messageReceivers.containsKey(entityName))
-					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
-				messageReceivers.put(entityName, receiver);
-				JsonObject messageToServer = new JsonObject();
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
-				lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
-				return true;
-			}
-			
-			@Override
-			public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
-				if(!messageReceivers.remove(entityName, registeredReceiver))
-					return false;
-				JsonObject messageToServer = new JsonObject();
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-				messageToServer.addProperty(UNREGISTER_KEY, UNREGISTER_KEY);
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
-				lf("Unregistered entity [] from this pylon []: ", entityName, thisPylon(), messageToServer);
-				return true;
-			}
-			
-			/**
-			 * Send a message to an entity.
-			 *
-			 * @param wave
-			 *            - the wave to send.
-			 * @return - an indication of success
-			 */
-			@Override
-			public boolean send(AgentWave wave) {
-				if(messageReceivers.containsKey(wave.getFirstDestinationElement())) {
-					messageReceivers.get(wave.getFirstDestinationElement()).receive(wave);
-					return true;
-				}
-				JsonObject messageToServer = AgentWaveJson.toJson(wave);
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
-				return true;
-			}
-			
-			@Override
-			public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-				return WebSocketPylon.this.getRecommendedShardImplementation(shardType);
-			}
-			
-			@Override
-			public String getEntityName() {
-				return getName();
-			}
-		};
+		messagingProxy = new WaveMessagingPylonProxyClass(messageReceivers, thisPylon(), nodeName);
 	}
 	
 	/**
@@ -270,7 +193,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 						/**
 						 * Receives a message from the server. The message was previously routed to this websocket
 						 * client address and it is further routed to a specific entity using the
-						 * {@link ClassicMessageReceiver} instance. The entity is searched within the context of this
+						 * {@link WaveReceiver} instance. The entity is searched within the context of this
 						 * support.
 						 *
 						 * @param jsonString
@@ -320,6 +243,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 							le(Arrays.toString(e.getStackTrace()));
 						}
 					};
+
+					if (messagingProxy instanceof WaveMessagingPylonProxyClass)
+						((WaveMessagingPylonProxyClass) messagingProxy).setWebSocketClient(webSocketClient);
 				} catch(URISyntaxException e) {
 					e.printStackTrace();
 					return false;
@@ -439,5 +365,199 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	WebSocketPylon thisPylon() {
 		return this;
+	}
+}
+
+class WaveMessagingPylonProxyClass implements WaveMessagingPylonProxy {
+
+	/**
+	 * The {@link WebSocketClient} instance to use.
+	 */
+	protected WebSocketClient				webSocketClient;
+	/**
+	 * For the entities in the scope of this pylon, the correspondence between their names and their
+	 * {@link ClassicMessageReceiver} instances.
+	 */
+	protected HashMap<String, WaveReceiver>	messageReceivers	= new HashMap<>();
+	/**
+	 * The key in the JSON object which is assigned to the name of the node on which an entity executes (for
+	 * registration messages).
+	 */
+	public static final String				MESSAGE_NODE_KEY	= "nodeName";
+	/**
+	 * The key in the JSON object which is assigned to the name of the entity (for registration messages).
+	 */
+	public static final String				MESSAGE_ENTITY_KEY	= "entityName";
+	/**
+	 * If this key is present, the entity will be unregistered.
+	 */
+	public static final String				UNREGISTER_KEY		= "unregister";
+
+	protected WebSocketPylon				pylon;
+
+	/**
+	 * The name of the node in the context of which this pylon is placed.
+	 */
+	protected String						nodeName;
+
+	public WaveMessagingPylonProxyClass(HashMap<String, WaveReceiver> messageReceivers, WebSocketPylon pylon, String nodeName) {
+		this.messageReceivers = messageReceivers;
+		this.pylon = pylon;
+		this.nodeName = nodeName;
+	}
+
+	/**
+	 * The entity is both: - registered within the local instance which is useful for routing a message back to
+	 * the the {@link WaveReceiver} instance when it arrives from the server - registered to the
+	 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
+	 * client
+	 *
+	 * @param entityName
+	 *            - the name of the entity
+	 * @param receiver
+	 *            - the {@link WaveReceiver} instance to receive messages
+	 * @return - an indication of success
+	 */
+	@Override
+	public boolean register(String entityName, WaveReceiver receiver) {
+		if(messageReceivers.containsKey(entityName))
+			return ler(false, "Entity [] already registered with this pylon [].", entityName, pylon);
+		messageReceivers.put(entityName, receiver);
+		JsonObject messageToServer = new JsonObject();
+		messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
+		messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
+		try {
+			webSocketClient.send(messageToServer.toString());
+		} catch(Exception e) {
+			le("Failed to send message:", (Object[]) e.getStackTrace());
+		}
+		lf("Registered entity []/[] with this pylon []: ", entityName, receiver, pylon, messageToServer);
+		return true;
+	}
+
+	public boolean register(String entityName, WaveReceiver receiver, Map<String, String> bridgeInfo) {
+		if (messageReceivers.containsKey(entityName))
+			return ler(false, "Entity [] already registered with this pylon [].", entityName, pylon);
+		messageReceivers.put(entityName, receiver);
+		JsonObject messageToServer = new JsonObject();
+		messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
+		messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
+
+		if (bridgeInfo != null)
+			for (Entry<String, String> info : bridgeInfo.entrySet()) {
+				messageToServer.addProperty(info.getKey(), info.getValue());
+			}
+
+		try {
+			webSocketClient.send(messageToServer.toString());
+		} catch (Exception e) {
+			le("Failed to send message:", (Object[]) e.getStackTrace());
+		}
+
+		lf("Registered entity []/[] with this pylon []: ", entityName, receiver, pylon, messageToServer);
+		return true;
+	}
+
+	@Override
+	public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
+		if(!messageReceivers.remove(entityName, registeredReceiver))
+			return false;
+		JsonObject messageToServer = new JsonObject();
+		messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
+		messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
+		messageToServer.addProperty(UNREGISTER_KEY, UNREGISTER_KEY);
+		try {
+			webSocketClient.send(messageToServer.toString());
+		} catch(Exception e) {
+			le("Failed to send message:", (Object[]) e.getStackTrace());
+		}
+		lf("Unregistered entity [] from this pylon []: ", entityName, pylon, messageToServer);
+		return true;
+	}
+
+	/**
+	 * Send a message to an entity.
+	 *
+	 * @param wave
+	 *            - the wave to send.
+	 * @return - an indication of success
+	 */
+	@Override
+	public boolean send(AgentWave wave) {
+		if(messageReceivers.containsKey(wave.getFirstDestinationElement())) {
+			messageReceivers.get(wave.getFirstDestinationElement()).receive(wave);
+			return true;
+		}
+		JsonObject messageToServer = AgentWaveJson.toJson(wave);
+		messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
+		try {
+			webSocketClient.send(messageToServer.toString());
+		} catch(Exception e) {
+			le("Failed to send message:", (Object[]) e.getStackTrace());
+		}
+		return true;
+	}
+
+	@Override
+	public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
+		return pylon.getRecommendedShardImplementation(shardType);
+	}
+
+	@Override
+	public String getEntityName() {
+		return pylon.getName();
+	}
+
+	/**
+	 * @return the name of the local node, as configured in
+	 *         {@link DefaultPylonImplementation}.
+	 */
+	protected String getNodeName() {
+		return nodeName;
+	}
+
+	public void setWebSocketClient(WebSocketClient webSocketClient) {
+		this.webSocketClient = webSocketClient;
+	}
+
+	protected void le(String message, Object... arguments) {
+		pylon.le(message, arguments);
+	}
+
+	protected void lw(String message, Object... arguments) {
+		pylon.lw(message, arguments);
+	}
+
+	protected void li(String message, Object... arguments) {
+		pylon.li(message, arguments);
+	}
+
+	protected void lf(String message, Object... arguments) {
+		pylon.lf(message, arguments);
+	}
+
+	protected boolean ler(boolean ret, String message, Object... arguments) {
+		return pylon.ler(ret, message, arguments);
+	}
+}
+
+class InteroperableWaveMessagingPylonProxyClass extends WaveMessagingPylonProxyClass implements InteroperableMessagingPylonProxy {
+
+	/**
+	 * The key in the JSON object which is assigned to the name of the bridge entity
+	 * (for bridge registration messages).
+	 */
+	public static final String MESSAGE_BRIDGE_KEY = "platformPrefix";
+
+	public InteroperableWaveMessagingPylonProxyClass(HashMap<String, WaveReceiver> messageReceivers, WebSocketPylon pylon, String nodeName) {
+		super(messageReceivers, pylon, nodeName);
+	}
+
+	@Override
+	public boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver) {
+		Map<String, String> bridgeInfo = new HashMap<>();
+		bridgeInfo.put(MESSAGE_BRIDGE_KEY, platformPrefix);
+
+		return register(entityName, receiver, bridgeInfo);
 	}
 }

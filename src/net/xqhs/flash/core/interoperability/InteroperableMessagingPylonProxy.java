@@ -1,6 +1,9 @@
-package net.xqhs.flash.core.support;
+package net.xqhs.flash.core.interoperability;
 
-public interface InteroperableMessagingPylonProxy extends MessagingPylonProxy {
+import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
+import net.xqhs.flash.core.support.WaveReceiver;
+
+public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProxy {
 
 	/**
 	 * Registers a bridge entity with the specified name, associating with it a {@link MessageReceiver} instance and an identifier corresponding to 
@@ -11,8 +14,8 @@ public interface InteroperableMessagingPylonProxy extends MessagingPylonProxy {
 	 * @param platformPrefix
 	 *                      - the identifier for the support infrastructure
 	 * @param receiver
-	 *                      - the {@link MessageReceiver} instance to receive messages.
+	 *                      - the {@link WaveReceiver} instance to receive messages.
 	 * @return an indication of success.
 	 */
-	boolean registerBridge(String entityName, String platformPrefix, MessageReceiver receiver);
+	boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver);
 }

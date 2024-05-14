@@ -28,6 +28,7 @@ import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
@@ -73,7 +74,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 * Keep track of all entities within a node context.
 	 */
 	private HashMap<String, List<String>>	nodeToEntities		= new LinkedHashMap<>();
-	
+	/**
+	 * Keep track of all bridge entities within a node context.
+	 */
+	private InteroperabilityRouter interoperabilityRouter		= new InteroperabilityRouter();
+
 	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
 	 * 
@@ -170,7 +175,31 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 					lf("Sent to node: []. ", message);
 					return;
 				}
-				
+
+				// send to bridge
+				String bridgeDestination = interoperabilityRouter.getBridgeName(destination);
+				if (bridgeDestination != null) {
+					lf("Trying to send to bridge entity [].", destination);
+
+					WebSocket bridgeDestinationWebSocket;
+					bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
+					if (bridgeDestinationWebSocket != null) {
+						bridgeDestinationWebSocket.send(message.toString());
+						lf("Sent to agent: []. ", message);
+						return;
+					}
+
+					bridgeDestinationWebSocket = nodeToWebSocket.get(destination);
+					if (bridgeDestinationWebSocket != null) {
+						bridgeDestinationWebSocket.send(message.toString());
+						lf("Sent to node: []. ", message);
+						return;
+					}
+
+					le("Failed to find websocket for the bridge entity [].", destination);
+					return;
+				}
+
 				le("Failed to find websocket for the entity [].", destination);
 				return;
 			}
@@ -219,6 +248,12 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 					nodeToEntities.get(nodeName).add(entityName);
 				}
 				lf("Registered entity [] on []. ", entityName, nodeName);
+			}
+
+			// bridge registration info
+			if (message.has(InteroperableWaveMessagingPylonProxyClass.MESSAGE_BRIDGE_KEY)) {
+				String platformPrefix = message.get(InteroperableWaveMessagingPylonProxyClass.MESSAGE_BRIDGE_KEY).getAsString();
+				interoperabilityRouter.addBridge(entityName, platformPrefix);
 			}
 		}
 		if(!useful)
