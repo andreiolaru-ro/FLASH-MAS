@@ -31,6 +31,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.webSocket.WebSocketPylon.InteroperableWebSocketPylonProxy;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -189,14 +190,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 						return;
 					}
 
-					bridgeDestinationWebSocket = nodeToWebSocket.get(destination);
-					if (bridgeDestinationWebSocket != null) {
-						bridgeDestinationWebSocket.send(message.toString());
-						lf("Sent to node: []. ", message);
-						return;
-					}
-
-					le("Failed to find websocket for the bridge entity [].", destination);
+					le("Failed to find websocket for the bridge entity [] in order to route to [].", bridgeDestination, destination);
 					return;
 				}
 
@@ -251,8 +245,8 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			}
 
 			// bridge registration info
-			if (message.has(InteroperableWaveMessagingPylonProxyClass.MESSAGE_BRIDGE_KEY)) {
-				String platformPrefix = message.get(InteroperableWaveMessagingPylonProxyClass.MESSAGE_BRIDGE_KEY).getAsString();
+			if (message.has(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY)) {
+				String platformPrefix = message.get(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 				interoperabilityRouter.addBridge(entityName, platformPrefix);
 			}
 		}

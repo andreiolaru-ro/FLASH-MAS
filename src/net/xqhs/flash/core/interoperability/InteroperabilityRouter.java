@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InteroperabilityRouter {
-	protected Map<String, String> platformToBridge;
+	protected Map<String, String>	platformToBridge;
+	private static final String		PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
 
 	public boolean hasBridge(String entityName) {
 		if (platformToBridge == null)
@@ -37,6 +38,6 @@ public class InteroperabilityRouter {
 	}
 
 	public static String getPlatformPrefix(String address) {
-		return address.split("/(?!/)")[0];
+		return address.split(PLATFORM_PREFIX_SEPARATOR)[0];
 	}
 }
