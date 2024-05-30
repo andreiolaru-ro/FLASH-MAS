@@ -11,6 +11,7 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.BridgeAgentEvent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -108,8 +109,10 @@ public class BridgeAgent extends Unit implements Agent {
 		if (messagingShards == null)
 			throw new IllegalStateException("No messaging shard present");
 
-		for (MessagingShard msgShard : messagingShards.values())
+		for (MessagingShard msgShard : messagingShards.values()) {
 			msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+			msgShard.signalAgentEvent(new BridgeAgentEvent(AgentEventType.BRIDGE_AGENT_START, "platformPrefix"));
+		}
 
 		li("Agent started");
 		return true;

@@ -14,6 +14,8 @@ package net.xqhs.flash.core.support;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.BridgeAgentEvent;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -166,6 +168,12 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 				classicPylon.unregister(getAgent().getEntityName(), classicInbox);
 			if(wavePylon != null)
 				wavePylon.unregister(getAgent().getEntityName(), waveInbox);
+			break;
+		case BRIDGE_AGENT_START:
+			if (wavePylon == null || !(wavePylon instanceof InteroperableMessagingPylonProxy) || !(event instanceof BridgeAgentEvent))
+				break;
+
+			((InteroperableMessagingPylonProxy) wavePylon).registerBridge(getAgent().getEntityName(), ((BridgeAgentEvent) event).getPlatformPrefix(), waveInbox);
 			break;
 		default:
 			break;
