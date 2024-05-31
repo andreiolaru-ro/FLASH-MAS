@@ -195,6 +195,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 			return register(entityName, receiver, bridgeInfo);
 		}
+
+		@Override
+		public String getPlatformPrefix() {
+			return webSocketServerAddress.split(":(?!/)")[0];
+		}
 	}
 	
 	/**
@@ -223,7 +228,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	/**
 	 * The attribute name for the server port.
 	 */
-	public static final String	WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
+	public static final String	IS_SERVER_PARAMETER				= "isServer";
 	/**
 	 * The prefix for Websocket server address.
 	 */
@@ -419,10 +424,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
-		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
+		if(configuration.isSimple(IS_SERVER_PARAMETER)) {
 			hasServer = true;
-			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
-			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort;
+			webSocketServerAddress = configuration.getAValue(IS_SERVER_PARAMETER);
+			serverPort = Integer.parseInt(webSocketServerAddress.split(":")[1]);
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress;
 		}
 		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);

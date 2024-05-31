@@ -178,7 +178,7 @@ public class BootSimple
 		WebSocketPylon pylon = new WebSocketPylon();
 		pylon.configure(
 				new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
-						.addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_PORT_NAME, "8885"));
+						.addSingleValue(WebSocketPylon.IS_SERVER_PARAMETER, "localhost:8885"));
 		pylon.addContext(node1.asContext());
 		pylon.start();
 		AgentTest one = new AgentTest("One");

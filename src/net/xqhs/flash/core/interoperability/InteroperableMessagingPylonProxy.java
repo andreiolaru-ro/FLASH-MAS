@@ -18,4 +18,9 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	 * @return an indication of success.
 	 */
 	boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver);
+
+	/**
+	 * @return the identifier for the support infrastructure.
+	 */
+	String getPlatformPrefix();
 }

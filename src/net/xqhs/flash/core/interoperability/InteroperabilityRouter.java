@@ -2,42 +2,36 @@ package net.xqhs.flash.core.interoperability;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class InteroperabilityRouter {
-	protected Map<String, String>	platformToBridge;
-	private static final String		PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
+public class InteroperabilityRouter<T> {
+	protected Map<String, T>	platformPrefixToEndpoint;				// ?
 
-	public boolean hasBridge(String entityName) {
-		if (platformToBridge == null)
-			return false;
-		return platformToBridge.containsValue(entityName);
+	private static final String	PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
+
+	public void addEndpoint(String platformPrefix, T entityName) {
+		if (platformPrefixToEndpoint == null)
+			platformPrefixToEndpoint = new HashMap<>();
+
+		platformPrefixToEndpoint.put(platformPrefix, entityName);
 	}
 
-	public boolean canRouteToPlatform(String platformPrefix) {
-		if (platformToBridge == null)
-			return false;
-		return platformToBridge.containsKey(platformPrefix);
-	}
-
-	public void addBridge(String platformPrefix, String entityName) {
-		if (platformToBridge == null)
-			platformToBridge = new HashMap<>();
-
-		platformToBridge.put(platformPrefix, entityName);
-	}
-
-	public String getBridgeName(String destination) {
-		if (platformToBridge == null)
+	public T getEndpoint(String destination) {
+		if (platformPrefixToEndpoint == null || destination == null)
 			return null;
 
-		String bridgeEntity = platformToBridge.get(getPlatformPrefix(destination));
-		if (bridgeEntity == null)
+		T endpoint = platformPrefixToEndpoint.get(getPlatformPrefix(destination));
+		if (endpoint == null)
 			return null;
 
-		return bridgeEntity;
+		return endpoint;
 	}
 
 	public static String getPlatformPrefix(String address) {
 		return address.split(PLATFORM_PREFIX_SEPARATOR)[0];
+	}
+
+	public Set<String> getAllPlatformPrefixes() {
+		return platformPrefixToEndpoint.keySet();
 	}
 }

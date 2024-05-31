@@ -76,9 +76,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 */
 	private HashMap<String, List<String>>	nodeToEntities		= new LinkedHashMap<>();
 	/**
-	 * Keep track of all bridge entities within a node context.
+	 * Keep track of all bridge entities and the platform they can route to
+	 * within the pylon.
 	 */
-	private InteroperabilityRouter interoperabilityRouter		= new InteroperabilityRouter();
+	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
 
 	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
@@ -178,7 +179,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				}
 
 				// send to bridge
-				String bridgeDestination = interoperabilityRouter.getBridgeName(destination);
+				String bridgeDestination = interoperabilityRouter.getEndpoint(destination);
 				if (bridgeDestination != null) {
 					lf("Trying to send to bridge entity [].", destination);
 
@@ -247,7 +248,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			// bridge registration info
 			if (message.has(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY)) {
 				String platformPrefix = message.get(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-				interoperabilityRouter.addBridge(entityName, platformPrefix);
+				interoperabilityRouter.addEndpoint(entityName, platformPrefix);
 			}
 		}
 		if(!useful)
