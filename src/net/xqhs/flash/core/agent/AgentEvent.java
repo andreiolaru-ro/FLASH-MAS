@@ -83,11 +83,6 @@ public class AgentEvent extends MultiValueMap
 		 */
 		SIMULATION_PAUSE(AgentSequenceType.UNORDERED),
 		
-		/**
-		 * Event occurs when the bridge agent starts and the components need to be initialized.
-		 */
-		BRIDGE_AGENT_START(AgentSequenceType.CONSTRUCTIVE),
-		
 		;
 		
 		/**
