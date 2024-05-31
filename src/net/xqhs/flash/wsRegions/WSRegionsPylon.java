@@ -11,6 +11,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
@@ -28,16 +29,9 @@ import net.xqhs.flash.webSocket.WebSocketPylon;
  * @author Andrei Olaru
  */
 public class WSRegionsPylon extends DefaultPylonImplementation {
-	/**
-	 * Agent list, that are located on this node.
-	 */
-	protected Map<String, WaveReceiver> agentList = new HashMap<>();
 	
-	/**
-	 * The proxy offered by this pylon.
-	 */
-	public WaveMessagingPylonProxy messagingProxy = new WaveMessagingPylonProxy() {
-		
+	class WSRegionsPylonProxy implements WaveMessagingPylonProxy {
+
 		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
 			return WSRegionsPylon.this.getRecommendedShardImplementation(shardType);
@@ -67,7 +61,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 			printStatus();
 			return true;
 		}
-		
+
 		@Override
 		public boolean send(AgentWave wave) {
 			return WSRegionsPylon.this.send(wave);
@@ -77,7 +71,36 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		public String getEntityName() {
 			return getName();
 		}
-	};
+	}
+
+	class InteroperableWSRegionsPylonProxy extends WSRegionsPylonProxy implements InteroperableMessagingPylonProxy {
+
+		@Override
+		public boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver) {
+			register(entityName, receiver); // maybe should not call this, entity is already registered normally
+
+			send((AgentWave) new AgentWaveJson().addSourceElements(entityName, Constants.PROTOCOL)
+					.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.REGISTER.toString())
+					.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix));
+
+			return false;
+		}
+
+		@Override
+		public String getPlatformPrefix() {
+			return HomeServerAddressName.split(PLATFORM_PREFIX_SEPARATOR)[0];
+		}
+	}
+
+	/**
+	 * Agent list, that are located on this node.
+	 */
+	protected Map<String, WaveReceiver>	agentList				= new HashMap<>();
+
+	/**
+	 * The proxy offered by this pylon.
+	 */
+	public WaveMessagingPylonProxy		messagingProxy			= new InteroperableWSRegionsPylonProxy();
 	
 	/**
 	 * The attribute name of server address of this instance.

@@ -20,6 +20,8 @@ import com.google.gson.JsonParser;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.json.AgentWaveJson;
@@ -69,6 +71,11 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * Connections with others servers.
 	 */
 	protected final Map<String, WSClient>		homeServers			= Collections.synchronizedMap(new HashMap<>());
+	/**
+	 * Keep track of all bridge entities and the platform they can route to
+	 * within the pylon.
+	 */
+	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
 	/**
 	 * The thread used to establish connections to other region servers.
 	 */
@@ -342,6 +349,14 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 */
 	protected void registerMessageHandler(JsonObject msg, WebSocket webSocket) {
 		String entity = extractSource(msg);
+		if (msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) != null) {
+			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
+			interoperabilityRouter.addEndpoint(entity, platformPrefix);
+
+			// bridge was already registered before
+			return;
+		}
+
 		lf("Received REGISTER message from new agent ", entity);
 		if(regionHomeAgents.put(entity,
 				new AgentStatus(entity, webSocket, AgentStatus.Status.HOME, getName())) != null)
@@ -509,6 +524,23 @@ public class RegionServer extends Unit implements Entity<Node> {
 				target, msg.get(AgentWave.CONTENT));
 		if(Dbg.DEBUG_WSREGIONS.toBool())
 			printStatus();
+
+		routeMessage(message, target, true);
+	}
+
+	/**
+	 * handler for normal messages between entities.
+	 * 
+	 * @param msg
+	 *            - the message.
+	 * @param message
+	 *            - the raw message, as a {@link String}.
+	 * @param target
+	 *            - the address of the entity the message should be routed to
+	 * @param allowRoutingToBridge
+	 *            - allow the message to be routed to a bridge, if the bridge exists
+	 */
+	protected void routeMessage(String message, String target, boolean allowRoutingToBridge) {
 		AgentStatus ag = regionHomeAgents.get(target);
 		AgentStatus agm = guestAgents.get(target);
 		if(ag != null) {
@@ -535,6 +567,17 @@ public class RegionServer extends Unit implements Entity<Node> {
 			sendMessage(agm.getClientConnection(), target, message);
 		}
 		else {
+			if (allowRoutingToBridge) {
+				// send to bridge
+				String bridgeDestination = interoperabilityRouter.getEndpoint(target);
+				if (bridgeDestination != null) {
+					lf("Trying to send to bridge entity [].", bridgeDestination);
+					routeMessage(message, bridgeDestination, false);
+					lf("Sent to agent: []. ", message); // TODO: change log message
+					return;
+				}
+			}
+
 			String regServer = null;
 			try {
 				regServer = extractHomeRegion(target);

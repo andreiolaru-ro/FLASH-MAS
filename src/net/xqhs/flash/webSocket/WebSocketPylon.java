@@ -182,12 +182,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 	class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
 
-		/**
-		 * The key in the JSON object which is assigned to the name of the bridge entity
-		 * (for bridge registration messages).
-		 */
-		public static final String MESSAGE_BRIDGE_KEY = "platformPrefix";
-
 		@Override
 		public boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver) {
 			Map<String, String> bridgeInfo = new HashMap<>();
@@ -198,7 +192,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 		@Override
 		public String getPlatformPrefix() {
-			return webSocketServerAddress.split(":(?!/)")[0];
+			return webSocketServerAddress.split(PLATFORM_PREFIX_SEPARATOR)[0];
 		}
 	}
 	

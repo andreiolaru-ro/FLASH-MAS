@@ -29,9 +29,9 @@ import com.google.gson.JsonSyntaxException;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.webSocket.WebSocketPylon.InteroperableWebSocketPylonProxy;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -181,13 +181,13 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				// send to bridge
 				String bridgeDestination = interoperabilityRouter.getEndpoint(destination);
 				if (bridgeDestination != null) {
-					lf("Trying to send to bridge entity [].", destination);
+					lf("Trying to send to bridge entity [].", bridgeDestination);
 
 					WebSocket bridgeDestinationWebSocket;
 					bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
 					if (bridgeDestinationWebSocket != null) {
 						bridgeDestinationWebSocket.send(message.toString());
-						lf("Sent to agent: []. ", message);
+						lf("Sent to agent: []. ", message); // TODO: change log message
 						return;
 					}
 
@@ -246,8 +246,8 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			}
 
 			// bridge registration info
-			if (message.has(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY)) {
-				String platformPrefix = message.get(InteroperableWebSocketPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
+			if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY)) {
+				String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 				interoperabilityRouter.addEndpoint(entityName, platformPrefix);
 			}
 		}
