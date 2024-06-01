@@ -75,7 +75,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 * Keep track of all bridge entities and the platform they can route to
 	 * within the pylon.
 	 */
-	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
+	private InteroperabilityRouter<String>		interoperabilityRouter	= new InteroperabilityRouter<>();
 	/**
 	 * The thread used to establish connections to other region servers.
 	 */
@@ -351,10 +351,10 @@ public class RegionServer extends Unit implements Entity<Node> {
 		String entity = extractSource(msg);
 		if (msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) != null) {
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-			interoperabilityRouter.addEndpoint(entity, platformPrefix);
+			interoperabilityRouter.addEndpoint(platformPrefix, entity);
 
-			// bridge was already registered before
-			return;
+			if (regionHomeAgents.containsKey(entity))
+				return;
 		}
 
 		lf("Received REGISTER message from new agent ", entity);
@@ -529,7 +529,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	}
 
 	/**
-	 * handler for normal messages between entities.
+	 * Router for normal messages between entities.
 	 * 
 	 * @param msg
 	 *            - the message.
@@ -571,9 +571,8 @@ public class RegionServer extends Unit implements Entity<Node> {
 				// send to bridge
 				String bridgeDestination = interoperabilityRouter.getEndpoint(target);
 				if (bridgeDestination != null) {
-					lf("Trying to send to bridge entity [].", bridgeDestination);
+					lf("Trying to send message to bridge entity [].", bridgeDestination);
 					routeMessage(message, bridgeDestination, false);
-					lf("Sent to agent: []. ", message); // TODO: change log message
 					return;
 				}
 			}

@@ -92,61 +92,31 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		 */
 		@Override
 		public boolean register(String entityName, WaveReceiver receiver) {
-			if (messageReceivers.containsKey(entityName))
-				return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
-			messageReceivers.put(entityName, receiver);
+			return register(entityName, receiver, null);
+		}
+
+		public boolean register(String entityName, WaveReceiver receiver, Map<String, String> additionalInfo) {
+			if (receiver != null) {
+				if (messageReceivers.containsKey(entityName))
+					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
+				messageReceivers.put(entityName, receiver);
+			}
+
 			JsonObject messageToServer = new JsonObject();
 			messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
 			messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
+
+			if (additionalInfo != null)
+				for (Entry<String, String> info : additionalInfo.entrySet()) {
+					messageToServer.addProperty(info.getKey(), info.getValue());
+				}
+
 			try {
 				webSocketClient.send(messageToServer.toString());
 			} catch (Exception e) {
 				le("Failed to send message:", (Object[]) e.getStackTrace());
 			}
 			lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
-			return true;
-		}
-
-		public boolean register(String entityName, WaveReceiver receiver, Map<String, String> additionalInfo) {
-			if (messageReceivers.containsKey(entityName))
-				return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
-			messageReceivers.put(entityName, receiver);
-			JsonObject messageToServer = new JsonObject();
-			messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-			messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-
-			if (additionalInfo != null)
-				for (Entry<String, String> info : additionalInfo.entrySet()) {
-					messageToServer.addProperty(info.getKey(), info.getValue());
-				}
-
-			try {
-				webSocketClient.send(messageToServer.toString());
-			} catch (Exception e) {
-				le("Failed to send message:", (Object[]) e.getStackTrace());
-			}
-
-			lf("Registered entity [] with this pylon []: []", entityName, thisPylon(), messageToServer);
-			return true;
-		}
-
-		public boolean register(String entityName, Map<String, String> additionalInfo) {
-			JsonObject messageToServer = new JsonObject();
-			messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-			messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-
-			if (additionalInfo != null)
-				for (Entry<String, String> info : additionalInfo.entrySet()) {
-					messageToServer.addProperty(info.getKey(), info.getValue());
-				}
-
-			try {
-				webSocketClient.send(messageToServer.toString());
-			} catch (Exception e) {
-				le("Failed to send message:", (Object[]) e.getStackTrace());
-			}
-
-			lf("Registered entity [] with this pylon []: [] ", entityName, thisPylon(), messageToServer);
 			return true;
 		}
 
@@ -203,11 +173,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
-		public boolean registerBridge(String entityName, String platformPrefix) {
+		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {
 			Map<String, String> bridgeInfo = new HashMap<>();
 			bridgeInfo.put(MESSAGE_BRIDGE_KEY, platformPrefix);
 
-			return register(entityName, bridgeInfo);
+			return register(entityName, waveReceiver, bridgeInfo);
 		}
 
 		@Override

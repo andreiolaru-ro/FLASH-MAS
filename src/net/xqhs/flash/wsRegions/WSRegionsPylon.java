@@ -76,7 +76,10 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	class InteroperableWSRegionsPylonProxy extends WSRegionsPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
-		public boolean registerBridge(String entityName, String platformPrefix) {
+		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {
+			if (waveReceiver != null)
+				register(entityName, waveReceiver);
+
 			send((AgentWave) new AgentWaveJson().addSourceElements(entityName, Constants.PROTOCOL)
 					.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.REGISTER.toString())
 					.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix));

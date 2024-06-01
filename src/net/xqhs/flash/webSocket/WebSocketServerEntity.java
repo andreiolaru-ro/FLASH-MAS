@@ -210,7 +210,21 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		} catch(Exception e) {
 			nodeName = "null";
 		}
-		
+
+		// bridge registration message
+		if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) && message.has(WebSocketPylon.MESSAGE_ENTITY_KEY)) {
+			String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
+			String entityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
+			interoperabilityRouter.addEndpoint(platformPrefix, entityName);
+			lf("Registered bridge entity [] on []. ", entityName, nodeName);
+			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(entityName) && entityToWebSocket.get(entityName) == webSocket) {
+				if (!useful)
+					le("Message could not be used []", message);
+				printState();
+				return;
+			}
+		}
+
 		// node registration message
 		if(!nodeToWebSocket.containsKey(nodeName)) {
 			nodeToWebSocket.put(nodeName, webSocket);
@@ -234,6 +248,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				else {
 					entityToWebSocket.remove(entityName, webSocket);
 					nodeToEntities.get(nodeName).remove(entityName);
+					interoperabilityRouter.removeBridge(entityName);
 					lf("Unregistered entity [] on []. ", entityName, nodeName);
 				}
 			}
@@ -243,12 +258,6 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 					nodeToEntities.get(nodeName).add(entityName);
 				}
 				lf("Registered entity [] on []. ", entityName, nodeName);
-			}
-
-			// bridge registration info
-			if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY)) {
-				String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-				interoperabilityRouter.addEndpoint(entityName, platformPrefix);
 			}
 		}
 		if(!useful)
