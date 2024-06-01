@@ -1,7 +1,6 @@
 package net.xqhs.flash.core.interoperability;
 
 import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
-import net.xqhs.flash.core.support.WaveReceiver;
 
 public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProxy {
 
@@ -11,7 +10,7 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	public final String	MESSAGE_BRIDGE_KEY			= "platformPrefix";
 
 	/**
-	 * The separator for the platform prefix and the port.
+	 * The separator between the platform prefix and the port.
 	 */
 	public final String	PLATFORM_PREFIX_SEPARATOR	= ":(?!/)";
 
@@ -22,11 +21,9 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	 *              - the name of the bridge entity
 	 * @param platformPrefix
 	 *              - the identifier for the support infrastructure
-	 * @param receiver
-	 *              - the {@link WaveReceiver} instance to receive messages.
 	 * @return an indication of success.
 	 */
-	boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver);
+	boolean registerBridge(String entityName, String platformPrefix);
 
 	/**
 	 * @return the identifier for the support infrastructure.

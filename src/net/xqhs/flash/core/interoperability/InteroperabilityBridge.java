@@ -66,6 +66,8 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon>, Shard
 
 			if (msgShard != null)
 				return msgShard.sendMessage((AgentWave) event);
+
+			le("Can't route to [].", destination);
 		}
 
 		return false;
@@ -81,7 +83,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon>, Shard
 
 		for (InteroperableMessagingPylonProxy pylonProxy : interoperablePylonProxies) {
 			for (String platformPrefix : interoperabilityRouter.getAllPlatformPrefixes()) {
-				pylonProxy.registerBridge(getName(), platformPrefix, null); // TODO
+				pylonProxy.registerBridge(getName(), platformPrefix);
 			}
 		}
 
@@ -93,6 +95,13 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon>, Shard
 	public boolean stop() {
 		for (MessagingShard msgShard : messagingShards.values())
 			msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+
+		// TODO
+		for (InteroperableMessagingPylonProxy pylonProxy : interoperablePylonProxies) {
+			for (String platformPrefix : interoperabilityRouter.getAllPlatformPrefixes()) {
+//				pylonProxy.unregisterBridge(getName(), platformPrefix); // TODO
+			}
+		}
 		li("Agent stopped");
 		return false;
 	}
@@ -121,6 +130,8 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon>, Shard
 		lf("Context added: ", context.getEntityName());
 
 		messagingShards.put(recommendedShard, msgShard);
+
+		// TODO: add context with a class InteroperabilityBridgeShardContainer implements ShardContainer, Serializable
 		msgShard.addContext(new ShardContainer() {
 			@Override
 			public String getEntityName() {

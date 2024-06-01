@@ -126,7 +126,27 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				le("Failed to send message:", (Object[]) e.getStackTrace());
 			}
 
-			lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
+			lf("Registered entity [] with this pylon []: []", entityName, thisPylon(), messageToServer);
+			return true;
+		}
+
+		public boolean register(String entityName, Map<String, String> additionalInfo) {
+			JsonObject messageToServer = new JsonObject();
+			messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
+			messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
+
+			if (additionalInfo != null)
+				for (Entry<String, String> info : additionalInfo.entrySet()) {
+					messageToServer.addProperty(info.getKey(), info.getValue());
+				}
+
+			try {
+				webSocketClient.send(messageToServer.toString());
+			} catch (Exception e) {
+				le("Failed to send message:", (Object[]) e.getStackTrace());
+			}
+
+			lf("Registered entity [] with this pylon []: [] ", entityName, thisPylon(), messageToServer);
 			return true;
 		}
 
@@ -183,11 +203,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
-		public boolean registerBridge(String entityName, String platformPrefix, WaveReceiver receiver) {
+		public boolean registerBridge(String entityName, String platformPrefix) {
 			Map<String, String> bridgeInfo = new HashMap<>();
 			bridgeInfo.put(MESSAGE_BRIDGE_KEY, platformPrefix);
 
-			return register(entityName, receiver, bridgeInfo);
+			return register(entityName, bridgeInfo);
 		}
 
 		@Override
