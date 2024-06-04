@@ -2,7 +2,9 @@ package net.xqhs.flash.core.interoperability;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
@@ -44,6 +46,12 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		};
 	}
 
+	/**
+	 * This method is called when the bridge receives a message in order to further route it.
+	 *
+	 * @param wave
+	 *            - the message to route.
+	 */
 	protected void receiveWave(AgentWave wave) {
 		li("Routing [] through bridge [].", wave.toString(), getName());
 
@@ -95,7 +103,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 			return false;
 
 		InteroperableMessagingPylonProxy pylonProxy = (InteroperableMessagingPylonProxy) context;
-		interoperabilityRouter.addEndpoint(pylonProxy.getPlatformPrefix(), pylonProxy);
+		interoperabilityRouter.addRoutingDestinationForPlatform(pylonProxy.getPlatformPrefix(), pylonProxy);
 
 		lf("Context added for bridge entity []: []", getName(), context.getEntityName());
 		return true;
@@ -103,6 +111,13 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 
 	@Override
 	public boolean removeContext(EntityProxy<Pylon> context) {
+		if (!(context instanceof InteroperableMessagingPylonProxy))
+			return false;
+
+		InteroperableMessagingPylonProxy pylonProxy = (InteroperableMessagingPylonProxy) context;
+		interoperabilityRouter.removeRoutingDestinationForPlatform(pylonProxy.getPlatformPrefix(), pylonProxy);
+
+		lf("Context removed for bridge entity []: []", getName(), context.getEntityName());
 		return false;
 	}
 
@@ -115,6 +130,8 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		if (context instanceof MessagingPylonProxy)
+			return removeContext((MessagingPylonProxy) context);
 		return false;
 	}
 

@@ -12,7 +12,7 @@ public class InteroperabilityRouter<T> {
 
 	private static final String	PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
 
-	public void addEndpoint(String platformPrefix, T entityName) {
+	public void addRoutingDestinationForPlatform(String platformPrefix, T entityName) {
 		if (platformPrefixToRoutingDestination == null)
 			platformPrefixToRoutingDestination = new HashMap<>();
 
@@ -57,5 +57,12 @@ public class InteroperabilityRouter<T> {
 		}
 
 		return foundBridge;
+	}
+
+	public boolean removeRoutingDestinationForPlatform(String platformPrefix, T pylonProxy) {
+		if (platformPrefixToRoutingDestination == null)
+			return true;
+
+		return platformPrefixToRoutingDestination.remove(platformPrefix, pylonProxy);
 	}
 }

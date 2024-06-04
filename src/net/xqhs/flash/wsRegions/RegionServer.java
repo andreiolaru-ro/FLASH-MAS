@@ -355,7 +355,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		String entity = extractSource(msg);
 		if (msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) != null) {
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-			interoperabilityRouter.addEndpoint(platformPrefix, entity);
+			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entity);
 
 			// register bridge for all regions
 			for (Entry<String, WSClient> homeServer : homeServers.entrySet())
