@@ -18,20 +18,20 @@ public class BootBridgeAgent {
 
 		// schimba ca numele agentB sa fie pentru BridgeAgent si sa se trimita de la A
 		// la C
-		args += " -package wsRegions mihai -loader agent:composite";
+		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;bridge;agent";
 
-		args += " -node nodeA-localhost:8885";
-		args += " -pylon WSRegions:pylonA1 isServer:localhost:8885";
-		args += " -pylon webSocket:pylonA2 serverPort:8886";
-		args += " -agent :agentA-localhost:8885 classpath:BridgeAgent ping:agentD pong:agentB-localhost:8885 in-context-of:WSRegions:pylonA1";
+		args += " -node nodeB";
+		args += " -pylon WSRegions:pylonB1 isServer:localhost:8885";
+		args += " -pylon webSocket:pylonB2 isServer:localhost:8886";
+		args += " -bridge interoperability: in-context-of:pylonB1";
 
-		args += " -node nodeB-localhost:8885";
-		args += " -pylon WSRegions:pylonB connectTo:localhost:8885";
-		args += " -agent :agentB-localhost:8885 -shard messaging";
+		args += " -node nodeA";
+		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
+		args += " -agent :agentA -shard messaging";
 
-		args += " -node nodeD";
-		args += " -pylon webSocket:pylonD connectTo:ws://localhost:8886";
-		args += " -agent agentD classpath:AgentPingPong sendTo:agentA-localhost:8885";
+		args += " -node nodeC";
+		args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
+		args += " -agent agentC classpath:AgentPingPong sendTo:agentA";
 
 		FlashBoot.main(args.split(" "));
 	}

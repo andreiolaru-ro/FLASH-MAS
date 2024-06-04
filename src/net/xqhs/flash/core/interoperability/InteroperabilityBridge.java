@@ -2,8 +2,6 @@ package net.xqhs.flash.core.interoperability;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
@@ -47,44 +45,24 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 	}
 
 	protected void receiveWave(AgentWave wave) {
-		if (!getName().equals(wave.getFirstDestinationElement()))
-			// FIXME use log
-			throw new IllegalStateException(
-					"The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT)
-							+ ") is not the address of this agent (" + getName() + ")");
-		
-		// already routed to this agent
-		wave.removeFirstDestinationElement();
-		
-		if(!wave.getCompleteSource().startsWith(wave.getCompleteSource().split(AgentWave.ADDRESS_SEPARATOR, 2)[0]))
-			// FIXME use log
-			throw new IllegalStateException(
-					"Source endpoint (" + wave.getCompleteSource() + ") does not start with the address of this agent ("
-							+ wave.getCompleteSource().split(AgentWave.ADDRESS_SEPARATOR, 2)[0] + ")");
+		li("Routing [] through bridge [].", wave.toString(), getName());
 
-		postBridgeEvent(wave);
-	}
+		String destination = wave.getCompleteDestination();
+		InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getRoutingDestination(destination);
 
-	public boolean postBridgeEvent(AgentEvent event) {
-		li("Routing [] through bridge [].", event.toString(), getName());
-
-		if (event.getType().equals(AgentEventType.AGENT_WAVE)) {
-			String destination = ((AgentWave) event).getCompleteDestination();
-			InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getEndpoint(destination);
-
-			if (pylonProxy != null)
-				return pylonProxy.send((AgentWave) event);
-
-			le("Can't route to [].", destination);
+		if (pylonProxy != null) {
+			le("Found routing destination [] for [].", pylonProxy, wave.toString());
+			pylonProxy.send(wave);
+			return;
 		}
 
-		le("Can't route [].", event.toString());
-		return false;
+		le("Can't find routing destination for [].", wave.toString());
 	}
 
 	@Override
 	public boolean start() {
-		for (InteroperableMessagingPylonProxy pylonProxy : interoperabilityRouter.getAllEndpoints()) {
+		li("Starting bridge entity [].", getName());
+		for (InteroperableMessagingPylonProxy pylonProxy : interoperabilityRouter.getAllDestinations()) {
 			boolean registerEntity = true;
 			for (String platformPrefix : interoperabilityRouter.getAllPlatformPrefixes()) {
 				pylonProxy.registerBridge(getName(), registerEntity ? waveInbox : null, platformPrefix);
@@ -92,16 +70,17 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 			}
 		}
 
-		li("Bridge started");
+		li("Bridge entity [] started successfully.", getName());
 		return true;
 	}
 
 	@Override
 	public boolean stop() {
-		for (InteroperableMessagingPylonProxy pylonProxy : interoperabilityRouter.getAllEndpoints())
+		li("Stopping bridge entity [].", getName());
+		for (InteroperableMessagingPylonProxy pylonProxy : interoperabilityRouter.getAllDestinations())
 			pylonProxy.unregister(getName(), waveInbox);
 
-		li("Bridge stopped");
+		li("Bridge entity [] stopped successfully.", getName());
 		return false;
 	}
 
@@ -118,7 +97,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		InteroperableMessagingPylonProxy pylonProxy = (InteroperableMessagingPylonProxy) context;
 		interoperabilityRouter.addEndpoint(pylonProxy.getPlatformPrefix(), pylonProxy);
 
-		lf("Context added: ", context.getEntityName());
+		lf("Context added for bridge entity []: []", getName(), context.getEntityName());
 		return true;
 	}
 

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -164,6 +165,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 			switch(MessageType.valueOf(type)) {
 			case REGISTER:
 				registerMessageHandler(json, webSocket);
+				break;
+			case UNREGISTER:
+				unregisterMessageHandler(json, webSocket);
 				break;
 			case CONNECT:
 				connectMessageHandler(json, webSocket);
@@ -332,7 +336,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 */
 	protected String extractHomeRegion(String endpoint) {
 		try {
-			return endpoint.split("-")[1];
+			return endpoint.split("://")[1].split(":")[0];
 		} catch(Exception e) {
 			le("Unable to parse endpoint for home region []", endpoint);
 			return null;
@@ -353,7 +357,14 @@ public class RegionServer extends Unit implements Entity<Node> {
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 			interoperabilityRouter.addEndpoint(platformPrefix, entity);
 
-			if (regionHomeAgents.containsKey(entity))
+			// register bridge for all regions
+			for (Entry<String, WSClient> homeServer : homeServers.entrySet())
+				sendMessage(homeServer.getValue().client, (AgentWaveJson) new AgentWaveJson().addSourceElements(entity, Constants.PROTOCOL)
+						.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.REGISTER.toString())
+						.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix)
+						.add(InteroperableMessagingPylonProxy.IS_REMOTE, "true"));
+
+			if (regionHomeAgents.containsKey(entity) || msg.get(InteroperableMessagingPylonProxy.IS_REMOTE) != null)
 				return;
 		}
 
@@ -361,6 +372,41 @@ public class RegionServer extends Unit implements Entity<Node> {
 		if(regionHomeAgents.put(entity,
 				new AgentStatus(entity, webSocket, AgentStatus.Status.HOME, getName())) != null)
 			le("An agent with the name [] already existed!", entity);
+		printStatus();
+	}
+	
+	/**
+	 * Handles the case when a new agent unregisters.
+	 * 
+	 * @param msg
+	 *            - the message received.
+	 * @param webSocket
+	 *            - the connection on which the message was received.
+	 */
+	private void unregisterMessageHandler(JsonObject msg, WebSocket webSocket) {
+		String entity = extractSource(msg);
+		lf("Received UNREGISTER message from agent ", entity);
+		AgentStatus ag = regionHomeAgents.get(entity);
+		if (ag != null) {
+			regionHomeAgents.remove(entity);
+			if (interoperabilityRouter.removeBridge(entity)) {
+				for (Entry<String, WSClient> homeServer : homeServers.entrySet())
+					sendMessage(homeServer.getValue().client, (AgentWaveJson) new AgentWaveJson().addSourceElements(entity, Constants.PROTOCOL)
+							.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.UNREGISTER.toString()));
+			}
+		} else if (guestAgents.remove(entity) != null) {
+			String homeServer = extractHomeRegion(entity);
+			if (homeServers.containsKey(homeServer))
+				sendMessage(homeServers.get(homeServer).client,
+						(AgentWaveJson) new AgentWaveJson().addSourceElements(entity, Constants.PROTOCOL)
+								.add(Constants.EVENT_TYPE_KEY, MessageType.UNREGISTER.toString()));
+			else
+				le("Region server [] not connected; known servers: ", homeServer, homeServers.keySet());
+		} else if (interoperabilityRouter.removeBridge(entity)) {
+			le("Unregistered remote bridge [].", entity);
+		} else
+			le("Unable to identify agent [].", entity);
+
 		printStatus();
 	}
 	
@@ -524,23 +570,6 @@ public class RegionServer extends Unit implements Entity<Node> {
 				target, msg.get(AgentWave.CONTENT));
 		if(Dbg.DEBUG_WSREGIONS.toBool())
 			printStatus();
-
-		routeMessage(message, target, true);
-	}
-
-	/**
-	 * Router for normal messages between entities.
-	 * 
-	 * @param msg
-	 *            - the message.
-	 * @param message
-	 *            - the raw message, as a {@link String}.
-	 * @param target
-	 *            - the address of the entity the message should be routed to
-	 * @param allowRoutingToBridge
-	 *            - allow the message to be routed to a bridge, if the bridge exists
-	 */
-	protected void routeMessage(String message, String target, boolean allowRoutingToBridge) {
 		AgentStatus ag = regionHomeAgents.get(target);
 		AgentStatus agm = guestAgents.get(target);
 		if(ag != null) {
@@ -567,14 +596,32 @@ public class RegionServer extends Unit implements Entity<Node> {
 			sendMessage(agm.getClientConnection(), target, message);
 		}
 		else {
-			if (allowRoutingToBridge) {
-				// send to bridge
-				String bridgeDestination = interoperabilityRouter.getEndpoint(target);
-				if (bridgeDestination != null) {
-					lf("Trying to send message to bridge entity [].", bridgeDestination);
-					routeMessage(message, bridgeDestination, false);
+			// send to bridge
+			String bridgeDestination = interoperabilityRouter.getRoutingDestination(target);
+			if (bridgeDestination != null) {
+				lf("Trying to send message to bridge entity [].", bridgeDestination);
+
+				AgentStatus bridge = regionHomeAgents.get(bridgeDestination);
+				if (bridge != null) {
+					sendMessage(bridge.getClientConnection(), bridgeDestination, message);
+					lf("Sent message to bridge entity [].", bridgeDestination);
 					return;
 				}
+
+				String regServer = null;
+				try {
+					regServer = extractHomeRegion(bridgeDestination);
+				} catch (Exception e) {
+					le("Unable to parse destination []", bridgeDestination);
+					return;
+				}
+				dbg(Dbg.DEBUG_WSREGIONS, "Bridge [] location isn't known. Sending message to home Region Server []", bridgeDestination, regServer);
+				if (homeServers.containsKey(regServer))
+					sendMessage(homeServers.get(regServer).client, bridgeDestination, message);
+				else
+					le("Region server [] not connected; known servers: ", regServer, homeServers.keySet());
+
+				return;
 			}
 
 			String regServer = null;

@@ -51,6 +51,11 @@ public class Constants {
 		 */
 		REGISTER,
 		/**
+		 * Message sent from agent to the Region-Server for unregistering. The agent wanting to unregister
+		 * is the source of the message.
+		 */
+		UNREGISTER,
+		/**
 		 * Message sent from new arrived agent to its host Region-Server.
 		 */
 		CONNECT,

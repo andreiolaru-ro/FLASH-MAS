@@ -4,30 +4,30 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class InteroperabilityRouter<T> {
-	protected Map<String, T>	platformPrefixToEndpoint;				// rename ?
+	protected Map<String, T>	platformPrefixToRoutingDestination;
 
 	private static final String	PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
 
 	public void addEndpoint(String platformPrefix, T entityName) {
-		if (platformPrefixToEndpoint == null)
-			platformPrefixToEndpoint = new HashMap<>();
+		if (platformPrefixToRoutingDestination == null)
+			platformPrefixToRoutingDestination = new HashMap<>();
 
-		platformPrefixToEndpoint.put(platformPrefix, entityName);
+		platformPrefixToRoutingDestination.put(platformPrefix, entityName);
 	}
 
-	public T getEndpoint(String destination) {
-		if (platformPrefixToEndpoint == null || destination == null)
+	public T getRoutingDestination(String finalDestination) {
+		if (platformPrefixToRoutingDestination == null || finalDestination == null)
 			return null;
 
-		T endpoint = platformPrefixToEndpoint.get(getPlatformPrefixFromAddress(destination));
-		if (endpoint == null)
+		T routingDestination = platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination));
+		if (routingDestination == null)
 			return null;
 
-		return endpoint;
+		return routingDestination;
 	}
 
 	private static String getPlatformPrefixFromAddress(String address) {
@@ -35,22 +35,27 @@ public class InteroperabilityRouter<T> {
 	}
 
 	public Set<String> getAllPlatformPrefixes() {
-		return platformPrefixToEndpoint.keySet();
+		return platformPrefixToRoutingDestination.keySet();
 	}
 
-	public Collection<T> getAllEndpoints() {
-		return platformPrefixToEndpoint.values();
+	public Collection<T> getAllDestinations() {
+		return platformPrefixToRoutingDestination.values();
 	}
 
-	public void removeBridge(String entityName) {
-		if (!platformPrefixToEndpoint.containsValue(entityName))
-			return;
+	public boolean removeBridge(String entityName) {
+		if (!platformPrefixToRoutingDestination.containsValue(entityName))
+			return false;
 
-		Iterator<Entry<String, T>> iterator = platformPrefixToEndpoint.entrySet().iterator();
+		Iterator<Entry<String, T>> iterator = platformPrefixToRoutingDestination.entrySet().iterator();
+		boolean foundBridge = false;
 		while (iterator.hasNext()) {
 			Entry<String, T> entry = iterator.next();
-			if (entityName.equals(entry.getValue()))
+			if (entityName.equals(entry.getValue())) {
 				iterator.remove();
+				foundBridge = true;
+			}
 		}
+
+		return foundBridge;
 	}
 }

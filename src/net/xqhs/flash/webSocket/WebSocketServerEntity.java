@@ -179,7 +179,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				}
 
 				// send to bridge
-				String bridgeDestination = interoperabilityRouter.getEndpoint(destination);
+				String bridgeDestination = interoperabilityRouter.getRoutingDestination(destination);
 				if (bridgeDestination != null) {
 					lf("Trying to send to bridge entity [].", bridgeDestination);
 

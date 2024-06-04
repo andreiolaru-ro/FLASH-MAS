@@ -57,6 +57,10 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 				return false;
 			}
 			agentList.remove(entityName);
+
+			send((AgentWave) new AgentWaveJson().addSourceElements(entityName, Constants.PROTOCOL)
+					.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.UNREGISTER.toString()));
+
 			lf("Entity [] unregistered.", entityName);
 			printStatus();
 			return true;

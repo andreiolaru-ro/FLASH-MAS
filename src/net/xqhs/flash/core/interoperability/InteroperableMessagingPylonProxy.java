@@ -16,6 +16,11 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	public final String	PLATFORM_PREFIX_SEPARATOR	= ":(?!/)";
 
 	/**
+	 * The key used for the wsRegions protocol for registering bridge only as a bridge and not as a normal entity.
+	 */
+	public final String IS_REMOTE = "isRemote";
+
+	/**
 	 * Registers a bridge entity with the specified name, associating with it a {@link WaveReceiver} instance
 	 * and an identifier corresponding to the support infrastructure the bridge entity can route messages to.
 	 * 
