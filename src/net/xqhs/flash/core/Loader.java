@@ -15,6 +15,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -370,6 +372,11 @@ public interface Loader<T extends Entity<?>>
 	static String toPackageName(String s) {
 		if(s.equals(s.toUpperCase())) // name is all-caps
 			return s.toLowerCase();
-		return s.substring(0, 1).toLowerCase() + s.substring(1);
+		if(!Character.isUpperCase(s.charAt(0))) // name starts with lower case -> leave it like that
+			return s;
+		Matcher m = Pattern.compile("[A-Z]+").matcher(s);
+		m.find(); // must match because tested before
+		int nCaps = m.group().length() - 1;
+		return s.substring(0, nCaps).toLowerCase() + s.substring(nCaps);
 	}
 }
