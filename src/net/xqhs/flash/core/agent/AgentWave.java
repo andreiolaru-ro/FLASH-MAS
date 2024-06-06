@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 /**
@@ -415,7 +416,7 @@ public class AgentWave extends AgentEvent {
 	 * @return the elements of the path.
 	 */
 	public static String[] pathToElements(String path) {
-		return (path.startsWith(ADDRESS_SEPARATOR) ? path.substring(1) : path).split(ADDRESS_SEPARATOR);
+		return (path.startsWith(ADDRESS_SEPARATOR) ? path.substring(1) : path).split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR);
 	}
 	
 	/**

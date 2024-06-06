@@ -2,10 +2,7 @@ package net.xqhs.flash.core.interoperability;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -70,11 +67,16 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 	@Override
 	public boolean start() {
 		li("Starting bridge entity [].", getName());
+		if (interoperabilityRouter.getAllDestinations() == null || interoperabilityRouter.getAllDestinations().isEmpty())
+			throw new IllegalStateException("Bridge has had no context added.");
+
 		for (InteroperableMessagingPylonProxy pylonProxy : interoperabilityRouter.getAllDestinations()) {
 			boolean registerEntity = true;
 			for (String platformPrefix : interoperabilityRouter.getAllPlatformPrefixes()) {
-				pylonProxy.registerBridge(getName(), registerEntity ? waveInbox : null, platformPrefix);
-				registerEntity = false;
+				if (!platformPrefix.equals(pylonProxy.getPlatformPrefix())) {
+					pylonProxy.registerBridge(getName(), registerEntity ? waveInbox : null, platformPrefix);
+					registerEntity = false;
+				}
 			}
 		}
 
@@ -123,15 +125,15 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if (context instanceof MessagingPylonProxy)
-			return addContext((MessagingPylonProxy) context);
+		if (context instanceof InteroperableMessagingPylonProxy)
+			return addContext((InteroperableMessagingPylonProxy) context);
 		return false;
 	}
 
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if (context instanceof MessagingPylonProxy)
-			return removeContext((MessagingPylonProxy) context);
+		if (context instanceof InteroperableMessagingPylonProxy)
+			return removeContext((InteroperableMessagingPylonProxy) context);
 		return false;
 	}
 

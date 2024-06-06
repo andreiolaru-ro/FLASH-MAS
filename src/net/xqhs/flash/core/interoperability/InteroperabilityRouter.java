@@ -10,8 +10,6 @@ import java.util.Set;
 public class InteroperabilityRouter<T> {
 	protected Map<String, T>	platformPrefixToRoutingDestination;
 
-	private static final String	PLATFORM_PREFIX_SEPARATOR	= "/(?!/)";
-
 	public void addRoutingDestinationForPlatform(String platformPrefix, T entityName) {
 		if (platformPrefixToRoutingDestination == null)
 			platformPrefixToRoutingDestination = new HashMap<>();
@@ -31,19 +29,25 @@ public class InteroperabilityRouter<T> {
 	}
 
 	private static String getPlatformPrefixFromAddress(String address) {
-		return address.split(PLATFORM_PREFIX_SEPARATOR)[0];
+		return address.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0];
 	}
 
 	public Set<String> getAllPlatformPrefixes() {
+		if (platformPrefixToRoutingDestination == null)
+			return null;
+
 		return platformPrefixToRoutingDestination.keySet();
 	}
 
 	public Collection<T> getAllDestinations() {
+		if (platformPrefixToRoutingDestination == null)
+			return null;
+
 		return platformPrefixToRoutingDestination.values();
 	}
 
 	public boolean removeBridge(String entityName) {
-		if (!platformPrefixToRoutingDestination.containsValue(entityName))
+		if (platformPrefixToRoutingDestination == null || !platformPrefixToRoutingDestination.containsValue(entityName))
 			return false;
 
 		Iterator<Entry<String, T>> iterator = platformPrefixToRoutingDestination.entrySet().iterator();

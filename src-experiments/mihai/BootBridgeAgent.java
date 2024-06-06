@@ -16,14 +16,12 @@ public class BootBridgeAgent {
 	public static void main(String[] args_) {
 		String args = "";
 
-		// schimba ca numele agentB sa fie pentru BridgeAgent si sa se trimita de la A
-		// la C
-		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;bridge;agent";
+		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
 
 		args += " -node nodeB";
-		args += " -pylon WSRegions:pylonB1 isServer:localhost:8885";
-		args += " -pylon webSocket:pylonB2 isServer:localhost:8886";
-		args += " -bridge interoperability: in-context-of:pylonB1";
+		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
+		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
+		args += " -bridge interoperability:bridge1 in-context-of:pylonWebsocket";
 
 		args += " -node nodeA";
 		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
@@ -31,7 +29,7 @@ public class BootBridgeAgent {
 
 		args += " -node nodeC";
 		args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
-		args += " -agent agentC classpath:AgentPingPong sendTo:agentA";
+		args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
 
 		FlashBoot.main(args.split(" "));
 	}

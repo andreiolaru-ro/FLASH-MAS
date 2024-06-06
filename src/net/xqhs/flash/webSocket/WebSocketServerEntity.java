@@ -27,6 +27,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
 import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
@@ -158,7 +159,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		if(message.has(AgentWave.DESTINATION_ELEMENT)) {
 			String destination = null;
 			try {
-				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
 			} catch(Exception e) {
 				// see if we can use the message in another way.
 			}
@@ -183,11 +184,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				if (bridgeDestination != null) {
 					lf("Trying to send to bridge entity [].", bridgeDestination);
 
-					WebSocket bridgeDestinationWebSocket;
-					bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
+					WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
 					if (bridgeDestinationWebSocket != null) {
 						bridgeDestinationWebSocket.send(message.toString());
-						lf("Sent to agent: []. ", message); // TODO: change log message
+						lf("Sent to bridge []: []. ", bridgeDestination, message);
 						return;
 					}
 
@@ -216,7 +216,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 			String entityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
 			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entityName);
-			lf("Registered bridge entity [] on []. ", entityName, nodeName);
+			lf("Registered bridge entity [] for platform [] on []. ", entityName, platformPrefix, nodeName);
 			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(entityName) && entityToWebSocket.get(entityName) == webSocket) {
 				if (!useful)
 					le("Message could not be used []", message);
