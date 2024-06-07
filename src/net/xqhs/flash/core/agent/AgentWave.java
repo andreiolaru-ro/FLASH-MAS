@@ -63,7 +63,10 @@ public class AgentWave extends AgentEvent {
 	 * The string separating elements of an endpoint address.
 	 */
 	public static final String ADDRESS_SEPARATOR = "/";
-	
+	/**
+	 * The string separating elements of an endpoint address.
+	 */
+	public static final String PROTOCOL_SEPARATOR = "://";
 	/**
 	 * The name associated with the content.
 	 */

@@ -80,13 +80,13 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 	class InteroperableWSRegionsPylonProxy extends WSRegionsPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
-		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {
+		public boolean registerBridge(String platformPrefix, WaveReceiver waveReceiver) {
 			if (waveReceiver != null)
-				register(entityName, waveReceiver);
+				register(platformPrefix, waveReceiver);
 
-			send((AgentWave) new AgentWaveJson().addSourceElements(entityName, Constants.PROTOCOL)
+			send((AgentWave) new AgentWaveJson().addSourceElements(platformPrefix, Constants.PROTOCOL)
 					.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.REGISTER.toString())
-					.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix));
+					.add(InteroperableMessagingPylonProxy.BRIDGE_KEY, platformPrefix));
 
 			return false;
 		}
@@ -244,6 +244,8 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		String destination;
 		try {
 			destination = json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+			if (HomeServerAddressName.equals(destination))
+				destination += AgentWave.ADDRESS_SEPARATOR + json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
 		} catch(Exception e) {
 			le("Unable to parse destination in ", json);
 			return;

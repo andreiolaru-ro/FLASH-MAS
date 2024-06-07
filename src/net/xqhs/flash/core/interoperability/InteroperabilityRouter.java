@@ -28,7 +28,7 @@ public class InteroperabilityRouter<T> {
 		return routingDestination;
 	}
 
-	private static String getPlatformPrefixFromAddress(String address) {
+	public static String getPlatformPrefixFromAddress(String address) {
 		return address.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0];
 	}
 
