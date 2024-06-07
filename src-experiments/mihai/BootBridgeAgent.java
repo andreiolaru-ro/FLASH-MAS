@@ -21,7 +21,7 @@ public class BootBridgeAgent {
 		args += " -node nodeB";
 		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
-		args += " -bridge interoperability:bridge1 in-context-of:pylonWebsocket";
+		args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
 
 		args += " -node nodeA";
 		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
