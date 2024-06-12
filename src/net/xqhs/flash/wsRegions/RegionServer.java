@@ -561,7 +561,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	protected void contentMessageHandler(JsonObject msg, String message) {
 		String target = null;
 		try {
-			target = msg.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+			target = msg.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + msg.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
 		} catch(Exception e) {
 			le("Unable to determine destination of message []: ", msg, e);
 			return;
@@ -603,7 +603,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 
 				AgentStatus bridge = regionHomeAgents.get(bridgeDestination);
 				if (bridge != null) {
-					sendMessage(bridge.getClientConnection(), bridgeDestination, message);
+					JsonObject modifiedMessage = InteroperabilityRouter.addBridgeToMessage(msg, bridgeDestination);
+
+					sendMessage(bridge.getClientConnection(), bridgeDestination, modifiedMessage.toString());
 					lf("Sent message to bridge entity [].", bridgeDestination);
 					return;
 				}

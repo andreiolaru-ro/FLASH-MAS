@@ -7,6 +7,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.gson.JsonObject;
+
+import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.json.AgentWaveJson;
+import net.xqhs.flash.webSocket.WebSocketPylon;
+
 public class InteroperabilityRouter<T> {
 	protected Map<String, T>	platformPrefixToRoutingDestination;
 
@@ -68,5 +74,20 @@ public class InteroperabilityRouter<T> {
 			return true;
 
 		return platformPrefixToRoutingDestination.remove(platformPrefix, pylonProxy);
+	}
+
+	public static JsonObject addBridgeToMessage(JsonObject message, String bridgeDestination) {
+		String nodeName = null;
+		if (message.has(WebSocketPylon.MESSAGE_NODE_KEY))
+			nodeName = message.get(WebSocketPylon.MESSAGE_NODE_KEY).getAsString();
+
+		message.remove(WebSocketPylon.MESSAGE_NODE_KEY);
+		AgentWave messageAsWave = AgentWaveJson.toAgentWave(message);
+		messageAsWave.prependDestination(bridgeDestination);
+
+		if (nodeName != null)
+			AgentWaveJson.toJson(messageAsWave).addProperty(WebSocketPylon.MESSAGE_NODE_KEY, nodeName);
+
+		return AgentWaveJson.toJson(messageAsWave);
 	}
 }

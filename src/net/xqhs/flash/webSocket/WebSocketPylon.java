@@ -319,8 +319,9 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 							
 							String destination;
 							try {
-								destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0)
-										.getAsString();
+								destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+								if (webSocketServerAddress.equals(destination))
+									destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
 							} catch(Exception e) {
 								le("Unable to parse destination in ", message);
 								return;

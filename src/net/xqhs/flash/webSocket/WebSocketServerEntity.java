@@ -27,7 +27,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
 import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
@@ -81,6 +80,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 * within the pylon.
 	 */
 	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
+	/**
+	 * The port on which this server was started.
+	 */
+	int										serverPort				= -1;
 
 	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
@@ -90,6 +93,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 */
 	public WebSocketServerEntity(int serverPort) {
 		lf("Starting websocket server on port: ", Integer.valueOf(serverPort));
+		this.serverPort = serverPort;
 		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -160,8 +164,19 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			String destination = null;
 			try {
 				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
+				if (!destination.contains(WebSocketPylon.WS_PROTOCOL_PREFIX))
+					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+				else if (("ws://localhost:" + serverPort).equals(message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString())) {
+					// use short address
+					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
+				}
 			} catch(Exception e) {
-				// see if we can use the message in another way.
+				try {
+					// use short address
+					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+				} catch (Exception exception) {
+					// see if we can use the message in another way.
+				}
 			}
 			if(destination != null) {
 				WebSocket destinationWebSocket;
@@ -182,10 +197,12 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				// send to bridge
 				String bridgeDestination = interoperabilityRouter.getRoutingDestination(destination);
 				if (bridgeDestination != null) {
-					lf("Trying to send to bridge entity [].", bridgeDestination);
+					lf("Trying to send to bridge entity [], [].", bridgeDestination, message);
 
 					WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
 					if (bridgeDestinationWebSocket != null) {
+						message = InteroperabilityRouter.addBridgeToMessage(message, bridgeDestination);
+
 						bridgeDestinationWebSocket.send(message.toString());
 						lf("Sent to bridge []: []. ", bridgeDestination, message);
 						return;

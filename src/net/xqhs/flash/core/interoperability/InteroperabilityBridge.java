@@ -52,11 +52,16 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 	protected void receiveWave(AgentWave wave) {
 		li("Routing [] through bridge [].", wave.toString(), getName());
 
+		if (!getName().equals(wave.getFirstDestinationElement()))
+			throw new IllegalStateException("The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT) + ") is not the address of this agent (" + getName() + ")");
+		wave.removeFirstDestinationElement();
+		wave.recomputeCompleteDestination();
+
 		String destination = wave.getCompleteDestination();
 		InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getRoutingDestination(destination);
 
 		if (pylonProxy != null) {
-			le("Found routing destination [] for [].", pylonProxy, wave.toString());
+			le("Found routing destination [] for [].", pylonProxy.getPlatformPrefix(), wave.toString());
 			pylonProxy.send(wave);
 			return;
 		}
