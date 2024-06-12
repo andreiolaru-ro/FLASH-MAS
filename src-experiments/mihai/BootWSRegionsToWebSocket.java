@@ -15,7 +15,7 @@ public class BootWSRegionsToWebSocket {
 	public static void main(String[] args_) {
 		String args = "";
 		args += " -package wsRegions mihai testing src-tests.test.wsRegionsDeployment.Script -loader agent:composite -load_order pylon;agent;bridge";
-
+		// TODO: fix Script
 		args += " -node nodeB";
 		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
