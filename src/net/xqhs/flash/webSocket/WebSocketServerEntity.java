@@ -27,7 +27,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
+import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
@@ -57,10 +60,6 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 */
 	private WebSocketServer		webSocketServer;
 	/**
-	 * The address of the WebSocket server that the client should connect to.
-	 */
-	protected String			webSocketServerAddress;
-	/**
 	 * <code>true</code> if the server is currently running.
 	 */
 	private boolean				running;
@@ -78,55 +77,58 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 */
 	private HashMap<String, List<String>>	nodeToEntities		= new LinkedHashMap<>();
 	/**
+	 * Keep track of all bridge entities and the platform they can route to
+	 * within the pylon.
+	 */
+	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
+
+	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
 	 * 
-	 * @param webSocketServerAddress
-	 *                      - the address on which to start the server.
+	 * @param serverPort
+	 *            - the port on which to start the server.
 	 */
-	public WebSocketServerEntity(String webSocketServerAddress) {
-		try {
-			this.webSocketServerAddress = webSocketServerAddress;
-			Integer serverPort = Integer.valueOf(webSocketServerAddress.split(":")[2].split("/")[0]);
-			lf("Starting websocket server on port:", serverPort);
-			webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort.intValue())) {
-				@Override
-				public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-					/*
-					 * This method sends a message to the new client.
-					 */
-					li("new client connected []", webSocket);
-				}
-
-				@Override
-				public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-					li("[] closed with exit code ", webSocket, Integer.valueOf(i));
-				}
-
-				/**
-				 * Receives message from a {@link WebSocketClient} and sends it directly to {@link WebSocketServerEntity#processMessage}.
-				 * 
-				 * @param webSocket - the sender {@link WebSocket} client
-				 * @param json      - the JSON string containing a message and routing information
+	public WebSocketServerEntity(int serverPort) {
+		lf("Starting websocket server on port: ", Integer.valueOf(serverPort));
+		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
+			@Override
+			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
+				/*
+				 * This method sends a message to the new client.
 				 */
-				@Override
-				public void onMessage(WebSocket webSocket, String json) {
-					processMessage(webSocket, json);
-				}
-
-				@Override
-				public void onError(WebSocket webSocket, Exception e) {
-					e.printStackTrace();
-				}
-
-				@Override
-				public void onStart() {
-					li("Server started successfully.");
-				}
-			};
-			webSocketServer.setReuseAddr(true);
-		} catch (Exception e) {
-			le("Can't parse WebSocket server address!");
-		}
+				li("new client connected []", webSocket);
+			}
+			
+			@Override
+			public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+				li("[] closed with exit code ", webSocket, Integer.valueOf(i));
+			}
+			
+			/**
+			 * Receives message from a {@link WebSocketClient} and sends it directly to
+			 * {@link WebSocketServerEntity#processMessage}.
+			 * 
+			 * @param webSocket
+			 *            - the sender {@link WebSocket} client
+			 * @param json
+			 *            - the JSON string containing a message and routing information
+			 */
+			@Override
+			public void onMessage(WebSocket webSocket, String json) {
+				processMessage(webSocket, json);
+			}
+			
+			@Override
+			public void onError(WebSocket webSocket, Exception e) {
+				e.printStackTrace();
+			}
+			
+			@Override
+			public void onStart() {
+				li("Server started successfully.");
+			}
+		};
+		webSocketServer.setReuseAddr(true);
 	}
 	
 	/**
@@ -157,48 +159,31 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		if(message.has(AgentWave.DESTINATION_ELEMENT)) {
 			String destination = null;
 			try {
-				// use complete address
 				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
-				if (!destination.contains(AgentWave.PROTOCOL_SEPARATOR))
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-				else if (webSocketServerAddress.equals(message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString())) {
-					// use short address
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
-				}
 			} catch(Exception e) {
-				try {
-					// use short address
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-				} catch (Exception exception) {
-					// see if we can use the message in another way.
-				}
+				// see if we can use the message in another way.
 			}
 			if(destination != null) {
-				lf("Message to send to: [].", destination);
-				if (!destination.contains(AgentWave.PROTOCOL_SEPARATOR)) {
-					WebSocket destinationWebSocket;
-					destinationWebSocket = entityToWebSocket.get(destination);
-					if (destinationWebSocket != null) {
-						destinationWebSocket.send(message.toString());
-						lf("Sent to agent: []. ", message);
-						return;
-					}
-
-					destinationWebSocket = nodeToWebSocket.get(destination);
-					if (destinationWebSocket != null) {
-						destinationWebSocket.send(message.toString());
-						lf("Sent to node: []. ", message);
-						return;
-					}
-
-					le("Failed to find websocket for the entity [].", destination);
+				WebSocket destinationWebSocket;
+				destinationWebSocket = entityToWebSocket.get(destination);
+				if(destinationWebSocket != null) {
+					destinationWebSocket.send(message.toString());
+					lf("Sent to agent: []. ", message);
+					return;
+				}
+				
+				destinationWebSocket = nodeToWebSocket.get(destination);
+				if(destinationWebSocket != null) {
+					destinationWebSocket.send(message.toString());
+					lf("Sent to node: []. ", message);
 					return;
 				}
 
-				lf("Trying to find bridge entity in order to route to: [].", destination);
-				String bridgeDestination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+				// send to bridge
+				String bridgeDestination = interoperabilityRouter.getRoutingDestination(destination);
 				if (bridgeDestination != null) {
-					lf("Trying to send to bridge entity: [].", bridgeDestination);
+					lf("Trying to send to bridge entity [].", bridgeDestination);
+
 					WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
 					if (bridgeDestinationWebSocket != null) {
 						bridgeDestinationWebSocket.send(message.toString());
@@ -206,11 +191,11 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 						return;
 					}
 
-					le("Failed to find websocket for the bridge entity [] in order to route to: [].", bridgeDestination, destination);
+					le("Failed to find websocket for the bridge entity [] in order to route to [].", bridgeDestination, destination);
 					return;
 				}
 
-				le("Failed to find bridge for the entity: [].", destination);
+				le("Failed to find websocket for the entity [].", destination);
 				return;
 			}
 		}
@@ -225,7 +210,21 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		} catch(Exception e) {
 			nodeName = "null";
 		}
-		
+
+		// bridge registration message
+		if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) && message.has(WebSocketPylon.MESSAGE_ENTITY_KEY)) {
+			String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
+			String entityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
+			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entityName);
+			lf("Registered bridge entity [] for platform [] on []. ", entityName, platformPrefix, nodeName);
+			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(entityName) && entityToWebSocket.get(entityName) == webSocket) {
+				if (!useful)
+					le("Message could not be used []", message);
+				printState();
+				return;
+			}
+		}
+
 		// node registration message
 		if(!nodeToWebSocket.containsKey(nodeName)) {
 			nodeToWebSocket.put(nodeName, webSocket);
@@ -249,6 +248,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				else {
 					entityToWebSocket.remove(entityName, webSocket);
 					nodeToEntities.get(nodeName).remove(entityName);
+					interoperabilityRouter.removeBridge(entityName);
 					lf("Unregistered entity [] on []. ", entityName, nodeName);
 				}
 			}

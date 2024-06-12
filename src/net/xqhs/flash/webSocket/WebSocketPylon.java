@@ -173,11 +173,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
-		public boolean registerBridge(String platformPrefix, WaveReceiver waveReceiver) {
+		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {
 			Map<String, String> bridgeInfo = new HashMap<>();
-			bridgeInfo.put(BRIDGE_KEY, platformPrefix);
+			bridgeInfo.put(MESSAGE_BRIDGE_KEY, platformPrefix);
 
-			return register(platformPrefix, waveReceiver, bridgeInfo);
+			return register(entityName, waveReceiver, bridgeInfo);
 		}
 
 		@Override
@@ -224,12 +224,16 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected boolean hasServer;
 	
 	/**
+	 * For the case in which a server must be created on this node, the port the server is bound to.
+	 */
+	protected int					serverPort	= -1;
+	/**
 	 * For the case in which a server must be created on this node, the entity that represents the server.
 	 */
 	protected WebSocketServerEntity	serverEntity;
 	
 	/**
-	 * The address of the WebSocket server that the client should connect to.
+	 * The address of the Websocket server that the client should connect to.
 	 */
 	protected String						webSocketServerAddress;
 	/**
@@ -277,7 +281,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	@Override
 	public boolean start() {
 		if(hasServer) {
-			serverEntity = new WebSocketServerEntity(webSocketServerAddress);
+			serverEntity = new WebSocketServerEntity(serverPort);
 			serverEntity.start();
 		}
 		
@@ -315,9 +319,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 							
 							String destination;
 							try {
-								destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-								if (webSocketServerAddress.equals(destination))
-									destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
+								destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0)
+										.getAsString();
 							} catch(Exception e) {
 								le("Unable to parse destination in ", message);
 								return;
@@ -408,6 +411,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		if(configuration.isSimple(IS_SERVER_PARAMETER)) {
 			hasServer = true;
 			webSocketServerAddress = configuration.getAValue(IS_SERVER_PARAMETER);
+			serverPort = Integer.parseInt(webSocketServerAddress.split(":")[1]);
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress;
 		}
 		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))

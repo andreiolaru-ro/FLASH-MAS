@@ -102,8 +102,6 @@ public class AgentPingPong extends Unit implements Agent {
 				@Override
 				public void run() {
 					tick++;
-					if (tick >= 3)
-						this.cancel();
 					for (String otherAgent : otherAgents) {
 						lf("Sending the message to ", otherAgent);
 						if (!msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),

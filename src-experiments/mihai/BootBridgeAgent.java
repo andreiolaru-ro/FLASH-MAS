@@ -5,7 +5,7 @@ import net.xqhs.flash.FlashBoot;
 /**
  * Deployment testing.
  */
-public class BootWSRegionsToWebSocket {
+public class BootBridgeAgent {
 	/**
 	 * Performs test
 	 * 
@@ -15,7 +15,8 @@ public class BootWSRegionsToWebSocket {
 
 	public static void main(String[] args_) {
 		String args = "";
-		args += " -package wsRegions mihai testing src-tests.test.wsRegionsDeployment.Script -loader agent:composite -load_order pylon;agent;bridge";
+
+		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
 
 		args += " -node nodeB";
 		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
@@ -24,11 +25,11 @@ public class BootWSRegionsToWebSocket {
 
 		args += " -node nodeA";
 		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
-		args += " -agent :ws://localhost:8885/agentA -shard messaging -shard ScriptTesting from:Simple";
+		args += " -agent :agentA -shard messaging";
 
 		args += " -node nodeC";
 		args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
-		args += " -agent :agentC -shard messaging";
+		args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
 
 		FlashBoot.main(args.split(" "));
 	}

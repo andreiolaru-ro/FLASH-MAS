@@ -1,0 +1,19 @@
+script:
+ agentA-localhost:8885:
+   actions:
+     - action: "MARK"
+       trigger: "NEXT"
+     - action: "NOP"
+       arg: 5000
+     - action: "SEND_MESSAGE"
+       arguments: {to: "agentD-localhost:8885", with: "check"}
+     - action: "MARK"
+       trigger: "EVENT"
+       arg: "AGENT_WAVE"
+ agentD-localhost:8885:
+   actions:
+     - trigger: "EVENT"
+       arg: "AGENT_WAVE"
+       action: "SEND_MESSAGE"
+       arguments: {to: "agentA-localhost:8885", with: "check reply"}
+
