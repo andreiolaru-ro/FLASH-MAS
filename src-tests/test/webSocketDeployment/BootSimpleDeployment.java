@@ -31,7 +31,7 @@ public class BootSimpleDeployment
 		args += " -package testing";
 		
 		args += " -node node1";
-		args += " -pylon webSocket:pylon1 serverPort:8885";
+		args += " -pylon webSocket:pylon1 isServer:localhost:8885";
 		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
 		
 		args += " -node node2";

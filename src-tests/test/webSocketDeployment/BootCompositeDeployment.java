@@ -40,7 +40,7 @@ public class BootCompositeDeployment
 		args += " -package testing -loader agent:composite";
 		
 		args += " -node node1";
-		args += " -pylon webSocket:pylon1 serverPort:8886";
+		args += " -pylon webSocket:pylon1 isServer:localhost:8886";
 		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
 		
 		args += " -node node2";

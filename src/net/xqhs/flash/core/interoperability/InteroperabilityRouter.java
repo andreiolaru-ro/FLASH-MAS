@@ -76,7 +76,7 @@ public class InteroperabilityRouter<T> {
 		return platformPrefixToRoutingDestination.remove(platformPrefix, pylonProxy);
 	}
 
-	public static JsonObject addBridgeToMessage(JsonObject message, String bridgeDestination) {
+	public static JsonObject prependDestinationToMessage(JsonObject message, String bridgeDestination) {
 		String nodeName = null;
 		if (message.has(WebSocketPylon.MESSAGE_NODE_KEY))
 			nodeName = message.get(WebSocketPylon.MESSAGE_NODE_KEY).getAsString();

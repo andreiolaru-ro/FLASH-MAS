@@ -190,7 +190,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 
 					WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
 					if (bridgeDestinationWebSocket != null) {
-						message = InteroperabilityRouter.addBridgeToMessage(message, bridgeDestination);
+						message = InteroperabilityRouter.prependDestinationToMessage(message, bridgeDestination);
 
 						bridgeDestinationWebSocket.send(message.toString());
 						lf("Sent to bridge []: []. ", bridgeDestination, message);

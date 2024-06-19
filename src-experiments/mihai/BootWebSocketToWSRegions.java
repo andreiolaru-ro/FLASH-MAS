@@ -16,7 +16,7 @@ public class BootWebSocketToWSRegions {
 		String args = "";
 		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
 
-		args += " -node nodeB";
+		args += " -node nodeB keep:20";
 		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
 		args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";

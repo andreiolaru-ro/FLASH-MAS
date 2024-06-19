@@ -385,7 +385,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 	 */
 	private void unregisterMessageHandler(JsonObject msg, WebSocket webSocket) {
 		String entity = extractSource(msg);
-		lf("Received UNREGISTER message from agent ", entity);
+		lf("Received UNREGISTER message from bridge ", entity);
 		AgentStatus ag = regionHomeAgents.get(entity);
 		if (ag != null) {
 			regionHomeAgents.remove(entity);
@@ -393,6 +393,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 				for (Entry<String, WSClient> homeServer : homeServers.entrySet())
 					sendMessage(homeServer.getValue().client, (AgentWaveJson) new AgentWaveJson().addSourceElements(entity, Constants.PROTOCOL)
 							.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.UNREGISTER.toString()));
+				le("Unregistered local bridge [].", entity);
 			}
 		} else if (guestAgents.remove(entity) != null) {
 			String homeServer = extractHomeRegion(entity);
@@ -603,7 +604,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 
 				AgentStatus bridge = regionHomeAgents.get(bridgeDestination);
 				if (bridge != null) {
-					JsonObject modifiedMessage = InteroperabilityRouter.addBridgeToMessage(msg, bridgeDestination);
+					JsonObject modifiedMessage = InteroperabilityRouter.prependDestinationToMessage(msg, bridgeDestination);
 
 					sendMessage(bridge.getClientConnection(), bridgeDestination, modifiedMessage.toString());
 					lf("Sent message to bridge entity [].", bridgeDestination);

@@ -63,7 +63,7 @@ public class SynchronousMPIMessaging extends AsynchronousMPIMessaging implements
 	}
 	
 	@Override
-	public boolean sendMessage(String source, String destination, String content) {
+	public boolean sendMessage(String source, String destination, String content, String... otherDestinationElements) {
 		if(pylon == null) { // FIXME: use logging
 			System.out.println("No pylon added as context.");
 			return false;

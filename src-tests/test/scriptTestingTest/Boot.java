@@ -16,7 +16,7 @@ public class Boot {
 		
 		args += " -package testing src-tests.test.scriptTestingTest -loader agent:mobileComposite ";
 		
-		args += " -node nodeA -pylon webSocket:A serverPort:8887";
+		args += " -node nodeA -pylon webSocket:A isServer:localhost:8887";
 		args += " -node nodeB -pylon webSocket:B connectTo:ws://localhost:8887";
 		args += " -agent agent1 -shard messaging -shard EchoTesting -shard ScriptTesting from:Test1";
 		args += " -agent agent2 -shard messaging -shard EchoTesting -shard ScriptTesting from:Test1";

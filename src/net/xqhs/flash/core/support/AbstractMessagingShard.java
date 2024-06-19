@@ -229,12 +229,13 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
-	public boolean sendMessage(String source, String destination, String content) {
+	public boolean sendMessage(String source, String destination, String content, String... otherDestinationElements) {
 		if(classicPylon != null)
 			return classicPylon.send(source, destination, content);
 		else if(wavePylon != null) {
-			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
-					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
+			return wavePylon.send(new AgentWave(content).appendDestination(destination)
+														.appendDestination(otherDestinationElements)
+														.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
 		}
 		else
 			return false;

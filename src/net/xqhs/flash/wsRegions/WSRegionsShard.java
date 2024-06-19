@@ -8,7 +8,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.mobileComposite.MobilityAwareMessagingShard;
-import net.xqhs.flash.core.support.NameBasedMessagingShard;
+import net.xqhs.flash.core.support.URIBasedMessagingShard;
 import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.wsRegions.Constants.MessageType;
 
@@ -18,7 +18,7 @@ import net.xqhs.flash.wsRegions.Constants.MessageType;
  * @author Andrei Olaru
  * @author Monica Pricope
  */
-public class WSRegionsShard extends NameBasedMessagingShard implements MobilityAwareMessagingShard {
+public class WSRegionsShard extends URIBasedMessagingShard implements MobilityAwareMessagingShard {
 	/**
 	 * The serial UID.
 	 */

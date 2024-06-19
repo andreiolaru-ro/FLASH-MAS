@@ -395,7 +395,7 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	public boolean sendMessage(String destination, String content) {
 		return messagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(destination, SHARD_ENDPOINT), content);
+				AgentWave.makePath(destination), content, SHARD_ENDPOINT);
 	}
 	
 	/**

@@ -1,29 +1,12 @@
 script:
- one-localhost:8885:
+ ws://localhost:8885/agentA:
    actions:
      - action: "MARK"
        trigger: "NEXT"
+     - action: "NOP"
+       arg: 5000
      - action: "SEND_MESSAGE"
-       arguments: {to: "two-localhost:8885", with: "check"}
-     - action: "SEND_MESSAGE"
-       arg: 4000
-       arguments: {to: "two-localhost:8885", with: "go move"}
+       arguments: {to: "ws://localhost:8886/agentC", with: "check"}
      - action: "MARK"
        trigger: "EVENT"
        arg: "AGENT_WAVE"
- two-localhost:8885:
-   actions:
-     - trigger: "EVENT"
-       arg: "AGENT_WAVE"
-       action: "SEND_MESSAGE"
-       arguments: {to: "one-localhost:8885", with: "check reply"}
-     - arg: 3000
-       action: "NOP"
-     - trigger: "EVENT"
-       arg: "AGENT_WAVE"
-       action: "MOVE_TO_NODE"
-       arguments: {to: "node2-localhost:8885"}
-     - trigger: "EVENT"
-       arg: "AFTER_MOVE"
-       action: "SEND_MESSAGE"
-       arguments: {to: "one-localhost:8885", with: "arrived"} 

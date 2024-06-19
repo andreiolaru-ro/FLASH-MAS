@@ -170,7 +170,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 	}
 
-	class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
+	public class InteroperableWebSocketPylonProxy extends WebSocketPylonProxy implements InteroperableMessagingPylonProxy {
 
 		@Override
 		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {

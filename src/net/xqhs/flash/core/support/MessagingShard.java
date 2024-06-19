@@ -35,9 +35,11 @@ public interface MessagingShard extends AgentShard {
 	 *            - the target (complete) endpoint of the message.
 	 * @param content
 	 *            - the content of the message.
+	 * @param otherDestinationElements
+	 *            - other destination elements         
 	 * @return <code>true</code> if the message was sent successfully.
 	 */
-	public boolean sendMessage(String source, String target, String content);
+	public boolean sendMessage(String source, String target, String content, String... otherDestinationElements);
 	
 	/**
 	 * Sends a message to another agent, according to the specific implementation.

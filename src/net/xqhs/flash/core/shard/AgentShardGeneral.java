@@ -88,7 +88,7 @@ public class AgentShardGeneral extends AgentShardCore
 	{
 		MessagingShard msd = getMessagingShard();
 		return msd.sendMessage(AgentWave.makePath(msd.getAgentAddress(), sourceInternalEndpoint),
-				AgentWave.makePath(targetAgent, targetPathElements), content);
+				AgentWave.makePath(targetAgent), content, targetPathElements);
 	}
 	
 	/**

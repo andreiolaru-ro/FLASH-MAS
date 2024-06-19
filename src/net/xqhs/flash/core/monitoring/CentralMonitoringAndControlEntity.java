@@ -490,12 +490,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 */
 	private boolean sendMessage(String destination, String content) {
 		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(destination, OTHER_CONTROL_SHARD_ENDPOINT), content);
+				AgentWave.makePath(destination), content, OTHER_CONTROL_SHARD_ENDPOINT);
 	}
 	
 	public boolean sendAgentMessage(String agent, String content) {
-		return centralMessagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(agent, "messaging"), content);
+		return centralMessagingShard.sendMessage(AgentWave.makePath(getName()),
+				AgentWave.makePath(agent), content, SHARD_ENDPOINT, "messaging");
 	}
 	
 	@Override
