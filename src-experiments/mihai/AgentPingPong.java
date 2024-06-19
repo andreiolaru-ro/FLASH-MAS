@@ -106,8 +106,7 @@ public class AgentPingPong extends Unit implements Agent {
 						this.cancel();
 					for (String otherAgent : otherAgents) {
 						lf("Sending the message to ", otherAgent);
-						if (!msgShard.sendMessage(AgentWave.makePath(getName(), "ping"),
-								AgentWave.makePath(otherAgent, "pong"), "ping-no " + tick))
+						if (!msgShard.sendMessage(AgentWave.makePath(getName()), AgentWave.makePath(otherAgent), "ping-no " + tick))
 							le("Message sending failed");
 					}
 				}

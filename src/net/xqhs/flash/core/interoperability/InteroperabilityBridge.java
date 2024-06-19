@@ -61,7 +61,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getRoutingDestination(destination);
 
 		if (pylonProxy != null) {
-			le("Found routing destination [] for [].", pylonProxy.getPlatformPrefix(), wave.toString());
+			li("Found routing destination [] for [].", pylonProxy.getPlatformPrefix(), wave.toString());
 			pylonProxy.send(wave);
 			return;
 		}

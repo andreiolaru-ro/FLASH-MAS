@@ -243,9 +243,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 		
 		String destination;
 		try {
-			destination = json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
-			if (!destination.startsWith(WebSocketPylon.WS_PROTOCOL_PREFIX))
-				destination = json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+			destination = json.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
 		} catch(Exception e) {
 			le("Unable to parse destination in ", json);
 			return;

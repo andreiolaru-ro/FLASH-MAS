@@ -163,20 +163,9 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		if(message.has(AgentWave.DESTINATION_ELEMENT)) {
 			String destination = null;
 			try {
-				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString() + AgentWave.ADDRESS_SEPARATOR + message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
-				if (!destination.contains(WebSocketPylon.WS_PROTOCOL_PREFIX))
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-				else if (("ws://localhost:" + serverPort).equals(message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString())) {
-					// use short address
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(1).getAsString();
-				}
+				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
 			} catch(Exception e) {
-				try {
-					// use short address
-					destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-				} catch (Exception exception) {
-					// see if we can use the message in another way.
-				}
+				// see if we can use the message in another way.
 			}
 			if(destination != null) {
 				WebSocket destinationWebSocket;
