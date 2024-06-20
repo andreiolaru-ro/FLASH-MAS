@@ -3,6 +3,9 @@ package net.xqhs.flash.core.interoperability;
 import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
 import net.xqhs.flash.core.support.WaveReceiver;
 
+/**
+ * The interface all pylon proxies must implement for platforms that can be interoperated.
+ */
 public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProxy {
 
 	/**

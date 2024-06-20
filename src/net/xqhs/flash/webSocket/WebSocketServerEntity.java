@@ -164,6 +164,10 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			String destination = null;
 			try {
 				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+				if (destination.contains(WebSocketPylon.WS_PROTOCOL_PREFIX) && destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0].equals("ws://localhost:" + serverPort)) {
+					destination = destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[1];
+					message = InteroperabilityRouter.prependDestinationToMessage(message, destination);
+				}
 			} catch(Exception e) {
 				// see if we can use the message in another way.
 			}

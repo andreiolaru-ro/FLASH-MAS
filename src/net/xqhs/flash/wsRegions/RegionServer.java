@@ -357,6 +357,9 @@ public class RegionServer extends Unit implements Entity<Node> {
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entity);
 
+			if (msg.get(InteroperableMessagingPylonProxy.IS_REMOTE) != null)
+				return;
+
 			// register bridge for all regions
 			for (Entry<String, WSClient> homeServer : homeServers.entrySet())
 				sendMessage(homeServer.getValue().client, (AgentWaveJson) new AgentWaveJson().addSourceElements(entity, Constants.PROTOCOL)
@@ -364,7 +367,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 						.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix)
 						.add(InteroperableMessagingPylonProxy.IS_REMOTE, "true"));
 
-			if (regionHomeAgents.containsKey(entity) || msg.get(InteroperableMessagingPylonProxy.IS_REMOTE) != null)
+			if (regionHomeAgents.containsKey(entity))
 				return;
 		}
 

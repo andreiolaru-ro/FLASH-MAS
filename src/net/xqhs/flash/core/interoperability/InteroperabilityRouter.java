@@ -14,7 +14,7 @@ import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.webSocket.WebSocketPylon;
 
 public class InteroperabilityRouter<T> {
-	protected Map<String, T>	platformPrefixToRoutingDestination;
+	private Map<String, T> platformPrefixToRoutingDestination;
 
 	public void addRoutingDestinationForPlatform(String platformPrefix, T entityName) {
 		if (platformPrefixToRoutingDestination == null)
@@ -34,7 +34,7 @@ public class InteroperabilityRouter<T> {
 		return routingDestination;
 	}
 
-	private static String getPlatformPrefixFromAddress(String address) {
+	public static String getPlatformPrefixFromAddress(String address) {
 		return address.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0];
 	}
 
@@ -52,15 +52,15 @@ public class InteroperabilityRouter<T> {
 		return platformPrefixToRoutingDestination.values();
 	}
 
-	public boolean removeBridge(String entityName) {
-		if (platformPrefixToRoutingDestination == null || !platformPrefixToRoutingDestination.containsValue(entityName))
+	public boolean removeBridge(String bridgeAddress) {
+		if (platformPrefixToRoutingDestination == null || !platformPrefixToRoutingDestination.containsValue(bridgeAddress))
 			return false;
 
 		Iterator<Entry<String, T>> iterator = platformPrefixToRoutingDestination.entrySet().iterator();
 		boolean foundBridge = false;
 		while (iterator.hasNext()) {
 			Entry<String, T> entry = iterator.next();
-			if (entityName.equals(entry.getValue())) {
+			if (bridgeAddress.equals(entry.getValue())) {
 				iterator.remove();
 				foundBridge = true;
 			}
@@ -69,21 +69,21 @@ public class InteroperabilityRouter<T> {
 		return foundBridge;
 	}
 
-	public boolean removeRoutingDestinationForPlatform(String platformPrefix, T pylonProxy) {
+	public boolean removeRoutingDestinationForPlatform(String platformPrefix, T routingDestination) {
 		if (platformPrefixToRoutingDestination == null)
 			return true;
 
-		return platformPrefixToRoutingDestination.remove(platformPrefix, pylonProxy);
+		return platformPrefixToRoutingDestination.remove(platformPrefix, routingDestination);
 	}
 
-	public static JsonObject prependDestinationToMessage(JsonObject message, String bridgeDestination) {
+	public static JsonObject prependDestinationToMessage(JsonObject message, String destination) {
 		String nodeName = null;
 		if (message.has(WebSocketPylon.MESSAGE_NODE_KEY))
 			nodeName = message.get(WebSocketPylon.MESSAGE_NODE_KEY).getAsString();
 
 		message.remove(WebSocketPylon.MESSAGE_NODE_KEY);
 		AgentWave messageAsWave = AgentWaveJson.toAgentWave(message);
-		messageAsWave.prependDestination(bridgeDestination);
+		messageAsWave.prependDestination(destination);
 
 		if (nodeName != null)
 			AgentWaveJson.toJson(messageAsWave).addProperty(WebSocketPylon.MESSAGE_NODE_KEY, nodeName);

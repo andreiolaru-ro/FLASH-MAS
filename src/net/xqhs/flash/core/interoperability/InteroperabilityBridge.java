@@ -6,8 +6,6 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.json.AgentWaveJson;
-import net.xqhs.flash.webSocket.WebSocketPylon;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -59,22 +57,11 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		wave.removeFirstDestinationElement();
 		wave.recomputeCompleteDestination();
 
-		String destination = wave.getCompleteDestination();
+		String destination = wave.getFirstDestinationElement();
 		InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getRoutingDestination(destination);
 
 		if (pylonProxy != null) {
 			li("Found routing destination [] for [].", pylonProxy.getPlatformPrefix(), wave.toString());
-
-			if (pylonProxy instanceof WebSocketPylon.InteroperableWebSocketPylonProxy) {
-				AgentWave updatedWave = null;
-				try {
-					updatedWave = AgentWaveJson.toAgentWave(InteroperabilityRouter.prependDestinationToMessage(AgentWaveJson.toJson(wave), destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[1]));
-				} catch (Exception e) {
-					le("Error when translating address.");
-				}
-				pylonProxy.send(updatedWave);
-				return;
-			}
 
 			pylonProxy.send(wave);
 			return;
