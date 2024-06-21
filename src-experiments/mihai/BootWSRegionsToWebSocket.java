@@ -17,7 +17,7 @@ public class BootWSRegionsToWebSocket {
 		args += " -package wsRegions mihai testing src-tests.test.wsRegionsDeployment.Script -loader agent:composite -load_order pylon;agent;bridge";
 
 		if (args_[0].equals("1")) {
-			args += " -node nodeB keep:20";
+			args += " -node nodeB keep:200";
 			args += " -pylon webSocket:pylonWebsocket isServer:10.89.51.225:8886";
 			args += " -pylon WSRegions:pylonWSRegions isServer:10.89.51.225:8885";
 			args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
@@ -32,7 +32,7 @@ public class BootWSRegionsToWebSocket {
 		if (args_[0].equals("3")) {
 			args += " -node nodeC";
 			args += " -pylon webSocket:pylonC connectTo:ws://10.89.51.225:8886";
-			args += " -agent :agentC -shard messaging";
+			args += " -agent :agentC -shard messaging -shard EchoTesting";
 		}
 
 		FlashBoot.main(args.split(" "));

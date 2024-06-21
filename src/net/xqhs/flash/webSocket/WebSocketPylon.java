@@ -224,10 +224,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected boolean hasServer;
 	
 	/**
-	 * For the case in which a server must be created on this node, the port the server is bound to.
-	 */
-	protected int					serverPort	= -1;
-	/**
 	 * For the case in which a server must be created on this node, the entity that represents the server.
 	 */
 	protected WebSocketServerEntity	serverEntity;
@@ -281,7 +277,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	@Override
 	public boolean start() {
 		if(hasServer) {
-			serverEntity = new WebSocketServerEntity(serverPort);
+			serverEntity = new WebSocketServerEntity(webSocketServerAddress);
 			serverEntity.start();
 		}
 		
@@ -411,7 +407,6 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		if(configuration.isSimple(IS_SERVER_PARAMETER)) {
 			hasServer = true;
 			webSocketServerAddress = configuration.getAValue(IS_SERVER_PARAMETER);
-			serverPort = Integer.parseInt(webSocketServerAddress.split(":")[1]);
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress;
 		}
 		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
