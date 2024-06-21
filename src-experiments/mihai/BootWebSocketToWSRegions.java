@@ -16,18 +16,24 @@ public class BootWebSocketToWSRegions {
 		String args = "";
 		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
 
-		args += " -node nodeB keep:10";
-		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
-		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
-		args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
+		if (args_[0] == "1") {
+			args += " -node nodeB keep:10";
+			args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
+			args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
+			args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
+		}
 
-		args += " -node nodeA";
-		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
-		args += " -agent :ws://localhost:8885/agentA -shard messaging";
+		if (args_[0] == "2") {
+			args += " -node nodeA";
+			args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
+			args += " -agent :ws://localhost:8885/agentA -shard messaging";
+		}
 
-		args += " -node nodeC";
-		args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
-		args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
+		if (args_[0] = "3") {
+			args += " -node nodeC";
+			args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
+			args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
+		}
 
 		FlashBoot.main(args.split(" "));
 	}
