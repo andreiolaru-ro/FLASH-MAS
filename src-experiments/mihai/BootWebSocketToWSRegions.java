@@ -17,7 +17,7 @@ public class BootWebSocketToWSRegions {
 		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
 
 		if (args_[0] == "1") {
-			args += " -node nodeB keep:10";
+			args += " -node nodeB keep:200";
 			args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 			args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
 			args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
@@ -29,7 +29,7 @@ public class BootWebSocketToWSRegions {
 			args += " -agent :ws://localhost:8885/agentA -shard messaging";
 		}
 
-		if (args_[0] = "3") {
+		if (args_[0] == "3") {
 			args += " -node nodeC";
 			args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
 			args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
