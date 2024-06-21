@@ -27,13 +27,13 @@ public class BootWebSocketToWSRegions {
 
 		if (args_[0].equals("2")) {
 			args += " -node nodeA";
-			args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
+			args += " -pylon WSRegions:pylonA connectTo:10.89.51.225:8885";
 			args += " -agent :ws://10.89.51.225:8885/agentA -shard messaging";
 		}
 
 		if (args_[0].equals("3")) {
 			args += " -node nodeC";
-			args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
+			args += " -pylon webSocket:pylonC connectTo:ws://10.89.51.225:8886";
 			args += " -agent agentC classpath:AgentPingPong sendTo:ws://10.89.51.225:8885/agentA";
 		}
 
