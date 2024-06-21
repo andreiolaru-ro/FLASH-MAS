@@ -28,7 +28,7 @@ public class BootWebSocketToWSRegions {
 		if (args_[0].equals("2")) {
 			args += " -node nodeA";
 			args += " -pylon WSRegions:pylonA connectTo:10.89.51.225:8885";
-			args += " -agent :ws://10.89.51.225:8885/agentA -shard messaging";
+			args += " -agent :ws://10.89.51.225:8885/agentA -shard messaging -shard EchoTesting";
 		}
 
 		if (args_[0].equals("3")) {
