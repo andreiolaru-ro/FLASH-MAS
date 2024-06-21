@@ -1,0 +1,50 @@
+script:
+ A1:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A1"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A2", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A2", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A3:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A3"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A12", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A12", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A5:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A5"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A14", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A14", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A7: 
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A7"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A16", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A16", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A9:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A9"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A10", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A10", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A11:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A11"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A4", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A4", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A13:
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A13"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A6", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A6", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" }
+ A15: 
+  actions:
+  - { action: "MARK", trigger: "BOOT", arg: 15000, arguments: {with: "A15"} }
+  - { action: "SEND_MESSAGE", trigger: "NEXT", arguments: {to: "A8", with: "check"} }
+  - { times: 50, action: "SEND_MESSAGE", trigger: "EVENT", arg: "AGENT_WAVE", arguments: {to: "A8", with: "check #times"} }
+  - { action: "MARK", trigger: "EVENT", arg: "AGENT_WAVE" } 
+ 

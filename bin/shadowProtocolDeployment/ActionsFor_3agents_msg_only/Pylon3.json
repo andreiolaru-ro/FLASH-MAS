@@ -1,0 +1,6 @@
+{
+  "agent3": [
+    {"source": "agent3", "destination": "agent1", "content": "Message 1-agent3", "type": "SEND_MESSAGE"},
+    {"source": "agent3", "destination": "agent2", "content": "Message 2-agent3", "type": "SEND_MESSAGE"},
+  ]
+}
