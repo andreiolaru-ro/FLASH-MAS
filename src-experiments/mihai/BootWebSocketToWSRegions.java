@@ -15,21 +15,23 @@ public class BootWebSocketToWSRegions {
 	public static void main(String[] args_) {
 		String args = "";
 		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
+		System.out.println("hello");
 
-		if (args_[0] == "1") {
+		if (args_[0].equals("1")) {
+			System.out.println("hello");
 			args += " -node nodeB keep:200";
 			args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 			args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
 			args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
 		}
 
-		if (args_[0] == "2") {
+		if (args_[0].equals("2")) {
 			args += " -node nodeA";
 			args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
 			args += " -agent :ws://localhost:8885/agentA -shard messaging";
 		}
 
-		if (args_[0] == "3") {
+		if (args_[0].equals("3")) {
 			args += " -node nodeC";
 			args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
 			args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
