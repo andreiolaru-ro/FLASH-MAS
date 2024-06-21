@@ -1,0 +1,336 @@
+. [ boot ] Booting Flash-MAS.
+* [ settings load ] Category [package] not found elsewhere in the hierarchy; adding in current context.
+* [ settings load ] Category [loader] not found elsewhere in the hierarchy; adding in current context.
+* [ settings load ] Category [load_order] not found elsewhere in the hierarchy; adding in current context.
+> [ settings load ] removed auto-created [NODE] entity [null] to replace with entity [nodeC].
+> [ settings load ] final config:[
+   [deployment]-
+   .     [null]-
+   .     .     [#local-id]-      [#1604125387]
+   .     .     [#category-type]- [deployment]
+   .     .     [schema]-         [src-schema/deployment-schema.xsd]
+   .     .     [load_order]-     [pylon;agent;bridge]
+   .     .     [node]-
+   .     .     .     [nodeC]>
+   .     .     .     .     [name]>           [nodeC]
+   .     .     .     .     [#local-id]-      [#1465085305]
+   .     .     .     .     [#category-type]- [node]
+   .     .     .     .     [pylon]-
+   .     .     .     .     .     [webSocket:pylonC]>
+   .     .     .     .     .     .     [name]>           [webSocket:pylonC]
+   .     .     .     .     .     .     [#local-id]-      [#989938643]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [connectTo]>      [ws://10.89.51.225:8886]
+   .     .     .     .     .     .     [agent]-
+   .     .     .     .     .     .     .     [:agentC]>
+   .     .     .     .     .     .     .     .     [name]>           [:agentC]
+   .     .     .     .     .     .     .     .     [#local-id]-      [#1519280649]
+   .     .     .     .     .     .     .     .     [#category-type]- [agent]
+   .     .     .     .     .     .     .     .     [shard]-
+   .     .     .     .     .     .     .     .     .     [messaging]>
+   .     .     .     .     .     .     .     .     .     .     [name]>           [messaging]
+   .     .     .     .     .     .     .     .     .     .     [#local-id]-      [#1262822392]
+   .     .     .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     .     .     .     [EchoTesting]>
+   .     .     .     .     .     .     .     .     .     .     [name]>           [EchoTesting]
+   .     .     .     .     .     .     .     .     .     .     [#local-id]-      [#120694604]
+   .     .     .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     [in-context-of]>  [#989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     .     [local:default]>
+   .     .     .     .     .     .     [name]>           [local:default]
+   .     .     .     .     .     .     [#local-id]-      [#522764626]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     [load_order]-     [pylon;agent;bridge]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [loader]-
+   .     .     .     .     .     [agent:composite]>
+   .     .     .     .     .     .     [name]>           [agent:composite]
+   .     .     .     .     .     .     [#local-id]-      [#2106620844]
+   .     .     .     .     .     .     [#category-type]- [loader]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   .     .     [pylon]-
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#1795799895]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [loader]-
+   .     .     .     [agent:composite]>
+   .     .     .     .     [name]>           [agent:composite]
+   .     .     .     .     [#local-id]-      [#1843368112]
+   .     .     .     .     [#category-type]- [loader]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   [#local-id]-
+   .     [#1604125387]-
+   .     .     [#local-id]-      [#1604125387]
+   .     .     [#category-type]- [deployment]
+   .     .     [schema]-         [src-schema/deployment-schema.xsd]
+   .     .     [load_order]-     [pylon;agent;bridge]
+   .     .     [node]-
+   .     .     .     [nodeC]>
+   .     .     .     .     [name]>           [nodeC]
+   .     .     .     .     [#local-id]-      [#1465085305]
+   .     .     .     .     [#category-type]- [node]
+   .     .     .     .     [pylon]-
+   .     .     .     .     .     [webSocket:pylonC]>
+   .     .     .     .     .     .     [name]>           [webSocket:pylonC]
+   .     .     .     .     .     .     [#local-id]-      [#989938643]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [connectTo]>      [ws://10.89.51.225:8886]
+   .     .     .     .     .     .     [agent]-
+   .     .     .     .     .     .     .     [:agentC]>
+   .     .     .     .     .     .     .     .     [name]>           [:agentC]
+   .     .     .     .     .     .     .     .     [#local-id]-      [#1519280649]
+   .     .     .     .     .     .     .     .     [#category-type]- [agent]
+   .     .     .     .     .     .     .     .     [shard]-
+   .     .     .     .     .     .     .     .     .     [messaging]>
+   .     .     .     .     .     .     .     .     .     .     [name]>           [messaging]
+   .     .     .     .     .     .     .     .     .     .     [#local-id]-      [#1262822392]
+   .     .     .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     .     .     .     [EchoTesting]>
+   .     .     .     .     .     .     .     .     .     .     [name]>           [EchoTesting]
+   .     .     .     .     .     .     .     .     .     .     [#local-id]-      [#120694604]
+   .     .     .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     [in-context-of]>  [#989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     .     [local:default]>
+   .     .     .     .     .     .     [name]>           [local:default]
+   .     .     .     .     .     .     [#local-id]-      [#522764626]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     [load_order]-     [pylon;agent;bridge]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [loader]-
+   .     .     .     .     .     [agent:composite]>
+   .     .     .     .     .     .     [name]>           [agent:composite]
+   .     .     .     .     .     .     [#local-id]-      [#2106620844]
+   .     .     .     .     .     .     [#category-type]- [loader]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   .     .     [pylon]-
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#1795799895]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [loader]-
+   .     .     .     [agent:composite]>
+   .     .     .     .     [name]>           [agent:composite]
+   .     .     .     .     [#local-id]-      [#1843368112]
+   .     .     .     .     [#category-type]- [loader]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1604125387]
+   .     [#1795799895]-
+   .     .     [name]>           [local:default]
+   .     .     [#local-id]-      [#1795799895]
+   .     .     [#category-type]- [pylon]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1604125387]
+   .     [#1843368112]-
+   .     .     [name]>           [agent:composite]
+   .     .     [#local-id]-      [#1843368112]
+   .     .     [#category-type]- [loader]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1604125387]
+   .     [#1465085305]-
+   .     .     [name]>           [nodeC]
+   .     .     [#local-id]-      [#1465085305]
+   .     .     [#category-type]- [node]
+   .     .     [pylon]-
+   .     .     .     [webSocket:pylonC]>
+   .     .     .     .     [name]>           [webSocket:pylonC]
+   .     .     .     .     [#local-id]-      [#989938643]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [connectTo]>      [ws://10.89.51.225:8886]
+   .     .     .     .     [agent]-
+   .     .     .     .     .     [:agentC]>
+   .     .     .     .     .     .     [name]>           [:agentC]
+   .     .     .     .     .     .     [#local-id]-      [#1519280649]
+   .     .     .     .     .     .     [#category-type]- [agent]
+   .     .     .     .     .     .     [shard]-
+   .     .     .     .     .     .     .     [messaging]>
+   .     .     .     .     .     .     .     .     [name]>           [messaging]
+   .     .     .     .     .     .     .     .     [#local-id]-      [#1262822392]
+   .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     .     [EchoTesting]>
+   .     .     .     .     .     .     .     .     [name]>           [EchoTesting]
+   .     .     .     .     .     .     .     .     [#local-id]-      [#120694604]
+   .     .     .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#989938643, #1465085305, #1604125387]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#522764626]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     [load_order]-     [pylon;agent;bridge]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [loader]-
+   .     .     .     [agent:composite]>
+   .     .     .     .     [name]>           [agent:composite]
+   .     .     .     .     [#local-id]-      [#2106620844]
+   .     .     .     .     [#category-type]- [loader]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     .     [in-context-of]>  [#1604125387]
+   .     [#989938643]-
+   .     .     [name]>           [webSocket:pylonC]
+   .     .     [#local-id]-      [#989938643]
+   .     .     [#category-type]- [pylon]
+   .     .     [connectTo]>      [ws://10.89.51.225:8886]
+   .     .     [agent]-
+   .     .     .     [:agentC]>
+   .     .     .     .     [name]>           [:agentC]
+   .     .     .     .     [#local-id]-      [#1519280649]
+   .     .     .     .     [#category-type]- [agent]
+   .     .     .     .     [shard]-
+   .     .     .     .     .     [messaging]>
+   .     .     .     .     .     .     [name]>           [messaging]
+   .     .     .     .     .     .     [#local-id]-      [#1262822392]
+   .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     .     [EchoTesting]>
+   .     .     .     .     .     .     [name]>           [EchoTesting]
+   .     .     .     .     .     .     [#local-id]-      [#120694604]
+   .     .     .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#989938643, #1465085305, #1604125387]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     [#1519280649]-
+   .     .     [name]>           [:agentC]
+   .     .     [#local-id]-      [#1519280649]
+   .     .     [#category-type]- [agent]
+   .     .     [shard]-
+   .     .     .     [messaging]>
+   .     .     .     .     [name]>           [messaging]
+   .     .     .     .     [#local-id]-      [#1262822392]
+   .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     .     [EchoTesting]>
+   .     .     .     .     [name]>           [EchoTesting]
+   .     .     .     .     [#local-id]-      [#120694604]
+   .     .     .     .     [#category-type]- [shard]
+   .     .     .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#989938643, #1465085305, #1604125387]
+   .     [#1262822392]-
+   .     .     [name]>           [messaging]
+   .     .     [#local-id]-      [#1262822392]
+   .     .     [#category-type]- [shard]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     [#120694604]-
+   .     .     [name]>           [EchoTesting]
+   .     .     [#local-id]-      [#120694604]
+   .     .     [#category-type]- [shard]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1519280649, #989938643, #1465085305, #1604125387]
+   .     [#522764626]-
+   .     .     [name]>           [local:default]
+   .     .     [#local-id]-      [#522764626]
+   .     .     [#category-type]- [pylon]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1465085305, #1604125387]
+   .     [#2106620844]-
+   .     .     [name]>           [agent:composite]
+   .     .     [#local-id]-      [#2106620844]
+   .     .     [#category-type]- [loader]
+   .     .     [package]>        [wsRegions, mihai, testing, src-tests.test.wsRegionsDeployment.Script]
+   .     .     [in-context-of]>  [#1465085305, #1604125387]
+]
+> [ settings load ] log exit.
+. [ boot          ] Configuration loaded
+. [ boot          ] Loading node [node:nodeC.0]
+> [ boot          ] Loader for [agent] of kind [composite] successfully loaded from [net.xqhs.flash.core.composite.CompositeAgentLoader].
+. [ boot          ] Trying to load node using default loader [net.xqhs.flash.core.SimpleLoader], from classpath [node][net.xqhs.flash.core.node.Node]
+> [ node:nodeC.0  ] Active entitites:[[agent]]
+. [ boot          ] Loading order: [pylon;agent;bridge]
+. [ boot          ] Loading category: [pylon]
+. [ boot          ] Trying to load [webSocket:pylonC]/[#989938643] [pylon][webSocket] using default loader [net.xqhs.flash.core.SimpleLoader], from classpath [net.xqhs.flash.webSocket.WebSocketPylon]
+. [ pylonC        ] Added node context:[nodeC]
+> [ boot          ] Entity [webSocket:pylonC]/[#989938643] of type [pylon] successfully loaded.
+. [ node:nodeC.0  ] registered an entity of type [pylon]. Provided name was [pylonC].
+. [ boot          ] Loaded items:[[#1465085305, #989938643]]
+. [ boot          ] Trying to load [local:default]/[#522764626] [pylon][local] using default loader [net.xqhs.flash.core.SimpleLoader], from classpath [net.xqhs.flash.local.LocalPylon]
+. [ default       ] Added node context:[nodeC]
+> [ boot          ] Entity [local:default]/[#522764626] of type [pylon] successfully loaded.
+. [ node:nodeC.0  ] registered an entity of type [pylon]. Provided name was [default].
+. [ boot          ] Loaded items:[[#1465085305, #989938643, #522764626]]
+. [ boot          ] Loading category: [agent]
+. [ boot          ] Trying to load [:agentC]/[#1519280649] [agent][null] using [0]th loader for [agent][first (composite)]
+. [ boot          ] Pylon [pylonC pylon] recommends [messaging] shard at classpath [net.xqhs.flash.webSocket.WebSocketMessagingShard].
+. [ boot          ] agentC: shard [messaging] can be loaded
+. [ boot          ] Pylon [pylonC pylon] does not recommend a [EchoTesting]/[EchoTesting] shard.
+. [ boot          ] agentC: shard [EchoTesting] can be loaded
+. [ boot          ] agentC: Shard [messaging] created for agent [agentC] from classpath [net.xqhs.flash.webSocket.WebSocketMessagingShard]. now configuring.
+. [ boot          ] agentC: Shard [messaging] for agent [agentC] configured.
+. [ boot          ] agentC: Shard [EchoTesting] created for agent [agentC] from classpath [testing.EchoTestingShard]. now configuring.
+. [ boot          ] agentC: Shard [EchoTesting] for agent [agentC] configured.
+. [ testing-agentC >>>> ] testing started.
+> [ boot                ] Entity [:agentC]/[#1519280649] of type [agent] successfully loaded.
+. [ node:nodeC.0        ] registered an entity of type [agent]. Provided name was [agentC].
+. [ boot                ] Loaded items:[[#1465085305, #989938643, #522764626, #1519280649]]
+> [ boot                ] No [bridge] entities defined.
+. [ boot                ] Other configuration:
+. [ node:nodeC.0        ] Messaging shard added, affiliated with pylon [pylonC pylon]
+. [ boot                ] node loaded: [nodeC]
+. [ boot                ] [1] nodes loaded.
+> [ boot                ] log exit.
+> [ node:nodeC.0        ] Starting node [nodeC] with entities [[net.xqhs.flash.webSocket.WebSocketPylon@7494e528, net.xqhs.flash.local.LocalPylon@1e6d1014, agentC]].
+. [ node:nodeC.0        ] starting entity [pylonC pylon]...
+. [ pylonC              ] Trying connection to WS server [ws://10.89.51.225:8886] tries left: [10]
+. [ pylonC              ] connected to [ws://10.89.51.225:8886]
+. [ pylonC              ] [pylonC] starting
+> [ pylonC              ] Started [with thread].
+. [ node:nodeC.0        ] entity [pylonC pylon] started successfully.
+. [ node:nodeC.0        ] starting entity [default pylon]...
+. [ default             ] [default] starting
+> [ default             ] Started with thread.
+. [ node:nodeC.0        ] entity [default pylon] started successfully.
+. [ node:nodeC.0        ] starting entity [agentC]...
+> [ agentC#             ] Agent state is soon [STARTING][]
+. [ node:nodeC.0        ] entity [agentC] started successfully.
+. [ pylonC              ] Registered entity [nodeC]/[net.xqhs.flash.core.support.AbstractMessagingShard$2@23bb8443] with this pylon [net.xqhs.flash.webSocket.WebSocketPylon@7494e528]: [{"nodeName":"nodeC","entityName":"nodeC"}]
+> [ node:nodeC.0        ] Node [nodeC] started.
+. [ pylonC              ] Registered entity [agentC]/[net.xqhs.flash.core.support.AbstractMessagingShard$2@4b365086] with this pylon [net.xqhs.flash.webSocket.WebSocketPylon@7494e528]: [{"nodeName":"nodeC","entityName":"agentC"}]
+> [ testing-agentC >>>> ] agent [agentC] event: [{EVENT_TYPE=[AGENT_START]}]
+> [ agentC#             ] state is now [RUNNING]
+> [ testing-agentC >>>> ] agent [agentC] event: [{EVENT_TYPE=[AGENT_WAVE], content=[check], destination-element=[ws://10.89.51.225:8886/agentC], source-element=[ws:, 10.89.51.225:8885, agentA, ws:, 10.89.51.225:8885, agentA], destination-complete=[agentC/ws://10.89.51.225:8886/agentC]}]
+* [ pylonC              ] Closed with exit code 1006
