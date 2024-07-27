@@ -7,7 +7,7 @@ from PIL import Image
 import io
 import json
 from builtins import isinstance
-import torch
+# import torch
 
 head = "<ML server> "
 
@@ -31,7 +31,7 @@ ML_DIRECTORY_PATH = "../../../../../../" + "ml-directory/";
 PYTHONLIB_PATH = "ml-directory/" + "pythonlib/lib/site-packages/"
 OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
-MODEL_CONFIG_FILE = "config.yaml";
+MODEL_CONFIG_FILE = "config-deeplab.yaml";
 MODELS_DIRECTORY = "models/";
 MODEL_ENDPOINT = ".pth";
 ADD_MODEL_SERVICE = "add_model";
