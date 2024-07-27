@@ -81,20 +81,27 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	 */
 	private InteroperabilityRouter<String>	interoperabilityRouter	= new InteroperabilityRouter<>();
 	/**
-	 * The port on which this server was started.
+	 * The address on which this server was started.
 	 */
-	int										serverPort				= -1;
+	String									webSocketServerAddress;
 
 	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
 	 * 
-	 * @param serverPort
-	 *            - the port on which to start the server.
+	 * @param webSocketServerAddress
+	 *            - the address on which to start the server.
 	 */
-	public WebSocketServerEntity(int serverPort) {
-		lf("Starting websocket server on port: ", Integer.valueOf(serverPort));
-		this.serverPort = serverPort;
-		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort)) {
+	public WebSocketServerEntity(String webSocketServerAddress) {
+		this.webSocketServerAddress = webSocketServerAddress;
+		Integer serverPort;
+		try {
+			serverPort = Integer.valueOf(webSocketServerAddress.split("://")[1].split(":")[1].split("/")[0]);
+			lf("Starting websocket server on port: ", serverPort);
+		} catch (Exception e) {
+			le("Can't parse server address: []", webSocketServerAddress);
+			return;
+		}
+		webSocketServer = new WebSocketServer(new InetSocketAddress(serverPort.intValue())) {
 			@Override
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
 				/*
@@ -164,7 +171,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			String destination = null;
 			try {
 				destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
-				if (destination.contains(WebSocketPylon.WS_PROTOCOL_PREFIX) && destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0].equals("ws://localhost:" + serverPort)) {
+				if (destination.contains(WebSocketPylon.WS_PROTOCOL_PREFIX) && destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0].equals(webSocketServerAddress)) {
 					destination = destination.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[1];
 					message = InteroperabilityRouter.prependDestinationToMessage(message, destination);
 				}

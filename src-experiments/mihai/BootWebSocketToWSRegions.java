@@ -4,6 +4,9 @@ import net.xqhs.flash.FlashBoot;
 
 /**
  * Deployment testing.
+ * 
+ * AgentC (in a WebSocket infrastructure) sends messages to AgentA (in a WSRegions infrastructure), via the bridge in
+ * nodeB. A number of 5 pings are sent.
  */
 public class BootWebSocketToWSRegions {
 	/**
@@ -14,20 +17,20 @@ public class BootWebSocketToWSRegions {
 
 	public static void main(String[] args_) {
 		String args = "";
-		args += " -package wsRegions mihai -loader agent:composite -load_order pylon;agent;bridge";
+		args += " -package wsRegions testing mihai -loader agent:composite -load_order pylon;agent;bridge";
 
 		args += " -node nodeB keep:20";
 		args += " -pylon webSocket:pylonWebsocket isServer:localhost:8886";
 		args += " -pylon WSRegions:pylonWSRegions isServer:localhost:8885";
 		args += " -bridge interoperability:bridge1 in-context-of:webSocket:pylonWebsocket";
 
-		args += " -node nodeA";
+		args += " -node nodeA keep:1";
 		args += " -pylon WSRegions:pylonA connectTo:localhost:8885";
-		args += " -agent :ws://localhost:8885/agentA -shard messaging";
+		args += " -agent :ws://localhost:8885/agentA -shard messaging -shard EchoTesting exit:30";
 
-		args += " -node nodeC";
+		args += " -node nodeC keep:1";
 		args += " -pylon webSocket:pylonC connectTo:ws://localhost:8886";
-		args += " -agent agentC classpath:AgentPingPong sendTo:ws://localhost:8885/agentA";
+		args += " -agent agentC -shard messaging -shard EchoTesting -shard PingTest otherAgent:ws://localhost:8885/agentA";
 
 		FlashBoot.main(args.split(" "));
 	}
