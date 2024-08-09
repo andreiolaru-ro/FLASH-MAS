@@ -27,8 +27,10 @@ head = "<ML server> "
 # constants:
 SERVER_URL = "http://localhost:5000/";
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
-ML_DIRECTORY_PATH = "../../../../../../" + "ml-directory/";
-PYTHONLIB_PATH = "ml-directory/" + "pythonlib/lib/site-packages/"
+ML_DIRECTORY_PATH = "ml-directory/";
+PYTHONLIB_PATH = []
+PYTHONLIB_PATH.append(ML_DIRECTORY_PATH + "pythonlib/lib/site-packages/")
+PYTHONLIB_PATH.append(ML_DIRECTORY_PATH + "pythonlib/lib/python3.11/site-packages/")
 OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config-deeplab.yaml";
@@ -41,7 +43,7 @@ GET_MODELS_SERVICE = "get_models";
 EXPORT_MODEL_SERVICE = "export_model";
 MODEL_NAME_PARAM = "model_name";
 MODEL_FILE_PARAM = "model_file";
-MODEL_CONFIG_PARAM = "model_config";
+MODEL_CONFIG_PARAM = "model_config";2
 INPUT_DATA_PARAM = "input_data";
 EXPORT_PATH_PARAM = "export_directory_path";
 OPERATION_MODULE_PARAM = "operation_module";
@@ -50,10 +52,22 @@ PREDICT_OP_PARAM = "predict_op";
 DATASET_NAME_PARAM = "dataset_name";
 DATASET_CLASSES_PARAM = "dataset_classes";
 
-print(head + "loading prerequisites...")
-pylib_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.parent.parent.absolute()
-pylib_path = str(pylib_path) + "/" + PYTHONLIB_PATH
-sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
+
+print("loading prerequisites...")
+project_root = pathlib.Path(__file__)
+first_branch = ML_SRC_PATH.split("/")[0]
+while str(project_root).split("/")[-1] != first_branch:
+    project_root = project_root.parent
+    ML_DIRECTORY_PATH = "../" + ML_DIRECTORY_PATH
+project_root = project_root.parent
+print(project_root)
+print(ML_DIRECTORY_PATH)
+for one_path in PYTHONLIB_PATH:
+    pylib_path = project_root.absolute()
+    pylib_path = str(pylib_path) + "/" + one_path
+    print(pylib_path)
+    # pylib_path = pylib_path.replace("/", "\\")
+    sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
 print(sys.path)
 
 try:
@@ -315,6 +329,8 @@ def export_model():
 if __name__ == '__main__':
     print(f"{head} starting...")
     # app.run()
+    import numpy
+    print(numpy.__version__)
     predict("deeplabv3plus_cityscapes", ML_DIRECTORY_PATH + "input/ADE_val_00000793.jpg")
     """  prediction = torch.tensor(response['prediction'])
     
