@@ -18,6 +18,7 @@ head = "<ML server> "
 #  pip install <package>
 
 # Windows:
+# in ml-directory/pythonlib:
 # python -m venv <c:\path\to\myenv>
 # .\Scripts\activate.bat
 # .\Scripts\pip.exe install <package>
