@@ -11,15 +11,6 @@
  ******************************************************************************/
 package florina.monitoringAndControlTest.shards;
 
-import florina.monitoringAndControlTest.BootCompositeWebSocket;
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.shard.AgentShardGeneral;
-import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.MultiTreeMap;
-import test.compositePingPong.Boot;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -28,6 +19,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.ReentrantLock;
+
+import florina.monitoringAndControlTest.BootCompositeWebSocket;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
@@ -182,11 +181,5 @@ public class PingTestComponent extends AgentShardGeneral
 			startAgentsTime[index] = System.currentTimeMillis();
 		}
 		return true;
-	}
-	
-	@Override
-	protected MultiTreeMap getShardData()
-	{
-		return super.getShardData();
 	}
 }
