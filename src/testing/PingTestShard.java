@@ -197,9 +197,4 @@ public class PingTestShard extends AgentShardGeneral {
 		if(!keep)
 			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 	}
-	
-	@Override
-	protected MultiTreeMap getShardData() {
-		return super.getShardData();
-	}
 }
