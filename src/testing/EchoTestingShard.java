@@ -114,6 +114,8 @@ public class EchoTestingShard extends AgentShardCore {
 		if(getAgent() != null) {
 			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>").setLogLevel(Level.ALL)
 					.setLoggerType(PlatformUtils.platformLogType());
+			if(getConfiguration().isSimple(HIGHLIGHT_FOCUS))
+				locallog.setHighlighted();
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null) {

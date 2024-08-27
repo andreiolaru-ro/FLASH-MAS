@@ -14,6 +14,7 @@ package net.xqhs.flash.core.shard;
 import java.io.Serializable;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -48,7 +49,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardCore extends Unit implements AgentShard, Serializable {
+public class AgentShardCore extends EntityCore<Agent> implements AgentShard, Serializable {
 	/**
 	 * The class UID.
 	 */
@@ -67,10 +68,6 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
 	private transient ShardContainer	parentAgent;
-	/**
-	 * Indicates the state of the shard.
-	 */
-	private boolean						isRunning;
 	
 	/**
 	 * The constructor assigns the designation to the shard.
@@ -136,18 +133,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		if(configuration != null) {
-			configuration.ensureLocked();
-			shardConfiguration = configuration;
-		}
-		return true;
-	}
-	
-	/**
-	 * @return the shard configuration stored at {@link #configure(MultiTreeMap)} time.
-	 */
-	public MultiTreeMap getShardConfiguration() {
-		return shardConfiguration;
+		configuration.ensureLocked();
+		return super.configure(configuration);
 	}
 	
 	/**
@@ -155,12 +142,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean start() {
-		if(isRunning)
-			return ler(false, "Shard is already running");
 		if(getAgent() == null)
 			return ler(false, "Shards cannot start without being in context of an agent.");
-		isRunning = true;
-		return true;
+		return super.start();
 	}
 	
 	/**
@@ -168,17 +152,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean stop() {
-		if(!isRunning)
-			return ler(false, "Shard is not running");
 		if(getAgent() == null)
 			throw new IllegalStateException("Shard is " + getShardDesignation() + " not in the context of an agent.");
-		isRunning = false;
-		return true;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return isRunning;
+		return super.stop();
 	}
 	
 	/**
@@ -202,6 +178,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	}
 	
 	/**
+<<<<<<< master
 	 * @return the shard initialization data. It cannot be modified, and it is guaranteed to not be <code>null</code>.
 	 */
 	protected MultiTreeMap getShardData() {
@@ -209,6 +186,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	}
 	
 	/**
+=======
+>>>>>>> 09fd8fb Added files not added in the previous commit.
 	 * The method is called by the parent {@link ShardContainer} when an event occurs.
 	 * 
 	 * @param event

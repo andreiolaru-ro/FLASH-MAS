@@ -95,10 +95,4 @@ public class ControlShard extends AgentShardGeneral {
 		// return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
 		return true;
 	}
-	
-	@Override
-	protected MultiTreeMap getShardData() {
-		return super.getShardData();
-	}
-	
 }
