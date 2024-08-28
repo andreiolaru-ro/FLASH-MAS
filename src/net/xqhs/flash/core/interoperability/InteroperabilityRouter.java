@@ -1,11 +1,7 @@
 package net.xqhs.flash.core.interoperability;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.google.gson.JsonObject;
 
@@ -14,24 +10,50 @@ import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.flash.webSocket.WebSocketPylon;
 
 public class InteroperabilityRouter<T> {
-	private Map<String, T> platformPrefixToRoutingDestination;
+//	private Map<String, T> platformPrefixToRoutingDestination;
+	private Map<String, TreeMap<Integer, Set<T>>> platformPrefixToRoutingDestination;
 
-	public void addRoutingDestinationForPlatform(String platformPrefix, T entityName) {
-		if (platformPrefixToRoutingDestination == null)
+	public void addRoutingDestinationForPlatform(String platformPrefix, T entityName, Integer distance) {
+//		if (platformPrefixToRoutingDestination == null)
+//			platformPrefixToRoutingDestination = new HashMap<>();
+//
+//		platformPrefixToRoutingDestination.put(platformPrefix, entityName);
+
+		if (platformPrefixToRoutingDestination == null) {
 			platformPrefixToRoutingDestination = new HashMap<>();
+		}
 
-		platformPrefixToRoutingDestination.put(platformPrefix, entityName);
+		if (platformPrefixToRoutingDestination.get(platformPrefix) == null) {
+			platformPrefixToRoutingDestination.put(platformPrefix, new TreeMap<>());
+		}
+
+		if (platformPrefixToRoutingDestination.get(platformPrefix).get(distance) == null) {
+			platformPrefixToRoutingDestination.get(platformPrefix).put(distance, new HashSet<>());
+		}
+
+		platformPrefixToRoutingDestination.get(platformPrefix).get(distance).add(entityName);
+
 	}
 
 	public T getRoutingDestination(String finalDestination) {
-		if (platformPrefixToRoutingDestination == null || finalDestination == null)
-			return null;
+//		if (platformPrefixToRoutingDestination == null || finalDestination == null)
+//			return null;
+//
+//		T routingDestination = platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination));
+//		if (routingDestination == null)
+//			return null;
+//
+//		return routingDestination;
 
-		T routingDestination = platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination));
-		if (routingDestination == null)
+		if (platformPrefixToRoutingDestination == null || finalDestination == null) {
 			return null;
+		}
 
-		return routingDestination;
+		if (platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination)) == null) {
+			return null;
+		}
+
+		return platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination)).firstEntry().getValue().iterator().next();
 	}
 
 	public static String getPlatformPrefixFromAddress(String address) {
@@ -46,27 +68,40 @@ public class InteroperabilityRouter<T> {
 	}
 
 	public Collection<T> getAllDestinations() {
+//		if (platformPrefixToRoutingDestination == null)
+//			return null;
+//
+//		return platformPrefixToRoutingDestination.values();
+
 		if (platformPrefixToRoutingDestination == null)
 			return null;
 
-		return platformPrefixToRoutingDestination.values();
-	}
-
-	public boolean removeBridge(String bridgeAddress) {
-		if (platformPrefixToRoutingDestination == null || !platformPrefixToRoutingDestination.containsValue(bridgeAddress))
-			return false;
-
-		Iterator<Entry<String, T>> iterator = platformPrefixToRoutingDestination.entrySet().iterator();
-		boolean foundBridge = false;
-		while (iterator.hasNext()) {
-			Entry<String, T> entry = iterator.next();
-			if (bridgeAddress.equals(entry.getValue())) {
-				iterator.remove();
-				foundBridge = true;
+		Set<T> destinations = new HashSet<>();
+		for (TreeMap<Integer, Set<T>> treeMap : platformPrefixToRoutingDestination.values()) {
+			for (Set<T> tSet : treeMap.values()) {
+				destinations.addAll(tSet);
 			}
 		}
 
-		return foundBridge;
+		return destinations;
+	}
+
+	public boolean removeBridge(String bridgeAddress) {
+//		if (platformPrefixToRoutingDestination == null || !platformPrefixToRoutingDestination.containsValue(bridgeAddress))
+//			return false;
+//
+//		Iterator<Entry<String, T>> iterator = platformPrefixToRoutingDestination.entrySet().iterator();
+//		boolean foundBridge = false;
+//		while (iterator.hasNext()) {
+//			Entry<String, T> entry = iterator.next();
+//			if (bridgeAddress.equals(entry.getValue())) {
+//				iterator.remove();
+//				foundBridge = true;
+//			}
+//		}
+//
+//		return foundBridge;
+		return false;
 	}
 
 	public boolean removeRoutingDestinationForPlatform(String platformPrefix, T routingDestination) {

@@ -355,7 +355,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 		String entity = extractSource(msg);
 		if (msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) != null) {
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entity);
+			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entity, 1);
 
 			if (msg.get(InteroperableMessagingPylonProxy.IS_REMOTE) != null)
 				return;

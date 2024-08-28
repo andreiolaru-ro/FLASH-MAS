@@ -232,7 +232,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) && message.has(WebSocketPylon.MESSAGE_ENTITY_KEY)) {
 			String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
 			String entityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
-			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entityName);
+			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entityName, 1);
 			lf("Registered bridge entity [] for platform [] on []. ", entityName, platformPrefix, nodeName);
 			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(entityName) && entityToWebSocket.get(entityName) == webSocket) {
 				if (!useful)

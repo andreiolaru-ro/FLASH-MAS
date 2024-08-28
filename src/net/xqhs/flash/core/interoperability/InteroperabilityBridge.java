@@ -111,7 +111,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 			return false;
 
 		InteroperableMessagingPylonProxy pylonProxy = (InteroperableMessagingPylonProxy) context;
-		interoperabilityRouter.addRoutingDestinationForPlatform(pylonProxy.getPlatformPrefix(), pylonProxy);
+		interoperabilityRouter.addRoutingDestinationForPlatform(pylonProxy.getPlatformPrefix(), pylonProxy, 1);
 
 		lf("Context added for bridge entity []: []", getName(), context.getEntityName());
 		return true;
