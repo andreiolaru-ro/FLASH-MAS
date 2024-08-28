@@ -55,9 +55,11 @@ DATASET_CLASSES_PARAM = "dataset_classes";
 
 print("loading prerequisites...")
 project_root = pathlib.Path(__file__)
+project_root_str = str(project_root).replace("\\", "/")
 first_branch = ML_SRC_PATH.split("/")[0]
-while str(project_root).split("/")[-1] != first_branch:
+while project_root_str.split("/")[-1] != first_branch:
     project_root = project_root.parent
+    project_root_str = str(project_root).replace("\\", "/")
     ML_DIRECTORY_PATH = "../" + ML_DIRECTORY_PATH
 project_root = project_root.parent
 print(project_root)
