@@ -1,12 +1,18 @@
 package net.xqhs.flash.core.interoperability;
 
+import com.google.gson.Gson;
+import jdk.internal.net.http.common.Pair;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.util.logging.Unit;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -83,8 +89,22 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 					pylonProxy.registerBridge(getName(), registerEntity ? waveInbox : null, platformPrefix);
 					registerEntity = false;
 				}
+
+				// this is for inter-zone routing
+//				// for inter-zone routing
+//				AgentWave wave = new AgentWaveJson().appendDestination(platformPrefix).addSourceElements(getName());
+//
+//				// create json with entries target -> {next_hop: <name>. distance: <dist>}
+//
+//				// create map for toJson method
+//				Map<String, Pair<String, Integer>> jsonMap = new HashMap<>();
+//
+//				Gson gson = new Gson();
+//				String jsonToSend = gson.toJson(jsonMap);
+//				wave.add("content", jsonToSend);
 			}
 		}
+
 
 		li("Bridge entity [] started successfully.", getName());
 		return true;
