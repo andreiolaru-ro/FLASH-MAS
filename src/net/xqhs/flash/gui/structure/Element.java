@@ -293,6 +293,7 @@ public class Element implements Cloneable {
 	 */
 	public JsonObject toJSON() {
 		JsonObject result = new JsonObject();
+		result.addProperty("id", id);
 		result.addProperty("type", type);
 		result.addProperty("value", value);
 		result.addProperty("port", port);
