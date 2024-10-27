@@ -11,26 +11,58 @@
  ******************************************************************************/
 package net.xqhs.flash.core.shard;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 
+/**
+ * Parent for all shards that support communicating with the exterior via "ports". An example is a graphical user
+ * interface. An IO interface is organized in <i>ports</i>, each port containing one or more <i>roles</i>. Ports and
+ * roles are identified by strings.
+ * 
+ * <li>output -- information goes out through the port
+ * <li>'passive' input -- information is read through the port at request, when {@link #getInput(String)} is called.
+ * <li>'active' input -- the method {@link #postActiveInput} is called when input comes in through the port (acts as a
+ * callback).
+ * </ul>
+ * Information is sent through ports by means of {@link AgentWave} instances containing value key-pairs. The key of each
+ * pair is called a <i>role</i>.
+ * 
+ * @author andreiolaru
+ */
 public abstract class IOShard extends AgentShardGeneral {
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -2775487340051334684L;
 	
+	/**
+	 * No-argument constructor.
+	 */
 	protected IOShard() {
 		super(StandardAgentShard.IO.toAgentShardDesignation());
 	}
 	
+	/**
+	 * Constructor with the given designation.
+	 * 
+	 * @param designation
+	 *            - the designation of the shard.
+	 */
 	protected IOShard(AgentShardDesignation designation) {
 		super(designation);
 	}
 	
+	/**
+	 * The methods is called from the exterior of the shard / of the shard container when an event generates input for
+	 * the shard (e.g. a user clicks on a button in the GUI).
+	 * 
+	 * @param port
+	 *            - the port that generated the input.
+	 * @param values
+	 *            - the roles in the port and their corresponding values that characterize the input event.
+	 */
 	public void postActiveInput(String port, Map<String, String> values) {
 		AgentWave inputWave = new AgentWave(null, "/");
 		for(String role : values.keySet())
@@ -38,6 +70,17 @@ public abstract class IOShard extends AgentShardGeneral {
 		postActiveInput(port, inputWave);
 	}
 	
+	/**
+	 * The methods is called from the exterior of the shard / of the shard container when an event generates input for
+	 * the shard (e.g. a user clicks on a button in the GUI). In this version, the roles and values are already
+	 * assembled in an {@link AgentWave} instance.
+	 * 
+	 * @param port
+	 *            - the port that generated the input.
+	 * @param inputWave
+	 *            - an {@link AgentWave} containing the roles in the port and their corresponding values that
+	 *            characterize the input event.
+	 */
 	public void postActiveInput(String port, AgentWave inputWave) {
 		if(inputWave.getCompleteSource().length() == 0)
 			inputWave.addSourceElementFirst(port);
@@ -45,9 +88,22 @@ public abstract class IOShard extends AgentShardGeneral {
 		super.getAgent().postAgentEvent(inputWave);
 	}
 	
+	/**
+	 * The method should be called from within the shard to retrieve input from the port.
+	 * 
+	 * @param portName
+	 *            - the port to get input from.
+	 * @return an {@link AgentWave} containing the information obtained from the port. The wave should contain the name
+	 *         of the port as {@link AgentWave#SOURCE_ELEMENT}.
+	 */
 	public abstract AgentWave getInput(String portName);
 	
+	/**
+	 * The method should be called from within the shard to send output through a port. The port is found in the
+	 * {@link AgentWave#DESTINATION_ELEMENT} of the wave.
+	 * 
+	 * @param agentWave
+	 *            - the wave containing the information to be sent out.
+	 */
 	public abstract void sendOutput(AgentWave agentWave);
-	
-	public static HashMap<String, String> reducedInterfacesValues = new HashMap<>();
 }

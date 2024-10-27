@@ -18,299 +18,305 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import net.xqhs.flash.core.agent.AgentWave;
+
 /**
- * Element class represents an element from GUI interface (e.g. button, label, container, text box, spinner)
+ * Element class represents the structure of an element from GUI interface (e.g. whole interface, container (block),
+ * button, label, text box, spinner, etc).
+ * 
+ * @author Florin Mihalache
+ * @author andreiolaru
+ * @author Valentin Mignot
  */
 public class Element implements Cloneable {
 	/**
 	 * the default role of an element
 	 */
-	public static final String DEFAULT_ROLE = "content";
-	public static final int		INDENT_SIZE		= 8;
+	public static final String	DEFAULT_ROLE			= AgentWave.CONTENT;
+	/**
+	 * Intent size to use when producing a {@link String} rendition of the structure.
+	 */
+	public static final int		INDENT_SIZE				= 8;
 	/**
 	 * prefix for elements that are disabled
 	 */
-	public static String DISABLED_ROLE_PREFIX = "disabled-";
+	public static final String	DISABLED_ROLE_PREFIX	= "disabled-";
 	
 	/**
-	 * id of the element
+	 * ID of this element
 	 */
 	private String				id;
 	/**
-	 * the list of child elements (applicable to block elements)
+	 * The list of child elements (applicable to block elements).
 	 */
 	private List<Element>		children	= new ArrayList<>();
+	/**
+	 * The properties of this element (could affect rendering the element).
+	 */
 	private Map<String, String>	properties	= new HashMap<>();
 	/**
-	 * type of element
+	 * Type of the element.
 	 */
 	private String				type		= ElementType.BLOCK.type;
 	/**
-	 * port where is the element
-	 * Used to identify an element in the GUI with the role.
+	 * The port that this element is part of.
 	 */
 	private String				port;
 	/**
-	 * the role of the element in its port
-	 * Used to identify an element in the GUI with the port.
+	 * The role with which this element is associated.
 	 */
 	private String				role;
 	/**
-	 * value of the element (e.g. the text of a button / label)
+	 * Value of the element (e.g. the text of a button / label).
 	 */
 	private String				value;
 	/**
-	 * the type of the block where the element is (global, agent interfaces)
+	 * The type of the block where the element is (global, agent interfaces).
 	 */
 	private String				blockType;
-
+	
 	/**
-	 * @return
-	 * 		- the list of child elements
+	 * @return - the list of child elements
 	 */
 	public List<Element> getChildren() {
 		return children;
 	}
-
+	
 	/**
 	 * Set the children of the element with the given list
 	 *
 	 * @param children
-	 * 		- the list of child elements
+	 *            - the list of child elements
 	 */
 	public void setChildren(List<Element> children) {
 		this.children = children;
 	}
-
+	
 	/**
 	 * Add a child element to the list of children
 	 *
 	 * @param element
-	 * 		- the child element to be added
+	 *            - the child element to be added
 	 */
 	public void addChild(Element element) {
 		this.children.add(element);
 	}
-
+	
 	/**
 	 * Add a list of child elements to the list of children
 	 *
 	 * @param _children
-	 * 		- the list of child elements to be added
+	 *            - the list of child elements to be added
 	 */
 	public void addAllChildren(List<Element> _children) {
 		this.children.addAll(_children);
 	}
-
+	
 	/**
-	 * @return
-	 * 		- the id of the element
+	 * @return - the id of the element
 	 */
 	public String getId() {
 		return id;
 	}
-
+	
 	/**
 	 * Set the id of the element
 	 *
 	 * @param id
-	 * 		- the id of the element
+	 *            - the id of the element
 	 */
 	public void setId(String id) {
 		this.id = id;
 	}
-
+	
 	/**
-	 * @return
-	 * 		- the type of the element
+	 * @return - the type of the element
 	 */
 	public String getType() {
 		return type;
 	}
-
+	
 	/**
 	 * Set the type of the element
 	 *
 	 * @param type
-	 * 		- the type of the element
+	 *            - the type of the element
 	 */
 	public void setType(String type) {
 		this.type = type;
 	}
-
+	
 	/**
-	 * @return
-	 *       - the properties of the element
+	 * @return - the properties of the element
 	 */
 	public Map<String, String> getProperties() {
 		return properties;
 	}
-
+	
 	/**
 	 * Set the properties of the element
 	 *
 	 * @param properties
-	 * 		- the properties of the element
+	 *            - the properties of the element
 	 */
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
 	}
-
+	
 	/**
 	 *
-	 * @return
-	 * 		- the port of the element
+	 * @return - the port of the element
 	 */
 	public String getPort() {
 		return port;
 	}
-
+	
 	/**
 	 * Set the port of the element
 	 *
 	 * @param port
-	 * 		- the port of the element
+	 *            - the port of the element
 	 */
 	public void setPort(String port) {
 		this.port = port;
 	}
-
+	
 	/**
-	 * @return
-	 * 		- the role of the element
+	 * @return - the role of the element
 	 */
 	public String getRole() {
 		return role;
 	}
-
+	
 	/**
 	 * Set the role of the element
 	 *
 	 * @param role
-	 * 		- the role of the element
+	 *            - the role of the element
 	 */
 	public void setRole(String role) {
 		this.role = role;
 	}
-
+	
 	/**
-	 * @return
-	 * 		- the value of the element
+	 * @return - the value of the element
 	 */
 	public String getValue() {
 		return value;
 	}
-
+	
 	/**
 	 * Set the value of the element
 	 *
 	 * @param value
-	 * 		- the value of the element
+	 *            - the value of the element
 	 */
 	public void setValue(String value) {
 		this.value = value;
 	}
-
+	
 	/**
-	 * @return
-	 * 		- the type of the block where the element is
+	 * @return - the type of the block where the element is
 	 */
 	public String getBlockType() {
 		return blockType;
 	}
-
+	
 	/**
 	 * Set the type of the block where the element is
 	 *
 	 * @param blockType
-	 * 		- the type of the block where the element is
+	 *            - the type of the block where the element is
 	 */
 	public void setBlockType(String blockType) {
 		this.blockType = blockType;
 	}
-
+	
 	/**
 	 * Return the children of the element if they match the given port
 	 *
-	 * @param port
-	 * 		- the port to match
-	 *
-	 * @return
-	 * 		- the list of children that match the given port
+	 * @param childrenPort
+	 *            - the port to match
+	 * @return - the list of children that match the given port
 	 */
-	public List<Element> getChildren(String port) {
+	public List<Element> getChildren(String childrenPort) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
-			if((port == null && e.getPort() == null) || (port != null && port.equals(e.getPort())))
+			if((childrenPort == null && e.getPort() == null) || (childrenPort != null && childrenPort.equals(e.getPort())))
 				result.add(e);
 		return result;
 	}
-
+	
 	/**
 	 * Return the children of the element if they match the given port and role
 	 *
-	 * @param port
-	 * 		- the port to match
-	 * @param role
-	 * 		- the role to match
-	 *
-	 * @return
-	 * 		- the list of children that match the given port and role
+	 * @param childPort
+	 *            - the port to match
+	 * @param childRole
+	 *            - the role to match
+	 * @return - the list of children that match the given port and role
 	 */
-	public List<Element> getChildren(String port, String role) {
+	public List<Element> getChildren(String childPort, String childRole) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
-			if(((port == null && e.getPort() == null) || (port != null && port.equals(e.getPort())))
-					&& ((role == null && e.getRole() == null) || (role != null && role.equals(e.getRole()))))
+			if(((childPort == null && e.getPort() == null) || (childPort != null && childPort.equals(e.getPort())))
+					&& ((childRole == null && e.getRole() == null)
+							|| (childRole != null && childRole.equals(e.getRole()))))
 				result.add(e);
 		return result;
 	}
-
+	
 	/**
 	 * Return the child of the element if it matches the given id
 	 *
-	 * @param id
-	 * 		- the id to match
-	 *
-	 * @return
-	 * 		- the child that matches the given id
+	 * @param childID
+	 *            - the id to match
+	 * 			
+	 * @return - the child that matches the given id
 	 */
-	public Element getChildWithId(String id) {
+	public Element getChildWithId(String childID) {
 		for(Element e : children)
-			if(id.equals(e.getId()))
+			if(childID.equals(e.getId()))
 				return e;
 		return null;
 	}
-
+	
 	/**
 	 * Create a {@link JSONObject} from the element
 	 *
-	 * @return
-	 *        - a {@link JSONObject} representation of the element
+	 * @return - a {@link JSONObject} representation of the element
 	 */
-	public JSONObject toJSON() {
-		JSONObject result = new JSONObject();
-		result.put("id", id);
-		result.put("type", type);
-		result.put("value", value);
-		result.put("port", port);
-		result.put("role", role);
-		JSONArray childrenArray = new JSONArray();
-		result.put("children", childrenArray);
+	public JsonObject toJSON() {
+		JsonObject result = new JsonObject();
+		result.addProperty("type", type);
+		result.addProperty("value", value);
+		result.addProperty("port", port);
+		result.addProperty("role", role);
+		JsonArray childrenArray = new JsonArray();
+		result.add("children", childrenArray);
 		if(children != null)
 			for(Element child : children)
 				childrenArray.add(child.toJSON());
 		return result;
 	}
-
+	
 	@Override
 	public String toString() {
 		return toString(0).toString();
 	}
 	
+	/**
+	 * Creates a String rendition of the element.
+	 * 
+	 * @param indent
+	 *            - the indentation level.
+	 * @return a string rendition.
+	 */
 	protected StringBuilder toString(int indent) {
 		StringBuilder result = new StringBuilder();
 		result.append(" ".repeat(indent * INDENT_SIZE));
@@ -327,12 +333,12 @@ public class Element implements Cloneable {
 		result.append("]  ");
 		return result;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(port, role);
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
@@ -346,7 +352,7 @@ public class Element implements Cloneable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Element result = (Element) super.clone();
-		result.children = new LinkedList<Element>();
+		result.children = new LinkedList<>();
 		for(Element c : children)
 			result.children.add((Element) c.clone());
 		result.properties = new HashMap<>(properties);

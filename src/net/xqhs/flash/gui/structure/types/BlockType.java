@@ -11,22 +11,47 @@
  ******************************************************************************/
 package net.xqhs.flash.gui.structure.types;
 
+/**
+ * The types of containers that can appear in a UI.
+ */
 public enum BlockType {
-    GLOBAL("global"),
-    INTERFACES("interfaces");
-
-    public final String type;
-
-    BlockType(String type) {
-        this.type = type;
-    }
-
-    public static BlockType valueOfLabel(String label) {
-        for (BlockType e : values()) {
-            if (e.type.equals(label)) {
-                return e;
-            }
-        }
-        return null;
-    }
+	/**
+	 * The global interface (e.g. the whole web interface).
+	 */
+	GLOBAL("global"),
+	/**
+	 * The container for the various agent interfaces.
+	 */
+	INTERFACES("interfaces");
+	
+	/**
+	 * The label of the type.
+	 */
+	public final String type;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param type
+	 *            - the label.
+	 */
+	BlockType(String type) {
+		this.type = type;
+	}
+	
+	/**
+	 * Get the type with the given label.
+	 * 
+	 * @param label
+	 *            - the label
+	 * @return the corresponding type.
+	 */
+	public static BlockType valueOfLabel(String label) {
+		for(BlockType e : values()) {
+			if(e.type.equals(label)) {
+				return e;
+			}
+		}
+		return null;
+	}
 }

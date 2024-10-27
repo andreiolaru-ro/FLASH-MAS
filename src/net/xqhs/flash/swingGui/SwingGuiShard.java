@@ -32,12 +32,21 @@ import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.ElementType;
 
+/**
+ * Java Swing implementation of the {@link GuiShard}. It creates a window for this shard to which it adds Swing
+ * components according to the specification.
+ * 
+ * @author andreiolaru
+ */
 public class SwingGuiShard extends GuiShard {
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -3741974077986177703L;
 	
+	/**
+	 * The window containing the controls.
+	 */
 	JFrame window = null;
 	
 	@Override
@@ -56,6 +65,14 @@ public class SwingGuiShard extends GuiShard {
 		}
 	}
 	
+	/**
+	 * Generates the elements of the interface based on the {@link Element} specification.
+	 * 
+	 * @param element
+	 *            - the specification.
+	 * @param parent
+	 *            - the parent {@link JPanel}, if this is not a top element.
+	 */
 	protected void generate(Element element, JPanel parent) {
 		Component comp = null;
 		ComponentConnect connector = null;

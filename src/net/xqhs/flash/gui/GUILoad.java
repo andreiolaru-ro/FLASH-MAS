@@ -26,15 +26,22 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.util.logging.Logger;
 
+/**
+ * Class with static methods to load an interface specification (represented as an {@link Element} instance) from a YAML
+ * file or directly from a YAML-formatted {@link String}.
+ * 
+ * @author Florin Mihalache
+ * @author andreiolaru
+ */
 public class GUILoad {
 	/**
 	 * Loads a GUI from a configuration from a .yml or .yaml file, and associates it with a logger.
 	 *
 	 * @param configuration
-	 *                          - the configuration.
+	 *            - the configuration.
 	 * @param log
-	 *                          - the logger.
-	 * @return the GUI.
+	 *            - the logger.
+	 * @return the structure of the interface.
 	 */
 	public static Element load(MultiTreeMap configuration, Logger log) {
 		String config = configuration.getFirstValue("from");

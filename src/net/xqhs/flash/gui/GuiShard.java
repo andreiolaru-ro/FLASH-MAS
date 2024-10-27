@@ -23,33 +23,57 @@ import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
-import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Class for any shard that models a GUI.
+ * 
+ * @author andreiolaru
+ * @author Florin Mihalache
+ */
 public class GuiShard extends IOShard {
+	/**
+	 * Connects each component of each role in each port to an actual component of the interface (e.g. a button).
+	 */
 	protected interface ComponentConnect {
+		/**
+		 * @param value
+		 *            the value to output to the component.
+		 */
 		void sendOutput(String value);
-
+		
+		/**
+		 * @return the value in the component.
+		 */
 		String getInput();
 	}
-
+	
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -2769555908800271606L;
-
+	/**
+	 * The description of the structure of the interface.
+	 */
 	protected Element interfaceStructure;
-
+	/**
+	 * A mapping of ports to roles to list of components.
+	 */
 	protected Map<String, Map<String, List<ComponentConnect>>> portRoleComponents = new HashMap<>();
-
+	/**
+	 * A reference to the {@link MonitoringShard} if one exists.
+	 */
 	protected MonitoringShard monitor = null;
-
+	
 	/**
 	 * No-argument constructor.
 	 */
 	public GuiShard() {
 		super(StandardAgentShard.GUI.toAgentShardDesignation());
 	}
-
+	
+	/**
+	 * Loads the interface structure, via {@link GUILoad}.
+	 */
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
@@ -60,14 +84,17 @@ public class GuiShard extends IOShard {
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Handles the {@link AgentEventType#AGENT_START} event to register the UIG to the {@link MonitoringShard}.
+	 */
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		if(event.getType() == AgentEventType.AGENT_START)
 			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
 				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
-				//monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
+				// monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
 				monitor.addGuiElement(interfaceStructure);
 			}
 	}
@@ -98,7 +125,7 @@ public class GuiShard extends IOShard {
 		}
 		
 		Map<String, List<ComponentConnect>> roleMap = portRoleComponents.get(targetport);
-
+		
 		for(String role : wave.getContentElements())
 			if(roleMap.containsKey(role)) {
 				List<ComponentConnect> targetList = roleMap.get(role);
