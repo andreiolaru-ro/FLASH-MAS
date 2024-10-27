@@ -46,6 +46,10 @@ public class Element implements Cloneable {
 	 * prefix for elements that are disabled
 	 */
 	public static final String	DISABLED_ROLE_PREFIX	= "disabled-";
+	/**
+	 * Active input role.
+	 */
+	public static final String	ACTIVE_INPUT			= "activate";
 	
 	/**
 	 * ID of this element
