@@ -11,9 +11,20 @@
  ******************************************************************************/
 package net.xqhs.flash.core.util;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+/**
+ * Class containing various utilities regarding the use of operations to control entities. Namely, it contains
+ * <ul>
+ * <li>the available Control operations (to be managed via ControlShard)
+ * <li>the available Monitor operations (to be managed via MonitoringShard)
+ * <li>construction of a JSON structure describing an operation
+ * <li>construction of a JSON structure describing an entity.
+ * </ul>
+ * 
+ * @author andreiolaru
+ */
 public class OperationUtils {
 
 	/**
@@ -29,7 +40,7 @@ public class OperationUtils {
 		 */
 		STOP,
 		/**
-		 * Operation where the Node stop the agent.
+		 * Operation where the Node stops the agent.
 		 */
 		KILL,
 		/**
@@ -85,9 +96,13 @@ public class OperationUtils {
 		 * Operation for updating the GUI of an entity.
 		 */
 		GUI_UPDATE,
-		
+		/**
+		 * Operation that relays a GUI output from the GuiShard to the central monitoring entity.
+		 */
 		GUI_OUTPUT,
-		
+		/**
+		 * Operation that relays a GUI input from a remote interface to an entity.
+		 */
 		GUI_INPUT_TO_ENTITY,
 		
 		;
@@ -119,15 +134,19 @@ public class OperationUtils {
 	}
 	
 	/**
-	 * Possible access when performing an operation. `proxy` refers to an intermediate entity which is able to perform
-	 * the operation; `self` refers to the ability to perform the operation by itself;
+	 * Possible access when performing an operation: `proxy` refers to an intermediate entity which is able to perform
+	 * the operation.
 	 */
-	private static final String[] modelAccess = { "proxy", "self" };
+	public static final String	ACCESS_MODE_PROXY	= "proxy";
+	/**
+	 * Possible access when performing an operation: `self` refers to the ability to perform the operation by itself.
+	 */
+	public static final String	ACCESS_MODE_SELF	= "self";
 	
 	/**
 	 * Name of the operation.
 	 */
-	public static final String NAME = "name";
+	public static final String OPERATION_NAME = "name";
 	
 	/**
 	 * Parameters of operation.
@@ -170,24 +189,23 @@ public class OperationUtils {
 	 * @param name
 	 *            - name of operation
 	 * @param proxy
-	 *            - proxy entity as a way to perform the operation
+	 *            - proxy entity as a way to perform the operation (e.g. the node containing the entity)
 	 * @param value
 	 *            - value for given operation
 	 * @param param
 	 *            - parameter as entity on which the operation is performed
-	 * @return - json object encapsulating all operation details
+	 * @return - JSON object encapsulating all operation details
 	 */
-	@SuppressWarnings("unchecked")
-	public static JSONObject operationToJSON(String name, String proxy, String value, String param) {
-		JSONObject op = new JSONObject();
-		op.put(NAME, name);
-		op.put(PARAMETERS, param);
-		op.put(VALUE, value);
-		op.put(PROXY, proxy);
+	public static JsonObject operationToJSON(String name, String proxy, String value, String param) {
+		JsonObject op = new JsonObject();
+		op.addProperty(OPERATION_NAME, name);
+		op.addProperty(PARAMETERS, param);
+		op.addProperty(VALUE, value);
+		op.addProperty(PROXY, proxy);
 		if(name.equals("start"))
-			op.put(ACCESS_MODE, modelAccess[0]);
+			op.addProperty(ACCESS_MODE, ACCESS_MODE_PROXY);
 		else
-			op.put(ACCESS_MODE, modelAccess[1]);
+			op.addProperty(ACCESS_MODE, ACCESS_MODE_SELF);
 		return op;
 	}
 	
@@ -202,15 +220,14 @@ public class OperationUtils {
 	 *            - the name of the entity
 	 * @param operations
 	 *            - all operations this entity is able to perform
-	 * @return - json object encapsulating all details
+	 * @return - JSON object encapsulating all details
 	 */
-	@SuppressWarnings("unchecked")
-	public static JSONObject registrationToJSON(String node, String category, String name, JSONArray operations) {
-		JSONObject entity = new JSONObject();
-		entity.put(NODE, node);
-		entity.put(CATEGORY, category);
-		entity.put(NAME, name);
-		entity.put(OPERATIONS, operations);
+	public static JsonObject registrationToJSON(String node, String category, String name, JsonArray operations) {
+		JsonObject entity = new JsonObject();
+		entity.addProperty(NODE, node);
+		entity.addProperty(CATEGORY, category);
+		entity.addProperty(OPERATION_NAME, name);
+		entity.add(OPERATIONS, operations);
 		return entity;
 	}
 }

@@ -18,11 +18,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import mpi.Op;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
@@ -157,10 +156,10 @@ public class Node extends Unit implements Entity<Node> {
 	 * 
 	 * @return - a json array indicating all details about each operation.
 	 */
-	protected JSONArray configureOperations() {
-		JSONArray operations = new JSONArray();
+	protected JsonArray configureOperations() {
+		JsonArray operations = new JsonArray();
 		for(OperationUtils.ControlOperation op : OperationUtils.ControlOperation.values()) {
-			JSONObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
+			JsonObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
 			operations.add(o);
 		}
 		return operations;
@@ -173,11 +172,11 @@ public class Node extends Unit implements Entity<Node> {
 	 * @return - an indication of success.
 	 */
 	protected boolean registerEntitiesToCentralEntity() {
-		JSONArray operations = configureOperations();
-		JSONArray entities = new JSONArray();
+		JsonArray operations = configureOperations();
+		JsonArray entities = new JsonArray();
 		registeredEntities.forEach((category, value) -> {
 			for(Entity<?> entity : value) {
-				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
+				JsonObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
 				entities.add(ent);
 			}
 		});
@@ -356,7 +355,7 @@ public class Node extends Unit implements Entity<Node> {
 		if(getName() == null)
 			return false;
 		String status = isRunning ? "RUNNING" : "STOPPED";
-		JSONObject update = OperationUtils.operationToJSON(
+		JsonObject update = OperationUtils.operationToJSON(
 				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
 		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
 	}
@@ -368,7 +367,7 @@ public class Node extends Unit implements Entity<Node> {
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
-		String op = jo.get(OperationUtils.NAME).getAsString();
+		String op = jo.get(OperationUtils.OPERATION_NAME).getAsString();
 		if(OperationUtils.ControlOperation.fromOperation(op) != null) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
 			if(param == null)
@@ -428,7 +427,7 @@ public class Node extends Unit implements Entity<Node> {
 				.filter(entity -> entity instanceof MobileCompositeAgent && entity.getName().equals(agentName))
 				.findAny().ifPresent(entity -> entityOrder.remove(entity));
 		JsonObject root = new JsonObject();
-		root.addProperty(OperationUtils.NAME, Node.RECEIVE_AGENT_OPERATION);
+		root.addProperty(OperationUtils.OPERATION_NAME, Node.RECEIVE_AGENT_OPERATION);
 		root.addProperty(OperationUtils.PARAMETERS, agentData);
 		
 		lf("Send message with agent [] to []", agentName, destination);

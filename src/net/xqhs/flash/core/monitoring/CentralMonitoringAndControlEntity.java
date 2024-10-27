@@ -12,12 +12,17 @@
 package net.xqhs.flash.core.monitoring;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import net.xqhs.flash.gui.structure.types.PortType;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -52,7 +57,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	protected class EntityData {
 		String		name;
 		String		status;
-		JSONArray	operations;
+		JsonArray	operations;
 		Element		guiSpecification;
 
 		public String getName() {
@@ -63,7 +68,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			return status;
 		}
 
-		public JSONArray getOperations() {
+		public JsonArray getOperations() {
 			return operations;
 		}
 
@@ -82,9 +87,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		}
 
 		@SuppressWarnings("unchecked")
-		public EntityData addOperations(JSONArray ops) {
+		public EntityData addOperations(JsonArray ops) {
 			if(operations == null)
-				operations = new JSONArray();
+				operations = new JsonArray();
 			operations.addAll(ops);
 			return this;
 		}
@@ -203,6 +208,10 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * Used for unknown entity names, statuses, etc.
 	 */
 	public static final String UNKNOWN = "none";
+	/**
+	 * File for configuring the default controls for entities.
+	 */
+	protected static final String	DEFAULT_CONTROLS	= "controls.yml";
 
 	private MessagingShard centralMessagingShard;
 
@@ -218,9 +227,9 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	private HashMap<String, List<String>> allAgents = new LinkedHashMap<>();
 
 	/**
-	 * Keeps track of all entities deployed in the system and their {@link JSONArray} of operations.
+	 * Keeps track of all entities deployed in the system and their {@link JsonArray} of operations.
 	 */
-	private HashMap<String, JSONArray> entitiesToOp = new LinkedHashMap<>();
+	private HashMap<String, JsonArray> entitiesToOp = new LinkedHashMap<>();
 
 	/**
 	 * Keeps track of entities state.
@@ -248,7 +257,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	public CentralMonitoringAndControlEntity(MultiTreeMap configuration) {
 		this.name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		proxy = new CentralEntityProxy();
-		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue("from", "controls.yml")
+		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue(GUILoad.FILE_SOURCE_PARAMETER, DEFAULT_CONTROLS)
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
 
 		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY))
@@ -320,25 +329,29 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 					wave.getSerializedContent());
 			return true;
 		}
-		Object obj = JSONValue.parse(content);
-		if(obj == null) {
+		JsonElement obj = null;
+		try {
+			obj = JsonParser.parseString(content);
+			if(obj == null)
+				return false;
+		} catch(JsonSyntaxException e) {
 			le("null/unparsable message content from []: ", source, content);
 			return false;
 		}
-		if(obj instanceof JSONObject) {
-			JSONObject jo = (JSONObject) obj;
+		if(obj.isJsonObject()) {
+			JsonObject jo = obj.getAsJsonObject();
 			if(manageOperation(jo)) {
-				lf("Parsed operation from []: .", source, jo);
+				lf("Parsed operation from []: ", source, jo);
 				return true;
 			}
-			else if(((String) jo.get("name")).equals("message")) {
+			else if(jo.get(OperationUtils.OPERATION_NAME).getAsString().equals("message")) {
 				// WebEntity.agentMessages.put(source, ((String) jo.get("value")));
 				lf("Parsed message from []: ", source, jo);
 				return true;
 			}
 		}
-		if(obj instanceof JSONArray) {
-			JSONArray ja = (JSONArray) obj;
+		if(obj.isJsonArray()) {
+			JsonArray ja = obj.getAsJsonArray();
 			if(registerEntities(ja)) {
 				lf("Registered entities from []: ", source, ja);
 				return true;
@@ -355,41 +368,41 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 *            - the object received as content through the {@link ShardContainer}
 	 * @return - an indication of success
 	 */
-	private boolean manageOperation(JSONObject jsonObj) {
-		switch (MonitoringOperation.fromOperation((String) jsonObj.get(OperationUtils.NAME))) {
+	private boolean manageOperation(JsonObject jsonObj) {
+		switch(MonitoringOperation.fromOperation(jsonObj.get(OperationUtils.OPERATION_NAME).getAsString())) {
 			case STATUS_UPDATE:
 				li("Status update received: " + jsonObj);
-				String params = (String) jsonObj.get(OperationUtils.PARAMETERS);
-				String value = (String) jsonObj.get(OperationUtils.VALUE);
+				String params = jsonObj.get(OperationUtils.PARAMETERS).getAsString();
+				String value = jsonObj.get(OperationUtils.VALUE).getAsString();
 				try {
 					switch (AgentEvent.AgentEventType.valueOf(value)) {
 						case AGENT_START:
 							//the first time the agent is started, it's entitiesData is empty
 							if (entitiesData.size() == 0){
 								standardCtrls.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
-										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + Element.ACTIVE_INPUT);
 								standardCtrls.getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.ACTIVE_INPUT);
 								standardCtrls.getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.ACTIVE_INPUT);
 							}
 							else {
 								entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
-										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.DISABLED_ROLE_PREFIX + Element.ACTIVE_INPUT);
 								entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.ACTIVE_INPUT);
 								entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-										.get(0).setRole(PortType.ACTIVE_INPUT.type);
+										.get(0).setRole(Element.ACTIVE_INPUT);
 							}
 							break;
 
 						case AGENT_STOP:
 							entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_START)
-									.get(0).setRole(PortType.ACTIVE_INPUT.type);
+									.get(0).setRole(Element.ACTIVE_INPUT);
 							entitiesData.get(params).getGuiSpecification().getChildren(CONTROL_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + Element.ACTIVE_INPUT);
 							entitiesData.get(params).getGuiSpecification().getChildren(NODE_OPERATIONS_PREFIX + STANDARD_OPERATON_STOP)
-									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + PortType.ACTIVE_INPUT.type);
+									.get(0).setRole(Element.DISABLED_ROLE_PREFIX + Element.ACTIVE_INPUT);
 
 							break;
 
@@ -421,9 +434,10 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return true;
 
 			case GUI_UPDATE:
-				String entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				li("GUI update received: " + jsonObj);
+				String entity = jsonObj.get(OperationUtils.PARAMETERS).getAsString();
 				Element interfaceContainer = new Element();
-				Element interfaceStructure = GUILoad.fromYaml((String) jsonObj.get(OperationUtils.VALUE));
+				Element interfaceStructure = GUILoad.fromYaml(jsonObj.get(OperationUtils.VALUE).getAsString());
 				if (interfaceStructure != null){
 					// must avoid adding it twice
 					for (Element child : interfaceStructure.getChildren()) {
@@ -441,10 +455,11 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return gui.updateGui(entity, interfaceContainer);
 
 			case GUI_OUTPUT:
-				String output_entity = (String) jsonObj.get(OperationUtils.PARAMETERS);
+				String output_entity = jsonObj.get(OperationUtils.PARAMETERS).getAsString();
 				AgentWave wave;
 				try {
-					wave = (AgentWave) MultiValueMap.fromSerializedString((String) jsonObj.get(OperationUtils.VALUE));
+					wave = (AgentWave) MultiValueMap
+							.fromSerializedString(jsonObj.get(OperationUtils.VALUE).getAsString());
 				} catch(ClassNotFoundException e) {
 					le("Unable to unpack AgentWave from ", output_entity);
 					return false;
@@ -454,26 +469,26 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				return true;
 
 			default :
-				le("Unknown operation: ", jsonObj.get(OperationUtils.NAME));
+				le("Unknown operation: ", jsonObj.get(OperationUtils.OPERATION_NAME));
 				return false;
 		}
 	}
 	
-	private boolean registerEntities(JSONArray ja) {
+	private boolean registerEntities(JsonArray ja) {
 		for(Object o : ja) {
-			JSONObject entity = (JSONObject) o;
+			JsonObject entity = (JsonObject) o;
 			
-			String node = (String) entity.get(OperationUtils.NODE);
-			String category = (String) entity.get(OperationUtils.CATEGORY);
-			String name = (String) entity.get(OperationUtils.NAME);
+			String node = entity.get(OperationUtils.NODE).getAsString();
+			String category = entity.get(OperationUtils.CATEGORY).getAsString();
+			String name = entity.get(OperationUtils.OPERATION_NAME).getAsString();
 			
-			JSONArray operationDetails = (JSONArray) entity.get(OperationUtils.OPERATIONS);
+			JsonArray operationDetails = (JsonArray) entity.get(OperationUtils.OPERATIONS);
 			if(category.equals("agent")) {
 				if(!allAgents.containsKey(name))
 					allAgents.put(name, new LinkedList<>());
 				for(Object oo : operationDetails) {
-					JSONObject op = (JSONObject) oo;
-					String operation = (String) op.get(OperationUtils.NAME);
+					JsonObject op = (JsonObject) oo;
+					String operation = op.get(OperationUtils.OPERATION_NAME).getAsString();
 					allAgents.get(name).add(operation);
 				}
 			}
@@ -544,24 +559,24 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	 * @return - an indication of success
 	 */
 	public boolean sendToEntity(String destination, String operation) {
-		JSONObject jsonOperation = getOperationFromEntity(destination, operation);
+		JsonObject jsonOperation = getOperationFromEntity(destination, operation);
 		if(jsonOperation == null) {
 			le("Entity [] does not exist or does not support [] command.", destination, operation);
 			return false;
 		}
-		String access = (String) jsonOperation.get("access");
-		if(access.equals("self")) {
-			JSONObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
+		String access = jsonOperation.get(OperationUtils.ACCESS_MODE).getAsString();
+		if(access.equals(OperationUtils.ACCESS_MODE_SELF)) {
+			JsonObject msg = OperationUtils.operationToJSON(operation, destination, "", destination);
 			if(!sendMessage(destination, msg.toString())) {
 				le("Message from [] to [] failed.", getName(), destination);
 				return false;
 			}
 		}
 		else {
-			String proxy = (String) jsonOperation.get("proxy");
-			JSONObject msg = OperationUtils.operationToJSON(operation, proxy, "", destination);
-			if(!sendMessage(proxy, msg.toString())) {
-				le("Message from [] to proxy [] of [] failed.", getName(), proxy, destination);
+			String op_proxy = jsonOperation.get(OperationUtils.PROXY).getAsString();
+			JsonObject msg = OperationUtils.operationToJSON(operation, op_proxy, "", destination);
+			if(!sendMessage(op_proxy, msg.toString())) {
+				le("Message from [] to proxy [] of [] failed.", getName(), op_proxy, destination);
 				return false;
 			}
 		}
@@ -569,21 +584,21 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	}
 
     /**
-     * Returns the {@link JSONObject} corresponding to the operation of the given entity.
-     *
-     * @param entity
-     *            - the name of the entity
-     * @param command
-     *            - the name of the command
-     * @return - the {@link JSONObject} of the operation
-     */
-	private JSONObject getOperationFromEntity(String entity, String command) {
-		JSONArray ja = entitiesToOp.get(entity);
+	 * Returns the {@link JsonObject} corresponding to the operation of the given entity.
+	 *
+	 * @param entity
+	 *            - the name of the entity
+	 * @param command
+	 *            - the name of the command
+	 * @return - the {@link JsonObject} of the operation
+	 */
+	private JsonObject getOperationFromEntity(String entity, String command) {
+		JsonArray ja = entitiesToOp.get(entity);
 		if(ja == null)
 			return null;
 		for(Object o : ja) {
-			JSONObject op = (JSONObject) o;
-			String cmd = (String) op.get("name");
+			JsonObject op = (JsonObject) o;
+			String cmd = op.get(OperationUtils.OPERATION_NAME).getAsString();
 			if(cmd.equals(command))
 				return op;
 		}

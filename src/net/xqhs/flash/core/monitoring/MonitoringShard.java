@@ -11,9 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.core.monitoring;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.yaml.snakeyaml.Yaml;
+
+import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -28,26 +28,36 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
 
+/**
+ * Shard that allows monitoring, potentially remotely, the container of this shard.
+ * <p>
+ * The shard handles monitoring events in the agent, and builds the interface structure which is sent to cetralized
+ * monitoring entities.
+ * 
+ * @author andreiolaru
+ * @author Florina Nastasoiu
+ */
 public class MonitoringShard extends AgentShardGeneral {
 	/**
 	 * The UID.
 	 */
-	private static final long serialVersionUID = 521488201837501593L;
-	
-	/**
-	 * Cache for the name of this agent.
-	 */
-	String thisAgent = null;
-	
-	private Element interfaceSpecification = new Element();
-	
+	private static final long		serialVersionUID	= 521488201837501593L;
 	/**
 	 * Endpoint element of this shard.
 	 */
-	protected static final String SHARD_ENDPOINT = StandardAgentShard.MONITORING.shardName();
+	protected static final String	SHARD_ENDPOINT		= StandardAgentShard.MONITORING.shardName();
+	
+	/**
+	 * The interface for this agent, which will be sent to central monitoring entities / web application(s).
+	 */
+	private Element	interfaceSpecification	= new Element();
+	/**
+	 * Cache for the name of this agent.
+	 */
+	String			thisAgent				= null;
 	
 	{
-		setUnitName("mon");
+		setUnitName("monitor");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
@@ -59,16 +69,10 @@ public class MonitoringShard extends AgentShardGeneral {
 	}
 	
 	@Override
-	public boolean configure(MultiTreeMap configuration) {
-		return super.configure(configuration);
-	}
-	
-	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
-			System.out.println(event);
 			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement();
@@ -80,35 +84,29 @@ public class MonitoringShard extends AgentShardGeneral {
 				wave.resetDestination(AgentWave.ADDRESS_SEPARATOR);
 				((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation())).postActiveInput(port,
 						wave);
+				return;
 			}
-			else
-				parseAgentWaveEvent(((AgentWave) event).getContent());
-			break;
+			return;
 		case AGENT_START:
 			li("Shard []/[] started.", thisAgent, SHARD_ENDPOINT);
 			sendStatusUpdate(event.getType().toString());
-			break;
+			return;
 		case AGENT_STOP:
 			li("Shard []/[] stopped.", thisAgent, SHARD_ENDPOINT);
 			sendStatusUpdate(event.getType().toString());
-			break;
+			return;
 		case SIMULATION_START:
 			li("Shard []/[] started simulation.", thisAgent, SHARD_ENDPOINT);
 			sendStatusUpdate(event.getType().toString());
-			break;
+			return;
 		case SIMULATION_PAUSE:
 			li("Shard []/[] paused simulation.", thisAgent, SHARD_ENDPOINT);
 			sendStatusUpdate(event.getType().toString());
-			break;
+			return;
 		default:
 			break;
 		}
-	}
-	
-	private void parseAgentWaveEvent(String content) {
-		JSONObject jsonObject = (JSONObject) JSONValue.parse(content);
-		if(jsonObject == null)
-			le("null jsonObject received at []/[]", thisAgent, SHARD_ENDPOINT);
+		li("Agent [] event [].", thisAgent, event);
 	}
 	
 	@Override
@@ -116,17 +114,19 @@ public class MonitoringShard extends AgentShardGeneral {
 		super.parentChangeNotifier(oldParent);
 		if(getAgent() != null)
 			thisAgent = getAgent().getEntityName();
+		else
+			thisAgent = "<null>";
 	}
 	
 	private void sendStatusUpdate(String status) {
-		JSONObject update = OperationUtils.operationToJSON(
+		JsonObject update = OperationUtils.operationToJSON(
 				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status,
 				getAgent().getEntityName());
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
 	
 	/**
-	 * Adds a gui element to the interface specification
+	 * Adds a GUI element to the interface specification
 	 * 
 	 * @param element
 	 *            the element to add
@@ -138,17 +138,16 @@ public class MonitoringShard extends AgentShardGeneral {
 	}
 	
 	/**
-	 * Removes a gui element from the interface specification, and recursively removes all children
+	 * Removes a GUI element from the interface specification, and recursively removes all children
 	 * 
 	 * @param element
 	 *            the element to remove
-	 * @param parent
+	 * @param _parent
 	 *            the parent element to remove the element from (if null, the root element is used)
 	 * @return true if the element was removed, false otherwise
 	 */
-	public boolean removeGuiElement(Element element, Element parent) {
-		if(parent == null)
-			parent = this.interfaceSpecification;
+	public boolean removeGuiElement(Element element, Element _parent) {
+		Element parent = _parent != null ? _parent : this.interfaceSpecification;
 		
 		for(Element e : parent.getChildren()) {
 			if(e.equals(element)) {
@@ -173,28 +172,28 @@ public class MonitoringShard extends AgentShardGeneral {
 	/**
 	 * send a gui update to the central monitoring entity
 	 * 
-	 * @param interfaceSpecification
+	 * @param specification
 	 *            the interface specification to send
 	 */
-	public void sendGuiUpdate(String interfaceSpecification) {
-		JSONObject update = OperationUtils.operationToJSON(OperationUtils.MonitoringOperation.GUI_UPDATE.getOperation(),
-				"", interfaceSpecification, getAgent().getEntityName());
+	public void sendGuiUpdate(String specification) {
+		JsonObject update = OperationUtils.operationToJSON(OperationUtils.MonitoringOperation.GUI_UPDATE.getOperation(),
+				"", specification, getAgent().getEntityName());
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
-
+	
 	/**
-	 * send a gui output to the central monitoring entity
+	 * Relays a GUI output from the GUIShard to the central monitoring entity.
 	 *
 	 * @param output
 	 *            the output to send
 	 */
 	public void sendOutput(AgentWave output) {
-		JSONObject update = new JSONObject();
-		update.put(OperationUtils.NAME, OperationUtils.MonitoringOperation.GUI_OUTPUT.getOperation());
-		update.put(OperationUtils.PARAMETERS, getAgent().getEntityName());
+		JsonObject update = new JsonObject();
+		update.addProperty(OperationUtils.OPERATION_NAME, OperationUtils.MonitoringOperation.GUI_OUTPUT.getOperation());
+		update.addProperty(OperationUtils.PARAMETERS, getAgent().getEntityName());
 		output.prependDestination(thisAgent);
-		update.put(OperationUtils.VALUE, output.toSerializedString());
-		update.put(OperationUtils.PROXY, "");
+		update.addProperty(OperationUtils.VALUE, output.toSerializedString());
+		update.addProperty(OperationUtils.PROXY, "");
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
 	

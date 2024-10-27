@@ -17,35 +17,42 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.monitoring.MonitoringShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
-import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
 
+/**
+ * Shard to allow controlling the agent from the outside.
+ * <p>
+ * It adds to the agent UI the Stop button.
+ * 
+ * @author andreiolaru
+ * @author Florina Nastasoiu
+ */
 public class ControlShard extends AgentShardGeneral {
 	/**
 	 * The UID.
 	 */
-	private static final long serialVersionUID = 5214882018809437402L;
-	
+	private static final long		serialVersionUID	= 5214882018809437402L;
 	/**
 	 * Endpoint element for this shard.
 	 */
-	public static final String SHARD_ENDPOINT = StandardAgentShard.CONTROL.shardName();
-
+	public static final String		SHARD_ENDPOINT		= StandardAgentShard.CONTROL.shardName();
+	/**
+	 * File with the UI elements needed by this shard.
+	 */
+	protected static final String	UI_STRUCTURE		= "controlBtn.yml";
+	
 	/**
 	 * The interface structure required by this shard.
 	 */
-	protected Element standartBtn;
-
-	protected MonitoringShard monitor = null;
-	
+	protected Element			standartBtn;
 	/**
-	 * Cache for the name of this agent.
+	 * Link to the {@link MonitoringShard}
 	 */
-	String thisAgent = null;
+	protected MonitoringShard	monitor	= null;
 	
 	{
 		setUnitName("control-shard");
@@ -62,7 +69,7 @@ public class ControlShard extends AgentShardGeneral {
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
-		standartBtn = GUILoad.load(new MultiTreeMap().addOneValue("from", "controlBtn.yml")
+		standartBtn = GUILoad.load(new MultiTreeMap().addOneValue(GUILoad.FILE_SOURCE_PARAMETER, UI_STRUCTURE)
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
 		if(standartBtn == null) {
 			le("Interface load failed");
@@ -70,8 +77,6 @@ public class ControlShard extends AgentShardGeneral {
 		}
 		return true;
 	}
-
-
 	
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
@@ -103,23 +108,11 @@ public class ControlShard extends AgentShardGeneral {
 				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
 				monitor.addGuiElement(standartBtn);
 			}
+			break;
 		default:
 			// nothing to do.
 			break;
 		}
-	}
-	
-	@Override
-	protected void parentChangeNotifier(ShardContainer oldParent) {
-		super.parentChangeNotifier(oldParent);
-		if(getAgent() != null)
-			thisAgent = getAgent().getEntityName();
-	}
-	
-	protected boolean sendMessage(String content) {
-		// TODO: messages are sent via messaging shard
-		// return sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestComponent.SHARD_ENDPOINT);
-		return true;
 	}
 	
 	@Override

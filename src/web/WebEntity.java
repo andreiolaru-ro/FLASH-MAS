@@ -309,7 +309,7 @@ public class WebEntity extends CentralGUI {
 		JsonObject content = new JsonObject();
 		if (msg.getString("subject").split("_")[1].contains(CentralMonitoringAndControlEntity.getNodeOperationsPrefix())) {
 			content.put(OperationUtils.PARAMETERS, entityName);
-			content.put(OperationUtils.NAME, msg.getJsonObject("content")
+			content.put(OperationUtils.OPERATION_NAME, msg.getJsonObject("content")
 					.getString(msg.getJsonObject("content").fieldNames().toArray()[0].toString()).toLowerCase());
 			wave.add("content", content.toString());
 		}

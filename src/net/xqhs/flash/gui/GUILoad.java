@@ -35,6 +35,11 @@ import net.xqhs.util.logging.Logger;
  */
 public class GUILoad {
 	/**
+	 * Parameter in the configuration specifying the file from which to load the UI structure.
+	 */
+	public static final String FILE_SOURCE_PARAMETER = "from";
+	
+	/**
 	 * Loads a GUI from a configuration from a .yml or .yaml file, and associates it with a logger.
 	 *
 	 * @param configuration
@@ -44,7 +49,7 @@ public class GUILoad {
 	 * @return the structure of the interface.
 	 */
 	public static Element load(MultiTreeMap configuration, Logger log) {
-		String config = configuration.getFirstValue("from");
+		String config = configuration.getFirstValue(FILE_SOURCE_PARAMETER);
 		if(config == null)
 			log.le("Configuration is null");
 		if(config != null && (config.endsWith(".yml") || config.endsWith(".yaml"))) { // file
