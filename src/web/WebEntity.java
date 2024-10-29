@@ -11,8 +11,6 @@
  ******************************************************************************/
 package web;
 
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
-import net.xqhs.flash.core.util.OperationUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -29,9 +27,11 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.monitoring.CentralGUI;
+import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
@@ -46,6 +46,8 @@ public class WebEntity extends CentralGUI {
 		private WebEntity entity;
 		
 		private boolean handler = false;
+		
+		protected int port = 8081;
 		
 		public ServerVerticle(WebEntity entity) {
 			this.entity = entity;
@@ -156,11 +158,11 @@ public class WebEntity extends CentralGUI {
 				}
 			}));
 			router.route().handler(StaticHandler.create("src/web").setIndexPage("page.html"));
-			vertx.createHttpServer().requestHandler(router).listen(8080, http -> {
+			vertx.createHttpServer().requestHandler(router).listen(port, http -> {
 				if(http.succeeded())
-					System.out.println("HTTP server started on port 8080");
+					li("HTTP server started on port []", port);
 				else
-					System.out.println("HTTP server failed to start on port 8080");
+					li("HTTP server failed to start on port []", port);
 			});
 		}
 		
@@ -334,6 +336,10 @@ public class WebEntity extends CentralGUI {
 		tosend.put("subject", idManager.makeID(null, entity, port)); // questionable abuse of makeID
 		
 		Element gui = entityGUIs.get(entity);
+		if(gui == null) {
+			le("GUI for entity [] not present.", entity);
+			return;
+		}
 		JSONObject allValues = new JSONObject();
 		for(String role : wave.getContentElements()) {
 			int i = 0;

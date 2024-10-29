@@ -436,6 +436,10 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			case GUI_UPDATE:
 				li("GUI update received: " + jsonObj);
 				String entity = jsonObj.get(OperationUtils.PARAMETERS).getAsString();
+				if(!entitiesData.containsKey(entity)) {
+					le("Entity [] is unknown.", entity);
+					return false;
+				}
 				Element interfaceContainer = new Element();
 				Element interfaceStructure = GUILoad.fromYaml(jsonObj.get(OperationUtils.VALUE).getAsString());
 				if (interfaceStructure != null){
@@ -476,37 +480,38 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 	
 	private boolean registerEntities(JsonArray ja) {
 		for(Object o : ja) {
-			JsonObject entity = (JsonObject) o;
+			JsonObject entityJson = (JsonObject) o;
 			
-			String node = entity.get(OperationUtils.NODE).getAsString();
-			String category = entity.get(OperationUtils.CATEGORY).getAsString();
-			String name = entity.get(OperationUtils.OPERATION_NAME).getAsString();
+			String node = entityJson.get(OperationUtils.NODE).getAsString();
+			String category = entityJson.get(OperationUtils.CATEGORY).getAsString();
+			String entity = entityJson.get(OperationUtils.OPERATION_NAME).getAsString();
 			
-			JsonArray operationDetails = (JsonArray) entity.get(OperationUtils.OPERATIONS);
+			JsonArray operationDetails = (JsonArray) entityJson.get(OperationUtils.OPERATIONS);
 			if(category.equals("agent")) {
-				if(!allAgents.containsKey(name))
-					allAgents.put(name, new LinkedList<>());
+				if(!allAgents.containsKey(entity))
+					allAgents.put(entity, new LinkedList<>());
 				for(Object oo : operationDetails) {
 					JsonObject op = (JsonObject) oo;
 					String operation = op.get(OperationUtils.OPERATION_NAME).getAsString();
-					allAgents.get(name).add(operation);
+					allAgents.get(entity).add(operation);
 				}
 			}
-			entitiesToOp.put(name, operationDetails);
+			entitiesToOp.put(entity, operationDetails);
 			
 			if(!allNodeEntities.containsKey(node))
 				allNodeEntities.put(node, new LinkedHashMap<>());
 			if(!allNodeEntities.get(node).containsKey(category))
 				allNodeEntities.get(node).put(category, new LinkedList<>());
-			allNodeEntities.get(node).get(category).add(name);
+			allNodeEntities.get(node).get(category).add(entity);
 			
 			try {
-				entitiesData.put(name, new EntityData().setName(name).setStatus(UNKNOWN).addOperations(operationDetails)
+				entitiesData.put(entity, new EntityData().setName(entity).setStatus(UNKNOWN).addOperations(operationDetails)
 						.setGuiSpecification((Element) standardCtrls.clone()));
 			} catch(CloneNotSupportedException e) {
 				le("Failed to clone standard controls", e);
 			}
-			gui.updateGui(name, entitiesData.get(name).getGuiSpecification());
+			li("Registered entity []/[] in []", entity, category, node);
+			gui.updateGui(entity, entitiesData.get(entity).getGuiSpecification());
 		}
 		return true;
 	}

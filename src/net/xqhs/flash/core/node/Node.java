@@ -186,9 +186,9 @@ public class Node extends Unit implements Entity<Node> {
 	@Override
 	public boolean start() {
 		li("Starting node [] with entities [].", name, entityOrder);
-		for(Entity<?> entity : entityOrder) {
+		// must start entities before sending messages to M&C because M&C must be started too
+		for(Entity<?> entity : entityOrder)
 			startEntity(entity);
-		}
 		isRunning = true;
 		if(messagingShard != null)
 			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
@@ -196,7 +196,7 @@ public class Node extends Unit implements Entity<Node> {
 		li("Node [] started.", name);
 		
 		if(getName() != null && registerEntitiesToCentralEntity())
-			lf("Entities successfully registered to control entity.");
+			lf("Entities successfully registered to control entity: ", entityOrder);
 		return true;
 	}
 
