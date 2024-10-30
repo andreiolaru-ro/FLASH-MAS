@@ -45,7 +45,6 @@ import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
-import net.xqhs.flash.gui.structure.GlobalConfiguration;
 import net.xqhs.util.logging.Unit;
 import web.WebEntity;
 
@@ -265,8 +264,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 			case WEB_INTERFACE_SWITCH: {
 				// TODO mock config -- to be added in deployment configuration?
 				MultiTreeMap config = new MultiTreeMap().addOneValue("file", "interface-files/model-page/web-page.yml");
-				GlobalConfiguration representation = null; // GUILoad.loadGlobalRepresentation(config);
-				gui = new WebEntity(representation);
+				gui = new WebEntity();
 				gui.addContext(proxy);
 				if(gui.start()) // starts now in order to be available before starting entities
 					li("web gui started");

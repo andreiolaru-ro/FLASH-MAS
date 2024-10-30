@@ -29,6 +29,9 @@ public abstract class CentralGUI extends GuiShard {
 	 */
 	private static final long serialVersionUID = -8874092747023941934L;
 	
+	/**
+	 * A mapping of entity names to their interface specifications.
+	 */
 	protected Map<String, Element> entityGUIs = new HashMap<>();
 
 	/**

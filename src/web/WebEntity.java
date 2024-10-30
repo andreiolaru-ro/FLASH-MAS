@@ -35,7 +35,6 @@ import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
-import net.xqhs.flash.gui.structure.GlobalConfiguration;
 
 /**
  * Web entity for the connection between the MAS and the web interface.
@@ -187,23 +186,6 @@ public class WebEntity extends CentralGUI {
 	private boolean verticleReady = false;
 	
 	// private static boolean generated = false;
-	
-	public WebEntity(GlobalConfiguration config) {
-		// if(!generated) {
-		// PageBuilder.getInstance().platformType = PlatformType.WEB;
-		// try {
-		// agentMessages = new JsonObject();
-		//
-		// BuildPageTest.main(new String[] {"file", "interface-files/model-page/web-page.yml"});
-		// specification = PageBuilder.getInstance().getPage();
-		//
-		// generated = true;
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// start();
-	}
 	
 	@Override
 	public boolean start() {
