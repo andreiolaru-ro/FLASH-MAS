@@ -14,6 +14,8 @@
  */
 /**
  * The package contains the core of Flash-MAS.
+ * <p>
+ * Classes and packages placed here are critical to the deployment of a Flash-MAS scenario.
  * 
  * @author andreiolaru
  *

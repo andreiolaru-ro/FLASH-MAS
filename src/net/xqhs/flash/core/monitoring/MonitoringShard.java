@@ -20,6 +20,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
@@ -31,8 +32,13 @@ import net.xqhs.flash.gui.structure.Element;
 /**
  * Shard that allows monitoring, potentially remotely, the container of this shard.
  * <p>
- * The shard handles monitoring events in the agent, and builds the interface structure which is sent to cetralized
- * monitoring entities.
+ * The shard handles monitoring events in the agent, and builds the unified interface structure which is sent to
+ * centralized monitoring entities. It also manages remote activations for active inputs (see {@link IOShard}).
+ * <p>
+ * When relevant events are signaled to the shard (e.g. agent start/stop and simulation start/stop) these state changes
+ * are signaled to the central monitoring entity (via {@link #sendStatusUpdate}).
+ * <p>
+ * When changes occur to the interface specification or interface content #TODO
  * 
  * @author andreiolaru
  * @author Florina Nastasoiu
@@ -73,7 +79,8 @@ public class MonitoringShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_WAVE:
-			if(!SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
+			if(!(event instanceof AgentWave)
+					|| !SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement();
 			if(MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation().equals(wave.getFirstDestinationElement())) {
@@ -106,7 +113,7 @@ public class MonitoringShard extends AgentShardGeneral {
 		default:
 			break;
 		}
-		li("Agent [] event [].", thisAgent, event);
+		lf("Agent [] event [].", thisAgent, event);
 	}
 	
 	@Override

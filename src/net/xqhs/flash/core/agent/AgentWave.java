@@ -114,7 +114,7 @@ public class AgentWave extends AgentEvent {
 		super(AgentEventType.AGENT_WAVE);
 		add(CONTENT, content);
 	}
-
+	
 	/**
 	 * Creates an agent wave with <b>no</b> destination.
 	 * <p>
@@ -132,14 +132,14 @@ public class AgentWave extends AgentEvent {
 		add(CONTENT, content);
 		add(VALUE, String.valueOf(value));
 	}
-
+	
 	/**
 	 * Creates an agent wave with a <b>single</b> destination.
 	 * <p>
 	 * A <i>complete</i> destination will be added by assembling the elements of the destination.
 	 * <p>
-	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if so,
-	 * the content will be unpacked accordingly.
+	 * The <code>content</code> argument may be a serialized form produced by {@link #getSerializedContent()} and, if
+	 * so, the content will be unpacked accordingly.
 	 * 
 	 * @param content
 	 *            - the content of the wave, that can be the result of previous serialization.
@@ -166,7 +166,7 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Appends elements to the list of source endpoint elements.
+	 * Appends elements to the list of source endpoint elements (the first in the list will be the first source).
 	 * 
 	 * @param sourceElements
 	 *            - endpoint elements to add.
@@ -320,12 +320,11 @@ public class AgentWave extends AgentEvent {
 	public String getContent() {
 		return getValue(CONTENT);
 	}
-
+	
 	/**
 	 * @return the value of the wave.
 	 */
-	public int getValue()
-	{
+	public int getValue() {
 		return Integer.parseInt(getValue(VALUE));
 	}
 	
