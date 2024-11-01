@@ -137,7 +137,8 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		// the source is this shard, within this agent
 		output.addSourceElements(getParentName(), SHARD_ENDPOINT);
 		// the destination is the port in the interface for this agent, in the central entity
-		output.prependDestination();
+		// output.prependDestination();
+		
 		// TODO check if waves are cloned when sending. Must clone waves because their destination / source parameters
 		// are processed and changed
 		
