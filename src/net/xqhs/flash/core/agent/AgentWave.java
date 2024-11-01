@@ -79,12 +79,6 @@ public class AgentWave extends AgentEvent {
 	 * The name associated with the elements of one of the destinations.
 	 */
 	public static final String	DESTINATION_ELEMENT		= "destination-element";
-	/**
-	 * The name associated with an auxiliary and optional field (e.g. MPI tag value for filtering messages).
-	 * <p>
-	 * This is used for MPI support.
-	 */
-	public final String			VALUE					= "value";
 	
 	/**
 	 * The keys which have special meanings in the wave and are not part of actual content.
@@ -112,25 +106,15 @@ public class AgentWave extends AgentEvent {
 	 */
 	public AgentWave(String content) {
 		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
-	}
-	
-	/**
-	 * Creates an agent wave with <b>no</b> destination.
-	 * <p>
-	 * A <i>complete</i> destination will be added by assembling the elements of the destination..
-	 * <p>
-	 * This is used for MPI support.
-	 *
-	 * @param content
-	 *            - the content of the wave.
-	 * @param value
-	 *            - the value of the wave.
-	 */
-	public AgentWave(String content, int value) {
-		super(AgentEventType.AGENT_WAVE);
-		add(CONTENT, content);
-		add(VALUE, String.valueOf(value));
+		try {
+			// is this a serialized content?
+			MultiValueMap contentMap = MultiValueMap.fromSerializedString(content);
+			for(String key : contentMap.getKeys())
+				addAll(key, contentMap.getValues(key));
+		} catch(Exception e) {
+			// not a serialized content
+			add(CONTENT, content);
+		}
 	}
 	
 	/**
@@ -163,6 +147,22 @@ public class AgentWave extends AgentEvent {
 		
 		// if the serialization already contained destination data, it will be lost.
 		resetDestination(destinationRoot, destinationElements != null ? destinationElements : new String[] {});
+	}
+	
+	/**
+	 * Creates an {@link AgentWave} with the source and destination of this wave, reversed, and with the given content,
+	 * if any. No other fields are created.
+	 * 
+	 * @param content
+	 *            - if not <code>null</code>, it is used as content for the reply.
+	 * 			
+	 * @return the reply to this agent wave.
+	 */
+	public AgentWave createReply(String content) {
+		AgentWave reply = new AgentWave(content);
+		reply.addSourceElements(getDestinationElements());
+		reply.resetDestination(null, this.getSourceElements());
+		return reply;
 	}
 	
 	/**
@@ -211,6 +211,13 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
+	 * @return an array containing all elements of the source.
+	 */
+	public String[] getSourceElements() {
+		return getValues(SOURCE_ELEMENT).toArray(new String[0]);
+	}
+	
+	/**
 	 * @return the first (complete) destination endpoint.
 	 */
 	public String getCompleteDestination() {
@@ -225,6 +232,13 @@ public class AgentWave extends AgentEvent {
 	}
 	
 	/**
+	 * @return an array containing all elements of the destination.
+	 */
+	public String[] getDestinationElements() {
+		return getValues(DESTINATION_ELEMENT).toArray(new String[0]);
+	}
+	
+	/**
 	 * Insert new elements of the destination endpoint, after existing elements.
 	 * 
 	 * @param destinationElements
@@ -236,8 +250,9 @@ public class AgentWave extends AgentEvent {
 			throw new IllegalArgumentException("Argument is null");
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, dest + ADDRESS_SEPARATOR + String.join(ADDRESS_SEPARATOR, destinationElements));
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, makePath(dest, destinationElements));
 		return this;
 	}
 	
@@ -251,8 +266,9 @@ public class AgentWave extends AgentEvent {
 	public AgentWave prependDestination(String destinationElement) {
 		addFirst(DESTINATION_ELEMENT, destinationElement);
 		String dest = get(COMPLETE_DESTINATION);
-		removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, destinationElement + ADDRESS_SEPARATOR + dest);
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
+		add(COMPLETE_DESTINATION, destinationElement + (dest != null ? ADDRESS_SEPARATOR + dest : ""));
 		return this;
 	}
 	
@@ -269,7 +285,8 @@ public class AgentWave extends AgentEvent {
 	public AgentWave resetDestination(String destinationRoot, String... destinationElements) {
 		if(isSet(DESTINATION_ELEMENT))
 			removeKey(DESTINATION_ELEMENT);
-		add(DESTINATION_ELEMENT, destinationRoot);
+		if(destinationRoot != null)
+			add(DESTINATION_ELEMENT, destinationRoot);
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		return recomputeCompleteDestination();
 	}
@@ -320,13 +337,7 @@ public class AgentWave extends AgentEvent {
 	public String getContent() {
 		return getValue(CONTENT);
 	}
-	
-	/**
-	 * @return the value of the wave.
-	 */
-	public int getValue() {
-		return Integer.parseInt(getValue(VALUE));
-	}
+
 	
 	/**
 	 * @return all the keys in this {@link MultiValueMap} which are not realted to routing or agent event type. The
@@ -376,7 +387,7 @@ public class AgentWave extends AgentEvent {
 	 * <p>
 	 * Elements that are <code>null</code> will not be assembled in the path.
 	 * <p>
-	 * If the start is <code>null</code> the result will begin with a slash.
+	 * If the start is <code>null</code> the result will begin with a the first element.
 	 * 
 	 * @param start
 	 *            - start of the address. Special cases:
@@ -393,8 +404,36 @@ public class AgentWave extends AgentEvent {
 		String ret = (start != null) ? start : "";
 		for(String elem : elements)
 			if(elem != null && elem.length() > 0)
-				ret += ADDRESS_SEPARATOR + elem;
+				ret += ret.length() > 0 ? ADDRESS_SEPARATOR + elem : elem;
 		return ret;
+	}
+	
+	/**
+	 * Splits an endpoint path into elements, using {@link #ADDRESS_SEPARATOR} as split separator.
+	 * 
+	 * @param path
+	 *            - an endpoint path.
+	 * @return the elements of the path.
+	 */
+	public static String[] pathToElements(String path) {
+		return (path.startsWith(ADDRESS_SEPARATOR) ? path.substring(1) : path).split(ADDRESS_SEPARATOR);
+	}
+	
+	/**
+	 * Concatenates a prefix and a path (uses an {@link #ADDRESS_SEPARATOR} to separate them if they don't contain one
+	 * already) and splits them by {@link #ADDRESS_SEPARATOR}.
+	 * 
+	 * @param path
+	 *            - an endpoint path.
+	 * @param prefix
+	 *            - another path.
+	 * @return the elements of the prefix and the path combined.
+	 */
+	public static String[] pathToElementsPlus(String path, String prefix) {
+		
+		if(path.startsWith(ADDRESS_SEPARATOR) || prefix.endsWith(ADDRESS_SEPARATOR))
+			return pathToElements(prefix + path);
+		return pathToElements(prefix + ADDRESS_SEPARATOR + path);
 	}
 	
 	/**
@@ -412,13 +451,15 @@ public class AgentWave extends AgentEvent {
 	 * @return the elements of the path, excluding the prefix.
 	 */
 	public static String[] pathToElements(String path, String prefixToRemove) {
-		String barePath = path.startsWith(prefixToRemove) ? path.substring(prefixToRemove.length()) : path;
-		return (barePath.startsWith(ADDRESS_SEPARATOR) ? barePath.substring(1) : barePath).split(ADDRESS_SEPARATOR);
+		String barePath = prefixToRemove != null && path.startsWith(prefixToRemove)
+				? path.substring(prefixToRemove.length())
+				: path;
+		return pathToElements(barePath);
 	}
 	
 	/**
 	 * Splits a complete endpoint (a path) into its elements. This version allows the caller to specify a prefix, which
-	 * will be returned as the first element of the path.
+	 * will be returned as the first element of the path, instead of being separated like the rest of the path.
 	 * <p>
 	 * The path is split by {@link #ADDRESS_SEPARATOR}.
 	 * <p>
@@ -432,7 +473,7 @@ public class AgentWave extends AgentEvent {
 	 */
 	public static String[] pathToElementsWith(String path, String prefix) {
 		String[] elements = pathToElements(path, prefix);
-		if(!path.startsWith(prefix))
+		if(prefix == null || !path.startsWith(prefix))
 			return elements;
 		String[] ret = new String[elements.length + 1];
 		ret[0] = prefix;

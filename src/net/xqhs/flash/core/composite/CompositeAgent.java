@@ -75,8 +75,8 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		}
 		
 		@Override
-		public void postAgentEvent(AgentEvent event) {
-			agent.postAgentEvent(event);
+		public boolean postAgentEvent(AgentEvent event) {
+			return agent.postAgentEvent(event);
 		}
 		
 		@Override
@@ -303,7 +303,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 			synchronized(eventQueue) {
 				if(eventQueue.isEmpty())
 					try {
-						eventQueue.wait();
+						eventQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 					} catch(InterruptedException e) {
 						// do nothing
 					}

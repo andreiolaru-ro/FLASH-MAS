@@ -8,3 +8,5 @@
 /MTPs-Container-*.txt
 *__pycache__
 /.pydevproject
+/ml-directory/
+/target/

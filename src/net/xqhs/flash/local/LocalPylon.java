@@ -12,7 +12,6 @@
 package net.xqhs.flash.local;
 
 import java.util.HashMap;
-import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.RunnableEntity;
@@ -21,22 +20,23 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
+import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
- * name.
+ * name. This now uses {@link AgentWave}s (the previous implementation is kept in {@link LocalClassicPylon}).
  * <p>
  * Messages with destination which have not yet been registered (undeliverable messages) will be discarded.
  * <p>
  * There are two ways in which this implementation can work.
  * <p>
  * In the <i>direct</i> method (when a thread is <b>not</b> used), the send method leads directly to a call of the
- * {@link MessageReceiver#receive(String, String, String)} method of the shard in the destination agent.
+ * {@link WaveReceiver#receive} method of the shard in the destination agent.
  * <p>
  * In the <i>queued</i> method, a thread is used (as configured by means of the {@link #USE_THREAD_PARAM_NAME} parameter
  * in the configuration), which processes a queue to which messages are added, and from which messages are taken to be
@@ -55,7 +55,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  */
 public class LocalPylon extends DefaultPylonImplementation implements RunnableEntity<Node> {
 	/**
-	 * An alias for {@link NameBasedMessagingShard}.
+	 * An alias for {@link NameBasedMessagingShard}, kept for modeling purposes.
 	 */
 	public static class SimpleLocalMessaging extends NameBasedMessagingShard {
 		/**
@@ -64,7 +64,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 		private static final long serialVersionUID = 1L;
 		// nothing to add, but kept for compatibility with older tests and such.
 	}
-
+	
 	/**
 	 * The thread that manages the message queue.
 	 * 
@@ -80,35 +80,34 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	/**
 	 * The proxy to this entity.
 	 */
-	public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
-
+	public WaveMessagingPylonProxy messagingProxy = new WaveMessagingPylonProxy() {
 		@Override
-		public boolean send(String source, String destination, String content) {
-			return LocalPylon.this.send(source, destination, content);
+		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
+			return LocalPylon.this.getRecommendedShardImplementation(shardType);
 		}
-
+		
 		@Override
-		public boolean register(String entityName, MessageReceiver receiver) {
+		public String getEntityName() {
+			return getName();
+		}
+		
+		@Override
+		public boolean register(String entityName, WaveReceiver receiver) {
 			messageReceivers.put(entityName, receiver);
 			return true;
 		}
 		
 		@Override
-		public boolean unregister(String entityName, MessageReceiver registeredReceiver) {
+		public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
 			return messageReceivers.remove(entityName, registeredReceiver);
 		}
-
+		
 		@Override
-		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-			return LocalPylon.this.getRecommendedShardImplementation(shardType);
-		}
-
-		@Override
-		public String getEntityName() {
-			return getName();
+		public boolean send(AgentWave wave) {
+			return LocalPylon.this.send(wave);
 		}
 	};
-
+	
 	/**
 	 * The type of this support infrastructure (its 'kind')
 	 */
@@ -126,12 +125,12 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	 * Indicates how often delivery should be retried for messages.
 	 */
 	public static final String	RETRY_EVERY_PARAM_NAME			= "retry-every";
-
+	
 	/**
 	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
 	 * used.
 	 * <p>
-	 * If a thread is used, {@link MessagingPylonProxy#send(String, String, String)} will always return true.
+	 * If a thread is used, {@link WaveMessagingPylonProxy#send(AgentWave)} will always return true.
 	 * <p>
 	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
 	 * doing.
@@ -146,23 +145,23 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	 * Indicates how often delivery should be retried for messages.
 	 */
 	protected int		retryEvery			= 5;
-
+	
 	/**
 	 * The receivers for each agent.
 	 */
-	protected HashMap<String, MessageReceiver> messageReceivers = new HashMap<>();
-
+	protected HashMap<String, WaveReceiver> messageReceivers = new HashMap<>();
+	
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this is a reference to that
 	 * thread.
 	 */
-	protected Thread								messageThread	= null;
+	protected Thread							messageThread	= null;
 	/**
 	 * If a separate thread is used for messages ({@link #useThread} is <code>true</code>) this queue is used to gather
 	 * messages.
 	 */
-	protected LinkedBlockingQueue<Vector<String>>	messageQueue	= null;
-
+	protected LinkedBlockingQueue<AgentWave>	messageQueue	= null;
+	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
@@ -183,8 +182,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			try {
 				retryEvery = Integer.parseInt(configuration.getAValue(RETRY_EVERY_PARAM_NAME));
 			} catch(NumberFormatException e) {
-				le("Parameter [] is not a number:",
-						RETRY_EVERY_PARAM_NAME,
+				le("Parameter [] is not a number:", RETRY_EVERY_PARAM_NAME,
 						configuration.getAValue(RETRY_EVERY_PARAM_NAME));
 			}
 		messageQueue = new LinkedBlockingQueue<>();
@@ -229,54 +227,44 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	public void run() {
 		processQueue();
 	}
-
+	
 	/**
 	 * Registered that a message must be sent. If a thread and a queue are not used, this method directly calls
-	 * {@link #deliver(String, String, String)}.
+	 * {@link #deliver(AgentWave)}.
 	 *
-	 * @param source
-	 *            - the source (complete) endpoint of the message.
-	 * @param destination
-	 *            - the target (complete) endpoint of the message.
-	 * @param content
-	 *            - the content of the message.
+	 * @param wave
+	 *            - the wave
 	 * @return <code>true</code> if the message was sent successfully or if a thread is used.
 	 */
-	protected boolean send(String source, String destination, String content) {
+	protected boolean send(AgentWave wave) {
 		if(useThread) {
-			Vector<String> message = new Vector<>(3);
-			message.add(source);
-			message.add(destination);
-			message.add(content);
 			synchronized(messageQueue) {
-				messageQueue.add(message);
+				messageQueue.add(wave);
 				messageQueue.notify();
 			}
 			return true;
 		}
-		return deliver(source, destination, content);
+		return deliver(wave);
 	}
-
+	
 	/**
 	 * Attempts the actual delivery of a message.
 	 *
-	 * @param source
-	 *            - the source (complete) endpoint of the message.
-	 * @param destination
-	 *            - the target (complete) endpoint of the message.
-	 * @param content
-	 *            - the content of the message.
+	 * @param wave
+	 *            - the wave
 	 * @return <code>true</code> if the destination is registered, <code>false</code> otherwise.
 	 */
-	protected boolean deliver(String source, String destination, String content) {
-		String agentName = destination.split(AgentWave.ADDRESS_SEPARATOR)[0];
-		if(!messageReceivers.containsKey(agentName))
+	protected boolean deliver(AgentWave wave) {
+		String agentName = wave.getFirstDestinationElement();
+		if(!messageReceivers.containsKey(agentName)) {
+			le("Unable to find destination [] for wave [].", agentName, wave);
 			// TODO manage undeliverables
 			return false;
-		messageReceivers.get(agentName).receive(source, destination, content);
+		}
+		messageReceivers.get(agentName).receive(wave);
 		return true;
 	}
-
+	
 	/**
 	 * When using a thread, process (or wait for) messages in the message queue.
 	 */
@@ -286,25 +274,25 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 			if(messageQueue.isEmpty())
 				try {
 					synchronized(messageQueue) {
-						messageQueue.wait();
+						messageQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 					}
 				} catch(InterruptedException e) {
 					// do nothing
 				}
 			else {
-				Vector<String> message = messageQueue.poll();
-				deliver(message.get(0), message.get(1), message.get(2));
+				AgentWave wave = messageQueue.poll();
+				deliver(wave);
 			}
 		}
 	}
-
+	
 	@Override
 	public String getRecommendedShardImplementation(AgentShardDesignation shardName) {
 		if(shardName.equals(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
-			return NameBasedMessagingShard.class.getName();
+			return SimpleLocalMessaging.class.getName();
 		return super.getRecommendedShardImplementation(shardName);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<Pylon> asContext() {

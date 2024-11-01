@@ -41,31 +41,40 @@ import java.util.Set;
  * 
  * @author andreiolaru
  */
-public class MultiTreeMap extends MultiValueMap
-{
+public class MultiTreeMap extends MultiValueMap {
 	/**
 	 * The class UID
 	 */
-	private static final long	serialVersionUID	= 4361796924244682172L;
+	private static final long serialVersionUID = 4361796924244682172L;
+	
+	/**
+	 * The leftmost indent when printing a {@link MultiTreeMap}.
+	 */
+	protected static final String INITIAL_INDENT = "   ";
+	
+	/**
+	 * The indentation for each level when printing a {@link MultiTreeMap}.
+	 */
+	protected static final String INDENTATION = ".     ";
 	
 	/**
 	 * Keys that have String values.
 	 */
-	protected Set<String>		simpleKeys			= new LinkedHashSet<>();
+	protected Set<String>	simpleKeys		= new LinkedHashSet<>();
 	/**
 	 * Keys that have {@link MultiTreeMap} values.
 	 */
-	protected Set<String>		treeKeys			= new LinkedHashSet<>();
+	protected Set<String>	treeKeys		= new LinkedHashSet<>();
 	/**
 	 * Keys that should only hold one value (can be simple or hierarchical).
 	 */
-	protected Set<String>		singletonKeys		= new LinkedHashSet<>();
+	protected Set<String>	singletonKeys	= new LinkedHashSet<>();
 	
 	/**
 	 * Is updated with the longest length of a key; used for pretty printing without calculating the longest key every
 	 * time.
 	 */
-	protected int				padLen				= 0;
+	protected int padLen = 0;
 	
 	/**
 	 * Internal method for adding a name (either simple or hierarchical).
@@ -77,8 +86,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @param isSingleton
 	 *            - <code>true</code> if the name should have only one value.
 	 */
-	protected void addKey(String name, boolean isSimple, boolean isSingleton)
-	{
+	protected void addKey(String name, boolean isSimple, boolean isSingleton) {
 		if(name != null && name.length() > padLen)
 			padLen = name.length();
 		if(isSimple)
@@ -105,22 +113,21 @@ public class MultiTreeMap extends MultiValueMap
 	 * If the name is existing and singleton, the given value replaces the existing association.
 	 * 
 	 * @param name
-	 *                        - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                        - the value, either a {@link String} or a {@link MultiTreeMap} instance.
+	 *            - the value, either a {@link String} or a {@link MultiTreeMap} instance.
 	 * @param isSimple
-	 *                        - <code>true</code> if the name is expected to be simple, <code>false</code> if it is
-	 *                        expected to be hierarchical.
+	 *            - <code>true</code> if the name is expected to be simple, <code>false</code> if it is expected to be
+	 *            hierarchical.
 	 * @param isSingleton
-	 *                        - <code>true</code> if the name is associated with a singleton value, <code>false</code>
-	 *                        if multiple values can be associated with the name.
+	 *            - <code>true</code> if the name is associated with a singleton value, <code>false</code> if multiple
+	 *            values can be associated with the name.
 	 * @param isFirst
-	 *                        - <code>true</code> if the value should be added as the first value to be associated with
-	 *                        the name; <code>false</code> if as the last.
+	 *            - <code>true</code> if the value should be added as the first value to be associated with the name;
+	 *            <code>false</code> if as the last.
 	 * @return the instance itself.
 	 */
-	protected MultiTreeMap addItem(String name, Object value, boolean isSimple, boolean isSingleton, boolean isFirst)
-	{
+	protected MultiTreeMap addItem(String name, Object value, boolean isSimple, boolean isSingleton, boolean isFirst) {
 		if(isSimple && treeKeys.contains(name))
 			throw new IllegalArgumentException("Name [" + name
 					+ "] is already present, as a hierarchical name. It cannot be assigned to simple (String) values.");
@@ -128,8 +135,7 @@ public class MultiTreeMap extends MultiValueMap
 			throw new IllegalArgumentException(
 					"Name [" + name + "] is already present, as a simple name. It cannot be assigned to tree values.");
 		boolean keyExists = false;
-		if(treeKeys.contains(name) || simpleKeys.contains(name))
-		{ // existing key
+		if(treeKeys.contains(name) || simpleKeys.contains(name)) { // existing key
 			keyExists = true;
 			if(isSingleton && !singletonKeys.contains(name))
 				throw new IllegalArgumentException("Name [" + name
@@ -161,8 +167,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the given name is already present as a hierarchical name, or as a non-singleton name.
 	 */
-	public MultiTreeMap addSingleValue(String name, String value)
-	{
+	public MultiTreeMap addSingleValue(String name, String value) {
 		return addItem(name, value, true, true, false);
 	}
 	
@@ -179,8 +184,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the given name is already present as a hierarchical name, or as a singleton name.
 	 */
-	public MultiTreeMap addOneValue(String name, String value)
-	{
+	public MultiTreeMap addOneValue(String name, String value) {
 		return addItem(name, value, true, false, false);
 	}
 	
@@ -188,8 +192,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * Alias of {@link #addOneValue(String, String)}, but should not be used because of its ambiguity.
 	 */
 	@Override
-	public MultiValueMap add(String name, String value)
-	{
+	public MultiValueMap add(String name, String value) {
 		return addOneValue(name, value);
 	}
 	
@@ -199,16 +202,14 @@ public class MultiTreeMap extends MultiValueMap
 	 * When this method inserts a new name, use this if the name is expected to be associated with several values.
 	 * 
 	 * @param name
-	 *                  - the name (key) of the entry.
+	 *            - the name (key) of the entry.
 	 * @param value
-	 *                  - the value associated with the name.
+	 *            - the value associated with the name.
 	 * @return the instance itself, for chained calls.
 	 * @throws IllegalArgumentException
-	 *                                      if the given name is already present as a hierarchical name, or as a
-	 *                                      singleton name.
+	 *             if the given name is already present as a hierarchical name, or as a singleton name.
 	 */
-	public MultiTreeMap addFirstValue(String name, String value)
-	{
+	public MultiTreeMap addFirstValue(String name, String value) {
 		return addItem(name, value, true, false, true);
 	}
 	
@@ -216,14 +217,12 @@ public class MultiTreeMap extends MultiValueMap
 	 * Alias of {@link #addFirstValue(String, String)}, but should not be used because of its ambiguity.
 	 */
 	@Override
-	public MultiValueMap addFirst(String name, String value)
-	{
+	public MultiValueMap addFirst(String name, String value) {
 		return addFirstValue(name, value);
 	}
 	
 	@Override
-	public MultiTreeMap addAll(String name, List<String> values)
-	{
+	public MultiTreeMap addAll(String name, List<String> values) {
 		if(values.isEmpty())
 			// no effect
 			return this;
@@ -244,8 +243,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the given name is already present as a simple name or as a non-singleton name.
 	 */
-	public MultiTreeMap addSingleTree(String name, MultiTreeMap tree)
-	{
+	public MultiTreeMap addSingleTree(String name, MultiTreeMap tree) {
 		return addItem(name, tree, false, true, false);
 	}
 	
@@ -259,8 +257,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the {@link MultiTreeMap} instance to associate with the name.
 	 * @return the second argument.
 	 */
-	public MultiTreeMap addSingleTreeGet(String name, MultiTreeMap tree)
-	{
+	public MultiTreeMap addSingleTreeGet(String name, MultiTreeMap tree) {
 		addItem(name, tree, false, true, false);
 		return tree;
 	}
@@ -278,8 +275,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the given name is already present as a simple name or as a singleton name.
 	 */
-	public MultiTreeMap addOneTree(String name, MultiTreeMap tree)
-	{
+	public MultiTreeMap addOneTree(String name, MultiTreeMap tree) {
 		return addItem(name, tree, false, false, false);
 	}
 	
@@ -293,8 +289,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the {@link MultiTreeMap} instance to associate with the name.
 	 * @return the second argument.
 	 */
-	public MultiTreeMap addOneTreeGet(String name, MultiTreeMap tree)
-	{
+	public MultiTreeMap addOneTreeGet(String name, MultiTreeMap tree) {
 		addItem(name, tree, false, false, false);
 		return tree;
 	}
@@ -308,8 +303,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the {@link MultiTreeMap} instances to associate with the name.
 	 * @return this instance itself, for chained calls.
 	 */
-	public MultiTreeMap addTrees(String name, List<MultiTreeMap> trees)
-	{
+	public MultiTreeMap addTrees(String name, List<MultiTreeMap> trees) {
 		if(trees.isEmpty())
 			// no effect
 			return this;
@@ -329,8 +323,7 @@ public class MultiTreeMap extends MultiValueMap
 	 */
 	@Deprecated
 	@Override
-	public MultiTreeMap addObject(String name, Object value)
-	{
+	public MultiTreeMap addObject(String name, Object value) {
 		throw new UnsupportedOperationException("The MultiTreeMap class does not allow adding objects arbitrarily.");
 	}
 	
@@ -338,12 +331,11 @@ public class MultiTreeMap extends MultiValueMap
 	 * This method is not available in {@link MultiTreeMap}. One of the other addition methods must be used.
 	 * 
 	 * @throws UnsupportedOperationException
-	 *                                           always.
+	 *             always.
 	 */
 	@Deprecated
 	@Override
-	public MultiValueMap addFirstObject(String name, Object value)
-	{
+	public MultiValueMap addFirstObject(String name, Object value) {
 		throw new UnsupportedOperationException("The MultiTreeMap class does not allow adding objects arbitrarily.");
 	}
 	
@@ -351,15 +343,14 @@ public class MultiTreeMap extends MultiValueMap
 	 * Replaces or adds the given value for the given singleton name.
 	 * 
 	 * @param name
-	 *                  - the (key) name of the entry.
+	 *            - the (key) name of the entry.
 	 * @param value
-	 *                  - the new value.
+	 *            - the new value.
 	 * @return this instance itself, for chained calls.
 	 * @throws IllegalArgumentException
-	 *                                      if the name exist and is not simple or is not singleton.
+	 *             if the name exist and is not simple or is not singleton.
 	 */
-	public MultiTreeMap setValue(String name, String value)
-	{
+	public MultiTreeMap setValue(String name, String value) {
 		return addItem(name, value, true, true, false);
 	}
 	
@@ -378,8 +369,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the name exists and is associated with singleton values.
 	 */
-	public MultiTreeMap clear(String name)
-	{
+	public MultiTreeMap clear(String name) {
 		if(singletonKeys.contains(name))
 			throw new IllegalArgumentException("Singleton name [" + name + "] cannot be cleared.");
 		if(backingMap.containsKey(name))
@@ -402,8 +392,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *             if the name is not singleton and the request was to make it singleton, but it is already associated
 	 *             with more than one value.
 	 */
-	public MultiTreeMap makeSingleton(String name, boolean makeSingleton)
-	{
+	public MultiTreeMap makeSingleton(String name, boolean makeSingleton) {
 		if(!containsKey(name))
 			throw new IllegalArgumentException("The name [" + name + "] does not exist.");
 		if(!singletonKeys.contains(name) && makeSingleton && backingMap.get(name).size() > 1)
@@ -420,8 +409,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name to search.
 	 * @return <code>true</code> if the name is contained as a singleton name; <code>false</code> otherwise.
 	 */
-	public boolean isSingleton(String name)
-	{
+	public boolean isSingleton(String name) {
 		return singletonKeys.contains(name);
 	}
 	
@@ -431,8 +419,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @return <code>true</code> if the name has been added to this instance as a simple name; <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean isSimple(String name)
-	{
+	public boolean isSimple(String name) {
 		return simpleKeys.contains(name);
 	}
 	
@@ -444,8 +431,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @return <code>true</code> if the name has been added to this instance as a simple name; <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean containsSimpleName(String name)
-	{
+	public boolean containsSimpleName(String name) {
 		return isSimple(name);
 	}
 	
@@ -455,8 +441,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @return <code>true</code> if the name has been added to this instance as a hierarchical name; <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean isHierarchical(String name)
-	{
+	public boolean isHierarchical(String name) {
 		return treeKeys.contains(name);
 	}
 	
@@ -468,24 +453,21 @@ public class MultiTreeMap extends MultiValueMap
 	 * @return <code>true</code> if the name has been added to this instance as a hierarchical name; <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean containsHierarchicalName(String name)
-	{
+	public boolean containsHierarchicalName(String name) {
 		return isHierarchical(name);
 	}
 	
 	/**
 	 * @return the list of simple names, as a new list, not backed by this map.
 	 */
-	public List<String> getSimpleNames()
-	{
+	public List<String> getSimpleNames() {
 		return new LinkedList<>(simpleKeys);
 	}
 	
 	/**
 	 * @return the list of hierarchical names, as a new list, not backed by this map.
 	 */
-	public List<String> getHierarchicalNames()
-	{
+	public List<String> getHierarchicalNames() {
 		return new LinkedList<>(treeKeys);
 	}
 	
@@ -494,8 +476,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * 
 	 * @return the list of hierarchical names.
 	 */
-	public List<String> getTreeKeys()
-	{
+	public List<String> getTreeKeys() {
 		return getHierarchicalNames();
 	}
 	
@@ -514,8 +495,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the name exists but does not correspond to the specified access.
 	 */
-	protected boolean checkKeyAccess(String name, boolean asSimple, boolean asSingleton)
-	{
+	protected boolean checkKeyAccess(String name, boolean asSimple, boolean asSingleton) {
 		if(!containsKey(name))
 			return false;
 		if(asSimple && !simpleKeys.contains(name))
@@ -534,8 +514,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * used for non-singleton simple values.
 	 */
 	@Override
-	public String get(String name)
-	{
+	public String get(String name) {
 		checkKeyAccess(name, true, false);
 		return super.get(name);
 	}
@@ -545,8 +524,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * be used for non-singleton simple values.
 	 */
 	@Override
-	public String getValue(String name)
-	{
+	public String getValue(String name) {
 		return get(name);
 	}
 	
@@ -557,12 +535,11 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) tos search.
 	 * @return the value associated with the name. may be <code>null</code> if the name does not exist, if the name has
 	 *         been {@link #clear}ed or {@link #setValue} was called with <code>null</code>.
-	 * 
+	 * 		
 	 * @throws IllegalArgumentException
 	 *             if the name is used for a non-singleton name or for a hierarchical name.
 	 */
-	public String getSingleValue(String name)
-	{
+	public String getSingleValue(String name) {
 		checkKeyAccess(name, true, true);
 		return (backingMap.containsKey(name) && backingMap.get(name).size() == 1) ? (String) backingMap.get(name).get(0)
 				: null;
@@ -578,8 +555,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * @throws IllegalArgumentException
 	 *             if the name is used for a singleton name or for a hierarchical name.
 	 */
-	public String getFirstValue(String name)
-	{
+	public String getFirstValue(String name) {
 		return get(name);
 	}
 	
@@ -590,8 +566,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *             if the name is used for a singleton name or for a hierarchical name.
 	 */
 	@Override
-	public List<String> getValues(String name)
-	{
+	public List<String> getValues(String name) {
 		checkKeyAccess(name, true, false);
 		return super.getValues(name);
 	}
@@ -606,8 +581,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to search.
 	 * @return a value associated with the name.
 	 */
-	public String getAValue(String name)
-	{
+	public String getAValue(String name) {
 		if(!isSimple(name))
 			// slight abuse of the check order in checkKeyAccess.
 			checkKeyAccess(name, true, false);
@@ -621,8 +595,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to search.
 	 * @return the associated tree.
 	 */
-	public MultiTreeMap getSingleTree(String name)
-	{
+	public MultiTreeMap getSingleTree(String name) {
 		checkKeyAccess(name, false, true);
 		return getCreateTree(name, false, true);
 	}
@@ -639,8 +612,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            and returned. If <code>false</code>, the method is the same as {@link #getSingleTree(String)}.
 	 * @return the associated tree.
 	 */
-	public MultiTreeMap getSingleTree(String name, boolean create)
-	{
+	public MultiTreeMap getSingleTree(String name, boolean create) {
 		return getCreateTree(name, create, true);
 	}
 	
@@ -651,8 +623,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to search.
 	 * @return the first associated tree.
 	 */
-	public MultiTreeMap getFirstTree(String name)
-	{
+	public MultiTreeMap getFirstTree(String name) {
 		checkKeyAccess(name, false, false);
 		return getCreateTree(name, false, false);
 	}
@@ -667,8 +638,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            and returned. If <code>false</code>, the method is the same as {@link #getFirstTree(String)}.
 	 * @return the first associated tree.
 	 */
-	public MultiTreeMap getFirstTree(String name, boolean create)
-	{
+	public MultiTreeMap getFirstTree(String name, boolean create) {
 		return getCreateTree(name, create, false);
 	}
 	
@@ -679,12 +649,11 @@ public class MultiTreeMap extends MultiValueMap
 	 * @param name
 	 *            - the name.
 	 * @return the trees associated with the name.
-	 * 
+	 * 			
 	 * @throws IllegalArgumentException
 	 *             if the given name is a simple name (its values are not trees).
 	 */
-	public List<MultiTreeMap> getTrees(String name)
-	{
+	public List<MultiTreeMap> getTrees(String name) {
 		checkKeyAccess(name, false, false);
 		List<MultiTreeMap> ret = new LinkedList<>();
 		for(Object t : backingMap.get(name))
@@ -702,8 +671,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to search.
 	 * @return a tree associated with the name.
 	 */
-	public MultiTreeMap getATree(String name)
-	{
+	public MultiTreeMap getATree(String name) {
 		if(!isHierarchical(name))
 			// slight abuse of the check order in checkKeyAccess.
 			checkKeyAccess(name, false, false);
@@ -728,10 +696,8 @@ public class MultiTreeMap extends MultiValueMap
 	 *            whether the name should be considered as singleton or not.
 	 * @return the first associated tree.
 	 */
-	protected MultiTreeMap getCreateTree(String name, boolean create, boolean isSingletonName)
-	{
-		if(!containsKey(name) && create)
-		{
+	protected MultiTreeMap getCreateTree(String name, boolean create, boolean isSingletonName) {
+		if(!containsKey(name) && create) {
 			MultiTreeMap newTree = new MultiTreeMap();
 			addItem(name, newTree, false, isSingletonName, false);
 			return newTree;
@@ -759,8 +725,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to transfer
 	 * @return the instance itself
 	 */
-	public MultiTreeMap copyNameFrom(MultiTreeMap from, String name)
-	{
+	public MultiTreeMap copyNameFrom(MultiTreeMap from, String name) {
 		return copyNameFrom(from, name, false);
 	}
 	
@@ -783,8 +748,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the name (key) to transfer
 	 * @return the instance itself
 	 */
-	public MultiTreeMap copyNameFromDeep(MultiTreeMap from, String name)
-	{
+	public MultiTreeMap copyNameFromDeep(MultiTreeMap from, String name) {
 		return copyNameFrom(from, name, true);
 	}
 	
@@ -801,8 +765,7 @@ public class MultiTreeMap extends MultiValueMap
 	 *            is copied.
 	 * @return the instance itself (the {@link MultiTreeMap} which is the destination the transfer.
 	 */
-	protected MultiTreeMap copyNameFrom(MultiTreeMap from, String name, boolean deepCopy)
-	{
+	protected MultiTreeMap copyNameFrom(MultiTreeMap from, String name, boolean deepCopy) {
 		if(from.isHierarchical(name))
 			if(from.isSingleton(name))
 				if(isSingleton(name) && isHierarchical(name))
@@ -815,10 +778,8 @@ public class MultiTreeMap extends MultiValueMap
 					addOneTree(name, ((MultiTreeMap) tree).copyDeep());
 			else
 				addTrees(name, from.getTrees(name));
-		else if(from.isSingleton(name))
-		{
-			if(isSingleton(name) && isSimple(name))
-			{
+		else if(from.isSingleton(name)) {
+			if(isSingleton(name) && isSimple(name)) {
 				// TODO find a way to issue warning
 			}
 			addSingleValue(name, from.getSingleValue(name));
@@ -838,8 +799,7 @@ public class MultiTreeMap extends MultiValueMap
 	 * 
 	 * @return the shallow copy of this map.
 	 */
-	public MultiTreeMap copyShallow()
-	{
+	public MultiTreeMap copyShallow() {
 		MultiTreeMap ret = new MultiTreeMap();
 		for(String key : backingMap.keySet())
 			ret.backingMap.put(key, new LinkedList<>(backingMap.get(key)));
@@ -857,12 +817,10 @@ public class MultiTreeMap extends MultiValueMap
 	 * 
 	 * @return the shallow copy of this map.
 	 */
-	public MultiTreeMap copyDeep()
-	{
+	public MultiTreeMap copyDeep() {
 		MultiTreeMap ret = new MultiTreeMap();
 		for(String key : backingMap.keySet())
-			if(treeKeys.contains(key))
-			{
+			if(treeKeys.contains(key)) {
 				ret.backingMap.put(key, new LinkedList<>());
 				for(Object treeObj : backingMap.get(key))
 					ret.backingMap.get(key).add(((MultiTreeMap) treeObj).copyDeep());
@@ -888,10 +846,8 @@ public class MultiTreeMap extends MultiValueMap
 	 *            - the path, consisting of names.
 	 * @return the value associated with the leaf at the end of the path, if any is found; <code>null</code> otherwise.
 	 */
-	public String getDeepValue(String... names)
-	{
-		switch(names.length)
-		{
+	public String getDeepValue(String... names) {
+		switch(names.length) {
 		case 0:
 			return null;
 		case 1:
@@ -907,22 +863,19 @@ public class MultiTreeMap extends MultiValueMap
 	}
 	
 	@Override
-	public MultiValueMap removeFirst(String name)
-	{
+	public MultiValueMap removeFirst(String name) {
 		// nothing to do
 		return super.removeFirst(name);
 	}
 	
 	@Override
-	public MultiValueMap remove(String name, Object value)
-	{
+	public MultiValueMap remove(String name, Object value) {
 		// nothing to do
 		return super.remove(name, value);
 	}
 	
 	@Override
-	public MultiValueMap removeKey(String name)
-	{
+	public MultiValueMap removeKey(String name) {
 		simpleKeys.remove(name);
 		treeKeys.remove(name);
 		singletonKeys.remove(name);
@@ -940,15 +893,13 @@ public class MultiTreeMap extends MultiValueMap
 	 *            details.
 	 * @return the String rendition of this tree.
 	 */
-	public String toString(int depth, boolean shorter)
-	{
-		return toString(shorter ? "" : "   ", shorter ? "" : "      ", depth, shorter);
+	public String toString(int depth, boolean shorter) {
+		return toString(shorter ? " " : INITIAL_INDENT, shorter ? "" : INDENTATION, depth, shorter);
 	}
 	
 	@Override
-	public String toString()
-	{
-		return toString("   ", "      ", -1, false);
+	public String toString() {
+		return toString(INITIAL_INDENT, INDENTATION, -1, false);
 	}
 	
 	/**
@@ -967,36 +918,38 @@ public class MultiTreeMap extends MultiValueMap
 	 *            details.
 	 * @return the String rendition of this tree, indented.
 	 */
-	protected String toString(String indent, String baseIndent, int depth, boolean shorter)
-	{
+	protected String toString(String indent, String baseIndent, int depth, boolean shorter) {
+		String SINGLE = "-", MULTI = ">";
+		String SHORT_SEP = shorter ? "," : "";
+		String NEW_ENTRY = shorter ? "" : "]:";
+		String NEW_LEVEL = shorter && indent.length() > baseIndent.length() ? ">" : "";
+		String KEY_IN = shorter ? "" : "[", KEY_OUT = shorter ? "" : "]";
+		
 		if(depth == 0)
-			return shorter ? "," : "";
-		String ret = shorter && indent.length() < baseIndent.length() ? ">" : "";
-		boolean justtree = false;
+			return SHORT_SEP;
+		String ret = NEW_LEVEL;
+		boolean justtree = false; // if true, the tree has already started to print
 		for(String name : backingMap.keySet())
-			if(simpleKeys.contains(name))
-			{
-				if(shorter)
+			if(simpleKeys.contains(name)) {
+				if(shorter) // no short printing for simple keys
 					continue;
-				ret += (justtree || shorter ? "" : "\n") + indent
-						+ String.format("%-" + (padLen + 4) + "s", "[" + name + ("]" + (isSingleton(name) ? ":" : ">")))
-						+ backingMap.get(name);
+				ret += (justtree || shorter ? "" : "\n") + indent + String.format("%-" + (padLen + 4) + "s",
+						"[" + name + "]" + (isSingleton(name) ? SINGLE : MULTI)) + backingMap.get(name);
 				justtree = false;
 			}
-			else
-			{
-				ret += (justtree || shorter ? "" : "\n") + indent + (shorter ? "" : "[") + name
-						+ (shorter ? "" : ("]" + (isSingleton(name) ? "" : ">")));
+			else {
+				ret += (justtree || shorter ? "" : "\n") + indent + KEY_IN + name + KEY_OUT
+						+ (shorter ? "" : (isSingleton(name) ? SINGLE : MULTI));
 				justtree = true;
 				boolean first = true;
-				for(Object o : backingMap.get(name))
-				{
+				for(Object o : backingMap.get(name)) {
 					/*
-					 *  Avoid "ClassCastException because net.xqhs.flash.core.util.MultiTreeMap.toString() cannot be evaluate"
+					 * Avoid
+					 * "ClassCastException because net.xqhs.flash.core.util.MultiTreeMap.toString() cannot be evaluate"
 					 */
-					if (o instanceof MultiTreeMap) {
+					if(o instanceof MultiTreeMap) {
 						MultiTreeMap mtm = (MultiTreeMap) o;
-						ret += (first ? "" : (indent + baseIndent + (shorter ? "" : "]>")))
+						ret += (first ? "" : (indent + baseIndent + NEW_ENTRY))
 								+ mtm.toString(indent + baseIndent, baseIndent, depth - 1, shorter);
 						first = false;
 					}

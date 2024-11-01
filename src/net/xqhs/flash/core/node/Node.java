@@ -12,11 +12,16 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.simple.JSONObject;
 
@@ -35,7 +40,6 @@ import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -49,6 +53,11 @@ import net.xqhs.util.logging.Unit;
  * may exist on the same machine.
  * <p>
  * There should be no "higher"-context entity than the node.
+ * <p>
+ * The node will stop when there are no more active entities in its registered entity list. By default, active entities
+ * are the ones in {@link #DEFAULT_ACTIVE_ENTITIES}. All entities can be specified as active by passing the
+ * <code>active:*</code> parameter in the configuration deployment of the node, leading to the node (most likely) never
+ * stopping by default.
  * 
  * @author Andrei Olaru
  */
@@ -80,42 +89,74 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * The endpoint for messages sent between nodes.
 	 */
-	private static final String	SHARD_ENDPOINT			= "node";
+	private static final String		SHARD_ENDPOINT				= "node";
 	/**
 	 * The name of the operation in which a node receives a mobile agent.
 	 */
-	public static final String	RECEIVE_AGENT_OPERATION	= "receive_agent";
+	public static final String		RECEIVE_AGENT_OPERATION		= "receive_agent";
+	/**
+	 * The name of the parameter that indicates which entities keep the node alive.
+	 */
+	public static final String		ACTIVE_PARAMETER_NAME		= "active";
+	/**
+	 * Value for the active parameter indicating that all entities are active entities.
+	 */
+	public static final String		ACTIVE_ALWAYS_VALUE			= "*";
+	/**
+	 * The default "active" entities, which keep the node running while they are running.
+	 */
+	public static final String[]	DEFAULT_ACTIVE_ENTITIES		= new String[] { "agent" };
+	/**
+	 * The name of the parameter indicating when to make the first check for active entities.
+	 */
+	public static final String		ACTIVE_CHECK_PARAMETER		= "keep";
+	/**
+	 * Global (implementation-wide) switch to kill the node when there are no more running active entities.
+	 */
+	public static final boolean		EXIT_ON_NO_ACTIVE_ENTITIES	= true;
+	/**
+	 * The time (in seconds) after which to perform the first check of active entities, if not modified in the
+	 * configuration.
+	 */
+	public static final int			INITIAL_ACTIVE_CHECK		= 5;
 	
 	/**
 	 * The name of the node.
 	 */
-	protected String						name						= null;
+	protected String						name				= null;
 	/**
-	 * A collection of all entities added in the context of this node, indexed by their names.
+	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
-	protected Map<String, List<Entity<?>>>	registeredEntities			= new HashMap<>();
+	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder					= new LinkedList<>();
+	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
 	protected MessagingShard				messagingShard;
 	/**
-	 * monitors if the messaging shard has been registered with its pylon.
-	 */
-	protected boolean						messagingShardRegistered	= false;
-	/**
 	 * An indication if this entity is running.
 	 */
 	private boolean							isRunning;
+	/**
+	 * The set of entity types considered as "active" and keeping the node from exiting.
+	 */
+	protected Set<String>					activeEntities		= new HashSet<>(Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	/**
+	 * The time (in seconds) to check for active entities. if negative, the node will never close.
+	 */
+	protected long							activeFor			= INITIAL_ACTIVE_CHECK;
+	/**
+	 * Monitors if all active entities still running.
+	 */
+	protected Timer							activeMonitor		= null;
 	/**
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
 	private PylonProxy						nodePylonProxy;
-	protected String						serverURI					= null;					// FIXME: Remove this
 	
 	/**
 	 * Creates a new {@link Node} instance.
@@ -126,10 +167,14 @@ public class Node extends Unit implements Entity<Node> {
 	public Node(MultiTreeMap nodeConfiguration) {
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			this.serverURI = nodeConfiguration.get("region-server");
+			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
+				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
+			if(nodeConfiguration.containsKey(ACTIVE_CHECK_PARAMETER))
+				activeFor = Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER));
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		li("Active entitites:", activeEntities);
 	}
 	
 	/**
@@ -180,15 +225,23 @@ public class Node extends Unit implements Entity<Node> {
 				entities.add(ent);
 			}
 		});
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
+		return false;
+		// TODO revert to this when a monitoring entity is actually created.
+		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
 	
 	@Override
 	public boolean start() {
 		li("Starting node [] with entities [].", name, entityOrder);
 		// must start entities before sending messages to M&C because M&C must be started too
-		for(Entity<?> entity : entityOrder)
-			startEntity(entity);
+		for(Entity<?> entity : entityOrder) {
+			String entityName = entity.getName();
+			lf("starting entity []...", entityName);
+			if(entity.start())
+				lf("entity [] started successfully.", entityName);
+			else
+				le("failed to start entity [].", entityName);
+		}
 		isRunning = true;
 		if(messagingShard != null)
 			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
@@ -197,33 +250,20 @@ public class Node extends Unit implements Entity<Node> {
 		
 		if(getName() != null && registerEntitiesToCentralEntity())
 			lf("Entities successfully registered to control entity: ", entityOrder);
+		
+		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
+			activeMonitor = new Timer();
+			activeMonitor.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					checkRunning();
+				}
+			}, activeFor * 1000, 1000);
+		}
+		
 		return true;
 	}
-
-	/**
-	 * Method to start one entity in the context of this node.
-	 *
-	 * @param entity
-	 * 		  - the entity to start.
-	 *
-	 * @return boolean - an indication of success.
-	 */
-	public boolean startEntity(Entity<?> entity) {
-		lf("starting entity []...", entity.getName());
-		if(entity.start()) {
-			lf("entity [] started successfully.", entity.getName());
-			EntityProxy<?> ctx = entity.asContext();
-			if(!messagingShardRegistered && getName() != null && messagingShard != null
-					&& (ctx instanceof MessagingPylonProxy)) {
-				messagingShard.register(getName());
-				messagingShardRegistered = true;
-			}
-		}
-		else
-			le("failed to start entity [].", entity.getName());
-		return false;
-	}
-
+	
 	@Override
 	public boolean stop() {
 		li("Stopping node [] with entities [].", name, entityOrder);
@@ -231,11 +271,11 @@ public class Node extends Unit implements Entity<Node> {
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
-				lf("stopping an entity...");
+				lf("stopping entity []...", entity.getName());
 				if(entity.stop())
-					lf("entity stopped successfully.");
+					lf("entity [] stopped successfully.", entity.getName());
 				else
-					le("failed to stop entity.");
+					le("failed to stop entity [].", entity.getName());
 			}
 		}
 		isRunning = false;
@@ -277,7 +317,7 @@ public class Node extends Unit implements Entity<Node> {
 		}
 		messagingShard.addContext(new ShardContainer() {
 			@Override
-			public void postAgentEvent(AgentEvent event) {
+			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
 				case AGENT_WAVE:
 					String localAddr = ((AgentWave) event).getCompleteDestination();
@@ -291,6 +331,7 @@ public class Node extends Unit implements Entity<Node> {
 				default:
 					break;
 				}
+				return true; // FIXME it always returns true
 			}
 			
 			@Override
@@ -304,9 +345,6 @@ public class Node extends Unit implements Entity<Node> {
 				return getName();
 			}
 		});
-		// FIXME: remove this protocol-specific code
-		messagingShard.configure(
-				new MultiTreeMap().addSingleValue("connectTo", this.serverURI).addSingleValue("agent_name", getName()));
 		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
@@ -330,6 +368,21 @@ public class Node extends Unit implements Entity<Node> {
 	@Override
 	public EntityProxy<Node> asContext() {
 		return new NodeProxy();
+	}
+	
+	protected void checkRunning() {
+		boolean allActive = (activeEntities.size() == 1)
+				&& activeEntities.iterator().next().equals(ACTIVE_ALWAYS_VALUE);
+		for(String type : registeredEntities.keySet())
+			if(activeEntities.contains(type) || allActive)
+				for(Entity<?> e : registeredEntities.get(type))
+					if(e.isRunning())
+						// found an active entity still running
+						return;
+		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
+				activeEntities);
+		activeMonitor.cancel();
+		stop();
 	}
 	
 	/**
@@ -367,6 +420,8 @@ public class Node extends Unit implements Entity<Node> {
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
+		if(!jo.has(OperationUtils.OPERATION_NAME))
+			return;
 		String op = jo.get(OperationUtils.OPERATION_NAME).getAsString();
 		if(OperationUtils.ControlOperation.fromOperation(op) != null) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
@@ -378,18 +433,18 @@ public class Node extends Unit implements Entity<Node> {
 				return;
 			}
 			switch (ControlOperation.fromOperation(op)) {
-				case START:
-					if(startEntity(entity)) {
-						lf("[] was started by parent [].", param, name);
-						return;
-					}
-					break;
-				case KILL:
-					if(entity.stop()) {
-						lf("[] was stopped by parent [].", param, name);
-						return;
-					}
-					break;
+			// case START:
+			// if(startEntity(entity)) {
+			// lf("[] was started by parent [].", param, name);
+			// return;
+			// }
+			// break;
+			// case KILL:
+			// if(entity.stop()) {
+			// lf("[] was stopped by parent [].", param, name);
+			// return;
+			// }
+			// break;
 				default:
 					le("Unknown operation: ", op);
 					break;

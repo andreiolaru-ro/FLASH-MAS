@@ -16,6 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
@@ -27,6 +28,11 @@ import test.compositePingPong.Boot;
  * An {@link AgentShard} implementation that sends messages to other agents.
  * <p>
  * This is a rather older implementation, that starts pinging immediately after agent start.
+ * <p>
+ * Since it is a testing mechanism, it will instruct the agent to terminate immediately after the last of the specified
+ * number of pings is sent. Termination can be suppressed by sending the {@value #KEEP_PARAMETER_NAME} parameter.
+ * <p>
+ * Pings are sent indefinitely if n < 0.
  * 
  * @author Andrei Olaru
  */
@@ -41,7 +47,12 @@ public class PingTestShard extends AgentShardGeneral {
 		public void run() {
 			tick++;
 			System.out.println("Sending the message....");
-			sendMessage("ping-no " + tick);
+			if(n >= 0 && tick >= n) {
+				sendMessage(PING_PRE_LAST + tick);
+				endActivity();
+			}
+			else
+				sendMessage(PING_PRE + tick);
 		}
 	}
 	
@@ -58,6 +69,22 @@ public class PingTestShard extends AgentShardGeneral {
 	 */
 	protected static final String	TIME_PARAMETER_NAME			= "every";
 	/**
+	 * The name of the parameter that contains the total number of pings.
+	 */
+	protected static final String	N_PARAMETER_NAME			= "n";
+	/**
+	 * The name of the parameter that indicates agent should not be terminated after the last ping.
+	 */
+	protected static final String	KEEP_PARAMETER_NAME			= "keep";
+	/**
+	 * The prefix for every message except the last.
+	 */
+	protected static final String	PING_PRE					= "ping-no ";
+	/**
+	 * The prefix for the last message.
+	 */
+	protected static final String	PING_PRE_LAST				= "ping-last ";
+	/**
 	 * Endpoint element for this shard.
 	 */
 	protected static final String	SHARD_ENDPOINT				= "ping";
@@ -69,6 +96,10 @@ public class PingTestShard extends AgentShardGeneral {
 	 * Time between ping messages.
 	 */
 	protected static final int		DEFAULT_PING_PERIOD			= 2000;
+	/**
+	 * Number of pings.
+	 */
+	protected static final int		DEFAULT_NUMBER				= 5;
 	
 	/**
 	 * Timer for pinging.
@@ -90,6 +121,14 @@ public class PingTestShard extends AgentShardGeneral {
 	 * Period between pings.
 	 */
 	int				period;
+	/**
+	 * Number of pings to send in total.
+	 */
+	int				n;
+	/**
+	 * If the agent should be kept alive after the last ping is sent.
+	 */
+	boolean			keep		= false;
 	
 	/**
 	 * No-argument constructor
@@ -106,6 +145,11 @@ public class PingTestShard extends AgentShardGeneral {
 		period = configuration.containsKey(TIME_PARAMETER_NAME)
 				? Integer.parseInt(configuration.getFirstValue(TIME_PARAMETER_NAME))
 				: DEFAULT_PING_PERIOD;
+		n = configuration.containsKey(N_PARAMETER_NAME)
+				? Integer.parseInt(configuration.getFirstValue(N_PARAMETER_NAME))
+				: DEFAULT_NUMBER;
+		if(configuration.containsKey(KEEP_PARAMETER_NAME))
+			keep = true;
 		return true;
 	}
 	
@@ -143,6 +187,15 @@ public class PingTestShard extends AgentShardGeneral {
 		for(String otherAgent : otherAgents)
 			res &= sendMessage(content, SHARD_ENDPOINT, otherAgent, PingBackTestShard.SHARD_ENDPOINT);
 		return res;
+	}
+	
+	/**
+	 * Wrap up the activity of this shard and instructs the agent to stop.
+	 */
+	protected void endActivity() {
+		pingTimer.cancel();
+		if(!keep)
+			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 	}
 	
 	@Override

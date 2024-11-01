@@ -36,6 +36,11 @@ The current phase of FLASH-MAS (branch `master`) uses  an older type of entities
 
 The future phase of FLASH-MAS uses the ***entity-operation*** model, in which entities interact only via the framework. See, for instance, branch [`opmodel`](https://github.com/andreiolaru-ro/FLASH-MAS/tree/opmodel-gabi).
 
+## Importing into your IDE
+
+* see [importing](doc/importing.md)
+* see also chapter Source organization below
+
 ## Understanding FLASH-MAS
 
 Deploying a FLASH-MAS system means creating a *deployment configuration* specifying the *entities* in the system, and *booting the system*.

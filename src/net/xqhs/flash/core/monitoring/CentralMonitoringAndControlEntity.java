@@ -45,8 +45,8 @@ import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
+import net.xqhs.flash.web.WebEntity;
 import net.xqhs.util.logging.Unit;
-import web.WebEntity;
 
 /**
  * This class is used to monitor and control the MAS.
@@ -131,13 +131,12 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 		 * This is expected to be called by the messaging shard.
 		 */
 		@Override
-		public void postAgentEvent(AgentEvent event) {
+		public boolean postAgentEvent(AgentEvent event) {
 			switch(event.getType()) {
 			case AGENT_WAVE:
-				parseReceivedMsg((AgentWave) event);
-				break;
+				return parseReceivedMsg((AgentWave) event);
 			default:
-				break;
+				return false;
 			}
 		}
 	}

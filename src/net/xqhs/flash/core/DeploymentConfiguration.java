@@ -62,6 +62,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String	NAME_SEPARATOR					= ":";
 	/**
+	 * Separator for multiple values of the same parameter.
+	 */
+	public static final String	VALUE_SEPARATOR		= ";";
+	// cannot use : because many values are URLs and contain ':'
+	/**
 	 * Separator for elements in the load order setting.
 	 */
 	public static final String	LOAD_ORDER_SEPARATOR			= ";";
@@ -135,7 +140,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Local IDs of default created entities.
 	 */
-	protected List<String> autoCreated = new LinkedList<>();
+	protected List<String>			autoCreated	= new LinkedList<>();
 	/**
 	 * The correspondence between names and local IDs, used to assign contexts by names.
 	 */
@@ -330,9 +335,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
 		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<String>(), this, autoCreated, name_ids, log);
+				new LinkedList<>(), this, autoCreated, name_ids, log);
 		
-		addContext(deployment, new LinkedList<String>(), name_ids);
+		addContext(deployment, new LinkedList<>(), name_ids);
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);
@@ -567,9 +572,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				return false;
 			}
 			if(tree.isHierarchical(child))
-				for(MultiTreeMap subTree : tree.getTrees(child))
-					if(!allPortable(subTree, caller, log))
+				if(tree.isSingleton(child)) {
+					if(!allPortable(tree.getATree(child), caller, log))
 						return false;
+				}
+				else
+					for(MultiTreeMap subTree : tree.getTrees(child))
+						if(!allPortable(subTree, caller, log))
+							return false;
 		}
 		return true;
 	}
@@ -918,6 +928,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			log.le("Name [] already present as hierarchical name.", par);
 		else if(asSingleton)
 			node.setValue(par, val);
+		else if(val != null && val.contains(VALUE_SEPARATOR))
+			for(String oneval : val.split(VALUE_SEPARATOR))
+				node.addOneValue(par, oneval);
 		else
 			node.addOneValue(par, val);
 	}
@@ -973,7 +986,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * @param autoCreated
 	 *            - the list of entity IDs that have been created automatically (that were not given in the deployment
 	 *            scenario).
-	 * @param name_ids 
+	 * @param name_ids
 	 *            - correspondence between names and local IDs.
 	 * @param log
 	 *            - the {@link Logger} to use.
@@ -1011,7 +1024,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(catTree.getTrees(firstName).size() == 1
 							&& autoCreated.contains(catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE))) {
 						// the only tree is an auto-created category and it will be removed.
+						String id = catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE);
 						catTree.removeKey(firstName);
+						rootTree.getSingleTree(LOCAL_ID_ATTRIBUTE).removeKey(id);
 						log.li("removed auto-created [] entity [] to replace with entity [].", category, firstName,
 								name);
 					}

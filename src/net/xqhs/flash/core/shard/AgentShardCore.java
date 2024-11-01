@@ -205,7 +205,7 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	}
 	
 	/**
-	 * The method calls is called by the parent {@link Agent} when an event occurs.
+	 * The method is called by the parent {@link ShardContainer} when an event occurs.
 	 * 
 	 * @param event
 	 *            - the event which occurred.

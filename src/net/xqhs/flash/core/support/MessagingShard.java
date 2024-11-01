@@ -25,26 +25,37 @@ import net.xqhs.flash.core.shard.AgentShard;
  * 
  * @author Andrei Olaru
  */
-public interface MessagingShard extends AgentShard
-{
+public interface MessagingShard extends AgentShard {
 	/**
 	 * Sends a message to another agent, according to the specific implementation.
 	 * 
 	 * @param source
-	 *                    - the source (complete) endpoint of the message.
+	 *            - the source (complete) endpoint of the message.
 	 * @param target
-	 *                    - the target (complete) endpoint of the message.
+	 *            - the target (complete) endpoint of the message.
 	 * @param content
-	 *                    - the content of the message.
+	 *            - the content of the message.
 	 * @return <code>true</code> if the message was sent successfully.
 	 */
 	public boolean sendMessage(String source, String target, String content);
 	
 	/**
+	 * Sends a message to another agent, according to the specific implementation.
+	 * <p>
+	 * If the pylon does not support sending {@link AgentWave}s, the source, the destination, and the content will be
+	 * extracted from the wave.
+	 * 
+	 * @param wave
+	 *            - the wave to send.
+	 * @return <code>true</code> if the message was sent successfully.
+	 */
+	public boolean sendMessage(AgentWave wave);
+	
+	/**
 	 * @return the address of this agent in the {@link Pylon} this shard is assigned to.
 	 */
 	public String getAgentAddress();
-
+	
 	/**
 	 * This can be called by non-agent entities to register their messaging shard, in case they are unable (or it would
 	 * not be practical) to use {@link #signalAgentEvent(AgentEvent)}.

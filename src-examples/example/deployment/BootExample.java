@@ -73,7 +73,7 @@ public class BootExample {
 	public static String version0(int mask) {
 		String args = "";
 		if((mask & (DEFINE_AGENT_A | DEFINE_AGENT_B)) > 0)
-			args += " -package test.simplePingPong";
+			args += " -package testing";
 		if((mask & DEFINE_NODE) > 0)
 			args += " -node node1";
 		if((mask & DEFINE_LOCAL_PYLON) > 0)

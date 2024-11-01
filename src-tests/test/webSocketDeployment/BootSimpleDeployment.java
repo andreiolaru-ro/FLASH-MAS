@@ -28,7 +28,7 @@ public class BootSimpleDeployment
 	{
 		String args = "";
 		
-		args += " -package test.simplePingPong";
+		args += " -package testing";
 		
 		args += " -node node1";
 		args += " -pylon webSocket:pylon1 serverPort:8885";
