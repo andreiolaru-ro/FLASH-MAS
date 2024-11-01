@@ -25,6 +25,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.monitoring.CentralGUI;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
@@ -156,7 +157,10 @@ public class WebEntity extends CentralGUI {
 					be.complete(true);
 				}
 			}));
-			router.route().handler(StaticHandler.create("src/web").setIndexPage("page.html"));
+			System.out.println(WebEntity.class.getPackage().getName());
+			String pkg = DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
+					+ WebEntity.class.getPackage().getName().replace(".", "/");
+			router.route().handler(StaticHandler.create(pkg).setIndexPage("page.html"));
 			vertx.createHttpServer().requestHandler(router).listen(port, http -> {
 				if(http.succeeded())
 					li("HTTP server started on port []", port);

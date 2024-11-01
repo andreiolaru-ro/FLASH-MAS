@@ -225,9 +225,7 @@ public class Node extends Unit implements Entity<Node> {
 				entities.add(ent);
 			}
 		});
-		return false;
-		// TODO revert to this when a monitoring entity is actually created.
-		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
+		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
 	
 	@Override
