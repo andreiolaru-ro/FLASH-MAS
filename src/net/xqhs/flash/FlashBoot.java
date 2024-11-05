@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,34 +19,30 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
+import net.xqhs.util.logging.output.ConsoleOutput;
+import net.xqhs.util.logging.output.FileOutput;
 
 /**
  * Class that boots a Flash-MAS instance.
  * 
  * @author andreiolaru
  */
-public class FlashBoot
-{
-	// public static ByteArrayOutputStream stream = null;
+public class FlashBoot {
 	/**
 	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
 	 */
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		MasterLog.setLogLevel(Level.ALL);
-
-		// stream = new ByteArrayOutputStream();
-		// GlobalLogWrapper.setLogStream(stream);
+		MasterLog.addDefaultOutput(new ConsoleOutput());
+		try {
+			MasterLog.addDefaultOutput(new FileOutput("output/global.log"));
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
-		// try {
-		// Thread.sleep(20000);
-		// } catch(InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 		for(Node node : nodes)
 			node.start();
 	}
