@@ -29,7 +29,7 @@ import net.xqhs.util.XML.XMLTree.XMLNode.XMLAttribute;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Logger.Level;
-import net.xqhs.util.logging.UnitComponentExt;
+import net.xqhs.util.logging.UnitComponent;
 
 /**
  * This class manages deployment configurations. It handles loading the elements of the configuration from various
@@ -56,11 +56,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String	CLI_CATEGORY_PREFIX				= "-";
+	public static final String	CLI_CATEGORY_PREFIX	= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String	NAME_SEPARATOR					= ":";
+	public static final String	NAME_SEPARATOR		= ":";
 	/**
 	 * Separator for multiple values of the same parameter.
 	 */
@@ -165,7 +165,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
 	 * tree while parsing CLI arguments.
 	 */
-	static class CtxtTriple {
+	public static class CtxtTriple {
 		/**
 		 * The name of the current category.
 		 */
@@ -199,6 +199,18 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		public String toString() {
 			return "{" + category + "/" + (catTree != null ? catTree.toString(1, true) : "-") + "/"
 					+ (elemTree != null ? elemTree.toString(1, true) : "-") + "}";
+		}
+		
+		public String toStringFull() {
+			String indent = MultiTreeMap.INITIAL_INDENT;
+			return "{" + category
+					+ (catTree != null
+							? catTree.toString(indent, indent, -1, false)
+							: "\n" + indent + "<null>")
+					+ (elemTree != null
+							? elemTree.toString(indent, indent, -1, false)
+							: "\n" + indent + "<null>")
+					+ "}";
 		}
 	}
 	
@@ -266,8 +278,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	public DeploymentConfiguration loadConfiguration(List<String> programArguments, boolean parseDeploymentFile,
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
-		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt("settings load")
-				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
+		UnitComponent log = new UnitComponent("settings load").setLoggerType(PlatformUtils.platformLogType())
+				.setLogLevel(Level.INFO);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -334,10 +346,10 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
-		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<String>(), this, autoCreated, name_ids, log);
+		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(), new LinkedList<>(),
+				this, autoCreated, name_ids, log);
 		
-		addContext(deployment, new LinkedList<String>(), name_ids);
+		addContext(deployment, new LinkedList<>(), name_ids);
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);
@@ -752,10 +764,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * @param log
 	 *            - the {@link Logger} to use.
 	 */
-	protected static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
-			List<String> autoCreated, Map<String, String> name_ids, UnitComponentExt log) {
+	public static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
+			List<String> autoCreated, Map<String, String> name_ids, UnitComponent log) {
 		Deque<CtxtTriple> context = new LinkedList<>();
-		context.push(baseContext);
+		if(baseContext != null)
+			context.push(baseContext);
 		while(args.hasNext()) {
 			// log.lf(context.toString());
 			String a = args.next();
@@ -1024,7 +1037,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(catTree.getTrees(firstName).size() == 1
 							&& autoCreated.contains(catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE))) {
 						// the only tree is an auto-created category and it will be removed.
+						String id = catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE);
 						catTree.removeKey(firstName);
+						rootTree.getSingleTree(LOCAL_ID_ATTRIBUTE).removeKey(id);
 						log.li("removed auto-created [] entity [] to replace with entity [].", category, firstName,
 								name);
 					}
