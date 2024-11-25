@@ -11,7 +11,16 @@
  ******************************************************************************/
 package test.compositePingPong;
 
+import andrei.partialCLI.PartialCLI_Test;
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.node.clientApp.ClientApp;
+import net.xqhs.flash.rmi.NodeCLI;
+import net.xqhs.flash.testViorel.PartialCLIWrapp;
+import net.xqhs.flash.testViorel.Timer;
+
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Deployment testing.
@@ -44,6 +53,13 @@ public class Boot
 		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));
+
+
+		PartialCLIWrapp.processArgs(args.split(" "));
+
+
 	}
+
+
 	
 }

@@ -1,8 +1,11 @@
 package net.xqhs.flash.rmi;
 
+
+import java.rmi.RemoteException;
 import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
+
 
 public class NodeCLI {
 	
@@ -21,7 +24,12 @@ public class NodeCLI {
 		 * @return the return value of {@link Entity#stop()}.
 		 */
 		boolean stopEntity(String entityName);
+
+		void addAgent(String agentName, String shardName) throws RemoteException;
+
 	}
+
+
 	
 	public static final String NODE_CLI_PARAM = "cli";
 	// TODO

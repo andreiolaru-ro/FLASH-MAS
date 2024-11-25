@@ -12,17 +12,12 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.rmi.RemoteException;
+import java.util.*;
 
+
+import net.xqhs.flash.core.node.clientApp.ClientCallbackInterface;
+import net.xqhs.flash.testViorel.PartialCLIWrapp;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -51,6 +46,9 @@ import net.xqhs.flash.rmi.NodeCLI;
 import net.xqhs.flash.rmi.NodeCLI.NodeInterface;
 import net.xqhs.util.logging.Unit;
 
+import javax.security.auth.callback.Callback;
+
+
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
  * may exist on the same machine.
@@ -64,7 +62,18 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class Node extends Unit implements Entity<Node> {
+public class Node extends Unit implements Entity<Node> , NodeInterface{
+	@Override
+	public Map<String, String> listEntities() {
+		return new HashMap<>();
+	}
+
+
+	@Override
+	public boolean stopEntity(String entityName) {
+		return false;
+	}
+
 	/**
 	 * Proxy for a {@link Node}.
 	 */
@@ -157,7 +166,8 @@ public class Node extends Unit implements Entity<Node> {
 	 */
 	private PylonProxy						nodePylonProxy;
 	protected String						serverURI					= null;					// FIXME: Remove this
-	
+
+
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
@@ -165,6 +175,7 @@ public class Node extends Unit implements Entity<Node> {
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
 	public Node(MultiTreeMap nodeConfiguration) {
+		this.callbacks = new ArrayList<>();
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
@@ -184,6 +195,11 @@ public class Node extends Unit implements Entity<Node> {
 						// TODO Auto-generated method stub
 						return null;
 					}
+
+					@Override
+					public void addAgent(String agentName, String shardName) throws RemoteException {
+						Node.this.addAgent(agentName, shardName);
+					}
 				});
 			}
 		}
@@ -192,7 +208,7 @@ public class Node extends Unit implements Entity<Node> {
 		li("Active entitites:", activeEntities);
 		
 	}
-	
+
 	/**
 	 * Method used to register entities added in the context of this node.
 	 * 
@@ -280,8 +296,36 @@ public class Node extends Unit implements Entity<Node> {
 				}
 			}, INITIAL_ACTIVE_CHECK, 1000);
 		}
-		
+		startMonitoring(" ", " ");
+		/*activeMonitor.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				// System.out.println("Loading new Timer");
+				// PartialCLIWrapp.processArgs(argset);
+
+				try {
+					callbacks.addAgent(agentName, shardName);
+				} catch (RemoteException e) {
+					System.err.println("Failed to add agent via client callback: " + e.getMessage());
+				}
+			}
+		}, 2000);*/
+
 		return true;
+	}
+	public void startMonitoring(String agentName, String shardName){
+		Timer activeMonitor = new Timer();
+
+		activeMonitor.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				try{
+					addAgent(agentName,shardName);
+				} catch (RemoteException e){
+					System.out.println("Failed to add agent: " +e.getMessage());
+				}
+			}
+		}, 2000);
 	}
 	
 	@Override
@@ -491,4 +535,28 @@ public class Node extends Unit implements Entity<Node> {
 		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(destination, root.toString());
 	}
+
+	private List<ClientCallbackInterface> callbacks;
+	public void addAgent(String agentName, String shardName) throws RemoteException{
+		listEntities().put(agentName,shardName);
+		// Logic to add the agent to the specified shard would go here.
+		System.out.println("Adding agent " + agentName + " to shard " + shardName);
+		notifyClients(agentName);
+	}
+
+	public synchronized void registerCallback(ClientCallbackInterface callback) throws RemoteException{
+		callbacks.add(callback);
+	}
+
+	private void notifyClients(String agentName) throws RemoteException{
+		for(ClientCallbackInterface callback : callbacks){
+			try{
+				callback.notifyAgentAdded(agentName);
+			} catch (RemoteException e){
+				System.out.println("Failed to notify client: " + e.getMessage());
+			}
+		}
+	}
+
+
 }
