@@ -11,14 +11,15 @@
  ******************************************************************************/
 package net.xqhs.flash.web;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonArray;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -41,160 +42,143 @@ import net.xqhs.flash.gui.structure.ElementIdManager;
  * Web entity for the connection between the MAS and the web interface.
  */
 public class WebEntity extends CentralGUI {
-	
+
+	/**
+	 * Serial version UID.
+	 */
+	private static final long serialVersionUID = -8088098471516262577L;
+
+	/** Address for ws communication from server to client */
+	protected static final String SERVER_TO_CLIENT = "server-to-client";
+
+	/** Address for ws communication from client to server */
+	protected static final String CLIENT_TO_SERVER = "client-to-server";
+
+	/** Address for ws communication from server to client agent */
+	protected static final String SERVER_TO_CLIENT_AGENT = "server-to-client-agent";
+
+	/** Address for ws communication from client to server agent */
+	protected static final String CLIENT_TO_SERVER_AGENT = "client-to-server-agent";
+
+	/** The endpoint for ws communication */
+	protected static final String WS_ENDPOINT = "/eventbus";
+
+	/**
+	 * The server verticle for the web entity.
+	 */
 	class ServerVerticle extends AbstractVerticle {
+		/**
+		 * The web entity this verticle is associated with.
+		 */
 		private WebEntity entity;
-		
-		private boolean handler = false;
-		
+
+		/**
+		 * The port on which the server is running.
+		 */
 		protected int port = 8081;
-		
+
+		/**
+		 * The number of connections to the server.
+		 */
+		protected int numConnections = 0;
+
+		/**
+		 * Constructor for the server verticle.
+		 * 
+		 * @param entity
+		 *               - the web entity this verticle is associated with.
+		 */
 		public ServerVerticle(WebEntity entity) {
 			this.entity = entity;
 		}
-		
+
 		@Override
 		public void start(Future<Void> startFuture) throws Exception {
 			Router router = Router.router(vertx);
 			SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
 			BridgeOptions options = new BridgeOptions()
-					.addOutboundPermitted(new PermittedOptions().setAddress("server-to-client"))
-					.addInboundPermitted(new PermittedOptions().setAddress("client-to-server"))
-					.addOutboundPermitted(new PermittedOptions().setAddress("server-to-client-agent-message"))
-					.addInboundPermitted(new PermittedOptions().setAddress("client-to-server-agent-message"));
+					.addOutboundPermitted(new PermittedOptions().setAddress(SERVER_TO_CLIENT))
+					.addOutboundPermitted(new PermittedOptions().setAddress(SERVER_TO_CLIENT_AGENT))
+					.addInboundPermitted(new PermittedOptions().setAddress(CLIENT_TO_SERVER))
+					.addInboundPermitted(new PermittedOptions().setAddress(CLIENT_TO_SERVER_AGENT));
+
 			// mount the bridge on the router
-			router.mountSubRouter("/eventbus", sockJSHandler.bridge(options, be -> {
+			router.mountSubRouter(WS_ENDPOINT, sockJSHandler.bridge(options, bridgeEvent -> {
 				try {
-					if(be.type() == BridgeEventType.SOCKET_CREATED) {
+					if (bridgeEvent.type() == BridgeEventType.SOCKET_CREATED) {
 						System.out.println("created");
-					}
-					else if(be.type() == BridgeEventType.REGISTER) {
+					} else if (bridgeEvent.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
-						verticleReady = true;
-						String tosend = getEntities().toString();
-						vertx.eventBus().send("server-to-client", tosend);
-						
-						if(!handler)
-							vertx.eventBus().consumer("client-to-server").handler(objectMessage -> {
-								JsonObject msg = new JsonObject((String) objectMessage.body());
-								if("port".equals(msg.getString("scope")))
-									activeInput(msg);
-							});
-							
-						// else {
-						// System.out.println(objectMessage.body());
-						// CentralEntityProxy cep = entity.cep;
-						// JsonObject data = new JsonObject((String) objectMessage.body());
-						// Iterator<Map.Entry<String, Object>> entryIterator = data.iterator();
-						//
-						// while(entryIterator.hasNext()) {
-						// Map.Entry<String, Object> entry = entryIterator.next();
-						//
-						// String entity = entry.getKey();
-						// JsonObject input = (JsonObject) entry.getValue();
-						// if(input.getString("type").equals("operation")) {
-						// // TODO: opertaions for entities do not have parameters yet
-						// String name = input.getString("name").split(" ")[1];
-						// String[] parameters = input.getString("name").split(" ");
-						// if(entity.equals("all"))
-						// cep.sendToAllAgents(name);
-						// else
-						// cep.sendToEntity(entity, name);
-						// }
-						// else if(input.getString("type").equals("message")) {
-						// String[] content_destination = input.getString("content_destination")
-						// .split(" ");
-						// int n = content_destination.length - 1;
-						// JsonObject message = new JsonObject();
-						// String destination = content_destination[n];
-						// message.put("agent", entity);
-						// message.put("content", content_destination[1]);
-						// for(int m = 2; m < n; m++)
-						// message.put("content",
-						// message.getString("content") + " " + content_destination[m]);
-						// cep.sendAgentMessage(destination, message.toString());
-						// }
-						// else {
-						// // TODO: needed for other input options
-						// }
-						// }
-						// }
-						// });
-						// vertx.setPeriodic(10000l, t -> {
-						// JsonObject entities = new JsonObject((String) WebEntity.cep.getEntities());
-						// vertx.eventBus().send("server-to-client", entities.toString());
-						// });
-						// handler = true;
-						// }
-						// else {
-						// vertx.eventBus().consumer("client-to-server-agent-message").handler(objectMessage -> {
-						// System.out.println("Message seen for agent " + objectMessage.body());
-						// });
-						// vertx.setPeriodic(1000l, t -> {
-						// // vertx.eventBus().send("server-to-client-agent-message",
-						// // WebEntity.agentMessages.toString());
-						// });
-						// }
-					}
-					else if(be.type() == BridgeEventType.UNREGISTER) {
-						verticleReady = false;
+						numConnections++;
+
+						String entities = getEntities().toString();
+						vertx.eventBus().send(SERVER_TO_CLIENT, entities);
+					} else if (bridgeEvent.type() == BridgeEventType.UNREGISTER) {
+						numConnections--;
 						System.out.println("unregister");
-					}
-					else if(be.type() == BridgeEventType.SOCKET_CLOSED) {
-						verticleReady = false;
+					} else if (bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
+						numConnections--;
 						System.out.println("closed");
-					}
-					else if(be.type() == BridgeEventType.SEND) {
+					} else if (bridgeEvent.type() == BridgeEventType.SEND) {
 						System.out.println("client-message");
-					}
-					else if(be.type() == BridgeEventType.RECEIVE) {
+					} else if (bridgeEvent.type() == BridgeEventType.RECEIVE) {
 						System.out.println("server-message");
-						
 					}
-				} catch(Exception e) {
-					
+				} catch (Exception e) {
+					// do nothing
 				} finally {
-					be.complete(true);
+					bridgeEvent.complete(Boolean.valueOf(true));
 				}
 			}));
+
+			vertx.eventBus().consumer(CLIENT_TO_SERVER).handler(objectMessage -> {
+				JsonObject msg = JsonParser.parseString((String) objectMessage.body()).getAsJsonObject();
+				if ("port".equals(msg.get("scope").getAsString()))
+					activeInput(msg);
+			});
+
 			System.out.println(WebEntity.class.getPackage().getName());
 			String pkg = DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
 					+ WebEntity.class.getPackage().getName().replace(".", "/");
-			router.route().handler(StaticHandler.create(pkg).setIndexPage("page.html"));
+
+			router.route().handler(
+				StaticHandler.create(pkg).setIndexPage("page.html").setCachingEnabled(false)
+			);
+			
 			vertx.createHttpServer().requestHandler(router).listen(port, http -> {
-				if(http.succeeded())
+				if (http.succeeded())
 					li("HTTP server started on port []", port);
 				else
 					li("HTTP server failed to start on port []", port);
 			});
 		}
-		
+
 		@Override
 		public void stop(Future<Void> stopFuture) throws Exception {
 			System.out.println("HTTP server stoped");
 		}
 	}
-	
+
 	static CentralEntityProxy cep;
-	
+
 	// public static JsonObject agentMessages;
-	
+
 	private Element specification;
-	
+
 	protected ElementIdManager idManager = new ElementIdManager();
-	
+
 	private Vertx web;
-	
+
 	private boolean running = false;
-	
-	private boolean verticleReady = false;
-	
+
+	// protected boolean verticleReady = false;
+
 	// private static boolean generated = false;
-	
+
 	@Override
 	public boolean start() {
 		lock();
-		if(!running) {
+		if (!running) {
 			VertxOptions options = new VertxOptions();
 			web = Vertx.vertx(options);
 			web.deployVerticle(new ServerVerticle(this));
@@ -202,16 +186,16 @@ public class WebEntity extends CentralGUI {
 		}
 		return running;
 	}
-	
+
 	@Override
 	public boolean stop() {
-		if(running) {
+		if (running) {
 			web.close();
 			running = false;
 		}
 		return running;
 	}
-	
+
 	@Override
 	protected void parentChangeNotifier(ShardContainer oldParent) {
 		super.parentChangeNotifier(oldParent);
@@ -219,60 +203,67 @@ public class WebEntity extends CentralGUI {
 	}
 
 	/**
-	 * @return a {@link JSONObject} containing the specifications of all entities.
+	 * @return a {@link JsonObject} containing the specifications of all entities.
 	 */
-	public JSONObject getEntities() {
+	public JsonObject getEntities() {
 		System.out.println("entities get.");
-		JSONObject specifications = new JSONObject();
-		JSONObject types = new JSONObject();
-		JSONObject activators = new JSONObject();
-		entityGUIs.keySet().forEach(name -> {
-			specifications.put(name, entityGUIs.get(name).toJSON());
-			for(Element e : entityGUIs.get(name).getChildren()) {
-				types.put(e.getId(), e.getType());
-				if("activate".equals(e.getRole())) {
-					JSONArray role_ids = new JSONArray();
-					for(Element port_e : entityGUIs.get(name).getChildren(e.getPort()))
+
+		JsonObject specifications = new JsonObject();
+		JsonObject types = new JsonObject();
+		JsonObject activators = new JsonObject();
+
+		entityGUIs.entrySet().forEach(entry -> {
+			String name = entry.getKey();
+			Element guiElement = entry.getValue();
+
+			specifications.add(name, guiElement.toJSON());
+			for (Element child : guiElement.getChildren()) {
+				types.addProperty(child.getId(), child.getType());
+				if ("activate".equals(child.getRole())) {
+					JsonArray role_ids = new JsonArray();
+					for (Element port_e : guiElement.getChildren(child.getPort()))
 						role_ids.add(port_e.getId());
-					activators.put(e.getId(), role_ids);
+					activators.add(child.getId(), role_ids);
 				}
 			}
 		});
-		JSONObject result = new JSONObject();
-		result.put("scope", "global");
-		result.put("subject", "entities list");
-		JSONObject content = new JSONObject();
-		content.put("specification", specifications);
-		content.put("types", types);
-		content.put("activators", activators);
-		result.put("content", content);
+		JsonObject result = new JsonObject();
+		result.addProperty("scope", "global");
+		result.addProperty("subject", "entities list");
+		JsonObject content = new JsonObject();
+		content.add("specification", specifications);
+		content.add("types", types);
+		content.add("activators", activators);
+		result.add("content", content);
 		System.out.println("entities get: " + specifications.toString());
 		return result;
 	}
-	
+
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
 		super.updateGui(entity, guiSpecification);
-		
+
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
-		if(entity == null)
+		if (entity == null)
 			return false;
 		idManager.removeIdsWithPrefix(entity);
 		idManager.insertIdsInto(guiSpecification, entity);
-		
-		JSONObject tosend = new JSONObject();
-		tosend.put("scope", "entity");
-		tosend.put("subject", "update");
-		tosend.put("content", guiSpecification.toJSON());
-		web.eventBus().send("server-to-client", tosend.toString());
+
+		JsonObject tosend = new JsonObject();
+		tosend.addProperty("scope", "entity");
+		tosend.addProperty("subject", "update");
+		tosend.add("content", guiSpecification.toJSON());
+		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
 		return true;
 	}
-	
+
 	/**
-	 * Posts an {@link AgentWave} to the {@link CentralEntityProxy} when an active input arrives from the web client.
+	 * Posts an {@link AgentWave} to the {@link CentralEntityProxy} when an active
+	 * input arrives from the web client.
 	 * <ul>
 	 * <li>The source is the shard designation (gui).
-	 * <li>The destination is {@link MonitoringOperation#GUI_INPUT_TO_ENTITY} / entity / gui / port
+	 * <li>The destination is {@link MonitoringOperation#GUI_INPUT_TO_ENTITY} /
+	 * entity / gui / port
 	 * <li>The wave contains all the values for each role in the specification.
 	 * </ul>
 	 * 
@@ -282,31 +273,32 @@ public class WebEntity extends CentralGUI {
 	protected void activeInput(JsonObject msg) {
 		AgentWave wave = new AgentWave(null, MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation());
 		wave.addSourceElements(getShardDesignation().toString());
-		Element activatedElement = idManager.getElement(msg.getString("subject"));
-		if(activatedElement == null) {
-			le("Element for id [] not found.", msg.getString("subject"));
+		Element activatedElement = idManager.getElement(msg.get("subject").getAsString());
+		if (activatedElement == null) {
+			le("Element for id [] not found.", msg.get("subject").getAsString());
 			return;
 		}
-		String entityName = idManager.getEntity(msg.getString("subject"));
-		if(entityName == null) {
-			le("Entity for id [] not found.", msg.getString("subject"));
+		String entityName = idManager.getEntity(msg.get("subject").getAsString());
+		if (entityName == null) {
+			le("Entity for id [] not found.", msg.get("subject").getAsString());
 			return;
 		}
 		String port = activatedElement.getPort();
 		wave.appendDestination(entityName, StandardAgentShard.GUI.shardName(), port);
 		JsonObject content = new JsonObject();
-		if (msg.getString("subject").split("_")[1].contains(CentralMonitoringAndControlEntity.getNodeOperationsPrefix())) {
-			content.put(OperationUtils.PARAMETERS, entityName);
-			content.put(OperationUtils.OPERATION_NAME, msg.getJsonObject("content")
-					.getString(msg.getJsonObject("content").fieldNames().toArray()[0].toString()).toLowerCase());
+		if (msg.get("subject").getAsString().split("_")[1]
+				.contains(CentralMonitoringAndControlEntity.getNodeOperationsPrefix())) {
+			content.addProperty(OperationUtils.PARAMETERS, entityName);
+			content.addProperty(OperationUtils.OPERATION_NAME, msg.get("content").getAsJsonObject()
+					.get(msg.get("content").getAsJsonObject().keySet().toArray()[0].toString())
+					.getAsString().toLowerCase());
 			wave.add("content", content.toString());
-		}
-		else {
+		} else {
 			Element entityElement = entityGUIs.get(entityName);
-			content = msg.getJsonObject("content");
-			for(Element element : entityElement.getChildren(port)) {
-				if(content.containsKey(element.getId()))
-					wave.add(element.getRole(), content.getString(element.getId()));
+			content = msg.get("content").getAsJsonObject();
+			for (Element element : entityElement.getChildren(port)) {
+				if (content.has(element.getId()))
+					wave.add(element.getRole(), content.get(element.getId()).getAsString());
 			}
 		}
 		cep.postAgentEvent(wave);
@@ -314,25 +306,25 @@ public class WebEntity extends CentralGUI {
 
 	@Override
 	public void sendOutput(AgentWave wave) {
-		JSONObject tosend = new JSONObject();
-		tosend.put("scope", "port");
-		
+		JsonObject tosend = new JsonObject();
+		tosend.addProperty("scope", "port");
+
 		String entity = wave.popDestinationElement();
 		String port = wave.getFirstDestinationElement();
-		tosend.put("subject", idManager.makeID(null, entity, port)); // questionable abuse of makeID
-		
+		tosend.addProperty("subject", idManager.makeID(null, entity, port)); // questionable abuse of makeID
+
 		Element gui = entityGUIs.get(entity);
-		if(gui == null) {
+		if (gui == null) {
 			le("GUI for entity [] not present.", entity);
 			return;
 		}
-		JSONObject allValues = new JSONObject();
-		for(String role : wave.getContentElements()) {
+		JsonObject allValues = new JsonObject();
+		for (String role : wave.getContentElements()) {
 			int i = 0;
-			for(Element e : gui.getChildren(port, role))
-				allValues.put(e.getId(), wave.getValues(role).get(i++));
+			for (Element e : gui.getChildren(port, role))
+				allValues.addProperty(e.getId(), wave.getValues(role).get(i++));
 		}
-		tosend.put("content", allValues);
-		web.eventBus().send("server-to-client", tosend.toString());
+		tosend.add("content", allValues);
+		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
 	}
 }
