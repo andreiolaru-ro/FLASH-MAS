@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
  * 
  * @author andreiolaru
  */
+@Deprecated
 public class OperationUtils {
 
 	/**

@@ -35,8 +35,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
-import net.xqhs.flash.core.monitoring.CentralGUI;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity.CentralEntityProxy;
+import net.xqhs.flash.remoteOperation.CentralGUI;
+import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 // TODO: us agent events like in WebEntity
 

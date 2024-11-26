@@ -18,11 +18,11 @@ import java.util.Map;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.monitoring.MonitoringShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
+import net.xqhs.flash.remoteOperation.RemoteOperationShard;
 
 /**
  * Class for any shard that models a GUI.
@@ -50,19 +50,19 @@ public class GuiShard extends IOShard {
 	/**
 	 * The UID.
 	 */
-	private static final long serialVersionUID = -2769555908800271606L;
+	private static final long									serialVersionUID	= -2769555908800271606L;
 	/**
 	 * The description of the structure of the interface.
 	 */
-	protected Element interfaceStructure;
+	protected Element											interfaceStructure;
 	/**
 	 * A mapping of ports to roles to list of components.
 	 */
-	protected Map<String, Map<String, List<ComponentConnect>>> portRoleComponents = new HashMap<>();
+	protected Map<String, Map<String, List<ComponentConnect>>>	portRoleComponents	= new HashMap<>();
 	/**
-	 * A reference to the {@link MonitoringShard} if one exists.
+	 * A reference to the {@link RemoteOperationShard} if one exists.
 	 */
-	protected MonitoringShard monitor = null;
+	protected RemoteOperationShard								remoteShard			= null;
 	
 	/**
 	 * No-argument constructor.
@@ -91,12 +91,23 @@ public class GuiShard extends IOShard {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		if(event.getType() == AgentEventType.AGENT_START)
-			if(getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation()) != null) {
-				monitor = (MonitoringShard) getAgentShard(StandardAgentShard.MONITORING.toAgentShardDesignation());
-				// monitor.sendGuiUpdate(new Yaml().dump(interfaceStructure));
-				monitor.addGuiElement(interfaceStructure);
+		switch(event.getType()) {
+		case AGENT_START:
+			if(getAgentShard(StandardAgentShard.REMOTE.toAgentShardDesignation()) != null) {
+				remoteShard = (RemoteOperationShard) getAgentShard(StandardAgentShard.REMOTE.toAgentShardDesignation());
+				remoteShard.addGuiElement(interfaceStructure);
 			}
+			break;
+		case AGENT_WAVE:
+			if(event instanceof AgentWave
+					&& ((AgentWave) event).getFirstDestinationElement().equals(StandardAgentShard.GUI.shardName())) {
+				((AgentWave) event).popDestinationElement();
+				postActiveInput(((AgentWave) event).getFirstDestinationElement(), (AgentWave) event);
+			}
+			break;
+		default:
+			// nothing to do
+		}
 	}
 	
 	@Override
@@ -114,15 +125,13 @@ public class GuiShard extends IOShard {
 	}
 	
 	@Override
-	public void sendOutput(AgentWave wave) {
+	public boolean sendOutput(AgentWave wave) {
 		String targetport = wave.getFirstDestinationElement();
 		if(targetport.equals(getShardDesignation().toString()))
 			targetport = wave.removeFirstDestinationElement().getFirstDestinationElement();
 		
-		if(!portRoleComponents.containsKey(targetport)) {
-			le("Output target port [] not found for content [].", targetport, wave.getContent());
-			return;
-		}
+		if(!portRoleComponents.containsKey(targetport))
+			return ler(false, "Output target port [] not found for content [].", targetport, wave.getContent());
 		
 		Map<String, List<ComponentConnect>> roleMap = portRoleComponents.get(targetport);
 		
@@ -138,7 +147,8 @@ public class GuiShard extends IOShard {
 			}
 			else
 				le("Output role []/[] cannot be found.", targetport, role);
-		if(monitor != null)
-			monitor.sendOutput(wave);
+		if(remoteShard != null)
+			remoteShard.sendOutput(wave);
+		return true;
 	}
 }

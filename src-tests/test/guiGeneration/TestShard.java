@@ -17,12 +17,16 @@ import java.util.TimerTask;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
-import net.xqhs.flash.core.shard.IOShard;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.GuiShard;
 
-@SuppressWarnings("javadoc")
+/**
+ * Periodically increases the value obtained from the port and outputs it back.
+ * <p>
+ * If the button is activated, the value is updated with whatever the activation sends.
+ */
 public class TestShard extends AgentShardGeneral {
 	/**
 	 * 
@@ -32,11 +36,15 @@ public class TestShard extends AgentShardGeneral {
 	/**
 	 * The timer for auto counting. If autocount is off, the timer will be <code>null</code>.
 	 */
-	private Timer timer = new Timer();
-
-    /**
-     * No-argument constructor.
-     */
+	protected Timer					timer	= new Timer();
+	/**
+	 * The port.
+	 */
+	protected final static String	PORT	= "valuePort";
+	
+	/**
+	 * No-argument constructor.
+	 */
 	public TestShard() {
 		super(AgentShardDesignation.autoDesignation("Test"));
 	}
@@ -53,18 +61,18 @@ public class TestShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_START:
-			((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-					.sendOutput(new AgentWave(Integer.valueOf(0).toString(), "port1"));
+			((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation()))
+					.sendOutput(new AgentWave(Integer.valueOf(0).toString(), PORT));
 			if(timer != null)
 				timer.schedule(new TimerTask() {
 					@SuppressWarnings("synthetic-access")
 					@Override
 					public void run() {
 						int value = Integer
-								.parseInt(((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-										.getInput("port1").get(AgentWave.CONTENT));
-						((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI")))
-								.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), "port1"));
+								.parseInt(((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation()))
+										.getInput(PORT).get(AgentWave.CONTENT));
+						((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation()))
+								.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), PORT));
 					}
 				}, 0, 2000);
 			break;
@@ -77,12 +85,13 @@ public class TestShard extends AgentShardGeneral {
 		case AGENT_WAVE:
 			try {
 				li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
-				((GuiShard) getAgentShard(AgentShardDesignation.autoDesignation("GUI"))).sendOutput(new AgentWave(
-						Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), "port1"));
+				((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation())).sendOutput(new AgentWave(
+						Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), PORT));
 				break;
 			} catch(NumberFormatException e) {
 				le("Invalid number format: ", event.get(AgentWave.CONTENT));
 			}
+			break;
 		default:
 			break;
 		}

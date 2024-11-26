@@ -11,8 +11,8 @@
 #-------------------------------------------------------------------------------
 children:
  - type: form
-   port: port1
+   port: valuePort
    role: content
  - type: button
-   port: port1
+   port: valuePort
    role: activate
