@@ -12,10 +12,8 @@
 package net.xqhs.flash.core.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -373,14 +371,7 @@ public class MultiValueMap extends Config implements Serializable {
 	 * @return the serialized string.
 	 */
 	public String toSerializedString() {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-			oos.writeObject(this);
-			oos.close();
-		} catch(IOException e) {
-			throw new RuntimeException("Serialization failed", e);
-		}
-		return Base64.getEncoder().encodeToString(baos.toByteArray());
+		return PlatformUtils.serializeObject(this);
 	}
 	
 	/**

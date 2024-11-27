@@ -11,7 +11,7 @@ import org.json.simple.JSONValue;
 
 import florina.monitoringAndControlTest.shards.PingTestComponent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.support.MessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
@@ -28,9 +28,9 @@ public class WebSocketClientProxyForTesting extends Unit {
 
     protected WebSocketClient client;
 
-    protected HashMap<String, MessageReceiver> messageReceivers	= new HashMap<>();
+    protected HashMap<String, ClassicMessageReceiver> messageReceivers	= new HashMap<>();
 
-    void addReceiverAgent(String name, MessageReceiver receiver) {
+    void addReceiverAgent(String name, ClassicMessageReceiver receiver) {
         messageReceivers.put(name, receiver);
     }
 
@@ -44,7 +44,7 @@ public class WebSocketClientProxyForTesting extends Unit {
 
             /**
              * Receives a message from the server. The message was previously routed to this websocket client address
-             * and it is further routed to a specific entity using the {@link MessageReceiver} instance. The entity is
+             * and it is further routed to a specific entity using the {@link ClassicMessageReceiver} instance. The entity is
              * searched within the context of this support.
              *
              * @param s

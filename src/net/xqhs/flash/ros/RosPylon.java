@@ -23,10 +23,10 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.NameBasedMessagingShard;
+import net.xqhs.flash.core.support.ClassicMessageReceiver;
+import net.xqhs.flash.core.support.ClassicMessagingPylonProxy;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
-import net.xqhs.flash.core.support.MessageReceiver;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.NameBasedMessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.ros.rosBridge.Publisher;
@@ -55,7 +55,7 @@ public class RosPylon extends DefaultPylonImplementation {
     /**
      * The proxy to this entity.
      */
-    public MessagingPylonProxy messagingProxy = new MessagingPylonProxy() {
+	public ClassicMessagingPylonProxy messagingProxy = new ClassicMessagingPylonProxy() {
         /**
 		 * @param source
 		 *            - the source endpoint.
@@ -85,7 +85,7 @@ public class RosPylon extends DefaultPylonImplementation {
 		 * @param agentName
 		 *            - the name of the agent.
 		 * @param receiver
-		 *            - the {@link MessageReceiver} instance to receive messages.
+		 *            - the {@link ClassicMessageReceiver} instance to receive messages.
 		 *			
 		 *            New subscriber to topic with name: /@param agentName. The message received is formatted as
 		 *            follows: source: @param source destination: @param destination content: @param content.
@@ -93,7 +93,7 @@ public class RosPylon extends DefaultPylonImplementation {
 		 * @return always returns <code>true</code>.
 		 */
         @Override
-        public boolean register(String agentName, MessageReceiver receiver) {
+        public boolean register(String agentName, ClassicMessageReceiver receiver) {
             messageReceivers.put(agentName, receiver);
             // topic name: id = agentName
             bridge.subscribe(SubscriptionRequestMsg.generate("/" + agentName)
@@ -127,7 +127,7 @@ public class RosPylon extends DefaultPylonImplementation {
 																
 																@Override
 																public boolean unregister(String entityName,
-																		MessageReceiver registeredReceiver) {
+																		ClassicMessageReceiver registeredReceiver) {
 																	// TODO Auto-generated method stub
 																	return false;
 																}
@@ -180,7 +180,7 @@ public class RosPylon extends DefaultPylonImplementation {
     /**
      * The receivers for each agent.
      */
-    protected HashMap<String, MessageReceiver>										messageReceivers	= new HashMap<>();
+    protected HashMap<String, ClassicMessageReceiver>										messageReceivers	= new HashMap<>();
     /**
      * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
      * used.

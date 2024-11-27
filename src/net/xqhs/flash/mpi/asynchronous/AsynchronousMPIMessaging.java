@@ -7,12 +7,12 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.AbstractMessagingShard;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
+import net.xqhs.flash.core.support.ClassicMessagingPylonProxy;
 
 public class AsynchronousMPIMessaging extends AbstractMessagingShard {
 
     private static final long	serialVersionUID	= 1L;
-    private MessagingPylonProxy pylon;
+	private ClassicMessagingPylonProxy	pylon;
     private Thread thread;
     private Status status;
     private byte[] buffer;
@@ -87,9 +87,9 @@ public class AsynchronousMPIMessaging extends AbstractMessagingShard {
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context)
     {
-        if(!(context instanceof MessagingPylonProxy))
+		if(!(context instanceof ClassicMessagingPylonProxy))
             throw new IllegalStateException("Pylon Context is not of expected type.");
-        pylon = (MessagingPylonProxy) context;
+		pylon = (ClassicMessagingPylonProxy) context;
         return true;
     }
 

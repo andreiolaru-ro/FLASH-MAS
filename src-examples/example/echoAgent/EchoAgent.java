@@ -16,8 +16,8 @@ import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -26,71 +26,59 @@ import net.xqhs.util.logging.Unit;
  * @author Andrei Olaru
  */
 @SuppressWarnings("javadoc")
-public class EchoAgent extends Unit implements Agent
-{
-	boolean						isRunning	= false;
-	Set<MessagingPylonProxy>	supports	= new HashSet<>();
+public class EchoAgent extends Unit implements Agent {
+	boolean			isRunning	= false;
+	Set<PylonProxy>	supports	= new HashSet<>();
 	
-	public EchoAgent()
-	{
+	public EchoAgent() {
 		setUnitName("EchoAgent");
 	}
 	
 	@Override
-	public boolean start()
-	{
+	public boolean start() {
 		li("Agent starting");
 		isRunning = true;
 		return true;
 	}
 	
 	@Override
-	public boolean stop()
-	{
+	public boolean stop() {
 		li("Agent stopping");
 		isRunning = false;
 		return true;
 	}
 	
 	@Override
-	public boolean isRunning()
-	{
+	public boolean isRunning() {
 		return isRunning;
 	}
 	
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return "EchoAgent";
 	}
 	
 	@Override
-	public boolean addContext(EntityProxy<Pylon> context)
-	{
-		supports.add((MessagingPylonProxy) context);
+	public boolean addContext(EntityProxy<Pylon> context) {
+		supports.add((PylonProxy) context);
 		li("Support [] added; current contexts:", context, supports);
 		return true;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean addGeneralContext(EntityProxy<?> context)
-	{
-		try
-		{
+	public boolean addGeneralContext(EntityProxy<?> context) {
+		try {
 			return addContext((EntityProxy<Pylon>) context);
-		} catch(ClassCastException e)
-		{
+		} catch(ClassCastException e) {
 			le("Added context is of incorrect type");
 			return false;
 		}
 	}
 	
 	@Override
-	public boolean removeContext(EntityProxy<Pylon> context)
-	{
-		if(supports.contains(context))
-		{
+	public boolean removeContext(EntityProxy<Pylon> context) {
+		if(supports.contains(context)) {
 			supports.remove(context);
 			li("Support [] removed; current contexts:", context, supports);
 			return true;
@@ -100,14 +88,12 @@ public class EchoAgent extends Unit implements Agent
 	}
 	
 	@Override
-	public <C extends Entity<Pylon>> EntityProxy<C> asContext()
-	{
+	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
 		return null;
 	}
 	
 	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context)
-	{
+	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		return false;
 	}
 	

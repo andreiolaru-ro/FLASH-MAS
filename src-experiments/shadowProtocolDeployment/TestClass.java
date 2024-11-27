@@ -26,10 +26,10 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.wsRegions.WSRegionsPylon;
+import net.xqhs.flash.wsRegions.WSRegionsShard;
 import shadowProtocolDeployment.Action.Actions;
 import testing.EchoTestingShard;
-import wsRegions.WSRegionsShard;
-import wsRegions.WSRegionsPylon;
 
 /**
  * Class that generates and execute tests.
@@ -314,10 +314,10 @@ public class TestClass {
 				// CREATE PYLON
 				WSRegionsPylon pylon_elem = new WSRegionsPylon();
 				MultiTreeMap config = new MultiTreeMap()
-						.addSingleValue(WSRegionsPylon.HOME_SERVER_ADDRESS_NAME, "ws://" + server_name)
+						.addSingleValue(WSRegionsPylon.REGION_SERVER_PARAMETER, "ws://" + server_name)
 						.addSingleValue("pylon_name", pylon_name);
 				if(isRegionServer) {
-					config.addSingleValue(WSRegionsPylon.HOME_SERVER_PORT_NAME, port_value).addSingleValue("servers",
+					config.addSingleValue(WSRegionsPylon.IS_SERVER_PARAMETER, port_value).addSingleValue("servers",
 							String.join("|", regionServersList));
 					isRegionServer = false;
 				}

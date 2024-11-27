@@ -1026,7 +1026,9 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(catTree.getTrees(firstName).size() == 1
 							&& autoCreated.contains(catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE))) {
 						// the only tree is an auto-created category and it will be removed.
+						String id = catTree.getATree(firstName).getSingleValue(LOCAL_ID_ATTRIBUTE);
 						catTree.removeKey(firstName);
+						rootTree.getSingleTree(LOCAL_ID_ATTRIBUTE).removeKey(id);
 						log.li("removed auto-created [] entity [] to replace with entity [].", category, firstName,
 								name);
 					}

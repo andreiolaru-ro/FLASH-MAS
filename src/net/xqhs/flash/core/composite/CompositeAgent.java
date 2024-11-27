@@ -303,7 +303,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 			synchronized(eventQueue) {
 				if(eventQueue.isEmpty())
 					try {
-						eventQueue.wait();
+						eventQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
 					} catch(InterruptedException e) {
 						// do nothing
 					}

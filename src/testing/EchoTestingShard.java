@@ -16,6 +16,7 @@ import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -131,5 +132,11 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 	@Override
 	public void sendingMessage(String source, String destination, String content) {
 		locallog.li("Sending a message from [] to [] with content [].", source, destination, content);
+	}
+	
+	@Override
+	public void sendingMessage(AgentWave wave) {
+		locallog.li("Sending a message from [] to [] with content [].", wave.getCompleteDestination(),
+				wave.getCompleteSource(), wave.getSerializedContent());
 	}
 }
