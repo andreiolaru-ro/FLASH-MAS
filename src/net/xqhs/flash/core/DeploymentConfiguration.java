@@ -135,8 +135,24 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Directories containing source files (especially for looking up various files).
 	 */
-	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-experiments", "src-tests",
-			"src-examples" };
+	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-tests", "src-examples",
+			"src-experiments" };
+	/**
+	 * The index in {@link #SOURCE_FILE_DIRECTORIES} for the main sources (e.g. core packages).
+	 */
+	public static final int			SOURCE_INDEX_MAIN			= 0;
+	/**
+	 * The index in {@link #SOURCE_FILE_DIRECTORIES} for tests.
+	 */
+	public static final int			SOURCE_INDEX_TESTS			= 1;
+	/**
+	 * The index in {@link #SOURCE_FILE_DIRECTORIES} for examples..
+	 */
+	public static final int			SOURCE_INDEX_EXAMPLES		= 2;
+	/**
+	 * The index in {@link #SOURCE_FILE_DIRECTORIES} for experiments.
+	 */
+	public static final int			SOURCE_INDEX_EXPERIMENTS	= 3;
 	
 	/**
 	 * Local IDs of default created entities.
