@@ -87,9 +87,10 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
-			((MessagingShard) getAgent()
-					.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
-							.addOutgoingMessageHook(this);
+			MessagingShard msg = ((MessagingShard) getAgent()
+					.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)));
+			if(msg != null)
+				msg.addOutgoingMessageHook(this);
 			exitTimer = new Timer();
 			exitTimer.schedule(new TimerTask() {
 				@Override
@@ -97,6 +98,7 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 					askExit();
 				}
 			}, exitAfter * 1000);
+			locallog.lf("Will exit after [] seconds", Integer.valueOf(exitAfter));
 		}
 		if(event.getType() == AgentEventType.AGENT_STOP) {
 			if(exitTimer != null)
