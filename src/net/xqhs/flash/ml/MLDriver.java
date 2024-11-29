@@ -124,7 +124,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 */
 	public static String	DATASET_CLASSES_PARAM;
 	
-	{
+	{ // use the same block of constants from server.py
 		SERVER_URL = "http://localhost:5000/";
 		ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 		ML_DIRECTORY_PATH = "ml-directory/";
@@ -172,7 +172,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python", DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[0] + "/"
+			ProcessBuilder pb = new ProcessBuilder("python",
+					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
 					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
 			// pb.directory(new File(<directory from where you want to run the command>));
 			// pb.inheritIO();
@@ -180,8 +181,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			serverProcess = pb.start();
-			int initialtries = 10, tries = initialtries;
-			int spaceBetweenTries = 4000;
+			int initialtries = 5, tries = initialtries;
+			int spaceBetweenTries = 1000;
 			boolean started = false, connected = false;
 			while(!started && tries-- >= 0) {
 				try { // wait for the process to start.

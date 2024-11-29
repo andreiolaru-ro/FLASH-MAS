@@ -24,11 +24,10 @@ head = "<ML server> "
 # .\Scripts\pip.exe install <package>
 
 
-# constants:
+# constants (use the same block of constants from MLDriver.java):
 SERVER_URL = "http://localhost:5000/";
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 ML_DIRECTORY_PATH = "ml-directory/";
-PYTHONLIB_PATH = ML_DIRECTORY_PATH + "pythonlib/lib/site-packages/"
 OP_MODULE_PACKAGE = "operations-modules";
 SERVER_FILE = "python_module/server.py";
 MODEL_CONFIG_FILE = "config.yaml";
@@ -50,46 +49,30 @@ PREDICT_OP_PARAM = "predict_op";
 DATASET_NAME_PARAM = "dataset_name";
 DATASET_CLASSES_PARAM = "dataset_classes";
 
-print(head + "loading prerequisites...")
-pylib_path = pathlib.Path(__file__).parent.parent.parent.parent.parent.parent.parent.absolute()
-pylib_path = str(pylib_path) + "/" + PYTHONLIB_PATH
-# pylib_path = pylib_path.replace("/", "\\")
-sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
-print(head + "System path is:")
-print(sys.path)
+PYTHONLIB_PATH = []
+PYTHONLIB_PATH.append(ML_DIRECTORY_PATH + "pythonlib/lib/site-packages/")
+PYTHONLIB_PATH.append(ML_DIRECTORY_PATH + "pythonlib/lib/python3.11/site-packages/")
 
-try:
-    import torch
-except Exception as e:
-    print(head + "PyTorch unavailable (use pip install torch ):", e)
-    print("head + If there is a problem with MobileNetV2, try to run the Regenerate.py script in "
-          "src-experiments\aifolk\ml_driver")
-    exit(1)
-try:
-    from torchvision import transforms
-except Exception as e:
-    print(head + "Torchvision unavailable (use pip install torchvision ):", e)
-    exit(1)
-try:
-    import torchaudio
-except Exception as e:
-    print(head + "Torchaudio unavailable (use pip install torchaudio ):", e)
-    # exit(1)
-try:
-    from omegaconf import OmegaConf
-except Exception as e:
-    print(head + "OmegaConf unavailable (use pip install omegaconf ):", e)
-    # exit(1)
-try:
-    import soundfile
-except Exception as e:
-    print(head + "Soundfile unavailable (use pip install soundfile ):", e)
-    # exit(1)
-try:
-    from ultralytics import YOLO
-except Exception as e:
-    print(head + "YOLO unavailable (use pip install ultralytics ):", e)
-    # exit(1)
+print(f"{head} loading prerequisites...")
+project_root = pathlib.Path(__file__)
+project_root_str = str(project_root).replace("\\", "/")
+# print(str(os.getcwd()), "\n", str(project_root.parent))
+if(str(os.getcwd()) == str(project_root.parent)):
+    print("fixing paths")
+    # the file is run from its directory
+    first_branch = ML_SRC_PATH.split("/")[0]
+    while project_root_str.split("/")[-1] != first_branch:
+        project_root = project_root.parent
+        project_root_str = str(project_root).replace("\\", "/")
+        ML_DIRECTORY_PATH = "../" + ML_DIRECTORY_PATH
+project_root = project_root.parent
+for one_path in PYTHONLIB_PATH:
+    pylib_path = project_root.absolute()
+    pylib_path = str(pylib_path) + "/" + one_path
+    # pylib_path = pylib_path.replace("/", "\\")
+    sys.path.insert(0, pylib_path) # TODO regexpreplace path in ML_SRC_PATH
+print(f"{head} System path: ", sys.path)
+
 try:
     from flask import Flask, request, jsonify, json
 except Exception as e:
@@ -182,6 +165,7 @@ def load_datasets_from_config(config_file):
 print(f"{head} prerequisites loaded; starting server... ")
 app = Flask(__name__)
 print(f"{head} working directory: " + ML_DIRECTORY_PATH)
+
 model_map = {}
 models = load_models_from_config((ML_DIRECTORY_PATH + MODEL_CONFIG_FILE))
 datasets = load_datasets_from_config(ML_DIRECTORY_PATH + MODEL_CONFIG_FILE)
@@ -242,7 +226,7 @@ def predict():
             output = model(input_data)
         dataset = models[model_name]['dataset']
         response = {'prediction': output if isinstance(output, list) else output.tolist()}
-        # print("Response:", response)
+        # print(f"{head} Response:", response)
         if models[model_name]["output"]:
             response['prediction'] = models[model_name]['output'].process_output(response['prediction'])
         if dataset in datasets:
