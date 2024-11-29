@@ -26,7 +26,6 @@ import net.xqhs.util.logging.MasterLog;
  */
 public class FlashBoot
 {
-	// public static ByteArrayOutputStream stream = null;
 	/**
 	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
 	 * 
@@ -37,17 +36,18 @@ public class FlashBoot
 	{
 		MasterLog.setLogLevel(Level.ALL);
 
-		// stream = new ByteArrayOutputStream();
-		// GlobalLogWrapper.setLogStream(stream);
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
-		// try {
-		// Thread.sleep(20000);
-		// } catch(InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 		for(Node node : nodes)
 			node.start();
 	}
 	
+	/**
+	 * Same as {@link #main(String[])}, but taking one single command line and splits it into multiple arguments.
+	 * 
+	 * @param commandLine
+	 *            - the command line containing arguments.
+	 */
+	public static void main(String commandLine) {
+		main(commandLine.split(" "));
+	}
 }
