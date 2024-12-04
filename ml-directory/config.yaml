@@ -1,4 +1,16 @@
-PORT: 5000
-MODELS: []
+MODELS:
+ -
+  name: "MobileNetV2"
+  path: "ml-directory/models/mobilenetv2.pth"
+  transform: "datasets.transform.ImageNetTransform"
+  cuda: false
+  input_space: RGB
+  task: "classification"
+  dataset: "ImageNet" 
+ -
+  name: "YOLOv8-pedestrians"
+  path: "ml-directory/models/yolov8n-seg.pt"
+  code: "yolo_module.YoloOps"
+  cuda: true
 DATASETS: []
 
