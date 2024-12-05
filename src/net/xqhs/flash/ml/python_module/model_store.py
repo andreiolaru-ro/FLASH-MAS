@@ -2,83 +2,69 @@ from util import import_functionality, log
 
 yaml = import_functionality("yaml", pippackage = "pyyaml")
 
-model_map = {}
+models = {}
+datasets = {}
 
 class ModelOperations:
     def load(self, config):
-        return None
+        self.model = None
+        return self.model
     def process_input(self, input):
         return input
-    def predict(self, model, input):
-        return model(input)
+    def predict(self, input):
+        return self.model(input)
     def process_output(self, output):
         return output
+    
+    def load_image(self, image_path):
+        buffered = io.BytesIO()
+        image = Image.open(image_path)
+        image.save(buffered, format="JPEG")
+        input_data = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        return input_data
+    def image_to_tensor(self, input_data, cuda = False):
+        input_bytes = base64.b64decode(input_data)
+        input_tensor = Image.open(io.BytesIO(input_bytes))
+        input_tensor = models[model_name]['transform'].transform(input_tensor)
+        input_batch = input_tensor.unsqueeze(0)
+        if cuda:
+            input_batch = input_batch.cuda()
+        return input_batch
 
 
 def cuda_available():
+    torch = import_functionality("torch")
     try:
         return torch.cuda.is_available()
     except Exception as e:
         return False
 
-def get_model(model_config):
-    global model_map
-    model_path = model_config['path']
-    cuda = model_config['cuda'] and cuda_available()
-    device = 'cuda:0' if cuda else 'cpu'
-
-    if model_path in model_map: # reuse existing loaded model?
-        model = model_map[model_path]
-    else:
-        model = {
-            "torch": torch.load(model_path,  map_location = device),
-            "yolo": YOLO(model_path),
-            }[model_config.get("type", "torch")]
-        model_map[model_path] = model
-    try:
-        if cuda:
-            model = model.cuda()
-        else:
-            model = model.cpu()
-    except Exception as e:
-        log("Could not call model.{'cuda' if cuda else 'cpu'}() because {e}")
-    if 'transform' in model_config:
-        transform_class = import_functionality(model_config['transform'])
-        transform = transform_class()
-        input_size = transform.input_size
-    else:
-        transform = None
-        input_size = None
-    if 'output' in model_config:
-        output_class = import_functionality(model_config['output'])
-        output = output_class()
-    else:
-        output = None
-    # try:
-    #     model.eval() # what was the point of this?
-    # except Exception as e:
-    #     log("Could not call model.eval() because {e}")
-    return model, transform, input_size, output
-
-def load_models_from_config(config_file):
+def load_models_from_config(config_file, storage_directory = "", storage_prefix = ""):
+    global models
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
 
-    models = {}
     for model_config in config['MODELS']:
-        if 'code' not in model_config: continue
+        if 'code' not in model_config: 
+            log("Code entry not found for", model_config['name'], "; model will not be available")
+            continue
         log("Loading", model_config['name'])
+        # get model-specific processing code
         cls = import_functionality(model_config['code'])
         modelCode = cls()
+        # fix path
+        if model_config['path'].startswith(storage_prefix):
+            model_config['path'] = storage_directory + model_config['path'][len(storage_prefix):]
+        # load model
         modelCode.load(model_config)
         models[model_config['name']] = modelCode        
 
     return models
 
 def load_datasets_from_config(config_file):
+    global datasets
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
-    datasets = {}
     for dataset in config['DATASETS']:
         datasets[dataset['name']] = {'class_names': dataset['class_names']}
     return datasets

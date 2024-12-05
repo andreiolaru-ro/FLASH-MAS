@@ -202,14 +202,16 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			lf("Attempt connection because server process is []", serverProcess.isAlive() ? "alive" : "dead");
 			tries = initialtries;
 			while(!connected && tries-- >= 0) {
-				// lf("try []", tries);
+				// lf("try []", Integer.valueOf(tries));
 				try { // wait for the process to start.
 					Thread.sleep(spaceBetweenTries);
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
-				if(!serverProcess.isAlive())
+				if(!serverProcess.isAlive()) {
+					lf("Server process is alive no more");
 					break;
+				}
 				try {
 					if(checkResponse(setupConnection(GET_MODELS_SERVICE, "GET", null)) == null)
 						continue;
@@ -339,14 +341,14 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 *
 	 * @param key
 	 *            The key of the data to parse in the returned json
-	 * @param repsonse
+	 * @param response
 	 *            The json response from the server
 	 * 			
 	 * @return The parsed data as an object
 	 */
-	public Object parseResponse(String key, String repsonse) {
+	public Object parseResponse(String key, String response) {
 		JsonParser jsonParser = new JsonParser();
-		JsonObject jsonObject = jsonParser.parse(repsonse).getAsJsonObject();
+		JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
 		JsonElement jsonElement = jsonObject.get(key);
 		Gson gson = new Gson();
 		Object obj = gson.fromJson(jsonElement, Object.class);
@@ -502,8 +504,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		String response = checkResponse(connection);
 		if(response != null) {
 			ArrayList<Object> prediction_list = (ArrayList<Object>) parseResponse("prediction", response);
-			
-			li("Prediction: " + prediction_list);
+			li("Prediction: ", prediction_list);
 			return prediction_list;
 		}
 		return null;
