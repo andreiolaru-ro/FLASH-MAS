@@ -182,7 +182,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			serverProcess = pb.start();
 			int initialtries = 5, tries = initialtries;
-			int spaceBetweenTries = 1000;
+			int spaceBetweenTries = 2000;
 			boolean started = false, connected = false;
 			while(!started && tries-- >= 0) {
 				try { // wait for the process to start.
