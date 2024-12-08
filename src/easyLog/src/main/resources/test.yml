@@ -1,0 +1,25 @@
+- e: "Agent*"
+  level: ">"
+  match: ["RUNNING"]
+  out: ["count", "agents running:", "list:list"]
+  expect: ["count", "2"]
+  comment: "should pass if there are exactly 2 agents in the running phase."
+
+- e: "*"
+  level: "#"
+  match:
+  out: ["list:line"]
+  expect: ["count", "max", "4"]
+  comment: "should pass if there are 4 maximum errors found in the logs."
+
+- e: "Pylon*"
+  level:
+  match: ["Started [with thread]"]
+  out: ["count", "pylons starting:","list:entities"]
+  expect: ["count", "2"]
+  comment: "should pass if there are 2 pylons in starting phase"
+
+- e: "AgentA#"
+  level: ">"
+  out: ["count", "agent is running:", "list:line"]
+  expect: ["count", "1"]

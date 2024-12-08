@@ -11,16 +11,19 @@
  ******************************************************************************/
 package net.xqhs.flash;
 
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 
+import easyLog.src.main.java.main.Main;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
 import net.xqhs.util.logging.output.ConsoleOutput;
 import net.xqhs.util.logging.output.FileOutput;
+import net.xqhs.util.logging.output.StreamLogOutput;
 
 /**
  * Class that boots a Flash-MAS instance.
@@ -36,13 +39,83 @@ public class FlashBoot {
 	 */
 	public static void main(String[] args) {
 		MasterLog.setLogLevel(Level.ALL);
-		MasterLog.addDefaultOutput(new ConsoleOutput());
+//		MasterLog.addDefaultOutput(new ConsoleOutput());
 		try {
 			MasterLog.addDefaultOutput(new FileOutput("output/global.log"));
+
+			StreamLogOutput out = new StreamLogOutput() {
+				//easyLog Wrapper
+				PipedOutputStream out = new PipedOutputStream();
+
+				@Override
+				public long getUpdatePeriod() {
+					return 0;
+				}
+
+				@Override
+				public int formatData() {
+					return Logger.INCLUDE_NAME;
+				}
+
+				@Override
+				public boolean useCustomFormat() {
+					return false;
+				}
+
+				@Override
+				public String format(Level level, String s, String s1) {
+					return null;
+				}
+
+				@Override
+				public void update() {
+					// daca e nevoie sa fac flush Stream.flush
+					try {
+						out.flush();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+
+				}
+
+				@Override
+				public OutputStream getOutputStream() {
+					return out;
+				}
+
+				@Override
+				public void exit() {
+					// inchid streamul
+					try {
+						out.close();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+
+				}
+			};
+			MasterLog.addDefaultOutput(out);
+
+			PipedInputStream in = new PipedInputStream();
+			PipedOutputStream easyLogOut = (PipedOutputStream) out.getOutputStream();
+			easyLogOut.connect(in);
+
+			Thread easyLog = new Thread(() -> {
+				try {
+					Main.main(in);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+			easyLog.start();
 		} catch(FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+		} catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
 		for(Node node : nodes)
 			node.start();
 	}
