@@ -1,5 +1,6 @@
 package net.xqhs.flash.core.node.clientApp;
 
+import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.rmi.NodeCLI;
 
 import java.io.Serializable;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class ClientApp extends UnicastRemoteObject implements ClientCallbackInterface, Serializable , Remote {
-    private static ClientApp instance;
+    public static ClientApp instance;
 
     protected ClientApp() throws RemoteException {
         super();
@@ -34,18 +35,21 @@ public class ClientApp extends UnicastRemoteObject implements ClientCallbackInte
         try {
 
 
-            // it was modified -   // Locate the RMI registry
+            // Locate the RMI registry
             Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+
 
             // Look up the remote object
             NodeCLI.NodeInterface stub = (NodeCLI.NodeInterface) registry.lookup("Node");
+            NodeLoader originalLoader = new NodeLoader();
+            NodeLoaderDecorator decoratedLoader = new NodeLoaderDecorator(originalLoader);
 
             // Creează și exportă obiectul callback pentru client
-            ClientApp clientApp = new ClientApp(); // Already exported in constructor
+            ClientApp clientApp = new ClientApp();
             ClientCallbackInterface callbackStub = (ClientCallbackInterface) clientApp;
 
-            // Înregistrare callback la server
-            // stub.registerCallback(callbackStub);
+//             Înregistrare callback la server
+//             stub.registerCallback(callbackStub);
 
             Scanner scanner = new Scanner(System.in);
 
@@ -86,7 +90,6 @@ public class ClientApp extends UnicastRemoteObject implements ClientCallbackInte
                 } else {
                     System.out.println("Unknown command. Valid commands: add -agent AgentName -shard ShardName, exit");
                 }
-                // need to add more commands as needed
             }
 
             scanner.close();

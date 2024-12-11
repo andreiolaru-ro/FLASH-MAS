@@ -1,4 +1,4 @@
-package test.viorelTest;
+package viorelTest;
 
 import net.xqhs.flash.testViorel.PartialCLIWrapp;
 import org.junit.Test;

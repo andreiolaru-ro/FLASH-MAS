@@ -16,8 +16,12 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 
+import net.xqhs.flash.core.node.clientApp.ClientApp;
+import net.xqhs.flash.core.node.clientApp.ClientAppWebSocket;
 import net.xqhs.flash.core.node.clientApp.ClientCallbackInterface;
-import net.xqhs.flash.testViorel.PartialCLIWrapp;
+
+import net.xqhs.flash.core.node.clientApp.NodeLoaderDecorator;
+import net.xqhs.util.logging.UnitComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -46,7 +50,6 @@ import net.xqhs.flash.rmi.NodeCLI;
 import net.xqhs.flash.rmi.NodeCLI.NodeInterface;
 import net.xqhs.util.logging.Unit;
 
-import javax.security.auth.callback.Callback;
 
 
 /**
@@ -168,6 +171,13 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	protected String						serverURI					= null;					// FIXME: Remove this
 
 
+	MultiTreeMap nodeConfiguration = new MultiTreeMap();
+
+
+	public void configure1(MultiTreeMap configure1) {
+		this.nodeConfiguration = configure1;
+	}
+	private Unit unit;
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
@@ -175,6 +185,7 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
 	public Node(MultiTreeMap nodeConfiguration) {
+		this.nodeConfiguration = nodeConfiguration;
 		this.callbacks = new ArrayList<>();
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
@@ -200,13 +211,61 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 					public void addAgent(String agentName, String shardName) throws RemoteException {
 						Node.this.addAgent(agentName, shardName);
 					}
+
+					/*public void readCLIArgs(){
+						DeploymentConfiguration.readCLIArgs(
+								Arrays.asList("-additional value".split("")).iterator(),
+								new DeploymentConfiguration.CtxtTriple(CategoryName.DEPLOYMENT.s(), null, nodeConfiguration),
+								nodeConfiguration, new LinkedList<>(), new HashMap<>(), new UnitComponent("test")
+						);
+					}*/
+
 				});
 			}
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 		li("Active entitites:", activeEntities);
-		
+		this.unit = new Unit(this);
+	}
+	private void initializeNodeConfiguration() {
+
+		if (nodeConfiguration != null) {
+			// Set the name from the node configuration
+			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+
+			// Check if there are active entities configured and update the activeEntities set
+			if (nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME)) {
+				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
+			}
+
+			// Set the server URI from the configuration if available
+			this.serverURI = nodeConfiguration.get("region-server");
+
+			if (nodeConfiguration.containsKey(NodeCLI.NODE_CLI_PARAM)) {
+				new NodeCLI(new NodeInterface() {
+					@Override
+					public boolean stopEntity(String entityName) {
+						return false;
+					}
+
+					@Override
+					public Map<String, String> listEntities() {
+						return new HashMap<>();
+					}
+
+					@Override
+					public void addAgent(String agentName, String shardName) throws RemoteException {
+						Node.this.addAgent(agentName, shardName);
+					}
+
+				});
+			}
+			li("Active entities:", activeEntities);
+		}
+	}
+	public MultiTreeMap getNodeConfiguration(){
+		return this.nodeConfiguration;
 	}
 
 	/**
@@ -219,6 +278,8 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 * @param entityName
 	 *            - the name of the entity.
 	 */
+
+
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName) {
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
@@ -259,7 +320,18 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 		});
 		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
-	
+	public class Unit {
+		private Node parentNode;
+
+		public Unit(Node parentNode) {
+			if (parentNode == null) {
+				throw new IllegalArgumentException("Parent Node cannot be null");
+			}
+			this.parentNode = parentNode;
+		}
+
+
+	}
 	@Override
 	public boolean start() {
 		li("Starting node [] with entities [].", name, entityOrder);
@@ -296,38 +368,77 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 				}
 			}, INITIAL_ACTIVE_CHECK, 1000);
 		}
-		startMonitoring(" ", " ");
-		/*activeMonitor.schedule(new TimerTask() {
+
+		/*Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				// System.out.println("Loading new Timer");
-				// PartialCLIWrapp.processArgs(argset);
-
 				try {
-					callbacks.addAgent(agentName, shardName);
-				} catch (RemoteException e) {
-					System.err.println("Failed to add agent via client callback: " + e.getMessage());
+					String[] argset = (
+							"-agent1 composite:AgentC -shard messaging par:val " +
+							"-shard EchoTesting " +
+							"-agent2 agentD parameter:one"
+									  )
+							.split(" ");
+					MultiTreeMap tree = new MultiTreeMap();
+					DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(CategoryName.DEPLOYMENT.s(), null, tree);
+					DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
+							new HashMap<>(), new UnitComponent("test"));
+					configure1(tree);
+
+//					System.out.println("Starting ClientApp...");
+//					ClientApp.main(new String[] {});
+//					ClientAppWebSocket.main(new String[] {});
+				} catch (Exception e){
+					System.err.println("Error in TimerTask: " + e.getMessage());
+					e.printStackTrace();
 				}
 			}
-		}, 2000);*/
 
-		return true;
-	}
-	public void startMonitoring(String agentName, String shardName){
-		Timer activeMonitor = new Timer();
+		}, 1000);*/
 
-		activeMonitor.schedule(new TimerTask() {
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				try{
-					addAgent(agentName,shardName);
-				} catch (RemoteException e){
-					System.out.println("Failed to add agent: " +e.getMessage());
+					String[] argset = ("-agent1 composite:AgentC -shard messaging par:val " +
+							"-shard EchoTesting " +
+							"-agent2 agentD parameter:one"
+					)
+							.split(" ");
+
+					MultiTreeMap tree = new MultiTreeMap();
+					DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(
+							CategoryName.DEPLOYMENT.s(), null, tree
+					);
+					DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
+							new HashMap<>(), new UnitComponent("test"));
+
+					NodeLoader baseLoader = new NodeLoader();
+					NodeLoader decorator = new NodeLoaderDecorator(baseLoader);
+
+					Node exampleNode = new Node(tree);
+					Map<String, Entity<?>> loadedEntities = new HashMap<>();
+
+					MultiTreeMap entityConfig = new MultiTreeMap();
+					entityConfig.get("-agent1 composite:AgentC -shard messaging par:val " +
+							"-shard EchoTesting " +
+							"-agent2 agentD parameter:one");
+					decorator.loadEntity(exampleNode, entityConfig, loadedEntities);
+
+					configure1(tree);
+
+				} catch (Exception e){
+					System.err.println("Error in TimerTask: " + e.getMessage());
+					e.printStackTrace();
 				}
 			}
-		}, 2000);
+		}, 1000);
+
+		return true;
 	}
-	
+
 	@Override
 	public boolean stop() {
 		li("Stopping node [] with entities [].", name, entityOrder);
@@ -537,12 +648,15 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	}
 
 	private List<ClientCallbackInterface> callbacks;
+
+
 	public void addAgent(String agentName, String shardName) throws RemoteException{
 		listEntities().put(agentName,shardName);
 		// Logic to add the agent to the specified shard would go here.
 		System.out.println("Adding agent " + agentName + " to shard " + shardName);
 		notifyClients(agentName);
 	}
+
 
 	public synchronized void registerCallback(ClientCallbackInterface callback) throws RemoteException{
 		callbacks.add(callback);

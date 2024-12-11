@@ -24,6 +24,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
+import net.xqhs.flash.core.node.clientApp.NodeLoaderDecorator;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -38,7 +39,7 @@ import net.xqhs.util.logging.Unit;
  * <p>
  * After performing all initializations, it creates a {@link Node} instance that manages the actual deployment
  * execution.
- * 
+ * toLoad
  * @author Andrei Olaru
  */
 public class NodeLoader extends Unit implements Loader<Node> {
@@ -47,6 +48,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		setUnitName("boot");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
+
 	
 	/**
 	 * Loads a deployment starting from command line arguments.
@@ -131,6 +133,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	 * @return the {@link Node} the was loaded.
 	 */
 	public Node loadNode(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities, String deploymentID) {
+
+
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
@@ -211,15 +215,17 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		lf("Trying to load node using default loader [], from classpath []", defaultLoader.getClass().getName(),
 				CategoryName.NODE.s(), nodecp);
 		Node node = (Node) defaultLoader.load(nodeConfiguration);
-		if(node == null) {
+		if(node != null) {
+			node.configure1(nodeConfiguration);
+		} else {
 			le("Could not load [][].", nodeCatName, nodeName);
 			return null;
 		}
-		
+
 		Map<String, Entity<?>> loaded = new LinkedHashMap<>();
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
-		
+
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");
@@ -260,16 +266,16 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						if(id == null)
 							id = name;
 					}
-					
+
 					// in case the kind:id format was used, we only want the name to be the id
 					if(name != null && name.contains(NAMESEP) && id != null)
 						entityConfig.addFirst(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, id);
-					
+
 					// find a loader for the entity
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
 					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { 
+					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) {
 						// if the category in loader list
 						log_catLoad = catName;
 						if(loaders.get(catName).containsKey(kind)) { // get loaders for this kind
@@ -287,7 +293,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							}
 						}
 					}
-					
+
 					// build context
 					List<EntityProxy<?>> context = new LinkedList<>();
 					if(entityConfig.isSimple(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
@@ -299,24 +305,39 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							else if(!contextItem.equals(deploymentID))
 								lw("Context item [] for [] []/[]/[] not found as a loaded entity.", contextItem,
 										catName, name, kind, local_id);
-							
+
 					// build subordinate entities list
 					List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities,
 							local_id);
-					
+
 					// TODO: provide load() with context and an appropriate list of subordinate entities
 					// try to load the entity with a loader
-					Entity<?> entity = null;
-					if(loaderList != null && !loaderList.isEmpty())
-						for(Loader<?> loader : loaderList) { // try loading
-							lf("Trying to load []/[] [][] using []th loader for [][]", name, local_id, catName, kind,
-									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
-							if(loader.preload(entityConfig, context))
-								entity = loader.load(entityConfig, context, subEntities);
-							if(entity != null)
-								break;
-							log_nLoader += 1;
-						}
+
+					// Entity<?> entity = null;
+//					if(loaderList != null && !loaderList.isEmpty())
+//						for(Loader<?> loader : loaderList) { // try loading
+//							lf("Trying to load []/[] [][] using []th loader for [][]", name, local_id, catName, kind,
+//									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
+//							if(loader.preload(entityConfig, context))
+//								entity = loader.load(entityConfig, context, subEntities);
+//							if(entity != null)
+//								break;
+//							log_nLoader += 1;
+//						}
+
+					Entity<?> entity = loadEntity(node, entityConfig, loaded);
+
+					if (entity != null) {
+								li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
+						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME, DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
+						loaded.put(local_id, entity);
+						node.registerEntity(catName, entity, id);
+					} else {
+						le("Could not load entity []/[] of type [].", name, local_id, catName);
+
+					}
+
+
 					// if not, try to load the entity with the default loader
 					if(entity == null) {
 						// attempt to obtain classpath information
@@ -337,12 +358,12 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
-						
+
 						// find messaging pylons that can be used by the Node
 						EntityProxy<?> ctx = entity.asContext();
 						if(ctx != null && ctx instanceof MessagingPylonProxy)
 							messagingProxies.add((MessagingPylonProxy) ctx);
-						
+
 						loaded.put(local_id, entity);
 						node.registerEntity(catName, entity, id);
 					}
@@ -379,9 +400,29 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			
 			li("Loading node [] completed.", node.getName());
 		}
+
+
 		return node;
 	}
-	
+
+	public Entity<?> loadEntity(Node node, MultiTreeMap entityConfig, Map<String, Entity<?>> loaded) {
+		String className = entityConfig.getSingleValue("className");
+		try {
+			// Assuming `className` points to a concrete subclass of `Entity`
+			Class<?> entityClass = Class.forName(className);
+			if (Entity.class.isAssignableFrom(entityClass)) {
+				return (Entity<?>) entityClass.getDeclaredConstructor().newInstance();
+			} else {
+				throw new IllegalArgumentException("Class " + className + " is not a valid subclass of Entity.");
+			}
+		} catch (Exception e) {
+			// Handle exceptions properly (e.g., log the error)
+			le("Failed to load entity class: " + className, e);
+			return null;
+		}
+	}
+
+
 	/**
 	 * Functionality not used.
 	 */
@@ -389,7 +430,6 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory factory) {
 		return true;
 	}
-	
 	/**
 	 * Functionality not used.
 	 */
@@ -405,4 +445,5 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
 		return preload(configuration);
 	}
+
 }

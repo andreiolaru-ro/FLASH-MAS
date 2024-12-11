@@ -11,15 +11,10 @@
  ******************************************************************************/
 package test.compositePingPong;
 
-import andrei.partialCLI.PartialCLI_Test;
-import net.xqhs.flash.FlashBoot;
-import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.node.clientApp.ClientApp;
-import net.xqhs.flash.rmi.NodeCLI;
-import net.xqhs.flash.testViorel.PartialCLIWrapp;
-import net.xqhs.flash.testViorel.Timer;
 
-import java.util.concurrent.TimeUnit;
+import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.testViorel.PartialCLIWrapp;
+
 
 
 /**
