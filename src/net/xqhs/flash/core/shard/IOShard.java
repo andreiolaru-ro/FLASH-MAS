@@ -104,6 +104,7 @@ public abstract class IOShard extends AgentShardGeneral {
 	 * 
 	 * @param agentWave
 	 *            - the wave containing the information to be sent out.
+	 * @return an indication of success in processing and conveying the output to the IO interface.
 	 */
-	public abstract void sendOutput(AgentWave agentWave);
+	public abstract boolean sendOutput(AgentWave agentWave);
 }

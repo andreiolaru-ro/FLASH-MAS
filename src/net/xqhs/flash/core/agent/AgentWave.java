@@ -340,15 +340,17 @@ public class AgentWave extends AgentEvent {
 
 	
 	/**
-	 * @return all the keys in this {@link MultiValueMap} which are not realted to routing or agent event type. The
-	 *         {@value #CONTENT} key is added as the first key.
+	 * @return all the keys in this {@link MultiValueMap} which are not related to routing or agent event type. The
+	 *         {@value #CONTENT} key is added as the first key, if it was initially present.
 	 */
 	public List<String> getContentElements() {
 		List<String> result = new LinkedList<>(getKeys());
 		for(String k : specialKeys)
 			result.remove(k);
-		result.remove(CONTENT);
-		result.add(0, CONTENT);
+		if(result.contains(CONTENT)) {
+			result.remove(CONTENT);
+			result.add(0, CONTENT);
+		}
 		return result;
 	}
 	

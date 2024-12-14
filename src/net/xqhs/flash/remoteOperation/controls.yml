@@ -11,16 +11,18 @@
 #-------------------------------------------------------------------------------
 children:
   - type: label
-    value: "--"
-    port: control-name
+    value: "---"
+    port: standard-name
   - type: label
     value: unknown
-    port: control-status
+    port: standard-status
   - type: button
     value: Start
-    port: nodeCtrl-start
+    port: standard-start
     role: activate
+    properties: {proxy: node}
   - type: button
     value: Kill
-    port: nodeCtrl-stop
+    port: standard-stop
     role: activate
+    properties: {proxy: node}

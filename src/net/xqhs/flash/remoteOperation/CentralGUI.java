@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.monitoring;
+package net.xqhs.flash.remoteOperation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +52,8 @@ public abstract class CentralGUI extends GuiShard {
 	}
 	
 	@Override
-	public void sendOutput(AgentWave wave) {
+	public boolean sendOutput(AgentWave wave) {
 		// this here just to block any calls to the underlying GuiShard.
+		return true;
 	}
 }

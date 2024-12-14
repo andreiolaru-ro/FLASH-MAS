@@ -23,10 +23,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.json.simple.JSONObject;
-
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
@@ -36,7 +33,6 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -46,6 +42,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -89,6 +86,7 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * The endpoint for messages sent between nodes.
 	 */
+	@SuppressWarnings("unused")
 	private static final String		SHARD_ENDPOINT				= "node";
 	/**
 	 * The name of the operation in which a node receives a mobile agent.
@@ -196,36 +194,19 @@ public class Node extends Unit implements Entity<Node> {
 	}
 	
 	/**
-	 * It takes all available {@link ControlOperation} and build up for each of them a {@link JSONObject} containing
-	 * relevant information.
-	 * 
-	 * @return - a json array indicating all details about each operation.
-	 */
-	protected JsonArray configureOperations() {
-		JsonArray operations = new JsonArray();
-		for(OperationUtils.ControlOperation op : OperationUtils.ControlOperation.values()) {
-			JsonObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
-			operations.add(o);
-		}
-		return operations;
-	}
-	
-	/**
 	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity} This lets it know what
 	 * entities are in the content of current node and what operations can be performed on them.
 	 *
 	 * @return - an indication of success.
 	 */
 	protected boolean registerEntitiesToCentralEntity() {
-		JsonArray operations = configureOperations();
-		JsonArray entities = new JsonArray();
-		registeredEntities.forEach((category, value) -> {
-			for(Entity<?> entity : value) {
-				JsonObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
-				entities.add(ent);
-			}
+		AgentWave wave = CentralMonitoringAndControlEntity.REGISTER_ENTITIES.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+		registeredEntities.forEach((category, entities) -> {
+			entities.forEach(e -> {
+				wave.add(e.getName(), category);
+			});
 		});
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
+		return sendMessage(wave);
 	}
 	
 	@Override
@@ -243,7 +224,6 @@ public class Node extends Unit implements Entity<Node> {
 		isRunning = true;
 		if(messagingShard != null)
 			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		sendStatusUpdate();
 		li("Node [] started.", name);
 		
 		if(getName() != null && registerEntitiesToCentralEntity())
@@ -277,7 +257,6 @@ public class Node extends Unit implements Entity<Node> {
 			}
 		}
 		isRunning = false;
-		sendStatusUpdate();
 		li("Node [] stopped.", name);
 		return true;
 	}
@@ -368,6 +347,9 @@ public class Node extends Unit implements Entity<Node> {
 		return new NodeProxy();
 	}
 	
+	/**
+	 * Checks if the entities registered to this node are still running. If none still is, the node is {@link #stop}ed.
+	 */
 	protected void checkRunning() {
 		boolean allActive = (activeEntities.size() == 1)
 				&& activeEntities.iterator().next().equals(ACTIVE_ALWAYS_VALUE);
@@ -386,29 +368,12 @@ public class Node extends Unit implements Entity<Node> {
 	/**
 	 * Send a message via {@link MessagingShard}.
 	 * 
-	 * @param destination
-	 *            - the name of the destination entity
-	 * @param content
-	 *            - the content to be sent
+	 * @param wave
+	 *            - the wave to send.
 	 * @return - an indication of success
 	 */
-	public boolean sendMessage(String destination, String content) {
-		return messagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
-				AgentWave.makePath(destination, SHARD_ENDPOINT), content);
-	}
-	
-	/**
-	 * Build a {@link JSONObject} to send updates about the new status of the node.
-	 * 
-	 * @return - an indication of success
-	 */
-	private boolean sendStatusUpdate() {
-		if(getName() == null)
-			return false;
-		String status = isRunning ? "RUNNING" : "STOPPED";
-		JsonObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
+	public boolean sendMessage(AgentWave wave) {
+		return messagingShard.sendMessage(wave);
 	}
 	
 	/**
@@ -417,7 +382,7 @@ public class Node extends Unit implements Entity<Node> {
 	 * @param jo
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
-	private void parseReceivedMsg(JsonObject jo) {
+	protected void parseReceivedMsg(JsonObject jo) {
 		if(!jo.has(OperationUtils.OPERATION_NAME))
 			return;
 		String op = jo.get(OperationUtils.OPERATION_NAME).getAsString();
@@ -430,7 +395,7 @@ public class Node extends Unit implements Entity<Node> {
 				le("[] entity not found in the context of [].", param, name);
 				return;
 			}
-			switch (ControlOperation.fromOperation(op)) {
+			switch(ControlOperation.fromOperation(op)) {
 			// case START:
 			// if(startEntity(entity)) {
 			// lf("[] was started by parent [].", param, name);
@@ -443,15 +408,13 @@ public class Node extends Unit implements Entity<Node> {
 			// return;
 			// }
 			// break;
-				default:
-					le("Unknown operation: ", op);
-					break;
-
+			default:
+				le("Unknown operation: ", op);
+				break;
+			
 			}/*
-			if(entity.start()) {
-				lf("[] was started by parent [].", param, name);
-				return;
-			}*/
+				 * if(entity.start()) { lf("[] was started by parent [].", param, name); return; }
+				 */
 		}
 		else if(RECEIVE_AGENT_OPERATION.equals(op)) {
 			String agentData = jo.get(OperationUtils.PARAMETERS).getAsString();
@@ -484,6 +447,6 @@ public class Node extends Unit implements Entity<Node> {
 		root.addProperty(OperationUtils.PARAMETERS, agentData);
 		
 		lf("Send message with agent [] to []", agentName, destination);
-		sendMessage(destination, root.toString());
+		sendMessage(new AgentWave(root.toString(), destination));
 	}
 }
