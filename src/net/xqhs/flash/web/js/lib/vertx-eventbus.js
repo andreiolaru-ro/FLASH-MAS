@@ -90,7 +90,7 @@
       if (self.randomizationFactor) {
         var rand =  Math.random();
         var deviation = Math.floor(rand * self.randomizationFactor * ms);
-        ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
+        ms = (Math.floor(rand * 10) & 1) === 0  ? ms - deviation : ms + deviation;
       }
       return Math.min(ms, self.reconnectDelayMax) | 0;
     };
@@ -101,6 +101,24 @@
     this.onerror = function (err) {
       try {
         console.error(err);
+      } catch (e) {
+        // dev tools are disabled so we cannot use console on IE
+      }
+    };
+
+    this.onevent = function (event, message) {
+      return false; // return false to signal that this message is not processed
+    };
+
+    this.onunhandled = function (json) {
+      try {
+        if (json.type === 'err')
+          self.onerror(json);
+        else if (json.event) {
+          console.warn('No handler found for event: %o. Message: %O', json.event, json);
+        } else {
+          console.warn('No handler found for message: ', json);
+        }
       } catch (e) {
         // dev tools are disabled so we cannot use console on IE
       }
@@ -140,7 +158,17 @@
       };
 
       self.sockJSConn.onmessage = function (e) {
-        var json = JSON.parse(e.data);
+        var json;
+
+        try {
+          json = JSON.parse(e.data);
+        } catch(ex) {
+          json = {
+            type: 'err',
+            failureType: ex.toString(),
+            message: e.data
+          };
+        }
 
         // define a reply function on the message itself
         if (json.replyAddress) {
@@ -171,14 +199,8 @@
             handler(null, json);
           }
         } else {
-          if (json.type === 'err') {
-            self.onerror(json);
-          } else {
-            try {
-              console.warn('No handler found for message: ', json);
-            } catch (e) {
-              // dev tools are disabled so we cannot use console on IE
-            }
+          if (!json.event || !self.onevent(json.event, json.message)) {
+            self.onunhandled(json)
           }
         }
       }
@@ -198,7 +220,7 @@
    */
   EventBus.prototype.send = function (address, message, headers, callback) {
     // are we ready?
-    if (this.state != EventBus.OPEN) {
+    if (this.state !== EventBus.OPEN) {
       throw new Error('INVALID_STATE_ERR');
     }
 
@@ -232,7 +254,7 @@
    */
   EventBus.prototype.publish = function (address, message, headers) {
     // are we ready?
-    if (this.state != EventBus.OPEN) {
+    if (this.state !== EventBus.OPEN) {
       throw new Error('INVALID_STATE_ERR');
     }
 
@@ -253,7 +275,7 @@
    */
   EventBus.prototype.registerHandler = function (address, headers, callback) {
     // are we ready?
-    if (this.state != EventBus.OPEN) {
+    if (this.state !== EventBus.OPEN) {
       throw new Error('INVALID_STATE_ERR');
     }
 
@@ -285,7 +307,7 @@
    */
   EventBus.prototype.unregisterHandler = function (address, headers, callback) {
     // are we ready?
-    if (this.state != EventBus.OPEN) {
+    if (this.state !== EventBus.OPEN) {
       throw new Error('INVALID_STATE_ERR');
     }
 
@@ -299,7 +321,7 @@
       }
 
       var idx = handlers.indexOf(callback);
-      if (idx != -1) {
+      if (idx !== -1) {
         handlers.splice(idx, 1);
         if (handlers.length === 0) {
           // No more local handlers so we should unregister the connection

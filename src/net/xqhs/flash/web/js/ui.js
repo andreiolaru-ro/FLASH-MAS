@@ -25,16 +25,17 @@ export function handleSidepanel() {
 export function updateEntitiesList() {
     $('#entities-list').empty();
     for (let [entityName, entity] of Object.entries(appContext.entitiesData.specification)) {
-        const checkbox = $('<input>').attr('type', 'checkbox').addClass('entity-checkbox')
+        const checkbox = $('<input>').addClass('entity-checkbox')
+            .attr('type', 'checkbox').attr('name', entityName + '-checkbox')
             .on('change', e => handleEntityCheckboxChange(e.target.checked, entityName))
             .on('click', e => e.stopPropagation());
+        const label = $('<label>').text(entityName)
+            .addClass('entity-label').attr('for', entityName + '-checkbox');
 
         $('#entities-list').append(
-            $('<div>').attr('id', entity.id).addClass('side-drawer entity-item').append(
-                checkbox,
-                $('<label>').text(entityName).addClass('entity-label')
-            ).on('click', function() { 
-                console.log('Click on entity', entityName);
+            $('<div>').attr('id', entity.id).addClass('side-drawer entity-item')
+            .append(checkbox, label)
+            .on('click', function() { 
                 checkbox.prop('checked', !checkbox.prop('checked'));
                 checkbox.trigger('change')
             })
