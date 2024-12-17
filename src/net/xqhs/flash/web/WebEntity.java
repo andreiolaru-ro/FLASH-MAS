@@ -311,7 +311,7 @@ public class WebEntity extends CentralGUI {
 		
 		String entity = wave.popDestinationElement();
 		String port = wave.getFirstDestinationElement();
-		tosend.addProperty("subject", idManager.makeID(null, entity, port)); // questionable abuse of makeID
+		tosend.addProperty("subject", idManager.makeID(entity, port));
 		
 		Element gui = entityGUIs.get(entity);
 		if(gui == null)

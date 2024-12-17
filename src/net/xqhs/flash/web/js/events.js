@@ -60,17 +60,18 @@ export function activate(child) {
         console.log("Activated element not in active ports:", child.id);
         return;
     }
-    console.log(appContext.entitiesData.activators);
+
     const activator = appContext.entitiesData.activators[child.id];
     const content = Object.fromEntries(activator.map(id => [
         id, appContext.entitiesData.types[id] == 'form' ? $('#' + id).val() : $('#' + id).text()
     ]));
-    console.log("Activating element", child.id, "with content", content);
+
     const msg = {
         scope: "port", 
         subject: child.id, 
         content
     }
+    console.log("Sending message", msg);
 	eventBus.send('client-to-server', JSON.stringify(msg));
 }
 

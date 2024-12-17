@@ -42,6 +42,21 @@ public class ElementIdManager {
 	}
 
 	/**
+	 * Create the ID for an element using the given parameters.
+	 *
+	 * @param entity
+	 *  		- the entity for which the ID is created. Can be null.
+	 * @param port
+	 * 		- the port of the entity for which the ID is created. Cannot be null.
+	 * 
+	 * @return
+	 * 		- A string of the ID.
+	 */
+	public String makeID(String entity, String port) {
+		return makeID(null, port, entity);
+	}
+
+	/**
 	 * Retrieves a list of IDs that match the given entity, port, and role combination.
 	 *
 	 * @param entity

@@ -83,6 +83,10 @@ public class Element implements Cloneable {
 	 * The type of the block where the element is (global, agent interfaces).
 	 */
 	private String				blockType;
+	/**
+	 * The endpoint of the shard that added this element and will receive the events from it
+	 */
+	private String				endpoint;
 	
 	/**
 	 * @return - the list of child elements
@@ -239,6 +243,23 @@ public class Element implements Cloneable {
 	 */
 	public void setBlockType(String blockType) {
 		this.blockType = blockType;
+	}
+
+	/**
+	 * @return - the endpoint of the shard that added this element
+	 */
+	public String getEndpoint() {
+		return endpoint;
+	}
+
+	/**
+	 * Set the endpoint of the shard that added this element
+	 *
+	 * @param endpoint
+	 *            - the endpoint of the shard that added this element
+	 */
+	public void setEndpoint(String endpoint) {
+		this.endpoint = endpoint;
 	}
 	
 	/**
