@@ -260,7 +260,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	 * @return - an indication of success
 	 */
 	public boolean processWave(AgentWave wave) {
-		// System.out.println(wave.toString());
+		lf("Routing wave", wave);
 		String sourceEntity = wave.getFirstSource();
 		Operations op = Operations.getRoute(wave);
 		if(op == null)

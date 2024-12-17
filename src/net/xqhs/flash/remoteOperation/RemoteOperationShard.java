@@ -7,16 +7,18 @@ import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.util.Operation;
+import net.xqhs.flash.core.util.Operation.BaseOperation;
+import net.xqhs.flash.core.util.Operation.OperationName;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.gui.GUILoad;
-import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.Fields;
-import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.Operations;
 
 /**
  * There can be more than one remote. There are two types of remotes:
@@ -33,6 +35,22 @@ import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.Operatio
  */
 public class RemoteOperationShard extends AgentShardGeneral {
 	/**
+	 * Operations supported by {@link RemoteOperationShard}.
+	 */
+	@SuppressWarnings("hiding")
+	public enum Operations implements OperationName {
+		/**
+		 * Name of the operation to stop the agent remotely.
+		 */
+		REMOTE_STOP,
+	}
+	
+	/**
+	 * The definition of the operation to stop the agent, corresponding to {@link Operations#REMOTE_STOP}.
+	 */
+	public static final Operation REMOTE_STOP = new BaseOperation(Operations.REMOTE_STOP, new String[] {});
+	
+	/**
 	 * The UID.
 	 */
 	private static final long		serialVersionUID		= 7298833269072319823L;
@@ -47,7 +65,8 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	/**
 	 * The default remote interface for the entity, formed of a stop button.
 	 */
-	protected static final String	INTERFACE_SPECIFICATION	= "children: [{ type: button, value: Stop, port: remote-stop, role: activate }]";
+	protected static final String	INTERFACE_SPECIFICATION	= "children: [{ type: button, value: Stop, port: "
+			+ REMOTE_STOP.s() + ", role: activate }]";
 	
 	/**
 	 * The interface specification for this agent, which will be sent to central monitoring entities / web
@@ -93,15 +112,24 @@ public class RemoteOperationShard extends AgentShardGeneral {
 					|| !SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement(); // this entity name
-			if(Operations.GUI_INPUT_TO_ENTITY == Operations.getRoute(wave)) {
-				wave.removeFirstDestinationElement();
-				wave.removeKey(AgentWave.SOURCE_ELEMENT);
-				String port = wave.getFirstDestinationElement();
-				wave.addSourceElements(port);
-				wave.resetDestination(AgentWave.ADDRESS_SEPARATOR);
-				((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation())).postActiveInput(port,
-						wave);
+			// original wave destination endpoint was AgentX/remote/remote_stop
+			if(wave.getFirstDestinationElement().toUpperCase().equals(Operations.REMOTE_STOP.toString())) {
+				li("Agent stopping requested remotely.");
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 			}
+			
+			// // TODO this is not needed anymore, routing should be done directly
+			// if(CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY ==
+			// CentralMonitoringAndControlEntity.Operations
+			// .getRoute(wave)) {
+			// wave.removeFirstDestinationElement();
+			// wave.removeKey(AgentWave.SOURCE_ELEMENT);
+			// String port = wave.getFirstDestinationElement();
+			// wave.addSourceElements(port);
+			// wave.resetDestination(AgentWave.ADDRESS_SEPARATOR);
+			// ((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation())).postActiveInput(port,
+			// wave);
+			// }
 			return;
 		case AGENT_START:
 			entityStatus[0] = Fields.RUNNING_STATUS_RUNNING;
@@ -138,8 +166,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		default:
 			// nothing to do
 		}
-		lf("Agent [] event [].", getParentName(), event);
-		
+		lf("Agent [] event unhandled [].", getParentName(), event);
 	}
 	
 	/**

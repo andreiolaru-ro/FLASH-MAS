@@ -34,6 +34,7 @@ import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.remoteOperation.CentralGUI;
+import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.CentralEntityProxy;
 
 /**
@@ -270,7 +271,8 @@ public class WebEntity extends CentralGUI {
 	 *            - the data received from the web client.
 	 */
 	protected void activeInput(JsonObject msg) {
-		AgentWave wave = new AgentWave(null, MonitoringOperation.GUI_INPUT_TO_ENTITY.getOperation());
+		AgentWave wave = new AgentWave(null,
+				CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString());
 		wave.addSourceElements(getShardDesignation().toString());
 		Element activatedElement = idManager.getElement(msg.get("subject").getAsString());
 		if(activatedElement == null) {

@@ -95,6 +95,7 @@ public class GuiShard extends IOShard {
 		case AGENT_START:
 			if(getAgentShard(StandardAgentShard.REMOTE.toAgentShardDesignation()) != null) {
 				remoteShard = (RemoteOperationShard) getAgentShard(StandardAgentShard.REMOTE.toAgentShardDesignation());
+				// TODO add this shard endpoint as handler endpoint for ports in the interface
 				remoteShard.addGuiElement(interfaceStructure);
 			}
 			break;
@@ -102,6 +103,7 @@ public class GuiShard extends IOShard {
 			if(event instanceof AgentWave
 					&& ((AgentWave) event).getFirstDestinationElement().equals(StandardAgentShard.GUI.shardName())) {
 				((AgentWave) event).popDestinationElement();
+				// handle the event directly and don't repost
 				postActiveInput(((AgentWave) event).getFirstDestinationElement(), (AgentWave) event);
 			}
 			break;
