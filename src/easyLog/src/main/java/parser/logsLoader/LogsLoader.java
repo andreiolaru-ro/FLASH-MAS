@@ -16,7 +16,7 @@ public class LogsLoader {
     public void initializeParser(LineProcessor lineProcessor) throws FileNotFoundException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             String line;
-//            int n = 0;
+            int n = 0;
             while ((line = reader.readLine()) != null) { // aici trebuie sa nu luam in seama primele linii
                 if( line.matches("^\\.\\s\\[ boot\\s+\\]\\sConfiguration loaded$"))
                 {
@@ -25,7 +25,7 @@ public class LogsLoader {
                 if(this.matched)
                 {
                     lineProcessor.process(line);
-//                    System.out.println(n++ + " Lines processed");
+                    System.out.println(n++ + " Lines processed");
                 }
             }
             reader.close();

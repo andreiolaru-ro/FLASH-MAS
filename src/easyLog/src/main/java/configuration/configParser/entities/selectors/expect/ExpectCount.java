@@ -63,16 +63,17 @@ public class ExpectCount implements Expect {
 
     @Override
     public boolean isSatisfied() {
+        int n = key == null || !numberOfAppearances.containsKey(key) ? 0 : numberOfAppearances.get(key);
         switch (criterium) {
             case MIN:
-                return numberOfAppearances.get(key) > countNumber;
+                return n > countNumber;
             case EXACTLY:
-                return numberOfAppearances.get(key) == countNumber;
+                return n == countNumber;
             case MAX:
-                return numberOfAppearances.get(key) < countNumber;
+                return n < countNumber;
 
         }
-        return numberOfAppearances.get(key) == countNumber;
+        return n == countNumber;
     }
 
     @Override
