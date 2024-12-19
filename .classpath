@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="src-examples"/>
 	<classpathentry kind="src" path="src-tests"/>
 	<classpathentry kind="src" path="src-experiments"/>
+	<classpathentry kind="src" path="easyLog"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
@@ -16,7 +17,6 @@
 	<classpathentry kind="lib" path="lib/ros/jetty-client-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/jetty-http-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/jetty-util-9.4.3.v20170317.jar"/>
-	<classpathentry kind="lib" path="lib/gui/snakeyaml-1.25.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-api-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/netty-all-4.1.47.Final.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/vertx-core-3.9.0.jar"/>
@@ -33,5 +33,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/gui/snakeyaml-2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

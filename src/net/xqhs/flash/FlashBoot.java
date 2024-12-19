@@ -11,17 +11,17 @@
  ******************************************************************************/
 package net.xqhs.flash;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.PipedOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import easyLog.src.main.java.main.Main;
+import easyLog.EasyLog;
+import easyLog.integration.PipedStreamLogOutput;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
-import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
-import net.xqhs.util.logging.output.ConsoleOutput;
 import net.xqhs.util.logging.output.FileOutput;
 import net.xqhs.util.logging.output.StreamLogOutput;
 
@@ -31,6 +31,15 @@ import net.xqhs.util.logging.output.StreamLogOutput;
  * @author andreiolaru
  */
 public class FlashBoot {
+	
+	protected static int			bitIndex			= 0;
+	protected static final int		OUTPUT_TO_CONSOLE	= 1 << bitIndex++;
+	protected static final int		OUTPUT_TO_FILE		= 1 << bitIndex++;
+	protected static final int		OUTPUT_TO_EASYLOG	= 1 << bitIndex++;
+	protected static final int		LOG_OUTPUTS			= OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG;
+	protected static final Level	GLOBAL_LOG_LEVEL	= Level.ALL;
+	private static final String		EASYLOG_CONFIG_FILE	= "resource/test.yml";
+	
 	/**
 	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
 	 * 
@@ -38,84 +47,25 @@ public class FlashBoot {
 	 *            - the arguments received by the program.
 	 */
 	public static void main(String[] args) {
-		MasterLog.setLogLevel(Level.ALL);
-//		MasterLog.addDefaultOutput(new ConsoleOutput());
-		try {
-			MasterLog.addDefaultOutput(new FileOutput("output/global.log"));
-
-			StreamLogOutput out = new StreamLogOutput() {
-				//easyLog Wrapper
-				PipedOutputStream out = new PipedOutputStream();
-
-				@Override
-				public long getUpdatePeriod() {
-					return 0;
-				}
-
-				@Override
-				public int formatData() {
-					return Logger.INCLUDE_NAME;
-				}
-
-				@Override
-				public boolean useCustomFormat() {
-					return false;
-				}
-
-				@Override
-				public String format(Level level, String s, String s1) {
-					return null;
-				}
-
-				@Override
-				public void update() {
-					// daca e nevoie sa fac flush Stream.flush
-					try {
-						out.flush();
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-
-				}
-
-				@Override
-				public OutputStream getOutputStream() {
-					return out;
-				}
-
-				@Override
-				public void exit() {
-					// inchid streamul
-					try {
-						out.close();
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-
-				}
-			};
+		MasterLog.setLogLevel(GLOBAL_LOG_LEVEL);
+		// MasterLog.addDefaultOutput(new ConsoleOutput());
+		
+		if((LOG_OUTPUTS & OUTPUT_TO_FILE) != 0)
+			try {
+				MasterLog.addDefaultOutput(new FileOutput("output/global.log"));
+			} catch(FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		
+		PipedOutputStream stream = null;
+		if((LOG_OUTPUTS & OUTPUT_TO_EASYLOG) != 0) {
+			StreamLogOutput out = new PipedStreamLogOutput();
 			MasterLog.addDefaultOutput(out);
-
-			PipedInputStream in = new PipedInputStream();
-			PipedOutputStream easyLogOut = (PipedOutputStream) out.getOutputStream();
-			easyLogOut.connect(in);
-
-			Thread easyLog = new Thread(() -> {
-				try {
-					Main.main(in);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				} catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-			easyLog.start();
-		} catch(FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+			stream = (PipedOutputStream) out.getOutputStream();
+			EasyLog.start(stream, EASYLOG_CONFIG_FILE);
+		}
+		
+		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
 		for(Node node : nodes)
 			node.start();
 	}
