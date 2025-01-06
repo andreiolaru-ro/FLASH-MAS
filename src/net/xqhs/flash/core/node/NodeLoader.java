@@ -24,7 +24,6 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
-import net.xqhs.flash.core.node.clientApp.NodeLoaderDecorator;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -313,19 +312,21 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					// TODO: provide load() with context and an appropriate list of subordinate entities
 					// try to load the entity with a loader
 
-					// Entity<?> entity = null;
-//					if(loaderList != null && !loaderList.isEmpty())
-//						for(Loader<?> loader : loaderList) { // try loading
-//							lf("Trying to load []/[] [][] using []th loader for [][]", name, local_id, catName, kind,
-//									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
-//							if(loader.preload(entityConfig, context))
-//								entity = loader.load(entityConfig, context, subEntities);
-//							if(entity != null)
-//								break;
-//							log_nLoader += 1;
-//						}
+				//	Entity<?> entity = loadEntity(node, entityConfig, loaded);
 
-					Entity<?> entity = loadEntity(node, entityConfig, loaded);
+					 Entity<?> entity = null;
+					if(loaderList != null && !loaderList.isEmpty())
+						for(Loader<?> loader : loaderList) { // try loading
+							lf("Trying to load []/[] [][] using []th loader for [][]", name, local_id, catName, kind,
+									Integer.valueOf(log_nLoader), log_catLoad, log_kindLoad);
+							if(loader.preload(entityConfig, context))
+								entity = loader.load(entityConfig, context, subEntities);
+							if(entity != null)
+								break;
+							log_nLoader += 1;
+						}
+
+
 
 					if (entity != null) {
 								li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
@@ -405,7 +406,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		return node;
 	}
 
-	public Entity<?> loadEntity(Node node, MultiTreeMap entityConfig, Map<String, Entity<?>> loaded) {
+	public Entity<?> loadEntity(Node node, MultiTreeMap entityConfig, Map<String, String> loaded) {
 		String className = entityConfig.getSingleValue("className");
 		try {
 			// Assuming `className` points to a concrete subclass of `Entity`
@@ -421,6 +422,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			return null;
 		}
 	}
+
 
 
 	/**

@@ -16,8 +16,6 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 
-import net.xqhs.flash.core.node.clientApp.ClientApp;
-import net.xqhs.flash.core.node.clientApp.ClientAppWebSocket;
 import net.xqhs.flash.core.node.clientApp.ClientCallbackInterface;
 
 import net.xqhs.flash.core.node.clientApp.NodeLoaderDecorator;
@@ -184,9 +182,13 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 * @param nodeConfiguration
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(MultiTreeMap nodeConfiguration) {
+
+	private  NodeLoader nodeLoader;
+	public Node(MultiTreeMap nodeConfiguration, NodeLoader nodeLoader) {
 		this.nodeConfiguration = nodeConfiguration;
 		this.callbacks = new ArrayList<>();
+		this.nodeLoader = nodeLoader;
+
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
@@ -369,65 +371,55 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 			}, INITIAL_ACTIVE_CHECK, 1000);
 		}
 
-		/*Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				try {
-					String[] argset = (
-							"-agent1 composite:AgentC -shard messaging par:val " +
-							"-shard EchoTesting " +
-							"-agent2 agentD parameter:one"
-									  )
-							.split(" ");
-					MultiTreeMap tree = new MultiTreeMap();
-					DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(CategoryName.DEPLOYMENT.s(), null, tree);
-					DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
-							new HashMap<>(), new UnitComponent("test"));
-					configure1(tree);
-
-//					System.out.println("Starting ClientApp...");
-//					ClientApp.main(new String[] {});
-//					ClientAppWebSocket.main(new String[] {});
-				} catch (Exception e){
-					System.err.println("Error in TimerTask: " + e.getMessage());
-					e.printStackTrace();
-				}
-			}
-
-		}, 1000);*/
-
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				try{
-					String[] argset = ("-agent1 composite:AgentC -shard messaging par:val " +
-							"-shard EchoTesting " +
-							"-agent2 agentD parameter:one"
-					)
-							.split(" ");
+						// Pasul 1: Configurarea `tree` și a contextului
+						MultiTreeMap tree = new MultiTreeMap();
+						DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(
+								CategoryName.DEPLOYMENT.s(), null, tree);
 
-					MultiTreeMap tree = new MultiTreeMap();
-					DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(
-							CategoryName.DEPLOYMENT.s(), null, tree
-					);
-					DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
-							new HashMap<>(), new UnitComponent("test"));
 
-					NodeLoader baseLoader = new NodeLoader();
-					NodeLoader decorator = new NodeLoaderDecorator(baseLoader);
+						// Pasul 2: Configurarea nodului
+						MultiTreeMap nodeConfiguration = new MultiTreeMap();
+						Node currentNode = new Node(nodeConfiguration, nodeLoader);
 
-					Node exampleNode = new Node(tree);
-					Map<String, Entity<?>> loadedEntities = new HashMap<>();
 
-					MultiTreeMap entityConfig = new MultiTreeMap();
-					entityConfig.get("-agent1 composite:AgentC -shard messaging par:val " +
-							"-shard EchoTesting " +
-							"-agent2 agentD parameter:one");
-					decorator.loadEntity(exampleNode, entityConfig, loadedEntities);
 
-					configure1(tree);
+					// Pasul 3: Configurarea argumentelor pentru entități
+						String[] argset = ("-agent composite:AgentC -shard messaging par:val " +
+								"-shard EchoTesting " +
+								"-agent agentD parameter:one").split(" ");
+
+						// Pasul 4: Procesarea `argset` pentru a construi configurațiile
+						for (String arg : argset) {
+							MultiTreeMap entityConfig = new MultiTreeMap();
+							String[] parts = arg.split(":");
+							if (parts.length == 2) {
+								String key = parts[0].replaceFirst("-", "").trim(); // Elimină `-`
+								String value = parts[1].trim();
+								entityConfig.addSingleValue(key, value);
+							} else {
+								entityConfig.addSingleValue("parameter", arg.replaceFirst("-", "").trim());
+							}
+
+							// Adaugă configurația entității în `tree`
+							tree.addAll("entity", (List<String>) entityConfig);
+
+							// Pasul 5: Apelează `loadEntity` pentru fiecare configurație
+							NodeLoader nodeLoader = currentNode.nodeLoader;
+							Entity<?> entity = nodeLoader.loadEntity(currentNode, entityConfig, new HashMap<>());
+
+							if (entity != null) {
+								System.out.println("Entity loaded successfully: " + entity.getClass().getName());
+							} else {
+								System.err.println("Failed to load entity for configuration: " + arg);
+							}
+						}
+
+
 
 				} catch (Exception e){
 					System.err.println("Error in TimerTask: " + e.getMessage());

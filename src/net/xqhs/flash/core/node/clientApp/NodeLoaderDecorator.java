@@ -1,7 +1,6 @@
 package net.xqhs.flash.core.node.clientApp;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -25,7 +24,7 @@ public class NodeLoaderDecorator extends NodeLoader {
 
 
         @Override
-        public Entity<?> loadEntity (Node node, MultiTreeMap entityConfig, Map < String, Entity < ? >> loadedEntities){
+        public Entity<?> loadEntity (Node node, MultiTreeMap entityConfig, Map<String, String> loadedEntities){
         li("Decorator: Pre-processing before loading entity");
         Entity<?> entity = decoratorLoader.loadEntity(node, entityConfig, loadedEntities);
         li("Decorator: Post-processing after loading entity");
