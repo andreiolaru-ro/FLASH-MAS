@@ -80,7 +80,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	public boolean stop() {
 		if(!running)
 			return false;
-		lf("[] stopped", name);
+		lf("[] stopping", name);
 		running = false;
 		return true;
 	}
@@ -170,7 +170,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	/**
 	 * @return the elements forming the general context of this entity.
 	 */
-	Set<EntityProxy<? extends Entity<?>>> getFullContext() {
+	protected Set<EntityProxy<? extends Entity<?>>> getFullContext() {
 		return fullContext;
 	}
 	
