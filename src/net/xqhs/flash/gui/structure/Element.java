@@ -42,51 +42,39 @@ public class Element implements Cloneable {
 	 * Intent size to use when producing a {@link String} rendition of the structure.
 	 */
 	public static final int		INDENT_SIZE				= 8;
-	/**
-	 * prefix for elements that are disabled
-	 */
-	public static final String	DISABLED_ROLE_PREFIX	= "disabled-";
-	/**
-	 * Active input role.
-	 */
-	public static final String	ACTIVE_INPUT			= "activate";
 	
 	/**
 	 * ID of this element
 	 */
-	private String				id;
+	protected String				id;
 	/**
 	 * The list of child elements (applicable to block elements).
 	 */
-	private List<Element>		children	= new ArrayList<>();
+	protected List<Element>			children	= new ArrayList<>();
 	/**
 	 * The properties of this element (could affect rendering the element).
 	 */
-	private Map<String, String>	properties	= new HashMap<>();
+	protected Map<String, String>	properties	= new HashMap<>();
 	/**
 	 * Type of the element.
 	 */
-	private String				type		= ElementType.BLOCK.type;
+	protected String				type		= ElementType.BLOCK.type;
 	/**
 	 * The port that this element is part of.
 	 */
-	private String				port;
+	protected String				port;
 	/**
 	 * The role with which this element is associated.
 	 */
-	private String				role;
+	protected String				role;
 	/**
 	 * Value of the element (e.g. the text of a button / label).
 	 */
-	private String				value;
-	/**
-	 * The type of the block where the element is (global, agent interfaces).
-	 */
-	private String				blockType;
+	protected String				value;
 	/**
 	 * The endpoint of the shard that added this element and will receive the events from it
 	 */
-	private String				endpoint;
+	protected String				notify;
 	
 	/**
 	 * @return - the list of child elements
@@ -229,27 +217,10 @@ public class Element implements Cloneable {
 	}
 	
 	/**
-	 * @return - the type of the block where the element is
-	 */
-	public String getBlockType() {
-		return blockType;
-	}
-	
-	/**
-	 * Set the type of the block where the element is
-	 *
-	 * @param blockType
-	 *            - the type of the block where the element is
-	 */
-	public void setBlockType(String blockType) {
-		this.blockType = blockType;
-	}
-
-	/**
 	 * @return - the endpoint of the shard that added this element
 	 */
-	public String getEndpoint() {
-		return endpoint;
+	public String getNotify() {
+		return notify;
 	}
 
 	/**
@@ -258,8 +229,8 @@ public class Element implements Cloneable {
 	 * @param endpoint
 	 *            - the endpoint of the shard that added this element
 	 */
-	public void setEndpoint(String endpoint) {
-		this.endpoint = endpoint;
+	public void setNotify(String endpoint) {
+		this.notify = endpoint;
 	}
 	
 	/**
@@ -347,8 +318,6 @@ public class Element implements Cloneable {
 		StringBuilder result = new StringBuilder();
 		result.append(" ".repeat(indent * INDENT_SIZE));
 		result.append(type);
-		if(blockType != null)
-			result.append("|").append(blockType);
 		result.append("#").append(id);
 		result.append(" <").append(port).append("|").append(role);
 		result.append("|").append(value).append("> ");

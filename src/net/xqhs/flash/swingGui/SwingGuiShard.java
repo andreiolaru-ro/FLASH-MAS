@@ -146,7 +146,7 @@ public class SwingGuiShard extends GuiShard {
 					return button.getText();
 				}
 			};
-			if(element.getRole().equals("activate"))
+			if("activate".equals(element.getRole()))
 				button.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
