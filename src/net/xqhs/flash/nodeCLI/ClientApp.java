@@ -1,7 +1,4 @@
-package net.xqhs.flash.core.node.clientApp;
-
-import net.xqhs.flash.core.node.NodeLoader;
-import net.xqhs.flash.rmi.NodeCLI;
+package net.xqhs.flash.nodeCLI;
 
 import java.io.Serializable;
 import java.rmi.Remote;
@@ -40,9 +37,7 @@ public class ClientApp extends UnicastRemoteObject implements ClientCallbackInte
 
 
             // Look up the remote object
-            NodeCLI.NodeInterface stub = (NodeCLI.NodeInterface) registry.lookup("Node");
-            NodeLoader originalLoader = new NodeLoader();
-            NodeLoaderDecorator decoratedLoader = new NodeLoaderDecorator(originalLoader);
+            NodeInterface stub = (NodeInterface) registry.lookup("Node");
 
             // Creează și exportă obiectul callback pentru client
             ClientApp clientApp = new ClientApp();

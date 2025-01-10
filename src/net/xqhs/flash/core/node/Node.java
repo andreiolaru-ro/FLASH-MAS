@@ -12,14 +12,17 @@
 package net.xqhs.flash.core.node;
 
 import java.lang.reflect.InvocationTargetException;
-import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
-
-import net.xqhs.flash.core.node.clientApp.ClientCallbackInterface;
-
-import net.xqhs.flash.core.node.clientApp.NodeLoaderDecorator;
-import net.xqhs.util.logging.UnitComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -28,6 +31,7 @@ import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.DeploymentConfiguration.CtxtTriple;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -37,18 +41,14 @@ import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.rmi.NodeCLI;
-import net.xqhs.flash.rmi.NodeCLI.NodeInterface;
 import net.xqhs.util.logging.Unit;
-
-
+import net.xqhs.util.logging.UnitComponent;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -63,18 +63,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class Node extends Unit implements Entity<Node> , NodeInterface{
-	@Override
-	public Map<String, String> listEntities() {
-		return new HashMap<>();
-	}
-
-
-	@Override
-	public boolean stopEntity(String entityName) {
-		return false;
-	}
-
+public class Node extends Unit implements Entity<Node> {
 	/**
 	 * Proxy for a {@link Node}.
 	 */
@@ -108,7 +97,7 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 */
 	public static final String		RECEIVE_AGENT_OPERATION		= "receive_agent";
 	/**
-	 * The name of the operation in which a node receives a mobile agent.
+	 * The name of the parameter that indicates which entities keep the node alive.
 	 */
 	public static final String		ACTIVE_PARAMETER_NAME		= "active";
 	/**
@@ -118,36 +107,37 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	/**
 	 * The default "active" entities, which keep the node running while they are running.
 	 */
-	public static final String[]	DEFAULT_ACTIVE_ENTITIES	= new String[] { "agent" };
+	public static final String[]	DEFAULT_ACTIVE_ENTITIES		= new String[] { "agent" };
+	/**
+	 * The name of the parameter indicating when to make the first check for active entities.
+	 */
+	public static final String		ACTIVE_CHECK_PARAMETER		= "keep";
 	/**
 	 * Global (implementation-wide) switch to kill the node when there are no more running active entities.
 	 */
 	public static final boolean		EXIT_ON_NO_ACTIVE_ENTITIES	= true;
 	/**
-	 * The time after which to perform the first check of active entities.
+	 * The time (in seconds) after which to perform the first check of active entities, if not modified in the
+	 * configuration.
 	 */
-	public static final int			INITIAL_ACTIVE_CHECK		= 5000;
+	public static final int			INITIAL_ACTIVE_CHECK		= 5;
 	
 	/**
 	 * The name of the node.
 	 */
-	protected String						name						= null;
+	protected String						name				= null;
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
-	protected Map<String, List<Entity<?>>>	registeredEntities			= new HashMap<>();
+	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder					= new LinkedList<>();
+	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
 	protected MessagingShard				messagingShard;
-	/**
-	 * monitors if the messaging shard has been registered with its pylon.
-	 */
-	protected boolean						messagingShardRegistered	= false;
 	/**
 	 * An indication if this entity is running.
 	 */
@@ -155,121 +145,44 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	/**
 	 * The set of entity types considered as "active" and keeping the node from exiting.
 	 */
-	protected Set<String>					activeEntities				= new HashSet<>(
-			Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	protected Set<String>					activeEntities		= new HashSet<>(Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	/**
+	 * The time (in seconds) to check for active entities. if negative, the node will never close.
+	 */
+	protected long							activeFor			= INITIAL_ACTIVE_CHECK;
 	/**
 	 * Monitors if all active entities still running.
 	 */
-	protected Timer							activeMonitor				= null;
+	protected Timer							activeMonitor		= null;
 	/**
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
 	private PylonProxy						nodePylonProxy;
-	protected String						serverURI					= null;					// FIXME: Remove this
-
-
-	MultiTreeMap nodeConfiguration = new MultiTreeMap();
-
-
-	public void configure1(MultiTreeMap configure1) {
-		this.nodeConfiguration = configure1;
-	}
-	private Unit unit;
+	
+	MultiTreeMap configuration;
+	
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
 	 * @param nodeConfiguration
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-
-	private  NodeLoader nodeLoader;
-	public Node(MultiTreeMap nodeConfiguration, NodeLoader nodeLoader) {
-		this.nodeConfiguration = nodeConfiguration;
-		this.callbacks = new ArrayList<>();
-		this.nodeLoader = nodeLoader;
-
+	public Node(MultiTreeMap nodeConfiguration) {
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
 				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
-			this.serverURI = nodeConfiguration.get("region-server");
-			
-			if(nodeConfiguration.containsKey(NodeCLI.NODE_CLI_PARAM)) {
-				new NodeCLI(new NodeInterface() {
-					@Override
-					public boolean stopEntity(String entityName) {
-						// TODO Auto-generated method stub
-						return false;
-					}
-					
-					@Override
-					public Map<String, String> listEntities() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-
-					@Override
-					public void addAgent(String agentName, String shardName) throws RemoteException {
-						Node.this.addAgent(agentName, shardName);
-					}
-
-					/*public void readCLIArgs(){
-						DeploymentConfiguration.readCLIArgs(
-								Arrays.asList("-additional value".split("")).iterator(),
-								new DeploymentConfiguration.CtxtTriple(CategoryName.DEPLOYMENT.s(), null, nodeConfiguration),
-								nodeConfiguration, new LinkedList<>(), new HashMap<>(), new UnitComponent("test")
-						);
-					}*/
-
-				});
-			}
+			if(nodeConfiguration.containsKey(ACTIVE_CHECK_PARAMETER))
+				activeFor = Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER));
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		
+		configuration = nodeConfiguration;
 		li("Active entitites:", activeEntities);
-		this.unit = new Unit(this);
 	}
-	private void initializeNodeConfiguration() {
-
-		if (nodeConfiguration != null) {
-			// Set the name from the node configuration
-			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-
-			// Check if there are active entities configured and update the activeEntities set
-			if (nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME)) {
-				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
-			}
-
-			// Set the server URI from the configuration if available
-			this.serverURI = nodeConfiguration.get("region-server");
-
-			if (nodeConfiguration.containsKey(NodeCLI.NODE_CLI_PARAM)) {
-				new NodeCLI(new NodeInterface() {
-					@Override
-					public boolean stopEntity(String entityName) {
-						return false;
-					}
-
-					@Override
-					public Map<String, String> listEntities() {
-						return new HashMap<>();
-					}
-
-					@Override
-					public void addAgent(String agentName, String shardName) throws RemoteException {
-						Node.this.addAgent(agentName, shardName);
-					}
-
-				});
-			}
-			li("Active entities:", activeEntities);
-		}
-	}
-	public MultiTreeMap getNodeConfiguration(){
-		return this.nodeConfiguration;
-	}
-
+	
 	/**
 	 * Method used to register entities added in the context of this node.
 	 * 
@@ -280,8 +193,6 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 * @param entityName
 	 *            - the name of the entity.
 	 */
-
-
 	protected void registerEntity(String entityType, Entity<?> entity, String entityName) {
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
@@ -320,35 +231,19 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 				entities.add(ent);
 			}
 		});
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
+		return false;
+		// TODO revert to this when a monitoring entity is actually created.
+		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
 	}
-	public class Unit {
-		private Node parentNode;
-
-		public Unit(Node parentNode) {
-			if (parentNode == null) {
-				throw new IllegalArgumentException("Parent Node cannot be null");
-			}
-			this.parentNode = parentNode;
-		}
-
-
-	}
+	
 	@Override
 	public boolean start() {
 		li("Starting node [] with entities [].", name, entityOrder);
 		for(Entity<?> entity : entityOrder) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
-			if(entity.start()) {
+			if(entity.start())
 				lf("entity [] started successfully.", entityName);
-				EntityProxy<?> ctx = entity.asContext();
-				if(!messagingShardRegistered && getName() != null && messagingShard != null
-						&& (ctx instanceof MessagingPylonProxy)) {
-					messagingShard.register(getName());
-					messagingShardRegistered = true;
-				}
-			}
 			else
 				le("failed to start entity [].", entityName);
 		}
@@ -361,76 +256,38 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 		if(getName() != null && registerEntitiesToCentralEntity())
 			lf("Entities successfully registered to control entity.");
 		
-		if(EXIT_ON_NO_ACTIVE_ENTITIES) {
+		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
 			activeMonitor = new Timer();
 			activeMonitor.schedule(new TimerTask() {
 				@Override
 				public void run() {
 					checkRunning();
 				}
-			}, INITIAL_ACTIVE_CHECK, 1000);
+			}, activeFor * 1000, 1000);
 		}
-
+		
+		dotest();
+		
+		return true;
+	}
+	
+	protected void dotest() {
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				try{
-						// Pasul 1: Configurarea `tree` și a contextului
-						MultiTreeMap tree = new MultiTreeMap();
-						DeploymentConfiguration.CtxtTriple ctx = new DeploymentConfiguration.CtxtTriple(
-								CategoryName.DEPLOYMENT.s(), null, tree);
-
-
-						// Pasul 2: Configurarea nodului
-						MultiTreeMap nodeConfiguration = new MultiTreeMap();
-						Node currentNode = new Node(nodeConfiguration, nodeLoader);
-
-
-
-					// Pasul 3: Configurarea argumentelor pentru entități
-						String[] argset = ("-agent composite:AgentC -shard messaging par:val " +
-								"-shard EchoTesting " +
-								"-agent agentD parameter:one").split(" ");
-
-						// Pasul 4: Procesarea `argset` pentru a construi configurațiile
-						for (String arg : argset) {
-							MultiTreeMap entityConfig = new MultiTreeMap();
-							String[] parts = arg.split(":");
-							if (parts.length == 2) {
-								String key = parts[0].replaceFirst("-", "").trim(); // Elimină `-`
-								String value = parts[1].trim();
-								entityConfig.addSingleValue(key, value);
-							} else {
-								entityConfig.addSingleValue("parameter", arg.replaceFirst("-", "").trim());
-							}
-
-							// Adaugă configurația entității în `tree`
-							tree.addAll("entity", (List<String>) entityConfig);
-
-							// Pasul 5: Apelează `loadEntity` pentru fiecare configurație
-							NodeLoader nodeLoader = currentNode.nodeLoader;
-							Entity<?> entity = nodeLoader.loadEntity(currentNode, entityConfig, new HashMap<>());
-
-							if (entity != null) {
-								System.out.println("Entity loaded successfully: " + entity.getClass().getName());
-							} else {
-								System.err.println("Failed to load entity for configuration: " + arg);
-							}
-						}
-
-
-
-				} catch (Exception e){
-					System.err.println("Error in TimerTask: " + e.getMessage());
-					e.printStackTrace();
-				}
+				String[] argset = ("-agent composite:AgentC -shard messaging par:val " + "-shard EchoTesting "
+						+ "-agent agentD parameter:one").split(" ");
+				MultiTreeMap tree = new MultiTreeMap();
+				CtxtTriple ctx = new CtxtTriple(CategoryName.DEPLOYMENT.s(), null, tree);
+				DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
+						new HashMap<>(), new UnitComponent("test"));
+				tree.removeKey(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
+				li("to insert:", tree);
 			}
 		}, 1000);
-
-		return true;
 	}
-
+	
 	@Override
 	public boolean stop() {
 		li("Stopping node [] with entities [].", name, entityOrder);
@@ -438,11 +295,11 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
-				lf("stopping an entity...");
+				lf("stopping entity []...", entity.getName());
 				if(entity.stop())
-					lf("entity stopped successfully.");
+					lf("entity [] stopped successfully.", entity.getName());
 				else
-					le("failed to stop entity.");
+					le("failed to stop entity [].", entity.getName());
 			}
 		}
 		isRunning = false;
@@ -512,9 +369,6 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 				return getName();
 			}
 		});
-		// FIXME: remove this protocol-specific code
-		messagingShard.configure(
-				new MultiTreeMap().addSingleValue("connectTo", this.serverURI).addSingleValue("agent_name", getName()));
 		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
@@ -577,10 +431,11 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	private boolean sendStatusUpdate() {
 		if(getName() == null)
 			return false;
-		String status = isRunning ? "RUNNING" : "STOPPED";
-		JSONObject update = OperationUtils.operationToJSON(
-				OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
-		return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
+		// String status = isRunning ? "RUNNING" : "STOPPED";
+		// JSONObject update = OperationUtils.operationToJSON(
+		// OperationUtils.MonitoringOperation.STATUS_UPDATE.getOperation(), "", status, getName());
+		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, update.toString());
+		return false;
 	}
 	
 	/**
@@ -590,6 +445,8 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
 	private void parseReceivedMsg(JsonObject jo) {
+		if(!jo.has(OperationUtils.NAME))
+			return;
 		String op = jo.get(OperationUtils.NAME).getAsString();
 		if(OperationUtils.ControlOperation.START.getOperation().equals(op)) {
 			String param = jo.get(OperationUtils.PARAMETERS).getAsString();
@@ -638,31 +495,4 @@ public class Node extends Unit implements Entity<Node> , NodeInterface{
 		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(destination, root.toString());
 	}
-
-	private List<ClientCallbackInterface> callbacks;
-
-
-	public void addAgent(String agentName, String shardName) throws RemoteException{
-		listEntities().put(agentName,shardName);
-		// Logic to add the agent to the specified shard would go here.
-		System.out.println("Adding agent " + agentName + " to shard " + shardName);
-		notifyClients(agentName);
-	}
-
-
-	public synchronized void registerCallback(ClientCallbackInterface callback) throws RemoteException{
-		callbacks.add(callback);
-	}
-
-	private void notifyClients(String agentName) throws RemoteException{
-		for(ClientCallbackInterface callback : callbacks){
-			try{
-				callback.notifyAgentAdded(agentName);
-			} catch (RemoteException e){
-				System.out.println("Failed to notify client: " + e.getMessage());
-			}
-		}
-	}
-
-
 }

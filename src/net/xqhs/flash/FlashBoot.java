@@ -14,8 +14,8 @@ package net.xqhs.flash;
 import java.util.Arrays;
 import java.util.List;
 
+import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
 
@@ -28,7 +28,7 @@ public class FlashBoot
 {
 	// public static ByteArrayOutputStream stream = null;
 	/**
-	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
+	 * Main method. It calls {@link Deployment#loadDeployment} with the arguments received by the program.
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
@@ -39,7 +39,7 @@ public class FlashBoot
 
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
 		// try {
 		// Thread.sleep(20000);
 		// } catch(InterruptedException e) {

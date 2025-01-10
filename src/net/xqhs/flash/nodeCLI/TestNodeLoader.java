@@ -1,3 +1,3 @@
-package net.xqhs.flash.core.node.clientApp;
+package net.xqhs.flash.nodeCLI;
 
 import net.xqhs.flash.core.node.NodeLoader;

@@ -11,11 +11,7 @@
  ******************************************************************************/
 package test.compositePingPong;
 
-
 import net.xqhs.flash.FlashBoot;
-import net.xqhs.flash.testViorel.PartialCLIWrapp;
-
-
 
 /**
  * Deployment testing.
@@ -48,13 +44,6 @@ public class Boot
 		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));
-
-
-		PartialCLIWrapp.processArgs(args.split(" "));
-
-
 	}
-
-
 	
 }

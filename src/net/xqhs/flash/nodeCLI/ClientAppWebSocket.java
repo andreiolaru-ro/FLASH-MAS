@@ -1,4 +1,4 @@
-package net.xqhs.flash.core.node.clientApp;
+package net.xqhs.flash.nodeCLI;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
