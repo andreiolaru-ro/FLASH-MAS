@@ -13,17 +13,26 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 
 public class LoadPack {
+	protected String									deploymentID;
+	protected ClassFactory								classFactory;
 	protected List<String>								packages;
 	protected Map<String, Map<String, List<Loader<?>>>>	loaders;
 	protected Loader<?>									defaultLoader;
-	protected List<String>								checkedPaths	= new LinkedList<>();
-	protected ClassFactory								classFactory	= PlatformUtils.getClassFactory();
-	Map<String, Entity<?>>								loaded			= new LinkedHashMap<>();
+	protected Map<String, Entity<?>>					loaded		= new LinkedHashMap<>();
+	protected String[]									loadOrder	= new String[] {};
+	protected Logger									log;
 	
-	public LoadPack loadFromConfiguration(MultiTreeMap configuration, Logger log) {
+	public LoadPack(ClassFactory classFactory, String deploymentID, Logger log) {
+		this.deploymentID = deploymentID;
+		this.classFactory = classFactory;
+		this.log = log != null ? log : new DumbLogger();
+	}
+	
+	public LoadPack loadFromConfiguration(MultiTreeMap configuration) {
 		packages = configuration.getValues(CategoryName.PACKAGE.s());
 		
 		loaders = new LinkedHashMap<>();
@@ -45,6 +54,7 @@ public class LoadPack {
 				
 				// find the implementation
 				String cp = loader_configs.getDeepValue(name, SimpleLoader.CLASSPATH_KEY);
+				List<String> checkedPaths = new LinkedList<>();
 				cp = Loader.autoFind(classFactory, packages, cp, entity, kind, CategoryName.LOADER.s(), checkedPaths);
 				if(cp == null)
 					log.le("Class for loader [] can not be found; tried paths ", name, checkedPaths);
@@ -54,9 +64,9 @@ public class LoadPack {
 						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
 						// add to map
 						if(!loaders.containsKey(entity))
-							loaders.put(entity, new LinkedHashMap<String, List<Loader<?>>>());
+							loaders.put(entity, new LinkedHashMap<>());
 						if(!loaders.get(entity).containsKey(kind))
-							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
+							loaders.get(entity).put(kind, new LinkedList<>());
 						loaders.get(entity).get(kind).add(loader);
 						// configure // TODO manage with portables
 						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.s(), packages);
@@ -79,6 +89,29 @@ public class LoadPack {
 			else if(!loaders.get(null).isEmpty())
 				defaultLoader = loaders.get(null).values().iterator().next().get(0);
 		}
+		
+		String toLoad = configuration.getSingleValue(CategoryName.LOAD_ORDER.s());
+		if(toLoad == null || toLoad.trim().length() == 0)
+			log.li("Load order is none or empty [].", toLoad);
+		else
+			loadOrder = toLoad.split(DeploymentConfiguration.LOAD_ORDER_SEPARATOR);
+		return this;
+	}
+	
+	/**
+	 * @return the deploymentID
+	 */
+	public String getDeploymentID() {
+		return deploymentID;
+	}
+	
+	/**
+	 * @param deploymentID
+	 *            the deploymentID to set
+	 * @return the {@link LoadPack} instance itself.
+	 */
+	public LoadPack setDeploymentID(String deploymentID) {
+		this.deploymentID = deploymentID;
 		return this;
 	}
 	
@@ -104,13 +137,6 @@ public class LoadPack {
 	}
 	
 	/**
-	 * @return the checkedPaths
-	 */
-	public List<String> getCheckedPaths() {
-		return checkedPaths;
-	}
-	
-	/**
 	 * @return the classFactory
 	 */
 	public ClassFactory getClassFactory() {
@@ -122,5 +148,12 @@ public class LoadPack {
 	 */
 	public Map<String, Entity<?>> getLoaded() {
 		return loaded;
+	}
+	
+	/**
+	 * @return the loadOrder
+	 */
+	public String[] getLoadOrder() {
+		return loadOrder;
 	}
 }

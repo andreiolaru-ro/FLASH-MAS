@@ -8,3 +8,4 @@
 /MTPs-Container-*.txt
 *__pycache__
 /ml-directory/
+/target/

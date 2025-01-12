@@ -50,6 +50,7 @@ public interface Loader<T extends Entity<?>>
 	 * @return <code>true</code> if the configuration process was successful and the {@link Loader} instance is ready to
 	 *         load entities; <code>false</code> if this instance cannot be expected to work normally.
 	 */
+	// TODO: should this take a LoadPack as argument?
 	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory classLoader);
 	
 	/**

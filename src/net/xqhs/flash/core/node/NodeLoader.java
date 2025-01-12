@@ -12,6 +12,7 @@
 package net.xqhs.flash.core.node;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +25,10 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.deployment.LoadPack;
 import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
-import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
-import net.xqhs.util.logging.Unit;
 
 /**
  * The {@link NodeLoader} class manages the loading of one node in the system (normally, there is one node per machine,
@@ -41,11 +40,19 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class NodeLoader extends Unit implements Loader<Node> {
-	{
-		// sets logging parameters: the name of the log and the type (which is given by the current platform)
-		setUnitName("boot");
-		setLoggerType(PlatformUtils.platformLogType());
+public class NodeLoader implements Loader<Node> {
+	
+	protected Logger		l;
+	protected ClassFactory	cf;
+	
+	/**
+	 * Functionality not used.
+	 */
+	@Override
+	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory factory) {
+		l = log;
+		cf = factory;
+		return true;
 	}
 	
 	@Override
@@ -64,7 +71,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	public Node load(MultiTreeMap nodeConfiguration, List<EntityProxy<? extends Entity<?>>> context,
 			List<MultiTreeMap> subordinateEntities) {
 		if(context != null && context.size() > 0)
-			lw("nodes don't support context");
+			l.lw("nodes don't support context");
 		return loadNode(nodeConfiguration, subordinateEntities, null);
 	}
 	
@@ -76,15 +83,23 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	 * @param subordinateEntities
 	 *            - the entities that should be loaded inside the node, as specified by
 	 *            {@link Loader#load(MultiTreeMap, List, List)}.
-	 * @param deploymentID
-	 *            - the local ID of the {@link CategoryName#DEPLOYMENT} entity, used to no issue context item errors for
-	 *            the deployment itself. Can be <code>null</code>.
+	 * @param _loadPack
+	 *            - pre-configured {@link LoadPack} instance (with class factory and deployment ID. Can be
+	 *            <code>null</code>.
 	 * @return the {@link Node} the was loaded.
 	 */
-	public Node loadNode(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities, String deploymentID) {
+	public Node loadNode(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities, LoadPack _loadPack) {
 		// loader initials
 		
-		LoadPack loadPack = new LoadPack().loadFromConfiguration(nodeConfiguration, getLogger());
+		LoadPack loadPack = _loadPack != null ? _loadPack : new LoadPack(cf, null, l);
+		loadPack.loadFromConfiguration(nodeConfiguration);
+		
+		if(l == null)
+			l = new DumbLogger("node loader");
+		if(loadPack.getClassFactory() == null) {
+			l.le("Clas factory is null.");
+			return null;
+		}
 		
 		// ============================================================================== load entities
 		// node instance creation
@@ -92,18 +107,19 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			nodeConfiguration.addOneValue(SimpleLoader.CLASSPATH_KEY, Node.class.getCanonicalName());
 		String nodeCatName = CategoryName.NODE.s();
 		String nodeName = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		List<String> checkedPaths = new LinkedList<>();
 		String nodecp = Loader.autoFind(loadPack.getClassFactory(), loadPack.getPackages(),
-				nodeConfiguration.get(SimpleLoader.CLASSPATH_KEY), null, null, nodeCatName, loadPack.getCheckedPaths());
+				nodeConfiguration.get(SimpleLoader.CLASSPATH_KEY), null, null, nodeCatName, checkedPaths);
 		if(nodecp == null) {
-			le("Class for [] [] can not be found; tried paths ", nodeCatName, nodeName, loadPack.getCheckedPaths());
+			l.le("Class for [] [] can not be found; tried paths ", nodeCatName, nodeName, checkedPaths);
 			return null;
 		}
 		nodeConfiguration.addFirstValue(SimpleLoader.CLASSPATH_KEY, nodecp);
-		lf("Trying to load node using default loader [], from classpath []",
+		l.lf("Trying to load node using default loader [], from classpath []",
 				loadPack.getDefaultLoader().getClass().getName(), CategoryName.NODE.s(), nodecp);
 		Node node = (Node) loadPack.getDefaultLoader().load(nodeConfiguration);
 		if(node == null) {
-			le("Could not load [][].", nodeCatName, nodeName);
+			l.le("Could not load [][].", nodeCatName, nodeName);
 			return null;
 		}
 		
@@ -111,45 +127,27 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
 		
-		Deployment.get().loadEntities(nodeConfiguration);
+		Deployment.get().loadEntities(nodeConfiguration, node, subordinateEntities, loadPack);
 		
-		{
-			lf("Other configuration:");
-			
-			if(messagingProxies.isEmpty())
-				return node;
-			MessagingPylonProxy pylon = messagingProxies.stream().findFirst().get();
-			node.addGeneralContext(pylon);
-			
-			if(!nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY))
-				return node;
-				
-			// delegate the central node
-			// and register the central monitoring and control entity in its context
-			li("Node [] is central node.", node.getName());
-			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(new MultiTreeMap()
-					.addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
-							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
-					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
-							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
-			centralEntity.addGeneralContext(pylon);
-			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
-					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-			
-			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-					DeploymentConfiguration.MONITORING_TYPE);
-			
-			li("Loading node [] completed.", node.getName());
-		}
+		if(!nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY))
+			return node;
+		// delegate the central node
+		// and register the central monitoring and control entity in its context
+		l.li("Node [] is central node.", node.getName());
+		CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(new MultiTreeMap()
+				.addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+						DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
+				.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
+						nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
+		centralEntity.addGeneralContext(node.nodePylonProxy);
+		node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+				DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+		
+		l.lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+				DeploymentConfiguration.MONITORING_TYPE);
+		
+		l.li("Loading node [] completed.", node.getName());
 		return node;
-	}
-	
-	/**
-	 * Functionality not used.
-	 */
-	@Override
-	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory factory) {
-		return true;
 	}
 	
 	/**
