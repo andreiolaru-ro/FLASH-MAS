@@ -204,7 +204,7 @@ public class Deployment extends Unit {
 						entity = loadPack.getDefaultLoader().load(entityConfig, context, subEntities);
 				}
 				if(entity != null) {
-					li("Entity []/[] of type [] successfully loadPack.getLoaded().", name, local_id, catName);
+					li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
 					entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 							DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 					

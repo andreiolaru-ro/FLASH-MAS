@@ -31,7 +31,6 @@ import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.DeploymentConfiguration.CtxtTriple;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -51,7 +50,6 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.UnitComponent;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -270,27 +268,7 @@ public class Node extends EntityCore<Node> {
 				}
 			}, activeFor * 1000, 1000);
 		}
-		
-		doTest();
-		
 		return true;
-	}
-	
-	protected void doTest() {
-		Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				timer.cancel();
-				String[] argset = ("-agent composite:AgentC -shard messaging par:val " + "-shard EchoTesting "
-						+ "-agent agentD parameter:one").split(" ");
-				MultiTreeMap tree = new MultiTreeMap();
-				CtxtTriple ctx = new CtxtTriple(CategoryName.DEPLOYMENT.s(), null, tree);
-				DeploymentConfiguration.readCLIArgs(Arrays.asList(argset).iterator(), ctx, tree, new LinkedList<>(),
-						new HashMap<>(), new UnitComponent("test"));
-				dynamicLoad(tree);
-			}
-		}, 1000);
 	}
 	
 	@Override
