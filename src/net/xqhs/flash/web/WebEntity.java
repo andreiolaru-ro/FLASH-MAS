@@ -17,6 +17,7 @@ import com.google.gson.JsonParser;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -61,6 +62,18 @@ public class WebEntity extends CentralGUI {
 	
 	/** The endpoint for ws communication */
 	protected static final String WS_ENDPOINT = "/eventbus";
+
+	/** The port on which the HTTP server is running */
+	protected int port;
+
+	/**
+	 * Constructor for the web entity.
+	 * @param port - the port the HTTP server is started on.
+	 */
+	public WebEntity(int port) {
+		super();
+		this.port = port;
+	}
 	
 	/**
 	 * The server verticle for the web entity.
@@ -70,11 +83,6 @@ public class WebEntity extends CentralGUI {
 		 * The web entity this verticle is associated with.
 		 */
 		private WebEntity entity;
-		
-		/**
-		 * The port on which the server is running.
-		 */
-		protected int port = 8081;
 		
 		/**
 		 * The number of connections to the server.
@@ -92,7 +100,7 @@ public class WebEntity extends CentralGUI {
 		}
 		
 		@Override
-		public void start(Future<Void> startFuture) throws Exception {
+		public void start(Promise<Void> startPromise) throws Exception {
 			Router router = Router.router(vertx);
 			SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
 			BridgeOptions options = new BridgeOptions()
@@ -104,31 +112,31 @@ public class WebEntity extends CentralGUI {
 			// mount the bridge on the router
 			router.mountSubRouter(WS_ENDPOINT, sockJSHandler.bridge(options, bridgeEvent -> {
 				try {
-					if(bridgeEvent.type() == BridgeEventType.SOCKET_CREATED) {
+					if (bridgeEvent.type() == BridgeEventType.SOCKET_CREATED) {
 						System.out.println("created");
 					}
-					else if(bridgeEvent.type() == BridgeEventType.REGISTER) {
+					else if (bridgeEvent.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
 						numConnections++;
 						
 						String entities = getEntities().toString();
 						vertx.eventBus().send(SERVER_TO_CLIENT, entities);
 					}
-					else if(bridgeEvent.type() == BridgeEventType.UNREGISTER) {
+					else if (bridgeEvent.type() == BridgeEventType.UNREGISTER) {
 						numConnections--;
 						System.out.println("unregister");
 					}
-					else if(bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
+					else if (bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
 						numConnections--;
 						System.out.println("closed");
 					}
-					else if(bridgeEvent.type() == BridgeEventType.SEND) {
+					else if (bridgeEvent.type() == BridgeEventType.SEND) {
 						System.out.println("client-message");
 					}
-					else if(bridgeEvent.type() == BridgeEventType.RECEIVE) {
+					else if (bridgeEvent.type() == BridgeEventType.RECEIVE) {
 						System.out.println("server-message");
 					}
-				} catch(Exception e) {
+				} catch (Exception e) {
 					// do nothing
 				} finally {
 					bridgeEvent.complete(Boolean.valueOf(true));
@@ -137,7 +145,7 @@ public class WebEntity extends CentralGUI {
 			
 			vertx.eventBus().consumer(CLIENT_TO_SERVER).handler(objectMessage -> {
 				JsonObject msg = JsonParser.parseString((String) objectMessage.body()).getAsJsonObject();
-				if("port".equals(msg.get("scope").getAsString()))
+				if ("port".equals(msg.get("scope").getAsString()))
 					activeInput(msg);
 			});
 			
@@ -148,16 +156,20 @@ public class WebEntity extends CentralGUI {
 			router.route().handler(StaticHandler.create(pkg).setIndexPage("page.html").setCachingEnabled(false));
 			
 			vertx.createHttpServer().requestHandler(router).listen(port, http -> {
-				if(http.succeeded())
-					li("HTTP server started on port []", port);
-				else
-					li("HTTP server failed to start on port []", port);
+				if (http.succeeded()) {
+					entity.li("HTTP server started on port []", Integer.valueOf(port));
+					startPromise.complete();
+				} else {
+					entity.li("HTTP server failed to start on port []", Integer.valueOf(port));
+					startPromise.fail(http.cause());
+				}
 			});
 		}
 		
 		@Override
-		public void stop(Future<Void> stopFuture) throws Exception {
+		public void stop(Promise<Void> stopPromise) throws Exception {
 			System.out.println("HTTP server stoped");
+			stopPromise.complete();
 		}
 	}
 	
@@ -180,13 +192,22 @@ public class WebEntity extends CentralGUI {
 	@Override
 	public boolean start() {
 		lock();
-		if(!running) {
-			VertxOptions options = new VertxOptions();
-			web = Vertx.vertx(options);
-			web.deployVerticle(new ServerVerticle(this));
-			running = true;
-		}
-		return running;
+		if (running)
+			return true;
+
+		VertxOptions options = new VertxOptions();
+		web = Vertx.vertx(options);
+		Promise<String> promise = Promise.promise();
+		web.deployVerticle(new ServerVerticle(this), promise);
+
+		promise.future().onComplete(asyncResult -> {
+			if (asyncResult.succeeded()) {
+				running = true;
+			} else {
+				System.out.println("Failed to deploy gui verticle: " + asyncResult.cause());
+			}
+		});
+		return true;
 	}
 	
 	@Override
@@ -243,6 +264,7 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
+		System.out.println("UPDATE GUI");
 		super.updateGui(entity, guiSpecification);
 		
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
@@ -314,6 +336,7 @@ public class WebEntity extends CentralGUI {
 		String entity = wave.popDestinationElement();
 		String port = wave.getFirstDestinationElement();
 		tosend.addProperty("subject", idManager.makeID(entity, port));
+		System.out.println("SEND OUTPUT: " + idManager.makeID(entity, port));
 		
 		Element gui = entityGUIs.get(entity);
 		if(gui == null)
@@ -326,6 +349,7 @@ public class WebEntity extends CentralGUI {
 				allValues.addProperty(e.getId(), wave.getValues(role).get(i++));
 		}
 		tosend.add("content", allValues);
+		System.out.println(">>> SENDINGGGGGGG!!!!!!!!");
 		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
 		return true;
 	}

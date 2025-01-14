@@ -86,7 +86,7 @@ public class Element implements Cloneable {
 	/**
 	 * The endpoint of the shard that added this element and will receive the events from it
 	 */
-	private String				endpoint;
+	private String				handlerEndpoint;
 	
 	/**
 	 * @return - the list of child elements
@@ -248,8 +248,8 @@ public class Element implements Cloneable {
 	/**
 	 * @return - the endpoint of the shard that added this element
 	 */
-	public String getEndpoint() {
-		return endpoint;
+	public String getHandlerEndpoint() {
+		return handlerEndpoint;
 	}
 
 	/**
@@ -258,8 +258,8 @@ public class Element implements Cloneable {
 	 * @param endpoint
 	 *            - the endpoint of the shard that added this element
 	 */
-	public void setEndpoint(String endpoint) {
-		this.endpoint = endpoint;
+	public void setHandlerEndpoint(String endpoint) {
+		this.handlerEndpoint = endpoint;
 	}
 	
 	/**

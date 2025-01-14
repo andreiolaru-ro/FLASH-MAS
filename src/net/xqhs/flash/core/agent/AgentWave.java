@@ -52,7 +52,7 @@ import net.xqhs.flash.core.util.MultiValueMap;
  * 
  * @author Andrei Olaru
  */
-public class AgentWave extends AgentEvent {
+public class 		AgentWave extends AgentEvent {
 	/**
 	 * The serial UID.
 	 */

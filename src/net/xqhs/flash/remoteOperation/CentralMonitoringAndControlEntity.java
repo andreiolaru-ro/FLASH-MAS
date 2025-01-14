@@ -65,6 +65,12 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		
 		;
 		
+		/**
+		 * If the first destination element is one of the supported operations, return it.
+		 * Otherwise, return null.
+		 * @param wave
+		 * @return the operation, or null if the first destination element is not a supported operation.
+		 */
 		public static Operations getRoute(AgentWave wave) {
 			try {
 				return valueOf(wave.getFirstDestinationElement().toUpperCase());
@@ -227,7 +233,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			switch(iface) {
 			case WEB_INTERFACE_SWITCH: {
 				// TODO mock config -- to be added in deployment configuration?
-				gui = new WebEntity();
+				gui = new WebEntity(8081);  // maybe TODO: move this port to a configuration file
 				gui.addContext(proxy);
 				if(gui.start()) // starts now in order to be available before starting entities
 					li("web gui started");
@@ -291,6 +297,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					}
 				li("Registered entity []/[] in []", category, entityName, node);
 				gui.updateGui(entityName, entitiesData.get(entityName).getGuiSpecification());
+				gui.sendOutput(new AgentWave(ed.getStatus(), entityName, ENTITY_STATUS_ELEMENT));
 			}
 			return true;
 		case UPDATE_ENTITY_STATUS:

@@ -53,7 +53,7 @@ public class ElementIdManager {
 	 * 		- A string of the ID.
 	 */
 	public String makeID(String entity, String port) {
-		return makeID(null, port, entity);
+		return makeID(null, entity, port);
 	}
 
 	/**
