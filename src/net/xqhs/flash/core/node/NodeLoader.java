@@ -11,10 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -132,8 +129,6 @@ public class NodeLoader extends Unit implements Loader<Node> {
 	 * @return the {@link Node} the was loaded.
 	 */
 	public Node loadNode(MultiTreeMap nodeConfiguration, List<MultiTreeMap> subordinateEntities, String deploymentID) {
-
-
 		// loader initials
 		String NAMESEP = DeploymentConfiguration.NAME_SEPARATOR;
 		ClassFactory classFactory = PlatformUtils.getClassFactory();
@@ -311,7 +306,6 @@ public class NodeLoader extends Unit implements Loader<Node> {
 
 					// TODO: provide load() with context and an appropriate list of subordinate entities
 					// try to load the entity with a loader
-
 				//	Entity<?> entity = loadEntity(node, entityConfig, loaded);
 
 					 Entity<?> entity = null;
@@ -325,9 +319,6 @@ public class NodeLoader extends Unit implements Loader<Node> {
 								break;
 							log_nLoader += 1;
 						}
-
-
-
 					if (entity != null) {
 								li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
 						entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME, DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
@@ -335,10 +326,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						node.registerEntity(catName, entity, id);
 					} else {
 						le("Could not load entity []/[] of type [].", name, local_id, catName);
-
 					}
-
-
 					// if not, try to load the entity with the default loader
 					if(entity == null) {
 						// attempt to obtain classpath information
@@ -401,30 +389,8 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			
 			li("Loading node [] completed.", node.getName());
 		}
-
-
 		return node;
 	}
-
-	public Entity<?> loadEntity(Node node, MultiTreeMap entityConfig, Map<String, String> loaded) {
-		String className = entityConfig.getSingleValue("className");
-		try {
-			// Assuming `className` points to a concrete subclass of `Entity`
-			Class<?> entityClass = Class.forName(className);
-			if (Entity.class.isAssignableFrom(entityClass)) {
-				return (Entity<?>) entityClass.getDeclaredConstructor().newInstance();
-			} else {
-				throw new IllegalArgumentException("Class " + className + " is not a valid subclass of Entity.");
-			}
-		} catch (Exception e) {
-			// Handle exceptions properly (e.g., log the error)
-			le("Failed to load entity class: " + className, e);
-			return null;
-		}
-	}
-
-
-
 	/**
 	 * Functionality not used.
 	 */

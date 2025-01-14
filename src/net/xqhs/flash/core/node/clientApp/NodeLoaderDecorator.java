@@ -22,13 +22,12 @@ public class NodeLoaderDecorator extends NodeLoader {
         return node;
     }
 
-
-        @Override
-        public Entity<?> loadEntity (Node node, MultiTreeMap entityConfig, Map<String, String> loadedEntities){
-        li("Decorator: Pre-processing before loading entity");
-        Entity<?> entity = decoratorLoader.loadEntity(node, entityConfig, loadedEntities);
-        li("Decorator: Post-processing after loading entity");
-        return entity;
+//        @Override
+//        public Entity<?> loadEntity (Node node, MultiTreeMap entityConfig, Map<String, String> loadedEntities){
+//        li("Decorator: Pre-processing before loading entity");
+//        Entity<?> entity = decoratorLoader.loadEntity(node, entityConfig, loadedEntities);
+//        li("Decorator: Post-processing after loading entity");
+//        return entity;
 
     }
-}
+
