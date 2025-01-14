@@ -264,7 +264,6 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
-		System.out.println("UPDATE GUI");
 		super.updateGui(entity, guiSpecification);
 		
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
@@ -336,7 +335,6 @@ public class WebEntity extends CentralGUI {
 		String entity = wave.popDestinationElement();
 		String port = wave.getFirstDestinationElement();
 		tosend.addProperty("subject", idManager.makeID(entity, port));
-		System.out.println("SEND OUTPUT: " + idManager.makeID(entity, port));
 		
 		Element gui = entityGUIs.get(entity);
 		if(gui == null)
@@ -349,7 +347,6 @@ public class WebEntity extends CentralGUI {
 				allValues.addProperty(e.getId(), wave.getValues(role).get(i++));
 		}
 		tosend.add("content", allValues);
-		System.out.println(">>> SENDINGGGGGGG!!!!!!!!");
 		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
 		return true;
 	}
