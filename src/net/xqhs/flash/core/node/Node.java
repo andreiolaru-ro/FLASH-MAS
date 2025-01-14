@@ -477,11 +477,13 @@ public class Node extends EntityCore<Node> {
 		LoadPack pack = Deployment.get().getLoadPack(getLogger());
 		pack.loadFromConfiguration(nodeConfiguration);
 		pack.loadFromConfiguration(deploymentTree);
-		LinkedList<MultiTreeMap> entities = new LinkedList<>();
+		// TODO: add a list of registered (loaded) entities in pack.loaded
+		LinkedList<MultiTreeMap> entitiesConfig = new LinkedList<>();
 		for(String entityName : deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)
 				.getHierarchicalNames())
-			entities.add(
+			entitiesConfig.add(
 					deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE).getSingleTree(entityName));
-		Deployment.get().loadEntities(deploymentTree, this, entities, pack);
+		List<Entity<?>> entities = Deployment.get().loadEntities(deploymentTree, this, entitiesConfig, pack);
+		
 	}
 }

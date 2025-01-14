@@ -89,9 +89,10 @@ public class Deployment extends Unit {
 		return nodes;
 	}
 	
-	public void loadEntities(MultiTreeMap configuration, Node loadedNode, List<MultiTreeMap> subordinateEntities,
-			LoadPack loadPack) {
+	public List<Entity<?>> loadEntities(MultiTreeMap configuration, Node loadedNode,
+			List<MultiTreeMap> subordinateEntities, LoadPack loadPack) {
 		lf("Loading order: ", (Object[]) loadPack.getLoadOrder());
+		List<Entity<?>> loadedEntities = new LinkedList<>();
 		for(String catName : loadPack.getLoadOrder()) {
 			CategoryName cat = CategoryName.byName(catName);
 			List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(subordinateEntities, catName,
@@ -210,11 +211,13 @@ public class Deployment extends Unit {
 					
 					loadPack.getLoaded().put(local_id, entity);
 					loadedNode.registerEntity(catName, entity, id);
+					loadedEntities.add(entity);
 				}
 				else
 					le("Could not load entity []/[] of type [].", name, local_id, catName);
 				lf("loadPack.getLoaded() items:", loadPack.getLoaded().keySet());
 			}
 		}
+		return loadedEntities;
 	}
 }
