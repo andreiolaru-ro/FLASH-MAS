@@ -32,7 +32,7 @@ public class BootGuiAgent
 		test_args += " -package test.guiGeneration";
 
 		test_args += " -node main central:web";
-		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:one-port.yml -shard test";
+		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:more-ports.yml -shard test";
 		// test_args += " -agent AgentB -shard messaging -shard remoteOperation";
 		
 		FlashBoot.main(test_args.split(" "));
