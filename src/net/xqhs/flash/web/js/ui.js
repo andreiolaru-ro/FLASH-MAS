@@ -61,16 +61,8 @@ function updateSelectedEntities() {
         $('#selected-entities-list').append($('<div>').addClass('selected-entity').append(
             $('<h2>').text(entityName),
             entity.children.map(child => {
-                let item = null;
-                if (child.type == 'label') {
-                    item = $('<label>').text(child.value);
-                } else if (child.type == 'button') {
-                    item = $('<button>').text(child.value || child.id);
-                    if (child.role == 'activate')
-                        item.on('click', () => activate(child));
-                } else if (child.type == 'form') {
-                    item = $('<input>').attr('type', 'text').val(child.value);
-                } else {
+                let item = agentComponents[child.type]?.(child);
+                if (!(child.type in agentComponents)) {
                     console.log('Unknown child type', child);
                     return null;
                 }
@@ -80,3 +72,30 @@ function updateSelectedEntities() {
         ));
     }
 }
+
+// different components that can be rendered in an entity UI
+const agentLabel = (el) => $('<label>').text(el.value);
+const agentButton = (el) => {
+    let btn = $('<button>').text(el.value);
+    if (el.role == 'activate')
+        btn.on('click', () => activate(el));
+    return btn;
+}
+const agentInput = (el) => $('<input>').attr('type', 'text').val(el.value);
+const agentContainer = (el) => {
+    let container = $('<div>').addClass('agent-container').css('--direction', el.properties.layout);
+    el.children.forEach(child => {
+        let item = agentComponents[child.type]?.(child);
+        if (item) container.append(item);
+    });
+    return container;
+}
+
+const agentComponents = {
+    label: agentLabel,
+    button: agentButton,
+    form: agentInput,
+    container: agentContainer
+};
+
+

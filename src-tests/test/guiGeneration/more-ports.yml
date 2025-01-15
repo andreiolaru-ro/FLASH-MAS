@@ -17,9 +17,9 @@ children:
    port: valuePort
    notify: something
  - type: container
-   when: { running_status: running_status_stopped, style: disabled }
+   when: [{ running_status: running_status_stopped, style: disabled }]
    properties:
-    - layout: horizontal
+      layout: horizontal
    children:
     - type: form
       port: number
@@ -28,7 +28,9 @@ children:
       port: number
       role: increase
       notify: $port/$role
+      value: Increase
     - type: button
       port: number
       role: decrease
       notify: $port/$role
+      value: Decrease

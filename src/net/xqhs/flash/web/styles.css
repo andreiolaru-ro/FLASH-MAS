@@ -127,7 +127,7 @@ html, body {
 }
 
 div.selected-entity {
-    width: 20vw;
+    min-width: 20vw;
     min-height: 20vw;
     background-color: #f7f7f7;
     padding: 2%;
@@ -157,4 +157,13 @@ div.selected-entity input {
     min-height: 1.7rem;
     border: none;
     border-bottom: 1px solid #8a8a8a;
+}
+
+div.agent-container {
+    display: flex;
+    flex-direction: var(--direction, column);
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 5px;
 }

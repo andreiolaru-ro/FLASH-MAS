@@ -64,7 +64,7 @@ public class WebEntity extends CentralGUI {
 	protected static final String WS_ENDPOINT = "/eventbus";
 
 	/** The port on which the HTTP server is running */
-	protected int port;
+	protected int httpPort;
 
 	/**
 	 * Constructor for the web entity.
@@ -72,7 +72,7 @@ public class WebEntity extends CentralGUI {
 	 */
 	public WebEntity(int port) {
 		super();
-		this.port = port;
+		this.httpPort = port;
 	}
 	
 	/**
@@ -155,12 +155,12 @@ public class WebEntity extends CentralGUI {
 			
 			router.route().handler(StaticHandler.create(pkg).setIndexPage("page.html").setCachingEnabled(false));
 			
-			vertx.createHttpServer().requestHandler(router).listen(port, http -> {
+			vertx.createHttpServer().requestHandler(router).listen(httpPort, http -> {
 				if (http.succeeded()) {
-					entity.li("HTTP server started on port []", Integer.valueOf(port));
+					entity.li("HTTP server started on port []", Integer.valueOf(httpPort));
 					startPromise.complete();
 				} else {
-					entity.li("HTTP server failed to start on port []", Integer.valueOf(port));
+					entity.li("HTTP server failed to start on port []", Integer.valueOf(httpPort));
 					startPromise.fail(http.cause());
 				}
 			});
@@ -183,7 +183,10 @@ public class WebEntity extends CentralGUI {
 	
 	private Vertx web;
 	
-	private boolean running = false;
+	/**
+	 * A promise that is completed when the verticle is running.
+	 */
+	private Promise<Void> running = Promise.promise();
 	
 	// protected boolean verticleReady = false;
 	
@@ -192,7 +195,7 @@ public class WebEntity extends CentralGUI {
 	@Override
 	public boolean start() {
 		lock();
-		if (running)
+		if (running.future().isComplete())
 			return true;
 
 		VertxOptions options = new VertxOptions();
@@ -202,9 +205,10 @@ public class WebEntity extends CentralGUI {
 
 		promise.future().onComplete(asyncResult -> {
 			if (asyncResult.succeeded()) {
-				running = true;
+				running.complete();
 			} else {
 				System.out.println("Failed to deploy gui verticle: " + asyncResult.cause());
+				running.fail(asyncResult.cause());
 			}
 		});
 		return true;
@@ -212,11 +216,12 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public boolean stop() {
-		if(running) {
+		if (running.future().isComplete()) {
 			web.close();
-			running = false;
+			running = Promise.promise();
+			return true;
 		}
-		return running;
+		return false;
 	}
 	
 	@Override
@@ -343,11 +348,17 @@ public class WebEntity extends CentralGUI {
 		JsonObject allValues = new JsonObject();
 		for(String role : wave.getContentElements()) {
 			int i = 0;
-			for(Element e : gui.getChildren(port, role))
+			for(Element e : gui.getChildren(port, role)) {
 				allValues.addProperty(e.getId(), wave.getValues(role).get(i++));
+			}
 		}
 		tosend.add("content", allValues);
-		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
+
+		// some messages are sent before the https server is running - delay them until it is
+		running.future().onComplete(asyncResult -> {
+			if (asyncResult.succeeded())
+				web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
+		});
 		return true;
 	}
 }

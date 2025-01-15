@@ -54,7 +54,7 @@ public class Element implements Cloneable {
 	/**
 	 * The properties of this element (could affect rendering the element).
 	 */
-	protected Map<String, String>	properties	= new HashMap<>();
+	protected HashMap<String, String>	properties  = new HashMap<>();
 	/**
 	 * Type of the element.
 	 */
@@ -75,6 +75,59 @@ public class Element implements Cloneable {
 	 * The endpoint of the shard that added this element and will receive the events from it
 	 */
 	protected String				notify;
+
+	/**
+	 * Represents a style that the element can have
+	 */
+	protected static class ElementWhen {
+		/**
+		 * The running status that the agent must be in for the element to have this style applied
+		 */
+		protected String running_status;
+		/**
+		 * The style to apply to the element when the agent is in the given running status
+		 */
+		protected String style;
+
+		/**
+		 * @return - the running status that the agent must be in for the element to have this style applied
+		 */
+        public String getRunning_status() {
+            return running_status;
+        }
+
+		/**
+		 * Set the running status that the agent must be in for the element to have this style applied
+		 *
+		 * @param running_state
+		 *            - the running status that the agent must be in for the element to have this style applied
+		 */
+        public void setRunning_status(String running_state) {
+            this.running_status = running_state;
+        }
+
+		/**
+		 * @return - the style to apply to the element when the agent is in the given running state
+		 */
+        public String getStyle() {
+            return style;
+        }
+
+		/**
+		 * Set the style to apply to the element when the agent is in the given running status
+		 * 
+		 * @param style
+		 * 		  - the style to apply to the element when the agent is in the given running status
+		 */
+        public void setStyle(String style) {
+            this.style = style;
+        }
+	}
+	
+	/**
+	 * The list of styles that the element can have
+	 */
+	protected List<ElementWhen> when = new ArrayList<>();
 	
 	/**
 	 * @return - the list of child elements
@@ -150,7 +203,7 @@ public class Element implements Cloneable {
 	/**
 	 * @return - the properties of the element
 	 */
-	public Map<String, String> getProperties() {
+	public HashMap<String, String> getProperties() {
 		return properties;
 	}
 	
@@ -160,7 +213,7 @@ public class Element implements Cloneable {
 	 * @param properties
 	 *            - the properties of the element
 	 */
-	public void setProperties(Map<String, String> properties) {
+	public void setProperties(HashMap<String, String> properties) {
 		this.properties = properties;
 	}
 	
@@ -232,6 +285,23 @@ public class Element implements Cloneable {
 	public void setNotify(String endpoint) {
 		this.notify = endpoint;
 	}
+
+	/**
+	 * @return - the list of styles that the element can have
+	 */
+	public List<ElementWhen> getWhen() {
+		return when;
+	}
+
+	/**
+	 * Set the list of styles that the element can have
+	 *
+	 * @param when
+	 *            - the list of styles that the element can have
+	 */
+	public void setWhen(List<ElementWhen> when) {
+		this.when = when;
+	}
 	
 	/**
 	 * Return the children of the element if they match the given port
@@ -296,9 +366,13 @@ public class Element implements Cloneable {
 		result.addProperty("role", role);
 		JsonArray childrenArray = new JsonArray();
 		result.add("children", childrenArray);
-		if(children != null)
-			for(Element child : children)
+		if (children != null)
+			for (Element child : children)
 				childrenArray.add(child.toJSON());
+		JsonObject propertiesObject = new JsonObject();
+		result.add("properties", propertiesObject);
+		for (Map.Entry<String, String> entry : properties.entrySet())
+			propertiesObject.addProperty(entry.getKey(), entry.getValue());
 		return result;
 	}
 	
