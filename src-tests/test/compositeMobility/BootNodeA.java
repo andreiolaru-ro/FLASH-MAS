@@ -13,7 +13,7 @@ package test.compositeMobility;
 
 import java.util.Arrays;
 
-import net.xqhs.flash.core.node.NodeLoader;
+import net.xqhs.flash.core.deployment.Deployment;
 
 /**
  * Deployment testing.
@@ -42,6 +42,6 @@ public class BootNodeA {
 		a += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);
 		a += Boot.nodeA_agents;
 		
-		new NodeLoader().loadDeployment(Arrays.asList(a.split(" "))).forEach(node -> node.start());
+		new Deployment().loadDeployment(Arrays.asList(a.split(" "))).forEach(node -> node.start());
 	}
 }

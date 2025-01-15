@@ -11,18 +11,9 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.RunnableEntity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.hpc.ScheduledCompositeAgent;
 
 public class ScheduledNode extends Node {
-    /**
-     * Creates a new {@link Node} instance.
-     *
-     * @param nodeConfiguration the configuration of the node. Can be <code>null</code>.
-     */
-    public ScheduledNode(MultiTreeMap nodeConfiguration) {
-        super(nodeConfiguration);
-    }
 
     public static final int MAX_THREADS = 3;
 

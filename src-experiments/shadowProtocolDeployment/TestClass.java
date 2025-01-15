@@ -28,8 +28,8 @@ import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import shadowProtocolDeployment.Action.Actions;
 import testing.EchoTestingShard;
-import wsRegions.WSRegionsShard;
 import wsRegions.WSRegionsPylon;
+import wsRegions.WSRegionsShard;
 
 /**
  * Class that generates and execute tests.
@@ -327,8 +327,8 @@ public class TestClass {
 				elements.put(pylon.getKey(), pylon_elem);
 				
 				// CREATE NODE
-				Node node = new Node(
-						new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
+				Node node = new Node();
+				node.configure(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
 								.addFirstValue("region-server", "ws://" + server_name));
 				node.addGeneralContext(pylon_elem.asContext());
 				elements.put(node_name, node);

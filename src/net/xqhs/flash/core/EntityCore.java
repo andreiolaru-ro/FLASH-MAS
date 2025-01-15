@@ -52,10 +52,11 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	 */
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)) {
-			name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			setUnitName(name);
-		}
+		if(configuration != null)
+			if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)) {
+				name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+				setUnitName(name);
+			}
 		return true;
 	}
 	

@@ -30,16 +30,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.deployment.Deployment;
-import net.xqhs.flash.core.deployment.LoadPack;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -153,27 +149,26 @@ public class Node extends EntityCore<Node> {
 	 */
 	protected PylonProxy					nodePylonProxy;
 	
-	MultiTreeMap nodeConfiguration;
-	
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
 	 * @param configuration
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(MultiTreeMap configuration) {
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
 		if(configuration != null) {
-			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 			if(configuration.containsKey(ACTIVE_PARAMETER_NAME))
 				activeEntities = new HashSet<>(configuration.getValues(ACTIVE_PARAMETER_NAME));
 			if(configuration.containsKey(ACTIVE_CHECK_PARAMETER))
 				activeFor = Long.parseLong(configuration.getAValue(ACTIVE_CHECK_PARAMETER));
 		}
-		setLoggerType(PlatformUtils.platformLogType());
-		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		// setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 		
-		nodeConfiguration = configuration;
 		li("Active entitites:", activeEntities);
+		return true;
 	}
 	
 	/**
@@ -219,31 +214,8 @@ public class Node extends EntityCore<Node> {
 		return operations;
 	}
 	
-	/**
-	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity} This lets it know what
-	 * entities are in the content of current node and what operations can be performed on them.
-	 *
-	 * @return - an indication of success.
-	 */
-	protected boolean registerEntitiesToCentralEntity() {
-		JSONArray operations = configureOperations();
-		JSONArray entities = new JSONArray();
-		registeredEntities.forEach((category, value) -> {
-			for(Entity<?> entity : value) {
-				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
-				entities.add(ent);
-			}
-		});
-		return false;
-		// TODO revert to this when a monitoring entity is actually created.
-		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
-	}
-	
-	@Override
-	public boolean start() {
-		super.start();
-		li("Starting node [] with entities [].", name, entityOrder);
-		for(Entity<?> entity : entityOrder) {
+	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
+		for(Entity<?> entity : entities) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
 			if(entity.start())
@@ -251,13 +223,34 @@ public class Node extends EntityCore<Node> {
 			else
 				le("failed to start entity [].", entityName);
 		}
-		if(messagingShard != null)
-			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		sendStatusUpdate();
-		li("Node [] started.", name);
 		
-		if(getName() != null && registerEntitiesToCentralEntity())
-			lf("Entities successfully registered to control entity.");
+		if(isNodeStart) {
+			if(messagingShard != null)
+				messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+			sendStatusUpdate();
+			li("Node [] started.", name);
+		}
+		
+		if(getName() != null) {
+			JSONArray operations = configureOperations();
+			JSONArray entityRegistrations = new JSONArray();
+			entities.forEach(e -> {
+				// TODO fix category
+				entityRegistrations.add(OperationUtils.registrationToJSON(getName(), null, e.getName(), operations));
+			});
+			// TODO revert to this when a monitoring entity is actually created.
+			// if(sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entityRegistrations.toString()))
+			// lf("Entities successfully registered to control entity.");
+		}
+	}
+	
+	@Override
+	public boolean start() {
+		if(!super.start())
+			return false;
+		li("Starting node [] with entities [].", name, entityOrder);
+		
+		startAndRegister(entityOrder, true);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
 			activeMonitor = new Timer();
@@ -470,20 +463,5 @@ public class Node extends EntityCore<Node> {
 		
 		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(destination, root.toString());
-	}
-	
-	protected void dynamicLoad(MultiTreeMap deploymentTree) {
-		li("to insert:", deploymentTree);
-		LoadPack pack = Deployment.get().getLoadPack(getLogger());
-		pack.loadFromConfiguration(nodeConfiguration);
-		pack.loadFromConfiguration(deploymentTree);
-		// TODO: add a list of registered (loaded) entities in pack.loaded
-		LinkedList<MultiTreeMap> entitiesConfig = new LinkedList<>();
-		for(String entityName : deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)
-				.getHierarchicalNames())
-			entitiesConfig.add(
-					deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE).getSingleTree(entityName));
-		List<Entity<?>> entities = Deployment.get().loadEntities(deploymentTree, this, entitiesConfig, pack);
-		
 	}
 }

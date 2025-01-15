@@ -2,6 +2,7 @@ package net.xqhs.flash.core.deployment;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -167,8 +168,11 @@ public class Deployment extends Unit {
 								context.add(loadPack.getLoaded().get(contextItem).asContext());
 						}
 						else if(!contextItem.equals(loadPack.deploymentID))
-							lw("Context item [] for [] []/[]/[] not found as a loaded entity.", contextItem, catName,
-									name, kind, local_id);
+							lw("Context item [] for [] []/[]/[] not found as a loaded entity in", contextItem, catName,
+									name, kind, local_id,
+									loadPack.getLoaded().entrySet().stream()
+											.map(e -> e.getKey() + "|" + e.getValue().getName())
+											.collect(Collectors.joining(",")));
 						
 				// build subordinate entities list
 				List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities, local_id);
@@ -215,7 +219,7 @@ public class Deployment extends Unit {
 				}
 				else
 					le("Could not load entity []/[] of type [].", name, local_id, catName);
-				lf("loadPack.getLoaded() items:", loadPack.getLoaded().keySet());
+				lf("Loaded items:", loadPack.getLoaded().keySet());
 			}
 		}
 		return loadedEntities;

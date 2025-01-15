@@ -19,8 +19,8 @@ import net.xqhs.util.logging.Logger;
 public class LoadPack {
 	protected String									deploymentID;
 	protected ClassFactory								classFactory;
-	protected List<String>								packages;
-	protected Map<String, Map<String, List<Loader<?>>>>	loaders;
+	protected List<String>								packages	= new LinkedList<>();
+	protected Map<String, Map<String, List<Loader<?>>>>	loaders		= new LinkedHashMap<>();
 	protected Loader<?>									defaultLoader;
 	protected Map<String, Entity<?>>					loaded		= new LinkedHashMap<>();
 	protected String[]									loadOrder	= new String[] {};
@@ -33,9 +33,8 @@ public class LoadPack {
 	}
 	
 	public LoadPack loadFromConfiguration(MultiTreeMap configuration) {
-		packages = configuration.getValues(CategoryName.PACKAGE.s());
+		packages.addAll(configuration.getValues(CategoryName.PACKAGE.s()));
 		
-		loaders = new LinkedHashMap<>();
 		MultiTreeMap loader_configs = configuration.getSingleTree(CategoryName.LOADER.s());
 		if(loader_configs != null) {
 			if(!loader_configs.getSimpleNames().isEmpty()) // just a warning

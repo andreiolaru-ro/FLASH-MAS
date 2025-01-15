@@ -34,7 +34,7 @@ public class DefaultPylonImplementation extends EntityCore<Node> implements Pylo
 	/**
 	 * The default name for instances of this implementation.
 	 */
-	protected static final String DEFAULT_NAME = "Default";
+	protected static final String DEFAULT_NAME = "default";
 	
 	/**
 	 * The name of the node in the context of which this pylon is placed.
@@ -43,7 +43,7 @@ public class DefaultPylonImplementation extends EntityCore<Node> implements Pylo
 	
 	@Override
 	public String getName() {
-		return (name == null ? DEFAULT_NAME : name) + " " + CategoryName.PYLON.s();
+		return (name == null ? DEFAULT_NAME : name) + "_" + CategoryName.PYLON.s();
 	}
 	
 	@Override

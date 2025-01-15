@@ -1,4 +1,4 @@
-package net.xqhs.flash.nodeCLI;
+package net.xqhs.flash.openNode;
 
 import java.io.Serializable;
 
