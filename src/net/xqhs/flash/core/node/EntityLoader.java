@@ -65,7 +65,6 @@ public class EntityLoader {
                 }
             }
         }
-
         List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(null, local_id);
         if (subEntities == null) {
             subEntities = new ArrayList<>();
