@@ -33,21 +33,22 @@ public abstract class CentralGUI extends GuiShard {
 	 * A mapping of entity names to their interface specifications.
 	 */
 	protected Map<String, Element> entityGUIs = new HashMap<>();
-
+	
 	/**
 	 * Command to update the GUI for a given entity.
 	 *
 	 * @param entity
-	 *   	  - the entity for which the GUI is updated.
+	 *            - the entity for which the GUI is updated.
 	 * @param guiSpecification
-	 * 		- the GUI specification.
-	 *
+	 *            - the GUI specification.
+	 * 			
 	 * @return - true if the update was successful.
 	 */
 	public boolean updateGui(String entity, Element guiSpecification) {
 		// lf("Update for []: ", entity, interfaceStructure);
 		// lf("Update processed for []: ", entity, interfaceStructure);
-		entityGUIs.put(entity, guiSpecification);
+		Element temp = (Element) guiSpecification.clone();
+		entityGUIs.put(entity, temp);
 		return true;
 	}
 	

@@ -419,8 +419,14 @@ public class Element implements Cloneable {
 	}
 	
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		Element result = (Element) super.clone();
+	public Object clone() {
+		Element result;
+		try {
+			result = (Element) super.clone();
+		} catch(CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 		result.children = new LinkedList<>();
 		for(Element c : children)
 			result.children.add((Element) c.clone());

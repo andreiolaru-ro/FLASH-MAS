@@ -66,8 +66,8 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		;
 		
 		/**
-		 * If the first destination element is one of the supported operations, return it.
-		 * Otherwise, return null.
+		 * If the first destination element is one of the supported operations, return it. Otherwise, return null.
+		 * 
 		 * @param wave
 		 * @return the operation, or null if the first destination element is not a supported operation.
 		 */
@@ -185,6 +185,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	 */
 	public static final String		SWING_INTERFACE_SWITCH	= "swing";
 	/**
+	 * The default port for the web interface.
+	 */
+	public static final int			WEB_INTERFACE_PORT		= 8080;
+	/**
 	 * Endpoint element for this shard.
 	 */
 	protected static final String	ENTITY_STATUS_ELEMENT	= "standard-status";
@@ -233,7 +237,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			switch(iface) {
 			case WEB_INTERFACE_SWITCH: {
 				// TODO mock config -- to be added in deployment configuration?
-				gui = new WebEntity(8081);  // maybe TODO: move this port to a configuration file
+				gui = new WebEntity(WEB_INTERFACE_PORT); // maybe TODO: move this port to a configuration file
 				gui.addContext(proxy);
 				if(gui.start()) // starts now in order to be available before starting entities
 					li("web gui started");
@@ -290,19 +294,16 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				if(ed.getStatus() == null)
 					ed.setStatus(Fields.STATUS_UNKNOWN.name());
 				if(ed.getGuiSpecification() == null)
-					try {
-						ed.setGuiSpecification((Element) standardCtrls.clone());
-					} catch(CloneNotSupportedException e) {
-						le("Failed to clone standard controls", e);
-					}
+					ed.setGuiSpecification((Element) standardCtrls.clone());
 				li("Registered entity []/[] in []", category, entityName, node);
 				gui.updateGui(entityName, entitiesData.get(entityName).getGuiSpecification());
+				// if(ed.getStatus() != null)
+				// gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
 			}
 			return true;
 		case UPDATE_ENTITY_STATUS:
 			String output = wave.getContentElements().stream()
-					.map(key -> key + ": " + wave.getObject(key, "null").toString())
-					.collect(Collectors.joining("|"));
+					.map(key -> key + ": " + wave.getObject(key, "null").toString()).collect(Collectors.joining("|"));
 			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity)).setStatus(output);
@@ -318,17 +319,17 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				for(Element child : interfaceStructure.getChildren())
 					if(!interfaceContainer.getChildren().contains(child))
 						interfaceContainer.addChild(child);
-			try {
-				interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
-			} catch(CloneNotSupportedException e) {
-				throw new RuntimeException(e);
-			}
+			interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 					.setGuiSpecification(interfaceContainer);
 			lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
 			return gui.updateGui(sourceEntity, interfaceContainer);
 		case ENTITY_GUI_OUTPUT:
 			// remove the name of Central; add the entity sending the output
+			// TODO remove this once status update works
+			// EntityData ed = entitiesData.get(sourceEntity);
+			// if(ed.getStatus() != null)
+			// gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
 			return gui.sendOutput(wave.removeFirstDestinationElement().prependDestination(sourceEntity)
 					.recomputeCompleteDestination());
 		case GUI_INPUT_TO_ENTITY:

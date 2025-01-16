@@ -16,7 +16,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -269,13 +268,13 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
-		super.updateGui(entity, guiSpecification);
-		
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
 		if(entity == null)
 			return false;
 		idManager.removeIdsWithPrefix(entity);
 		idManager.insertIdsInto(guiSpecification, entity);
+		
+		super.updateGui(entity, guiSpecification);
 		
 		JsonObject tosend = new JsonObject();
 		tosend.addProperty("scope", "entity");
@@ -353,11 +352,13 @@ public class WebEntity extends CentralGUI {
 			}
 		}
 		tosend.add("content", allValues);
-
+		
 		// some messages are sent before the https server is running - delay them until it is
 		running.future().onComplete(asyncResult -> {
-			if (asyncResult.succeeded())
+			if(asyncResult.succeeded()) {
+				lf("message:", tosend);
 				web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
+			}
 		});
 		return true;
 	}
