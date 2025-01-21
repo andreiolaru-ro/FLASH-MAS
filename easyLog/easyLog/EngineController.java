@@ -5,12 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import easyLog.configuration.processor.types.AgentX;
+import easyLog.configuration.processor.types.Agents;
+import easyLog.configuration.processor.types.All;
+import easyLog.configuration.processor.types.Pylons;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -39,6 +39,23 @@ public class EngineController {
 		for(YamlObject yamlObject : yamlObjects) {
 			entriesList.add(yamlObject.initializeEntity());
 		}
+		entriesList.forEach(entry -> {
+			if(Objects.equals(entry.getEntity(), "Agent*"))
+			{
+				entry.setProcessor(new Agents(entry));
+			}
+			if(Objects.equals(entry.getEntity(), "*"))
+			{
+				entry.setProcessor(new All(entry));
+			}
+			if(Objects.equals(entry.getEntity(), "Pylon*"))
+			{
+				entry.setProcessor(new Pylons(entry));
+			}
+			if(entry.getEntity().matches("Agent[A-Z]#")){
+				entry.setProcessor(new AgentX(entry));
+			}
+		});
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -50,31 +67,38 @@ public class EngineController {
 	public void parseStream(InputStream in) throws FileNotFoundException, InterruptedException {
 		// method that activates the parser engine for the configuration objects
 		initializeParserEngineSet();
-		
+		int lineCount = 0;
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
 			int n = 0;
-			while((line = reader.readLine()) != null) { // aici trebuie sa nu luam in seama primele linii
-				if(line.matches("^\\.\\s\\[ boot\\s+\\]\\sConfiguration loaded$")) // ( . [ > [ # [ ) match pe primele 3
-																					// caractere dintr-un log obisnuit
+			while((line = reader.readLine()) != null) {
+				if(lineCount< 6)
 				{
-					this.matched = true;
+					lineCount++;// aici trebuie sa nu luam in seama primele linii
 				}
-				if(this.matched) {
-					for(ParserEngine engine : engineSet) {
-						engine.process(line);
+				else
+				{
+					if(line.matches("^[>.*] \\[.*"))// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
+					{
+						this.matched = true;
 					}
-					System.out.println(n++ + " Lines processed");
-					if(n % 10 == 0) {
-						for(Entry entry : entriesList) {
-							if(entry.getOutputItem() != null) {
-								entry.getOutputItem().getOutput();
+					if(this.matched) {
+						for(ParserEngine engine : engineSet) {
+							engine.processNew(line); //engine.process(line)
+						}
+						System.out.println(n++ + " Lines processed");
+						if(n % 10 == 0) {
+							for(Entry entry : entriesList) {
+								if(entry.getOutputItem() != null) {
+									entry.getOutputItem().getOutput();
+								}
+								System.out.println();
+								System.out.println("-----------------------------");
 							}
-							System.out.println();
-							System.out.println("-----------------------------");
 						}
 					}
 				}
+
 			}
 			reader.close();
 		} catch(IOException e) {
