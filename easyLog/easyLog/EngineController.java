@@ -54,9 +54,8 @@ public class EngineController {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
 			int n = 0;
-			while((line = reader.readLine()) != null) { // aici trebuie sa nu luam in seama primele linii
-				if(line.matches("^\\.\\s\\[ boot\\s+\\]\\sConfiguration loaded$")) // ( . [ > [ # [ ) match pe primele 3
-																					// caractere dintr-un log obisnuit
+			while((line = reader.readLine()) != null) {
+				if(line.matches("^[>.*#] \\[.*"))// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
 				{
 					this.matched = true;
 				}

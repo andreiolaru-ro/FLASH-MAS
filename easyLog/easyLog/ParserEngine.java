@@ -9,6 +9,8 @@ import easyLog.configuration.entry.selector.output.OutputElement;
 import easyLog.configuration.entry.selector.output.types.ListOutput;
 
 public class ParserEngine implements LineProcessor {
+
+
     Entry entry;
 
 
@@ -21,133 +23,41 @@ public class ParserEngine implements LineProcessor {
 
     @Override
     public void process(String line) {
-        if (entry.getEntity().matches("^Agent\\*$")) { // de modificat sa faca match linia de log cu ce am in entry
-            Pattern pattern = Pattern.compile(this.regex);
-            Matcher matcher = pattern.matcher(line);
-            if (matcher.find()) {
-                String matchedContent = matcher.group(1).trim();
-                if (entry.getEntity().toLowerCase().substring(0, entry.getEntity().length() - 1).equals(matchedContent.toLowerCase().substring(0, matchedContent.length() - 2))) {
-                    if (entry.getLevel().getType() != null) {
-                        if (line.startsWith(entry.getLevel().getType())) {
-                            if (entry.getStateMatcher().getKeywords() != null) {
-                                verifyMatch(line, matchedContent);
-                            } else //count only the logs that contain the level
-                            {
-                                entry.getExpect().addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                List<OutputElement> elementList = entry.getOutputItem().getElements();
-                                for (OutputElement obj : elementList) {
-                                    if (obj instanceof ListOutput) {
-                                        obj.addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                    }
-                                }
-                            }
-
-                        }
-                    } else {
-                        if (entry.getStateMatcher().getKeywords() != null) {
-                            verifyMatch(line, matchedContent);
-                        }
-                    }
-                }
-            }
-
-        } else {
-            if (entry.getEntity().matches("^\\*$")) {
-                if (entry.getLevel().getType() != null) {
-                    if (line.startsWith(entry.getLevel().getType())) {
-                        if (entry.getStateMatcher().getKeywords() != null) {
-                            verifyMatch(line, "*");
-                        } else //count only the logs that contain the level
-                        {
-                            entry.getExpect().addMatch(line, "*", entry.getLevel().getType(), entry.getLevel());
-                            List<OutputElement> elementList = entry.getOutputItem().getElements();
-                            for (OutputElement obj : elementList) {
-                                if (obj instanceof ListOutput) {
-                                    obj.addMatch(line, "*", entry.getLevel().getType(), entry.getLevel());
-                                }
-                            }
-                        }
-
-                    }
-                } else {
+        if (line.matches(".*\\[ " + entry.getEntity() + " \\].*")) { // face match orice e [  ] ca regex
+            if (entry.getLevel().getType() != null) {
+                if (line.startsWith(entry.getLevel().getType())) {
                     if (entry.getStateMatcher().getKeywords() != null) {
-                        verifyMatch(line, "*");
+                        verifyMatch(line);
+                    }
+                    else //count only the logs that contain the level
+                    {
+                        entry.getExpect().addMatch(line, entry.getEntity(), entry.getLevel().getType(), entry.getLevel());
+                        List<OutputElement> elementList = entry.getOutputItem().getElements();
+                        for (OutputElement obj : elementList) {
+                            if (obj instanceof ListOutput) {
+                                obj.addMatch(line, entry.getEntity(), entry.getLevel().getType(), entry.getLevel());
+                            }
+                        }
                     }
                 }
-
-
             } else {
-                if (entry.getEntity().matches("^Pylon\\*$")) {
-                    Pattern pattern = Pattern.compile(this.regex);
-                    Matcher matcher = pattern.matcher(line);
-                    if (matcher.find()) {
-                        String matchedContent = matcher.group(1).trim();
-                        if (entry.getEntity().toLowerCase().substring(0, entry.getEntity().length() - 1).equals(matchedContent.toLowerCase().substring(0, matchedContent.length() - 1))) {
-                            if (entry.getLevel().getType() != null) {
-                                if (line.startsWith(entry.getLevel().getType())) {
-                                    if (entry.getStateMatcher().getKeywords() != null) {
-                                        verifyMatch(line, matchedContent);
-                                    } else //count only the logs that contain the level
-                                    {
-                                        entry.getExpect().addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                        List<OutputElement> elementList = entry.getOutputItem().getElements();
-                                        for (OutputElement obj : elementList) {
-                                            if (obj instanceof ListOutput) {
-                                                obj.addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                            }
-                                        }
-                                    }
-
-                                }
-                            } else {
-                                if (entry.getStateMatcher().getKeywords() != null) {
-                                    verifyMatch(line, matchedContent);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    Pattern pattern = Pattern.compile(this.regex);
-                    Matcher matcher = pattern.matcher(line);
-                    if (matcher.find()) {
-                        String matchedContent = matcher.group(1).trim();
-                        if (entry.getEntity().equalsIgnoreCase(matchedContent)) {
-                            if (entry.getLevel().getType() != null) {
-                                if (line.startsWith(entry.getLevel().getType())) {
-                                    if (entry.getStateMatcher().getKeywords() != null) {
-                                        verifyMatch(line, matchedContent);
-                                    } else //count only the logs that contain the level
-                                    {
-                                        entry.getExpect().addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                        List<OutputElement> elementList = entry.getOutputItem().getElements();
-                                        for (OutputElement obj : elementList) {
-                                            if (obj instanceof ListOutput) {
-                                                obj.addMatch(line, matchedContent, entry.getLevel().getType(), entry.getLevel());
-                                            }
-                                        }
-                                    }
-
-                                }
-                            } else {
-                                if (entry.getStateMatcher().getKeywords() != null) {
-                                    verifyMatch(line, matchedContent);
-                                }
-                            }
-                        }
-                    }
+                if (entry.getStateMatcher().getKeywords() != null) {
+                    verifyMatch(line);
                 }
             }
         }
+
     }
 
-    public void verifyMatch(String line, String matchedContent) {
+
+    public void verifyMatch(String line) {
         for (String item : entry.getStateMatcher().getKeywords()) {
             if (line.contains(item)) {
-                entry.getExpect().addMatch(line, matchedContent, item, entry.getLevel());
+                entry.getExpect().addMatch(line, entry.getEntity(), item, entry.getLevel());
                 List<OutputElement> elementList = entry.getOutputItem().getElements();
                 for (OutputElement obj : elementList) {
                     if (obj instanceof ListOutput) {
-                        obj.addMatch(line, matchedContent, item, entry.getLevel());
+                        obj.addMatch(line, entry.getEntity(), item, entry.getLevel());
                     }
                 }
             }
