@@ -1,4 +1,4 @@
-package easyLog.configuration.processor;
+package easyLog;
 
 public interface LineProcessor {
     void process(String line);

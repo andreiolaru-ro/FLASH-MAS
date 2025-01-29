@@ -1,6 +1,6 @@
 package easyLog.configuration.entry;
 
-import easyLog.configuration.processor.LineProcessor;
+import easyLog.LineProcessor;
 import easyLog.configuration.entry.selector.expect.Expect;
 import easyLog.configuration.entry.selector.level.Level;
 import easyLog.configuration.entry.selector.output.OutputItem;
