@@ -1,11 +1,8 @@
 package easyLog.configuration.entry;
 
-import java.util.List;
-
+import easyLog.configuration.processor.LineProcessor;
 import easyLog.configuration.entry.selector.expect.Expect;
-import easyLog.configuration.entry.selector.expect.ExpectCount;
 import easyLog.configuration.entry.selector.level.Level;
-import easyLog.configuration.entry.selector.output.OutputElement;
 import easyLog.configuration.entry.selector.output.OutputItem;
 import easyLog.configuration.entry.selector.stateMatcher.StateMatcher;
 
@@ -34,6 +31,7 @@ public class Entry {
 
     private Expect expect;
 
+    private LineProcessor processor;
     private String comment;
 
     public Entry() {
@@ -129,5 +127,13 @@ public class Entry {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public LineProcessor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(LineProcessor processor) {
+        this.processor = processor;
     }
 }
