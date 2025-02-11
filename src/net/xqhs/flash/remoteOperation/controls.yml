@@ -10,9 +10,19 @@
 # You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 #-------------------------------------------------------------------------------
 children:
- - type: form
-   port: valuePort
-   role: content
- - type: button
-   port: valuePort
-   role: activate
+  - type: label
+    value: "---"
+    port: standard-name
+  - type: label
+    value: unknown
+    port: standard-status
+  - type: button
+    value: Start
+    port: standard-start
+    role: activate
+    properties: {proxy: node}
+  - type: button
+    value: Kill
+    port: standard-stop
+    role: activate
+    properties: {proxy: node}

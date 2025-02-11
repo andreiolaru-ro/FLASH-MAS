@@ -32,12 +32,21 @@ import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.ElementType;
 
+/**
+ * Java Swing implementation of the {@link GuiShard}. It creates a window for this shard to which it adds Swing
+ * components according to the specification.
+ * 
+ * @author andreiolaru
+ */
 public class SwingGuiShard extends GuiShard {
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -3741974077986177703L;
 	
+	/**
+	 * The window containing the controls.
+	 */
 	JFrame window = null;
 	
 	@Override
@@ -56,6 +65,14 @@ public class SwingGuiShard extends GuiShard {
 		}
 	}
 	
+	/**
+	 * Generates the elements of the interface based on the {@link Element} specification.
+	 * 
+	 * @param element
+	 *            - the specification.
+	 * @param parent
+	 *            - the parent {@link JPanel}, if this is not a top element.
+	 */
 	protected void generate(Element element, JPanel parent) {
 		Component comp = null;
 		ComponentConnect connector = null;
@@ -129,7 +146,7 @@ public class SwingGuiShard extends GuiShard {
 					return button.getText();
 				}
 			};
-			if(element.getRole().equals("activate"))
+			if("activate".equals(element.getRole()))
 				button.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -172,6 +189,8 @@ public class SwingGuiShard extends GuiShard {
 				portRoleComponents.put(port, new HashMap<>());
 			if(!portRoleComponents.get(port).containsKey(role))
 				portRoleComponents.get(port).put(role, new ArrayList<>());
+			if(portRoleComponents.get(port).get(role).size() != 0)
+				portRoleComponents.get(port).get(role).remove(0);
 			portRoleComponents.get(port).get(role).add(connector);
 		}
 	}

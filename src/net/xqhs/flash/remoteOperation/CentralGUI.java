@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.core.monitoring;
+package net.xqhs.flash.remoteOperation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,17 +29,32 @@ public abstract class CentralGUI extends GuiShard {
 	 */
 	private static final long serialVersionUID = -8874092747023941934L;
 	
+	/**
+	 * A mapping of entity names to their interface specifications.
+	 */
 	protected Map<String, Element> entityGUIs = new HashMap<>();
 	
+	/**
+	 * Command to update the GUI for a given entity.
+	 *
+	 * @param entity
+	 *            - the entity for which the GUI is updated.
+	 * @param guiSpecification
+	 *            - the GUI specification.
+	 * 			
+	 * @return - true if the update was successful.
+	 */
 	public boolean updateGui(String entity, Element guiSpecification) {
 		// lf("Update for []: ", entity, interfaceStructure);
 		// lf("Update processed for []: ", entity, interfaceStructure);
-		entityGUIs.put(entity, guiSpecification);
+		Element temp = (Element) guiSpecification.clone();
+		entityGUIs.put(entity, temp);
 		return true;
 	}
 	
 	@Override
-	public void sendOutput(AgentWave wave) {
+	public boolean sendOutput(AgentWave wave) {
 		// this here just to block any calls to the underlying GuiShard.
+		return true;
 	}
 }

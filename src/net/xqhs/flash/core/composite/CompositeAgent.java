@@ -503,6 +503,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		default:
 			// do nothing
 		}
+		
 		return false;
 	}
 	

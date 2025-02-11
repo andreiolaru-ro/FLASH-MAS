@@ -1,0 +1,8 @@
+// this file helps development by providing intellisense for the jquery library in IDEs
+{
+    "typeAcquisition": {
+        "include": [
+            "jquery"
+        ]
+    }
+}

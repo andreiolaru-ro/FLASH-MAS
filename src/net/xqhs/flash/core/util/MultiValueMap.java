@@ -191,6 +191,21 @@ public class MultiValueMap extends Config implements Serializable {
 	 *             if the value is not a String.
 	 */
 	public String get(String name) {
+		return get(name, null);
+	}
+	
+	/**
+	 * Same as {@link #get(String)}, but with a default value to return if the name is not found.
+	 * 
+	 * @param name
+	 *            - the name of the searched entry.
+	 * @param defaultValue
+	 *            - the value to return if the name is not found.
+	 * @return the value of an entry with the given name, or the default value if the name is not found.
+	 * @throws IllegalStateException
+	 *             if the value is not a String.
+	 */
+	public String get(String name, String defaultValue) {
 		Object value = getObject(name);
 		if(value == null)
 			return null;
@@ -204,10 +219,27 @@ public class MultiValueMap extends Config implements Serializable {
 	 * 
 	 * @param name
 	 *            - the name of the searched entry.
-	 * @return the value of the entry with the given name.
+	 * @return the value of the entry with the given name, <code>null</code> if the name is not found.
+	 * @throws IllegalStateException
+	 *             if the value is not a String.
 	 */
 	public String getValue(String name) {
 		return get(name);
+	}
+	
+	/**
+	 * Alias for the {@link #get} method.
+	 * 
+	 * @param name
+	 *            - the name of the searched entry.
+	 * @param defaultValue
+	 *            - the value to return if the name is not found.
+	 * @return the value of the entry with the given name, or the default value if the name is not found.
+	 * @throws IllegalStateException
+	 *             if the value is not a String.
+	 */
+	public String getValue(String name, String defaultValue) {
+		return get(name, defaultValue);
 	}
 	
 	/**
@@ -238,9 +270,23 @@ public class MultiValueMap extends Config implements Serializable {
 	 * @return the value associated with the name, or <code>null</code> if the name is not found.
 	 */
 	public Object getObject(String name) {
+		return getObject(name, null);
+	}
+	
+	/**
+	 * Same as {@link #getObject(String)}, but with a default value to return if the name is not found.
+	 * 
+	 * @param name
+	 *            - the name of the searched entry.
+	 * @param defaultObject
+	 *            - the value to return if the name is not found.
+	 * @return the value of the entry with the given name, or the default value if the name is not found.
+	 */
+	public Object getObject(String name, Object defaultObject) {
 		if(!backingMap.containsKey(name))
 			return null;
 		return backingMap.get(name).get(0);
+		
 	}
 	
 	/**

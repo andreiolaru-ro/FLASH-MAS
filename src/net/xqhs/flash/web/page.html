@@ -13,39 +13,63 @@ You should have received a copy of the GNU General Public License along with Fla
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Input</title>
-    <script src="js/jquery-3.4.1.min.js"></script>
-    <script src="js/sockjs.js"></script>
-    <script src="js/vertx-eventbus.js"></script>
-    <script src="js/client.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Flash-MAS</title>
+    <script src="js/lib/jquery-3.7.1.min.js"></script>
+    <script src="js/lib/sockjs.js"></script>
+    <script src="js/lib/vertx-eventbus.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/@material/web@latest/material-components-web.min.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
-<body onload="init()">
-	<div id = "page" class = "root">
-		<div id = "global" class = "global">
-			<label id = "global-label">
-				Global
-			</label>
-			<button id = "node-start_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
-				Start
-			</button>
-			<button id = "node-stop_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
-				Stop
-			</button>
-			<button id = "pause-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
-				Pause simulation
-			</button>
-			<button id = "start-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
-				Start simulation
-			</button>
-			<button id = "stop-simulation_activate_0" style = "display: block;" type = "submit" onclick="send_data(this.id)">
-				Stop simulation
-			</button>
-			<div id = "entities_list" class = "entities">
-			</div>
-		</div>
-		<div id = "interfaces" class = "interfaces">
-			<div>--</div>
-		</div>
-	</div>
+<body>
+    <div id="root">
+        <!-- Toggle Button for Side Panel -->
+        <button id="sidepanel-btn">
+            <span class="material-icons">menu</span>
+        </button>
+
+        <!-- Collapsible Side Panel -->
+        <aside class="sidepanel open" id="sidepanel">
+            <div id="sidepanel-header">
+                <span>Global</span>
+                <button class="material-icons" id="sidepanel-close-btn">close</button>
+            </div>
+            <div id="sidepanel-content">
+                <div class="side-section">
+                    <div class="side-drawer">
+                        <button id="global-start-btn">Start</button>
+                    </div>
+                    <div class="side-drawer">
+                        <button id="global-stop-btn">Stop</button>
+                    </div>
+                    <div class="side-drawer">
+                        <button id="global-pause-btn">Pause simulation</button>
+                    </div>
+                    <div class="side-drawer">
+                        <button id="global-start-simulation-btn">Start simulation</button>
+                    </div>
+                    <div class="side-drawer">
+                        <button id="global-stop-simulation-btn">Stop simulation</button>
+                    </div>
+                </div>
+                <div class="side-section" id="entities-list"></div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="collapsed" id="main-content">
+            <div id="main-header">
+                <h1>No selected entities</h1>
+            </div>
+            <div id="selected-entities-list"></div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/@material/web@latest/material-components-web.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/events.js"></script>
+    <script type="module" src="js/ui.js"></script>
 </body>
+
+</html>
