@@ -34,6 +34,10 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 */
 	public static String	SERVER_URL;
 	/**
+	 * port of the python server
+	 */
+	public static int		SERVER_PORT;
+	/**
 	 * path to the md driver source code
 	 */
 	public static String	ML_SRC_PATH;
@@ -125,7 +129,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	public static String	DATASET_CLASSES_PARAM;
 	
 	{ // use the same block of constants from server.py
-		SERVER_URL = "http://localhost:5000/";
+		SERVER_URL = "http://localhost";
+		SERVER_PORT = 5023;
 		ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 		ML_DIRECTORY_PATH = "ml-directory/";
 		OP_MODULE_PACKAGE = "operations-modules";
@@ -276,7 +281,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 			return null;
 		}
 		try {
-			String location = SERVER_URL + route_endpoint;
+			String location = SERVER_URL + ":" + SERVER_PORT + "/" + route_endpoint;
 			URL url = new URL(location);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod(request_method);

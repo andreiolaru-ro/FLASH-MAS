@@ -2,7 +2,8 @@
 
 
 # constants (use the same block of constants from MLDriver.java):   -- from here --
-SERVER_URL = "http://localhost:5000/";
+SERVER_URL = "http://localhost";
+SERVER_PORT = 5023;
 ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 ML_DIRECTORY_PATH = "ml-directory/";
 OP_MODULE_PACKAGE = "operations-modules";

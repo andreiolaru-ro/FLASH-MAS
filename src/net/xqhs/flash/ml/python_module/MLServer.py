@@ -9,7 +9,7 @@ log("creating server... ")
 app = flask.Flask(__name__)
 
 def start():
-    app.run()
+    app.run(port = SERVER_PORT)
 
 @app.route('/' + ADD_MODEL_SERVICE, methods=['POST'])
 def add_model():
