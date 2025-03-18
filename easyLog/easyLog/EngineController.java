@@ -63,7 +63,7 @@ public class EngineController {
 					for(ParserEngine engine : engineSet) {
 						engine.process(line);
 					}
-					System.out.println(n++ + " Lines processed");
+//					System.out.print("\r" + (n++) + " Lines processed");
 					if(n % 10 == 0) {
 						for(Entry entry : entriesList) {
 							if(entry.getOutputItem() != null) {

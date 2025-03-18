@@ -17,6 +17,15 @@ public class ExpectOutput implements OutputElement {
         if (expect.isSatisfied()) {
             System.out.print(expect.getSatisfactionIndication() + " ");
         }
+        else {
+            if(expect.getSatisfactionIndication() == null)
+            {
+                System.out.print(0 + " ");
+            }
+            else {
+                System.out.print(expect.getSatisfactionIndication() + " ");
+            }
+        }
     }
 
     @Override

@@ -77,7 +77,14 @@ public class ExpectCount implements Expect {
 
     @Override
     public String getSatisfactionIndication() {
-        return numberOfAppearances.get(key).toString();
+        if(key == null)
+        {
+            return "0";
+        }
+        else
+        {
+            return numberOfAppearances.get(key).toString();
+        }
     }
 
     public int getCountNumber() {
