@@ -21,28 +21,26 @@ import net.xqhs.util.logging.Logger;
  * 
  * @author andreiolaru
  */
-public class SimpleLoader implements Loader<Entity<?>>
-{
+public class SimpleLoader implements Loader<Entity<?>> {
 	/**
 	 * Name of the key in which the classpath should be stored.
 	 */
-	public static final String	CLASSPATH_KEY	= "classpath";
+	public static final String CLASSPATH_KEY = "classpath";
 	
 	/**
 	 * The log to use.
 	 */
-	protected Logger			log				= null;
+	protected Logger		log			= null;
 	/**
 	 * The class factory to use.
 	 */
-	protected ClassFactory		classLoader		= null;
+	protected ClassFactory	classLoader	= null;
 	
 	/**
 	 * The configuration is not used.
 	 */
 	@Override
-	public boolean configure(MultiTreeMap configuration, Logger _log, ClassFactory classFactory)
-	{
+	public boolean configure(MultiTreeMap configuration, Logger _log, ClassFactory classFactory) {
 		log = _log;
 		classLoader = classFactory;
 		return true;
@@ -52,8 +50,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 	 * Context is not considered in any way.
 	 */
 	@Override
-	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context)
-	{
+	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
 		return preload(configuration);
 	}
 	
@@ -61,16 +58,18 @@ public class SimpleLoader implements Loader<Entity<?>>
 	 * The preload method tests if the classpath is set and exists.
 	 */
 	@Override
-	public boolean preload(MultiTreeMap configuration)
-	{
-		if(!configuration.isSimple(CLASSPATH_KEY))
-		{
+	public boolean preload(MultiTreeMap configuration) {
+		if(configuration == null) {
+			if(log != null)
+				log.le("Configuration is null");
+			return false;
+		}
+		if(!configuration.isSimple(CLASSPATH_KEY)) {
 			if(log != null)
 				log.le("Classpath not set in configuration (missing classpath key)");
 			return false;
 		}
-		if(!PlatformUtils.getClassFactory().canLoadClass(configuration.get(CLASSPATH_KEY)))
-		{
+		if(!PlatformUtils.getClassFactory().canLoadClass(configuration.get(CLASSPATH_KEY))) {
 			if(log != null)
 				log.le("Class cannot be loaded from given classpath []", configuration.get(CLASSPATH_KEY));
 			return false;
@@ -99,34 +98,25 @@ public class SimpleLoader implements Loader<Entity<?>>
 	 */
 	@Override
 	public Entity<?> load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
-			List<MultiTreeMap> subordinateEntities)
-	{
-		if(preload(configuration))
-		{
+			List<MultiTreeMap> subordinateEntities) {
+		if(preload(configuration)) {
 			String classpath = configuration.get(CLASSPATH_KEY);
 			Entity<?> loaded = null;
-			try
-			{
+			try {
 				// try Constructor(configuration)
 				loaded = (Entity<?>) classLoader.loadClassInstance(classpath, configuration, false);
-			} catch(Exception e)
-			{
-				if(e instanceof NoSuchMethodException)
-				{// no constructor with configuration argument
-					try
-					{
+			} catch(Exception e) {
+				if(e instanceof NoSuchMethodException) {// no constructor with configuration argument
+					try {
 						loaded = (Entity<?>) classLoader.loadClassInstance(classpath, null, true);
-						if(loaded instanceof ConfigurableEntity)
-						{// no-argument constructor used, must try to configure
+						if(loaded instanceof ConfigurableEntity) {// no-argument constructor used, must try to configure
 							if(!((ConfigurableEntity<?>) loaded).configure(configuration) && log != null)
 								log.le("Entity [] loaded from [] but configuration failed.", loaded.getName(),
 										classpath);
 						}
 						else
-							log.le("Configuration not sent to entity [] loaded from []", loaded.getName(),
-									classpath);
-					} catch(Exception e1)
-					{
+							log.le("Configuration not sent to entity [] loaded from []", loaded.getName(), classpath);
+					} catch(Exception e1) {
 						if(log != null)
 							log.le("Failed to load class [] via no-argument constructor: ", classpath,
 									PlatformUtils.printException(e));
@@ -145,8 +135,7 @@ public class SimpleLoader implements Loader<Entity<?>>
 	}
 	
 	@Override
-	public Entity<?> load(MultiTreeMap configuration)
-	{
+	public Entity<?> load(MultiTreeMap configuration) {
 		return load(configuration, null, null);
 	}
 }

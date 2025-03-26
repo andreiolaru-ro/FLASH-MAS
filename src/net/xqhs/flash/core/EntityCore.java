@@ -1,5 +1,6 @@
 package net.xqhs.flash.core;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,37 +27,62 @@ import net.xqhs.util.logging.Unit;
  * @param <P>
  *            - the type of {@link Entity} which is the direct (or main) context for this entity.
  */
-public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P> {
+public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable {
+	/**
+	 * The serial UID.
+	 */
+	private static final long	serialVersionUID	= 6709023622970061354L;
+	/**
+	 * The parameter name for focusing (use the "highlighted" state of the log) logging on this entity.
+	 */
+	public static final String HIGHLIGHT_FOCUS = "focus";
 	
+	/**
+	 * The {@link MultiTreeMap} with which this entity was {@link #configure}d.
+	 */
+	private MultiTreeMap	entityConfiguration	= new MultiTreeMap();
 	/**
 	 * The running state of the entity.
 	 */
-	protected boolean	running	= false;
+	private boolean			running				= false;
 	/**
 	 * The name provided in the configuration.
 	 */
-	protected String	name	= null;
+	protected String		name				= null;
 	
 	/**
 	 * The <i>main</i> context of this entity.
 	 */
-	EntityProxy<P> mainContext = null;
+	private EntityProxy<P> mainContext = null;
 	
 	/**
 	 * The <i>general</i> context of this entity.
 	 */
-	Set<EntityProxy<? extends Entity<?>>> fullContext = new HashSet<>();
+	private Set<EntityProxy<? extends Entity<?>>> fullContext = new HashSet<>();
 	
 	/**
 	 * This implementation only reads the name given in the configuration and assigns it to the log.
 	 */
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
+		if(configuration == null)
+			return false;
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)) {
 			name = configuration.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 			setUnitName(name);
 		}
+		if(configuration.isSimple(HIGHLIGHT_FOCUS)) {
+			setHighlighted();
+		}
+		entityConfiguration = configuration;
 		return true;
+	}
+	
+	/**
+	 * @return the shard configuration stored at {@link #configure(MultiTreeMap)} time.
+	 */
+	public MultiTreeMap getConfiguration() {
+		return entityConfiguration;
 	}
 	
 	/**
@@ -66,7 +92,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	@Override
 	public boolean start() {
 		if(running)
-			return false;
+			return ler(false, "Entity is already running");
 		lf("[] starting", name);
 		running = true;
 		return true;
@@ -79,7 +105,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	@Override
 	public boolean stop() {
 		if(!running)
-			return false;
+			return ler(false, "Entity is already stopped");
 		lf("[] stopped", name);
 		running = false;
 		return true;
@@ -98,17 +124,30 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 		return name;
 	}
 	
+	/**
+	 * Returns <code>true</code> if the main context has changed.
+	 */
 	@Override
 	public boolean addContext(EntityProxy<P> context) {
+		if(mainContext == context)
+			return false;
+		if(mainContext != null)
+			fullContext.remove(mainContext);
 		mainContext = context;
 		fullContext.add(context);
 		return true;
 	}
 	
+	/**
+	 * This implementation returns <code>true</code> if the "main context" was the same instance as the provided
+	 * argument.
+	 */
 	@Override
 	public boolean removeContext(EntityProxy<P> context) {
+		if(mainContext == null)
+			return ler(false, "There was no main context present.");
 		if(mainContext != context)
-			return false;
+			return ler(false, "Main context was not the same as the given argument.");
 		mainContext = null;
 		fullContext.remove(context);
 		return true;
@@ -143,24 +182,35 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 		throw new UnsupportedOperationException("This functionality is not implemented.");
 	}
 	
+	/**
+	 * This implementation returns <code>true</code> if a change really happened, that is, if the given argument was not
+	 * part of the context.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		try {
 			if(isMainContext(context))
-				addContext((EntityProxy<P>) context);
+				return addContext((EntityProxy<P>) context);
 		} catch(UnsupportedOperationException e) {
 			// nothing to do
 		}
 		return fullContext.add(context);
 	}
 	
+	/**
+	 * This implementation returns <code>true</code> if a change really happened, that is, if the given argument was
+	 * indeed part of the context.
+	 * 
+	 * WARNING: possible errors when a different instance of the same type with the current main context is removed, as
+	 * it will nullify the main context, but the previous main context will remain in the full context.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		try {
 			if(isMainContext(context))
-				removeContext((EntityProxy<P>) context);
+				return removeContext((EntityProxy<P>) context);
 		} catch(UnsupportedOperationException e) {
 			// nothing to do
 		}
@@ -170,7 +220,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	/**
 	 * @return the elements forming the general context of this entity.
 	 */
-	Set<EntityProxy<? extends Entity<?>>> getFullContext() {
+	protected Set<EntityProxy<? extends Entity<?>>> getFullContext() {
 		return fullContext;
 	}
 	

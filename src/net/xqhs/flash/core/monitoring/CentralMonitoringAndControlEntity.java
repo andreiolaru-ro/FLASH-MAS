@@ -335,7 +335,7 @@ public class CentralMonitoringAndControlEntity extends Unit implements Entity<Py
 				} catch(CloneNotSupportedException e) {
 					le("Failed to clone standard controls", e);
 				}
-			entitiesData.get(entity).setGuiSpecification(interfaceStructure);
+			entitiesData.computeIfAbsent(entity, k -> new EntityData()).setGuiSpecification(interfaceStructure);
 			try {
 				entitiesData.get(entity).insertNewGuiElements(((Element) standardCtrls.clone()).getChildren());
 			} catch(CloneNotSupportedException e) {
