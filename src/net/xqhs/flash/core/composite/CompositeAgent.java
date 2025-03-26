@@ -31,6 +31,7 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
@@ -48,7 +49,7 @@ import net.xqhs.util.logging.UnitComponent;
  *
  * @author Andrei Olaru
  */
-public class CompositeAgent extends EntityCore<Pylon> implements CompositeAgentModel, Serializable {
+public class CompositeAgent extends EntityCore<Pylon> implements CompositeAgentModel {
 	/**
 	 * The serial UID.
 	 */
@@ -553,7 +554,7 @@ public class CompositeAgent extends EntityCore<Pylon> implements CompositeAgentM
 	
 	@Override
 	public boolean isMainContext(Object context) {
-		return context instanceof Pylon;
+		return context instanceof PylonProxy;
 	}
 	
 	@SuppressWarnings("unchecked")

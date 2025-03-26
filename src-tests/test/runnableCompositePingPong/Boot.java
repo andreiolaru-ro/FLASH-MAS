@@ -46,7 +46,7 @@ public class Boot {
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(test_args.split(" ")));
-		NodeAccess node = (NodeAccess) nodes.get(1); // the 0-th node is node <null>
+		NodeAccess node = (NodeAccess) nodes.get(0);
 		// node.start();
 		// Thread.sleep(RUN_TIME);
 		// node.stop();

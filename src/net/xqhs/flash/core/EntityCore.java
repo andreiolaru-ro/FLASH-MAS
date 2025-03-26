@@ -1,5 +1,6 @@
 package net.xqhs.flash.core;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,7 +27,11 @@ import net.xqhs.util.logging.Unit;
  * @param <P>
  *            - the type of {@link Entity} which is the direct (or main) context for this entity.
  */
-public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P> {
+public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable {
+	/**
+	 * The serial UID.
+	 */
+	private static final long	serialVersionUID	= 6709023622970061354L;
 	/**
 	 * The parameter name for focusing (use the "highlighted" state of the log) logging on this entity.
 	 */
