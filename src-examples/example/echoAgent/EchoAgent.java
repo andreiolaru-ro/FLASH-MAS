@@ -36,6 +36,7 @@ public class EchoAgent extends BaseAgent {
 			}
 		}, 2000);
 		li("Agent started");
+		li("Hello World");
 		return true;
 	}
 	
