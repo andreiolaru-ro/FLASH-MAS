@@ -319,21 +319,31 @@ public class Element implements Cloneable {
 	}
 	
 	/**
-	 * Return the children of the element if they match the given port and role
+	 * Return the child of the element that matches the given port and role
 	 *
 	 * @param childPort
 	 *            - the port to match
 	 * @param childRole
 	 *            - the role to match
-	 * @return - the list of children that match the given port and role
+	 * @return - the child that matches the given port and role
 	 */
-	public List<Element> getChildren(String childPort, String childRole) {
-		List<Element> result = new LinkedList<>();
-		for(Element e : children)
-			if(((childPort == null && e.getPort() == null) || (childPort != null && childPort.equals(e.getPort())))
-					&& ((childRole == null && e.getRole() == null)
-							|| (childRole != null && childRole.equals(e.getRole()))))
-				result.add(e);
+	public Element getChildren(String childPort, String childRole) {
+		Element result = null;
+		for (Element e : children) {
+			boolean portMatch = (childPort != null && childPort.equals(e.getPort()));
+			portMatch = portMatch || (childPort == null && e.getPort() == null);
+			boolean roleMatch = (childRole != null && childRole.equals(e.getRole()));
+			roleMatch = roleMatch || (childRole == null && e.getRole() == null);
+			if (portMatch && roleMatch) {
+				result = e;
+				break;
+			}
+			if ("container".equals(e.type)) {
+				result = e.getChildren(childPort, childRole);
+				if (result != null)
+					break;
+			}
+		}
 		return result;
 	}
 	
@@ -346,10 +356,25 @@ public class Element implements Cloneable {
 	 * @return - the child that matches the given id
 	 */
 	public Element getChildWithId(String childID) {
-		for(Element e : children)
-			if(childID.equals(e.getId()))
+		for (Element e : children)
+			if (childID.equals(e.getId()))
 				return e;
 		return null;
+	}
+
+	/**
+	 * Applies an update to this element and its children, according to the given wave.
+	 * The roles to which this update applies are the content elements of the wave.
+	 */
+	public void applyUpdate(String port, AgentWave wave) {
+		String updatePort = wave.getFirstDestinationElement();
+		List<String> roles = wave.getContentElements();
+
+		for (String updateRole : roles) {
+			Element element = this.getChildren(updatePort, updateRole);
+			if (element == null) continue;
+			element.setValue(wave.getValue(updateRole));
+		}
 	}
 	
 	/**
@@ -364,6 +389,16 @@ public class Element implements Cloneable {
 		result.addProperty("value", value);
 		result.addProperty("port", port);
 		result.addProperty("role", role);
+
+		JsonArray whenArray = new JsonArray();
+		result.add("when", whenArray);
+		for (ElementWhen e : when) {
+			JsonObject whenObject = new JsonObject();
+			whenArray.add(whenObject);
+			whenObject.addProperty("running_status", e.getRunning_status());
+			whenObject.addProperty("style", e.getStyle());
+		}
+
 		JsonArray childrenArray = new JsonArray();
 		result.add("children", childrenArray);
 		if (children != null)

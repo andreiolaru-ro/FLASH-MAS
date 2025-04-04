@@ -53,17 +53,29 @@ public class WebEntity extends CentralGUI {
 	/** Address for ws communication from client to server */
 	protected static final String CLIENT_TO_SERVER = "client-to-server";
 	
-	/** Address for ws communication from server to client agent */
-	protected static final String SERVER_TO_CLIENT_AGENT = "server-to-client-agent";
-	
-	/** Address for ws communication from client to server agent */
-	protected static final String CLIENT_TO_SERVER_AGENT = "client-to-server-agent";
-	
 	/** The endpoint for ws communication */
 	protected static final String WS_ENDPOINT = "/eventbus";
 
+	/** The scope for client messages regarding updates to a port */
+	protected static final String PORT_SCOPE = "port";
+
+	/** The scope for client messages regarding a client registration */
+	protected static final String REGISTERED_SCOPE = "registered";
+
+	/** The scope key for a message from the client */
+	protected static final String MESSAGE_SCOPE = "scope";
+
+	/** The subject key for a message from the client */
+	protected static final String MESSAGE_SUBJECT = "subject";
+
+	/** The content key for a message from the client */
+	protected static final String MESSAGE_CONTENT = "content";
+
 	/** The port on which the HTTP server is running */
 	protected int httpPort;
+
+	/** A promise that is completed when a client connection is fully established */
+	protected Promise<Void> running = Promise.promise();
 
 	/**
 	 * Constructor for the web entity.
@@ -84,11 +96,6 @@ public class WebEntity extends CentralGUI {
 		private WebEntity entity;
 		
 		/**
-		 * The number of connections to the server.
-		 */
-		protected int numConnections = 0;
-		
-		/**
 		 * Constructor for the server verticle.
 		 * 
 		 * @param entity
@@ -104,9 +111,7 @@ public class WebEntity extends CentralGUI {
 			SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
 			BridgeOptions options = new BridgeOptions()
 					.addOutboundPermitted(new PermittedOptions().setAddress(SERVER_TO_CLIENT))
-					.addOutboundPermitted(new PermittedOptions().setAddress(SERVER_TO_CLIENT_AGENT))
-					.addInboundPermitted(new PermittedOptions().setAddress(CLIENT_TO_SERVER))
-					.addInboundPermitted(new PermittedOptions().setAddress(CLIENT_TO_SERVER_AGENT));
+					.addInboundPermitted(new PermittedOptions().setAddress(CLIENT_TO_SERVER));
 			
 			// mount the bridge on the router
 			router.mountSubRouter(WS_ENDPOINT, sockJSHandler.bridge(options, bridgeEvent -> {
@@ -116,17 +121,12 @@ public class WebEntity extends CentralGUI {
 					}
 					else if (bridgeEvent.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
-						numConnections++;
-						
-						String entities = getEntities().toString();
-						vertx.eventBus().send(SERVER_TO_CLIENT, entities);
 					}
 					else if (bridgeEvent.type() == BridgeEventType.UNREGISTER) {
-						numConnections--;
 						System.out.println("unregister");
+						entity.running = Promise.promise();
 					}
 					else if (bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
-						numConnections--;
 						System.out.println("closed");
 					}
 					else if (bridgeEvent.type() == BridgeEventType.SEND) {
@@ -142,10 +142,19 @@ public class WebEntity extends CentralGUI {
 				}
 			}));
 			
+			// handle messages from the client
 			vertx.eventBus().consumer(CLIENT_TO_SERVER).handler(objectMessage -> {
 				JsonObject msg = JsonParser.parseString((String) objectMessage.body()).getAsJsonObject();
-				if ("port".equals(msg.get("scope").getAsString()))
+				String scope = msg.get(MESSAGE_SCOPE).getAsString();
+				if (REGISTERED_SCOPE.equals(scope)) {
+					JsonObject entities = getEntities();
+					String message = buildMessage("global", "entities list", entities);
+					vertx.eventBus().send(SERVER_TO_CLIENT, message);
+					entity.running.complete();
+				}
+				else if (PORT_SCOPE.equals(scope)) {
 					activeInput(msg);
+				}
 			});
 			
 			System.out.println(WebEntity.class.getPackage().getName());
@@ -182,11 +191,6 @@ public class WebEntity extends CentralGUI {
 	
 	private Vertx web;
 	
-	/**
-	 * A promise that is completed when the verticle is running.
-	 */
-	private Promise<Void> running = Promise.promise();
-	
 	// protected boolean verticleReady = false;
 	
 	// private static boolean generated = false;
@@ -199,17 +203,7 @@ public class WebEntity extends CentralGUI {
 
 		VertxOptions options = new VertxOptions();
 		web = Vertx.vertx(options);
-		Promise<String> promise = Promise.promise();
-		web.deployVerticle(new ServerVerticle(this), promise);
-
-		promise.future().onComplete(asyncResult -> {
-			if (asyncResult.succeeded()) {
-				running.complete();
-			} else {
-				System.out.println("Failed to deploy gui verticle: " + asyncResult.cause());
-				running.fail(asyncResult.cause());
-			}
-		});
+		web.deployVerticle(new ServerVerticle(this));
 		return true;
 	}
 	
@@ -228,59 +222,109 @@ public class WebEntity extends CentralGUI {
 		super.parentChangeNotifier(oldParent);
 		cep = (CentralEntityProxy) getAgent();
 	}
+
+	/**
+	 * Sends a message to the client after a connection has been established.
+	 * @param message - the message to be sent.
+	 */
+	protected void sendToClient(String message) {
+		running.future().onComplete(asyncResult -> {
+			if (asyncResult.succeeded()) {
+				web.eventBus().send(SERVER_TO_CLIENT, message);
+			}
+		});
+	}
+
+	/**
+	 * Constructs a message for the client.
+	 * @param scope - the scope of the message.
+	 * @param subject - the subject of the message.
+	 * @param content - the content of the message.
+	 * @return the message as a string.
+	 */
+	protected static String buildMessage(String scope, String subject, JsonObject content) {
+		JsonObject message = new JsonObject();
+		message.addProperty(MESSAGE_SCOPE, scope);
+		message.addProperty(MESSAGE_SUBJECT, subject);
+		message.add(MESSAGE_CONTENT, content);
+		return message.toString();
+	}
+
+	/**
+	 * Constructs a message for the client.
+	 * @param scope - the scope of the message.
+	 * @param subject - the subject of the message.
+	 * @param content - the content of the message.
+	 * @return the message as a string.
+	 */
+	protected static String buildMessage(String scope, JsonObject subject, JsonObject content) {
+		JsonObject message = new JsonObject();
+		message.addProperty(MESSAGE_SCOPE, scope);
+		message.add(MESSAGE_SUBJECT, subject);
+		message.add(MESSAGE_CONTENT, content);
+		return message.toString();
+	}
 	
 	/**
 	 * @return a {@link JsonObject} containing the specifications of all entities.
 	 */
 	public JsonObject getEntities() {
-		System.out.println("entities get.");
+		// System.out.println("entities get.");
 		
-		JsonObject specifications = new JsonObject();
-		JsonObject types = new JsonObject();
-		JsonObject activators = new JsonObject();
+		// JsonObject specifications = new JsonObject();
+		// JsonObject types = new JsonObject();
+		// JsonObject activators = new JsonObject();
 		
-		entityGUIs.entrySet().forEach(entry -> {
-			String name = entry.getKey();
-			Element guiElement = entry.getValue();
+		// entityGUIs.entrySet().forEach(entry -> {
+		// 	String name = entry.getKey();
+		// 	Element guiElement = entry.getValue();
 			
-			specifications.add(name, guiElement.toJSON());
-			for(Element child : guiElement.getChildren()) {
-				types.addProperty(child.getId(), child.getType());
-				if("activate".equals(child.getRole())) {
-					JsonArray role_ids = new JsonArray();
-					for(Element port_e : guiElement.getChildren(child.getPort()))
-						role_ids.add(port_e.getId());
-					activators.add(child.getId(), role_ids);
-				}
-			}
+		// 	specifications.add(name, guiElement.toJSON());
+		// 	for(Element child : guiElement.getChildren()) {
+		// 		types.addProperty(child.getId(), child.getType());
+		// 		if ("activate".equals(child.getRole())) {
+		// 			JsonArray role_ids = new JsonArray();
+		// 			for (Element port_e : guiElement.getChildren(child.getPort()))
+		// 				role_ids.add(port_e.getId());
+		// 			activators.add(child.getId(), role_ids);
+		// 		}
+		// 	}
+		// });
+		// JsonObject result = new JsonObject();
+		// result.addProperty("scope", "global");
+		// result.addProperty("subject", "entities list");
+		// JsonObject content = new JsonObject();
+		// content.add("specification", specifications);
+		// content.add("types", types);
+		// content.add("activators", activators);
+		// result.add("content", content);
+		// System.out.println("entities get: " + specifications.toString());
+		// return result;
+		JsonObject specifications = new JsonObject();
+		lf("All entity GUIs: []", entityGUIs);
+		entityGUIs.entrySet().forEach(entry -> {
+			String entityName = entry.getKey();
+			Element guiSpecification = entry.getValue();
+
+			lf("Entity GUI: [], []", entityName, guiSpecification);
+			specifications.add(entityName, guiSpecification.toJSON());
 		});
-		JsonObject result = new JsonObject();
-		result.addProperty("scope", "global");
-		result.addProperty("subject", "entities list");
-		JsonObject content = new JsonObject();
-		content.add("specification", specifications);
-		content.add("types", types);
-		content.add("activators", activators);
-		result.add("content", content);
-		System.out.println("entities get: " + specifications.toString());
-		return result;
+		return specifications;
 	}
 	
 	@Override
 	public boolean updateGui(String entity, Element guiSpecification) {
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
-		if(entity == null)
+		if (entity == null)
 			return false;
 		idManager.removeIdsWithPrefix(entity);
 		idManager.insertIdsInto(guiSpecification, entity);
 		
 		super.updateGui(entity, guiSpecification);
 		
-		JsonObject tosend = new JsonObject();
-		tosend.addProperty("scope", "entity");
-		tosend.addProperty("subject", "update");
-		tosend.add("content", guiSpecification.toJSON());
-		web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
+		String message = buildMessage("entity", "update", 
+			guiSpecification.toJSON());
+		sendToClient(message);
 		return true;
 	}
 	
@@ -333,33 +377,27 @@ public class WebEntity extends CentralGUI {
 	
 	@Override
 	public boolean sendOutput(AgentWave wave) {
-		JsonObject tosend = new JsonObject();
-		tosend.addProperty("scope", "port");
+		super.sendOutput(wave);
+		li("Sending output wave: []", wave.toString());
 		
+		// wave destination is entity/port
 		String entity = wave.popDestinationElement();
-		String port = wave.getFirstDestinationElement();
-		tosend.addProperty("subject", idManager.makeID(entity, port));
+		String port = wave.popDestinationElement();
+		JsonObject subject = new JsonObject();
+		subject.addProperty("entity", entity);
+		subject.addProperty("port", port);
 		
 		Element gui = entityGUIs.get(entity);
-		if(gui == null)
+		if (gui == null)
 			return ler(false, "GUI for entity [] not present.", entity);
 		
-		JsonObject allValues = new JsonObject();
-		for(String role : wave.getContentElements()) {
-			int i = 0;
-			for(Element e : gui.getChildren(port, role)) {
-				allValues.addProperty(e.getId(), wave.getValues(role).get(i++));
-			}
+		JsonObject allRoles = new JsonObject();
+		for (String role : wave.getContentElements()) {
+			allRoles.addProperty(role, wave.getValue(role));
 		}
-		tosend.add("content", allValues);
 		
-		// some messages are sent before the https server is running - delay them until it is
-		running.future().onComplete(asyncResult -> {
-			if(asyncResult.succeeded()) {
-				lf("message:", tosend);
-				web.eventBus().send(SERVER_TO_CLIENT, tosend.toString());
-			}
-		});
+		String message = buildMessage(PORT_SCOPE, subject, allRoles);
+		sendToClient(message);
 		return true;
 	}
 }

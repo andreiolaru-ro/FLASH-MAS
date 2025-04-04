@@ -297,8 +297,8 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					ed.setGuiSpecification((Element) standardCtrls.clone());
 				li("Registered entity []/[] in []", category, entityName, node);
 				gui.updateGui(entityName, entitiesData.get(entityName).getGuiSpecification());
-				// if(ed.getStatus() != null)
-				// gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
+				if (ed.getStatus() != null)
+					gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
 			}
 			return true;
 		case UPDATE_ENTITY_STATUS:
@@ -307,7 +307,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity)).setStatus(output);
-			System.out.println("VVVVVVVVVVVVVVVVVVVVVVVV");
+			li("Status update for []: []", sourceEntity, output);
 			return gui.sendOutput(new AgentWave(output, sourceEntity, ENTITY_STATUS_ELEMENT));
 		case UPDATE_ENTITY_GUI:
 			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)

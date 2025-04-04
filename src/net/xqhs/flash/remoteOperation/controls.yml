@@ -16,6 +16,7 @@ children:
   - type: label
     value: unknown
     port: standard-status
+    role: content
   - type: button
     value: Start
     port: standard-start
@@ -23,6 +24,7 @@ children:
     properties: {proxy: node}
   - type: button
     value: Kill
+    when: [{ running_status: running_status_stopped, style: disabled }]
     port: standard-stop
     role: activate
     properties: {proxy: node}

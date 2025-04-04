@@ -153,14 +153,19 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		case AGENT_STOP:
 		case SIMULATION_PAUSE:
 		case SIMULATION_START: {
-			li("Status of [] is [].", getParentName(),
-					Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | ")));
+			String status = Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | "));
+			li("Status of [] is [].", getParentName(), status);
 			AgentWave update = CentralMonitoringAndControlEntity.UPDATE_ENTITY_STATUS
 					// FIXME this should be sent to each remote
 					.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, (Object[]) entityStatus)
 					.addSourceElements(SHARD_ENDPOINT);
 			if(!sendMessage(update))
 				le("Status sending failed. Wave is []", update);
+			// TODO: change interfaceSpecification to reflect the new status
+			Element statusElement = interfaceSpecification.getChildren("standard-status", "content");
+			if (statusElement != null) {
+				statusElement.setValue(status);
+			}
 			return;
 		}
 		default:
@@ -236,6 +241,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	public void sendOutput(AgentWave wave) {
 		// TODO check if waves are cloned when sending. Must clone waves because their destination / source parameters
 		// are processed and changed
+		String port = wave.getFirstDestinationElement();
 		
 		// the source is this shard, within this agent
 		wave.addSourceElements(getParentName(), SHARD_ENDPOINT);
@@ -245,5 +251,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		wave.prependDestination(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 		if(!sendMessage(wave))
 			le("Failed to send output [].", wave);
+		// TODO: update the GUI for the entity
+		interfaceSpecification.applyUpdate(port, wave);
 	}
 }

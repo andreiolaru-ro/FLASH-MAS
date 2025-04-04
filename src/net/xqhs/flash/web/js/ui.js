@@ -1,15 +1,13 @@
 import { appContext, sendData, activate } from "./events.js";
 
-// let sidebarEntities = [];
-
 export function handleSidepanel() {
-    $('#sidepanel-btn').on('click', function() {
+    $('#sidepanel-btn').on('click', function () {
         $('#sidepanel').toggleClass('open');
         $('#main-content').toggleClass('collapsed');
         $(this).hide();
     }).hide();
 
-    $('#sidepanel-close-btn').on('click', function() {
+    $('#sidepanel-close-btn').on('click', function () {
         $('#sidepanel').removeClass('open');
         $('#main-content').removeClass('collapsed');
         $('#sidepanel-btn').show();
@@ -24,9 +22,14 @@ export function handleSidepanel() {
 
 export function updateEntitiesList() {
     $('#entities-list').empty();
-    for (let [entityName, entity] of Object.entries(appContext.entitiesData.specification)) {
+    const selectedEntities = [];
+    for (let [entityName, entity] of Object.entries(appContext.entities)) {
+        const selected = appContext.selectedEntities.includes(entityName);
+        if (selected) selectedEntities.push(entityName);
+
         const checkbox = $('<input>').addClass('entity-checkbox')
             .attr('type', 'checkbox').attr('name', entityName + '-checkbox')
+            .attr('checked', selected)
             .on('change', e => handleEntityCheckboxChange(e.target.checked, entityName))
             .on('click', e => e.stopPropagation());
         const label = $('<label>').text(entityName)
@@ -34,13 +37,15 @@ export function updateEntitiesList() {
 
         $('#entities-list').append(
             $('<div>').attr('id', entity.id).addClass('side-drawer entity-item')
-            .append(checkbox, label)
-            .on('click', function() { 
-                checkbox.prop('checked', !checkbox.prop('checked'));
-                checkbox.trigger('change')
-            })
+                .append(checkbox, label)
+                .on('click', function () {
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    checkbox.trigger('change')
+                })
         );
     }
+    appContext.selectedEntities = selectedEntities;
+    updateSelectedEntities();
 }
 
 function handleEntityCheckboxChange(checked, entityName) {
@@ -53,20 +58,22 @@ function handleEntityCheckboxChange(checked, entityName) {
 }
 
 function updateSelectedEntities() {
-    $('#main-header > h1').text(appContext.selectedEntities.length ? 'Selected Entities' : 'No Entities Selected');
+    $('#main-header > h1').text(appContext.selectedEntities.length ?
+        'Selected Entities' : 'No Entities Selected');
+
     $('#selected-entities-list').empty();
-    console.log('Selected entities', appContext.selectedEntities);
     for (let entityName of appContext.selectedEntities) {
-        const entity = appContext.entitiesData.specification[entityName];
+        const entity = appContext.entities[entityName];
         $('#selected-entities-list').append($('<div>').addClass('selected-entity').append(
             $('<h2>').text(entityName),
-            entity.children.map(child => {
-                let item = agentComponents[child.type]?.(child);
+            entity.children.map(childId => {
+                const child = entity.data[childId];
+                const item = agentComponents[child.type]?.(child, entity.data);
                 if (!(child.type in agentComponents)) {
                     console.log('Unknown child type', child);
                     return null;
                 }
-                item.attr('id', child.id);
+                item.attr('id', childId);
                 return item;
             })
         ));
@@ -74,19 +81,24 @@ function updateSelectedEntities() {
 }
 
 // different components that can be rendered in an entity UI
-const agentLabel = (el) => $('<label>').text(el.value);
-const agentButton = (el) => {
+// el is the element from the entity specification
+// data is all the data for the entity
+const agentLabel = (el, _data) => $('<label>').text(el.value);
+const agentButton = (el, _data) => {
     let btn = $('<button>').text(el.value);
     if (el.role == 'activate')
         btn.on('click', () => activate(el));
     return btn;
 }
-const agentInput = (el) => $('<input>').attr('type', 'text').val(el.value);
-const agentContainer = (el) => {
-    let container = $('<div>').addClass('agent-container').css('--direction', el.properties.layout);
-    el.children.forEach(child => {
-        let item = agentComponents[child.type]?.(child);
+const agentInput = (el, _data) => $('<input>').attr('type', 'text').val(el.value);
+const agentContainer = (el, data) => {
+    let container = $('<div>').addClass('agent-container')
+        .css('--direction', el.properties.layout);
+    el.children.forEach(childId => {
+        const child = data[childId];
+        const item = agentComponents[child.type]?.(child, data);
         if (item) container.append(item);
+        item.attr('id', childId);
     });
     return container;
 }
