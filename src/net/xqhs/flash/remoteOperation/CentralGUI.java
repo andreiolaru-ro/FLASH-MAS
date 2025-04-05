@@ -12,13 +12,11 @@
 package net.xqhs.flash.remoteOperation;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.gui.GuiShard;
 import net.xqhs.flash.gui.structure.Element;
-import net.xqhs.flash.json.AgentWaveJson;
 
 /**
  * Interface for possible Central GUIs.

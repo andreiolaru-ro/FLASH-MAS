@@ -338,7 +338,7 @@ public class Element implements Cloneable {
 				result = e;
 				break;
 			}
-			if ("container".equals(e.type)) {
+			if(ElementType.BLOCK.type.equals(e.type)) {
 				result = e.getChildren(childPort, childRole);
 				if (result != null)
 					break;
@@ -366,8 +366,7 @@ public class Element implements Cloneable {
 	 * Applies an update to this element and its children, according to the given wave.
 	 * The roles to which this update applies are the content elements of the wave.
 	 */
-	public void applyUpdate(String port, AgentWave wave) {
-		String updatePort = wave.getFirstDestinationElement();
+	public void applyUpdate(String updatePort, AgentWave wave) {
 		List<String> roles = wave.getContentElements();
 
 		for (String updateRole : roles) {

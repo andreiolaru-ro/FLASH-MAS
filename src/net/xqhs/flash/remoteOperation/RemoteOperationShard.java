@@ -162,10 +162,6 @@ public class RemoteOperationShard extends AgentShardGeneral {
 			if(!sendMessage(update))
 				le("Status sending failed. Wave is []", update);
 			// TODO: change interfaceSpecification to reflect the new status
-			Element statusElement = interfaceSpecification.getChildren("standard-status", "content");
-			if (statusElement != null) {
-				statusElement.setValue(status);
-			}
 			return;
 		}
 		default:

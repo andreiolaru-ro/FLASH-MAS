@@ -294,11 +294,9 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				if(ed.getStatus() == null)
 					ed.setStatus(Fields.STATUS_UNKNOWN.name());
 				if(ed.getGuiSpecification() == null)
-					ed.setGuiSpecification((Element) standardCtrls.clone());
+					ed.setGuiSpecification(setupStandardControls(ed.getStatus(), entityName));
 				li("Registered entity []/[] in []", category, entityName, node);
 				gui.updateGui(entityName, entitiesData.get(entityName).getGuiSpecification());
-				if (ed.getStatus() != null)
-					gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
 			}
 			return true;
 		case UPDATE_ENTITY_STATUS:
@@ -310,16 +308,18 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			li("Status update for []: []", sourceEntity, output);
 			return gui.sendOutput(new AgentWave(output, sourceEntity, ENTITY_STATUS_ELEMENT));
 		case UPDATE_ENTITY_GUI:
-			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
-				lw("Entity [] not yet registered when [].", sourceEntity, op);
-			Element interfaceContainer = new Element();
 			Element interfaceStructure = (Element) wave.getObject(Fields.SPECIFICATION.name());
+			Element interfaceContainer = new Element();
 			if(interfaceStructure != null)
 				// must avoid adding it twice
 				for(Element child : interfaceStructure.getChildren())
 					if(!interfaceContainer.getChildren().contains(child))
 						interfaceContainer.addChild(child);
-			interfaceContainer.addAllChildren(((Element) standardCtrls.clone()).getChildren());
+			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
+				lw("Entity [] not yet registered when [].", sourceEntity, op);
+			else
+				interfaceContainer.addAllChildren(setupStandardControls(entitiesData.get(sourceEntity).getStatus(),
+						entitiesData.get(sourceEntity).getName()).getChildren());
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 					.setGuiSpecification(interfaceContainer);
 			lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
@@ -339,6 +339,13 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			lw("Unhandled operation [] from [].", wave.getFirstDestinationElement(), wave.getCompleteSource());
 			return false;
 		}
+	}
+	
+	protected Element setupStandardControls(String status, String entityName) {
+		Element element = (Element) standardCtrls.clone();
+		element.getChildren(ENTITY_LABEL_ELEMENT).get(0).setValue(entityName);
+		element.getChildren(ENTITY_STATUS_ELEMENT).get(0).setValue(status);
+		return element;
 	}
 	
 	@Override
