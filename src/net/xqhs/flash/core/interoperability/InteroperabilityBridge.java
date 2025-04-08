@@ -1,18 +1,17 @@
 package net.xqhs.flash.core.interoperability;
 
-import com.google.gson.Gson;
-import jdk.internal.net.http.common.Pair;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import com.google.gson.JsonObject;
+
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.util.logging.Unit;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 
@@ -58,6 +57,25 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 	protected void receiveWave(AgentWave wave) {
 		li("Routing [] through bridge [].", wave.toString(), getName());
 
+		if (wave.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION) != null) {
+			String content = wave.get("content");
+			JSONParser parser = new JSONParser();
+			JsonObject json = null;
+			try {
+				json = (JsonObject) parser.parse(content);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (interoperabilityRouter.updateRoutingInformation(json)) {
+				// send to other ERs
+				li("Updated info for []", getName());
+			}
+
+			return;
+		}
+
 		if (!getName().equals(wave.getFirstDestinationElement()))
 			throw new IllegalStateException("The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT) + ") is not the address of this agent (" + getName() + ")");
 		wave.removeFirstDestinationElement();
@@ -89,20 +107,17 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 					pylonProxy.registerBridge(getName(), registerEntity ? waveInbox : null, platformPrefix);
 					registerEntity = false;
 				}
-
-				// this is for inter-zone routing
-//				// for inter-zone routing
-//				AgentWave wave = new AgentWaveJson().appendDestination(platformPrefix).addSourceElements(getName());
-//
-//				// create json with entries target -> {next_hop: <name>. distance: <dist>}
-//
-//				// create map for toJson method
-//				Map<String, Pair<String, Integer>> jsonMap = new HashMap<>();
-//
-//				Gson gson = new Gson();
-//				String jsonToSend = gson.toJson(jsonMap);
-//				wave.add("content", jsonToSend);
 			}
+
+			// this is for inter-zone routing
+			// for inter-zone routing
+//			AgentWave wave = new AgentWaveJson().appendDestination(pylonProxy.getPlatformPrefix()).addSourceElements(getName());
+//			
+//			// create json with entries target -> {next_hop: <name>. distance: <dist>}
+//			String jsonToSend = interoperabilityRouter.getRoutingInfo().getAsString();
+//			wave.add("content", jsonToSend);
+//			wave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, "true");
+//			pylonProxy.send(wave);
 		}
 
 

@@ -11,7 +11,7 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	/**
 	 * The key in the JSON object which is assigned to the name of the bridge entity (for bridge registration messages).
 	 */
-	public final String	MESSAGE_BRIDGE_KEY			= "platformPrefix";
+	public final String	REGISTER_BRIDGE_KEY			= "platformPrefix";
 
 	/**
 	 * The separator between the platform prefix and the port.
@@ -22,6 +22,11 @@ public interface InteroperableMessagingPylonProxy extends WaveMessagingPylonProx
 	 * The key used for the wsRegions protocol for registering bridge only as a bridge and not as a normal entity.
 	 */
 	public final String	IS_REMOTE					= "isRemote";
+	
+	/**
+	 * The key used for sending routing information for multi-platform routing.
+	 */
+	public final String	MULTI_PLATFORM_ROUTING_INFORMATION		= "multiPlatformRoutingInformation";
 
 	/**
 	 * Registers a bridge entity with the specified name, associating with it a {@link WaveReceiver} instance

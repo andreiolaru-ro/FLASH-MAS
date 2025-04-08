@@ -1,7 +1,14 @@
 package net.xqhs.flash.core.interoperability;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.agent.AgentWave;
@@ -112,10 +119,11 @@ public class InteroperabilityRouter<T> {
 
 	public static JsonObject prependDestinationToMessage(JsonObject message, String destination) {
 		String nodeName = null;
-		if (message.has(WebSocketPylon.MESSAGE_NODE_KEY))
+		if (message.has(WebSocketPylon.MESSAGE_NODE_KEY)) {
 			nodeName = message.get(WebSocketPylon.MESSAGE_NODE_KEY).getAsString();
+			message.remove(WebSocketPylon.MESSAGE_NODE_KEY);
+		}
 
-		message.remove(WebSocketPylon.MESSAGE_NODE_KEY);
 		AgentWave messageAsWave = AgentWaveJson.toAgentWave(message);
 		messageAsWave.prependDestination(destination);
 
@@ -123,5 +131,108 @@ public class InteroperabilityRouter<T> {
 			AgentWaveJson.toJson(messageAsWave).addProperty(WebSocketPylon.MESSAGE_NODE_KEY, nodeName);
 
 		return AgentWaveJson.toJson(messageAsWave);
+	}
+
+	public JsonObject getAllRoutingInfo() {
+		if (platformPrefixToRoutingDestination == null || platformPrefixToRoutingDestination.isEmpty())
+			return null;
+
+		JsonArray routingInfo = new JsonArray();
+		for (Map.Entry<String, TreeMap<Integer, Set<T>>> routesForDestination : platformPrefixToRoutingDestination.entrySet()) {
+			JsonArray routesInfoForDestination = new JsonArray();
+			String destination = routesForDestination.getKey();
+			JsonObject object = new JsonObject();
+
+			for (Map.Entry<Integer, Set<T>> routeInfo : routesForDestination.getValue().entrySet()) {
+				Integer distance = routeInfo.getKey();
+				JsonObject routeInfoJson = new JsonObject();
+
+				// TODO: only send first value info ?
+				for (T route : routeInfo.getValue()) {
+					if (route instanceof String) {
+						routeInfoJson.addProperty("route", (String) route);
+					} else if (route instanceof InteroperableMessagingPylonProxy) {
+						routeInfoJson.addProperty("route", ((InteroperableMessagingPylonProxy) route).getPlatformPrefix());
+					}
+
+					routeInfoJson.addProperty("distance", distance);
+				}
+
+				routesInfoForDestination.add(routeInfoJson);
+			}
+
+			object.addProperty("destination", destination);
+			object.add("info", routesInfoForDestination);
+			routingInfo.add(object);
+		}
+
+		JsonObject result = new JsonObject();
+		result.add("routingInfo", routingInfo);
+		return result;
+	}
+
+	public JsonObject getRoutingInfo(String nextHopEntityNameForExcludedRoute) {
+		if (platformPrefixToRoutingDestination == null || platformPrefixToRoutingDestination.isEmpty())
+			return null;
+
+		JsonArray routingInfo = new JsonArray();
+		for (Map.Entry<String, TreeMap<Integer, Set<T>>> routesForDestination : platformPrefixToRoutingDestination.entrySet()) {
+			JsonArray routesInfoForDestination = new JsonArray();
+			String destination = routesForDestination.getKey();
+			JsonObject object = new JsonObject();
+
+			for (Map.Entry<Integer, Set<T>> routeInfo : routesForDestination.getValue().entrySet()) {
+				Integer distance = routeInfo.getKey();
+				JsonObject routeInfoJson = new JsonObject();
+
+				// TODO: only send first value info ?
+				for (T route : routeInfo.getValue()) {
+					String nextHop = "";
+
+					if (route instanceof String) {
+						nextHop = (String) route;
+					} else if (route instanceof InteroperableMessagingPylonProxy) {
+						nextHop = ((InteroperableMessagingPylonProxy) route).getPlatformPrefix();
+					}
+
+					if (!nextHop.equals(nextHopEntityNameForExcludedRoute))
+						routeInfoJson.addProperty("distance", distance);
+				}
+
+				routesInfoForDestination.add(routeInfoJson);
+			}
+
+			object.addProperty("destination", destination);
+			object.add("info", routesInfoForDestination);
+			routingInfo.add(object);
+		}
+
+		JsonObject result = new JsonObject();
+		result.add("routingInfo", routingInfo);
+		return result;
+	}
+
+	public boolean updateRoutingInformation(JsonObject json) {
+		if (json == null)
+			return false;
+
+		boolean infoUpdated = false;
+		for (JsonElement routesForDestination : json.getAsJsonArray()) {
+			JsonObject object = routesForDestination.getAsJsonObject();
+			String destination = object.get("destination").getAsString();
+			JsonArray routes = object.getAsJsonArray("info");
+			
+			JsonObject shortestRoute = routes.get(0).getAsJsonObject();
+			int distance = shortestRoute.get("distance").getAsInt();
+			String routeName = shortestRoute.get("route").getAsString();
+			Integer currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey();
+			 
+			if (currentDistance.intValue() < distance) {
+				infoUpdated = true;
+				addRoutingDestinationForPlatform(destination, (T) routeName, distance);
+			}
+		}
+		
+		return infoUpdated;
 	}
 }

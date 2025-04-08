@@ -86,7 +86,7 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 
 			send((AgentWave) new AgentWaveJson().addSourceElements(entityName, Constants.PROTOCOL)
 					.add(Constants.EVENT_TYPE_KEY, Constants.MessageType.REGISTER.toString())
-					.add(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY, platformPrefix));
+					.add(InteroperableMessagingPylonProxy.REGISTER_BRIDGE_KEY, platformPrefix));
 
 			return false;
 		}

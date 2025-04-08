@@ -175,7 +175,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		@Override
 		public boolean registerBridge(String entityName, WaveReceiver waveReceiver, String platformPrefix) {
 			Map<String, String> bridgeInfo = new HashMap<>();
-			bridgeInfo.put(MESSAGE_BRIDGE_KEY, platformPrefix);
+			bridgeInfo.put(REGISTER_BRIDGE_KEY, platformPrefix);
 
 			return register(entityName, waveReceiver, bridgeInfo);
 		}

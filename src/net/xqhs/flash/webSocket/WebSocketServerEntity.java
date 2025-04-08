@@ -14,6 +14,7 @@ package net.xqhs.flash.webSocket;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -32,6 +34,7 @@ import net.xqhs.flash.core.interoperability.InteroperabilityRouter;
 import net.xqhs.flash.core.interoperability.InteroperableMessagingPylonProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -229,12 +232,75 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 		}
 
 		// bridge registration message
-		if (message.has(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY) && message.has(WebSocketPylon.MESSAGE_ENTITY_KEY)) {
-			String platformPrefix = message.get(InteroperableMessagingPylonProxy.MESSAGE_BRIDGE_KEY).getAsString();
-			String entityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
-			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, entityName, 1);
-			lf("Registered bridge entity [] for platform [] on []. ", entityName, platformPrefix, nodeName);
-			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(entityName) && entityToWebSocket.get(entityName) == webSocket) {
+		if (message.has(InteroperableMessagingPylonProxy.REGISTER_BRIDGE_KEY) && message.has(WebSocketPylon.MESSAGE_ENTITY_KEY)) {
+			String bridgeEntityName = message.get(WebSocketPylon.MESSAGE_ENTITY_KEY).getAsString();
+
+			// send to the newly registered bridge
+			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
+			if (initialRoutingInfo != null) {
+				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(bridgeEntityName);
+				initialWave.add("content", initialRoutingInfo.toString());
+				webSocket.send(AgentWaveJson.toJson(initialWave).toString());
+				li("Sent routing info [] to []", AgentWaveJson.toJson(initialWave).toString(), bridgeEntityName);
+			}
+
+			String platformPrefix = message.get(InteroperableMessagingPylonProxy.REGISTER_BRIDGE_KEY).getAsString();
+			interoperabilityRouter.addRoutingDestinationForPlatform(platformPrefix, bridgeEntityName, 1);
+			lf("Registered bridge entity [] for platform [] on []. ", bridgeEntityName, platformPrefix, nodeName);
+
+			for (Iterator<String> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
+				String destinationName = iterator.next();
+				WebSocket erWebSocket = entityToWebSocket.get(destinationName);
+
+				if (!destinationName.equals(bridgeEntityName)) {
+					JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
+					AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName);
+					updatedWave.add("content", updatedRoutingInfo.toString());
+					erWebSocket.send(AgentWaveJson.toJson(updatedWave).toString());
+					li("Sent routing info [] to []", AgentWaveJson.toJson(updatedWave).toString(), destinationName);
+				}
+			}
+
+			useful = true;
+			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(bridgeEntityName) && entityToWebSocket.get(bridgeEntityName) == webSocket) {
+				if (!useful)
+					le("Message could not be used []", message);
+				printState();
+				return;
+			}
+		}
+
+		if (message.has(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION)) {
+			String bridgeEntityName = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0).getAsString();
+			JsonElement content = message.get("content");
+			JsonObject json = content.getAsJsonObject();
+
+			// send to source ER
+			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
+			if (initialRoutingInfo != null) {
+				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(bridgeEntityName).addSourceElements(getName());
+				initialWave.add("content", initialRoutingInfo.getAsString());
+				webSocket.send(AgentWaveJson.toJson(initialWave).toString());
+			}
+
+			if (interoperabilityRouter.updateRoutingInformation(json)) {
+				// send to other ERs
+				for (Iterator<String> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
+					String destinationName = iterator.next();
+					WebSocket erWebSocket = entityToWebSocket.get(destinationName);
+
+					if (!destinationName.equals(bridgeEntityName)) {
+						JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
+						AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName).addSourceElements(getName());
+						updatedWave.add("content", updatedRoutingInfo.getAsString());
+						erWebSocket.send(AgentWaveJson.toJson(updatedWave).toString());
+						li("Sent routing info [] to []", AgentWaveJson.toJson(updatedWave).toString(), destinationName);
+					}
+				}
+			}
+
+			useful = true;
+			if (nodeToWebSocket.containsKey(nodeName) && entityToWebSocket.containsKey(bridgeEntityName) && entityToWebSocket.get(bridgeEntityName) == webSocket) {
 				if (!useful)
 					le("Message could not be used []", message);
 				printState();
