@@ -43,7 +43,7 @@ public class EngineController {
 	
 	@SuppressWarnings("unchecked")
 	public static YamlObject mapToYamlObject(LinkedHashMap<String, Object> map) {
-		return new YamlObject((String) map.get("e"), (String) map.get("level"), (List<String>) map.get("match"),
+		return new YamlObject((String) map.get("e"), (String) map.get("level"), (List<String>) map.get("match"), (String) map.get("fsm-from"), (String) map.get("fsm-start"), (String) map.get("fsm-expect"),
 				(List<String>) map.get("out"), (List<String>) map.get("expect"), (String) map.get("comment"));
 	}
 	

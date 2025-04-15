@@ -21,5 +21,8 @@
 
 - e: "AgentA#.*"
   level: ">"
+  fsm-from: "graph.dot"
+  fsm-start: "INITIAL"
+  fsm-expect: "STOPPED"
   out: ["count", "agent is running:", "list:line"]
   expect: ["count", "1"]

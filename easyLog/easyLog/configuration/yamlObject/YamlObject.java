@@ -22,6 +22,9 @@ public class YamlObject {
     private String e;
     private String level;
     private List<String> match;
+    private String fsmFrom;
+    private String fsmStart;
+    private String fsmExpect;
     private List<String> out;
     private List<String> expect;
     private String comment;
@@ -30,10 +33,13 @@ public class YamlObject {
 
     }
 
-    public YamlObject(String e, String level, List<String> match, List<String> out, List<String> expect, String comment) {
+    public YamlObject(String e, String level, List<String> match, String fsmFrom, String fsmStart, String fsmExpect, List<String> out, List<String> expect, String comment) {
         this.e = e;
         this.level = level;
         this.match = match;
+        this.fsmFrom = fsmFrom;
+        this.fsmStart = fsmStart;
+        this.fsmExpect = fsmExpect;
         this.out = out;
         this.expect = expect;
         this.comment = comment;
