@@ -1,15 +1,16 @@
-package example.echoAgent;
+package automatedTesting;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import example.helloWorld.BootDeployment;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class EchoAgentTest {
+public class HelloWorldAgentTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
@@ -25,7 +26,7 @@ public class EchoAgentTest {
 
     @Test
     public void testExecution() throws InterruptedException {
-        Thread bootThread = new Thread(() -> Boot.main(new String[]{}));
+        Thread bootThread = new Thread(() -> BootDeployment.main(new String[]{}));
         bootThread.start();
 
         for (int i = 0; i < 10; i++) {

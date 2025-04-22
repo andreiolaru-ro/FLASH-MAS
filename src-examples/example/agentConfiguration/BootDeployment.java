@@ -9,18 +9,22 @@
  *
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
+package example.agentConfiguration;
+
+import net.xqhs.flash.FlashBoot;
+
 /**
- *
+ * Deployment testing.
  */
-/**
- * deployment for an agent that outputs to its log "Hello World" and then it stops.
- * <p>
- * The scenario can be started either via the deployment file (see  BootDeployment) or via command line arguments (see BootCLI)
- * <p>
- * Expected output: the agent outputs the fact that it is starting (it received the agent start event).
- * It outputs to its log "Hello World" and the agent stops after a short while.
- *
- * @author andreiolaru
- *
- */
-package example.helloWorld;
+public class BootDeployment {
+    /**
+     * Boots example.
+     *
+     * @param args_
+     *            - not used.
+     */
+    public static void main(String[] args_) {
+        FlashBoot.main(new String[] { "src-examples/example/agentConfiguration/deployment.xml" });
+    }
+
+}
