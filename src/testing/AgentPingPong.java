@@ -48,7 +48,18 @@ public class AgentPingPong extends BaseAgent {
 	 * Time between ping messages.
 	 */
 	protected static final long		PING_PERIOD					= 2000;
-	
+	/**
+	 * The name of the component parameter that contains the number of pings that should be sent.
+	 */
+	protected static final String PING_NUMBER_PARAMETER_NAME = "ping-number";
+	/**
+	 * Default number of pings that should be sent in case PING_NUMBER_PARAMETER_NAME is not present in the configuration.
+	 */
+	protected static final int DEFAULT_PING_NUMBER = 5;
+	/**
+	 * Limit number of pings sent.
+	 */
+	int pingLimit;
 	/**
 	 * Timer for pinging.
 	 */
@@ -76,6 +87,11 @@ public class AgentPingPong extends BaseAgent {
 			return false;
 		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
 			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
+		if (configuration.isSet(PING_NUMBER_PARAMETER_NAME)) {
+			pingLimit = Integer.parseInt(configuration.getFirstValue(PING_NUMBER_PARAMETER_NAME));
+		} else {
+			pingLimit = DEFAULT_PING_NUMBER;
+		}
 		return true;
 	}
 	
@@ -144,6 +160,12 @@ public class AgentPingPong extends BaseAgent {
 	 * Pings the other agents.
 	 */
 	protected void sendPing() {
+		if (pingLimit >= 0 && tick >= pingLimit) {
+			li("Ping limit reached, stopping agent.");
+			stop();
+			return;
+		}
+
 		tick++;
 		for(String otherAgent : otherAgents) {
 			AgentWave wave = new AgentWave("ping-no " + tick, otherAgent, "pong").addSourceElementFirst("ping");
