@@ -26,7 +26,7 @@ public class BootCLI
      */
     public static void main(String[] args)
     {
-        String test_args = "-agent AdvancedHelloWorldAgent classpath:example.agentConfiguration.AdvancedHelloWorldAgent stopAfterMs:3000";
+		String test_args = "-agent AdvancedHelloWorldAgent classpath:example.agentConfiguration.ConfigurableHelloWorldAgent stopAfterMs:3000";
         FlashBoot.main(test_args.split(" "));
     }
 

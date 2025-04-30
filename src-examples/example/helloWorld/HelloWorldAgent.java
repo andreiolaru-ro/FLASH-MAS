@@ -11,9 +11,6 @@
  ******************************************************************************/
 package example.helloWorld;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.BaseAgent;
 
@@ -22,30 +19,18 @@ import net.xqhs.flash.core.agent.BaseAgent;
  *
  * @author Andrei Olaru
  */
-
 public class HelloWorldAgent extends BaseAgent {
-    @Override
-    public boolean start() {
-        if(!super.start())
-            return false;
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                stop();
-                t.cancel();
-            }
-        }, 2000);
-        li("Agent started");
-        li("Hello World");
-        return true;
-    }
-
-    @Override
-    public boolean stop() {
-        if(!super.stop())
-            return false;
-        li("Agent stopped");
-        return true;
-    }
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Override
+	public boolean start() {
+		if(!super.start())
+			return false;
+		li("Hello World");
+		stop();
+		return true;
+	}
 }

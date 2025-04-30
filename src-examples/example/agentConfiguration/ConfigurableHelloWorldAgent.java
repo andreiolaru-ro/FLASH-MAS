@@ -11,9 +11,9 @@
  ******************************************************************************/
 package example.agentConfiguration;
 
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Optional;
 
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.BaseAgent;
@@ -23,41 +23,39 @@ import net.xqhs.flash.core.agent.BaseAgent;
  *
  * @author Andrei Olaru
  */
-
-public class AdvancedHelloWorldAgent extends BaseAgent {
-
-    protected static final Long DEFAULT_STOP_AFTER = 2000L;
-
-    protected static final String STOP_AFTER_PARAMETER_NAME = "stopAfterMs";
-
-    @Override
-    public boolean start() {
-        if (!super.start())
-            return false;
-
-        long stopAfter = Optional.ofNullable(getConfiguration().get(STOP_AFTER_PARAMETER_NAME))
-                .map(Long::parseLong)
-                .orElse(DEFAULT_STOP_AFTER);
-
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                stop();
-                t.cancel();
-            }
-        }, stopAfter);
-
-        li("Agent started");
-        li("Hello World (stopping in " + stopAfter + " ms)");
-        return true;
-    }
-
-    @Override
-    public boolean stop() {
-        if (!super.stop())
-            return false;
-        li("Agent stopped");
-        return true;
-    }
+public class ConfigurableHelloWorldAgent extends BaseAgent {
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * The time the agent will stop after, if no configuration is done in the deployment.
+	 */
+	protected static final Long		DEFAULT_STOP_AFTER			= Long.valueOf(2000L);
+	/**
+	 * The name of the parameter for the configuration of the time to stop after.
+	 */
+	protected static final String	STOP_AFTER_PARAMETER_NAME	= "stopAfterMs";
+	
+	@Override
+	public boolean start() {
+		if(!super.start())
+			return false;
+		
+		long stopAfter = Optional.ofNullable(getConfiguration().get(STOP_AFTER_PARAMETER_NAME)).map(Long::parseLong)
+				.orElse(DEFAULT_STOP_AFTER).longValue();
+		
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				stop();
+				t.cancel();
+			}
+		}, stopAfter);
+		
+		li("Hello World (stopping in " + stopAfter + " ms)");
+		return true;
+	}
 }
