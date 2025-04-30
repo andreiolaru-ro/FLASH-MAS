@@ -31,6 +31,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  */
 public class AgentPingPong extends BaseAgent {
 	/**
+	 * The serial UID.
+	 */
+	private static final long		serialVersionUID			= 1L;
+	/**
 	 * The name of the component parameter that contains the id of the other agent.
 	 */
 	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "sendTo";
@@ -72,10 +76,6 @@ public class AgentPingPong extends BaseAgent {
 	 * The messaging shard.
 	 */
 	MessagingShard	msgShard	= null;
-	/**
-	 * The name of this agent.
-	 */
-	String			agentName	= null;
 	/**
 	 * The index of the message sent.
 	 */
