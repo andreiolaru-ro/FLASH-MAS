@@ -15,7 +15,7 @@
 /**
  * deployment for an agent that outputs to its log "Hello World" and then it stops.
  * <p>
- * The scenario can be started either via the deployment file (see  BootDeployment) or via command line arguments (see BootCLI)
+ * The scenario can be started either via the deployment file (see {@link example.helloWorld.BootDeployment}) or via command line arguments (see {@link example.helloWorld.BootCLI})
  * <p>
  * Expected output: the agent outputs the fact that it is starting (it received the agent start event).
  * It outputs to its log "Hello World" and the agent stops after a short while.

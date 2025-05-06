@@ -16,7 +16,7 @@
  * The scenario of two agents which ping messages between them (one sends and one replies). The scenario is given as
  * console arguments. The agent definition is in package <code>testing</code>.
  * <p>
- * Run the Boot class.
+ * Run the {@link example.simplePingPong.Boot} class.
  * <p>
  * Expect to see at each 2 seconds 2 events: one from AgentB and one from AgentA.
  *

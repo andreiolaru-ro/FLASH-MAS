@@ -11,90 +11,29 @@
  ******************************************************************************/
 package testing;
 
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
-import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
- * The implementation of the agents.
+ * An extension of AgentPingPongPlain using MessagingShard instead of WaveMessagingPylonProxy.
  */
-public class AgentPingPong extends BaseAgent {
+public class AgentPingPong extends AgentPingPongPlain {
 	/**
 	 * The serial UID.
 	 */
-	private static final long		serialVersionUID			= 1L;
-	/**
-	 * The name of the component parameter that contains the id of the other agent.
-	 */
-	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "sendTo";
-	/**
-	 * Endpoint element for this shard.
-	 */
-	protected static final String	SHARD_ENDPOINT				= "ping";
-	/**
-	 * Initial delay before the first ping message.
-	 */
-	
-	// For WebSocket we need to wait until all agents are started and registered to the server.
-	protected static final long		PING_INITIAL_DELAY			= 2000;
-	/**
-	 * Time between ping messages.
-	 */
-	protected static final long		PING_PERIOD					= 2000;
-	/**
-	 * The name of the component parameter that contains the number of pings that should be sent.
-	 */
-	protected static final String PING_NUMBER_PARAMETER_NAME = "ping-number";
-	/**
-	 * Default number of pings that should be sent in case PING_NUMBER_PARAMETER_NAME is not present in the configuration.
-	 */
-	protected static final int DEFAULT_PING_NUMBER = 5;
-	/**
-	 * Limit number of pings sent.
-	 */
-	int pingLimit;
-	/**
-	 * Timer for pinging.
-	 */
-	Timer			pingTimer	= null;
-	/**
-	 * Cache for the name of the other agent.
-	 */
-	List<String>	otherAgents	= null;
+	private static final long	 	serialVersionUID	 		= 1L;
 	/**
 	 * The messaging shard.
 	 */
-	MessagingShard	msgShard	= null;
-	/**
-	 * The index of the message sent.
-	 */
-	int				tick		= 0;
-	
-	@Override
-	public boolean configure(MultiTreeMap configuration) {
-		if(!super.configure(configuration))
-			return false;
-		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
-			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
-		if (configuration.isSet(PING_NUMBER_PARAMETER_NAME)) {
-			pingLimit = Integer.parseInt(configuration.getFirstValue(PING_NUMBER_PARAMETER_NAME));
-		} else {
-			pingLimit = DEFAULT_PING_NUMBER;
-		}
-		return true;
-	}
-	
+	MessagingShard	 msgShard	 = null;
+
 	@Override
 	public boolean start() {
 		if(!super.start())
@@ -102,17 +41,6 @@ public class AgentPingPong extends BaseAgent {
 		if(msgShard == null)
 			throw new IllegalStateException("No messaging shard present");
 		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		if(otherAgents != null) {
-			// agent is Ping agent.
-			pingTimer = new Timer();
-			pingTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					sendPing();
-				}
-			}, PING_INITIAL_DELAY, PING_PERIOD);
-		}
-		li("Agent started");
 		return true;
 	}
 	
@@ -134,10 +62,7 @@ public class AgentPingPong extends BaseAgent {
 	
 	@Override
 	public boolean stop() {
-		if(!super.stop())
-			return false;
-		pingTimer.cancel();
-		li("Agent stopped");
+		if (!super.stop()) return false;
 		return true;
 	}
 	
