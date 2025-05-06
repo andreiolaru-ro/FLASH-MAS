@@ -11,7 +11,6 @@
  ******************************************************************************/
 package testing;
 
-
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -22,18 +21,19 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 
 /**
- * An extension of AgentPingPongPlain using MessagingShard instead of WaveMessagingPylonProxy.
+ * An extension of AgentPingPongPlain integrating a {@link MessagingShard} instead of directly using
+ * WaveMessagingPylonProxy.
  */
 public class AgentPingPong extends AgentPingPongPlain {
 	/**
 	 * The serial UID.
 	 */
-	private static final long	 	serialVersionUID	 		= 1L;
+	private static final long	serialVersionUID	= 1L;
 	/**
 	 * The messaging shard.
 	 */
-	MessagingShard	 msgShard	 = null;
-
+	MessagingShard				msgShard			= null;
+	
 	@Override
 	public boolean start() {
 		if(!super.start())
@@ -44,59 +44,21 @@ public class AgentPingPong extends AgentPingPongPlain {
 		return true;
 	}
 	
-	/**
-	 * @param event
-	 *            - the event received.
-	 * @return <code>true</code> if the message was posted successfully.
-	 */
-	protected boolean processEvent(AgentEvent event) {
-		li("received: " + event.toString());
-		if(AgentEventType.AGENT_WAVE.equals(event.getType()) && otherAgents == null) {
-			// only reply if this is not the ping agent
-			String replyContent = ((AgentWave) event).getContent() + " reply";
-			li("sending reply ", ((AgentWave) event).createReply(replyContent));
-			return msgShard.sendMessage(((AgentWave) event).createReply(replyContent));
-		}
-		return false;
-	}
-	
 	@Override
-	public boolean stop() {
-		if (!super.stop()) return false;
-		return true;
-	}
-	
-	@Override
-	public boolean addContext(EntityProxy<Pylon> context) {
-		if(!super.addContext(context))
-			return false;
+	protected boolean register(EntityProxy<Pylon> context) {
 		msgShard = (MessagingShard) AgentShardCore.instantiateRecommendedShard(StandardAgentShard.MESSAGING,
 				(PylonProxy) context, null, new BaseAgentProxy() {
 					@Override
 					public boolean postAgentEvent(AgentEvent event) {
-						return processEvent(event);
+						return AgentEventType.AGENT_WAVE.equals(event.getType()) ? processEvent((AgentWave) event)
+								: false;
 					}
 				});
-		lf("Context added: ", context.getEntityName());
 		return msgShard.addGeneralContext(context);
 	}
 	
-	/**
-	 * Pings the other agents.
-	 */
-	protected void sendPing() {
-		if (pingLimit >= 0 && tick >= pingLimit) {
-			li("Ping limit reached, stopping agent.");
-			stop();
-			return;
-		}
-
-		tick++;
-		for(String otherAgent : otherAgents) {
-			AgentWave wave = new AgentWave("ping-no " + tick, otherAgent, "pong").addSourceElementFirst("ping");
-			lf("Sending the message [] to ", wave, otherAgent);
-			if(!msgShard.sendMessage(wave))
-				le("Message sending failed");
-		}
+	@Override
+	protected boolean send(AgentWave wave) {
+		return msgShard.sendMessage(wave);
 	}
 }

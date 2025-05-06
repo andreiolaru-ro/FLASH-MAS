@@ -27,11 +27,14 @@ public class Boot
     public static void main(String[] args)
     {
         String test_args = "";
+		
+		boolean usePlainAgent = true;
+		String agentType = usePlainAgent ? "AgentPingPongPlain" : "AgentPingPong";
 
         test_args += " -package testing";
         test_args += " -node main";
-		test_args += " -agent AgentA classpath:AgentPingPongPlain sendTo:AgentB ping-number:8";
-		test_args += " -agent AgentB classpath:AgentPingPongPlain";
+		test_args += " -agent AgentA classpath:" + agentType + " sendTo:AgentB ping-number:5";
+		test_args += " -agent AgentB classpath:" + agentType;
 
         FlashBoot.main(test_args.split(" "));
     }
