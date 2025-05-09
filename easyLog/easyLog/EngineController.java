@@ -63,8 +63,8 @@ public class EngineController {
 					for(ParserEngine engine : engineSet) {
 						engine.process(line);
 					}
-//					System.out.print("\r" + (n++) + " Lines processed");
-					if(n % 10 == 0) {
+					// System.out.print("\r" + n + " Lines processed");
+					if(n++ % 10 == 0) {
 						for(Entry entry : entriesList) {
 							if(entry.getOutputItem() != null) {
 								entry.getOutputItem().getOutput();
@@ -75,6 +75,7 @@ public class EngineController {
 					}
 				}
 			}
+			System.out.println("----------------------------- EXIT");
 			reader.close();
 		} catch(IOException e) {
 			throw new RuntimeException(e);

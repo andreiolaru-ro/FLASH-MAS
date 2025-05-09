@@ -17,13 +17,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import easyLog.EasyLog;
-import easyLog.integration.PipedStreamLogOutput;
+import easyLog.integration.BufferedStreamOutput;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
+import net.xqhs.util.logging.output.ConsoleOutput;
 import net.xqhs.util.logging.output.FileOutput;
-import net.xqhs.util.logging.output.StreamLogOutput;
 
 /**
  * Class that boots a Flash-MAS instance.
@@ -32,11 +32,12 @@ import net.xqhs.util.logging.output.StreamLogOutput;
  */
 public class FlashBoot {
 	
-	protected static int			bitIndex			= 0;
-	protected static final int		OUTPUT_TO_CONSOLE	= 1 << bitIndex++;
-	protected static final int		OUTPUT_TO_FILE		= 1 << bitIndex++;
-	protected static final int		OUTPUT_TO_EASYLOG	= 1 << bitIndex++;
-	protected static final int		LOG_OUTPUTS			= OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG;
+	protected static int		bitIndex			= 0;
+	protected static final int	OUTPUT_TO_CONSOLE	= 1 << bitIndex++;
+	protected static final int	OUTPUT_TO_FILE		= 1 << bitIndex++;
+	protected static final int	OUTPUT_TO_EASYLOG	= 1 << bitIndex++;
+	// protected static final int LOG_OUTPUTS = OUTPUT_TO_CONSOLE;
+	protected static final int		LOG_OUTPUTS			= OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	protected static final Level	GLOBAL_LOG_LEVEL	= Level.ALL;
 	private static final String		EASYLOG_CONFIG_FILE	= "resource/test.yml";
 	
@@ -48,7 +49,8 @@ public class FlashBoot {
 	 */
 	public static void main(String[] args) {
 		MasterLog.setLogLevel(GLOBAL_LOG_LEVEL);
-		// MasterLog.addDefaultOutput(new ConsoleOutput());
+		if((LOG_OUTPUTS & OUTPUT_TO_CONSOLE) != 0)
+			MasterLog.addDefaultOutput(new ConsoleOutput());
 		
 		if((LOG_OUTPUTS & OUTPUT_TO_FILE) != 0)
 			try {
@@ -57,11 +59,9 @@ public class FlashBoot {
 				e.printStackTrace();
 			}
 		
-		PipedOutputStream stream = null;
+		PipedOutputStream stream = new PipedOutputStream();
 		if((LOG_OUTPUTS & OUTPUT_TO_EASYLOG) != 0) {
-			StreamLogOutput out = new PipedStreamLogOutput();
-			MasterLog.addDefaultOutput(out);
-			stream = (PipedOutputStream) out.getOutputStream();
+			MasterLog.addDefaultOutput(new BufferedStreamOutput(stream));
 			EasyLog.start(stream, EASYLOG_CONFIG_FILE);
 		}
 		
@@ -69,5 +69,4 @@ public class FlashBoot {
 		for(Node node : nodes)
 			node.start();
 	}
-	
 }
