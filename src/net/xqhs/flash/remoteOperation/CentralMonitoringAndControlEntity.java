@@ -166,6 +166,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			case AGENT_WAVE:
 				return processWave((AgentWave) event);
 			default:
+				centralMessagingShard.signalAgentEvent(event);
 				return false;
 			}
 		}
@@ -333,6 +334,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			return gui.sendOutput(wave.removeFirstDestinationElement().prependDestination(sourceEntity)
 					.recomputeCompleteDestination());
 		case GUI_INPUT_TO_ENTITY:
+			li("GUI input to entity []: []", sourceEntity, wave.toString());
 			return centralMessagingShard.sendMessage(wave.removeFirstDestinationElement().recomputeCompleteDestination()
 					.addSourceElementFirst(getName()));
 		default:

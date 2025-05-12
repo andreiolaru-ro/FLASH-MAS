@@ -26,7 +26,7 @@ public enum ElementType {
 	/**
 	 * A container with multiple elements.
 	 */
-    BLOCK("container"),
+    CONTAINER("container"),
 	/**
 	 * A static output for one value.
 	 */

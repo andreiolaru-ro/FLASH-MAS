@@ -75,6 +75,7 @@ public class TestShard extends AgentShardGeneral {
 								.sendOutput(new AgentWave(Integer.valueOf(value + 1).toString(), PORT));
 					}
 				}, 0, 2000);
+			
 			break;
 		case AGENT_STOP:
 			if(timer != null) {

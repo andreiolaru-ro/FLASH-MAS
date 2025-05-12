@@ -11,7 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.web;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -19,6 +21,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.Json;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -26,7 +29,9 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import net.xqhs.flash.core.DeploymentConfiguration;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.OperationUtils;
@@ -56,11 +61,14 @@ public class WebEntity extends CentralGUI {
 	/** The endpoint for ws communication */
 	protected static final String WS_ENDPOINT = "/eventbus";
 
-	/** The scope for client messages regarding updates to a port */
+	/** The scope for server messages regarding updates to a port */
 	protected static final String PORT_SCOPE = "port";
 
 	/** The scope for client messages regarding a client registration */
 	protected static final String REGISTERED_SCOPE = "registered";
+
+	/** The scope for client messages regarding a notification */
+	protected static final String NOTIFY_SCOPE = "notify";
 
 	/** The scope key for a message from the client */
 	protected static final String MESSAGE_SCOPE = "scope";
@@ -76,6 +84,9 @@ public class WebEntity extends CentralGUI {
 
 	/** A promise that is completed when a client connection is fully established */
 	protected Promise<Void> running = Promise.promise();
+
+	/** The Gson object used for JSON serialization and deserialization */
+	protected static final Gson gson = new Gson();
 
 	/**
 	 * Constructor for the web entity.
@@ -144,16 +155,20 @@ public class WebEntity extends CentralGUI {
 			
 			// handle messages from the client
 			vertx.eventBus().consumer(CLIENT_TO_SERVER).handler(objectMessage -> {
-				JsonObject msg = JsonParser.parseString((String) objectMessage.body()).getAsJsonObject();
+				// convert from vertx.json.JsonObject to Gson JsonObject
+				JsonObject msg = JsonParser.parseString(objectMessage.body().toString()).getAsJsonObject();
 				String scope = msg.get(MESSAGE_SCOPE).getAsString();
+
 				if (REGISTERED_SCOPE.equals(scope)) {
 					JsonObject entities = getEntities();
 					String message = buildMessage("global", "entities list", entities);
 					vertx.eventBus().send(SERVER_TO_CLIENT, message);
 					entity.running.complete();
 				}
-				else if (PORT_SCOPE.equals(scope)) {
-					activeInput(msg);
+				else if (NOTIFY_SCOPE.equals(scope)) {
+					JsonArray subject = msg.get(MESSAGE_SUBJECT).getAsJsonArray();
+					JsonObject content = msg.get(MESSAGE_CONTENT).getAsJsonObject();
+					entity.sendNotification(subject, content);
 				}
 			});
 			
@@ -269,37 +284,6 @@ public class WebEntity extends CentralGUI {
 	 * @return a {@link JsonObject} containing the specifications of all entities.
 	 */
 	public JsonObject getEntities() {
-		// System.out.println("entities get.");
-		
-		// JsonObject specifications = new JsonObject();
-		// JsonObject types = new JsonObject();
-		// JsonObject activators = new JsonObject();
-		
-		// entityGUIs.entrySet().forEach(entry -> {
-		// 	String name = entry.getKey();
-		// 	Element guiElement = entry.getValue();
-			
-		// 	specifications.add(name, guiElement.toJSON());
-		// 	for(Element child : guiElement.getChildren()) {
-		// 		types.addProperty(child.getId(), child.getType());
-		// 		if ("activate".equals(child.getRole())) {
-		// 			JsonArray role_ids = new JsonArray();
-		// 			for (Element port_e : guiElement.getChildren(child.getPort()))
-		// 				role_ids.add(port_e.getId());
-		// 			activators.add(child.getId(), role_ids);
-		// 		}
-		// 	}
-		// });
-		// JsonObject result = new JsonObject();
-		// result.addProperty("scope", "global");
-		// result.addProperty("subject", "entities list");
-		// JsonObject content = new JsonObject();
-		// content.add("specification", specifications);
-		// content.add("types", types);
-		// content.add("activators", activators);
-		// result.add("content", content);
-		// System.out.println("entities get: " + specifications.toString());
-		// return result;
 		JsonObject specifications = new JsonObject();
 		lf("All entity GUIs: []", entityGUIs);
 		entityGUIs.entrySet().forEach(entry -> {
@@ -329,50 +313,42 @@ public class WebEntity extends CentralGUI {
 	}
 	
 	/**
-	 * Posts an {@link AgentWave} to the {@link CentralEntityProxy} when an active input arrives from the web client.
-	 * <ul>
-	 * <li>The source is the shard designation (gui).
-	 * <li>The destination is {@link MonitoringOperation#GUI_INPUT_TO_ENTITY} / entity / gui / port
-	 * <li>The wave contains all the values for each role in the specification.
-	 * </ul>
-	 * 
-	 * @param msg
-	 *            - the data received from the web client.
+	 * Sends an event to the agent when an active input on a port is received from the client.
+	 * @param subject - a JsonArray containing the destination elements on the agent
+	 * @param content - a JsonObject containing all the roles and their values
 	 */
-	protected void activeInput(JsonObject msg) {
-		AgentWave wave = new AgentWave(null,
-				CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString());
+	public void sendNotification(JsonArray subject, JsonObject content) {
+		// Special actions:
+		String port = subject.get(1).getAsString();
+		String role = subject.get(2).getAsString();
+		if ("standard-stop".equals(port) && "stop".equals(role)) {
+			sendEvent(AgentEventType.AGENT_STOP);
+			return;
+		}
+		if ("standard-start".equals(port) && "start".equals(role)) {
+			sendEvent(AgentEventType.AGENT_START);
+			return;
+		}
+		// Normal notification:
+		AgentWave wave = new AgentWave(
+			content.toString(),
+			CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString(),
+			gson.fromJson(subject, String[].class)
+		);
+			
 		wave.addSourceElements(getShardDesignation().toString());
-		Element activatedElement = idManager.getElement(msg.get("subject").getAsString());
-		if(activatedElement == null) {
-			le("Element for id [] not found.", msg.get("subject").getAsString());
-			return;
-		}
-		String entityName = idManager.getEntity(msg.get("subject").getAsString());
-		if(entityName == null) {
-			le("Entity for id [] not found.", msg.get("subject").getAsString());
-			return;
-		}
-		String port = activatedElement.getPort();
-		wave.appendDestination(entityName, StandardAgentShard.GUI.shardName(), port);
-		JsonObject content = new JsonObject();
-		if(msg.get("subject").getAsString().split("_")[1].contains("#####")) { // used to be "control-"
-			content.addProperty(OperationUtils.PARAMETERS, entityName);
-			content.addProperty(OperationUtils.OPERATION_NAME,
-					msg.get("content").getAsJsonObject()
-							.get(msg.get("content").getAsJsonObject().keySet().toArray()[0].toString()).getAsString()
-							.toLowerCase());
-			wave.add("content", content.toString());
-		}
-		else {
-			Element entityElement = entityGUIs.get(entityName);
-			content = msg.get("content").getAsJsonObject();
-			for(Element element : entityElement.getChildren(port)) {
-				if(content.has(element.getId()))
-					wave.add(element.getRole(), content.get(element.getId()).getAsString());
-			}
-		}
+		li("Sending notification to client: []", wave.toString());
 		cep.postAgentEvent(wave);
+	}
+
+	/**
+	 * Sends an event to the agent (for e.g. start/stop)
+	 * @param eventType - the type of the event to be sent.
+	 */
+	public void sendEvent(AgentEventType eventType) {
+		li("Sending event to agent: []", eventType);
+		AgentEvent event = new AgentEvent(eventType);
+		cep.postAgentEvent(event);
 	}
 	
 	@Override

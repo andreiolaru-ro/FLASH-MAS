@@ -20,6 +20,8 @@ import java.util.Objects;
 
 import org.json.simple.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -42,6 +44,11 @@ public class Element implements Cloneable {
 	 * Intent size to use when producing a {@link String} rendition of the structure.
 	 */
 	public static final int		INDENT_SIZE				= 8;
+
+	/**
+	 * The Gson instance used for conversions to/from JSON.
+	 */
+	public static final Gson gson = new Gson();
 	
 	/**
 	 * ID of this element
@@ -58,7 +65,7 @@ public class Element implements Cloneable {
 	/**
 	 * Type of the element.
 	 */
-	protected String				type		= ElementType.BLOCK.type;
+	protected String				type		= ElementType.CONTAINER.type;
 	/**
 	 * The port that this element is part of.
 	 */
@@ -80,54 +87,51 @@ public class Element implements Cloneable {
 	 * Represents a style that the element can have
 	 */
 	protected static class ElementWhen {
-		/**
-		 * The running status that the agent must be in for the element to have this style applied
-		 */
-		protected String running_status;
-		/**
-		 * The style to apply to the element when the agent is in the given running status
-		 */
+		/** The list of conditions that must be met for the style to be applied. */
+		protected HashMap<String, String> conditions = new HashMap<>();
+
+		/** The style to apply to the element when the condition is met. */
 		protected String style;
 
 		/**
-		 * @return - the running status that the agent must be in for the element to have this style applied
+		 * A condition is a key-value pair where the key denotes the element whose value 
+		 * is used to determine the style of this element.
+		 * The keys are in one of the following formats: port/role, /role, port.
+		 * The second format is relative to the current element's port.
+		 * The last of these formats is synonymous with the first where role = "content".
+		 * @return - the map of conditions that must be met for the style to be applied
 		 */
-        public String getRunning_status() {
-            return running_status;
-        }
+		public HashMap<String, String> getConditions() {
+			return conditions;
+		}
 
 		/**
-		 * Set the running status that the agent must be in for the element to have this style applied
-		 *
-		 * @param running_state
-		 *            - the running status that the agent must be in for the element to have this style applied
+		 * @return - the style to apply to the element when the condition is met
 		 */
-        public void setRunning_status(String running_state) {
-            this.running_status = running_state;
-        }
+		public String getStyle() {
+			return style;
+		}
 
 		/**
-		 * @return - the style to apply to the element when the agent is in the given running state
+		 * Set the conditions that must be met for the style to be applied
+		 * The special "style" key is stripped from the map.
+		 * @param conditions
+		 *            - the map of conditions that must be met for the style to be applied
+		 * @see #getConditions()
 		 */
-        public String getStyle() {
-            return style;
-        }
-
-		/**
-		 * Set the style to apply to the element when the agent is in the given running status
-		 * 
-		 * @param style
-		 * 		  - the style to apply to the element when the agent is in the given running status
-		 */
-        public void setStyle(String style) {
-            this.style = style;
-        }
+		public ElementWhen(HashMap<String, String> conditions) {
+			this.conditions = conditions;
+			if (conditions.containsKey("style")) {
+				style = conditions.get("style");
+				conditions.remove("style");
+			}
+		}
 	}
 	
 	/**
 	 * The list of styles that the element can have
 	 */
-	protected List<ElementWhen> when = new ArrayList<>();
+	protected transient List<ElementWhen> when = new ArrayList<>();
 	
 	/**
 	 * @return - the list of child elements
@@ -288,19 +292,25 @@ public class Element implements Cloneable {
 
 	/**
 	 * @return - the list of styles that the element can have
+	 * Note: this method must not be named getWhen() because it would clash with the
+	 * setter method for the when property used by SnakeYAML
 	 */
-	public List<ElementWhen> getWhen() {
+	public List<ElementWhen> getWhenConditions() {
 		return when;
 	}
 
 	/**
 	 * Set the list of styles that the element can have
 	 *
-	 * @param when
+	 * @param whenMaps
 	 *            - the list of styles that the element can have
 	 */
-	public void setWhen(List<ElementWhen> when) {
-		this.when = when;
+	@JsonSetter
+	public void setWhen(List<HashMap<String, String>> whenMaps) {
+		this.when = new ArrayList<>();
+		for (HashMap<String, String> e : whenMaps) {
+			this.when.add(new ElementWhen(e));
+		}
 	}
 	
 	/**
@@ -338,7 +348,7 @@ public class Element implements Cloneable {
 				result = e;
 				break;
 			}
-			if(ElementType.BLOCK.type.equals(e.type)) {
+			if (ElementType.CONTAINER.type.equals(e.type)) {
 				result = e.getChildren(childPort, childRole);
 				if (result != null)
 					break;
@@ -388,14 +398,17 @@ public class Element implements Cloneable {
 		result.addProperty("value", value);
 		result.addProperty("port", port);
 		result.addProperty("role", role);
+		result.addProperty("notify", notify);
 
 		JsonArray whenArray = new JsonArray();
 		result.add("when", whenArray);
 		for (ElementWhen e : when) {
 			JsonObject whenObject = new JsonObject();
 			whenArray.add(whenObject);
-			whenObject.addProperty("running_status", e.getRunning_status());
 			whenObject.addProperty("style", e.getStyle());
+
+			JsonObject conditionsObject = gson.toJsonTree(e.getConditions()).getAsJsonObject();
+			whenObject.add("conditions", conditionsObject);
 		}
 
 		JsonArray childrenArray = new JsonArray();

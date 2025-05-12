@@ -1,27 +1,19 @@
+import { appContext, idOf } from "./common.js";
+import { processSpec, applyUpdatesOnPort } from "./processing.js";
 import { updateEntitiesList } from "./ui.js";
 
 const CLIENT_TO_SERVER = 'client-to-server';
 const SERVER_TO_CLIENT = 'server-to-client';
 const WS_ENDPOINT = '/eventbus';
-const GLOBAL_SCOPE = 'global';
-const PORT_SCOPE = 'port';
-const REGISTERED_SCOPE = 'registered';
-const STATUS_PORT = 'standard-status';
 const RECONNECTION_TIMEOUT = 5000;  // in ms
 
+const GLOBAL_SCOPE = 'global';
+const PORT_SCOPE = 'port';
+
+const REGISTERED_SCOPE = 'registered';
+const NOTIFY_SCOPE = 'notify';
+
 let eventBus = null;
-
-export let appContext = {
-    entitiesData: {             // to be removed soon
-        specification: null,
-        types: null,
-        activators: null
-    },
-    entities: {},
-    selectedEntities: []
-};
-
-export const idOf = (entity, port, role) => CSS.escape(`${entity}_${port}_${role}`);
 
 export function connectToServer() {
     return new Promise((resolve, _reject) => {
@@ -41,18 +33,9 @@ export function connectToServer() {
 export function registerHandler() {
     eventBus.registerHandler(SERVER_TO_CLIENT,
         (_, message) => recvMessage(JSON.parse(message.body)));
-    
+        
     eventBus.send(CLIENT_TO_SERVER, JSON.stringify({ scope: REGISTERED_SCOPE }));
 }
-
-// Flatten the specification into a list of [id, element] pairs
-// including the children of containers and the container with children ids only
-const flattenSpec = (spec) => spec.children.flatMap(({id, ...element}) =>
-    element.type != 'container' ? [[id, element]] :
-        [...flattenSpec(element), [id, {
-            ...element, 
-            children: element.children.map(({id}) => id)
-        }]]);
 
 function recvMessage(message) {
     console.log('Received message', message);
@@ -60,68 +43,57 @@ function recvMessage(message) {
         if (message.subject != 'entities list')
             return;
 
-        for (let [entityName, spec] of Object.entries(message.content)) {
-            let entityData = Object.fromEntries(flattenSpec(spec));
-            appContext.entities[entityName] = {
-                id: spec.id,
-                data: entityData,
-                children: spec.children.map(({id}) => id),
-                // status: entityData[idOf(entityName, STATUS_PORT, 'content')].value
-            };
-        }
+        appContext.entities = processSpec(message.content);
         console.log('Received new entities data', appContext.entities);
         updateEntitiesList();
         return;
     }
     if (message.scope == PORT_SCOPE) {
-        const entity = message.subject.entity;
+        const entityName = message.subject.entity;
         const port = message.subject.port;
-        console.log("Port output to: ", entity + " " + port);
-
-        for (let role in message.content) {
-            const content = message.content[role];
-            const id = idOf(entity, port, role);
-            console.log("Setting content to: ", id, content);
-            const data = appContext.entities[entity].data[id];
-            data.value = content;
-            data.type == 'form' ? $('#' + id).val(content) : $('#' + id).text(content);
-
-            if (port == 'standard-status' && role == 'content')
-                console.log(`Status update: ${content}`);
-        }
+        applyUpdatesOnPort(entityName, port, message.content);
     }
 }
 
-function changeEntityStatus(entity, status) {
-    appContext.entities[entity].status = status;
-    $(appContext.entities[entity].specification.id).addClass(status);
-}
+/**
+ * Replaces dollar-sign variables in a string with values from a map.
+ * @param {string} str - The string containing variables to replace.
+ * @param {Record<string, string>} replaceMap - The map containing variable names and their values.
+ * @example replaceVariables('$port/$role', { port: 'myPort', role: 'myRole' }) // returns 'myPort/myRole'
+ */
+const replaceVariables = (str, replaceMap) =>
+    str.replace(/\$([a-zA-Z_]\w*)/g, (_, key) => replaceMap[key] || '');
 
-export function activate(child) {
-    if (!(child.id in appContext.entitiesData.activators)) {
-        console.log("Activated element not in active ports:", child.id);
-        return;
-    }
+/**
+ * Used to send a message to the server when an element with a 'notify' property
+ * is interacted with. The message contains the data from all the elements of the
+ * port, indexed by their role. For buttons, the value 'true' is sent for the pressed
+ * button and 'false' for the rest. Same for checkboxes. The message will be redirected 
+ * by the server to the corresponding entity on the route given by the 'notify' property.
+ * @param {InterfaceElement} trigger - The element that was interacted with.
+ * @param {string} entityName - The name of the entity to notify.
+ * @returns {void}
+ */
+export function notifyEntity(trigger, entityName) {
+    const notifyTarget = replaceVariables(trigger.notify || '', {
+        entity: entityName,
+        port: trigger.port,
+        role: trigger.role
+    });
 
-    const activator = appContext.entitiesData.activators[child.id];
-    const content = Object.fromEntries(activator.map(id => [
-        id, appContext.entitiesData.types[id] == 'form' ? $('#' + id).val() : $('#' + id).text()
-    ]));
+    console.log("Notify: " + idOf(entityName, trigger.port, trigger.role));
+    const entity = appContext.entities[entityName];
+    const content = Object.fromEntries(entity.ports[trigger.port].map(role => {
+        let child = entity.data[idOf(entityName, trigger.port, role)];
+        let value = (child.type == 'button') ? (role == trigger.role) : child.value;
+        return [role, value];
+    }));
 
     const msg = {
-        scope: PORT_SCOPE, 
-        subject: child.id, 
-        content
-    }
-    console.log("Sending message", msg);
-	eventBus.send(CLIENT_TO_SERVER, JSON.stringify(msg));
-}
-
-export function sendData(id) {
-	let input = { 
-        type: 'operation',
-        name: 'operation ' + $('#' + id).text().toLowerCase().replace(' ', '_'),
-        parameters: 'parameters'
+        scope: NOTIFY_SCOPE,
+        subject: [entityName, ...notifyTarget.split('/')],
+        content: content
     };
-	eventBus.send(CLIENT_TO_SERVER, JSON.stringify({ all: input }));
+    console.log("Sending message", msg);
+    eventBus.send(CLIENT_TO_SERVER, JSON.stringify(msg));
 }

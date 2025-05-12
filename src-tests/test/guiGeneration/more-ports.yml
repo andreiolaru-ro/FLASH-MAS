@@ -13,6 +13,7 @@ children:
  - type: form
    port: valuePort
    role: content
+   when: [{ /: 10, style: red }]
  - type: button
    port: valuePort
    notify: something
@@ -27,13 +28,13 @@ children:
     - type: button
       port: number
       role: increase
-      when: [{ running_status: running_status_stopped, style: disabled }]
+      when: [{ standard-status: running_status_stopped, style: disabled }]
       notify: $port/$role
       value: Increase
     - type: button
       port: number
       role: decrease
-      when: [{ running_status: running_status_stopped, style: disabled }]
+      when: [{ standard-status: running_status_stopped, style: disabled }]
       notify: $port/$role
       value: Decrease
     - type: label

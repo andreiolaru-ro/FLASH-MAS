@@ -77,7 +77,7 @@ public class SwingGuiShard extends GuiShard {
 		Component comp = null;
 		ComponentConnect connector = null;
 		switch(ElementType.valueOfLabel(element.getType())) {
-		case BLOCK:
+		case CONTAINER:
 			if(parent == null) { // main window
 				// lf("with ids: ", element);
 				

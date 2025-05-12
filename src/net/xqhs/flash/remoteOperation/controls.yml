@@ -20,11 +20,14 @@ children:
   - type: button
     value: Start
     port: standard-start
-    role: activate
+    role: start
+    when: [{ standard-status: "RUNNING_STATUS: RUNNING_STATUS_RUNNING|APPLICATION_STATUS: STATUS_UNKNOWN", style: disabled }]
+    notify: $port/$role
     properties: {proxy: node}
   - type: button
     value: Kill
-    when: [{ running_status: running_status_stopped, style: disabled }]
     port: standard-stop
-    role: activate
+    role: stop
+    when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
+    notify: $port/$role
     properties: {proxy: node}
