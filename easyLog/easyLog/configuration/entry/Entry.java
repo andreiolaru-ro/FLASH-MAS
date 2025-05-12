@@ -1,5 +1,7 @@
 package easyLog.configuration.entry;
 
+import java.util.List;
+
 import easyLog.LineProcessor;
 import easyLog.configuration.entry.selector.expect.Expect;
 import easyLog.configuration.entry.selector.level.Level;
@@ -10,7 +12,7 @@ public class Entry {
 
 
     public interface Recorder {
-        public void build();
+		public void build(List<String> oneLineOutput, List<String> blockOutput);
 
         /**
          * @param logLine - the entire log line that matched the entry.
