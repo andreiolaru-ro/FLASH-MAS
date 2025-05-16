@@ -16,7 +16,7 @@ import net.xqhs.flash.FlashBoot;
 /**
  * Runs scenario.
  */
-public class Boot {
+public class FedBoot {
 	
 	/**
 	 * Performs test.
@@ -28,10 +28,12 @@ public class Boot {
 		String a = "";
 		
 		a += " -load_order driver;pylon;agent -loader agent:composite";
-		a += " -package testing net.xqhs.flash.ml " + Boot.class.getPackageName();
+		a += " -package testing net.xqhs.flash.fedlearn " + FedBoot.class.getPackageName();
 		
-		a += " -node node active:agent -driver ML:mldriver";
-		a += " -agent agentA -shard echoTesting exit:5";
+		a += " -node nodeServer -driver Fed:FedDriver";
+		a += " -agent agentS -shard echoTesting exit:5 -shard FedServer";
+		a += " -agent agentC1 -shard FedClient -shard echoTesting exit:5";
+		a += " -agent agentC2 -shard FedClient -shard echoTesting exit:5";
 		
 		FlashBoot.main(a);
 	}
