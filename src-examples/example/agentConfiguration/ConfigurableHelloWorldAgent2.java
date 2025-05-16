@@ -11,24 +11,24 @@
  ******************************************************************************/
 package example.agentConfiguration;
 
-import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.BaseAgent;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * Advanced HelloWorld agent with configurable stop time. Logging is handled by {@link EntityCore}.
  *
  * @author Andrei Olaru
  */
-public class ConfigurableHelloWorldAgent extends BaseAgent {
+public class ConfigurableHelloWorldAgent2 extends BaseAgent {
 	/**
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * The time the agent will stop after, if no configuration is done in the deployment.
 	 */
@@ -37,15 +37,27 @@ public class ConfigurableHelloWorldAgent extends BaseAgent {
 	 * The name of the parameter for the configuration of the time to stop after.
 	 */
 	protected static final String	STOP_AFTER_PARAMETER_NAME	= "stopAfterMs";
-	
+	/**
+	 * The parameter for the configuration of the time to stop after.
+	 */
+	protected long 					stopAfter;
+
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration.isSet(STOP_AFTER_PARAMETER_NAME))
+			stopAfter = Long.parseLong(configuration.getFirstValue(STOP_AFTER_PARAMETER_NAME));
+		else
+			stopAfter = DEFAULT_STOP_AFTER;
+		return true;
+	}
+
 	@Override
 	public boolean start() {
 		if(!super.start())
 			return false;
-		
-		long stopAfter = Optional.ofNullable(getConfiguration().get(STOP_AFTER_PARAMETER_NAME)).map(Long::parseLong)
-				.orElse(DEFAULT_STOP_AFTER).longValue();
-		
+
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
@@ -54,7 +66,7 @@ public class ConfigurableHelloWorldAgent extends BaseAgent {
 				t.cancel();
 			}
 		}, stopAfter);
-		
+
 		li("Hello World (stopping in " + stopAfter + " ms)");
 		return true;
 	}

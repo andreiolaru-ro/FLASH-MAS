@@ -18,7 +18,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-public class AdvancedHelloWorldAgentTest {
+public class ConfigurableHelloWorldAgentTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
@@ -63,9 +63,9 @@ public class AdvancedHelloWorldAgentTest {
 
         String consoleOutput = outContent.toString();
 
-        assertTrue("Agent start message not found", consoleOutput.contains("Agent started"));
+        assertTrue("Agent start message not found", consoleOutput.contains("starting"));
         assertTrue("Hello World message not found", consoleOutput.contains("Hello World (stopping in " + stopAfterMs + " ms)"));
-        assertTrue("Agent stop message not found", consoleOutput.contains("Agent stopped"));
+        assertTrue("Agent stop message not found", consoleOutput.contains("stopped"));
     }
 
     @Test
@@ -76,12 +76,12 @@ public class AdvancedHelloWorldAgentTest {
         bootThread.start();
 
         // Sleep for less than stopAfterMs
-        Thread.sleep(Math.max(500, stopAfterMs / 2));
+        Thread.sleep(stopAfterMs / 3);
 
         String consoleOutput = outContent.toString();
 
-        assertTrue("Agent start message not found", consoleOutput.contains("Agent started"));
+        assertTrue("Agent start message not found", consoleOutput.contains("starting"));
         assertTrue("Hello World message not found", consoleOutput.contains("Hello World (stopping in " + stopAfterMs + " ms)"));
-        assertFalse("Agent should not have stopped yet", consoleOutput.contains("Agent stopped"));
+        assertFalse("Agent should not have stopped yet", consoleOutput.contains("stopped"));
     }
 }

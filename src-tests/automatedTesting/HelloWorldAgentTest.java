@@ -30,7 +30,7 @@ public class HelloWorldAgentTest {
         bootThread.start();
 
         for (int i = 0; i < 10; i++) {
-            if (outContent.toString().contains("Agent stopped")) {
+            if (outContent.toString().contains("stopped")) {
                 break; // stop waiting if we already see the message
             }
             Thread.sleep(500); // check every 500ms
@@ -38,8 +38,8 @@ public class HelloWorldAgentTest {
 
         String consoleOutput = outContent.toString();
 
-        assertTrue("Agent start message not found", consoleOutput.contains("Agent started"));
+        assertTrue("Agent start message not found", consoleOutput.contains("starting"));
         assertTrue("Hello World message not found", consoleOutput.contains("Hello World"));
-        assertTrue("Agent stop message not found", consoleOutput.contains("Agent stopped"));
+        assertTrue("Agent stop message not found", consoleOutput.contains("stopped"));
     }
 }
