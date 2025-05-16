@@ -134,7 +134,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		ML_SRC_PATH = "src/net/xqhs/flash/ml/";
 		ML_DIRECTORY_PATH = "ml-directory/";
 		OP_MODULE_PACKAGE = "operations-modules";
-		SERVER_FILE = "python_module/server.py";
+		SERVER_FILE = "python_module/server_init.py";
 		MODEL_CONFIG_FILE = "config.yaml";
 		MODELS_DIRECTORY = "models/";
 		MODEL_ENDPOINT = ".pth";
