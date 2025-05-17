@@ -1,31 +1,51 @@
 package net.xqhs.flash.fedlearn;
 
+import java.util.stream.IntStream;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
+/**
+ * Shard for Federated Learning server functionality.
+ */
 public class FedServerShard extends AgentShardGeneral {
 	/**
 	 * The serial UID.
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID		= 1L;
 	/**
 	 * Shard designation,
 	 */
-	public static final String	DESIGNATION			= "Fed:Server";
+	public static final String	DESIGNATION				= "Fed:Server";
+	/**
+	 * Parameter name for the number of clients.
+	 */
+	private static final String	NCLIENTS_PARAMETER_NAME	= "nclients";
 	
 	/**
 	 * The node-local {@link FedDriver} instance.
 	 */
-	FedDriver					fedDriver;
+	FedDriver	fedDriver;
+	/**
+	 * The number of clients.
+	 */
+	int			nclients;
 	
 	/**
 	 * No-arg constructor.
 	 */
 	public FedServerShard() {
 		super(AgentShardDesignation.customShard(DESIGNATION));
+	}
+	
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		nclients = Integer.parseInt(configuration.get(NCLIENTS_PARAMETER_NAME));
+		return super.configure(configuration);
 	}
 	
 	@Override
@@ -47,6 +67,13 @@ public class FedServerShard extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			// do start procedures
+			
+			// message sending example, sent to all agents:
+			IntStream.range(1, nclients + 1).forEachOrdered(n -> {
+				AgentWave wave = new AgentWave("test content").addSourceElements(DESIGNATION)
+						.appendDestination(Constants.CLIENT_AGENT_PREFIX + n);
+				sendMessage(wave);
+			});
 			break;
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {

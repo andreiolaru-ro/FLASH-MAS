@@ -6,6 +6,9 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 
+/**
+ * Shard for Federated Learning client functionality.
+ */
 public class FedClientShard extends AgentShardGeneral {
 	/**
 	 * The serial UID.

@@ -12,6 +12,7 @@
 package fedlearn;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.fedlearn.Constants;
 
 /**
  * Runs scenario.
@@ -30,10 +31,15 @@ public class FedBoot {
 		a += " -load_order driver;pylon;agent -loader agent:composite";
 		a += " -package testing net.xqhs.flash.fedlearn " + FedBoot.class.getPackageName();
 		
+		int nclients = 5;
+		
 		a += " -node nodeServer -driver Fed:FedDriver";
-		a += " -agent agentS -shard echoTesting exit:5 -shard FedServer";
-		a += " -agent agentC1 -shard FedClient -shard echoTesting exit:5";
-		a += " -agent agentC2 -shard FedClient -shard echoTesting exit:5";
+		a += " -pylon local:pylon1";
+		a += " -agent agentS  in-context-of:Fed:FedDriver -shard echoTesting exit:5 -shard messaging -shard FedServer nclients:"
+				+ nclients;
+		for(int client = 0; client++ < nclients;)
+			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client
+					+ " in-context-of:Fed:FedDriver -shard FedClient -shard messaging -shard echoTesting exit:5";
 		
 		FlashBoot.main(a);
 	}
