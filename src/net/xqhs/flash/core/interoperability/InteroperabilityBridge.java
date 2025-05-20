@@ -1,9 +1,9 @@
 package net.xqhs.flash.core.interoperability;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import java.util.Iterator;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -11,6 +11,7 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.json.AgentWaveJson;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -55,26 +56,50 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 	 *            - the message to route.
 	 */
 	protected void receiveWave(AgentWave wave) {
-		li("Routing [] through bridge [].", wave.toString(), getName());
-
 		if (wave.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION) != null) {
-			String content = wave.get("content");
-			JSONParser parser = new JSONParser();
-			JsonObject json = null;
-			try {
-				json = (JsonObject) parser.parse(content);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			li("Received multi-platform routing info [].", wave.toString());
+
+			String content = wave.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION);
+			String sourceName = wave.getFirstSource();
+			InteroperableMessagingPylonProxy sourceProxy = interoperabilityRouter.getRoutingDestination(sourceName);
+			if (sourceProxy == null) {
+				le("Cannot find routing destination for [].", sourceName);
+				le("No reason to try updating routing info.");
+				return;
 			}
 
-			if (interoperabilityRouter.updateRoutingInformation(json)) {
+			JsonParser parser = new JsonParser();
+			JsonObject json = null;
+			json = (JsonObject) parser.parse(content);
+
+			if (interoperabilityRouter.updateRoutingInformation(json, sourceProxy)) {
+				li("Updated info for [].", getName());
+
 				// send to other ERs
-				li("Updated info for []", getName());
+				for (Iterator<InteroperableMessagingPylonProxy> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
+					Object next = iterator.next();
+					if (!(next instanceof InteroperableMessagingPylonProxy))
+						continue;
+
+					InteroperableMessagingPylonProxy pylonProxy = (InteroperableMessagingPylonProxy) next;
+					String destinationName = pylonProxy.getPlatformPrefix();
+
+					JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
+					AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().addSourceElements(getName());
+					updatedWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, updatedRoutingInfo.toString());
+					pylonProxy.send(updatedWave);
+					li("Sent routing info [] to []", AgentWaveJson.toJson(updatedWave).toString(), destinationName);
+				}
+
+			} else {
+				li("Known routing info before update [].", interoperabilityRouter.getAllRoutingInfo());
+				li("Did not update routing info.");
 			}
 
 			return;
 		}
+
+		li("Routing [] through bridge [].", wave.toString(), getName());
 
 		if (!getName().equals(wave.getFirstDestinationElement()))
 			throw new IllegalStateException("The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT) + ") is not the address of this agent (" + getName() + ")");
@@ -92,6 +117,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		}
 
 		le("Can't find routing destination for [].", wave.toString());
+		li("Known routing info [].", interoperabilityRouter.getAllRoutingInfo());
 	}
 
 	@Override

@@ -181,11 +181,13 @@ public class InteroperabilityRouter<T> {
 			String destination = routesForDestination.getKey();
 			JsonObject object = new JsonObject();
 
+			boolean addInfo = false;
 			for (Map.Entry<Integer, Set<T>> routeInfo : routesForDestination.getValue().entrySet()) {
 				Integer distance = routeInfo.getKey();
 				JsonObject routeInfoJson = new JsonObject();
 
 				// TODO: only send first value info ?
+				boolean addRoute = false;
 				for (T route : routeInfo.getValue()) {
 					String nextHop = "";
 
@@ -195,16 +197,28 @@ public class InteroperabilityRouter<T> {
 						nextHop = ((InteroperableMessagingPylonProxy) route).getPlatformPrefix();
 					}
 
-					if (!nextHop.equals(nextHopEntityNameForExcludedRoute))
+					if (!nextHop.equals(nextHopEntityNameForExcludedRoute)) {
+						routeInfoJson.addProperty("route", nextHop);
 						routeInfoJson.addProperty("distance", distance);
+
+						if (!addRoute)
+							addRoute = true;
+					}
 				}
 
-				routesInfoForDestination.add(routeInfoJson);
+				if (addRoute) {
+					routesInfoForDestination.add(routeInfoJson);
+
+					if (!addInfo)
+						addInfo = true;
+				}
 			}
 
-			object.addProperty("destination", destination);
-			object.add("info", routesInfoForDestination);
-			routingInfo.add(object);
+			if (addInfo) {
+				object.addProperty("destination", destination);
+				object.add("info", routesInfoForDestination);
+				routingInfo.add(object);
+			}
 		}
 
 		JsonObject result = new JsonObject();
@@ -212,24 +226,35 @@ public class InteroperabilityRouter<T> {
 		return result;
 	}
 
-	public boolean updateRoutingInformation(JsonObject json) {
+	public boolean updateRoutingInformation(JsonObject json, T source) {
 		if (json == null)
 			return false;
 
 		boolean infoUpdated = false;
-		for (JsonElement routesForDestination : json.getAsJsonArray()) {
+		JsonElement jsonArray = json.get("routingInfo");
+		for (JsonElement routesForDestination : jsonArray.getAsJsonArray()) {
 			JsonObject object = routesForDestination.getAsJsonObject();
 			String destination = object.get("destination").getAsString();
 			JsonArray routes = object.getAsJsonArray("info");
 			
-			JsonObject shortestRoute = routes.get(0).getAsJsonObject();
-			int distance = shortestRoute.get("distance").getAsInt();
-			String routeName = shortestRoute.get("route").getAsString();
-			Integer currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey();
-			 
-			if (currentDistance.intValue() < distance) {
-				infoUpdated = true;
-				addRoutingDestinationForPlatform(destination, (T) routeName, distance);
+			try {
+				JsonObject shortestRoute = routes.get(0).getAsJsonObject();
+				if (shortestRoute.keySet().isEmpty())
+					continue;
+
+				int distance = shortestRoute.get("distance").getAsInt();
+
+				int currentDistance = -1;
+				if (platformPrefixToRoutingDestination.get(destination) != null)
+					currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey().intValue();
+
+				if (currentDistance < distance) {
+					infoUpdated = true;
+					addRoutingDestinationForPlatform(destination, source, distance);
+				}
+			} catch (Exception e) {
+				// le("Cannot parse routing info.");
+				continue;
 			}
 		}
 		

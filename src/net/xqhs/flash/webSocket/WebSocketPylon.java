@@ -214,6 +214,10 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	public static final String	IS_SERVER_PARAMETER				= "isServer";
 	/**
+	 * The attribute name for the name of the server entity.
+	 */
+	public static final String											SERVER_ENTITY_NAME_PARAMETER	= "serverName";
+	/**
 	 * The prefix for Websocket server address.
 	 */
 	public static final String	WS_PROTOCOL_PREFIX				= "ws://";
@@ -260,6 +264,10 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The thread processing the messages in the {@link #messageQueue}.
 	 */
 	protected Thread													messageThread;
+	/**
+	 * The name for the web socket server, as set in the configuration.
+	 */
+	protected String													webSocketServerName;
 	
 	/**
 	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
@@ -277,7 +285,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	@Override
 	public boolean start() {
 		if(hasServer) {
-			serverEntity = new WebSocketServerEntity(webSocketServerAddress);
+			serverEntity = new WebSocketServerEntity(webSocketServerAddress, webSocketServerName);
 			serverEntity.start();
 		}
 		
@@ -408,6 +416,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			hasServer = true;
 			webSocketServerAddress = configuration.getAValue(IS_SERVER_PARAMETER);
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress;
+
+			webSocketServerName = configuration.getAValue(SERVER_ENTITY_NAME_PARAMETER);
 		}
 		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
