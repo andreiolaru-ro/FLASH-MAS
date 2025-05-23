@@ -81,8 +81,9 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
-			Node node = loadNode(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
-					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)),
+			Node node = loadNode(nodeConfig,
+					DeploymentConfiguration.filterContext(allEntities,
+							nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)),
 					DeploymentConfiguration.filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null)
 							.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE));
 			if(node != null) {
@@ -169,9 +170,9 @@ public class NodeLoader extends Unit implements Loader<Node> {
 						Loader<?> loader = (Loader<?>) classFactory.loadClassInstance(cp, null, true);
 						// add to map
 						if(!loaders.containsKey(entity))
-							loaders.put(entity, new LinkedHashMap<String, List<Loader<?>>>());
+							loaders.put(entity, new LinkedHashMap<>());
 						if(!loaders.get(entity).containsKey(kind))
-							loaders.get(entity).put(kind, new LinkedList<Loader<?>>());
+							loaders.get(entity).put(kind, new LinkedList<>());
 						loaders.get(entity).get(kind).add(loader);
 						// configure // TODO manage with portables
 						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.s(), packages);
@@ -269,7 +270,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
 					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { 
+					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) {
 						// if the category in loader list
 						log_catLoad = catName;
 						if(loaders.get(catName).containsKey(kind)) { // get loaders for this kind
@@ -339,9 +340,13 @@ public class NodeLoader extends Unit implements Loader<Node> {
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						
 						// find messaging pylons that can be used by the Node
-						EntityProxy<?> ctx = entity.asContext();
-						if(ctx != null && ctx instanceof MessagingPylonProxy)
-							messagingProxies.add((MessagingPylonProxy) ctx);
+						try {
+							EntityProxy<?> ctx = entity.asContext();
+							if(ctx != null && ctx instanceof MessagingPylonProxy)
+								messagingProxies.add((MessagingPylonProxy) ctx);
+						} catch(UnsupportedOperationException e) {
+							// nothing to do, means asContext is not implemented.
+						}
 						
 						loaded.put(local_id, entity);
 						node.registerEntity(catName, entity, id);
@@ -365,11 +370,11 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			// delegate the central node
 			// and register the central monitoring and control entity in its context
 			li("Node [] is central node.", node.getName());
-			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(
-					new MultiTreeMap().addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(new MultiTreeMap()
+					.addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
 							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
-							.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
-									nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
+					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
+							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
 			centralEntity.addGeneralContext(pylon);
 			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);

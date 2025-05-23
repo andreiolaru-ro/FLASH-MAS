@@ -11,33 +11,25 @@
  ******************************************************************************/
 package testing;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.agent.BaseAgent;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
-import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
-import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 
 /**
  * The implementation of the agents.
  */
-public class AgentPingPong extends Unit implements Agent {
+public class AgentPingPong extends BaseAgent {
 	/**
 	 * The name of the component parameter that contains the id of the other agent.
 	 */
@@ -73,44 +65,38 @@ public class AgentPingPong extends Unit implements Agent {
 	 * The name of this agent.
 	 */
 	String			agentName	= null;
-	
 	/**
-	 * @param configuration
+	 * The index of the message sent.
 	 */
-	public AgentPingPong(MultiTreeMap configuration) {
-		agentName = configuration.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-		setUnitName(agentName);// .setLogLevel(Level.ALL);
+	int				tick		= 0;
+	
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
 		if(configuration.isSet(OTHER_AGENT_PARAMETER_NAME))
 			otherAgents = configuration.getValues(OTHER_AGENT_PARAMETER_NAME);
+		return true;
 	}
 	
 	@Override
 	public boolean start() {
+		if(!super.start())
+			return false;
 		if(msgShard == null)
 			throw new IllegalStateException("No messaging shard present");
 		msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		li("Agent started");
 		if(otherAgents != null) {
+			// agent is Ping agent.
 			pingTimer = new Timer();
 			pingTimer.schedule(new TimerTask() {
-				/**
-				 * The index of the message sent.
-				 */
-				int tick = 0;
-				
 				@Override
 				public void run() {
-					tick++;
-					for(String otherAgent : otherAgents) {
-						AgentWave wave = new AgentWave("ping-no " + tick, otherAgent, "pong")
-								.addSourceElementFirst("ping");
-						lf("Sending the message [] to ", wave, otherAgent);
-						if(!msgShard.sendMessage(wave))
-							le("Message sending failed");
-					}
+					sendPing();
 				}
 			}, PING_INITIAL_DELAY, PING_PERIOD);
 		}
+		li("Agent started");
 		return true;
 	}
 	
@@ -119,9 +105,10 @@ public class AgentPingPong extends Unit implements Agent {
 	 *            - the event received.
 	 * @return <code>true</code> if the message was posted successfully.
 	 */
-	protected boolean postAgentEvent(AgentEvent event) {
+	protected boolean processEvent(AgentEvent event) {
 		li("received: " + event.toString());
-		if(event.getType().equals(AgentEventType.AGENT_WAVE) && otherAgents == null) {
+		if(AgentEventType.AGENT_WAVE.equals(event.getType()) && otherAgents == null) {
+			// only reply if this is not the ping agent
 			String replyContent = ((AgentWave) event).getContent() + " reply";
 			li("sending reply ", ((AgentWave) event).createReply(replyContent));
 			return msgShard.sendMessage(((AgentWave) event).createReply(replyContent));
@@ -131,81 +118,38 @@ public class AgentPingPong extends Unit implements Agent {
 	
 	@Override
 	public boolean stop() {
+		if(!super.stop())
+			return false;
 		pingTimer.cancel();
 		li("Agent stopped");
 		return true;
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return true;
-	}
-	
-	@Override
-	public String getName() {
-		return agentName;
-	}
-	
-	@Override
 	public boolean addContext(EntityProxy<Pylon> context) {
-		PylonProxy proxy = (PylonProxy) context;
-		String recommendedShard = proxy
-				.getRecommendedShardImplementation(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING));
-		try {
-			msgShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null, true);
-		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
-				| InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		msgShard.addContext(new ShardContainer() {
-			@Override
-			public String getEntityName() {
-				return getName();
-			}
-			
-			@Override
-			public boolean postAgentEvent(AgentEvent event) {
-				return AgentPingPong.this.postAgentEvent(event);
-			}
-			
-			@Override
-			public AgentShard getAgentShard(AgentShardDesignation designation) {
-				return null;
-			}
-		});
+		if(!super.addContext(context))
+			return false;
+		msgShard = (MessagingShard) AgentShardCore.instantiateRecommendedShard(StandardAgentShard.MESSAGING,
+				(PylonProxy) context, null, new BaseAgentProxy() {
+					@Override
+					public boolean postAgentEvent(AgentEvent event) {
+						return processEvent(event);
+					}
+				});
 		lf("Context added: ", context.getEntityName());
 		return msgShard.addGeneralContext(context);
 	}
 	
-	@Override
-	public boolean removeContext(EntityProxy<Pylon> context) {
-		return false;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(context instanceof WaveMessagingPylonProxy)
-			return addContext((WaveMessagingPylonProxy) context);
-		return false;
-	}
-	
-	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
-	}
-	
-	@Override
-	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
-		return null;
-	}
-	
-	@Override
-	protected void le(String message, Object... arguments) {
-		super.le(message, arguments);
-	}
-	
-	@Override
-	protected void lf(String message, Object... arguments) {
-		super.lf(message, arguments);
+	/**
+	 * Pings the other agents.
+	 */
+	protected void sendPing() {
+		tick++;
+		for(String otherAgent : otherAgents) {
+			AgentWave wave = new AgentWave("ping-no " + tick, otherAgent, "pong").addSourceElementFirst("ping");
+			lf("Sending the message [] to ", wave, otherAgent);
+			if(!msgShard.sendMessage(wave))
+				le("Message sending failed");
+		}
 	}
 }

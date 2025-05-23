@@ -182,10 +182,4 @@ public class PingTestComponent extends AgentShardGeneral
 		}
 		return true;
 	}
-	
-	@Override
-	protected MultiTreeMap getShardData()
-	{
-		return super.getShardData();
-	}
 }

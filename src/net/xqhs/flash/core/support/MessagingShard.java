@@ -27,12 +27,12 @@ import net.xqhs.flash.core.shard.AgentShard;
  */
 public interface MessagingShard extends AgentShard {
 	/**
-	 * Mechanism to allow other shards to intercept outgoing messages. One of the methods is called whenever a message
-	 * is being sent, depending on how the message was sent (as a triple or as a wave).
+	 * Mechanism to allow other shards to intercept outgoing messages.
 	 */
 	public interface OutgoingMessageHook {
 		/**
-		 * Method to be called whenever a message is being sent by the agent.
+		 * Method to be called whenever a message is being sent by the agent through a
+		 * {@link ClassicMessagingPylonProxy}.
 		 * 
 		 * @param source
 		 *            - the source of the message
@@ -44,10 +44,11 @@ public interface MessagingShard extends AgentShard {
 		public void sendingMessage(String source, String destination, String content);
 		
 		/**
-		 * Method to be called whenever a message is being sent by the agent.
+		 * Method to be called whenever a message is being sent by the agent through a
+		 * {@link ClassicMessagingPylonProxy}.
 		 * 
 		 * @param wave
-		 *            - the wave that is being sent.
+		 *            - the wave that is being sent
 		 */
 		public void sendingMessage(AgentWave wave);
 	}

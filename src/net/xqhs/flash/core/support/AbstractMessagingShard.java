@@ -89,8 +89,6 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	/**
 	 * Reference to the pylon, if the pylon does not support wave messaging. At most one of {@link #classicPylon} and
 	 * {@link #wavePylon} can be not <code>null</code>.
-	 * Reference to the pylon, if the pylon does not support wave messaging. At most one of {@link #classicPylon} and
-	 * {@link #wavePylon} can be not <code>null</code>.
 	 */
 	transient protected ClassicMessagingPylonProxy	classicPylon	= null;
 	/**
@@ -239,14 +237,17 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
-		for(OutgoingMessageHook hook : outgoingHooks)
-			hook.sendingMessage(source.startsWith(getAgentAddress()) ? source
-					: AgentWave.makePath(getAgentAddress(), source), destination, content);
-		if(classicPylon != null)
+		if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(source, destination, content);
 			return classicPylon.send(source, destination, content);
+		}
 		else if(wavePylon != null) {
-			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
-					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
+			AgentWave wave = new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
+					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress()));
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
+			return wavePylon.send(wave);
 		}
 		else
 			return false;
@@ -256,13 +257,18 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	public boolean sendMessage(AgentWave wave) {
 		if(!getAgentAddress().equals(wave.getFirstSource()))
 			wave.addSourceElementFirst(getAgentAddress());
-		for(OutgoingMessageHook hook : outgoingHooks)
-			hook.sendingMessage(wave);
-		if(wavePylon != null)
+		if(wavePylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
 			return wavePylon.send(wave);
-		else if(classicPylon != null)
+		}
+		else if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
+						wave.getSerializedContent());
 			return classicPylon.send(wave.getCompleteSource(), wave.getCompleteDestination(),
 					wave.getSerializedContent());
+		}
 		else
 			return false;
 	}

@@ -134,9 +134,4 @@ public class MonitoringShard extends AgentShardGeneral {
 		update.put(OperationUtils.PROXY, "");
 		sendMessage(update.toString(), SHARD_ENDPOINT, DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 	}
-	
-	@Override
-	protected MultiTreeMap getShardData() {
-		return super.getShardData();
-	}
 }

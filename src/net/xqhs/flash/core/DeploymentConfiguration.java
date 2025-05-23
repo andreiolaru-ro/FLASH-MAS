@@ -371,7 +371,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
-		log.li("final config:", this);
+		log.li("final config:", new MultiTreeMap().addOneTree(CategoryName.DEPLOYMENT.s(), deployment));
+		log.lf("local IDs:", new MultiTreeMap().addSingleTree(LOCAL_ID_ATTRIBUTE, this.getATree(LOCAL_ID_ATTRIBUTE)));
 		
 		log.doExit();
 		lock();

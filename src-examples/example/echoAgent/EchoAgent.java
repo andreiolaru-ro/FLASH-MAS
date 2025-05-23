@@ -11,90 +11,39 @@
  ******************************************************************************/
 package example.echoAgent;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.support.PylonProxy;
-import net.xqhs.util.logging.Unit;
+import net.xqhs.flash.core.EntityCore;
+import net.xqhs.flash.core.agent.BaseAgent;
 
 /**
- * Simple agent for testing.
+ * Simple agent for testing. Logging is handled by {@link EntityCore}.
  * 
  * @author Andrei Olaru
  */
-@SuppressWarnings("javadoc")
-public class EchoAgent extends Unit implements Agent {
-	boolean			isRunning	= false;
-	Set<PylonProxy>	supports	= new HashSet<>();
-	
-	public EchoAgent() {
-		setUnitName("EchoAgent");
-	}
-	
+public class EchoAgent extends BaseAgent {
 	@Override
 	public boolean start() {
-		li("Agent starting");
-		isRunning = true;
+		if(!super.start())
+			return false;
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				stop();
+				t.cancel();
+			}
+		}, 2000);
+		li("Agent started");
 		return true;
 	}
 	
 	@Override
 	public boolean stop() {
-		li("Agent stopping");
-		isRunning = false;
-		return true;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return isRunning;
-	}
-	
-	@Override
-	public String getName() {
-		return "EchoAgent";
-	}
-	
-	@Override
-	public boolean addContext(EntityProxy<Pylon> context) {
-		supports.add((PylonProxy) context);
-		li("Support [] added; current contexts:", context, supports);
-		return true;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public boolean addGeneralContext(EntityProxy<?> context) {
-		try {
-			return addContext((EntityProxy<Pylon>) context);
-		} catch(ClassCastException e) {
-			le("Added context is of incorrect type");
+		if(!super.stop())
 			return false;
-		}
+		li("Agent stopped");
+		return true;
 	}
-	
-	@Override
-	public boolean removeContext(EntityProxy<Pylon> context) {
-		if(supports.contains(context)) {
-			supports.remove(context);
-			li("Support [] removed; current contexts:", context, supports);
-			return true;
-		}
-		lw("Context [] not present.", context);
-		return false;
-	}
-	
-	@Override
-	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
-		return null;
-	}
-	
-	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		return false;
-	}
-	
 }

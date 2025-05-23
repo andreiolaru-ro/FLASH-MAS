@@ -47,7 +47,7 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 	 */
 	public static final String		DESIGNATION			= "test/monitoring";
 	/**
-	 * The name of the parameter that indicates after how many seconds the agnt should exit..
+	 * The name of the parameter that indicates after how many seconds the agent should exit..
 	 */
 	protected static final String	EXIT_PARAMETER_NAME	= "exit";
 	/**
@@ -86,6 +86,8 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
+		((MessagingShard) getAgent().getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
+				.addOutgoingMessageHook(this);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
 			MessagingShard msg = ((MessagingShard) getAgent()
 					.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)));
@@ -122,6 +124,8 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 		if(getAgent() != null) {
 			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>").setLogLevel(Level.ALL)
 					.setLoggerType(PlatformUtils.platformLogType());
+			if(getConfiguration().isSimple(HIGHLIGHT_FOCUS))
+				locallog.setHighlighted();
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null) {
