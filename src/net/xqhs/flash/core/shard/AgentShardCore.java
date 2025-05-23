@@ -91,7 +91,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable
 		shardConfiguration = new MultiTreeMap();
 		shardConfiguration.ensureLocked();
 		
-		setUnitName("/." + shardDesignation.toString());
+		if(shardDesignation != null)
+			setUnitName("/." + shardDesignation.toString());
 		shardInitializer();
 	}
 	
