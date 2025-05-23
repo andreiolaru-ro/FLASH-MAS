@@ -237,11 +237,17 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
-		if(classicPylon != null)
+		if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(source, destination, content);
 			return classicPylon.send(source, destination, content);
+		}
 		else if(wavePylon != null) {
-			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
-					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
+			AgentWave wave = new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
+					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress()));
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
+			return wavePylon.send(wave);
 		}
 		else
 			return false;
@@ -251,11 +257,18 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	public boolean sendMessage(AgentWave wave) {
 		if(!getAgentAddress().equals(wave.getFirstSource()))
 			wave.addSourceElementFirst(getAgentAddress());
-		if(wavePylon != null)
+		if(wavePylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
 			return wavePylon.send(wave);
-		else if(classicPylon != null)
+		}
+		else if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
+						wave.getSerializedContent());
 			return classicPylon.send(wave.getCompleteSource(), wave.getCompleteDestination(),
 					wave.getSerializedContent());
+		}
 		else
 			return false;
 	}

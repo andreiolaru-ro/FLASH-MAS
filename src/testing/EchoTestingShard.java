@@ -16,6 +16,7 @@ import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -86,10 +87,9 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
+		((MessagingShard) getAgent().getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
+				.addOutgoingMessageHook(this);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
-			((MessagingShard) getAgent()
-					.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
-							.addOutgoingMessageHook(this);
 			exitTimer = new Timer();
 			exitTimer.schedule(new TimerTask() {
 				@Override
@@ -134,5 +134,10 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 	@Override
 	public void sendingMessage(String source, String destination, String content) {
 		locallog.li("Sending a message from [] to [] with content [].", source, destination, content);
+	}
+	
+	@Override
+	public void sendingMessage(AgentWave wave) {
+		locallog.li("Sending a message []", wave);
 	}
 }

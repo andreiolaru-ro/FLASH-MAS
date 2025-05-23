@@ -31,13 +31,26 @@ public interface MessagingShard extends AgentShard {
 	 */
 	public interface OutgoingMessageHook {
 		/**
-		 * method to be called whenever a message is being sent by the agent.
+		 * Method to be called whenever a message is being sent by the agent through a
+		 * {@link ClassicMessagingPylonProxy}.
 		 * 
-		 * @param source - the source of the message
-		 * @param destination - the destination of the message
-		 * @param content - the content of the message
+		 * @param source
+		 *            - the source of the message
+		 * @param destination
+		 *            - the destination of the message
+		 * @param content
+		 *            - the content of the message
 		 */
 		public void sendingMessage(String source, String destination, String content);
+		
+		/**
+		 * Method to be called whenever a message is being sent by the agent through a
+		 * {@link ClassicMessagingPylonProxy}.
+		 * 
+		 * @param wave
+		 *            - the wave that is being sent
+		 */
+		public void sendingMessage(AgentWave wave);
 	}
 	
 	/**
