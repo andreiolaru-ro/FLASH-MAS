@@ -11,8 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core.shard;
 
-import java.io.Serializable;
-
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.SimpleLoader;
@@ -49,7 +47,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardCore extends EntityCore<Agent> implements AgentShard, Serializable {
+public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	/**
 	 * The class UID.
 	 */
@@ -90,7 +88,8 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard, Ser
 		shardConfiguration = new MultiTreeMap();
 		shardConfiguration.ensureLocked();
 		
-		setUnitName("/." + shardDesignation.toString());
+		if(shardDesignation != null)
+			setUnitName("/." + shardDesignation.toString());
 		shardInitializer();
 	}
 	
@@ -178,7 +177,6 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard, Ser
 	}
 	
 	/**
-<<<<<<< master
 	 * @return the shard initialization data. It cannot be modified, and it is guaranteed to not be <code>null</code>.
 	 */
 	protected MultiTreeMap getShardData() {
@@ -186,8 +184,6 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard, Ser
 	}
 	
 	/**
-=======
->>>>>>> 09fd8fb Added files not added in the previous commit.
 	 * The method is called by the parent {@link ShardContainer} when an event occurs.
 	 * 
 	 * @param event
