@@ -56,6 +56,7 @@ public class FedClientShard extends AgentShardGeneral {
 				AgentWave wave = (AgentWave) event;
 				lf("processing wave ", wave);
 				// TODO process message
+				sendMessageFromShard(wave.createReply("Response"));
 			}
 			break;
 		

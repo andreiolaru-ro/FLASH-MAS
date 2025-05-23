@@ -70,9 +70,9 @@ public class FedServerShard extends AgentShardGeneral {
 			
 			// message sending example, sent to all agents:
 			IntStream.range(1, nclients + 1).forEachOrdered(n -> {
-				AgentWave wave = new AgentWave("test content").addSourceElements(DESIGNATION)
-						.appendDestination(Constants.CLIENT_AGENT_PREFIX + n);
-				sendMessage(wave);
+				AgentWave wave = new AgentWave("test content").appendDestination(Constants.CLIENT_AGENT_PREFIX + n,
+						FedClientShard.DESIGNATION);
+				sendMessageFromShard(wave);
 			});
 			break;
 		case AGENT_WAVE:
