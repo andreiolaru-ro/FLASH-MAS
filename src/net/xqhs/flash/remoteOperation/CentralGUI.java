@@ -45,9 +45,10 @@ public abstract class CentralGUI extends GuiShard {
 	 * @return - true if the update was successful.
 	 */
 	public boolean updateGui(String entity, Element guiSpecification) {
-		// lf("Update for []: ", entity, interfaceStructure);
+		lf("1. Update for []: ", entity, guiSpecification);
 		// lf("Update processed for []: ", entity, interfaceStructure);
 		Element temp = (Element) guiSpecification.clone();
+		li("Central GUI updating entity: ", entity, " with GUI: ", temp);
 		entityGUIs.put(entity, temp);
 		return true;
 	}

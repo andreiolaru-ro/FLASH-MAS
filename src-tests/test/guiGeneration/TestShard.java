@@ -78,6 +78,7 @@ public class TestShard extends AgentShardGeneral {
 			
 			break;
 		case AGENT_STOP:
+			li("Stopping agent: ", event);
 			if(timer != null) {
 				timer.cancel();
 				timer = new Timer();

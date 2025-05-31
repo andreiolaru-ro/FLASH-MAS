@@ -98,6 +98,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	protected class EntityData {
 		String	entityName;
 		String	status;
+		String  applicationStatus;
 		boolean	registered	= false;
 		Element	guiSpecification;
 		
@@ -107,6 +108,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		
 		public String getStatus() {
 			return status;
+		}
+
+		public String getApplicationStatus() {
+			return applicationStatus;
 		}
 		
 		public Element getGuiSpecification() {
@@ -120,6 +125,11 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		
 		public EntityData setStatus(String status) {
 			this.status = status;
+			return this;
+		}
+
+		public EntityData setApplicationStatus(String applicationStatus) {
+			this.applicationStatus = applicationStatus;
 			return this;
 		}
 		
@@ -166,7 +176,6 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			case AGENT_WAVE:
 				return processWave((AgentWave) event);
 			default:
-				centralMessagingShard.signalAgentEvent(event);
 				return false;
 			}
 		}
@@ -192,8 +201,9 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	/**
 	 * Endpoint element for this shard.
 	 */
-	protected static final String	ENTITY_STATUS_ELEMENT	= "standard-status";
-	protected static final String	ENTITY_LABEL_ELEMENT	= "standard-name";
+	protected static final String	ENTITY_STATUS_ELEMENT	    = "standard-status";
+	protected static final String   APPLICATION_STATUS_ELEMENT  = "standard-application-status";
+	protected static final String	ENTITY_LABEL_ELEMENT	    = "standard-name";
 	/**
 	 * File for configuring the default controls for entities.
 	 */
@@ -292,35 +302,57 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					entitiesData.put(entityName, new EntityData().setName(entityName));
 				EntityData ed = entitiesData.get(entityName);
 				ed.registered = true;
-				if(ed.getStatus() == null)
+				if (ed.getStatus() == null) {
 					ed.setStatus(Fields.STATUS_UNKNOWN.name());
-				if(ed.getGuiSpecification() == null)
-					ed.setGuiSpecification(setupStandardControls(ed.getStatus(), entityName));
+					ed.setApplicationStatus(Fields.STATUS_UNKNOWN.name());
+				}
+				Element standardControls = setupStandardControls(
+					ed.getStatus(), ed.getApplicationStatus(), entityName);
+				if (ed.getGuiSpecification() == null) {
+					ed.setGuiSpecification(standardControls);
+				} else {
+					Element guiSpec = ed.getGuiSpecification();
+					for (Element child : standardControls.getChildren()) {
+						if (!guiSpec.getChildren().contains(child))
+							guiSpec.addChild(child);
+					}
+				}
 				li("Registered entity []/[] in []", category, entityName, node);
-				gui.updateGui(entityName, entitiesData.get(entityName).getGuiSpecification());
+				gui.updateGui(entityName, ed.getGuiSpecification());
 			}
 			return true;
 		case UPDATE_ENTITY_STATUS:
-			String output = wave.getContentElements().stream()
-					.map(key -> key + ": " + wave.getObject(key, "null").toString()).collect(Collectors.joining("|"));
-			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
+			li("UPDATE_ENTITY_STATUS wave: []", wave);
+			String entityStatus = ((Fields)wave.getObject(Fields.RUNNING_STATUS.name(), 
+				Fields.STATUS_UNKNOWN)).name();
+			String applicationStatus = ((Fields)wave.getObject(Fields.APPLICATION_STATUS.name(), 
+				Fields.STATUS_UNKNOWN)).name();
+		
+			if (!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
-			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity)).setStatus(output);
-			li("Status update for []: []", sourceEntity, output);
-			return gui.sendOutput(new AgentWave(output, sourceEntity, ENTITY_STATUS_ELEMENT));
+
+			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity)
+					.setStatus(entityStatus).setApplicationStatus(applicationStatus));
+
+			li("Status update for []: [], []", sourceEntity, entityStatus, applicationStatus);
+			return gui.sendOutput(new AgentWave(entityStatus, sourceEntity, ENTITY_STATUS_ELEMENT)) &&
+				   gui.sendOutput(new AgentWave(applicationStatus, sourceEntity, APPLICATION_STATUS_ELEMENT));
 		case UPDATE_ENTITY_GUI:
 			Element interfaceStructure = (Element) wave.getObject(Fields.SPECIFICATION.name());
 			Element interfaceContainer = new Element();
-			if(interfaceStructure != null)
+			if (interfaceStructure != null)
 				// must avoid adding it twice
-				for(Element child : interfaceStructure.getChildren())
-					if(!interfaceContainer.getChildren().contains(child))
+				for (Element child : interfaceStructure.getChildren())
+					if (!interfaceContainer.getChildren().contains(child))
 						interfaceContainer.addChild(child);
-			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
+			if (!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
 			else
-				interfaceContainer.addAllChildren(setupStandardControls(entitiesData.get(sourceEntity).getStatus(),
-						entitiesData.get(sourceEntity).getName()).getChildren());
+				interfaceContainer.addAllChildren(setupStandardControls(
+					entitiesData.get(sourceEntity).getStatus(),
+					entitiesData.get(sourceEntity).getApplicationStatus(),
+					entitiesData.get(sourceEntity).getName()
+				).getChildren());
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 					.setGuiSpecification(interfaceContainer);
 			lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
@@ -343,10 +375,18 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		}
 	}
 	
-	protected Element setupStandardControls(String status, String entityName) {
+	/**
+	 * Sets up the standard controls for an entity.
+	 * @param status - the status of the entity
+	 * @param applicationStatus - the application status for the entity
+	 * @param entityName - the name of the entity
+	 * @return an {@link Element} containing the standard controls for the entity
+	 */
+	protected Element setupStandardControls(String status, String applicationStatus, String entityName) {
 		Element element = (Element) standardCtrls.clone();
 		element.getChildren(ENTITY_LABEL_ELEMENT).get(0).setValue(entityName);
 		element.getChildren(ENTITY_STATUS_ELEMENT).get(0).setValue(status);
+		element.getChildren(APPLICATION_STATUS_ELEMENT).get(0).setValue(applicationStatus);
 		return element;
 	}
 	

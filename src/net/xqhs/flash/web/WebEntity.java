@@ -11,6 +11,11 @@
  ******************************************************************************/
 package net.xqhs.flash.web;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map.Entry;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -318,37 +323,27 @@ public class WebEntity extends CentralGUI {
 	 * @param content - a JsonObject containing all the roles and their values
 	 */
 	public void sendNotification(JsonArray subject, JsonObject content) {
-		// Special actions:
-		String port = subject.get(1).getAsString();
-		String role = subject.get(2).getAsString();
-		if ("standard-stop".equals(port) && "stop".equals(role)) {
-			sendEvent(AgentEventType.AGENT_STOP);
-			return;
-		}
-		if ("standard-start".equals(port) && "start".equals(role)) {
-			sendEvent(AgentEventType.AGENT_START);
-			return;
-		}
-		// Normal notification:
-		AgentWave wave = new AgentWave(
-			content.toString(),
+		AgentWave wave = new AgentWave();
+		wave.resetDestination(
 			CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString(),
 			gson.fromJson(subject, String[].class)
 		);
+		for (Entry<String, JsonElement> entry : content.entrySet()) {
+			String key = entry.getKey();
+			JsonElement value = entry.getValue();
+			if (value.isJsonArray()) {
+				JsonArray array = value.getAsJsonArray();
+				List<String> values = Arrays.asList(gson.fromJson(array, String[].class));
+				wave.addAll(key, values);
+			} else if (value.isJsonPrimitive()) {
+				String val = value.getAsString();
+				wave.add(key, val);
+			}
+		}
 			
 		wave.addSourceElements(getShardDesignation().toString());
 		li("Sending notification to client: []", wave.toString());
 		cep.postAgentEvent(wave);
-	}
-
-	/**
-	 * Sends an event to the agent (for e.g. start/stop)
-	 * @param eventType - the type of the event to be sent.
-	 */
-	public void sendEvent(AgentEventType eventType) {
-		li("Sending event to agent: []", eventType);
-		AgentEvent event = new AgentEvent(eventType);
-		cep.postAgentEvent(event);
 	}
 	
 	@Override

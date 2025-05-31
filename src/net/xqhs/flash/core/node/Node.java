@@ -297,6 +297,7 @@ public class Node extends Unit implements Entity<Node> {
 			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
 				case AGENT_WAVE:
+					li("Agent wave received at node: ", event);
 					String localAddr = ((AgentWave) event).getCompleteDestination();
 					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
 						break;
