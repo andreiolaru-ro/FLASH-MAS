@@ -95,7 +95,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 			return register(entityName, receiver, null);
 		}
 
-		public boolean register(String entityName, WaveReceiver receiver, Map<String, String> additionalInfo) {
+		protected boolean register(String entityName, WaveReceiver receiver, Map<String, String> additionalInfo) {
 			if (receiver != null) {
 				if (messageReceivers.containsKey(entityName))
 					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());

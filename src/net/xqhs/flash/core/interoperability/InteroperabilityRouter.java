@@ -185,9 +185,8 @@ public class InteroperabilityRouter<T> {
 			for (Map.Entry<Integer, Set<T>> routeInfo : routesForDestination.getValue().entrySet()) {
 				Integer distance = routeInfo.getKey();
 				JsonObject routeInfoJson = new JsonObject();
-
-				// TODO: only send first value info ?
 				boolean addRoute = false;
+
 				for (T route : routeInfo.getValue()) {
 					String nextHop = "";
 
@@ -200,7 +199,6 @@ public class InteroperabilityRouter<T> {
 					if (!nextHop.equals(nextHopEntityNameForExcludedRoute)) {
 						routeInfoJson.addProperty("route", nextHop);
 						routeInfoJson.addProperty("distance", distance);
-
 						if (!addRoute)
 							addRoute = true;
 					}
@@ -208,7 +206,6 @@ public class InteroperabilityRouter<T> {
 
 				if (addRoute) {
 					routesInfoForDestination.add(routeInfoJson);
-
 					if (!addInfo)
 						addInfo = true;
 				}
@@ -236,25 +233,18 @@ public class InteroperabilityRouter<T> {
 			JsonObject object = routesForDestination.getAsJsonObject();
 			String destination = object.get("destination").getAsString();
 			JsonArray routes = object.getAsJsonArray("info");
-			
-			try {
-				JsonObject shortestRoute = routes.get(0).getAsJsonObject();
-				if (shortestRoute.keySet().isEmpty())
-					continue;
-
-				int distance = shortestRoute.get("distance").getAsInt();
-
-				int currentDistance = -1;
-				if (platformPrefixToRoutingDestination.get(destination) != null)
-					currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey().intValue();
-
-				if (currentDistance < distance) {
-					infoUpdated = true;
-					addRoutingDestinationForPlatform(destination, source, distance);
-				}
-			} catch (Exception e) {
-				// le("Cannot parse routing info.");
+			JsonObject shortestRoute = routes.get(0).getAsJsonObject();
+			if (shortestRoute.keySet().isEmpty())
 				continue;
+
+			int distance = shortestRoute.get("distance").getAsInt();
+			int currentDistance = -1;
+			if (platformPrefixToRoutingDestination.get(destination) != null)
+				currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey().intValue();
+
+			if (currentDistance < distance) {
+				infoUpdated = true;
+				addRoutingDestinationForPlatform(destination, source, distance);
 			}
 		}
 		

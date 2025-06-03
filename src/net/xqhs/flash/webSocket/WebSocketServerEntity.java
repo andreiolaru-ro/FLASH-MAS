@@ -238,7 +238,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			// send to the newly registered bridge
 			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
 			if (initialRoutingInfo != null) {
-				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(bridgeEntityName);
+				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(bridgeEntityName).addSourceElementFirst(webSocketServerAddress);
 				initialWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, initialRoutingInfo.toString());
 				webSocket.send(AgentWaveJson.toJson(initialWave).toString());
 				li("Sent routing info [] to newly registered bridge []", AgentWaveJson.toJson(initialWave).toString(), bridgeEntityName);
@@ -284,13 +284,6 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 			JsonParser parser = new JsonParser();
 			JsonObject json = null;
 			json = (JsonObject) parser.parse(content);
-			// send to source ER
-//			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
-//			if (initialRoutingInfo != null) {
-//				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(bridgeEntityName).addSourceElements(getName());
-//				initialWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, initialRoutingInfo.getAsString());
-//				webSocket.send(AgentWaveJson.toJson(initialWave).toString());
-//			}
 
 			if (interoperabilityRouter.updateRoutingInformation(json, bridgeEntityName)) {
 				li("Updated routing info.");

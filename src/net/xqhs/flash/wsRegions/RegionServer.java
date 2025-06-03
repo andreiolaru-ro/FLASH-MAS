@@ -157,10 +157,15 @@ public class RegionServer extends Unit implements Entity<Node> {
 	protected void processMessage(String message, WebSocket webSocket) {
 		JsonObject json = JsonParser.parseString(message).getAsJsonObject();
 		dbg(Dbg.DEBUG_WSREGIONS, "received message: ", json);
+		if (json.has(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION)) {
+			routingInfoMessageHandler(json, webSocket);
+			return;
+		}
+
 		String destination = json.has(AgentWave.COMPLETE_DESTINATION)
 				? json.get(AgentWave.COMPLETE_DESTINATION).getAsString()
 				: null;
-		if(destination == null || destination.contains(Constants.PROTOCOL)) {
+		if (destination == null || destination.contains(Constants.PROTOCOL)) {
 			String type = json.get(Constants.EVENT_TYPE_KEY).getAsString();
 			switch(MessageType.valueOf(type)) {
 			case REGISTER:
@@ -192,6 +197,45 @@ public class RegionServer extends Unit implements Entity<Node> {
 			contentMessageHandler(json, message);
 	}
 	
+	private void routingInfoMessageHandler(JsonObject msgJson, WebSocket webSocket) {
+		if (msgJson.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION) != null) {
+			String bridgeEntityName = msgJson.get(AgentWave.SOURCE_ELEMENT).getAsString();
+			String content = msgJson.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION).getAsString();
+			li("Received routing info [].", msgJson.toString());
+			li("Known routing info before update []", interoperabilityRouter.getAllRoutingInfo());
+
+			JsonParser parser = new JsonParser();
+			JsonObject json = null;
+			json = (JsonObject) parser.parse(content);
+
+			if (interoperabilityRouter.updateRoutingInformation(json, bridgeEntityName)) {
+				li("Updated routing info.");
+
+				for (Iterator<String> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
+					String destinationName = iterator.next();
+					WebSocket erWebSocket = regionHomeAgents.get(destinationName).getClientConnection();
+					if (erWebSocket == null)
+						continue;
+
+					if (!destinationName.equals(bridgeEntityName)) {
+						JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
+
+						if (updatedRoutingInfo != null) {
+							AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName).addSourceElementFirst("ws://" + getName());
+							updatedWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, updatedRoutingInfo.toString());
+							erWebSocket.send(AgentWaveJson.toJson(updatedWave).toString());
+							li("Sent routing info [] to []", AgentWaveJson.toJson(updatedWave).toString(), destinationName);
+						} else {
+							li("Did not have relevant routing info. Known routing info: [].", interoperabilityRouter.getAllRoutingInfo());
+						}
+					}
+				}
+			} else {
+				li("Did not update routing info using [].", json.toString());
+			}
+		}
+	}
+
 	@Override
 	public boolean start() {
 		webSocketServer.start();
@@ -357,9 +401,10 @@ public class RegionServer extends Unit implements Entity<Node> {
 			// send to the newly registered bridge
 			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
 			if (initialRoutingInfo != null) {
-				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(entity).addSourceElements(getName());
-				initialWave.add("content", initialRoutingInfo.getAsString());
+				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(entity).addSourceElementFirst("ws://" + getName());
+				initialWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, initialRoutingInfo.toString());
 				sendMessage(webSocket, initialWave);
+				li("Sent routing info [] to newly registered bridge []", AgentWaveJson.toJson(initialWave).toString(), entity);
 			}
 
 			String platformPrefix = msg.get(InteroperableMessagingPylonProxy.REGISTER_BRIDGE_KEY).getAsString();
@@ -367,6 +412,24 @@ public class RegionServer extends Unit implements Entity<Node> {
 
 			if (msg.get(InteroperableMessagingPylonProxy.IS_REMOTE) != null)
 				return;
+
+			for (Iterator<String> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
+				String destinationName = iterator.next();
+
+				if (!destinationName.equals(entity)) {
+					WebSocket erWebSocket = regionHomeAgents.get(destinationName).getClientConnection();
+					JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
+
+					if (updatedRoutingInfo != null) {
+						AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName).addSourceElementFirst("ws://" + getName());
+						updatedWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, updatedRoutingInfo.toString());
+						erWebSocket.send(AgentWaveJson.toJson(updatedWave).toString());
+						li("Sent routing info [] to []", AgentWaveJson.toJson(updatedWave).toString(), destinationName);
+					} else {
+						li("Did not have relevant routing info. Known routing info: [].", interoperabilityRouter.getAllRoutingInfo());
+					}
+				}
+			}
 
 			// register bridge for all regions
 			for (Entry<String, WSClient> homeServer : homeServers.entrySet())
@@ -383,7 +446,7 @@ public class RegionServer extends Unit implements Entity<Node> {
 				if (!destinationName.equals(entity)) {
 					JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
 					AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName).addSourceElements(getName());
-					updatedWave.add("content", updatedRoutingInfo.toString());
+					updatedWave.add(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION, updatedRoutingInfo.toString());
 					sendMessage(agentStatus.getClientConnection(), updatedWave);
 				}
 			}
@@ -392,37 +455,6 @@ public class RegionServer extends Unit implements Entity<Node> {
 				return;
 		}
 
-		if (msg.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION) != null) {
-			JsonElement content = msg.get("content");
-			JsonObject json = content.getAsJsonObject();
-
-			// send to source ER
-			JsonObject initialRoutingInfo = interoperabilityRouter.getAllRoutingInfo();
-			if (initialRoutingInfo != null) {
-				AgentWaveJson initialWave = (AgentWaveJson) new AgentWaveJson().appendDestination(entity).addSourceElements(getName());
-				initialWave.add("content", initialRoutingInfo.getAsString());
-				sendMessage(webSocket, initialWave);
-			}
-
-			if (interoperabilityRouter.updateRoutingInformation(json)) {
-				// send to other ERs
-				for (Iterator<String> iterator = interoperabilityRouter.getAllDestinations().iterator(); iterator.hasNext();) {
-					String destinationName = iterator.next();
-					AgentStatus agentStatus = regionHomeAgents.get(destinationName);
-
-					if (destinationName != entity) {
-						JsonObject updatedRoutingInfo = interoperabilityRouter.getRoutingInfo(destinationName);
-						AgentWaveJson updatedWave = (AgentWaveJson) new AgentWaveJson().appendDestination(destinationName).addSourceElements(getName());
-						updatedWave.add("content", updatedRoutingInfo.toString());
-						sendMessage(agentStatus.getClientConnection(), updatedWave);
-					}
-				}
-			}
-
-			if (regionHomeAgents.containsKey(entity))
-				return;
-		}
-		
 		lf("Received REGISTER message from new agent ", entity);
 		if(regionHomeAgents.put(entity,
 				new AgentStatus(entity, webSocket, AgentStatus.Status.HOME, getName())) != null)
