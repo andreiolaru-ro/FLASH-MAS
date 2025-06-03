@@ -90,8 +90,8 @@ public class WebEntity extends CentralGUI {
 	/** The port on which the HTTP server is running */
 	protected int httpPort;
 
-	/** A promise that is completed when a client connection is fully established */
-	protected Promise<Void> running = Promise.promise();
+	/** Is the web server started? */
+	protected boolean isRunning = false;
 
 	/** The Gson object used for JSON serialization and deserialization */
 	protected static final Gson gson = new Gson();
@@ -136,25 +136,16 @@ public class WebEntity extends CentralGUI {
 			router.mountSubRouter(WS_ENDPOINT, sockJSHandler.bridge(options, bridgeEvent -> {
 				try {
 					if (bridgeEvent.type() == BridgeEventType.SOCKET_CREATED) {
-						System.out.println("created");
+						li("Socket created: []", bridgeEvent.socket().remoteAddress());
 					}
 					else if (bridgeEvent.type() == BridgeEventType.REGISTER) {
-						System.out.println("register");
 						li("Registering client []", bridgeEvent.socket().remoteAddress());
 					}
 					else if (bridgeEvent.type() == BridgeEventType.UNREGISTER) {
-						System.out.println("unregister");
 						li("Unregistering client []", bridgeEvent.socket().remoteAddress());
-						entity.running = Promise.promise();
 					}
 					else if (bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
-						System.out.println("closed");
-					}
-					else if (bridgeEvent.type() == BridgeEventType.SEND) {
-						System.out.println("client-message");
-					}
-					else if (bridgeEvent.type() == BridgeEventType.RECEIVE) {
-						System.out.println("server-message");
+						li("Socket closed: []", bridgeEvent.socket().remoteAddress());
 					}
 				} catch (Exception e) {
 					// do nothing
@@ -172,8 +163,7 @@ public class WebEntity extends CentralGUI {
 				if (REGISTERED_SCOPE.equals(scope)) {
 					JsonObject entities = getEntities();
 					String message = buildMessage("global", "entities list", entities);
-					vertx.eventBus().send(SERVER_TO_CLIENT, message);
-					entity.running.complete();
+					vertx.eventBus().publish(SERVER_TO_CLIENT, message);
 				}
 				else if (NOTIFY_SCOPE.equals(scope)) {
 					JsonArray source = msg.get(MESSAGE_SOURCE_PORT).getAsJsonArray();
@@ -224,23 +214,23 @@ public class WebEntity extends CentralGUI {
 	@Override
 	public boolean start() {
 		lock();
-		if (running.future().isComplete())
-			return true;
-
+		if (isRunning)
+			return false;
+		
 		VertxOptions options = new VertxOptions();
 		web = Vertx.vertx(options);
 		web.deployVerticle(new ServerVerticle(this));
+		isRunning = true;
 		return true;
 	}
 	
 	@Override
 	public boolean stop() {
-		if (running.future().isComplete()) {
+		if (isRunning) {
 			web.close();
-			running = Promise.promise();
-			return true;
+			isRunning = false;
 		}
-		return false;
+		return !isRunning;
 	}
 	
 	@Override
@@ -254,11 +244,7 @@ public class WebEntity extends CentralGUI {
 	 * @param message - the message to be sent.
 	 */
 	protected void sendToClient(String message) {
-		running.future().onComplete(asyncResult -> {
-			if (asyncResult.succeeded()) {
-				web.eventBus().send(SERVER_TO_CLIENT, message);
-			}
-		});
+		web.eventBus().publish(SERVER_TO_CLIENT, message);
 	}
 
 	/**
