@@ -38,10 +38,19 @@ public class TestShard extends AgentShardGeneral {
 	 */
 	protected Timer					timer	= new Timer();
 	/**
-	 * The port.
+	 * The timer value port.
 	 */
 	protected final static String	PORT	= "valuePort";
-	
+	/** The port for the counter label. */
+	protected final static String	COUNTER_PORT = "number";
+	/** Increase role for the counter */
+	protected final static String	INCREASE_ROLE = "increase";
+	/** Decrease role for the counter */
+	protected final static String	DECREASE_ROLE = "decrease";
+	/** Counter overflow label role */
+	protected final static String	INDICATOR_ROLE = "indicator";
+	/** Counter value */
+	protected static int counter = 0;
 	/**
 	 * No-argument constructor.
 	 */
@@ -85,17 +94,32 @@ public class TestShard extends AgentShardGeneral {
 			}
 			break;
 		case AGENT_WAVE:
-			try {
-				li("Agent event from []: ", ((AgentWave) event).getCompleteSource(), event);
-				((GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation())).sendOutput(new AgentWave(
-						Integer.valueOf(Integer.parseInt(event.get(AgentWave.CONTENT))).toString(), PORT));
-				break;
-			} catch(NumberFormatException e) {
-				le("Invalid number format: ", event.get(AgentWave.CONTENT));
-			}
+			handleWave((AgentWave) event);
 			break;
 		default:
 			break;
+		}
+	}
+
+	public void handleWave(AgentWave wave) {
+		li("Agent event from []: []", wave.getCompleteSource(), wave);
+		String[] subject = wave.getDestinationElements();
+		if (subject.length < 2) return;  // 
+		String port = subject[0], role = subject[1];
+		GuiShard guiShard = (GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation());
+
+		if (COUNTER_PORT.equals(port)) {
+			if (INCREASE_ROLE.equals(role)) {
+				counter++;
+			} else if (DECREASE_ROLE.equals(role)) {
+				counter--;
+			}
+
+			String indicator = (counter < 0) ? "underflow" : (counter > 10) ? "overflow" : "";
+			counter = Math.max(0, Math.min(counter, 10)); // keep counter in [0, 10]
+			AgentWave outputWave = new AgentWave(Integer.valueOf(counter).toString(), COUNTER_PORT);
+			outputWave.add(INDICATOR_ROLE, indicator);
+			guiShard.sendOutput(outputWave);
 		}
 	}
 }

@@ -23,8 +23,9 @@ children:
    children:
     - type: form
       port: number
-      role: value
-      # when: [{ /indicator: overflow, style: red }]
+      role: content
+      value: 0
+      when: [{ /indicator: overflow, style: red }, { /indicator: underflow, style: red }]
     - type: button
       port: number
       role: increase
@@ -40,4 +41,4 @@ children:
     - type: label
       port: number
       role: indicator
-      value: --
+      value: ""

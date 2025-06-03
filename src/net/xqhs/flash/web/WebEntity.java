@@ -84,6 +84,9 @@ public class WebEntity extends CentralGUI {
 	/** The content key for a message from the client */
 	protected static final String MESSAGE_CONTENT = "content";
 
+	/** The source key for a message from the client */
+	protected static final String MESSAGE_SOURCE_PORT = "source";
+
 	/** The port on which the HTTP server is running */
 	protected int httpPort;
 
@@ -137,9 +140,11 @@ public class WebEntity extends CentralGUI {
 					}
 					else if (bridgeEvent.type() == BridgeEventType.REGISTER) {
 						System.out.println("register");
+						li("Registering client []", bridgeEvent.socket().remoteAddress());
 					}
 					else if (bridgeEvent.type() == BridgeEventType.UNREGISTER) {
 						System.out.println("unregister");
+						li("Unregistering client []", bridgeEvent.socket().remoteAddress());
 						entity.running = Promise.promise();
 					}
 					else if (bridgeEvent.type() == BridgeEventType.SOCKET_CLOSED) {
@@ -171,9 +176,10 @@ public class WebEntity extends CentralGUI {
 					entity.running.complete();
 				}
 				else if (NOTIFY_SCOPE.equals(scope)) {
+					JsonArray source = msg.get(MESSAGE_SOURCE_PORT).getAsJsonArray();
 					JsonArray subject = msg.get(MESSAGE_SUBJECT).getAsJsonArray();
 					JsonObject content = msg.get(MESSAGE_CONTENT).getAsJsonObject();
-					entity.sendNotification(subject, content);
+					entity.sendNotification(source, subject, content);
 				}
 			});
 			
@@ -319,10 +325,11 @@ public class WebEntity extends CentralGUI {
 	
 	/**
 	 * Sends an event to the agent when an active input on a port is received from the client.
+	 * @param source - a JsonArray containing the entity, port, and role of the source
 	 * @param subject - a JsonArray containing the destination elements on the agent
 	 * @param content - a JsonObject containing all the roles and their values
 	 */
-	public void sendNotification(JsonArray subject, JsonObject content) {
+	public void sendNotification(JsonArray source, JsonArray subject, JsonObject content) {
 		AgentWave wave = new AgentWave();
 		wave.resetDestination(
 			CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString(),
@@ -341,7 +348,10 @@ public class WebEntity extends CentralGUI {
 			}
 		}
 			
-		wave.addSourceElements(getShardDesignation().toString());
+		String srcEntity = source.get(0).getAsString();
+		String srcPort = source.get(1).getAsString();
+		String srcRole = source.get(2).getAsString();
+		wave.addSourceElements(getShardDesignation().toString(), srcEntity, srcPort, srcRole);
 		li("Sending notification to client: []", wave.toString());
 		cep.postAgentEvent(wave);
 	}

@@ -65,9 +65,10 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	/**
 	 * The default remote interface for the entity, formed of a stop button.
 	 */
-	protected static final String	INTERFACE_SPECIFICATION	= "children: [{ type: button, value: Stop, port: "
-			+ REMOTE_STOP.s() + ", when: [{ running_status: running_status_running, style: disabled }], "
-		    + "notify: " + SHARD_ENDPOINT + "/" + REMOTE_STOP.s() + " }]";
+	protected static final String	INTERFACE_SPECIFICATION	= 
+		"children: [{ type: button, value: Stop, port: " + REMOTE_STOP.s() + ", role: stop"
+		+ ", when: [{ standard-status: " + Fields.RUNNING_STATUS_STOPPED.name()
+		+ ", style: disabled }], notify: " + SHARD_ENDPOINT + "/" + REMOTE_STOP.s() + " }]";
 	
 	/**
 	 * The interface specification for this agent, which will be sent to central monitoring entities / web

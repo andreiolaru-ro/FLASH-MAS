@@ -91,6 +91,7 @@ export function notifyEntity(trigger, entityName) {
 
     const msg = {
         scope: NOTIFY_SCOPE,
+        source: [entityName, trigger.port, trigger.role],
         subject: [entityName, ...notifyTarget.split('/')],
         content: content
     };

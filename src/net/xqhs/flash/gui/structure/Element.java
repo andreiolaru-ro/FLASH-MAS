@@ -337,7 +337,7 @@ public class Element implements Cloneable {
 	 *            - the role to match
 	 * @return - the child that matches the given port and role
 	 */
-	public Element getChildren(String childPort, String childRole) {
+	public Element getChild(String childPort, String childRole) {
 		Element result = null;
 		for (Element e : children) {
 			boolean portMatch = (childPort != null && childPort.equals(e.getPort()));
@@ -349,7 +349,7 @@ public class Element implements Cloneable {
 				break;
 			}
 			if (ElementType.CONTAINER.type.equals(e.type)) {
-				result = e.getChildren(childPort, childRole);
+				result = e.getChild(childPort, childRole);
 				if (result != null)
 					break;
 			}
@@ -380,7 +380,7 @@ public class Element implements Cloneable {
 		List<String> roles = wave.getContentElements();
 
 		for (String updateRole : roles) {
-			Element element = this.getChildren(updatePort, updateRole);
+			Element element = this.getChild(updatePort, updateRole);
 			if (element == null) continue;
 			element.setValue(wave.getValue(updateRole));
 		}

@@ -77,14 +77,23 @@ export function applyUpdatesOnPort(entityName, port, roles) {
 }
 
 // $element - jQuery element to apply the styles to (might not be added to the DOM yet)
+/**
+ * @param {*} entity 
+ * @param {*} id 
+ * @param {jQuery} $element 
+ * @returns 
+ */
 export function applyStyles(entity, id, $element) {
     if (!(id in entity.data)) return;
+    const classesToAdd = new Set();
+
     for (let {conditions, style} of entity.data[id].when) {
         let isValid = Object.entries(conditions).every(([trigger, value]) => 
             entity.data[trigger]?.value == value);
         const className = `conditional-style-${style}`;
 
-        if (isValid) $element.addClass(className);
+        if (isValid) classesToAdd.add(className);
         else $element.removeClass(className);
     }
+    $element.addClass([...classesToAdd].join(' '));
 }

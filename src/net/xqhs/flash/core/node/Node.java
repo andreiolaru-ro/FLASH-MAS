@@ -297,10 +297,14 @@ public class Node extends Unit implements Entity<Node> {
 			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
 				case AGENT_WAVE:
-					li("Agent wave received at node: ", event);
-					String localAddr = ((AgentWave) event).getCompleteDestination();
-					if(!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
+					AgentWave agentWave = (AgentWave) event;
+					li("Agent wave received at node: ", agentWave);
+					String localAddr = agentWave.getCompleteDestination();
+					if (!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
 						break;
+					String[] destination = agentWave.getDestinationElements();
+					if (destination.length == 3 && "standard-start".equals(destination[1]))
+						start();
 					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
 					if(msg == null)
 						break;
