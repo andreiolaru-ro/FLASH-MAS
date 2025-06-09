@@ -1,5 +1,7 @@
 package net.xqhs.flash.fedlearn;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import net.xqhs.flash.core.Entity;
@@ -34,6 +36,8 @@ public class FedServerShard extends AgentShardGeneral {
 	 * The number of clients.
 	 */
 	int			nclients;
+
+	List<String> clientUpdates = new ArrayList<>();
 	
 	/**
 	 * No-arg constructor.
@@ -67,24 +71,53 @@ public class FedServerShard extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			// do start procedures
+			li("FedServerShard starting...");
+			broadcastGlobalModel("InitialModelData");
 			
 			// message sending example, sent to all agents:
-			IntStream.range(1, nclients + 1).forEachOrdered(n -> {
-				AgentWave wave = new AgentWave("test content").appendDestination(Constants.CLIENT_AGENT_PREFIX + n,
-						FedClientShard.DESIGNATION);
-				sendMessageFromShard(wave);
-			});
+			// IntStream.range(1, nclients + 1).forEachOrdered(n -> {
+			// 	AgentWave wave = new AgentWave("test content").appendDestination(Constants.CLIENT_AGENT_PREFIX + n,
+			// 			FedClientShard.DESIGNATION);
+			// 	sendMessageFromShard(wave);
+			// });
 			break;
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 				AgentWave wave = (AgentWave) event;
-				lf("processing wave ", wave);
+				lf("Processing wave: ", wave);
 				// TODO process message
+				String content = wave.getContent();
+				if (content != null && content.startsWith("CLIENT_UPDATE")) {
+					String clientUpdate = content.substring("CLIENT_UPDATE".length()).trim();
+					li("Received client update.");
+					clientUpdates.add(clientUpdate);
+
+					if (clientUpdates.size() >= nclients) {
+						li("All cliet updates received. Aggregating...");
+						// Aggregate using Flask server
+						// startFit implemented by Marius and Dragos
+						String aggregatedModel = fedDriver.startFit(1, 60f);
+
+						broadcastGlobalModel(aggregatedModel);
+						clientUpdates.clear();
+					}
+				} else {
+					lw("Unknown wave content received: " + content);
+				}
 			}
 			break;
 		
 		default:
 			break;
 		}
+	}
+
+	private void broadcastGlobalModel(String modelData) {
+		String globalModelMessage = "GLOBAL_MODEL_UPDATE " + modelData;
+		IntStream.range(1, nclients + 1).forEachOrdered(n -> {
+			AgentWave wave = new AgentWave(globalModelMessage)
+					.appendDestination(Constants.CLIENT_AGENT_PREFIX + n, FedClientShard.DESIGNATION);
+			sendMessageFromShard(wave);
+		});
 	}
 }

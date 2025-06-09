@@ -23,6 +23,8 @@ public class FedClientShard extends AgentShardGeneral {
 	 * The node-local {@link FedDriver} instance.
 	 */
 	FedDriver					fedDriver;
+
+	String                      serverAgentId;
 	
 	/**
 	 * No-arg constructor.
@@ -50,13 +52,29 @@ public class FedClientShard extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			// do start procedures
+			li("FedCliendShard starting...");
 			break;
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 				AgentWave wave = (AgentWave) event;
-				lf("processing wave ", wave);
-				// TODO process message
-				sendMessageFromShard(wave.createReply("Response"));
+				lf("Processing wave: ", wave);
+				// process message
+				String content = wave.getContent();
+				if (content != null && content.startsWith("GLOBAL_MODEL_UPDATE")) {
+					String globalModelData = content.substring("GLOBAL_MODEL_UPDATE".length()).trim();
+					li("Received global model update.");
+					// fedDriver to load model
+					// clientData implemented by Marius and Dragos
+					String localUpdate = fedDriver.clientData(serverAgentId, globalModelData);
+					AgentWave replyWave = new AgentWave("CLIENT_UPDATE " + localUpdate)
+								.appendDestination(wave.getFirstSource(), FedServerShard.DESIGNATION);
+					sendMessageFromShard(replyWave);
+					
+				} else {
+					lw("Unknown wave content received: " + content);
+				}
+
+				// sendMessageFromShard(wave.createReply("Response"));
 			}
 			break;
 		
