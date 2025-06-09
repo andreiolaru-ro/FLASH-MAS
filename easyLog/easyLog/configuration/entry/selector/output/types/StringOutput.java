@@ -1,5 +1,6 @@
 package easyLog.configuration.entry.selector.output.types;
 
+import easyLog.configuration.entry.Entry.OutputBlockAccess;
 import easyLog.configuration.entry.selector.level.Level;
 import easyLog.configuration.entry.selector.output.OutputElement;
 
@@ -11,8 +12,9 @@ public class StringOutput implements OutputElement {
     }
 
     @Override
-    public void build() {
-        System.out.print(text + " ");
+	public void build(OutputBlockAccess oneLineOutput, OutputBlockAccess blockOutput) {
+		oneLineOutput.addOutputElement(text);
+		blockOutput.addOutputElement(text);
     }
 
     @Override

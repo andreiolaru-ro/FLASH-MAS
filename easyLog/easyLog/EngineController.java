@@ -16,6 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import easyLog.configuration.entry.Entry;
+import easyLog.configuration.entry.Entry.OutputBlock;
 import easyLog.configuration.yamlObject.YamlObject;
 
 public class EngineController {
@@ -64,14 +65,20 @@ public class EngineController {
 						engine.process(line);
 					}
 					// System.out.print("\r" + n + " Lines processed");
-					if(n++ % 10 == 0) {
+					if(n++ % 50 == 0) {
+						OutputBlock oneLineOutput = new OutputBlock(" ");
+						OutputBlock blockoutput = new OutputBlock(" ");
 						for(Entry entry : entriesList) {
 							if(entry.getOutputItem() != null) {
-								entry.getOutputItem().getOutput();
+								entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
 							}
-							System.out.println();
-							System.out.println("-----------------------------");
 						}
+						String tab = " ".repeat(40);
+						System.out.println(tab + "----------------------------- v");
+						System.out.println(blockoutput.toString(tab));
+						System.out.println(tab + "----------------------------- ^");
+						System.out.println(oneLineOutput);
+						System.out.println(tab + "----------------------------- ^");
 					}
 				}
 			}

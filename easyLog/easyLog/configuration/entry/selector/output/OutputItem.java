@@ -2,6 +2,9 @@ package easyLog.configuration.entry.selector.output;
 
 import java.util.List;
 
+import easyLog.configuration.entry.Entry.OutputBlock;
+import easyLog.configuration.entry.Entry.OutputBlockAccess;
+
 public class OutputItem {
 
 
@@ -25,10 +28,11 @@ public class OutputItem {
         this.elements = elements;
     }
 
-    public void getOutput() {
+	public void getOutput(OutputBlockAccess oneLineOutput, OutputBlockAccess blockOutput) {
 
         for (OutputElement item : elements) {
-            item.build();
+			item.build(oneLineOutput, blockOutput);
         }
+		blockOutput.addOutputElement(OutputBlock.LINE_SEPARATOR);
     }
 }
