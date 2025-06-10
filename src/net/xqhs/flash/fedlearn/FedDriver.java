@@ -127,7 +127,37 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 	 * parameter for the dataset classes
 	 */
 	public static String	DATASET_CLASSES_PARAM;
-	
+
+	private static String	CLIENT_INIT;
+
+	private static String	CLIENT_DATA;
+
+	private static String	INITIALIZE_FED_SERVICE;
+
+	private static String	REGISTER_CLIENT_PROXY;
+
+	private static String	CLIENT_ID;
+
+	private static String	FRACTION_FIT;
+
+	private static String	FRACTION_EVALUATE;
+
+	private static String	MIN_FIT_CLIENTS;
+
+	private static String	MIN_EVALUATE_CLIENTS;
+
+	private static String	MIN_AVAILABLE_CLIENTS;
+
+	private static String	NUM_CLIENTS;
+
+	private static String	START_FIT;
+
+	private static String	GET_TASK;
+
+	private static String	RES;
+
+	private static String	SERVER_PORT_PARAM = "port";
+
 	{ // use the same block of constants from fed.py
 		SERVER_URL = "http://localhost";
 		SERVER_PORT = 5023;
@@ -153,6 +183,21 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		PREDICT_OP_PARAM = "predict_op";
 		DATASET_NAME_PARAM = "dataset_name";
 		DATASET_CLASSES_PARAM = "dataset_classes";
+		// fed_learn constants
+		CLIENT_INIT = "init_client";
+		CLIENT_DATA = "client_data";
+		INITIALIZE_FED_SERVICE = "initialize_fed";
+		REGISTER_CLIENT_PROXY = "register_client_proxy";
+		CLIENT_ID = "client_id";
+		FRACTION_FIT = "fraction_fit";
+		FRACTION_EVALUATE = "fraction_evaluate";
+		MIN_FIT_CLIENTS = "min_fit_clients";
+		MIN_EVALUATE_CLIENTS = "min_evaluate_clients";
+		MIN_AVAILABLE_CLIENTS = "min_available_clients";
+		NUM_CLIENTS = "num_clients";
+		START_FIT = "start_fit";
+		GET_TASK = "get_task";
+		RES = "res";
 	}
 	
 	/**
@@ -176,12 +221,14 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
+		String port = getConfiguration().get(SERVER_PORT_PARAM);
 		try {
 			ProcessBuilder pb = new ProcessBuilder("python",
 					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
-					+ FedDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
+					+ FedDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE, port);
 			// pb.directory(new File(<directory from where you want to run the command>));
 			// pb.inheritIO();
+
 			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
 			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
@@ -394,7 +441,120 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		}
 		return encodedData;
 	}
-	
+
+	public String register(String client_id) {
+		Map<String, String> postData = new HashMap<>();
+		postData.put(CLIENT_ID, client_id);
+		HttpURLConnection connection = setupConnection(REGISTER_CLIENT_PROXY, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Client [] registered successfully", client_id);
+
+			return response;
+		}
+		le("Error: could not register client []", client_id);
+		return null;
+	}
+
+	public String initFedServer( float fraction_fit, float fraction_evaluate,
+			int min_fit_clients, int min_evaluate_clients, int min_available_clients, int num_clients) {
+		Map<String, String> postData = new HashMap<>();
+		postData.put(FRACTION_FIT, Float.toString(fraction_fit));
+		postData.put(FRACTION_EVALUATE, Float.toString(fraction_evaluate));
+		postData.put(MIN_FIT_CLIENTS, Integer.toString(min_fit_clients));
+		postData.put(MIN_EVALUATE_CLIENTS, Integer.toString(min_evaluate_clients));
+		postData.put(MIN_AVAILABLE_CLIENTS, Integer.toString(min_available_clients));
+		postData.put(NUM_CLIENTS, Integer.toString(num_clients));
+
+		HttpURLConnection connection = setupConnection(INITIALIZE_FED_SERVICE, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed initialized successfully");
+			return response;
+		}
+		le("Error: could not initialize fed");
+		return null;
+	}
+
+	public String startFit(Integer num_rounds, float timeout) {
+		Map<String, String> postData = new HashMap<>();
+		postData.put("num_rounds", Integer.toString(num_rounds));
+		postData.put("timeout", Float.toString(timeout));
+
+		HttpURLConnection connection = setupConnection(START_FIT, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed fit started successfully");
+			return response;
+		}
+		le("Error: could not start fit");
+		return null;
+	}
+
+	public String getTask(){
+		HttpURLConnection connection = setupConnection(GET_TASK, "GET", null);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed tasks retrieved successfully");
+			return response;
+		}
+		le("Error: could not get task");
+		return null;
+	}
+
+	public String getRes(String proxy_id, String results){
+		Map<String, String> postData = new HashMap<>();
+		postData.put("proxy_id", proxy_id);
+		postData.put("results", results);
+
+		HttpURLConnection connection = setupConnection(RES, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed results sent successfully");
+			return response;
+		}
+		le("Error: could not send results");
+		return null;
+	}
+
+	public String initFedClient(String server_agent_id, String dataset_name, Integer partition_id, Integer num_partitions) {
+		Map<String, String> postData = new HashMap<>();
+		postData.put("server_agent_id", server_agent_id);
+		postData.put("dataset", dataset_name);
+		postData.put("partition_id", Integer.toString(partition_id));
+		postData.put("num_partitions", Integer.toString(num_partitions));
+
+		HttpURLConnection connection = setupConnection(CLIENT_INIT, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed client initialized successfully");
+			return response;
+		}
+		le("Error: could not initialize fed client");
+		return null;
+	}
+
+	public String clientData(String proxy_id, String instruction){
+		Map<String, String> postData = new HashMap<>();
+		postData.put("proxy_id", proxy_id);
+		postData.put("instruction", instruction);
+
+		HttpURLConnection connection = setupConnection(CLIENT_DATA, "POST", postData);
+
+		String response = checkResponse(connection);
+		if(response != null) {
+			lf("Fed client data sent successfully");
+			return response;
+		}
+		le("Error: could not send fed client data");
+		return null;
+	}
 	/**
 	 * Methode to add a model to the python server. It takes strings of the model path and its name as parameter, and
 	 * return its ID if it exists. The server send a success message if the model is properly added, and an error
@@ -414,11 +574,12 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 	 * 			
 	 * @return The Id of the model if it is properly added, null if it is not
 	 */
+
 	public String addModel(String model_id, String model_path, Map<String, Object> model_config) {
 		// Convert the model_config to a JSON string
 		Gson gson = new Gson();
 		String jsonConfig = gson.toJson(model_config);
-		
+
 		// Set up the form data
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model_id);
@@ -433,7 +594,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			lf("Model " + model_id + " added successfully");
 			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
 			this.modelsList.put(model_id, values);
-			
+
 			li("available models: " + this.modelsList.keySet());
 			return model_id;
 		}
@@ -460,7 +621,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Methode to predict a result from a model. It gives to the server the model ID and the data to predict. Then it
 	 * shows the result of the prediction, or an error message if the prediction failed. Currently, the data to predict
@@ -470,7 +631,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 	 *            The ID of the model to use
 	 * @param data_path
 	 *            The path for the file we use to predict
-	 * 			
+	 *
 	 * @return The prediction result, as a list of double
 	 */
 	public ArrayList<Object> predict(String model, String data_path, boolean needEncode) {
@@ -479,12 +640,12 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			// Encode the data
 			toPredict = encodeImage(data_path);
 		}
-		
+
 		// Create the request data
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model);
 		postData.put(INPUT_DATA_PARAM, toPredict);
-		
+
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
 		// Check the response
@@ -496,7 +657,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Method to export a model from the server. When exporting a model, it creates a config file with the model's
 	 * configuration, and a .pth file with the model's weights. It takes the model ID and the export directory as
@@ -506,7 +667,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 	 *            The ID of the model to export
 	 * @param export_directory
 	 *            The directory where to export the model
-	 * 			
+	 *
 	 * @return The path to the exported model
 	 */
 	public String exportModel(String model_id, String export_directory) {
@@ -514,7 +675,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		Map<String, String> postData = new HashMap<>();
 		postData.put(MODEL_NAME_PARAM, model_id);
 		postData.put(EXPORT_PATH_PARAM, export_directory);
-		
+
 		// Set up the connection
 		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
 		// Check the response
@@ -525,16 +686,16 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		}
 		return null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<FedDriver> asContext() {
 		return this;
 	}
-	
+
 	@Override
 	public String getEntityName() {
 		return getName();
 	}
-	
+
 }

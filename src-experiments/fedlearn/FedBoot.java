@@ -33,7 +33,7 @@ public class FedBoot {
 		
 		int nclients = 5;
 		
-		a += " -node nodeServer -driver Fed:FedDriver";
+		a += " -node nodeServer -driver Fed:FedDriver port:8080";
 		a += " -pylon local:pylon1";
 		a += " -agent agentS  in-context-of:Fed:FedDriver -shard echoTesting exit:5 -shard messaging -shard FedServer nclients:"
 				+ nclients;
