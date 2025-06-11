@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -21,10 +23,10 @@ import easyLog.configuration.yamlObject.YamlObject;
 
 public class EngineController {
 	
-	private List<Entry>			entriesList	= new ArrayList<>();	// list of entries in the configuration file that
+	protected List<Entry> entriesList = new ArrayList<>(); // list of entries in the configuration file that
 																	// needs to be processed
-	private Set<ParserEngine>	engineSet;
-	private boolean				matched		= false;
+	protected Set<ParserEngine>	engineSet;
+	protected int				nLinesParsed	= 0;
 	
 	public EngineController(String pathToConfigFile) {
 		List<YamlObject> yamlObjects = new ArrayList<>();
@@ -52,20 +54,25 @@ public class EngineController {
 		// method that activates the parser engine for the configuration objects
 		initializeParserEngineSet();
 		
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if(nLinesParsed > 0)
+					nLinesParsed = 0;
+			}
+		}, 3000, 3000);
+		
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
-			int n = 0;
 			while((line = reader.readLine()) != null) {
-				if(line.matches("^[>.*#] \\[.*"))// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
-				{
-					this.matched = true;
-				}
-				if(this.matched) {
+				if(line.matches("^[>.*#] \\[.*")) {
+					// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
 					for(ParserEngine engine : engineSet) {
 						engine.process(line);
 					}
-					// System.out.print("\r" + n + " Lines processed");
-					if(n++ % 50 == 0) {
+					if(nLinesParsed++ % 50 == 0) {
+						System.out.println("\r" + nLinesParsed + " Lines processed");
 						OutputBlock oneLineOutput = new OutputBlock(" ");
 						OutputBlock blockoutput = new OutputBlock(" ");
 						for(Entry entry : entriesList) {
@@ -73,7 +80,7 @@ public class EngineController {
 								entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
 							}
 						}
-						String tab = " ".repeat(40);
+						String tab = " ".repeat(150);
 						System.out.println(tab + "----------------------------- v");
 						System.out.println(blockoutput.toString(tab));
 						System.out.println(tab + "----------------------------- ^");
@@ -83,6 +90,7 @@ public class EngineController {
 				}
 			}
 			System.out.println("----------------------------- EXIT");
+			timer.cancel();
 			reader.close();
 		} catch(IOException e) {
 			throw new RuntimeException(e);

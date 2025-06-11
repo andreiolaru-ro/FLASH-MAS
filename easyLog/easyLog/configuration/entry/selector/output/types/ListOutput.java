@@ -30,8 +30,8 @@ public class ListOutput implements OutputElement {
             case ENTITIES:
                 for(String entity: entities)
                 {
-					oneLineOutput.addOutputElement(entity + ", ");
-					blockOutput.addOutputElement(entity + ", ");
+					oneLineOutput.addOutputElement(entity);
+					blockOutput.addOutputElement(entity);
                 }
                 break;
             case LINE:

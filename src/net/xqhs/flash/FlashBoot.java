@@ -37,7 +37,8 @@ public class FlashBoot {
 	protected static final int	OUTPUT_TO_FILE		= 1 << bitIndex++;
 	protected static final int	OUTPUT_TO_EASYLOG	= 1 << bitIndex++;
 	// protected static final int LOG_OUTPUTS = OUTPUT_TO_CONSOLE;
-	protected static final int		LOG_OUTPUTS			= OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
+	protected static final int LOG_OUTPUTS = OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
+	// protected static final int LOG_OUTPUTS = OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	protected static final Level	GLOBAL_LOG_LEVEL	= Level.ALL;
 	private static final String		EASYLOG_CONFIG_FILE	= "resource/test.yml";
 	
@@ -54,7 +55,7 @@ public class FlashBoot {
 		
 		if((LOG_OUTPUTS & OUTPUT_TO_FILE) != 0)
 			try {
-				MasterLog.addDefaultOutput(new FileOutput("output/global.log"));
+				MasterLog.addDefaultOutput(new FileOutput("global.log"));
 			} catch(FileNotFoundException e) {
 				e.printStackTrace();
 			}
