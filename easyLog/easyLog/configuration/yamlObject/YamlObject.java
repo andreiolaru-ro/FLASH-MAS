@@ -4,6 +4,7 @@ import static easyLog.configuration.entry.selector.expect.Expect.ExpectType.COUN
 import static easyLog.configuration.entry.selector.expect.Expect.ExpectType.MATCH;
 import static easyLog.configuration.entry.selector.output.OutputListType.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import easyLog.configuration.entry.selector.output.types.ExpectOutput;
 import easyLog.configuration.entry.selector.output.types.ListOutput;
 import easyLog.configuration.entry.selector.output.types.StringOutput;
 import easyLog.configuration.entry.selector.stateMatcher.StateMatcher;
+import easyLog.easyFSM.FiniteStateMachine;
 
 public class YamlObject {
     private String e;
@@ -93,33 +95,71 @@ public class YamlObject {
         this.comment = comment;
     }
 
-    public Entry initializeEntity() // function that transforms a yaml object into an entity
+    public Entry initializeEntity() throws IOException // function that transforms a yaml object into an entity de mapat si fsm ul aici
     {
-        List<OutputElement> outputElements;
-        if (this.expect.get(0).equals(COUNT.toString().toLowerCase())) {
-            if(this.out!=null)
-            {
-                ExpectCount expectCount = new ExpectCount(this.expect.subList(1,this.expect.size()));
-                //logic to build the OutputItem
-                outputElements = buildOutputWithCount(this.out, expectCount);
-                return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), expectCount, new OutputItem(outputElements), this.comment);
-            }
-            return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectCount(this.expect.subList(1,this.expect.size())),this.comment);
-
-        } else
+        if(this.fsmFrom!= null)
         {
-            if (this.expect.get(0).equals(MATCH.toString().toLowerCase())) {
+            FiniteStateMachine fsm = new FiniteStateMachine();
+            fsm.loadFromDotFile(this.fsmFrom);
+            fsm.setInitialState(this.fsmStart);
+            fsm.setFinalState(this.fsmExpect);
+
+            List<OutputElement> outputElements;
+            if (this.expect.get(0).equals(COUNT.toString().toLowerCase())) {
                 if(this.out!=null)
                 {
-                    outputElements = buildOutputWithoutCount(this.out);
-                    return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), new ExpectMatch(),new OutputItem(outputElements), this.comment);
+                    ExpectCount expectCount = new ExpectCount(this.expect.subList(1,this.expect.size()));
+                    //logic to build the OutputItem
+                    outputElements = buildOutputWithCount(this.out, expectCount);
+                    return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), expectCount, new OutputItem(outputElements), this.comment, fsm);
                 }
-                return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectMatch(), this.comment);
+                return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectCount(this.expect.subList(1,this.expect.size())),this.comment, fsm);
+
+            } else
+            {
+                if (this.expect.get(0).equals(MATCH.toString().toLowerCase())) {
+                    if(this.out!=null)
+                    {
+                        outputElements = buildOutputWithoutCount(this.out);
+                        return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), new ExpectMatch(),new OutputItem(outputElements), this.comment, fsm);
+                    }
+                    return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectMatch(), this.comment, fsm);
+                }
+                else {
+                    return new Entry();
+                }
             }
-            else {
-                return new Entry();
+
+        }
+        else
+        {
+            List<OutputElement> outputElements;
+            if (this.expect.get(0).equals(COUNT.toString().toLowerCase())) {
+                if(this.out!=null)
+                {
+                    ExpectCount expectCount = new ExpectCount(this.expect.subList(1,this.expect.size()));
+                    //logic to build the OutputItem
+                    outputElements = buildOutputWithCount(this.out, expectCount);
+                    return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), expectCount, new OutputItem(outputElements), this.comment);
+                }
+                return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectCount(this.expect.subList(1,this.expect.size())),this.comment);
+
+            } else
+            {
+                if (this.expect.get(0).equals(MATCH.toString().toLowerCase())) {
+                    if(this.out!=null)
+                    {
+                        outputElements = buildOutputWithoutCount(this.out);
+                        return new Entry(this.e, new Level(this.level), new StateMatcher(this.match), new ExpectMatch(),new OutputItem(outputElements), this.comment);
+                    }
+                    return new Entry(this.e,new Level(this.level),new StateMatcher(this.match),new ExpectMatch(), this.comment);
+                }
+                else {
+                    return new Entry();
+                }
             }
         }
+
     }
 
     public List<OutputElement> buildOutputWithCount(List<String> out, ExpectCount expectCount) {

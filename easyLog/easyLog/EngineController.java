@@ -28,8 +28,8 @@ public class EngineController {
 	protected Set<ParserEngine>	engineSet;
 	protected int				nLinesParsed	= 0;
 	protected boolean			changed			= false;
-	
-	public EngineController(String pathToConfigFile) {
+
+	public EngineController(String pathToConfigFile) throws IOException {
 		List<YamlObject> yamlObjects = new ArrayList<>();
 		Yaml yaml = new Yaml(new Constructor(YamlObject.class, new LoaderOptions()));
 		InputStream inputStream = EasyLog.class.getClassLoader().getResourceAsStream(pathToConfigFile);
@@ -64,7 +64,7 @@ public class EngineController {
 				changed = false;
 			}
 		}, 5000, 5000);
-		
+
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
 			while((line = reader.readLine()) != null) {
@@ -80,6 +80,16 @@ public class EngineController {
 						if(entry.getOutputItem() != null) {
 							entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
 						}
+						if(!entry.showGraph)
+						{
+							if(entry.getFsm() != null)
+							{
+								entry.getFsm().displayGraph();
+								entry.showGraph = true;
+							}
+						}
+
+
 					}
 					String pad = " ".repeat(20);
 					System.out.print(pad + oneLineOutput + "\r");
@@ -119,9 +129,9 @@ public class EngineController {
 		System.out.println(tab + " ----------------------------- ^");
 		// System.out.println(oneLineOutput);
 		// System.out.println(tab + "----------------------------- ^");
-		
+
 	}
-	
+
 	private void initializeParserEngineSet() {
 		this.engineSet = new HashSet<>();
 		for(Entry entry : entriesList) {

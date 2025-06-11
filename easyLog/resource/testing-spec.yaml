@@ -39,3 +39,7 @@
   match-sequence: ["started", "stopped"] # the elements must be in this exact sequence
   expect: [match]
   # no 'out' line
+
+  #  fsm-from: "easyLog/resource/test.dot"
+  #  fsm-start: "INITIAL"
+  #  fsm-expect: "STOPPED"

@@ -1,0 +1,4 @@
+graph Agent_A {
+    INITIAL -- RUNNING [label="STARTING"];
+    RUNNING -- STOPPED [label="STOPPING"];
+}

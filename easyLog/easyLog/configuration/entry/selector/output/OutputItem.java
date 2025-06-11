@@ -1,5 +1,7 @@
 package easyLog.configuration.entry.selector.output;
 
+import easyLog.LineProcessor;
+
 import java.util.List;
 
 import easyLog.configuration.entry.Entry.OutputBlock;
