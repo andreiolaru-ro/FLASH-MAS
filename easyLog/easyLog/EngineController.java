@@ -27,6 +27,7 @@ public class EngineController {
 																	// needs to be processed
 	protected Set<ParserEngine>	engineSet;
 	protected int				nLinesParsed	= 0;
+	protected boolean			changed			= false;
 	
 	public EngineController(String pathToConfigFile) {
 		List<YamlObject> yamlObjects = new ArrayList<>();
@@ -58,34 +59,32 @@ public class EngineController {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if(nLinesParsed > 0)
-					nLinesParsed = 0;
+				if(changed)
+					printBlock();
+				changed = false;
 			}
-		}, 3000, 3000);
+		}, 5000, 5000);
 		
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
 			while((line = reader.readLine()) != null) {
 				if(line.matches("^[>.*#] \\[.*")) {
 					// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
+					changed = true;
 					for(ParserEngine engine : engineSet) {
 						engine.process(line);
 					}
-					if(nLinesParsed++ % 50 == 0) {
-						System.out.println("\r" + nLinesParsed + " Lines processed");
-						OutputBlock oneLineOutput = new OutputBlock(" ");
-						OutputBlock blockoutput = new OutputBlock(" ");
-						for(Entry entry : entriesList) {
-							if(entry.getOutputItem() != null) {
-								entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
-							}
+					OutputBlock oneLineOutput = new OutputBlock(" ");
+					OutputBlock blockoutput = new OutputBlock(" ");
+					for(Entry entry : entriesList) {
+						if(entry.getOutputItem() != null) {
+							entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
 						}
-						String tab = " ".repeat(150);
-						System.out.println(tab + "----------------------------- v");
-						System.out.println(blockoutput.toString(tab));
-						System.out.println(tab + "----------------------------- ^");
-						System.out.println(oneLineOutput);
-						System.out.println(tab + "----------------------------- ^");
+					}
+					String pad = " ".repeat(20);
+					System.out.print(pad + oneLineOutput + "\r");
+					if(nLinesParsed++ % 50 == 0) {
+						printBlock();
 					}
 				}
 			}
@@ -104,6 +103,23 @@ public class EngineController {
 		// System.out.println();
 		// System.out.println("-----------------------------");
 		// }
+	}
+	
+	protected void printBlock() {
+		OutputBlock oneLineOutput = new OutputBlock(" ");
+		OutputBlock blockoutput = new OutputBlock(" ");
+		for(Entry entry : entriesList) {
+			if(entry.getOutputItem() != null) {
+				entry.getOutputItem().getOutput(oneLineOutput.getAccesor(), blockoutput.getAccesor());
+			}
+		}
+		String tab = " ".repeat(150);
+		System.out.println(tab + "----------------------------- Log Lines processed: " + nLinesParsed);
+		System.out.println(blockoutput.toString(tab));
+		System.out.println(tab + " ----------------------------- ^");
+		// System.out.println(oneLineOutput);
+		// System.out.println(tab + "----------------------------- ^");
+		
 	}
 	
 	private void initializeParserEngineSet() {
