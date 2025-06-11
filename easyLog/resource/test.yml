@@ -1,7 +1,7 @@
 - e: "Agent.*"
   level: ">"
   match: ["RUNNING"]
-  out: ["count", "agents running:", "list:list"]
+  out: ["count", "agents running:", "list:entities"]
   expect: ["count", "2"]
   comment: "should pass if there are exactly 2 agents in the running phase."
 
@@ -14,7 +14,7 @@
 
 - e: "Pylon.*"
   level:
-  match: ["Started [with thread]"]
+  match: ["Started with thread"]
   out: ["count", "pylons starting:","list:entities"]
   expect: ["count", "2"]
   comment: "should pass if there are 2 pylons in starting phase"

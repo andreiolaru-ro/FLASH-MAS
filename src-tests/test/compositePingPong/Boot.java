@@ -40,7 +40,7 @@ public class Boot
 		args += " -package testing -loader agent:composite";
 		args += " -node node1";
 		// notice how the name of the shard does not necessarily need to contain "Shard", as it is handled by autoFind
-		args += " -agent composite:AgentA -shard messaging -shard PingTest n:3 otherAgent:AgentB -shard EchoTesting";
+		args += " -agent composite:AgentA -shard messaging -shard PingTest n:10 otherAgent:AgentB -shard EchoTesting";
 		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));

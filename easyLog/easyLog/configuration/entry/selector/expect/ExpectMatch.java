@@ -1,14 +1,15 @@
 package easyLog.configuration.entry.selector.expect;
 
+import easyLog.configuration.entry.Entry.OutputBlockAccess;
 import easyLog.configuration.entry.selector.level.Level;
 
 public class ExpectMatch implements Expect {
 
 
     @Override
-    public void build() {
-        // TODO Auto-generated method stub
-
+	public void build(OutputBlockAccess oneLineOutput, OutputBlockAccess blockOutput) {
+		// TODO Auto-generated method stub
+		
     }
 
     @Override

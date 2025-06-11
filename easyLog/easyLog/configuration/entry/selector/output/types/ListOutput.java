@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import easyLog.configuration.entry.Entry.OutputBlock;
+import easyLog.configuration.entry.Entry.OutputBlockAccess;
 import easyLog.configuration.entry.selector.level.Level;
 import easyLog.configuration.entry.selector.output.OutputElement;
 import easyLog.configuration.entry.selector.output.OutputListType;
@@ -22,23 +24,27 @@ public class ListOutput implements OutputElement {
     }
 
     @Override
-    public void build() {
-
+	public void build(OutputBlockAccess oneLineOutput, OutputBlockAccess blockOutput) {
+		oneLineOutput.addOutputElement("[");
         switch(outputListType){
             case ENTITIES:
                 for(String entity: entities)
                 {
-                    System.out.print(entity + ", ");
+					oneLineOutput.addOutputElement(entity);
+					blockOutput.addOutputElement(entity);
                 }
                 break;
             case LINE:
-                for(String line: lines)
+				if(!lines.isEmpty())
+					blockOutput.addOutputElement(OutputBlock.LINE_SEPARATOR);
+				for(String line : lines)
                 {
-                    System.out.println();
-                    System.out.println(line);
+					oneLineOutput.addOutputElement(".");
+					blockOutput.addOutputElement(line + OutputBlock.LINE_SEPARATOR);
                 }
                 break;
         }
+		oneLineOutput.addOutputElement("]");
     }
 
     @Override
