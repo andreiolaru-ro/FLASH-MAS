@@ -297,18 +297,34 @@ public class Node extends Unit implements Entity<Node> {
 			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
 				case AGENT_WAVE:
-					AgentWave agentWave = (AgentWave) event;
-					li("Agent wave received at node: ", agentWave);
-					String localAddr = agentWave.getCompleteDestination();
-					if (!(localAddr.split(AgentWave.ADDRESS_SEPARATOR)[0]).equals(getName()))
-						break;
-					String[] destination = agentWave.getDestinationElements();
-					if (destination.length == 3 && "standard-start".equals(destination[1]))
-						start();
-					JsonObject msg = new Gson().fromJson(((AgentWave) event).getContent(), JsonObject.class);
-					if(msg == null)
-						break;
-					parseReceivedMsg(msg);
+					AgentWave wave = (AgentWave) event;
+					li("Agent wave received at node: ", wave);
+					
+					JsonObject msg = new Gson().fromJson(wave.getContent(), JsonObject.class);
+					if(msg != null)
+						parseReceivedMsg(msg);
+					else {
+						String targetName = wave.popDestinationElement();
+						// TODO check nulls
+						Entity<?> targetEntity = entityOrder.stream().filter(e -> e.getName().equals(targetName))
+								.findFirst().orElse(null);
+						if(targetEntity == null)
+							return ler(false, "Entity [] is not in the context of this node.", targetEntity);
+						String operation = wave.popDestinationElement();
+						if(operation == null)
+							return ler(false, "Operation is null.", targetEntity);
+						switch(operation) {
+						case "standard-start":
+							targetEntity.start();
+							break;
+						case "standard-stop":
+							targetEntity.stop();
+							break;
+						default:
+							return ler(false, "Operation [] is unknown.", operation);
+						}
+						
+					}
 					break;
 				default:
 					break;
