@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: pigne
+Build-Jdk: 13.0.2
+Main-Class: org.graphstream.util.GraphDiff
+
