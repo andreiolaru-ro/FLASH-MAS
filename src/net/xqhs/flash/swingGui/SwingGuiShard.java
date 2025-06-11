@@ -174,6 +174,50 @@ public class SwingGuiShard extends GuiShard {
 			};
 			break;
 		}
+		case SPINNER: {
+			JButton incrementButton = new JButton("+");
+			JButton decrementButton = new JButton("-");
+			JLabel label = new JLabel();
+			if (element.getValue() != null) {
+				label.setText(element.getValue());
+			}
+			JPanel spinnerPanel = new JPanel();
+			spinnerPanel.setLayout(new BoxLayout(spinnerPanel, BoxLayout.X_AXIS));
+			spinnerPanel.add(decrementButton);
+			spinnerPanel.add(label);
+			spinnerPanel.add(incrementButton);
+			comp = spinnerPanel;
+			connector = new ComponentConnect() {
+				@Override
+				public void sendOutput(String value) {
+					label.setText(value);
+				}
+				
+				@Override
+				public String getInput() {
+					return label.getText();
+				}
+			};
+			incrementButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int value = Integer.parseInt(label.getText());
+					value++;
+					label.setText(Integer.toString(value));
+					postActiveInput(element.getPort(), getInput(element.getPort()));
+				}
+			});
+			decrementButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int value = Integer.parseInt(label.getText());
+					value--;
+					label.setText(Integer.toString(value));
+					postActiveInput(element.getPort(), getInput(element.getPort()));
+				}
+			});
+			break;
+		}
 		default:
 			break;
 		}

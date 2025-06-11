@@ -69,7 +69,8 @@ export function applyUpdatesOnPort(entityName, port, roles) {
         const data = entity.data[id];
         console.log("Setting content to: ", id, content);
         data.value = content;
-        data.type == 'form' ? $('#' + id).val(content) : $('#' + id).text(content);
+        ['form', 'spinner'].indexOf(data.type) != -1 ? 
+            $('#' + id).val(content) : $('#' + id).text(content);
 
         if (id in entity.styleTriggers) 
             entity.styleTriggers[id].forEach(id => applyStyles(entity, id, $('#' + id)));

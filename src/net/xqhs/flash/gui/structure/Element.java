@@ -41,6 +41,10 @@ public class Element implements Cloneable {
 	 */
 	public static final String	DEFAULT_ROLE			= AgentWave.CONTENT;
 	/**
+	 * The default notify endpoint for an element.
+	 */
+	public static final String	DEFAULT_NOTIFY			= "$port/$role";
+	/**
 	 * Intent size to use when producing a {@link String} rendition of the structure.
 	 */
 	public static final int		INDENT_SIZE				= 8;
@@ -73,7 +77,7 @@ public class Element implements Cloneable {
 	/**
 	 * The role with which this element is associated.
 	 */
-	protected String				role;
+	protected String				role 		= DEFAULT_ROLE;
 	/**
 	 * Value of the element (e.g. the text of a button / label).
 	 */
@@ -81,7 +85,7 @@ public class Element implements Cloneable {
 	/**
 	 * The endpoint of the shard that added this element and will receive the events from it
 	 */
-	protected String				notify;
+	protected String				notify 		= DEFAULT_NOTIFY;
 
 	/**
 	 * Represents a style that the element can have

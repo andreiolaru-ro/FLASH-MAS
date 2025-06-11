@@ -100,8 +100,19 @@ class AgentComponentBuilder {
     }
 
     form(el, id) {
-        return $('<input>').attr('type', 'text').id(id).val(el.value)
-            .on('change', e => el.value = e.target.value)
+        let form = $('<input>').attr('type', 'text').id(id).val(el.value)
+            .on('change', e => el.value = e.target.value);
+        if ('notify' in el)
+            form.on('enter', () => notifyEntity(el, this.entityName));
+        return form;
+    }
+
+    spinner(el, id) {
+        let spinner = $('<input>').attr('type', 'number').id(id).val(el.value)
+            .on('change', e => el.value = parseFloat(e.target.value));
+        if ('notify' in el)
+            spinner.on('change', () => notifyEntity(el, this.entityName));
+        return spinner;
     }
 
     container(el, id) {
