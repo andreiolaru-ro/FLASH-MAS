@@ -33,5 +33,5 @@ children:
     port: standard-stop
     role: stop
     when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
-    notify: Remote/Remote_stop
+    notify: $port/$role
     properties: {proxy: node}
