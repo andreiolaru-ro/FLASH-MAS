@@ -1,26 +1,16 @@
-/**
- * 
- */
 package aifolk.core;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Optional;
 
-import com.google.gson.Gson;
-
 import aifolk.onto.OntologyDriver;
-import aifolk.onto.Query;
-import aifolk.onto.QueryResult;
 import aifolk.onto.vocab.ExportableDescription;
-import aifolk.onto.vocab.ModelDescription;
 import aifolk.onto.vocab.TaskDescription;
 import aifolk.scenario.ScenarioShard;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
@@ -30,164 +20,98 @@ import net.xqhs.flash.ml.MLDriver;
 import net.xqhs.flash.ml.MLPipelineShard;
 import net.xqhs.util.logging.Logger;
 
-/**
- * Shard to manage the use of ML models, according to the AI Folk methodology.
- */
 public class MLManagementShard extends AgentShardGeneral {
 	public static class DataContext {
-		// nothing to specify
+		// No properties for now
 	}
-	
-	@SuppressWarnings("javadoc")
+
 	public interface Feature {
 		static final String FEATURE_KEY = "feature";
-		
-		TaskDescription modelAlternate(String input, MLDriver mlDriver, OntologyDriver ontDriver,
+
+		TaskDescription modelAlternate(String modelName, String input, MLDriver mlDriver, OntologyDriver ontDriver,
 				DataContext dataContext, Logger log);
-		
 	}
-	
-	/**
-	 * The serial UID
-	 */
-	private static final long	serialVersionUID	= 3728868349364945506L;
-	/**
-	 * {@link AgentShardDesignation}.
-	 */
-	private static final String	DESIGNATION			= "ML:Management";
-	
-	/**
-	 * The node-local {@link MLDriver} instance.
-	 */
-	MLDriver		mlDriver;
-	/**
-	 * The node-local {@link OntologyDriver} instance.
-	 */
-	OntologyDriver	ontDriver;
-	DataContext		currentDataContext	= new DrivingDataContext();
-	Feature			feature				= null;
-	
-	/**
-	 * The constructor.
-	 */
+
+	private static final long serialVersionUID = 3728868349364945506L;
+	private static final String DESIGNATION = "ML:Management";
+
+	private MLDriver mlDriver;
+	private OntologyDriver ontDriver;
+	private DataContext currentDataContext = new DataContext();
+	private Feature feature = null;
+
 	public MLManagementShard() {
 		super(AgentShardDesignation.customShard(DESIGNATION));
 	}
-	
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		for(String file : configuration.getValues(Feature.FEATURE_KEY)) {
+		for (String file : configuration.getValues(Feature.FEATURE_KEY)) {
 			try {
 				String cls = Loader.autoFind(PlatformUtils.getClassFactory(),
 						configuration.getValues(CategoryName.PACKAGE.s()), file, file, null, Feature.FEATURE_KEY, null);
-				// currently only supporting one feature at a time
 				feature = (Feature) PlatformUtils.getClassFactory().loadClassInstance(cls, null, false);
-			} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+			} catch (ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
 					| InvocationTargetException e) {
 				le("Feature load failed for feature [] with exception", file, e);
-				// e.printStackTrace();
 			}
 		}
 		return true;
 	}
-	
+
 	@Override
 	public boolean addGeneralContext(final EntityProxy<? extends Entity<?>> context) {
-		if(!super.addGeneralContext(context))
+		if (!super.addGeneralContext(context))
 			return false;
-		if(context instanceof MLDriver) {
+		if (context instanceof MLDriver) {
 			mlDriver = (MLDriver) context;
 			li("ML Driver detected");
 			return true;
 		}
-		if(context instanceof OntologyDriver) {
+		if (context instanceof OntologyDriver) {
 			ontDriver = (OntologyDriver) context;
 			li("Ontology Driver detected");
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void signalAgentEvent(final AgentEvent event) {
 		super.signalAgentEvent(event);
-		// TODO if event is output from agent ML pipeline, evaluate and decide
-		
-		if(!AgentEventType.AGENT_WAVE.equals(event.getType()) || !(event instanceof AgentWave))
+
+		if (!(event instanceof AgentWave))
 			return;
-		
-		if(ScenarioShard.DESIGNATION.equals(event.getValue(AgentWave.SOURCE_ELEMENT))) {
-			// it is an input for the ML pipeline
-			// recognize situation -- run scripts, evaluate props of current input window
-			
-			TaskDescription taskDesc = feature.modelAlternate((String) event.getObject("input"), mlDriver, ontDriver,
-					currentDataContext, this.getLogger());
-			if(taskDesc != null) {
-				// TODO send task description to other agents by first getting a String serialization of it
-				final Optional<String> taskDescStr = ExportableDescription.graphToString(taskDesc.exportToGraph());
-				
-				// FIXME check if optional ok
-				// FIXME the list of friends is fixed
-				for(String friend : new String[] { "B", "C" }) {
-					AgentWave message = (AgentWave) new AgentWave(taskDescStr.get()).addSourceElements(DESIGNATION)
-							.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_SEARCH);
-					message.resetDestination(friend, DESIGNATION);
-					// sendMessage(message);
+
+		AgentWave wave = (AgentWave) event;
+
+		if (ScenarioShard.DESIGNATION.equals(wave.getValue(AgentWave.SOURCE_ELEMENT))) {
+			// Received input for ML
+			TaskDescription taskDesc = feature.modelAlternate("CombinedModel", (String) wave.getObject("input"),
+					mlDriver, ontDriver, currentDataContext, this.getLogger());
+
+			if (taskDesc != null) {
+				// Replace these with actual logic if fields exist in TaskDescription
+				String modelName = "CombinedModel";
+				String taskType = "classification";
+
+				Optional<String> taskDescStr = ExportableDescription.graphToString(taskDesc.exportToGraph());
+				if (taskDescStr.isPresent()) {
+					for (String friend : new String[] { "B", "C" }) {
+						AgentWave message = new AgentWave(taskDescStr.get());
+						message.addSourceElements(DESIGNATION);
+						message.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_SEARCH);
+						message.resetDestination(friend, DESIGNATION);
+
+						sendMessage(message);
+					}
 				}
-				((MLPipelineShard) getAgent()
-						.getAgentShard(AgentShardDesignation.customShard(MLPipelineShard.DESIGNATION)))
-								.setTaskModel("segmentation", "deeplabv3plus_cityscapes");
-			}
-			
-			// TODO send query to other agents
-		}
-		else {
-			// FIXME alternatively, may have used endpoints such as A/ML-Management/<protocol>
-			List<String> sources = event.getValues(AgentWave.SOURCE_ELEMENT);
-			if(sources.size() >= 2 && !getAgent().getEntityName().equals(sources.get(0))
-					&& DESIGNATION.equals(sources.get(1))) {
-				// wave is from the MLManagementShard of a different agent
-				String messageType = event.get(AIFolkProtocol.FOLK_PROTOCOL);
-				String query = event.get(AgentWave.CONTENT);
-				switch(messageType) {
-				case AIFolkProtocol.FOLK_SEARCH: {
-					lf("received [] for []", messageType, query);
-					
-					QueryResult[] results = ontDriver.runQuery(new Query(query));
-					AgentWave reply = (AgentWave) ((AgentWave) event).createReply(new Gson().toJson(results))
-							.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_LISTING);
-					// TODO find model
-					
-					sendMessage(reply);
-					break;
-				}
-				case AIFolkProtocol.FOLK_LISTING: {
-					// List<QueryResult> results = new ArrayList<>();
-					// for(int i = 0; i < arguments.size(); i++) {
-					// results.add(new Gson().fromJson(arguments.get(i), QueryResult.class));
-					// // TODO manage result
-					// }
-					break;
-				}
-				case AIFolkProtocol.FOLK_REQUEST: {
-					String modelID = event.get(AgentWave.CONTENT);
-					// TODO check with MLDriver if we have the model
-					ModelDescription model = null;
-					AgentWave reply = ((AgentWave) event).createReply(new Gson().toJson(model));
-					reply.add(AIFolkProtocol.FOLK_PROTOCOL, AIFolkProtocol.FOLK_TRANSFER);
-					sendMessage(reply);
-					break;
-				}
-				case AIFolkProtocol.FOLK_TRANSFER: {
-					ModelDescription model = new Gson().fromJson(event.get(AgentWave.CONTENT), ModelDescription.class);
-					// TODO add model description to local graph
-					break;
-				}
-				default:
-					le("Unknown protocol []", messageType);
-				}
+
+				MLPipelineShard pipeline = (MLPipelineShard) getAgent()
+						.getAgentShard(AgentShardDesignation.customShard(MLPipelineShard.DESIGNATION));
+				pipeline.setTaskModel(taskType, modelName);
 			}
 		}
-		
 	}
+
 }

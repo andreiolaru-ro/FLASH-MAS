@@ -20,10 +20,10 @@ public class AutoDriveFeature implements Feature {
 	}
 	
 	@Override
-	public TaskDescription modelAlternate(String input, MLDriver mlDriver, OntologyDriver ontDriver,
+	public TaskDescription modelAlternate(String modelName, String input, MLDriver mlDriver, OntologyDriver ontDriver,
 			DataContext dataContext, Logger log) {
 		// situation element: no of pedestrians
-		ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", input, false);
+		ArrayList<Object> result = mlDriver.predict(modelName, input, false);
 		log.li("Result:", result);
 		try {
 			((DrivingDataContext) dataContext)

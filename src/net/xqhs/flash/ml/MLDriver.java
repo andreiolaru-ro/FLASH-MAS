@@ -177,7 +177,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python",
+			ProcessBuilder pb = new ProcessBuilder(
+					"C:\\Users\\teote\\git\\FLASH-MAS\\ml-directory\\pythonlib\\Scripts\\python.exe",
 					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
 					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
 			// pb.directory(new File(<directory from where you want to run the command>));
@@ -550,6 +551,19 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		return this;
 	}
 	
+	public static Object predictWithCombinedModel(String imagePath) {
+		Map<String, String> postData = new HashMap<>();
+		postData.put(INPUT_DATA_PARAM, imagePath);
+
+		HttpURLConnection connection = new MLDriver().setupConnection("predict_combined", "POST", postData);
+		String response = new MLDriver().checkResponse(connection);
+
+		if (response != null) {
+			return new MLDriver().parseResponse("prediction", response);
+		}
+		return null;
+	}
+
 	@Override
 	public String getEntityName() {
 		return getName();

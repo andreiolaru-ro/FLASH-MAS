@@ -1,16 +1,14 @@
 MODELS:
-# -
-#  name: "MobileNetV2"
-#  path: "ml-directory/models/mobilenetv2.pth"
-#  transform: "datasets.transform.ImageNetTransform"
-#  cuda: false
-#  input_space: RGB
-#  task: "classification"
-#  dataset: "ImageNet" 
- -
-  name: "YOLOv8-pedestrians"
-  path: "ml-directory/models/yolov8n-seg.pt"
-  code: "yolo_module.YoloOps"
-  cuda: true
-DATASETS: []
+  # - name: "MobileNetV2"
+  #   path: "ml-directory/models/mobilenetv2.pth"
+  #   transform: "datasets.transform.ImageNetTransform"
+  #   cuda: false
+  #   input_space: RGB
+  #   task: "classification"
+  #   dataset: "ImageNet"
 
+  - name: "CombinedModel"
+    code: "net.xqhs.flash.ml.python_module.combined_model_entry"
+    cuda: false
+
+DATASETS: []

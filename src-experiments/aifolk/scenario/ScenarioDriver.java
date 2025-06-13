@@ -20,7 +20,6 @@ import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import net.xqhs.flash.ml.MLDriver;
 
 public class ScenarioDriver extends EntityCore<Node> implements EntityProxy<ScenarioDriver> {
 	
@@ -67,7 +66,7 @@ public class ScenarioDriver extends EntityCore<Node> implements EntityProxy<Scen
 			public void run() {
 				if(script.containsKey(Integer.valueOf(step))) {
 					String file = script.get(Integer.valueOf(step));
-					agents.get(agent).initiateAgentEvent(MLDriver.ML_DIRECTORY_PATH + "input/" + file, step);
+					agents.get(agent).initiateAgentEvent("C:\\Users\\teote\\Desktop\\Image" + file, step); // hardcodedPath
 					step++;
 				}
 				else {

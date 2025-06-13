@@ -10,7 +10,9 @@ import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.ml.MLDriver;
 import net.xqhs.flash.ml.MLPipelineShard;
+
 
 @SuppressWarnings("javadoc")
 public class ScenarioShard extends AgentShardGeneral {
@@ -53,9 +55,24 @@ public class ScenarioShard extends AgentShardGeneral {
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		if(AgentEventType.AGENT_WAVE.equals(event.getType())
+
+		if (AgentEventType.AGENT_WAVE.equals(event.getType())
 				&& MLPipelineShard.DESIGNATION.equals(event.getValue(AgentWave.SOURCE_ELEMENT))) {
+
 			String inputID = event.get("ID");
+
+			Object inputObj = event.getObject("input");
+			if (inputObj instanceof String) {
+				String imagePath = (String) inputObj;
+
+				try {
+					Object result = MLDriver.predictWithCombinedModel(imagePath);
+					System.out.println("Prediction result for step " + inputID + ": " + result);
+				} catch (Exception e) {
+					System.err.println("Prediction failed at step " + inputID + ": " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
 			scenarioDriver.receiveAgentOutput(event.getObject(AgentWave.CONTENT), Long.parseLong(inputID));
 		}
 	}
