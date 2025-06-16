@@ -522,6 +522,16 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		return null;
 	}
 
+	/**
+	 * Initializes a federated learning client instance on the Python server.
+	 * This method sends a request to configure a fed client with a specific dataset partition.
+	 *
+	 * @param server_agent_id The unique identifier of the server agent managing the federated process.
+	 * @param dataset_name The name of the dataset the client will use for training/evaluation.
+	 * @param partition_id The specific partition id of the dataset assigned to this client.
+	 * @param num_partitions The total number of partitions the dataset is divided into.
+	 * @return The server's response as a String upon successful initialization, or null on failure.
+	 */
 	public String initFedClient(String server_agent_id, String dataset_name, Integer partition_id, Integer num_partitions) {
 		Map<String, String> postData = new HashMap<>();
 		postData.put("server_agent_id", server_agent_id);
@@ -540,6 +550,14 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		return null;
 	}
 
+	/**
+	 * Sends task instructions from a client proxy to the federated learning client to be executed
+	 * This is used for communication during federated tasks, like sending model updates or receiving tasks.
+	 *
+	 * @param proxy_id The unique identifier for the client proxy sending the data.
+	 * @param instruction The serialized instructions being sent to the client.
+	 * @return The client's response (that contains the operation result) as a String, or null if the communication fails.
+	 */
 	public String clientData(String proxy_id, String instruction){
 		Map<String, String> postData = new HashMap<>();
 		postData.put("proxy_id", proxy_id);
@@ -555,6 +573,8 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		le("Error: could not send fed client data");
 		return null;
 	}
+
+
 	/**
 	 * Methode to add a model to the python server. It takes strings of the model path and its name as parameter, and
 	 * return its ID if it exists. The server send a success message if the model is properly added, and an error
