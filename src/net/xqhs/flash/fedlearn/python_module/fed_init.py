@@ -43,8 +43,14 @@ while project_root_str.split("/")[-1] != first_branch:
     project_root = project_root.parent
     project_root_str = str(project_root).replace("\\", "/")
     if fixpaths: ML_DIRECTORY_PATH = "../" + ML_DIRECTORY_PATH
-project_root = project_root.parent
+
+# THE FIX IS HERE: The following line has been commented out.
+# The while-loop above correctly finds the source root (.../src).
+# This extra line was incorrectly moving the path up one more level.
+# project_root = project_root.parent
+
 log("project root: " + str(project_root))
+sys.path.insert(0, str(project_root))
 log("working directory for ML: " + ML_DIRECTORY_PATH)
 for one_path in PYTHONLIB_PATH:
     pylib_path = project_root.absolute()
@@ -72,4 +78,3 @@ if __name__ == '__main__':
     fed.start(port)
 else:
     log("nothing to do for now.")
-

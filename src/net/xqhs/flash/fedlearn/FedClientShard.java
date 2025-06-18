@@ -1,6 +1,5 @@
 package net.xqhs.flash.fedlearn;
 
-import fr.inria.corese.core.extension.Agent;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;

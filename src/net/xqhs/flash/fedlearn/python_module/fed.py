@@ -22,6 +22,11 @@ def start(port: int = SERVER_PORT):
     app.run(port=port)
 
 
+#### HEALTHCHECK ENDPOINT ####
+@app.route('/healthcheck', methods=['GET'])
+def healthcheck():
+    return jsonify({'message': 'Flask server is alive and well'}), 200
+
 # ---------------------------- CLIENT ROUTES ----------------------------
 from fed_client_module.fed_client import FedClient
 fedclient: Optional[FedClient] = None
@@ -61,13 +66,13 @@ def init_client_route():
     if num_partitions is None:
         return jsonify({'error': 'Missing "num_partitions" in request'}), 400
 
+    # try casting partition_id and num_partitions to int
+    partition_id = int(partition_id)
+    num_partitions = int(num_partitions)
+
     # Type Checking
     if not isinstance(server_agent_id, str):
         return jsonify({'error': 'Invalid type for "server_agent_id". Expected string.'}), 400
-    if not isinstance(partition_id, int):
-        return jsonify({'error': 'Invalid type for "partition_id". Expected integer.'}), 400
-    if not isinstance(num_partitions, int):
-        return jsonify({'error': 'Invalid type for "num_partitions". Expected integer.'}), 400
     if not isinstance(dataset, str):
         return jsonify({'error': 'Invalid type for "dataset". Expected string.'}), 400
     if not isinstance(device, str):
@@ -175,14 +180,17 @@ def init():
     if not data:
         return flask.jsonify({'error': 'No data provided.'}), 400
     client_manager = SimpleClientManager()
-    num_clients = data.get(NUM_CLIENTS)
+    num_clients = int(data.get(NUM_CLIENTS))
+
     log("Waiting for clients to register... ")
     client_manager.wait_for(num_clients,timeout=60)
+
     fraction_fit = data.get(FRACTION_FIT)
     fraction_evaluate = data.get(FRACTION_EVALUATE)
     min_fit_clients = data.get(MIN_FIT_CLIENTS)
     min_evaluate_clients = data.get(MIN_EVALUATE_CLIENTS)
     min_available_clients = data.get(MIN_AVAILABLE_CLIENTS)
+
     strategy = FedAvg(
         fraction_fit=fraction_fit,
         fraction_evaluate=fraction_evaluate,

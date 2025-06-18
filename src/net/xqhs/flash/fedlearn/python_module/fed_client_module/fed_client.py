@@ -8,14 +8,13 @@ from flwr.common import (
 from flwr.common.logger import log
 from logging import *
 
-# Assuming these imports are correct and accessible
 from net.xqhs.flash.fedlearn.python_module.fed_client_module.client_utils import (
     load_datasets
 )
 from net.xqhs.flash.fedlearn.python_module.fed_client_module.flower_client import (
     FlowerClient
 )
-from net.xqhs.flash.fedlearn.python_module.fed_client_module.net import Net
+from net.xqhs.flash.fedlearn.python_module.fed_client_module.convnet import Net
 
 
 class FedClient:

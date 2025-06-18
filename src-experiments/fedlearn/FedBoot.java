@@ -48,18 +48,24 @@ public class FedBoot {
               " min_available_clients:" + nclients +
               " num_rounds:3" +
               " timeout:240.0";
-		for(int client = 0; client++ < nclients;)
+
+
+		int BASE_CLIENT_PORT = 8090;
+		for(int client = 0; client++ < nclients;) {
+			a += " -node nodeClient" + client + " -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
+			a += " -pylon local:pylon_client" + client;
 			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
-                 " in-context-of:Fed:FedDriver" +
-                 " -shard FedClient" +
-                 " server_agent_id:agentS" +
-                 " dataset:cifar10" +
-                 " partition_id:" + (client - 1) +  // 0-based index
-                 " num_partitions:" + nclients +
-                 " device:cpu" +
-                 " -shard messaging" +
-                 " -shard echoTesting exit:5";
-		
+					" in-context-of:Fed:FedDriver" +
+					" -shard echoTesting exit:5" +
+					" -shard messaging" +
+					" -shard FedClient" +
+					" server_agent_id:agentS" +
+					" dataset:cifar10" +
+					" partition_id:" + (client - 1) +  // 0-based index
+					" num_partitions:" + nclients +
+					" device:cpu";
+		}
+
 		FlashBoot.main(a);
 	}
 }

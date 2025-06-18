@@ -30,13 +30,13 @@ import net.xqhs.flash.core.node.Node;
 public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver> {
 	
 	/**
+	 * port of the python server
+	 */
+	private int				SERVER_PORT;
+	/**
 	 * url of the python server
 	 */
 	public static String	SERVER_URL;
-	/**
-	 * port of the python server
-	 */
-	public static int		SERVER_PORT;
 	/**
 	 * path to the md driver source code
 	 */
@@ -156,11 +156,12 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 
 	private static String	RES;
 
+	private static String	HEALTHCHECK_ENDPOINT;
+
 	private static String	SERVER_PORT_PARAM = "port";
 
 	{ // use the same block of constants from fed.py
 		SERVER_URL = "http://localhost";
-		SERVER_PORT = 5023;
 		ML_SRC_PATH = "src/net/xqhs/flash/fedlearn/";
 		ML_DIRECTORY_PATH = "ml-directory/";
 		OP_MODULE_PACKAGE = "operations-modules";
@@ -184,6 +185,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		DATASET_NAME_PARAM = "dataset_name";
 		DATASET_CLASSES_PARAM = "dataset_classes";
 		// fed_learn constants
+		HEALTHCHECK_ENDPOINT = "healthcheck";
 		CLIENT_INIT = "init_client";
 		CLIENT_DATA = "client_data";
 		INITIALIZE_FED_SERVICE = "initialize_fed";
@@ -204,16 +206,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 	 * Use this to store the server process, to stop iit when needed.
 	 */
 	private Process serverProcess;
-	
-	/**
-	 * Map of available models, and their config
-	 */
-	private Map<String, Map<String, Object>> modelsList = new HashMap<>();
 
-	/**
-	 * Map of available datasets, and their config
-	 */
-	private Map<String, Map<String, Object>> datasetsList = new HashMap<>();
 	
 	@Override
 	public boolean start() {
@@ -222,6 +215,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server...");
 		String port = getConfiguration().get(SERVER_PORT_PARAM);
+		SERVER_PORT = Integer.parseInt(port);
 		try {
 			ProcessBuilder pb = new ProcessBuilder("python",
 					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
@@ -265,7 +259,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 					break;
 				}
 				try {
-					if(checkResponse(setupConnection(GET_MODELS_SERVICE, "GET", null)) == null)
+					if(checkResponse(setupConnection(HEALTHCHECK_ENDPOINT, "GET", null)) == null)
 						continue;
 					lf("connected");
 					connected = true;
@@ -305,24 +299,22 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 		}
 		return true;
 	}
-	
+
 	/**
-	 * Method to set up the connection to the python server, and send the request. At the moment, the request property
-	 * is always the same, but it could change in the future In such case, the method would take the request property as
-	 * parameter
+	 * Method to set up the connection to the python server, and send the request.
+	 * This version serializes the parameters as a JSON payload.
 	 *
 	 * @param route_endpoint
-	 *            The endpoint of the route to connect to
+	 * The endpoint of the route to connect to
 	 * @param request_method
-	 *            The request method to use
+	 * The request method to use
 	 * @param params
-	 *            The parameters to send to the server. If null, no parameters are sent
-	 * 			
-	 * @return The connection to the server
+	 * The parameters to send to the server as a JSON object. If null, no body is sent.
+	 * * @return The connection to the server
 	 */
 	protected HttpURLConnection setupConnection(String route_endpoint, String request_method,
-			Map<String, String> params) {
-		if(serverProcess == null || !serverProcess.isAlive()) {
+												Map<String, String> params) {
+		if (serverProcess == null || !serverProcess.isAlive()) {
 			le("Server process not active.");
 			return null;
 		}
@@ -331,21 +323,29 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			URL url = new URL(location);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod(request_method);
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+			// Set the content type to JSON, as expected by the Flask server
+			connection.setRequestProperty("Content-Type", "application/json; utf-8");
+			connection.setRequestProperty("Accept", "application/json");
 			connection.setDoOutput(true);
-			
-			if(params != null) {
-				String PostData = "";
-				for(Map.Entry<String, String> param : params.entrySet()) {
-					PostData += param.getKey() + "=" + URLEncoder.encode(param.getValue(), "UTF-8") + "&";
+
+			if (params != null) {
+				// Use Gson to convert the parameter map to a JSON string
+				Gson gson = new Gson();
+				String jsonPayload = gson.toJson(params);
+
+				// Print the message that is sent
+				lf("Sending JSON payload to [{}]: {}", location, jsonPayload);
+
+				// Write the JSON string to the output stream
+				try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+					wr.write(jsonPayload.getBytes("UTF-8"));
+					wr.flush();
 				}
-				DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-				wr.writeBytes(PostData);
-				wr.flush();
 			}
 			return connection;
-			
-		} catch(IOException e) {
+
+		} catch (IOException e) {
 			le("Error: [] []", e.getMessage(), e.getStackTrace());
 			return null;
 		}
@@ -384,62 +384,6 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			le("Error: [] []", e.getMessage(), e.getStackTrace());
 			return null;
 		}
-	}
-	
-	/**
-	 * Method to parse the json response from the server. It takes the response, and the key of the data to parse. It
-	 * returns the parsed data as an object, which can be casted to the appropriate type
-	 *
-	 * @param key
-	 *            The key of the data to parse in the returned json
-	 * @param response
-	 *            The json response from the server
-	 * 			
-	 * @return The parsed data as an object
-	 */
-	public Object parseResponse(String key, String response) {
-		JsonParser jsonParser = new JsonParser();
-		JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
-		JsonElement jsonElement = jsonObject.get(key);
-		Gson gson = new Gson();
-		Object obj = gson.fromJson(jsonElement, Object.class);
-		return obj;
-	}
-	
-	/**
-	 * Method to get the list of the available models.
-	 *
-	 * @return The list of the available models
-	 */
-	public Map<String, Map<String, Object>> getModels() {
-		return modelsList;
-	}
-	
-	/**
-	 * Method to encode the data to send to the server. It takes the path of the data to encode, and returns the encoded
-	 * data as a string
-	 *
-	 * @param dataPath
-	 *            The path of the data to encode
-	 * 			
-	 * @return The encoded data
-	 */
-	private String encodeImage(String dataPath) {
-		String encodedData;
-		try {
-			// Read and encode the image data
-			BufferedImage image = ImageIO.read(new File(dataPath));
-			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(image, "jpeg", baos);
-			byte[] imageData = baos.toByteArray();
-			encodedData = Base64.getEncoder().encodeToString(imageData);
-		} catch(IOException e) {
-			e.printStackTrace();
-			le("Error: could not read the image file");
-			return null;
-		}
-		return encodedData;
 	}
 
 	public String register(String client_id) {
@@ -571,139 +515,6 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 			return response;
 		}
 		le("Error: could not send fed client data");
-		return null;
-	}
-
-
-	/**
-	 * Methode to add a model to the python server. It takes strings of the model path and its name as parameter, and
-	 * return its ID if it exists. The server send a success message if the model is properly added, and an error
-	 * message if it is not. Adding a model also add it to the modelsList attribute, with its configuration.
-	 *
-	 * @param model_id
-	 *            The Id of the model to add
-	 * @param model_path
-	 *            The path for the model to load
-	 * @param model_config
-	 *            a dictionary containing the model configuration if needed. Some information are required, such as: -
-	 *            "cuda": true if the model is to be run on GPU, false otherwise - "transform": true if the model
-	 *            requires a transformation operation on the input data, false otherwise - "operation_module": the name
-	 *            of the module containing the operation specific to the model (e.g. "imageInput" for the models that
-	 *            require an image as input) Other information can be added to the configuration, depending on the
-	 *            model. Be carefull to give information that are relevant to the model, and to the operation module
-	 * 			
-	 * @return The Id of the model if it is properly added, null if it is not
-	 */
-
-	public String addModel(String model_id, String model_path, Map<String, Object> model_config) {
-		// Convert the model_config to a JSON string
-		Gson gson = new Gson();
-		String jsonConfig = gson.toJson(model_config);
-
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model_id);
-		postData.put(MODEL_FILE_PARAM, model_path);
-		postData.put(MODEL_CONFIG_PARAM, jsonConfig);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
-		if(response != null) {
-			lf("Model " + model_id + " added successfully");
-			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
-			this.modelsList.put(model_id, values);
-
-			li("available models: " + this.modelsList.keySet());
-			return model_id;
-		}
-		return null;
-	}
-
-	public String addDataset(String dataset_name, String classes) {
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(DATASET_NAME_PARAM, dataset_name);
-		postData.put(DATASET_CLASSES_PARAM, classes);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_DATASET_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
-		if(response != null) {
-			lf("Dataset " + dataset_name + " added successfully");
-			Map<String, Object> values = (Map<String, Object>) parseResponse("dataset", response);
-			this.datasetsList.put(dataset_name, values);
-
-			li("Available datasets: " + this.datasetsList.keySet());
-			return dataset_name;
-		}
-		return null;
-	}
-
-	/**
-	 * Methode to predict a result from a model. It gives to the server the model ID and the data to predict. Then it
-	 * shows the result of the prediction, or an error message if the prediction failed. Currently, the data to predict
-	 * is an image, encoded in base64.
-	 *
-	 * @param model
-	 *            The ID of the model to use
-	 * @param data_path
-	 *            The path for the file we use to predict
-	 *
-	 * @return The prediction result, as a list of double
-	 */
-	public ArrayList<Object> predict(String model, String data_path, boolean needEncode) {
-		String toPredict = data_path;
-		if(needEncode) {
-			// Encode the data
-			toPredict = encodeImage(data_path);
-		}
-
-		// Create the request data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model);
-		postData.put(INPUT_DATA_PARAM, toPredict);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
-		if(response != null) {
-			ArrayList<Object> prediction_list = (ArrayList<Object>) parseResponse("prediction", response);
-			li("Prediction: ", prediction_list);
-			return prediction_list;
-		}
-		return null;
-	}
-
-	/**
-	 * Method to export a model from the server. When exporting a model, it creates a config file with the model's
-	 * configuration, and a .pth file with the model's weights. It takes the model ID and the export directory as
-	 * parameter, and return the path to the exported model.
-	 *
-	 * @param model_id
-	 *            The ID of the model to export
-	 * @param export_directory
-	 *            The directory where to export the model
-	 *
-	 * @return The path to the exported model
-	 */
-	public String exportModel(String model_id, String export_directory) {
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model_id);
-		postData.put(EXPORT_PATH_PARAM, export_directory);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
-		if(response != null) {
-			lf("Model [] exported successfully", model_id);
-			return export_directory + "/" + model_id + MODEL_ENDPOINT;
-		}
 		return null;
 	}
 
