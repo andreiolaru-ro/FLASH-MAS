@@ -1,8 +1,16 @@
 package net.xqhs.flash.fedlearn;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -37,7 +45,19 @@ public class FedServerShard extends AgentShardGeneral {
 	 */
 	int			nclients;
 
-	List<String> clientUpdates = new ArrayList<>();
+	private List<String> registeredClients = new ArrayList<>();
+	private Timer taskTimer;
+	private AtomicBoolean fitInProgress = new AtomicBoolean(false);
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+	// FL config parameters
+	private float fractionFit;
+	private float fractionEvaluate;
+	private int minFitClients;
+	private int minEvaluateClients;
+	private int minAvailableClients;
+	private int numRounds;
+	private float timeout;
 	
 	/**
 	 * No-arg constructor.
@@ -49,6 +69,16 @@ public class FedServerShard extends AgentShardGeneral {
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		nclients = Integer.parseInt(configuration.get(NCLIENTS_PARAMETER_NAME));
+		
+		// Read FL parameters
+		fractionFit = Float.parseFloat(configuration.get("fraction_fit"));
+		fractionEvaluate = Float.parseFloat(configuration.get("fraction_evaluate"));
+		minFitClients = Integer.parseInt(configuration.get("min_fit_clients"));
+		minEvaluateClients = Integer.parseInt(configuration.get("min_evaluate_clients"));
+		minAvailableClients = Integer.parseInt(configuration.get("min_available_clients"));
+		numRounds = Integer.parseInt(configuration.get("num_rounds"));
+		timeout = Float.parseFloat(configuration.get("timeout"));
+		
 		return super.configure(configuration);
 	}
 	
@@ -70,39 +100,58 @@ public class FedServerShard extends AgentShardGeneral {
 		
 		switch(event.getType()) {
 		case AGENT_START:
-			// do start procedures
 			li("FedServerShard starting...");
-			broadcastGlobalModel("InitialModelData");
+			// Initialize federated server
+			boolean initSuccess = fedDriver.initFedServer(
+				fractionFit, 
+				fractionEvaluate, 
+				minFitClients, 
+				minEvaluateClients, 
+				minAvailableClients, 
+				nclients) != null;
 			
-			// message sending example, sent to all agents:
-			// IntStream.range(1, nclients + 1).forEachOrdered(n -> {
-			// 	AgentWave wave = new AgentWave("test content").appendDestination(Constants.CLIENT_AGENT_PREFIX + n,
-			// 			FedClientShard.DESIGNATION);
-			// 	sendMessageFromShard(wave);
-			// });
+			if (!initSuccess) {
+				le("Failed to initialize server");
+			}
 			break;
+
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 				AgentWave wave = (AgentWave) event;
 				lf("Processing wave: ", wave);
-				// TODO process message
 				String content = wave.getContent();
-				if (content != null && content.startsWith("CLIENT_UPDATE")) {
-					String clientUpdate = content.substring("CLIENT_UPDATE".length()).trim();
-					li("Received client update.");
-					clientUpdates.add(clientUpdate);
+				if (content != null) {
+					if (content.startsWith("REGISTER_CLIENT")) {
+						String clientId = content.substring("REGISTER_CLIENT".length()).trim();
+						li("Received registration from client: " + clientId);
+						registeredClients.add(clientId);
 
-					if (clientUpdates.size() >= nclients) {
-						li("All cliet updates received. Aggregating...");
-						// Aggregate using Flask server
-						// startFit implemented by Marius and Dragos
-						String aggregatedModel = fedDriver.startFit(1, 60f);
+						boolean regSuccess = fedDriver.register(clientId) != null;
 
-						broadcastGlobalModel(aggregatedModel);
-						clientUpdates.clear();
+						if (!regSuccess) {
+							lw("Failed to register client with Python server: " + clientId);
+						}
+
+						// Start fit when all clients registered
+						if (registeredClients.size() >= nclients && !fitInProgress.get()) {
+							li("All clients registered. Starting fit process...");
+							startFitProcess();
+						}
+					} else if (content.startsWith("TASK_RESULT")) {
+						String[] parts = content.substring("TASK_RESULT".length()).trim().split(":", 2);
+						if (parts.length == 2) {
+							String clientId = parts[0];
+							String result = parts[1];
+							li("Received result from client: " + clientId);
+
+							//Submit result to Python server
+							boolean resSuccess = fedDriver.getRes(clientId, result) != null;
+
+							if (!resSuccess) {
+								lw("Failed to submit result for client: " + clientId);
+							}
+						}
 					}
-				} else {
-					lw("Unknown wave content received: " + content);
 				}
 			}
 			break;
@@ -112,12 +161,72 @@ public class FedServerShard extends AgentShardGeneral {
 		}
 	}
 
-	private void broadcastGlobalModel(String modelData) {
-		String globalModelMessage = "GLOBAL_MODEL_UPDATE " + modelData;
-		IntStream.range(1, nclients + 1).forEachOrdered(n -> {
-			AgentWave wave = new AgentWave(globalModelMessage)
-					.appendDestination(Constants.CLIENT_AGENT_PREFIX + n, FedClientShard.DESIGNATION);
-			sendMessageFromShard(wave);
-		});
+	private void startFitProcess() {
+		fitInProgress.set(true);
+		li("Starting fit process for " + numRounds + " rounds");
+
+		// Start fit in background
+		new Thread(() -> {
+			String fitResponse = fedDriver.startFit(numRounds, timeout);
+			if (fitResponse == null) {
+				le("Fit process failed to start");
+				fitInProgress.set(false);
+				return;
+			}
+			startTaskLoop();
+		}).start();
+	}
+
+	private void startTaskLoop() {
+		taskTimer = new Timer(true);
+		taskTimer.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				if (!fitInProgress.get()) {
+					this.cancel();
+					return;
+				}
+
+				String taskResponse = fedDriver.getTask();
+				if (taskResponse == null || !taskResponse.isEmpty()) {
+					return;
+				}
+
+				try {
+					// Parse JSON response
+					Gson gson = new Gson();
+					JsonObject responseObj = gson.fromJson(taskResponse, JsonObject.class);
+					if (responseObj.has("tasks")) {
+						JsonArray tasks = responseObj.getAsJsonArray("tasks");
+						for (JsonElement taskElem : tasks) {
+							JsonObject task = taskElem.getAsJsonObject();
+							String proxyId = task.get("proxy_id").getAsString();
+							String instruction = task.get("instruction").getAsString();
+
+							// Send task to client
+							AgentWave taskWave = new AgentWave("TASK:" + instruction)
+									.appendDestination(proxyId, FedClientShard.DESIGNATION);
+							sendMessageFromShard(taskWave);
+						}
+					}
+				} catch (Exception e) {
+					le("Error parsing task response: " + e.getMessage());
+				}
+			}
+		}, 0, 3000); // check every 3 seconds
+	}
+
+	private void stopTaskLoop() {
+		if (taskTimer != null) {
+			taskTimer.cancel();
+			taskTimer = null;
+		}
+		fitInProgress.set(false);
+		li("Fit process completed");
+	}
+
+	@Override
+	public boolean stop() {
+		stopTaskLoop();
+		return super.stop();
 	}
 }

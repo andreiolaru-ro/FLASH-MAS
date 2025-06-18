@@ -35,11 +35,30 @@ public class FedBoot {
 		
 		a += " -node nodeServer -driver Fed:FedDriver port:8080";
 		a += " -pylon local:pylon1";
-		a += " -agent agentS  in-context-of:Fed:FedDriver -shard echoTesting exit:5 -shard messaging -shard FedServer nclients:"
-				+ nclients;
+		// Server configuration
+        a += " -agent agentS  in-context-of:Fed:FedDriver";
+        a += " -shard echoTesting exit:5";
+        a += " -shard messaging";
+        a += " -shard FedServer" +
+              " nclients:" + nclients +
+              " fraction_fit:1.0" +
+              " fraction_evaluate:1.0" +
+              " min_fit_clients:" + nclients +
+              " min_evaluate_clients:" + nclients +
+              " min_available_clients:" + nclients +
+              " num_rounds:3" +
+              " timeout:240.0";
 		for(int client = 0; client++ < nclients;)
-			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client
-					+ " in-context-of:Fed:FedDriver -shard FedClient -shard messaging -shard echoTesting exit:5";
+			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
+                 " in-context-of:Fed:FedDriver" +
+                 " -shard FedClient" +
+                 " server_agent_id:agentS" +
+                 " dataset:cifar10" +
+                 " partition_id:" + (client - 1) +  // 0-based index
+                 " num_partitions:" + nclients +
+                 " device:cpu" +
+                 " -shard messaging" +
+                 " -shard echoTesting exit:5";
 		
 		FlashBoot.main(a);
 	}

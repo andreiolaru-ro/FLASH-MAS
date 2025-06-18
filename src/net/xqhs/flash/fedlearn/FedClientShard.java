@@ -1,10 +1,12 @@
 package net.xqhs.flash.fedlearn;
 
+import fr.inria.corese.core.extension.Agent;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 /**
  * Shard for Federated Learning client functionality.
@@ -24,13 +26,28 @@ public class FedClientShard extends AgentShardGeneral {
 	 */
 	FedDriver					fedDriver;
 
-	String                      serverAgentId;
+	private String agentName;
+	private String serverAgentId;
+	private String dataset;
+	private int partitionId;
+	private int numPartitions;
 	
 	/**
 	 * No-arg constructor.
 	 */
 	public FedClientShard() {
 		super(AgentShardDesignation.customShard(DESIGNATION));
+	}
+
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		// Read client configuration
+		serverAgentId = configuration.get("server_agent_id");
+		dataset = configuration.get("dataset");
+		partitionId = Integer.parseInt(configuration.get("partition_id"));
+		numPartitions = Integer.parseInt(configuration.get("num_partitions"));
+
+		return super.configure(configuration);
 	}
 	
 	@Override
@@ -42,6 +59,7 @@ public class FedClientShard extends AgentShardGeneral {
 			li("Fed Driver detected");
 			return true;
 		}
+		agentName = getAgent().getEntityName();
 		return true;
 	}
 	
@@ -51,30 +69,50 @@ public class FedClientShard extends AgentShardGeneral {
 		
 		switch(event.getType()) {
 		case AGENT_START:
-			// do start procedures
-			li("FedCliendShard starting...");
+			li("FedClientShard starting...");
+
+			// Initialize federated client
+			boolean initSuccess = fedDriver.initFedClient(
+				serverAgentId,
+				dataset,
+				partitionId,
+				numPartitions
+			) != null;
+
+			if (!initSuccess) {
+				le("Failed to initialize federated client");
+			}
+
+			// Register with server
+			AgentWave registerWave = new AgentWave("REGISTER_CLIENT " + agentName)
+					.appendDestination(serverAgentId, FedServerShard.DESIGNATION);
+			sendMessageFromShard(registerWave);
 			break;
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 				AgentWave wave = (AgentWave) event;
 				lf("Processing wave: ", wave);
-				// process message
 				String content = wave.getContent();
-				if (content != null && content.startsWith("GLOBAL_MODEL_UPDATE")) {
-					String globalModelData = content.substring("GLOBAL_MODEL_UPDATE".length()).trim();
-					li("Received global model update.");
-					// fedDriver to load model
-					// clientData implemented by Marius and Dragos
-					String localUpdate = fedDriver.clientData(serverAgentId, globalModelData);
-					AgentWave replyWave = new AgentWave("CLIENT_UPDATE " + localUpdate)
-								.appendDestination(wave.getFirstSource(), FedServerShard.DESIGNATION);
-					sendMessageFromShard(replyWave);
-					
-				} else {
-					lw("Unknown wave content received: " + content);
-				}
+				if (content != null && content.startsWith("TASK:")) {
+					String instruction = content.substring("TASK:".length());
+					li("Received task from server");
 
-				// sendMessageFromShard(wave.createReply("Response"));
+					// Process task
+					String result = fedDriver.clientData(
+						agentName,
+						instruction
+					);
+
+					if (result == null) {
+						lw("Task processing failed for client: " + agentName);
+						return;
+					}
+
+					// Send result back
+					AgentWave resultWave = new AgentWave("TASK_RESULT " + agentName + ":" + result)
+							.appendDestination(wave.getFirstSource(), FedServerShard.DESIGNATION);
+					sendMessageFromShard(resultWave);
+				}
 			}
 			break;
 		
