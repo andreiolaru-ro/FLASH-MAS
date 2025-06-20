@@ -335,7 +335,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 				String jsonPayload = gson.toJson(params);
 
 				// Print the message that is sent
-				lf("Sending JSON payload to [{}]: {}", location, jsonPayload);
+				lf("Sending JSON payload to" + location);
 
 				// Write the JSON string to the output stream
 				try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -376,7 +376,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 				if(iserror)
 					le("Error: [][]. Response: ", responseCode, connection.getResponseMessage(), response);
 				else
-					li("Response: []", response);
+					li("Got response from " + connection.getURL().toString() + " : " + connection.getResponseCode());
 				return !iserror ? response : null;
 			}
 			

@@ -105,7 +105,7 @@ public class FedServerShard extends AgentShardGeneral {
 			case AGENT_WAVE:
 				if (DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 					AgentWave wave = (AgentWave) event;
-					lf("Processing wave: ", wave);
+					lf("Processing wave... ");
 					String content = wave.getContent();
 					if (content != null) {
 						if (content.startsWith("REGISTER_CLIENT")) {
@@ -163,7 +163,7 @@ public class FedServerShard extends AgentShardGeneral {
 				return;
 			}
 
-			li("Federated server initialized successfully.");
+			li("FedServer initialized successfully.");
 
 			// The entire process is now managed sequentially here.
 			manageFitAndTaskLoop();
@@ -215,8 +215,6 @@ public class FedServerShard extends AgentShardGeneral {
 				if (taskResponse.contains("No tasks available for clients.")){
 					return;
 				}
-
-				li("++++++++++++++++++++ FedServerShard got task: " + taskResponse);
 
 				try {
 					// Parse JSON response

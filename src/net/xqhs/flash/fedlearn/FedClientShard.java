@@ -92,7 +92,7 @@ public class FedClientShard extends AgentShardGeneral {
 		case AGENT_WAVE:
 			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
 				AgentWave wave = (AgentWave) event;
-				lf("Processing wave: ", wave);
+				lf("Processing wave...");
 				String content = wave.getContent();
 				if (content != null && content.startsWith("TASK:")) {
 					String instruction = content.substring("TASK:".length());
