@@ -185,11 +185,11 @@ def init():
     log("Waiting for clients to register... ")
     client_manager.wait_for(num_clients,timeout=240)
 
-    fraction_fit = data.get(FRACTION_FIT)
-    fraction_evaluate = data.get(FRACTION_EVALUATE)
-    min_fit_clients = data.get(MIN_FIT_CLIENTS)
-    min_evaluate_clients = data.get(MIN_EVALUATE_CLIENTS)
-    min_available_clients = data.get(MIN_AVAILABLE_CLIENTS)
+    fraction_fit = float(data.get(FRACTION_FIT))
+    fraction_evaluate = float(data.get(FRACTION_EVALUATE))
+    min_fit_clients = int(data.get(MIN_FIT_CLIENTS))
+    min_evaluate_clients = int(data.get(MIN_EVALUATE_CLIENTS))
+    min_available_clients = int(data.get(MIN_AVAILABLE_CLIENTS))
 
     strategy = FedAvg(
         fraction_fit=fraction_fit,
@@ -218,7 +218,7 @@ def start_fit():
     """
 
     data = flask.request.get_json()
-    num_rounds = data.get('num_rounds')
+    num_rounds = int(data.get('num_rounds'))
     timeout = float(data.get('timeout'))
     if not num_rounds or not timeout:
         return flask.jsonify({'error': 'num_rounds and timeout are required.'}), 400
