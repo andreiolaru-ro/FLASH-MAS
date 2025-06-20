@@ -1,5 +1,7 @@
 package net.xqhs.flash.fedlearn;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -97,18 +99,36 @@ public class FedClientShard extends AgentShardGeneral {
 					li("Received task from server");
 
 					// Process task
-					String result = fedDriver.clientData(
-						agentName,
-						instruction
+					String jsonResponse = fedDriver.clientData(
+							agentName,
+							instruction
 					);
 
-					if (result == null) {
+					if (jsonResponse == null) {
 						lw("Task processing failed for client: " + agentName);
 						return;
 					}
 
-					// Send result back
-					AgentWave resultWave = new AgentWave("TASK_RESULT " + agentName + ":" + result)
+					// Parse the JSON response to extract the actual Base64 results
+					String base64Result = null;
+					try {
+						Gson gson = new Gson();
+						JsonObject responseObj = gson.fromJson(jsonResponse, JsonObject.class);
+						if (responseObj.has("results")) {
+							base64Result = responseObj.get("results").getAsString();
+						}
+					} catch (Exception e) {
+						le("Error parsing client data response JSON: " + e.getMessage());
+						return;
+					}
+
+					if (base64Result == null) {
+						lw("'results' field not found in response from clientData for client: " + agentName);
+						return;
+					}
+
+					// Now, send ONLY the extracted Base64 result back.
+					AgentWave resultWave = new AgentWave("TASK_RESULT " + agentName + ":" + base64Result)
 							.appendDestination(wave.getFirstSource(), FedServerShard.DESIGNATION);
 					sendMessageFromShard(resultWave);
 				}
