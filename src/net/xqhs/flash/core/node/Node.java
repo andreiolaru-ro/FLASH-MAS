@@ -176,7 +176,7 @@ public class Node extends Unit implements Entity<Node> {
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
-		li("Active entitites:", activeEntities);
+		li("Active entitites, keep for []:", activeFor, activeEntities);
 	}
 	
 	/**
