@@ -18,7 +18,11 @@ import net.xqhs.flash.fedlearn.Constants;
  * Runs scenario.
  */
 public class FedBoot {
-	
+
+	public final static String WS_SERVER = "ws://localhost:";
+	public static final int WS_SERVER_PORT = 8886;
+
+
 	/**
 	 * Performs test.
 	 *
@@ -31,13 +35,12 @@ public class FedBoot {
 		a += " -load_order driver;pylon;agent -loader agent:composite";
 		a += " -package testing net.xqhs.flash.fedlearn " + FedBoot.class.getPackageName();
 		
-		int nclients = 5;
+		int nclients = 2;
 		
-		a += " -node nodeServer -driver Fed:FedDriver port:8080";
-		a += " -pylon local:pylon1";
+		a += " -node nodeServer keep -driver Fed:FedDriver port:8080";
+		a += " -pylon webSocket:pylon0 serverPort:" + WS_SERVER_PORT;
 		// Server configuration
         a += " -agent agentS  in-context-of:Fed:FedDriver";
-        a += " -shard echoTesting exit:5";
         a += " -shard messaging";
         a += " -shard FedServer" +
               " nclients:" + nclients +
@@ -52,11 +55,10 @@ public class FedBoot {
 
 		int BASE_CLIENT_PORT = 8090;
 		for(int client = 0; client++ < nclients;) {
-			a += " -node nodeClient" + client + " -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
-			a += " -pylon local:pylon_client" + client;
+			a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
+			a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
 			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
 					" in-context-of:Fed:FedDriver" +
-					" -shard echoTesting exit:5" +
 					" -shard messaging" +
 					" -shard FedClient" +
 					" server_agent_id:agentS" +

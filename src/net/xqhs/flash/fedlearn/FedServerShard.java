@@ -93,72 +93,88 @@ public class FedServerShard extends AgentShardGeneral {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
-		
+
 		switch(event.getType()) {
-		case AGENT_START:
-			li("FedServerShard starting...");
-			// Initialize federated server
-			boolean initSuccess = fedDriver.initFedServer(
-				fractionFit, 
-				fractionEvaluate, 
-				minFitClients, 
-				minEvaluateClients, 
-				minAvailableClients, 
-				nclients) != null;
-			
-			if (!initSuccess) {
-				le("Failed to initialize server");
-			}
-			break;
+			case AGENT_START:
+				li("FedServerShard is online and waiting for " + nclients + " clients to register.");
+				// DO NOT initialize the server here. Just wait.
+				break;
 
-		case AGENT_WAVE:
-			if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
-				AgentWave wave = (AgentWave) event;
-				lf("Processing wave: ", wave);
-				String content = wave.getContent();
-				if (content != null) {
-					if (content.startsWith("REGISTER_CLIENT")) {
-						String clientId = content.substring("REGISTER_CLIENT".length()).trim();
-						li("Received registration from client: " + clientId);
-						registeredClients.add(clientId);
+			case AGENT_WAVE:
+				if(DESIGNATION.equals(event.getValue(AgentWave.DESTINATION_ELEMENT))) {
+					AgentWave wave = (AgentWave) event;
+					lf("Processing wave: ", wave);
+					String content = wave.getContent();
+					if (content != null) {
+						if (content.startsWith("REGISTER_CLIENT")) {
+							String clientId = content.substring("REGISTER_CLIENT".length()).trim();
+							if (!registeredClients.contains(clientId)) {
+								li("Received registration from client: " + clientId);
+								registeredClients.add(clientId);
 
-						boolean regSuccess = fedDriver.register(clientId) != null;
+								// Register with the Python server's ClientManager
+								boolean regSuccess = fedDriver.register(clientId) != null;
+								if (!regSuccess) {
+									lw("Failed to register client with Python server: " + clientId);
+								}
 
-						if (!regSuccess) {
-							lw("Failed to register client with Python server: " + clientId);
-						}
+								// Check if all clients have now registered
+								if (registeredClients.size() >= nclients) {
+									li("All " + nclients + " clients registered. Initializing server...");
+									initializeAndStartFederatedLearning();
+								}
+							}
+						} else if (content.startsWith("TASK_RESULT")) {
+							String[] parts = content.substring("TASK_RESULT".length()).trim().split(":", 2);
+							if (parts.length == 2) {
+								String clientId = parts[0];
+								String result = parts[1];
+								li("Received result from client: " + clientId);
 
-						// Start fit when all clients registered
-						if (registeredClients.size() >= nclients && !fitInProgress.get()) {
-							li("All clients registered. Starting fit process...");
-							startFitProcess();
-						}
-					} else if (content.startsWith("TASK_RESULT")) {
-						String[] parts = content.substring("TASK_RESULT".length()).trim().split(":", 2);
-						if (parts.length == 2) {
-							String clientId = parts[0];
-							String result = parts[1];
-							li("Received result from client: " + clientId);
-
-							//Submit result to Python server
-							boolean resSuccess = fedDriver.getRes(clientId, result) != null;
-
-							if (!resSuccess) {
-								lw("Failed to submit result for client: " + clientId);
+								boolean resSuccess = fedDriver.getRes(clientId, result) != null;
+								if (!resSuccess) {
+									lw("Failed to submit result for client: " + clientId);
+								}
 							}
 						}
 					}
 				}
-			}
-			break;
-		
-		default:
-			break;
+				break;
+
+			default:
+				break;
 		}
+	}
+
+
+	private void initializeAndStartFederatedLearning() {
+		new Thread(() -> {
+			// 1. Initialize the Server
+			li("Calling initFedServer...");
+			boolean initSuccess = fedDriver.initFedServer(
+					fractionFit, fractionEvaluate, minFitClients,
+					minEvaluateClients, minAvailableClients, nclients) != null;
+
+			if (!initSuccess) {
+				le("Failed to initialize server. Aborting fit process.");
+				return;
+			}
+
+			li("Federated server initialized successfully.");
+
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            // 2. Start the Fit Process
+			startFitProcess();
+
+		}).start();
 	}
 
 	private void startFitProcess() {
@@ -173,8 +189,9 @@ public class FedServerShard extends AgentShardGeneral {
 				fitInProgress.set(false);
 				return;
 			}
-			startTaskLoop();
 		}).start();
+
+		startTaskLoop();
 	}
 
 	private void startTaskLoop() {
@@ -187,9 +204,12 @@ public class FedServerShard extends AgentShardGeneral {
 				}
 
 				String taskResponse = fedDriver.getTask();
-				if (taskResponse == null || !taskResponse.isEmpty()) {
+				if (taskResponse == null || taskResponse.isEmpty()) {
 					return;
 				}
+				li("++++++++++++++++++++ FedServerShard got task: " + taskResponse);
+
+
 
 				try {
 					// Parse JSON response

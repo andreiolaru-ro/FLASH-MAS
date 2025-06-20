@@ -90,21 +90,25 @@ class FedClient:
 
     def get_properties(self, ins: GetPropertiesIns) -> GetPropertiesRes:
         """Delegates get_properties to FlowerClient."""
+        log(INFO, f"[Client {self.partition_id}] Started execution of get_properties")
         self._check_flower_client()
         return self.flower_client.get_properties(ins)
 
     def get_parameters(self, ins: GetParametersIns) -> GetParametersRes:
         """Delegates get_parameters to FlowerClient."""
+        log(INFO, f"[Client {self.partition_id}] Started execution of get_parameters")
         self._check_flower_client()
         return self.flower_client.get_parameters(ins)
 
     def fit(self, ins: FitIns) -> FitRes:
         """Delegates fit to FlowerClient."""
+        log(INFO, f"[Client {self.partition_id}] Started execution of fit")
         self._check_flower_client()
         return self.flower_client.fit(ins)
 
     def evaluate(self, ins: EvaluateIns) -> EvaluateRes:
         """Delegates evaluate to FlowerClient."""
+        log(INFO, f"[Client {self.partition_id}] Started execution of evaluate")
         self._check_flower_client()
         return self.flower_client.evaluate(ins)
 

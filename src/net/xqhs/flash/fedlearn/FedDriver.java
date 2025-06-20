@@ -487,7 +487,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 
 		String response = checkResponse(connection);
 		if(response != null) {
-			lf("Fed client initialized successfully");
+			lf("Fed client initialized successfully -> CLIENT " + partition_id);
 			return response;
 		}
 		le("Error: could not initialize fed client");
@@ -511,7 +511,7 @@ public class FedDriver extends EntityCore<Node> implements EntityProxy<FedDriver
 
 		String response = checkResponse(connection);
 		if(response != null) {
-			lf("Fed client data sent successfully");
+			lf("Fed client data sent successfully -> CLIENT " + proxy_id);
 			return response;
 		}
 		le("Error: could not send fed client data");

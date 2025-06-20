@@ -183,7 +183,7 @@ def init():
     num_clients = int(data.get(NUM_CLIENTS))
 
     log("Waiting for clients to register... ")
-    client_manager.wait_for(num_clients,timeout=60)
+    client_manager.wait_for(num_clients,timeout=240)
 
     fraction_fit = data.get(FRACTION_FIT)
     fraction_evaluate = data.get(FRACTION_EVALUATE)
@@ -219,7 +219,7 @@ def start_fit():
 
     data = flask.request.get_json()
     num_rounds = data.get('num_rounds')
-    timeout = data.get('timeout')
+    timeout = float(data.get('timeout'))
     if not num_rounds or not timeout:
         return flask.jsonify({'error': 'num_rounds and timeout are required.'}), 400
     global server
