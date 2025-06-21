@@ -16,6 +16,14 @@ import net.xqhs.flash.fedlearn.Constants;
 
 /**
  * Runs scenario.
+ *
+ * How to configure python to run this?
+ * 	- create a venv in the location of where you run this cmd: python -m venv venv
+ * 	- activate it: source path-to-venv/bin/activate
+ * 	- install requirements: pip install -r path-to-requirements.txt
+ * 	- config ide to choose the python from the virtual environment
+ *
+ *
  */
 public class FedBoot {
 
