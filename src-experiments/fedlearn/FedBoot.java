@@ -62,7 +62,7 @@ public class FedBoot {
 
 
 		int BASE_CLIENT_PORT = 8090;
-		for(int client = 0; client++ < nclients;) {
+		for(int client = 0; client < nclients; client++) {
 			a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
 			a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
 			a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
@@ -71,7 +71,7 @@ public class FedBoot {
 					" -shard FedClient" +
 					" server_agent_id:agentS" +
 					" dataset:cifar10" +
-					" partition_id:" + (client - 1) +  // 0-based index
+					" partition_id:" + client +
 					" num_partitions:" + nclients +
 					" device:cpu";
 		}
