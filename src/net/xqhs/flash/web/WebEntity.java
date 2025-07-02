@@ -282,12 +282,10 @@ public class WebEntity extends CentralGUI {
 	 */
 	public JsonObject getEntities() {
 		JsonObject specifications = new JsonObject();
-		lf("All entity GUIs: []", entityGUIs);
 		entityGUIs.entrySet().forEach(entry -> {
 			String entityName = entry.getKey();
 			Element guiSpecification = entry.getValue();
 
-			lf("Entity GUI: [], []", entityName, guiSpecification);
 			specifications.add(entityName, guiSpecification.toJSON());
 		});
 		return specifications;

@@ -85,7 +85,7 @@ export function applyUpdatesOnPort(entityName, port, roles) {
  * @returns 
  */
 export function applyStyles(entity, id, $element) {
-    if (!(id in entity.data)) return;
+    if (!(id in entity.data)) return;  // defensive check because a user error in the spec can make this crash otherwise
     const classesToAdd = new Set();
 
     for (let {conditions, style} of entity.data[id].when) {

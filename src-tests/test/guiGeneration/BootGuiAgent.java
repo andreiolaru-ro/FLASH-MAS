@@ -32,8 +32,8 @@ public class BootGuiAgent
 		test_args += " -package test.guiGeneration";
 
 		test_args += " -node main central:web";
-		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:more-ports.yml -shard test";
-		// test_args += " -agent AgentB -shard messaging -shard remoteOperation";
+		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:more-ports.yml -shard test otherAgent:AgentB playerNumber:1";
+		// test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation -shard swingGui from:simple-game.yml -shard simpleGame otherAgent:AgentA playerNumber:2";
 		
 		FlashBoot.main(test_args.split(" "));
 	}

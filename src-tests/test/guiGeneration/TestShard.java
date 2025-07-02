@@ -107,6 +107,7 @@ public class TestShard extends AgentShardGeneral {
 		if (subject.length < 2) return;  // 
 		String port = subject[0], role = subject[1];
 		GuiShard guiShard = (GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation());
+		System.out.println("GUI SHARD: " + guiShard);
 
 		if (COUNTER_PORT.equals(port)) {
 			if (INCREASE_ROLE.equals(role)) {

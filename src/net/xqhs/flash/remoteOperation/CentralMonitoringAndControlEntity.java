@@ -369,10 +369,6 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			return gui.updateGui(sourceEntity, interfaceContainer);
 		case ENTITY_GUI_OUTPUT:
 			// remove the name of Central; add the entity sending the output
-			// TODO remove this once status update works
-			// EntityData ed = entitiesData.get(sourceEntity);
-			// if(ed.getStatus() != null)
-			// gui.sendOutput(new AgentWave(ed.getStatus(), ed.getName(), ENTITY_STATUS_ELEMENT));
 			return gui.sendOutput(wave.removeFirstDestinationElement().prependDestination(sourceEntity)
 					.recomputeCompleteDestination());
 		case GUI_INPUT_TO_ENTITY:

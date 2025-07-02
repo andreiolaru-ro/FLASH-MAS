@@ -142,7 +142,7 @@ div.selected-entity {
 }
 div.selected-entity button {
     width: 100%;
-    padding: 5%;
+    padding: max(5%, 0.5rem);
     background-color: #ffffff;
     border: none;
     border-radius: 5%;
@@ -160,8 +160,9 @@ div.selected-entity input {
 }
 
 div.agent-container {
+    --direction: column; /* Default direction */
     display: flex;
-    flex-direction: var(--direction, column);
+    flex-direction: var(--direction);
     justify-content: space-between;
     align-items: center;
     gap: 10px;

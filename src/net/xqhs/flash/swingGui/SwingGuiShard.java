@@ -90,7 +90,9 @@ public class SwingGuiShard extends GuiShard {
 				// } else if (PageBuilder.getInstance().layoutType.equals(LayoutType.VERTICAL)) {
 				// windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
 				// }
-				windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.X_AXIS));
+				String layout = element.getProperties().getOrDefault("layout", "column");
+				int layoutType = "row".equals(layout) ? BoxLayout.X_AXIS : BoxLayout.Y_AXIS;
+				windowPanel.setLayout(new BoxLayout(windowPanel, layoutType));
 				windowPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
 				window.add(windowPanel);
 				comp = windowPanel;

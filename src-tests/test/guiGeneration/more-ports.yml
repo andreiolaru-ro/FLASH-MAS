@@ -14,12 +14,9 @@ children:
    port: valuePort
    role: content
    when: [{ /: 10, style: red }]
- - type: button
-   port: valuePort
-   notify: something
  - type: container
    properties:
-      layout: horizontal
+      layout: row
    children:
     - type: form
       port: number
@@ -29,15 +26,17 @@ children:
     - type: button
       port: number
       role: increase
-      when: [{ standard-status: running_status_stopped, style: disabled }]
+      when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
       notify: $port/$role
       value: Increase
+      when: [{ /indicator: overflow, style: disabled }]
     - type: button
       port: number
       role: decrease
-      when: [{ standard-status: running_status_stopped, style: disabled }]
+      when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
       notify: $port/$role
       value: Decrease
+      when: [{ /indicator: underflow, style: disabled }]
     - type: label
       port: number
       role: indicator
