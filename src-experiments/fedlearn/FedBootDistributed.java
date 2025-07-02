@@ -15,7 +15,7 @@ import net.xqhs.flash.FlashBoot;
 import net.xqhs.flash.fedlearn.Constants;
 
 /**
- * Runs scenario.
+ * Runs a distributed federated learning scenario.
  */
 public class FedBootDistributed {
 
@@ -24,24 +24,32 @@ public class FedBootDistributed {
 	public static final int WS_SERVER_PORT = 8886;
 
 	/**
-	 * Performs test.
+	 * Performs the federated learning task.
 	 *
 	 * @param args
-	 * - args[0] should be the hostIndex (0 for server, 1 for the first client).
+	 * - args[0] should be the hostIndex.
+	 * - hostIndex = 0: The server machine. It also runs any clients not designated as 'distributed'.
+	 * - hostIndex = 1: The machine for the 1st distributed client.
+	 * - hostIndex = 2: The machine for the 2nd distributed client, and so on.
 	 */
 	public static void main(final String[] args) {
 		String a = "";
 		int hostIndex = args.length > 0 ? Integer.parseInt(args[0]) : 0;
+
+		// Total number of fl clients in the experiment.
 		int nclients = 2;
+
+		// The number of clients that will run on dedicated, separate machines.
+		int num_distributed_clients = 2;
 
 		a += " -load_order driver;pylon;agent -loader agent:composite";
 		a += " -package testing net.xqhs.flash.fedlearn " + FedBoot.class.getPackageName();
 
-		// If hostIndex is 0, configure the server node.
+		// If hostIndex is 0, configure and run the server node.
 		if(hostIndex == 0) {
 			a += " -node nodeServer keep -driver Fed:FedDriver port:8080";
 			a += " -pylon webSocket:pylon0 serverPort:" + WS_SERVER_PORT;
-			// Server configuration
+			// Server agent configuration
 			a += " -agent agentS  in-context-of:Fed:FedDriver";
 			a += " -shard messaging";
 			a += " -shard FedServer" +
@@ -57,10 +65,11 @@ public class FedBootDistributed {
 
 		int BASE_CLIENT_PORT = 8090;
 		for(int client = 1; client <= nclients; client++) {
-			// If host index is 1, run ONLY the first client (client == 1).
-			if(hostIndex == 1 && client == 1) {
+
+			// DISTRIBUTED CLIENTS
+			if (hostIndex > 0 && client == hostIndex && client <= num_distributed_clients) {
 				a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
-				// This client connects to the remote server IP
+				// Distributed clients connect to the remote server's IP address.
 				a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
 				a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
 						" in-context-of:Fed:FedDriver" +
@@ -72,24 +81,10 @@ public class FedBootDistributed {
 						" num_partitions:" + nclients +
 						" device:cpu";
 			}
-			else if(hostIndex == 2 && client == 2) {
+			// LOCAL CLIENTS
+			else if (hostIndex == 0 && client > num_distributed_clients) {
 				a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
-				// This client connects to the remote server IP
-				a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
-				a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
-						" in-context-of:Fed:FedDriver" +
-						" -shard messaging" +
-						" -shard FedClient" +
-						" server_agent_id:agentS" +
-						" dataset:cifar10" +
-						" partition_id:" + (client - 1) +  // 0-based index
-						" num_partitions:" + nclients +
-						" device:cpu";
-			}
-			// If host index is 0, run all clients EXCEPT the first one.
-			else if (hostIndex == 0 && client > 1) {
-				a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
-				// These clients connect to the local server, since they run on the same machine.
+				// Local clients connect to the server via localhost.
 				a += " -pylon webSocket:pylon" + client + " connectTo:" + MY_WS_SERVER + WS_SERVER_PORT;
 				a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
 						" in-context-of:Fed:FedDriver" +
@@ -103,6 +98,11 @@ public class FedBootDistributed {
 			}
 		}
 
-		FlashBoot.main(a);
+		// Only execute if a configuration has been generated for this host.
+		if (!a.isEmpty()) {
+			FlashBoot.main(a);
+		} else {
+			System.out.println("No roles for hostIndex " + hostIndex + " with the current configuration.");
+		}
 	}
 }
