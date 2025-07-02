@@ -160,14 +160,16 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 				destinationWebSocket = entityToWebSocket.get(destination);
 				if(destinationWebSocket != null) {
 					destinationWebSocket.send(message.toString());
-					lf("Sent to agent: []. ", message);
+//					lf("Sent to agent: []. ", message);
+					lf("Sent to agent: []. To destination: ", destination);
 					return;
 				}
 				
 				destinationWebSocket = nodeToWebSocket.get(destination);
 				if(destinationWebSocket != null) {
 					destinationWebSocket.send(message.toString());
-					lf("Sent to node: []. ", message);
+//					lf("Sent to node: []. ", message);
+					lf("Sent to node: []. To destination: ", destination);
 					return;
 				}
 				
