@@ -11,31 +11,52 @@
  ******************************************************************************/
 package test.guiGeneration;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import net.xqhs.flash.FlashBoot;
 
 /**
  * Deployment testing.
  */
-public class BootGuiAgent
+public class BootGuiAgentChatA
 {
+	/**
+	 * The IP address of the main node.
+	 */
+	public static String	MAIN_IP		= "localhost";
+	/**
+	 * The port on the main node.
+	 */
+	public static int		MAIN_PORT	= 8886;
+	
 	/**
 	 * Performs test.
 	 * 
 	 * @param args
-	 *                 - not used.
+	 *            - not used.
 	 */
 	public static void main(String[] args)
 	{
 		String test_args = "";
 
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				BootGuiAgentChatB.main(null);
+			}
+		}, 3000);
+		
 		test_args += " -loader agent:composite";
 		test_args += " -package test.guiGeneration";
 
 		test_args += " -node main central:web";
-		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentB playerNumber:1";
-		test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentA playerNumber:2";
+		test_args += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);
+		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation wait:2000 -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentB playerNumber:1";
 		
 		FlashBoot.main(test_args.split(" "));
+		
 	}
 	
 }

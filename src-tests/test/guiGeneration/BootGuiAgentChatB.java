@@ -16,7 +16,7 @@ import net.xqhs.flash.FlashBoot;
 /**
  * Deployment testing.
  */
-public class BootGuiAgent
+public class BootGuiAgentChatB
 {
 	/**
 	 * Performs test.
@@ -31,9 +31,10 @@ public class BootGuiAgent
 		test_args += " -loader agent:composite";
 		test_args += " -package test.guiGeneration";
 
-		test_args += " -node main central:web";
-		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentB playerNumber:1";
-		test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentA playerNumber:2";
+		test_args += " -node secondary";
+		test_args += " -pylon webSocket:wsB connectTo:ws://" + BootGuiAgentChatA.MAIN_IP + ":"
+				+ Integer.valueOf(BootGuiAgentChatA.MAIN_PORT);
+		test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation wait:5000 -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentA playerNumber:2";
 		
 		FlashBoot.main(test_args.split(" "));
 	}

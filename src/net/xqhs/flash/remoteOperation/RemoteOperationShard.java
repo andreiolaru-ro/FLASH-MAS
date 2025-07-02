@@ -3,6 +3,8 @@ package net.xqhs.flash.remoteOperation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -62,13 +64,13 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 * Parameter in the configuration designating away remotes to add.
 	 */
 	public static final String		AWAY_REMOTE_PARAMETER	= "remote";
+	public static final String		WAIT_PARAMETER_NAME		= "wait";
 	/**
 	 * The default remote interface for the entity, formed of a stop button.
 	 */
-	protected static final String	INTERFACE_SPECIFICATION	= 
-		"children: [{ type: button, value: Stop, port: " + REMOTE_STOP.s() + ", role: stop"
-		+ ", when: [{ standard-status: " + Fields.RUNNING_STATUS_STOPPED.name()
-		+ ", style: disabled }], notify: " + SHARD_ENDPOINT + "/" + REMOTE_STOP.s() + " }]";
+	protected static final String	INTERFACE_SPECIFICATION	= "children: [{ type: button, value: Stop, port: "
+			+ REMOTE_STOP.s() + ", role: stop" + ", when: [{ standard-status: " + Fields.RUNNING_STATUS_STOPPED.name()
+			+ ", style: disabled }], notify: " + SHARD_ENDPOINT + "/" + REMOTE_STOP.s() + " }]";
 	
 	/**
 	 * The interface specification for this agent, which will be sent to central monitoring entities / web
@@ -87,6 +89,8 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 * Fields describing entity status.
 	 */
 	protected Fields[]					entityStatus			= new Fields[2];
+	
+	Timer remoteDelayTimer = new Timer();
 	
 	{
 		setUnitName(SHARD_ENDPOINT);
@@ -150,7 +154,16 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		}
 		switch(event.getType()) {
 		case AGENT_START:
-			sendGuiUpdate();
+			if(getShardConfiguration().containsKey(WAIT_PARAMETER_NAME))
+				remoteDelayTimer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						sendGuiUpdate();
+						remoteDelayTimer.cancel();
+					}
+				}, Long.parseLong(getShardConfiguration().get(WAIT_PARAMETER_NAME)));
+			else
+				sendGuiUpdate();
 			//$FALL-THROUGH$
 		case AGENT_STOP:
 		case SIMULATION_PAUSE:

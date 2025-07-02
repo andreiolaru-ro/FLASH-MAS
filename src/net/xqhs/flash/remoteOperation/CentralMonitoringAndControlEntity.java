@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -418,6 +417,14 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			le("[] unable to start. No messaging shard found.", getName());
 			return false;
 		}
+		// TODO hack
+		// Timer timer = new Timer();
+		// timer.schedule(new TimerTask() {
+		// @Override
+		// public void run() {
+		// centralMessagingShard.register(name);
+		// }
+		// }, 1000);
 		centralMessagingShard.register(name);
 		li("[] started successfully.", getName());
 		return true;
