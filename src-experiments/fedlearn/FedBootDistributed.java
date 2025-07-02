@@ -31,7 +31,6 @@ public class FedBootDistributed {
 	 */
 	public static void main(final String[] args) {
 		String a = "";
-		// If args[0] is 1, it's the first client machine. If 0, it's the server machine.
 		int hostIndex = args.length > 0 ? Integer.parseInt(args[0]) : 0;
 		int nclients = 2;
 
@@ -57,10 +56,23 @@ public class FedBootDistributed {
 		}
 
 		int BASE_CLIENT_PORT = 8090;
-		// Iterate through all possible clients to generate their configurations
 		for(int client = 1; client <= nclients; client++) {
 			// If host index is 1, run ONLY the first client (client == 1).
 			if(hostIndex == 1 && client == 1) {
+				a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
+				// This client connects to the remote server IP
+				a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
+				a += " -agent " + Constants.CLIENT_AGENT_PREFIX + client +
+						" in-context-of:Fed:FedDriver" +
+						" -shard messaging" +
+						" -shard FedClient" +
+						" server_agent_id:agentS" +
+						" dataset:cifar10" +
+						" partition_id:" + (client - 1) +  // 0-based index
+						" num_partitions:" + nclients +
+						" device:cpu";
+			}
+			else if(hostIndex == 2 && client == 2) {
 				a += " -node nodeClient" + client + " keep -driver Fed:FedDriver port:" + (BASE_CLIENT_PORT + client);
 				// This client connects to the remote server IP
 				a += " -pylon webSocket:pylon" + client + " connectTo:" + WS_SERVER + WS_SERVER_PORT;
