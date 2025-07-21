@@ -1,4 +1,4 @@
-from server import *
+from server_init import *
 
 def dotesting():
     model_name = "YOLOv8-pedestrians"
