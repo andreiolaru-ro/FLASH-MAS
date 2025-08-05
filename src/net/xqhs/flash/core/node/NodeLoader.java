@@ -97,7 +97,7 @@ public class NodeLoader implements Loader<Node> {
 		if(l == null)
 			l = new DumbLogger("node loader");
 		if(loadPack.getClassFactory() == null) {
-			l.le("Clas factory is null.");
+			l.le("Class factory is null.");
 			return null;
 		}
 		
