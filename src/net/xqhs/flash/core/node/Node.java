@@ -30,23 +30,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.xqhs.flash.core.CategoryName;
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Unit;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -61,7 +60,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class Node extends Unit implements Entity<Node> {
+public class Node extends EntityCore<Node> {
 	/**
 	 * Proxy for a {@link Node}.
 	 */
@@ -121,10 +120,6 @@ public class Node extends Unit implements Entity<Node> {
 	public static final int			INITIAL_ACTIVE_CHECK		= 5;
 	
 	/**
-	 * The name of the node.
-	 */
-	protected String						name				= null;
-	/**
 	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
 	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
@@ -136,10 +131,6 @@ public class Node extends Unit implements Entity<Node> {
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
 	protected MessagingShard				messagingShard;
-	/**
-	 * An indication if this entity is running.
-	 */
-	private boolean							isRunning;
 	/**
 	 * The set of entity types considered as "active" and keeping the node from exiting.
 	 */
@@ -156,27 +147,28 @@ public class Node extends Unit implements Entity<Node> {
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
-	private PylonProxy						nodePylonProxy;
+	protected PylonProxy					nodePylonProxy;
 	
 	/**
 	 * Creates a new {@link Node} instance.
 	 * 
-	 * @param nodeConfiguration
+	 * @param configuration
 	 *            the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(MultiTreeMap nodeConfiguration) {
-		if(nodeConfiguration != null) {
-			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			if(nodeConfiguration.isSimple(ACTIVE_PARAMETER_NAME))
-				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
-			if(nodeConfiguration.isSimple(ACTIVE_CHECK_PARAMETER))
-				activeFor = nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER) != null
-						? Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER))
-						: -1; // keep node active if no value mentioned
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration != null) {
+			if(configuration.containsKey(ACTIVE_PARAMETER_NAME))
+				activeEntities = new HashSet<>(configuration.getValues(ACTIVE_PARAMETER_NAME));
+			if(configuration.containsKey(ACTIVE_CHECK_PARAMETER))
+				activeFor = Long.parseLong(configuration.getAValue(ACTIVE_CHECK_PARAMETER));
 		}
-		setLoggerType(PlatformUtils.platformLogType());
-		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		// setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
+		
 		li("Active entitites:", activeEntities);
+		return true;
 	}
 	
 	/**
@@ -189,12 +181,22 @@ public class Node extends Unit implements Entity<Node> {
 	 * @param entityName
 	 *            - the name of the entity.
 	 */
-	protected void registerEntity(String entityType, Entity<?> entity, String entityName) {
+	public void registerEntity(String entityType, Entity<?> entity, String entityName) {
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
 		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
+		
+		// find if entity is a messaging pylon that can be used by the Node
+		if(nodePylonProxy == null)
+			try {
+				EntityProxy<?> ctx = entity.asContext();
+				if(ctx != null && ctx instanceof MessagingPylonProxy)
+					addGeneralContext(ctx);
+			} catch(UnsupportedOperationException e) {
+				// nothing to do, most likely asContext threw exception
+			}
 	}
 	
 	/**
@@ -212,30 +214,8 @@ public class Node extends Unit implements Entity<Node> {
 		return operations;
 	}
 	
-	/**
-	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity} This lets it know what
-	 * entities are in the content of current node and what operations can be performed on them.
-	 *
-	 * @return - an indication of success.
-	 */
-	protected boolean registerEntitiesToCentralEntity() {
-		JSONArray operations = configureOperations();
-		JSONArray entities = new JSONArray();
-		registeredEntities.forEach((category, value) -> {
-			for(Entity<?> entity : value) {
-				JSONObject ent = OperationUtils.registrationToJSON(getName(), category, entity.getName(), operations);
-				entities.add(ent);
-			}
-		});
-		return false;
-		// TODO revert to this when a monitoring entity is actually created.
-		// return sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entities.toString());
-	}
-	
-	@Override
-	public boolean start() {
-		li("Starting node [] with entities [].", name, entityOrder);
-		for(Entity<?> entity : entityOrder) {
+	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
+		for(Entity<?> entity : entities) {
 			String entityName = entity.getName();
 			lf("starting entity []...", entityName);
 			if(entity.start())
@@ -243,14 +223,34 @@ public class Node extends Unit implements Entity<Node> {
 			else
 				le("failed to start entity [].", entityName);
 		}
-		isRunning = true;
-		if(messagingShard != null)
-			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		sendStatusUpdate();
-		li("Node [] started.", name);
 		
-		if(getName() != null && registerEntitiesToCentralEntity())
-			lf("Entities successfully registered to control entity.");
+		if(isNodeStart) {
+			if(messagingShard != null)
+				messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+			sendStatusUpdate();
+			li("Node [] started.", name);
+		}
+		
+		if(getName() != null) {
+			JSONArray operations = configureOperations();
+			JSONArray entityRegistrations = new JSONArray();
+			entities.forEach(e -> {
+				// TODO fix category
+				entityRegistrations.add(OperationUtils.registrationToJSON(getName(), null, e.getName(), operations));
+			});
+			// TODO revert to this when a monitoring entity is actually created.
+			// if(sendMessage(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, entityRegistrations.toString()))
+			// lf("Entities successfully registered to control entity.");
+		}
+	}
+	
+	@Override
+	public boolean start() {
+		if(!super.start())
+			return false;
+		li("Starting node [] with entities [].", name, entityOrder);
+		
+		startAndRegister(entityOrder, true);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
 			activeMonitor = new Timer();
@@ -261,7 +261,6 @@ public class Node extends Unit implements Entity<Node> {
 				}
 			}, activeFor * 1000, 1000);
 		}
-		
 		return true;
 	}
 	
@@ -279,25 +278,22 @@ public class Node extends Unit implements Entity<Node> {
 					le("failed to stop entity [].", entity.getName());
 			}
 		}
-		isRunning = false;
 		sendStatusUpdate();
 		li("Node [] stopped.", name);
+		super.stop();
 		return true;
 	}
 	
 	@Override
-	public boolean isRunning() {
-		return isRunning;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	@Override
 	public boolean addContext(EntityProxy<Node> context) {
-		return addGeneralContext(context);
+		// unsupported
+		return false;
+	}
+	
+	@Override
+	public boolean removeContext(EntityProxy<Node> context) {
+		// unsupported
+		return false;
 	}
 	
 	@Override
@@ -305,6 +301,7 @@ public class Node extends Unit implements Entity<Node> {
 		if(nodePylonProxy != null)
 			// only one pylon can be added as context for the node
 			return false;
+		super.addGeneralContext(context);
 		PylonProxy pylonProxy = (PylonProxy) context;
 		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
@@ -354,15 +351,10 @@ public class Node extends Unit implements Entity<Node> {
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(nodePylonProxy != context)
 			return false;
+		super.removeGeneralContext(context);
 		nodePylonProxy = null;
 		messagingShard = null;
 		return true;
-	}
-	
-	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		// unsupported
-		return false;
 	}
 	
 	@SuppressWarnings("unchecked")

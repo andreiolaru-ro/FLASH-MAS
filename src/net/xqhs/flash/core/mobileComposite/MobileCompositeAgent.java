@@ -17,6 +17,7 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.composite.CompositeAgentLoader;
+import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.node.Node.NodeProxy;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -176,7 +177,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		localLog = new UnitComponent(getName() + "~").setLoggerType(PlatformUtils.platformLogType())
 				.setLogLevel(Level.ALL);
 		loader = new CompositeAgentLoader();
-		loader.configure(new MultiTreeMap(), localLog, PlatformUtils.getClassFactory());
+		loader.configure(new MultiTreeMap(), Deployment.get().getBasicLoadPack(localLog));
 		
 		serializedShards.forEach((designation, serializedShard) -> addShard(deserializeShard(serializedShard)));
 		

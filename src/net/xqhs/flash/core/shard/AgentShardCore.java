@@ -17,12 +17,12 @@ import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
+import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
-import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -300,7 +300,7 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 		config.addFirstValue(SimpleLoader.CLASSPATH_KEY,
 				pylon.getRecommendedShardImplementation(AgentShardDesignation.standardShard(shardDesignation)));
 		SimpleLoader loader = new SimpleLoader();
-		loader.configure(null, null, PlatformUtils.getClassFactory());
+		loader.configure(null, Deployment.get().getBasicLoadPack(null));
 		AgentShard shard = (AgentShard) loader.load(config);
 		if(shard != null && shardContext != null) {
 			shard.addContext(shardContext);

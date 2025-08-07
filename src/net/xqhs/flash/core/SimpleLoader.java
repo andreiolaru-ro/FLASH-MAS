@@ -3,10 +3,9 @@ package net.xqhs.flash.core;
 import java.util.List;
 
 import net.xqhs.flash.core.Entity.EntityProxy;
-import net.xqhs.flash.core.util.ClassFactory;
+import net.xqhs.flash.core.deployment.LoadPack;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Logger;
 
 /**
  * Simple implementation for {@link Loader}, which attempts to load the entity class by instantiating it:
@@ -25,24 +24,18 @@ public class SimpleLoader implements Loader<Entity<?>> {
 	/**
 	 * Name of the key in which the classpath should be stored.
 	 */
-	public static final String CLASSPATH_KEY = "classpath";
-	
+	public static final String	CLASSPATH_KEY	= "classpath";
 	/**
-	 * The log to use.
+	 * The {@link LoadPack} instance to use.
 	 */
-	protected Logger		log			= null;
-	/**
-	 * The class factory to use.
-	 */
-	protected ClassFactory	classLoader	= null;
+	protected LoadPack			lp;
 	
 	/**
 	 * The configuration is not used.
 	 */
 	@Override
-	public boolean configure(MultiTreeMap configuration, Logger _log, ClassFactory classFactory) {
-		log = _log;
-		classLoader = classFactory;
+	public boolean configure(MultiTreeMap configuration, LoadPack loadPack) {
+		lp = loadPack;
 		return true;
 	}
 	
@@ -59,21 +52,12 @@ public class SimpleLoader implements Loader<Entity<?>> {
 	 */
 	@Override
 	public boolean preload(MultiTreeMap configuration) {
-		if(configuration == null) {
-			if(log != null)
-				log.le("Configuration is null");
-			return false;
-		}
-		if(!configuration.isSimple(CLASSPATH_KEY)) {
-			if(log != null)
-				log.le("Classpath not set in configuration (missing classpath key)");
-			return false;
-		}
-		if(!PlatformUtils.getClassFactory().canLoadClass(configuration.get(CLASSPATH_KEY))) {
-			if(log != null)
-				log.le("Class cannot be loaded from given classpath []", configuration.get(CLASSPATH_KEY));
-			return false;
-		}
+		if(configuration == null)
+			return lp.ler(false, "Configuration is null");
+		if(!configuration.isSimple(CLASSPATH_KEY))
+			lp.ler(false, "Classpath not set in configuration (missing classpath key)");
+		if(!PlatformUtils.getClassFactory().canLoadClass(configuration.get(CLASSPATH_KEY)))
+			lp.ler(false, "Class cannot be loaded from given classpath []", configuration.get(CLASSPATH_KEY));
 		return true;
 	}
 	
@@ -104,26 +88,25 @@ public class SimpleLoader implements Loader<Entity<?>> {
 			Entity<?> loaded = null;
 			try {
 				// try Constructor(configuration)
-				loaded = (Entity<?>) classLoader.loadClassInstance(classpath, configuration, false);
+				loaded = (Entity<?>) lp.getClassFactory().loadClassInstance(classpath, configuration, false);
 			} catch(Exception e) {
 				if(e instanceof NoSuchMethodException) {// no constructor with configuration argument
 					try {
-						loaded = (Entity<?>) classLoader.loadClassInstance(classpath, null, true);
+						loaded = (Entity<?>) lp.getClassFactory().loadClassInstance(classpath, null, true);
 						if(loaded instanceof ConfigurableEntity) {// no-argument constructor used, must try to configure
-							if(!((ConfigurableEntity<?>) loaded).configure(configuration) && log != null)
-								log.le("Entity [] loaded from [] but configuration failed.", loaded.getName(),
+							if(!((ConfigurableEntity<?>) loaded).configure(configuration))
+								lp.le("Entity [] loaded from [] but configuration failed.", loaded.getName(),
 										classpath);
 						}
 						else
-							log.le("Configuration not sent to entity [] loaded from []", loaded.getName(), classpath);
+							lp.le("Configuration not sent to entity [] loaded from []", loaded.getName(), classpath);
 					} catch(Exception e1) {
-						if(log != null)
-							log.le("Failed to load class [] via no-argument constructor: ", classpath,
-									PlatformUtils.printException(e));
+						lp.le("Failed to load class [] via no-argument constructor: ", classpath,
+								PlatformUtils.printException(e));
 					}
 				}
-				else if(log != null)
-					log.le("Failed to load class [] via constructor with configuration: ",
+				else
+					lp.le("Failed to load class [] via constructor with configuration: ",
 							configuration.get(CLASSPATH_KEY), PlatformUtils.printException(e));
 			}
 			if(loaded != null && context != null)

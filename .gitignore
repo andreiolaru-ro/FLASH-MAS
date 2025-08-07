@@ -7,5 +7,10 @@
 /APDescription.txt
 /MTPs-Container-*.txt
 *__pycache__
+<<<<<<< HEAD
 /target/
 /ml-directory/
+=======
+/ml-directory/
+/target/
+>>>>>>> refs/heads/open-system

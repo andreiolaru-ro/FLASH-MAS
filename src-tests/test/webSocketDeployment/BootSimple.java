@@ -174,7 +174,8 @@ public class BootSimple
 	 */
 	public static void main(String[] args) throws InterruptedException
 	{
-		Node node1 = new Node(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node1"));
+		Node node1 = new Node();
+		node1.configure(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node1"));
 		WebSocketPylon pylon = new WebSocketPylon();
 		pylon.configure(
 				new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885")
@@ -185,7 +186,8 @@ public class BootSimple
 		one.addMessagingShard(new WebSocketMessagingShard());
 		one.addContext(pylon.asContext());
 		
-		Node node2 = new Node(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node2"));
+		Node node2 = new Node();
+		node2.configure(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "node2"));
 		WebSocketPylon pylon2 = new WebSocketPylon();
 		pylon2.configure(
 				new MultiTreeMap().addSingleValue(WebSocketPylon.WEBSOCKET_SERVER_ADDRESS_NAME, "ws://localhost:8885"));

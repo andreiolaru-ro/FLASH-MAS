@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
 
 /**
  * Deployment testing.
@@ -45,7 +45,7 @@ public class Boot {
 		test_args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
 		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
 		
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(test_args.split(" ")));
+		List<Node> nodes = new Deployment().loadDeployment(Arrays.asList(test_args.split(" ")));
 		NodeAccess node = (NodeAccess) nodes.get(0);
 		// node.start();
 		// Thread.sleep(RUN_TIME);
