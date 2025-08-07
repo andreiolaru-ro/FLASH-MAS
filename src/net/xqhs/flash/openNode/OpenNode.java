@@ -1,7 +1,9 @@
 package net.xqhs.flash.openNode;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -36,16 +38,21 @@ public class OpenNode extends Node {
 	 */
 	protected void dynamicLoad(MultiTreeMap deploymentTree) {
 		li("to insert:", deploymentTree);
-		LoadPack pack = Deployment.get().getLoadPack(getLogger());
-		pack.loadFromConfiguration(nodeConfiguration);
-		pack.loadFromConfiguration(deploymentTree);
-		registeredEntities.forEach((category, entities) -> entities.forEach(e -> pack.getLoaded().put(e.getName(), e)));
+		LoadPack pack = Deployment.get().getBasicLoadPack(getLogger());
+		try {
+			pack.loadFromConfiguration(nodeConfiguration);
+			pack.loadFromConfiguration(deploymentTree);
+		} catch(ConfigLockedException e) {
+			// cannot happen, as the configuration is new.
+		}
+		Map<String, Entity<?>> loaded = new LinkedHashMap<>();
+		registeredEntities.forEach((category, entities) -> entities.forEach(e -> loaded.put(e.getName(), e)));
 		LinkedList<MultiTreeMap> entitiesConfig = new LinkedList<>();
 		for(String entityName : deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)
 				.getHierarchicalNames())
 			entitiesConfig.add(
 					deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE).getSingleTree(entityName));
-		List<Entity<?>> entities = Deployment.get().loadEntities(deploymentTree, this, entitiesConfig, pack);
+		List<Entity<?>> entities = Deployment.get().loadEntities(entitiesConfig, this, pack, loaded);
 		startAndRegister(entities, false);
 	}
 }

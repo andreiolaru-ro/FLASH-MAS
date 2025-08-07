@@ -1,7 +1,9 @@
 package net.xqhs.flash.core.deployment;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.CategoryName;
@@ -18,6 +20,13 @@ import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
+/**
+ * Represents a deployment of entities.
+ * <p>
+ * While in theory it is an entity, it does not implement the {@link Entity} interface, as it is a <i>virtual</i>
+ * entity, it is not referenced by other entities and cannot be started, stopped or added in the context of other
+ * entities.
+ */
 public class Deployment extends Unit {
 	{
 		// sets logging parameters: the name of the log and the type (which is given by the current platform)
@@ -25,15 +34,31 @@ public class Deployment extends Unit {
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 	
+	/**
+	 * Singleton instance of the deployment.
+	 */
 	static Deployment deployment = new Deployment();
 	
+	/**
+	 * The ID of the deployment.
+	 */
 	String deploymentID = null;
 	
+	/**
+	 * @return the singleton instance of the deployment.
+	 */
 	public static Deployment get() {
 		return deployment;
 	}
 	
-	public LoadPack getLoadPack(Logger log) {
+	/**
+	 * Creates a basic {@link LoadPack} using the current deployment ID and a given {@link Logger}.
+	 * 
+	 * @param log
+	 *            - the logger to use, or <code>null</code> to use the default logger.
+	 * @return a new {@link LoadPack} instance that can be used to load entities.
+	 */
+	public LoadPack getBasicLoadPack(Logger log) {
 		return new LoadPack(PlatformUtils.getClassFactory(), deploymentID, log != null ? log : getLogger());
 	}
 	
@@ -43,7 +68,7 @@ public class Deployment extends Unit {
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
-	 * @return the {@link List} of {@link Node} instances that were loadPack.getLoaded().
+	 * @return the {@link List} of {@link Node} instances that were loaded.
 	 */
 	public List<Node> loadDeployment(List<String> args) {
 		lf("Loading deployment.");
@@ -52,7 +77,7 @@ public class Deployment extends Unit {
 		DeploymentConfiguration deploymentConfiguration = null;
 		try {
 			deploymentConfiguration = new DeploymentConfiguration().loadConfiguration(args, true, null);
-			lf("Configuration loadPack.getLoaded()");
+			lf("Configuration loaded");
 		} catch(ConfigLockedException e) {
 			le("settings were locked (shouldn't ever happen): ", PlatformUtils.printException(e));
 			return null;
@@ -72,12 +97,12 @@ public class Deployment extends Unit {
 		deploymentID = DeploymentConfiguration.filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null)
 				.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		NodeLoader nodeLoader = new NodeLoader();
-		nodeLoader.configure(null, getLogger(), null);
+		nodeLoader.configure(null, getBasicLoadPack(null));
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
-			Node node = nodeLoader.loadNode(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
-					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)), getLoadPack(null));
+			Node node = nodeLoader.load(nodeConfig, null, DeploymentConfiguration.filterContext(allEntities,
+					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)));
 			if(node != null) {
 				nodes.add(node);
 				lf("node loaded: []", node.getName());
@@ -85,18 +110,34 @@ public class Deployment extends Unit {
 			else
 				le("node not loaded [].", nodeConfig.getAValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME));
 		}
-		lf("[] nodes loadPack.getLoaded().", Integer.valueOf(nodes.size()));
+		lf("[] nodes loaded.", Integer.valueOf(nodes.size()));
 		doExit();
 		return nodes;
 	}
 	
-	public List<Entity<?>> loadEntities(MultiTreeMap configuration, Node loadedNode,
-			List<MultiTreeMap> subordinateEntities, LoadPack loadPack) {
+	/**
+	 * Loads a set of entities in the given node, using the provided {@link LoadPack} instance.
+	 * <p>
+	 * if provided, the loaded entities will be added to the given map of loaded entities.
+	 * 
+	 * @param entitiesToLoad
+	 *            - the entities to load, as a list of {@link MultiTreeMap} entity configurations
+	 * @param hostNode
+	 *            - the node in which the entities will be loaded
+	 * @param loadPack
+	 *            - the {@link LoadPack} instance containing the loaders and other configuration
+	 * @param loadedEntities
+	 *            - the already loaded entities, to which the newly loaded entities will be added
+	 * @return a {@link List} of newly loaded entities
+	 */
+	public List<Entity<?>> loadEntities(List<MultiTreeMap> entitiesToLoad, Node hostNode, LoadPack loadPack,
+			Map<String, Entity<?>> loadedEntities) {
 		lf("Loading order: ", (Object[]) loadPack.getLoadOrder());
-		List<Entity<?>> loadedEntities = new LinkedList<>();
+		List<Entity<?>> newLoadedEntities = new LinkedList<>();
+		Map<String, Entity<?>> loaded = loadedEntities != null ? loadedEntities : new HashMap<>();
 		for(String catName : loadPack.getLoadOrder()) {
 			CategoryName cat = CategoryName.byName(catName);
-			List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(subordinateEntities, catName,
+			List<MultiTreeMap> entities = DeploymentConfiguration.filterCategoryInContext(entitiesToLoad, catName,
 					null);
 			if(entities.isEmpty()) {
 				li("No [] entities defined.", catName);
@@ -163,19 +204,19 @@ public class Deployment extends Unit {
 				List<EntityProxy<?>> context = new LinkedList<>();
 				if(entityConfig.isSimple(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
 					for(String contextItem : entityConfig.getValues(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
-						if(loadPack.getLoaded().containsKey(contextItem)) {
-							if(loadPack.getLoaded().get(contextItem).asContext() != null)
-								context.add(loadPack.getLoaded().get(contextItem).asContext());
+						if(loaded.containsKey(contextItem)) {
+							if(loaded.get(contextItem).asContext() != null)
+								context.add(loaded.get(contextItem).asContext());
 						}
 						else if(!contextItem.equals(loadPack.deploymentID))
 							lw("Context item [] for [] []/[]/[] not found as a loaded entity in", contextItem, catName,
 									name, kind, local_id,
-									loadPack.getLoaded().entrySet().stream()
+									loaded.entrySet().stream()
 											.map(e -> e.getKey() + "|" + e.getValue().getName())
 											.collect(Collectors.joining(",")));
 						
 				// build subordinate entities list
-				List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(subordinateEntities, local_id);
+				List<MultiTreeMap> subEntities = DeploymentConfiguration.filterContext(entities, local_id);
 				
 				// TODO: provide load() with context and an appropriate list of subordinate entities
 				// try to load the entity with a loader
@@ -213,15 +254,15 @@ public class Deployment extends Unit {
 					entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 							DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 					
-					loadPack.getLoaded().put(local_id, entity);
-					loadedNode.registerEntity(catName, entity, id);
-					loadedEntities.add(entity);
+					loaded.put(local_id, entity);
+					hostNode.registerEntity(catName, entity, id);
+					newLoadedEntities.add(entity);
 				}
 				else
 					le("Could not load entity []/[] of type [].", name, local_id, catName);
-				lf("Loaded items:", loadPack.getLoaded().keySet());
+				lf("Loaded items:", loaded.keySet());
 			}
 		}
-		return loadedEntities;
+		return newLoadedEntities;
 	}
 }

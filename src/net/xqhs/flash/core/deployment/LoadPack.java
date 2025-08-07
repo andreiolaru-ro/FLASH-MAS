@@ -6,33 +6,107 @@ import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.CategoryName;
+import net.xqhs.flash.core.ConfigurableEntity;
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.util.config.Config;
+import net.xqhs.util.logging.Debug.DebugItem;
 import net.xqhs.util.logging.DumbLogger;
 import net.xqhs.util.logging.Logger;
 
-public class LoadPack {
+/**
+ * This structure contains information that is useful in loading new entities. This should be used by {@link Loader}
+ * instances to correctly load entities and integrate them in the correct context.
+ * <p>
+ * A {@link LoadPack} instance is created for each node, and is passed down in {@link Loader} instances. After the
+ * initial configuration (via #loadFromConfiguration(MultiTreeMap)), the instance is not expected to change, but at
+ * least some of the {@link Loader} configuration (with this {@link LoadPack} instance) is done <b>before</b> the
+ * configuration of this load pack is completed.
+ * <p>
+ * The class also implements {@link Logger} so that it can be used for logging directly.
+ * <p>
+ * {@link LoadPack} extends {@link Config} so it can be {@link #lock}ed. If further configuration is needed, it can be
+ * {@link #clone}d as a new instance.
+ * 
+ * @author Andrei Olaru
+ */
+public class LoadPack extends Config implements Logger {
+	/**
+	 * The ID of the current deployment. Can be <code>null</code>.
+	 */
 	protected String									deploymentID;
+	/**
+	 * The {@link ClassFactory} instance to use. If never <code>null</code>. If not configured otherwise, the default is
+	 * used, as recommended by {@link PlatformUtils}.
+	 */
 	protected ClassFactory								classFactory;
+	/**
+	 * Package information -- package names in which to look for classes.
+	 */
 	protected List<String>								packages	= new LinkedList<>();
+	/**
+	 * The {@link Loader} instances created so far that can be used to load entities.
+	 * <p>
+	 * The structure is index by entity type -> entity kind -> list of available loaders.
+	 * <p>
+	 * Appropriate loaders (depending on type and, if available, kind) should be tried in order until one succeeds.
+	 */
 	protected Map<String, Map<String, List<Loader<?>>>>	loaders		= new LinkedHashMap<>();
+	/**
+	 * The default loader to use for entities in case no appropriate loader is found or none succeeds.
+	 */
 	protected Loader<?>									defaultLoader;
-	protected Map<String, Entity<?>>					loaded		= new LinkedHashMap<>();
+	/**
+	 * The types of entities to be loaded when loading a node.
+	 */
 	protected String[]									loadOrder	= new String[] {};
+	/**
+	 * The {@link Logger} instance to use for logging messages. Is never <code>null</code>.
+	 */
 	protected Logger									log;
 	
+	/**
+	 * Creates a {@link LoadPack} instance with the minimum necessary information.
+	 * 
+	 * @param classFactory
+	 *            - the {@link ClassFactory} to use. If <code>null</code>, the default will be used, as recommended by
+	 *            {@link PlatformUtils}.
+	 * @param deploymentID
+	 *            - ID of the deployment. Can be <code>null</code>.
+	 * @param log
+	 *            - the {@link Logger} to use. if <code>null</code>, a new instance of {@link DumbLogger} will be used.
+	 */
 	public LoadPack(ClassFactory classFactory, String deploymentID, Logger log) {
 		this.deploymentID = deploymentID;
-		this.classFactory = classFactory;
+		this.classFactory = classFactory != null ? classFactory : PlatformUtils.getClassFactory();
 		this.log = log != null ? log : new DumbLogger();
 	}
 	
-	public LoadPack loadFromConfiguration(MultiTreeMap configuration) {
+	/**
+	 * Fills some of the fields by reading a the configuration of the deployment.
+	 * <p>
+	 * It loads:
+	 * <ul>
+	 * <li>packages
+	 * <li>loaders (plus it {@link ConfigurableEntity#configure}s the loaders) with current information.
+	 * <li>the load order.
+	 * </ul>
+	 * 
+	 * @param configuration
+	 *            - the configuration of the deployment.
+	 * @return this instance itself.
+	 * @throws ConfigLockedException
+	 *             if the {@link LoadPack} cannot be modified anymore (e.g. it is already configured for a node or
+	 *             another entity).
+	 */
+	public LoadPack loadFromConfiguration(MultiTreeMap configuration) throws ConfigLockedException {
+		locked();
+		if(configuration == null)
+			return this;
 		packages.addAll(configuration.getValues(CategoryName.PACKAGE.s()));
 		
 		MultiTreeMap loader_configs = configuration.getSingleTree(CategoryName.LOADER.s());
@@ -69,7 +143,7 @@ public class LoadPack {
 						loaders.get(entity).get(kind).add(loader);
 						// configure // TODO manage with portables
 						loader_configs.getFirstTree(name).addAll(CategoryName.PACKAGE.s(), packages);
-						loader.configure(loader_configs.getFirstTree(name), log, classFactory);
+						loader.configure(loader_configs.getFirstTree(name), this);
 						log.li("Loader for [] of kind [] successfully loaded from [].", entity, kind, cp);
 					} catch(Exception e) {
 						log.le("Loader loading failed for []: ", name, PlatformUtils.printException(e));
@@ -81,7 +155,7 @@ public class LoadPack {
 			log.li("No loaders configured.");
 		
 		defaultLoader = new SimpleLoader();
-		defaultLoader.configure(null, log, classFactory);
+		defaultLoader.configure(null, this);
 		if(loaders.containsKey(null)) {
 			if(loaders.get(null).containsKey(null) && !loaders.get(null).get(null).isEmpty())
 				defaultLoader = loaders.get(null).get(null).get(0);
@@ -98,61 +172,109 @@ public class LoadPack {
 	}
 	
 	/**
-	 * @return the deploymentID
+	 * @return the deploymentID (see {@link #deploymentID})
 	 */
 	public String getDeploymentID() {
 		return deploymentID;
 	}
 	
 	/**
-	 * @param deploymentID
-	 *            the deploymentID to set
-	 * @return the {@link LoadPack} instance itself.
-	 */
-	public LoadPack setDeploymentID(String deploymentID) {
-		this.deploymentID = deploymentID;
-		return this;
-	}
-	
-	/**
-	 * @return the packages
+	 * @return the packages (see {@link #packages})
 	 */
 	public List<String> getPackages() {
 		return packages;
 	}
 	
 	/**
-	 * @return the loaders
+	 * @return the loaders (see {@link #loaders})
 	 */
 	public Map<String, Map<String, List<Loader<?>>>> getLoaders() {
 		return loaders;
 	}
 	
 	/**
-	 * @return the defaultLoader
+	 * @return the defaultLoader (see {@link #defaultLoader})
 	 */
 	public Loader<?> getDefaultLoader() {
 		return defaultLoader;
 	}
 	
 	/**
-	 * @return the classFactory
+	 * @return the classFactory (see {@link #classFactory})
 	 */
 	public ClassFactory getClassFactory() {
 		return classFactory;
 	}
 	
 	/**
-	 * @return the loaded
-	 */
-	public Map<String, Entity<?>> getLoaded() {
-		return loaded;
-	}
-	
-	/**
-	 * @return the loadOrder
+	 * @return the loadOrder (see {@link #loadOrder})
 	 */
 	public String[] getLoadOrder() {
 		return loadOrder;
+	}
+	
+	/**
+	 * Creates a new {@link LoadPack} instance which acts as a clone of this instance.
+	 * 
+	 * @return the new {@link LoadPack} instance.
+	 */
+	public LoadPack getClone() {
+		LoadPack clone = new LoadPack(classFactory, deploymentID, log);
+		clone.packages.addAll(packages);
+		for(Map.Entry<String, Map<String, List<Loader<?>>>> entry : loaders.entrySet()) {
+			Map<String, List<Loader<?>>> kindMap = new LinkedHashMap<>();
+			for(Map.Entry<String, List<Loader<?>>> kindEntry : entry.getValue().entrySet()) {
+				kindMap.put(kindEntry.getKey(), new LinkedList<>(kindEntry.getValue()));
+			}
+			clone.loaders.put(entry.getKey(), kindMap);
+		}
+		clone.defaultLoader = defaultLoader;
+		clone.loadOrder = loadOrder.clone();
+		return clone;
+	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+	
+	@Override
+	public void le(String message, Object... arguments) {
+		log.le(message, arguments);
+	}
+	
+	@Override
+	public void lw(String message, Object... arguments) {
+		log.lw(message, arguments);
+	}
+	
+	@Override
+	public void li(String message, Object... arguments) {
+		log.li(message, arguments);
+	}
+	
+	@Override
+	public void lf(String message, Object... arguments) {
+		log.lf(message, arguments);
+	}
+	
+	@Override
+	public Object lr(Object ret) {
+		return log.lr(ret);
+	}
+	
+	@Override
+	public Object lr(Object ret, String message, Object... arguments) {
+		return log.lr(ret, message, arguments);
+	}
+	
+	@Override
+	public boolean ler(boolean ret, String message, Object... arguments) {
+		return log.ler(ret, message, arguments);
+	}
+	
+	@Override
+	public void dbg(DebugItem debug, String message, Object... arguments) {
+		log.dbg(debug, message, arguments);
 	}
 }
