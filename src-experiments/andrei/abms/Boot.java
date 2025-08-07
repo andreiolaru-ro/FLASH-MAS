@@ -28,10 +28,11 @@ public class Boot
 	{
 		String a = "";
 		
-		a += " -load_order pylon;agentGroup";
+		a += " -load_order pylon;AgentGroup";
 		a += " -package andrei.abms";
+		a += " -loader AgentGroup:AgentGroup";
 		a += " -node main -pylon local:";
-		a += " -agentGroup g n:1000 classpath:AgentGroup -agent CA";
+		a += " -AgentGroup g n:1000 classpath:AgentGroup -agent CA";
 		
 		FlashBoot.main(a.split(" "));
 	}

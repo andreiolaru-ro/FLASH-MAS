@@ -284,6 +284,7 @@ public interface Loader<T extends Entity<?>>
 			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
 		// delimiter between elements in the package hierarchy
 		String D = searchType == SearchItemType.CLASS ? "." : "/";
+		String IN_CLASS = "$";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();
 		paths.clear();
 		paths.add(given_cp);
@@ -333,10 +334,17 @@ public interface Loader<T extends Entity<?>>
 				String upper_package = toPackageName(upper_name);
 				String lower_package = lower_name != null ? toPackageName(lower_name) : null;
 				paths.add(r + D + upper_package + D + cls);
+				if(searchType == SearchItemType.CLASS)
+					paths.add(r + D + upper_package + IN_CLASS + cls);
 				if(lower_name != null) {
 					paths.add(r + D + upper_package + D + lower_package + D + cls);
 					paths.add(r + D + lower_package + D + upper_package + D + cls);
 					paths.add(r + D + lower_package + D + cls);
+					if(searchType == SearchItemType.CLASS) {
+						paths.add(r + D + upper_package + D + lower_package + IN_CLASS + cls);
+						paths.add(r + D + lower_package + D + upper_package + IN_CLASS + cls);
+						paths.add(r + D + lower_package + D + cls);
+					}
 				}
 				paths.add(r + D + cls);
 			}
