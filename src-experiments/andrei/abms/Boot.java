@@ -31,8 +31,10 @@ public class Boot
 		a += " -load_order pylon;AgentGroup";
 		a += " -package andrei.abms";
 		a += " -loader AgentGroup:AgentGroup";
-		a += " -node main -pylon local:";
-		a += " -AgentGroup g n:1000 classpath:AgentGroup -agent CA";
+		a += " -node main";
+		a += " -map Grid vicinity:8neighbors";
+		a += " -executor StepWise";
+		a += " -AgentGroup g n:10 classpath:AgentGroup -agent CA";
 		
 		FlashBoot.main(a.split(" "));
 	}
