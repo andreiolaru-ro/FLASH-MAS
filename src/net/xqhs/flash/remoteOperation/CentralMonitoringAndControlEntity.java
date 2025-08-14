@@ -97,10 +97,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	protected class EntityData {
 		String	entityName;
 		String	status;
-		String  appStatus;
+		String	appStatus;
 		boolean	registered	= false;
 		Element	guiSpecification;
-		String  nodeName;
+		String	nodeName;
 		
 		public String getName() {
 			return entityName;
@@ -109,7 +109,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		public String getStatus() {
 			return status;
 		}
-
+		
 		public String getAppStatus() {
 			return appStatus;
 		}
@@ -117,7 +117,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		public Element getGuiSpecification() {
 			return guiSpecification;
 		}
-
+		
 		public String getNodeName() {
 			return nodeName;
 		}
@@ -131,7 +131,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			this.status = status;
 			return this;
 		}
-
+		
 		public EntityData setAppStatus(String appStatus) {
 			this.appStatus = appStatus;
 			return this;
@@ -141,7 +141,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			this.guiSpecification = guiSpecification;
 			return this;
 		}
-
+		
 		public EntityData setNodeName(String nodeName) {
 			this.nodeName = nodeName;
 			return this;
@@ -198,25 +198,25 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	/**
 	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the web interface.
 	 */
-	public static final String		WEB_INTERFACE_SWITCH	= "web";
+	public static final String		WEB_INTERFACE_SWITCH		= "web";
 	/**
 	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the swing interface.
 	 */
-	public static final String		SWING_INTERFACE_SWITCH	= "swing";
+	public static final String		SWING_INTERFACE_SWITCH		= "swing";
 	/**
 	 * The default port for the web interface.
 	 */
-	public static final int			WEB_INTERFACE_PORT		= 8080;
+	public static final int			WEB_INTERFACE_PORT			= 8080;
 	/**
 	 * Endpoint element for this shard.
 	 */
-	protected static final String	ENTITY_STATUS_ELEMENT	    = "standard-status";
-	protected static final String   ENTITY_APP_STATUS_ELEMENT   = "standard-application-status";
-	protected static final String	ENTITY_LABEL_ELEMENT	    = "standard-name";
+	protected static final String	ENTITY_STATUS_ELEMENT		= "standard-status";
+	protected static final String	ENTITY_APP_STATUS_ELEMENT	= "standard-application-status";
+	protected static final String	ENTITY_LABEL_ELEMENT		= "standard-name";
 	/**
 	 * File for configuring the default controls for entities.
 	 */
-	protected static final String	DEFAULT_CONTROLS		= "controls.yml";
+	protected static final String	DEFAULT_CONTROLS			= "controls.yml";
 	
 	/**
 	 * Standard controls for all entities.
@@ -299,32 +299,32 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		switch(op) {
 		case REGISTER_ENTITIES:
 			String node = sourceEntity;
-			if (!allNodeEntities.containsKey(node))
+			if(!allNodeEntities.containsKey(node))
 				allNodeEntities.put(node, new LinkedHashMap<>());
-			for (String entityName : wave.getContentElements()) {
+			for(String entityName : wave.getContentElements()) {
 				String category = wave.get(entityName);
-				if (!allNodeEntities.get(node).containsKey(category))
+				if(!allNodeEntities.get(node).containsKey(category))
 					allNodeEntities.get(node).put(category, new LinkedList<>());
 				allNodeEntities.get(node).get(category).add(entityName);
 				
-				if (!entitiesData.containsKey(entityName))
+				if(!entitiesData.containsKey(entityName))
 					entitiesData.put(entityName, new EntityData().setName(entityName));
 				EntityData ed = entitiesData.get(entityName);
 				ed.registered = true;
 				ed.setNodeName(node);
-
-				if (ed.getStatus() == null) {
+				
+				if(ed.getStatus() == null) {
 					ed.setStatus(Fields.STATUS_UNKNOWN.name());
 					ed.setAppStatus(Fields.STATUS_UNKNOWN.name());
 				}
-				Element standardControls = setupStandardControls(
-					ed.getStatus(), ed.getAppStatus(), entityName);
-				if (ed.getGuiSpecification() == null) {
+				Element standardControls = setupStandardControls(ed.getStatus(), ed.getAppStatus(), entityName);
+				if(ed.getGuiSpecification() == null) {
 					ed.setGuiSpecification(standardControls);
-				} else {
+				}
+				else {
 					Element guiSpec = ed.getGuiSpecification();
-					for (Element child : standardControls.getChildren()) {
-						if (!guiSpec.getChildren().contains(child))
+					for(Element child : standardControls.getChildren()) {
+						if(!guiSpec.getChildren().contains(child))
 							guiSpec.addChild(child);
 					}
 				}
@@ -334,34 +334,32 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			return true;
 		case UPDATE_ENTITY_STATUS:
 			li("UPDATE_ENTITY_STATUS wave: []", wave);
-			Fields entityStatus = (Fields)wave.getObject(Fields.RUNNING_STATUS.name(), Fields.STATUS_UNKNOWN);
-			Fields appStatus = (Fields)wave.getObject(Fields.APPLICATION_STATUS.name(), Fields.STATUS_UNKNOWN);
-		
-			if (!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
+			Fields entityStatus = (Fields) wave.getObject(Fields.RUNNING_STATUS.name(), Fields.STATUS_UNKNOWN);
+			Fields appStatus = (Fields) wave.getObject(Fields.APPLICATION_STATUS.name(), Fields.STATUS_UNKNOWN);
+			
+			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
-
+			
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 					.setStatus(entityStatus.name()).setAppStatus(appStatus.name());
-
+			
 			li("Status update for []: [], []", sourceEntity, entityStatus, appStatus);
-			return gui.sendOutput(new AgentWave(entityStatus.name(), sourceEntity, ENTITY_STATUS_ELEMENT)) &&
-				   gui.sendOutput(new AgentWave(appStatus.name(), sourceEntity, ENTITY_APP_STATUS_ELEMENT));
+			return gui.sendOutput(new AgentWave(entityStatus.name(), sourceEntity, ENTITY_STATUS_ELEMENT))
+					&& gui.sendOutput(new AgentWave(appStatus.name(), sourceEntity, ENTITY_APP_STATUS_ELEMENT));
 		case UPDATE_ENTITY_GUI:
 			Element interfaceStructure = (Element) wave.getObject(Fields.SPECIFICATION.name());
 			Element interfaceContainer = new Element();
-			if (interfaceStructure != null)
+			if(interfaceStructure != null)
 				// must avoid adding it twice
-				for (Element child : interfaceStructure.getChildren())
-					if (!interfaceContainer.getChildren().contains(child))
+				for(Element child : interfaceStructure.getChildren())
+					if(!interfaceContainer.getChildren().contains(child))
 						interfaceContainer.addChild(child);
-			if (!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
+			if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 				lw("Entity [] not yet registered when [].", sourceEntity, op);
 			else
-				interfaceContainer.addAllChildren(setupStandardControls(
-					entitiesData.get(sourceEntity).getStatus(),
-					entitiesData.get(sourceEntity).getAppStatus(),
-					entitiesData.get(sourceEntity).getName()
-				).getChildren());
+				interfaceContainer.addAllChildren(setupStandardControls(entitiesData.get(sourceEntity).getStatus(),
+						entitiesData.get(sourceEntity).getAppStatus(), entitiesData.get(sourceEntity).getName())
+								.getChildren());
 			entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 					.setGuiSpecification(interfaceContainer);
 			lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
@@ -373,7 +371,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		case GUI_INPUT_TO_ENTITY:
 			li("GUI input to entity []: []", sourceEntity, wave.toString());
 			wave.removeFirstDestinationElement();
-
+			
 			String[] sourceElements = wave.getSourceElements(); // source is gui/entity/port/role
 			String entityName = sourceElements[1];
 			String sourcePort = sourceElements[2], sourceRole = sourceElements[3];
@@ -382,7 +380,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			Element guiSpecification = entityData.getGuiSpecification();
 			Element sourceElement = guiSpecification.getChild(sourcePort, sourceRole);
 			HashMap<String, String> elementProperties = sourceElement.getProperties();
-			if ("node".equals(elementProperties.getOrDefault("proxy", "")))
+			if("node".equals(elementProperties.getOrDefault("proxy", "")))
 				wave.prependDestination(entityData.getNodeName());
 			
 			wave.recomputeCompleteDestination();
@@ -396,16 +394,23 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	
 	/**
 	 * Sets up the standard controls for an entity.
-	 * @param status - the status of the entity
-	 * @param appStatus - the application status for the entity
-	 * @param entityName - the name of the entity
+	 * 
+	 * @param status
+	 *            - the status of the entity
+	 * @param appStatus
+	 *            - the application status for the entity
+	 * @param entityName
+	 *            - the name of the entity
 	 * @return an {@link Element} containing the standard controls for the entity
 	 */
 	protected Element setupStandardControls(String status, String appStatus, String entityName) {
 		Element element = (Element) standardCtrls.clone();
-		element.getChildren(ENTITY_LABEL_ELEMENT).get(0).setValue(entityName);
-		element.getChildren(ENTITY_STATUS_ELEMENT).get(0).setValue(status);
-		element.getChildren(ENTITY_APP_STATUS_ELEMENT).get(0).setValue(appStatus);
+		if(!element.getChildren(ENTITY_LABEL_ELEMENT).isEmpty())
+			element.getChildren(ENTITY_LABEL_ELEMENT).get(0).setValue(entityName);
+		if(!element.getChildren(ENTITY_STATUS_ELEMENT).isEmpty())
+			element.getChildren(ENTITY_STATUS_ELEMENT).get(0).setValue(status);
+		if(!element.getChildren(ENTITY_APP_STATUS_ELEMENT).isEmpty())
+			element.getChildren(ENTITY_APP_STATUS_ELEMENT).get(0).setValue(appStatus);
 		return element;
 	}
 	
