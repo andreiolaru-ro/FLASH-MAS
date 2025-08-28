@@ -154,10 +154,14 @@ public class Deployment extends Unit {
 				List<EntityProxy<?>> context = new LinkedList<>();
 				if(entityConfig.isSimple(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
 					for(String contextItem : entityConfig.getValues(DeploymentConfiguration.CONTEXT_ELEMENT_NAME))
-						if(loaded.containsKey(contextItem)) {
-							if(loaded.get(contextItem).asContext() != null)
-								context.add(loaded.get(contextItem).asContext());
-						}
+						if(loaded.containsKey(contextItem))
+							try {
+								if(loaded.get(contextItem).asContext() != null)
+									context.add(loaded.get(contextItem).asContext());
+							} catch(UnsupportedOperationException e) {
+								lw("Entity [] cannot be used as context [].", loaded.get(contextItem).getName(),
+										PlatformUtils.printException(e));
+							}
 						else if(!contextItem.equals(loadPack.deploymentID))
 							lw("Context item [] for [] []/[] not found as a loaded entity in", contextItem, catName,
 									name, local_id,
@@ -217,8 +221,7 @@ public class Deployment extends Unit {
 	 * @return the loaded entity, or <code>null</code> if the entity could not be loaded.
 	 */
 	protected SimpleEntry<String, Entity<?>> loadEntity(String catName, MultiTreeMap entityConfig,
-			List<MultiTreeMap> entitiesToLoad,
-			List<EntityProxy<? extends Entity<?>>> context, LoadPack loadPack) {
+			List<MultiTreeMap> entitiesToLoad, List<EntityProxy<? extends Entity<?>>> context, LoadPack loadPack) {
 		// TODO add comments & notes about what names, kinds and ids really are.
 		// try to parse the name / obtain a kind (in order to find an appropriate loader)
 		CategoryName cat = CategoryName.byName(catName);
