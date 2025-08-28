@@ -28,12 +28,12 @@ public class Boot
 	{
 		String a = "";
 		
-		a += " -load_order pylon;AgentGroup";
+		a += " -load_order map;executor;AgentGroup";
 		a += " -package andrei.abms";
 		a += " -loader AgentGroup:AgentGroup";
 		a += " -node main";
-		a += " -map Grid vicinity:8neighbors";
-		a += " -executor StepWise";
+		a += " -map Grid vicinity:8neighbors classpath:gridworld.GridMap";
+		a += " -executor StepWise: steps:10";
 		a += " -AgentGroup g d:5 classpath:AgentGroup -agent CA";
 		
 		FlashBoot.main(a.split(" "));
