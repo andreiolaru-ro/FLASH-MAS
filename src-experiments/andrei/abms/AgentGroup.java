@@ -49,11 +49,11 @@ public class AgentGroup extends EntityCore<Node> {
 		@Override
 		public AgentGroup load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
 				List<MultiTreeMap> subordinateEntities) {
-			int n = Integer.parseInt(configuration.get("n"));
-			int padLength = Integer.valueOf(n - 1).toString().length();
+			int d = Integer.parseInt(configuration.get("d"));
+			int padLength = Integer.valueOf(d - 1).toString().length();
 			List<String> subCateg = configuration.getTreeKeys();
 			String c = subCateg.get(0);
-			lp.lf("Loading n: [] entities of category: ", Integer.valueOf(n), c);
+			lp.lf("Loading n: [] entities of category: ", Integer.valueOf(d), c);
 			// we support only one subcateg
 			// do we support multiple trees per category?
 			if(!c.equals(CategoryName.AGENT.getName()))
@@ -65,12 +65,18 @@ public class AgentGroup extends EntityCore<Node> {
 			// lp.lf(subConfig.toString());
 			
 			List<MultiTreeMap> confs = new LinkedList<>();
-			for(int i = 0; i < n; i++) {
-				String agentName = baseName + DeploymentConfiguration.NAME_SEPARATOR + baseName
-						+ String.format("%0" + padLength + "d", Integer.valueOf(i));
-				confs.add(subConfig.copyShallow().addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, agentName));
-				lp.lf("loading agent: ", agentName);
-			}
+			for(int y = 0; y < d; y++)
+				for(int x = 0; x < d; x++) {
+					String agentName = baseName + DeploymentConfiguration.NAME_SEPARATOR + baseName
+							+ String.format("%0" + padLength + "d", Integer.valueOf(x))
+							+ String.format("%0" + padLength + "d", Integer.valueOf(y));
+					String state = ((y == 0 && x == 1) || (y == 1 && x == 2) || (y == 2 && x <= 2)) ? "1" : "0";
+					confs.add(
+							subConfig.copyShallow().addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, agentName)
+									.addOneValue(CAAgent.STATE_PARAM, state));
+					lp.lf("loading agent [] with state ", agentName, state);
+					
+				}
 			// context.add(this); // make an agent group proxy
 			List<Entity<?>> entities = Deployment.get().loadEntities(confs, lp, context);
 			List<Agent> agents = entities.stream().map(e -> (Agent) e).toList();

@@ -34,7 +34,7 @@ public class Boot
 		a += " -node main";
 		a += " -map Grid vicinity:8neighbors";
 		a += " -executor StepWise";
-		a += " -AgentGroup g n:10 classpath:AgentGroup -agent CA";
+		a += " -AgentGroup g d:5 classpath:AgentGroup -agent CA";
 		
 		FlashBoot.main(a.split(" "));
 	}
