@@ -175,7 +175,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 		if(!super.start())
 			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
-		li("starting Python ML server...");
+		li("starting Python ML server on port []...", Integer.valueOf(SERVER_PORT));
 		try {
 			ProcessBuilder pb = new ProcessBuilder("python",
 					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"

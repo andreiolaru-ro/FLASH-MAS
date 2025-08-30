@@ -5,7 +5,7 @@ from constants import *
 from model_store import *
 
 flask = import_functionality("flask")
-log("creating server... ")
+log("creating server on port", SERVER_PORT, "... ")
 app = flask.Flask(__name__)
 
 def start():
@@ -45,6 +45,7 @@ def add_dataset():
 def predict():
     global models
     global datasets
+    log("prediction service")
     model_name = flask.request.form.get(MODEL_NAME_PARAM)
     input_data = flask.request.form.get(INPUT_DATA_PARAM)
 

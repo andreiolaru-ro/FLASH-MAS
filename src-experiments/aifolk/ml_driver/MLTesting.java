@@ -1,8 +1,5 @@
 package aifolk.ml_driver;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -63,38 +60,11 @@ public class MLTesting extends AgentShardGeneral {
 		switch(event.getType()) {
 		case AGENT_START:
 			// TODO testing code here
-			/**
-			 * An easy way to make tests here once we run this once already is to
-			 * delete the newly added model form the /models directory, and restore the config file
-			 * this will cause the model to be downloaded again, and the config file to be re-written
-			 * otherwise, we can't download the model again, because it already exists, and we have to find new models
-			 *
-			 * Since the silero_stt model is too big to be uploaded to github,
-			 * it has to be downloaded manually, you have to execute the following code in a python file:
-			 *
-			 * device = torch.device('cpu')  # gpu also works, but our models are fast enough for CPU
-			 * model, decoder, utils = torch.hub.load(repo_or_dir='snakers4/silero-models',
-			 *                                        model='silero_stt',
-			 *                                        language='en', # also available 'de', 'es'
-			 *                                        device=device)
-			 * torch.jit.save(model, 'silero_stt.pth')
-			 *
-			 */
 
-			li("Prediction result:", driver.predict("ResNet18", "src-experiments/aifolk/ml_driver/data/dog.jpg", true));
+			li("Prediction result:",
+					driver.predict("YOLOv8-pedestrians", "src-experiments/aifolk/ml_driver/data/dog.jpg", false));
 
-			Map<String, Object> modelConfig = new HashMap<>();
-			modelConfig.put("cuda", true);
-			modelConfig.put("transform", "datasets.transform.CityscapesTransform");
-			modelConfig.put("task", "semantic segmentation");
-			modelConfig.put("dataset", "Cityscapes");
-			modelConfig.put("input_space", "RGB");
-			driver.addModel("DeepLabV3Plus", "ml-directory/models/deeplabv3plus_cityscapes.pth", modelConfig);
-			li("Models list:", driver.getModels().keySet().toString());
-			driver.exportModel("ResNet18", "src-experiments/aifolk/ml_driver/test_export_destination");
-
-			driver.addDataset("cityscapes", "[\"class1\", \"class2\"]");
-			// loads some models, than [after some time] does several predictions, saves the model, etc
+			break;
 		default:
 			break;
 		}
