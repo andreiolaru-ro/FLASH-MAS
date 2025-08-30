@@ -1,0 +1,45 @@
+- e: "*" # the selector
+  level: "#"
+  out: list:line
+  # we could have as variants:
+  # list:entities, list:matches
+  expect: [count, max, 4]
+  # could be 'max', 'min', 'exactly'
+  comment: "should pass if there are 4 maximum errors found in the logs."
+
+- e: "agent*"
+  level: ">"
+  match: "RUNNING"
+  out: [count, "agents running:", list:entities] 
+  # 'count' and 'list' are keywords
+  # maybe we could use "$count" and "$list"
+  expect: [count, 2] # "exactly" is implicit 
+  comment: "should pass if there are exactly 2 agents in the running phase."
+  
+  
+  # e.g. pentru ALL_GOOD
+  # 2 agents running: AgentA#, AgentB# 
+  
+  
+- e: "agentA"
+  match: ["AGENT_WAVE", "ping-no", "reply"] # list means 'and'
+  expect: [count, 4]
+
+- e: "agentB"
+  match: ["AGENT_WAVE", "ping-no"]
+  expect: [count, 5]
+
+- e: "Pylon*"
+  match: "status"
+  out: last:line
+  # 'last:' prints the last <something> that matched, with the same value as 'list'
+  # no 'expect' entry here, it's just for the dashboard
+
+- e: "Pylon*"
+  match-sequence: ["started", "stopped"] # the elements must be in this exact sequence
+  expect: [match]
+  # no 'out' line
+
+  #  fsm-from: "easyLog/resource/test.dot"
+  #  fsm-start: "INITIAL"
+  #  fsm-expect: "STOPPED"

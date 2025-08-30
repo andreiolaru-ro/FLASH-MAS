@@ -1,0 +1,11 @@
+digraph Automaton {
+    S0 -> S1 [label="content=\[ping-no \d+\]"];
+    S1 -> S2 [label="content=\[ping-no \d+\ reply]"];
+    S1 -> ERROR [label="content=\[!ping-no \d+\ reply]", style=dashed, color=red];
+
+    S2 -> S1 [label="content=\[ping-no \d+\]"];
+    S2 -> FINAL [label="content=\[ping-last \d+\]"];
+
+    ERROR [shape=doublecircle, color=red, fontcolor=red];
+    FINAL [shape=doublecircle, color=green, fontcolor=green];
+}

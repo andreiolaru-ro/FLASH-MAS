@@ -1,0 +1,49 @@
+- e: "*"
+  level: "#"
+  match:
+  out: ["list:full"]
+  expect: ["count", "4"]
+  comment: "should pass if there are 4 maximum errors found in the logs."
+
+- e: "Agent*"
+  level: ">"
+  match: ["RUNNING"]
+  out: ["count", "agents running:", "list:entities"]
+  expect: ["count", "2"]
+  comment: "should pass if there are exactly 2 agents in the running phase."
+
+- e: "AgentA"
+  fsm-from: "graph.dot"
+  fsm-start: "INITIAL"
+  fsm-expect: "STOPPED"  // numele unui nod din graful din graph.dot
+  match: ['Agent state']
+  out: "state" // alte varianta ar fi "state-history", "last-transition", etc
+  expect: "STOPPED"
+
+- e: "AgentA"
+  level:
+  match: ["AGENT_WAVE", "ping-no", "reply"]
+  out:
+  expect: ["count", "4"]
+  comment:
+
+- e: "AgentB"
+  level:
+  match: ["AGENT_WAVE", "ping-no"]
+  out:
+  expect: ["count", "5"]
+  comment:
+
+- e: "Pylon1"
+  level:
+  match: ["status"]
+  out: ["last:line"]
+  expect:
+  comment:
+
+- e: "Pylon2"
+  level:
+  match: ["started", "stopped"]
+  out:
+  expect:
+  comment:

@@ -498,6 +498,7 @@ public class CompositeAgent extends EntityCore<Pylon> implements CompositeAgentM
 		default:
 			// do nothing
 		}
+		
 		return false;
 	}
 	

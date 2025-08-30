@@ -1,56 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src-examples"/>
+	<classpathentry kind="src" path="src-tests"/>
+	<classpathentry kind="src" path="src-experiments"/>
+	<classpathentry kind="src" path="easyLog"/>
+	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-common-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/mpi/mpi.jar"/>
+	<classpathentry kind="lib" path="lib/core/Config.jar"/>
+	<classpathentry kind="lib" path="lib/core/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="lib/core/Logging-modern.jar"/>
+	<classpathentry kind="lib" path="lib/core/net.xqhs.XML.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-io-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-client-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-http-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/jetty-util-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/ros/websocket-api-9.4.3.v20170317.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/netty-all-4.1.47.Final.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-core-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-web-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-web-common-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-tcp-eventbus-bridge-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/vertx-bridge-common-3.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-annotations-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-core-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/webserver/jackson-databind-2.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/websocket/Java-WebSocket-1.4.0-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/graph/gs-core-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/graph/gs-ui-swing-2.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/classes" path="src-examples">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="target/test-classes" path="src-tests">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="target/classes" path="src-experiments">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" path="target/generated-sources/annotations">
-		<attributes>
-			<attribute name="ignore_optional_problems" value="true"/>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="m2e-apt" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="target/test-classes" path="target/generated-test-sources/test-annotations">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="ignore_optional_problems" value="true"/>
-			<attribute name="m2e-apt" value="true"/>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry kind="lib" path="lib/gui/snakeyaml-2.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

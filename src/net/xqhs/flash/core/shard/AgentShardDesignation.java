@@ -49,11 +49,16 @@ public class AgentShardDesignation implements Serializable {
 		/**
 		 * The designation of a shard used for monitoring by a central monitoring entity.
 		 */
-		MONITORING,
+		MONITORING, // TO REMOVE
 		/**
 		 * The designation of a shard used for control by a central control entity.
 		 */
-		CONTROL,
+		CONTROL, // TO REMOVE
+		/**
+		 * The designation of a shard used for remote monitoring and operation, e.g. in relation to a central monitoring
+		 * entity.
+		 */
+		REMOTE,
 		
 		;
 		

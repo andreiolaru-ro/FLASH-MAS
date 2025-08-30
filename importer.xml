@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Copyright (C) 2018 Andrei Olaru.
+  
+  This file is part of Logging.
+  
+  Logging is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+  
+  Logging is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License along with Logging.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<!-- place this in the root of the importing project -->
+<!-- if you use multiple imports, copy the target and add it to the dependencies of the default target -->
+<!--  be sure to check for collisions between the dependencies of the current jar and other jars -->
+
+<project default="import">
+
+	<!-- the directory where the project is, relative to the parent of the current project -->
+	<property name="import-directory" value="." />
+
+	<!-- the target for the current project -->
+	<target name="Logging" depends="Config">
+		<copy file="../${import-directory}/net.xqhs.Logging/deploy/Logging-modern.jar" todir="lib/core/" />
+	</target>
+	
+	<target name="Config">
+		<copy file="../${import-directory}/net.xqhs.Logging/deploy/Config.jar" todir="lib/core/" />
+	</target>
+	<target name="import" depends="Logging" />
+</project>

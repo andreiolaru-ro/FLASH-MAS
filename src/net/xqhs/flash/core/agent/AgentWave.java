@@ -52,7 +52,7 @@ import net.xqhs.flash.core.util.MultiValueMap;
  * 
  * @author Andrei Olaru
  */
-public class AgentWave extends AgentEvent {
+public class 		AgentWave extends AgentEvent {
 	/**
 	 * The serial UID.
 	 */
@@ -147,6 +147,22 @@ public class AgentWave extends AgentEvent {
 		
 		// if the serialization already contained destination data, it will be lost.
 		resetDestination(destinationRoot, destinationElements != null ? destinationElements : new String[] {});
+	}
+	
+	/**
+	 * Creates an {@link AgentWave} with the source and destination of this wave, reversed, and with the given content,
+	 * if any. No other fields are created.
+	 * 
+	 * @param content
+	 *            - if not <code>null</code>, it is used as content for the reply.
+	 * 			
+	 * @return the reply to this agent wave.
+	 */
+	public AgentWave createReply(String content) {
+		AgentWave reply = new AgentWave(content);
+		reply.addSourceElements(getDestinationElements());
+		reply.resetDestination(null, this.getSourceElements());
+		return reply;
 	}
 	
 	/**
@@ -321,14 +337,11 @@ public class AgentWave extends AgentEvent {
 	public String getContent() {
 		return getValue(CONTENT);
 	}
+
 	
 	/**
 	 * @return all the keys in this {@link MultiValueMap} which are not related to routing or agent event type. The
-<<<<<<< HEAD
 	 *         {@value #CONTENT} key is added as the first key, if it was initially present.
-=======
-	 *         {@value #CONTENT} key is added as the first key.
->>>>>>> refs/heads/remotes-overhaul-temp
 	 */
 	public List<String> getContentElements() {
 		List<String> result = new LinkedList<>(getKeys());

@@ -1,0 +1,16 @@
+children:
+  - type: container
+    properties: {layout: row}
+    port: rowContainer
+    children:
+      - type: container
+        port: columnContainer
+        children:
+          - {type: form, port: valuePort}
+          - {type: button, port: valuePort, role: send, value: Send}
+      - type: container
+        port: buttonContainer
+        properties: {layout: row}
+        children:
+          - {type: button, port: actions, role: new, value: New}
+          - {type: button, port: actions, role: delete, value: Delete}

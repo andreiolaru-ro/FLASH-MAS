@@ -1,0 +1,104 @@
+. [ boot ] Booting Flash-MAS.
+> [ settings load ] final config:[
+   [deployment]-
+   .     [null]-
+   .     .     [#local-id]-      [#1637070917]
+   .     .     [#category-type]- [deployment]
+   .     .     [schema]-         [src-schema/deployment-schema.xsd]
+   .     .     [load_order]-     [pylon;agent]
+   .     .     [node]-
+   .     .     .     [null]>
+   .     .     .     .     [#local-id]-      [#780237624]
+   .     .     .     .     [#category-type]- [node]
+   .     .     .     .     [load_order]-     [pylon;agent]
+   .     .     .     .     [pylon]-
+   .     .     .     .     .     [local:default]>
+   .     .     .     .     .     .     [name]>           [local:default]
+   .     .     .     .     .     .     [#local-id]-      [#492228202]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [in-context-of]>  [#780237624, #1637070917]
+   .     .     .     .     [in-context-of]>  [#1637070917]
+   .     .     [pylon]-
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#205797316]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [in-context-of]>  [#1637070917]
+   [#local-id]-
+   .     [#1637070917]-
+   .     .     [#local-id]-      [#1637070917]
+   .     .     [#category-type]- [deployment]
+   .     .     [schema]-         [src-schema/deployment-schema.xsd]
+   .     .     [load_order]-     [pylon;agent]
+   .     .     [node]-
+   .     .     .     [null]>
+   .     .     .     .     [#local-id]-      [#780237624]
+   .     .     .     .     [#category-type]- [node]
+   .     .     .     .     [load_order]-     [pylon;agent]
+   .     .     .     .     [pylon]-
+   .     .     .     .     .     [local:default]>
+   .     .     .     .     .     .     [name]>           [local:default]
+   .     .     .     .     .     .     [#local-id]-      [#492228202]
+   .     .     .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     .     .     [in-context-of]>  [#780237624, #1637070917]
+   .     .     .     .     [in-context-of]>  [#1637070917]
+   .     .     [pylon]-
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#205797316]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [in-context-of]>  [#1637070917]
+   .     [#780237624]-
+   .     .     [#local-id]-      [#780237624]
+   .     .     [#category-type]- [node]
+   .     .     [load_order]-     [pylon;agent]
+   .     .     [pylon]-
+   .     .     .     [local:default]>
+   .     .     .     .     [name]>           [local:default]
+   .     .     .     .     [#local-id]-      [#492228202]
+   .     .     .     .     [#category-type]- [pylon]
+   .     .     .     .     [in-context-of]>  [#780237624, #1637070917]
+   .     .     [in-context-of]>  [#1637070917]
+   .     [#205797316]-
+   .     .     [name]>           [local:default]
+   .     .     [#local-id]-      [#205797316]
+   .     .     [#category-type]- [pylon]
+   .     .     [in-context-of]>  [#1637070917]
+   .     [#492228202]-
+   .     .     [name]>           [local:default]
+   .     .     [#local-id]-      [#492228202]
+   .     .     [#category-type]- [pylon]
+   .     .     [in-context-of]>  [#780237624, #1637070917]
+]
+> [ settings load ] log exit.
+. [ boot          ] Configuration loaded
+. [ boot          ] Loading node [node:null.0]
+> [ boot          ] No loaders configured.
+. [ boot          ] Trying to load node using default loader [net.xqhs.flash.core.SimpleLoader], from classpath [node][net.xqhs.flash.core.node.Node]
+> [ node:null.0   ] Active entitites:[[agent]]
+. [ boot          ] Loading order: [pylon;agent]
+. [ boot          ] Loading category: [pylon]
+. [ boot          ] Trying to load [local:default]/[#492228202] [pylon][local] using default loader [net.xqhs.flash.core.SimpleLoader], from classpath [net.xqhs.flash.local.LocalPylon]
+. [ default       ] Added node context:[null]
+> [ boot          ] Entity [local:default]/[#492228202] of type [pylon] successfully loaded.
+. [ node:null.0   ] registered an entity of type [pylon]. Provided name was [default].
+. [ boot          ] Loaded items:[[#780237624, #492228202]]
+> [ boot          ] No [agent] entities defined.
+. [ boot          ] Other configuration:
+. [ node:null.0   ] Messaging shard added, affiliated with pylon [default pylon]
+. [ boot          ] node loaded: [null]
+. [ boot          ] [1] nodes loaded.
+> [ boot          ] log exit.
+> [ node:null.0   ] Starting node [null] with entities [[net.xqhs.flash.local.LocalPylon@506c589e]].
+. [ node:null.0   ] starting entity [default pylon]...
+. [ default       ] [default] starting
+> [ default       ] Started with thread.
+. [ node:null.0   ] entity [default pylon] started successfully.
+> [ node:null.0   ] Node [null] started.
+> [ node:null.0   ] Node [null] will stop due to no more active entitites running. Active entity type list was [[agent]].
+> [ node:null.0   ] Stopping node [null] with entities [[net.xqhs.flash.local.LocalPylon@506c589e]].
+. [ node:null.0   ] stopping entity [default pylon]...
+. [ default       ] [default] stopped
+> [ default       ] Stopped
+. [ node:null.0   ] entity [default pylon] stopped successfully.
+> [ node:null.0   ] Node [null] stopped.
