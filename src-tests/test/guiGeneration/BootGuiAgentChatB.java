@@ -9,24 +9,34 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash.gui.structure.types;
+package test.guiGeneration;
 
-public enum LayoutType {
-    HORIZONTAL("horizontal"),
-    VERTICAL("vertical");
+import net.xqhs.flash.FlashBoot;
 
-    public final String type;
+/**
+ * Deployment testing.
+ */
+public class BootGuiAgentChatB
+{
+	/**
+	 * Performs test.
+	 * 
+	 * @param args
+	 *                 - not used.
+	 */
+	public static void main(String[] args)
+	{
+		String test_args = "";
 
-    LayoutType(String type) {
-        this.type = type;
-    }
+		test_args += " -loader agent:composite";
+		test_args += " -package test.guiGeneration";
 
-    public static LayoutType valueOfLabel(String type) {
-        for (LayoutType e : values()) {
-            if (e.type.equals(type)) {
-                return e;
-            }
-        }
-        return null;
-    }
+		test_args += " -node secondary";
+		test_args += " -pylon webSocket:wsB connectTo:ws://" + BootGuiAgentChatA.MAIN_IP + ":"
+				+ Integer.valueOf(BootGuiAgentChatA.MAIN_PORT);
+		test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation wait:5000 -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentA playerNumber:2";
+		
+		FlashBoot.main(test_args.split(" "));
+	}
+	
 }

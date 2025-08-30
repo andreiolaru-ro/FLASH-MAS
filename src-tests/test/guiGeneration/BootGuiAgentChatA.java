@@ -9,41 +9,54 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package test.compositePingPong;
+package test.guiGeneration;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import net.xqhs.flash.FlashBoot;
 
 /**
  * Deployment testing.
  */
-public class Boot
+public class BootGuiAgentChatA
 {
 	/**
-	 * Designation for shards.
+	 * The IP address of the main node.
 	 */
-	public static final String	FUNCTIONALITY	= "TESTING";
+	public static String	MAIN_IP		= "localhost";
 	/**
-	 * Different designation for shards.
+	 * The port on the main node.
 	 */
-	public static final String	MONITORING		= "OTHER-MONITORING";
+	public static int		MAIN_PORT	= 8886;
 	
 	/**
-	 * Performs test
+	 * Performs test.
 	 * 
-	 * @param args_
+	 * @param args
 	 *            - not used.
 	 */
-	public static void main(String[] args_)
+	public static void main(String[] args)
 	{
-		String args = "";
+		String test_args = "";
+
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				BootGuiAgentChatB.main(null);
+			}
+		}, 3000);
 		
-		args += " -package testing -loader agent:composite";
-		args += " -node node1 central:web";
-		// notice how the name of the shard does not necessarily need to contain "Shard", as it is handled by autoFind
-		args += " -agent composite:AgentA -shard messaging -shard PingTest n:10 otherAgent:AgentB -shard EchoTesting";
-		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
+		test_args += " -loader agent:composite";
+		test_args += " -package test.guiGeneration";
+
+		test_args += " -node main central:web";
+		test_args += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);
+		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation wait:2000 -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentB playerNumber:1";
 		
-		FlashBoot.main(args.split(" "));
+		FlashBoot.main(test_args.split(" "));
+		
 	}
 	
 }

@@ -11,20 +11,57 @@
  ******************************************************************************/
 package net.xqhs.flash.gui.structure;
 
+/**
+ * Type of an interface element.
+ */
 public enum ElementType {
+	/**
+	 * A button. It has a label and can be pressed.
+	 */
     BUTTON("button"),
+	/**
+	 * A form containing multiple fields.
+	 */
     FORM("form"),
-    BLOCK("container"),
+	/**
+	 * A container with multiple elements.
+	 */
+    CONTAINER("container"),
+	/**
+	 * A static output for one value.
+	 */
     OUTPUT("label"),
+	/**
+	 * A field containing one value which can be incremented or decremented.
+	 */
     SPINNER("spinner"),
+	/**
+	 * A list of elements.
+	 */
     LIST("list");
 
+	/**
+	 * The textual type of the element.
+	 */
     public final String type;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param type
+	 *            - the textual type of the element.
+	 */
     ElementType(String type) {
         this.type = type;
     }
 
+	/**
+	 * Retrieves the type with the given name.
+	 * 
+	 * @param label
+	 *            - the name.
+	 * @return the corresponding {@link ElementType} instance.
+	 */
     public static ElementType valueOfLabel(String label) {
         for (ElementType e : values()) {
             if (e.type.equals(label)) {

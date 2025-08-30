@@ -1,0 +1,16 @@
+children:
+  - type: label
+    port: inbound
+    role: recvd-label
+    value: "Received message:"
+  - type: label
+    port: inbound
+    role: content
+    value: "-"
+  - type: form
+    port: outbound
+    role: content
+  - type: button
+    port: outbound
+    role: send
+    value: Send

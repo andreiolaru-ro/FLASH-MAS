@@ -10,17 +10,34 @@
 # You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 #-------------------------------------------------------------------------------
 children:
-  - type: label
-    value: "--"
-    port: control-name
-  - type: label
-    value: unknown
-    port: control-status
-  - type: button
-    value: Start
-    port: control-start
-    role: activate
-  - type: button
-    value: Stop
-    port: control-stop
-    role: activate
+ - type: form
+   port: valuePort
+   role: content
+   when: [{ /: 10, style: red }]
+ - type: container
+   properties:
+      layout: row
+   children:
+    - type: form
+      port: number
+      role: content
+      value: 0
+      when: [{ /indicator: overflow, style: red }, { /indicator: underflow, style: red }]
+    - type: button
+      port: number
+      role: increase
+      when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
+      notify: $port/$role
+      value: Increase
+      when: [{ /indicator: overflow, style: disabled }]
+    - type: button
+      port: number
+      role: decrease
+      when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
+      notify: $port/$role
+      value: Decrease
+      when: [{ /indicator: underflow, style: disabled }]
+    - type: label
+      port: number
+      role: indicator
+      value: ""

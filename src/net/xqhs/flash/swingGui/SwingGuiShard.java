@@ -32,12 +32,21 @@ import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.gui.structure.ElementType;
 
+/**
+ * Java Swing implementation of the {@link GuiShard}. It creates a window for this shard to which it adds Swing
+ * components according to the specification.
+ * 
+ * @author andreiolaru
+ */
 public class SwingGuiShard extends GuiShard {
 	/**
 	 * The UID.
 	 */
 	private static final long serialVersionUID = -3741974077986177703L;
 	
+	/**
+	 * The window containing the controls.
+	 */
 	JFrame window = null;
 	
 	@Override
@@ -56,11 +65,19 @@ public class SwingGuiShard extends GuiShard {
 		}
 	}
 	
+	/**
+	 * Generates the elements of the interface based on the {@link Element} specification.
+	 * 
+	 * @param element
+	 *            - the specification.
+	 * @param parent
+	 *            - the parent {@link JPanel}, if this is not a top element.
+	 */
 	protected void generate(Element element, JPanel parent) {
 		Component comp = null;
 		ComponentConnect connector = null;
 		switch(ElementType.valueOfLabel(element.getType())) {
-		case BLOCK:
+		case CONTAINER:
 			if(parent == null) { // main window
 				// lf("with ids: ", element);
 				
@@ -73,7 +90,9 @@ public class SwingGuiShard extends GuiShard {
 				// } else if (PageBuilder.getInstance().layoutType.equals(LayoutType.VERTICAL)) {
 				// windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.Y_AXIS));
 				// }
-				windowPanel.setLayout(new BoxLayout(windowPanel, BoxLayout.X_AXIS));
+				String layout = element.getProperties().getOrDefault("layout", "column");
+				int layoutType = "row".equals(layout) ? BoxLayout.X_AXIS : BoxLayout.Y_AXIS;
+				windowPanel.setLayout(new BoxLayout(windowPanel, layoutType));
 				windowPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
 				window.add(windowPanel);
 				comp = windowPanel;
@@ -129,7 +148,7 @@ public class SwingGuiShard extends GuiShard {
 					return button.getText();
 				}
 			};
-			if(element.getRole().equals("activate"))
+			if("activate".equals(element.getRole()))
 				button.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -157,6 +176,50 @@ public class SwingGuiShard extends GuiShard {
 			};
 			break;
 		}
+		case SPINNER: {
+			JButton incrementButton = new JButton("+");
+			JButton decrementButton = new JButton("-");
+			JLabel label = new JLabel();
+			if (element.getValue() != null) {
+				label.setText(element.getValue());
+			}
+			JPanel spinnerPanel = new JPanel();
+			spinnerPanel.setLayout(new BoxLayout(spinnerPanel, BoxLayout.X_AXIS));
+			spinnerPanel.add(decrementButton);
+			spinnerPanel.add(label);
+			spinnerPanel.add(incrementButton);
+			comp = spinnerPanel;
+			connector = new ComponentConnect() {
+				@Override
+				public void sendOutput(String value) {
+					label.setText(value);
+				}
+				
+				@Override
+				public String getInput() {
+					return label.getText();
+				}
+			};
+			incrementButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int value = Integer.parseInt(label.getText());
+					value++;
+					label.setText(Integer.toString(value));
+					postActiveInput(element.getPort(), getInput(element.getPort()));
+				}
+			});
+			decrementButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int value = Integer.parseInt(label.getText());
+					value--;
+					label.setText(Integer.toString(value));
+					postActiveInput(element.getPort(), getInput(element.getPort()));
+				}
+			});
+			break;
+		}
 		default:
 			break;
 		}
@@ -172,6 +235,8 @@ public class SwingGuiShard extends GuiShard {
 				portRoleComponents.put(port, new HashMap<>());
 			if(!portRoleComponents.get(port).containsKey(role))
 				portRoleComponents.get(port).put(role, new ArrayList<>());
+			if(portRoleComponents.get(port).get(role).size() != 0)
+				portRoleComponents.get(port).get(role).remove(0);
 			portRoleComponents.get(port).get(role).add(connector);
 		}
 	}

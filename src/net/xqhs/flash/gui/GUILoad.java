@@ -26,9 +26,30 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.util.logging.Logger;
 
+/**
+ * Class with static methods to load an interface specification (represented as an {@link Element} instance) from a YAML
+ * file or directly from a YAML-formatted {@link String}.
+ * 
+ * @author Florin Mihalache
+ * @author andreiolaru
+ */
 public class GUILoad {
+	/**
+	 * Parameter in the configuration specifying the file from which to load the UI structure.
+	 */
+	public static final String FILE_SOURCE_PARAMETER = "from";
+	
+	/**
+	 * Loads a GUI from a configuration from a .yml or .yaml file, and associates it with a logger.
+	 *
+	 * @param configuration
+	 *            - the configuration.
+	 * @param log
+	 *            - the logger.
+	 * @return the structure of the interface.
+	 */
 	public static Element load(MultiTreeMap configuration, Logger log) {
-		String config = configuration.getFirstValue("from");
+		String config = configuration.getFirstValue(FILE_SOURCE_PARAMETER);
 		if(config == null)
 			log.le("Configuration is null");
 		if(config != null && (config.endsWith(".yml") || config.endsWith(".yaml"))) { // file
@@ -58,11 +79,29 @@ public class GUILoad {
 			}
 		return null;
 	}
-	
+
+	/**
+	 *  Parses a YAML file from a FileInputStream and converts it into an instance of the Element class.
+	 *
+	 * @param input
+	 *          - A FileInputStream object representing the YAML file to be parsed.
+	 *
+	 * @return
+	 * 		- An instance of the Element class representing the parsed YAML file.
+	 */
 	public static Element fromYaml(FileInputStream input) {
 		return new Yaml().loadAs(input, Element.class);
 	}
-	
+
+	/**
+	 * Parses YAML data from a String and converts it into an instance of the Element class.
+	 *
+	 * @param input
+	 * 		- A String object representing the YAML data to be parsed.
+	 *
+	 * @return
+	 * 		- An instance of the Element class representing the parsed YAML data.
+	 */
 	public static Element fromYaml(String input) {
 		return new Yaml().loadAs(input, Element.class);
 	}

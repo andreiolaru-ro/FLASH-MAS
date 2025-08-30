@@ -21,7 +21,7 @@ public class BootCompositeNodeA
 	/**
 	 * The IP address of the main node.
 	 */
-	public static String	MAIN_IP		= "192.168.100.3";
+	public static String	MAIN_IP		= "10.40.2.82";
 	/**
 	 * The port on the main node.
 	 */

@@ -1,0 +1,80 @@
+children:
+  - type: container
+    properties: { layout: row }
+    port: containers
+    role: c1
+    children:
+    - type: label
+      port: score
+      role: label
+      value: "Score: "
+    - type: label
+      port: score
+      role: content
+      value: 0
+  - type: container
+    properties: { layout: row }
+    port: containers
+    role: c2
+    children:
+    - type: label
+      port: score
+      role: moveLabel
+      value: "Opponent's Move: "
+    - type: label
+      port: score
+      role: moveSign
+      value: ""
+      when: [{ /moveSign: "-", style: red }]
+    - type: label
+      port: score
+      role: moveAbs
+      value: none
+      when: [{ /moveSign: "-", style: red }]
+  - type: container
+    properties: { layout: row }
+    port: containers
+    role: c3
+    children:
+      - type: label
+        port: strategy
+        role: label
+        value: "Strategy: "
+      - type: label
+        port: strategy
+        role: content
+        value: Random
+  - type: container
+    port: containers
+    role: c4
+    children:
+      - type: button
+        port: strategy
+        role: alwaysPlus1
+        value: Always +1
+        notify: $port/0
+      - type: button
+        port: strategy
+        role: alwaysMinus1
+        value: Always -1
+        notify: $port/1
+      - type: button
+        port: strategy
+        role: random
+        value: Random
+        notify: $port/2
+      - type: button
+        port: strategy
+        role: counterLast
+        value: Counter Last
+        notify: $port/3
+      - type: button
+        port: strategy
+        role: average
+        value: Average
+        notify: $port/4
+      - type: button
+        port: strategy
+        role: titForTat
+        value: Tit for Tat
+        notify: $port/5
