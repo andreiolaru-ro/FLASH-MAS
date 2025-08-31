@@ -23,11 +23,11 @@ import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
-import net.xqhs.flash.core.monitoring.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
 import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
@@ -221,6 +221,25 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		String node_local_id = nodeConfiguration.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		loaded.put(node_local_id, node);
 		
+		// register central entity before other entities, so that it will be started first
+		CentralMonitoringAndControlEntity centralEntity = null;
+		if(nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY)) {
+			// delegate the central node
+			// and register the central monitoring and control entity in its context
+			li("Node [] is central node.", node.getName());
+			centralEntity = new CentralMonitoringAndControlEntity();
+			centralEntity.configure(new MultiTreeMap()
+					.addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
+					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
+							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
+			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+			
+			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+					DeploymentConfiguration.MONITORING_TYPE);
+		}
+		
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
 		if(toLoad == null || toLoad.trim().length() == 0)
 			li("Nothing to load");
@@ -359,28 +378,16 @@ public class NodeLoader extends Unit implements Loader<Node> {
 			
 			lf("Other configuration:");
 			
-			if(messagingProxies.isEmpty())
-				return node;
-			MessagingPylonProxy pylon = messagingProxies.stream().findFirst().get();
-			node.addGeneralContext(pylon);
-			
-			if(!nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY))
-				return node;
+			if(!messagingProxies.isEmpty()) {
+				// if there are support infrastructures, all other entities have already been added in the context of an
+				// infrastructure.
+				// add also the node and the central monitoring entity
+				MessagingPylonProxy pylon = messagingProxies.stream().findFirst().get();
+				node.addGeneralContext(pylon);
 				
-			// delegate the central node
-			// and register the central monitoring and control entity in its context
-			li("Node [] is central node.", node.getName());
-			CentralMonitoringAndControlEntity centralEntity = new CentralMonitoringAndControlEntity(new MultiTreeMap()
-					.addSingleValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
-							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
-					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
-							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
-			centralEntity.addGeneralContext(pylon);
-			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
-					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-			
-			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-					DeploymentConfiguration.MONITORING_TYPE);
+				if(nodeConfiguration.containsKey(DeploymentConfiguration.CENTRAL_NODE_KEY) && centralEntity != null)
+					centralEntity.addGeneralContext(pylon);
+			}
 			
 			li("Loading node [] completed.", node.getName());
 		}
