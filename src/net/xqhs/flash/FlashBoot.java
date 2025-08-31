@@ -40,7 +40,7 @@ public class FlashBoot {
 	protected static final int LOG_OUTPUTS = OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	// protected static final int LOG_OUTPUTS = OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	protected static final Level	GLOBAL_LOG_LEVEL	= Level.ALL;
-	private static final String		EASYLOG_CONFIG_FILE	= "resource/test.yml";
+	private static final String		EASYLOG_CONFIG_FILE	= "resource/eumas.yml";
 	
 	/**
 	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.

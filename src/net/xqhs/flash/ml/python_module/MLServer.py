@@ -45,7 +45,6 @@ def add_dataset():
 def predict():
     global models
     global datasets
-    log("prediction service")
     model_name = flask.request.form.get(MODEL_NAME_PARAM)
     input_data = flask.request.form.get(INPUT_DATA_PARAM)
 

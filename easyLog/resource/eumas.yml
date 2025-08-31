@@ -1,0 +1,18 @@
+- e: "PeopleSorter"
+  level: ">"
+  match: ["Prediction result"]
+  out: ["count", "predictions done:","list:full"]
+  expect: ["count", "40"]
+- e: "PeopleSorter"
+  level: ">"
+  match: ["Prediction result", "5.0"]
+  out: ["count", "5-people predictions"]
+  expect: ["count", "10"]
+- e: "*"
+  level: "*"
+  out: ["count", "warnings"]
+  expect: ["count", "0"]
+- e: "*"
+  level: "#"
+  out: ["count", "errors"]
+  expect: ["count", "0"]

@@ -76,6 +76,6 @@ public class FedBoot {
 					" device:cpu";
 		}
 
-		FlashBoot.main(a);
+		FlashBoot.main(a.split(" "));
 	}
 }

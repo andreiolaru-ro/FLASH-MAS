@@ -100,7 +100,7 @@ public class FedBootDistributed {
 
 		// Only execute if a configuration has been generated for this host.
 		if (!a.isEmpty()) {
-			FlashBoot.main(a);
+			FlashBoot.main(a.split(" "));
 		} else {
 			System.out.println("No roles for hostIndex " + hostIndex + " with the current configuration.");
 		}

@@ -1,0 +1,5 @@
+children:
+  - port: current-image
+    value: "no image"
+  - port: nprocessed
+    value: 0

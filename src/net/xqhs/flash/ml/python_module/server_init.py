@@ -20,7 +20,7 @@ from constants import *
 # .\Scripts\pip.exe install <package>
 
 # these are relative to ML_DIRECTORY
-PACKAGE_DIRECTORIES = ["pythonlib/lib/site-packages/", "pythonlib/lib/python3.11/site-packages/", "model_operations/"]
+PACKAGE_DIRECTORIES = ["pythonlib/lib/site-packages/", "pythonlib/lib/python3.12/site-packages/", "model_operations/"]
 
 
 # construct system path, relative to how this file is run

@@ -128,6 +128,7 @@ html, body {
 
 div.selected-entity {
     min-width: 20vw;
+    max-width: 30vw;
     min-height: 20vw;
     background-color: #f7f7f7;
     padding: 2%;
