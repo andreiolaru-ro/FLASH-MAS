@@ -150,22 +150,6 @@ public class 		AgentWave extends AgentEvent {
 	}
 	
 	/**
-	 * Creates an {@link AgentWave} with the source and destination of this wave, reversed, and with the given content,
-	 * if any. No other fields are created.
-	 * 
-	 * @param content
-	 *            - if not <code>null</code>, it is used as content for the reply.
-	 * 			
-	 * @return the reply to this agent wave.
-	 */
-	public AgentWave createReply(String content) {
-		AgentWave reply = new AgentWave(content);
-		reply.addSourceElements(getDestinationElements());
-		reply.resetDestination(null, this.getSourceElements());
-		return reply;
-	}
-	
-	/**
 	 * Appends elements to the list of source endpoint elements.
 	 * 
 	 * @param sourceElements
@@ -355,6 +339,20 @@ public class 		AgentWave extends AgentEvent {
 	}
 	
 	/**
+	 * @return a string containing the content elements of the wave.
+	 */
+	public String getStringifiedContent() {
+		List<String> keys = getContentElements();
+		if(keys.size() <= 1 && CONTENT.equals(keys.get(0)) && getValues(CONTENT).size() == 1)
+			// there is only one content element
+			return getObject(CONTENT).toString();
+		MultiValueMap contentMap = new MultiValueMap();
+		for(String key : keys)
+			contentMap.addObjects(key, getObjects(key));
+		return contentMap.toString();
+	}
+	
+	/**
 	 * Creates a {@link String} that represents the serialization of all of the waves <b>content</b> (the keys returned
 	 * by {@link #getContentElements()}). This string can be given to {@link #fromSerializedContent(String)} or to the
 	 * {@link #AgentWave(String, String, String...)} constructor.
@@ -365,10 +363,10 @@ public class 		AgentWave extends AgentEvent {
 		List<String> keys = getContentElements();
 		if(keys.size() <= 1 && CONTENT.equals(keys.get(0)) && getValues(CONTENT).size() == 1)
 			// there is only one content element
-			return get(CONTENT);
+			return getObject(CONTENT).toString();
 		MultiValueMap contentMap = new MultiValueMap();
-		for(String key : getContentElements())
-			contentMap.addAll(key, getValues(key));
+		for(String key : keys)
+			contentMap.addObjects(key, getObjects(key));
 		return contentMap.toSerializedString();
 	}
 	
