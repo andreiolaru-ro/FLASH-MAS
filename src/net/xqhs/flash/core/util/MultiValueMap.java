@@ -170,6 +170,23 @@ public class MultiValueMap extends Config implements Serializable {
 	}
 	
 	/**
+	 * Adds multiple entries for the same parameter.
+	 * <p>
+	 * Throws an exception if the collection has been previously {@link #locked()}.
+	 * 
+	 * @param name
+	 *            - the name (key) of the entries.
+	 * @param objects
+	 *            - the values to be associated with the name.
+	 * @return the instance itself, for chained calls.
+	 */
+	public MultiValueMap addObjects(String name, List<Object> objects) {
+		for(Object o : objects)
+			addObject(name, o);
+		return this;
+	}
+	
+	/**
 	 * Retrieves all keys in the collection.
 	 * 
 	 * @return the key set.
@@ -258,7 +275,7 @@ public class MultiValueMap extends Config implements Serializable {
 			else if(value instanceof String)
 				ret.add((String) value);
 			else
-				throw new IllegalStateException("Value for key [" + name + "] cannot be converted to String");
+				throw new IllegalStateException("Value for key [" + name + "] is not a String");
 		return ret;
 	}
 	
@@ -436,7 +453,7 @@ public class MultiValueMap extends Config implements Serializable {
 			ois.close();
 			return o;
 		} catch(IOException e) {
-			throw new RuntimeException("Serialization failed", e);
+			throw new RuntimeException("De-serialization failed", e);
 		}
 	}
 }
