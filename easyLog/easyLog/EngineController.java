@@ -68,7 +68,7 @@ public class EngineController {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 			String line;
 			while((line = reader.readLine()) != null) {
-				if(line.matches("^[>.*#] \\[.*")) {
+				if(line.matches("^\\s*[>.*#] \\[.*")) {
 					// ( . [ > [ # [ ) match pe primele 3// caractere dintr-un log obisnuit
 					changed = true;
 					for(ParserEngine engine : engineSet) {
@@ -91,11 +91,11 @@ public class EngineController {
 
 
 					}
-					String pad = " ".repeat(20);
-					System.out.print(pad + oneLineOutput + "\r");
 					if(nLinesParsed++ % 50 == 0) {
 						printBlock();
 					}
+					String pad = " ".repeat(20);
+					System.out.print(pad + oneLineOutput + "\r");
 				}
 			}
 			System.out.println("----------------------------- EXIT");

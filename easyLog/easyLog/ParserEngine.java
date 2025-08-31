@@ -1,15 +1,15 @@
 package easyLog;
 
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
 
 import easyLog.configuration.entry.Entry;
 import easyLog.configuration.entry.selector.output.OutputElement;
 import easyLog.configuration.entry.selector.output.types.ListOutput;
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.Node;
 
 public class ParserEngine implements LineProcessor {
 
@@ -26,13 +26,14 @@ public class ParserEngine implements LineProcessor {
 
     @Override
     public void process(String line) {
-        if (line.matches(".*\\[ " + entry.getEntity() + " \\].*")) { // face match orice e [  ] ca regex
+		if(("*".equals(entry.getEntity())) || line.matches(".*\\[ " + entry.getEntity() + "\\s+\\].*")) {
+			// face match orice e [ ] ca regex
             if(entry.getFsm() != null)
             {
                 verifyFSM(line);
             }
             if (entry.getLevel().getType() != null) {
-                if (line.startsWith(entry.getLevel().getType())) {
+				if(line.trim().startsWith(entry.getLevel().getType())) {
                     if (entry.getStateMatcher().getKeywords() != null) {
                         verifyMatch(line);
                     }
