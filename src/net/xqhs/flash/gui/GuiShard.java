@@ -101,7 +101,7 @@ public class GuiShard extends IOShard {
 			break;
 		case AGENT_WAVE:
 			if(event instanceof AgentWave
-					&& ((AgentWave) event).getFirstDestinationElement().equals(StandardAgentShard.GUI.shardName())) {
+					&& StandardAgentShard.GUI.shardName().equals(((AgentWave) event).getFirstDestinationElement())) {
 				((AgentWave) event).popDestinationElement();
 				// handle the event directly and don't repost
 				postActiveInput(((AgentWave) event).getFirstDestinationElement(), (AgentWave) event);

@@ -60,13 +60,14 @@ public class GUILoad {
 				log.le("Cannot find file []. Check paths: ", config, checked);
 			else
 				try (FileInputStream input = new FileInputStream(new File(path))) {
+					log.lf("Loading interface config from [].", path);
 					return fromYaml(input);
 				} catch(FileNotFoundException e) {
-					log.le("Cannot load file [].", config);
+					log.le("Cannot load file [].", path);
 				} catch(IOException e1) {
-					log.le("File close error for file [].", config);
+					log.le("File close error for file [].", path);
 				} catch(Exception e) {
-					log.le("Interface load failed from [] with []", config, e);
+					log.le("Interface load failed from [] with []", path, e);
 					e.printStackTrace();
 				}
 		}
@@ -74,7 +75,7 @@ public class GUILoad {
 			try {
 				return fromYaml(config);
 			} catch(Exception e) {
-				log.le("Interface load failed from [] with []", config, e);
+				log.le("Interface load failed from string [] with []", config, e);
 				e.printStackTrace();
 			}
 		return null;
