@@ -143,6 +143,6 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 	@Override
 	public void sendingMessage(AgentWave wave) {
 		locallog.li("Sending a message from [] to [] with content [].", wave.getCompleteSource(),
-				wave.getCompleteDestination(), wave.getSerializedContent());
+				wave.getCompleteDestination(), wave.getStringifiedContent());
 	}
 }
