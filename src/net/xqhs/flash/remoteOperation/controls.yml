@@ -17,10 +17,6 @@ children:
     value: unknown
     port: standard-status
     role: content
-  - type: label
-    value: unknown
-    port: standard-application-status
-    role: content
   - type: button
     value: Start
     port: standard-start
@@ -28,10 +24,4 @@ children:
     when: [{ standard-status: RUNNING_STATUS_RUNNING, style: disabled }]
     notify: $port/$role
     properties: {proxy: node}
-  - type: button
-    value: Kill
-    port: standard-stop
-    role: stop
-    when: [{ standard-status: RUNNING_STATUS_STOPPED, style: disabled }]
-    notify: $port/$role
-    properties: {proxy: node}
+
