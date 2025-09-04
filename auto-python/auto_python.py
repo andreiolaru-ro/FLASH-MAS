@@ -1,9 +1,10 @@
-import subprocess # to run pip install commands
+import subprocess
 import sys
 import re
 import os
 import json
 import requests
+import platform
 
 def check_virtual_environment():
     """Check if a virtual environment is activated."""
@@ -11,7 +12,13 @@ def check_virtual_environment():
     if not venv:
         print("❌ Error: This script must be run inside a virtual environment.")
         print("Please activate your virtual environment and try again.")
-        sys.exit(1)
+        # sys.exit(1)
+        return
+    
+def get_current_venv():
+    if hasattr(sys, 'real_prefix') or sys.prefix != sys.base_prefix:
+        return sys.prefix
+    return None
 
 def find_packages(target_script_path:str):
     print(f"Running: python {target_script_path}")
@@ -153,7 +160,18 @@ def run_and_install(target_script_path: str, threshold_bytes: int, ml_dir_flag: 
 
     if not os.path.exists(target_script_path):
         print(f"❌ Error: Target script '{target_script_path}' not found.")
-        sys.exit(1)
+        # sys.exit(1)
+        return
+    
+    if ml_dir_flag:
+        ml_venv_path = get_current_venv
+        activate_venv()
+        subprocess.Popen(
+            [sys.executable, "auto-python/auto_python.py", target_script_path, "-t", str(threshold_bytes)],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+        )
+        activate_venv(ml_venv_path)
+        return
 
     print(f"\n--- Starting automated dependency resolution for: {target_script_path} ---")
 
@@ -168,7 +186,8 @@ def run_and_install(target_script_path: str, threshold_bytes: int, ml_dir_flag: 
 
         if not packages_to_install:
             print("✅ No additional packages needed. Script executed successfully.")
-            sys.exit(0)
+            # sys.exit(0)
+            return
 
         total_estimated_size = calculate_total_download_size(packages_to_install)
         print(f"Total estimated download size: {format_bytes(total_estimated_size)}")
@@ -176,13 +195,15 @@ def run_and_install(target_script_path: str, threshold_bytes: int, ml_dir_flag: 
             user_choice = input("This installation is large. Continue? (y/n): ").lower()
             if user_choice != 'y':
                 print("Installation cancelled by user.")
-                sys.exit(0)
+                # sys.exit(0)
+                return
 
         install_packages(packages_to_install)
 
     if attempt_count == max_attempts:
         print("❗ Maximum attempts reached. Proceed with manual package installation.")
-        sys.exit(1)
+        # sys.exit(1)
+        return
 
 def get_threshold(arguments):
     threshold_mb = 50
@@ -204,10 +225,25 @@ def get_threshold(arguments):
 
     return threshold_mb * 1024 * 1024
 
+def activate_venv(venv_path=None):
+    if venv_path is None:
+        venv_path = "ml/directory"
+
+    system = platform.system()
+
+    if system == "Windows":
+        activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
+        command = f'cmd.exe /k "{activate_script}"'
+    else:
+        activate_script = os.path.join(venv_path, "bin", "activate")
+        command = f'bash --rcfile "{activate_script}"'
+
+    subprocess.call(command, shell=True)
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python auto_python.py <python_program_path>")
-        sys.exit(1)
+        return
 
     target_script_path = sys.argv[1]
 
