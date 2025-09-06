@@ -1,0 +1,5 @@
+digraph Automaton {
+	START -> Processing [ label="Getting prediction" ];
+	Processing -> Processed [ label="Prediction result" ];
+	Processed -> Processing [ label="Getting prediction" ];
+}

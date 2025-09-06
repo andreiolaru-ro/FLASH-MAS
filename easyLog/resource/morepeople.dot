@@ -1,0 +1,6 @@
+digraph Automaton {
+	ZERO -> ONE [ label="AGENT_WAVE" ];
+	ONE -> TWO [ label="AGENT_WAVE" ];
+	TWO -> THREE [ label="AGENT_WAVE" ];
+	THREE -> MORE [ label="AGENT_WAVE" ];
+}

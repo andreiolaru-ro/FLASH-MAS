@@ -16,3 +16,17 @@
   level: "#"
   out: ["count", "errors"]
   expect: ["count", "0"]
+- e: "testing-MorePeople >>>>"
+  level: ">"
+  fsm-from: "easyLog/resource/morepeople.dot"
+  fsm-start: "ZERO"
+  fsm-expect: "MORE"
+  out: []
+  expect: ["count", "5"]
+- e: "PeopleSorter"
+  level: ">"
+  fsm-from: "easyLog/resource/sorter.dot"
+  fsm-start: "START"
+  fsm-expect: "Processed"
+  out: []
+  expect: ["count", "40"]

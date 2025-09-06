@@ -37,5 +37,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/gui/snakeyaml-2.2.jar"/>
+	<classpathentry kind="src" path="target/generated-sources/annotations">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

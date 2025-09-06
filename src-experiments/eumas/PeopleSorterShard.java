@@ -105,6 +105,7 @@ public class PeopleSorterShard extends AgentShardGeneral {
 		}
 		
 		String image = script.get(Integer.valueOf(item)), filename = MLDriver.ML_DIRECTORY_PATH + "input/" + image;
+		li("Getting prediction for []", image);
 		RemoteOperationShard remote = ((RemoteOperationShard) getAgentShard(
 				AgentShardDesignation.standardShard(StandardAgentShard.REMOTE)));
 		remote.sendOutput(new AgentWave(image, "current-image"));
