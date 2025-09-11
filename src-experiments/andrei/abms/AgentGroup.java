@@ -134,38 +134,6 @@ public class AgentGroup extends EntityCore<Node> {
 		agents = agentList;
 	}
 	
-	@Override
-	public boolean start() {
-		return super.start();
-	}
-	
-	protected boolean prepareExecution() {
-		int nStarted = 0;
-		for(Agent agent : agents) {
-			if(agent.start())
-				nStarted++;
-			else
-				le("Agent [] could not be started.", agent.getName());
-		}
-		li("Started [] agents out of [].", Integer.valueOf(nStarted), Integer.valueOf(agents.size()));
-		return nStarted == agents.size();
-	}
-	
-	@Override
-	public boolean stop() {
-		if(!super.stop())
-			return false;
-		int nStopped = 0;
-		for(Agent agent : agents) {
-			if(agent.stop())
-				nStopped++;
-			else
-				le("Agent [] could not be stopped.", agent.getName());
-		}
-		li("Stopped [] agents out of [].", Integer.valueOf(nStopped), Integer.valueOf(agents.size()));
-		return nStopped == agents.size();
-	}
-	
 	protected void display() {
 		String ret = "\n";
 		for(int y = 0; y < d; y++) {

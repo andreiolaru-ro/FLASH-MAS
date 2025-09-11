@@ -46,7 +46,16 @@ public class StepWiseExecutor extends EntityCore<Node> implements Executor, Enti
 	public boolean start() {
 		super.start();
 		li("Starting executor with [] groups and total of [] agents.", groupList.size(), agentList.size());
-		groupList.stream().forEach(g -> g.prepareExecution());
+		// groupList.stream().forEach(g -> g.prepareExecution());
+		
+		int nStarted = 0;
+		for(Agent agent : agentList) {
+			if(agent.start())
+				nStarted++;
+			else
+				le("Agent [] could not be started.", agent.getName());
+		}
+		li("Started [] agents out of [].", Integer.valueOf(nStarted), Integer.valueOf(agentList.size()));
 		
 		executor = new Thread() {
 			@Override
@@ -66,6 +75,14 @@ public class StepWiseExecutor extends EntityCore<Node> implements Executor, Enti
 	
 	@Override
 	public boolean stop() {
+		int nStopped = 0;
+		for(Agent agent : agentList) {
+			if(agent.stop())
+				nStopped++;
+			else
+				le("Agent [] could not be stopped.", agent.getName());
+		}
+		li("Stopped [] agents out of [].", Integer.valueOf(nStopped), Integer.valueOf(agentList.size()));
 		try {
 			executor.join();
 		} catch(InterruptedException e) {
