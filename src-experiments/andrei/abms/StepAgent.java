@@ -1,10 +1,10 @@
 package andrei.abms;
 
-import net.xqhs.flash.core.agent.BaseAgent;
+import net.xqhs.flash.core.agent.Agent;
 
-public abstract class StepAgent extends BaseAgent {
-	abstract void preStep();
+public interface StepAgent extends Agent {
+	void preStep();
 	
-	abstract void step();
+	void step();
 	
 }

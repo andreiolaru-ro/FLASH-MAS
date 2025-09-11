@@ -5,9 +5,10 @@ import java.util.Set;
 import andrei.abms.gridworld.GridMap;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class CAAgent extends StepAgent {
+public class CAAgent extends BaseAgent implements StepAgent {
 	
 	/**
 	 * The serial UID.
@@ -36,7 +37,7 @@ public class CAAgent extends StepAgent {
 	}
 	
 	@Override
-	void preStep() {
+	public void preStep() {
 		Set<Agent> neighbors = map.getNeighbors(this);
 		int liveNeighbors = neighbors.stream().mapToInt(a -> ((CAAgent) a).state).sum();
 		switch(liveNeighbors) {
@@ -53,7 +54,7 @@ public class CAAgent extends StepAgent {
 	}
 	
 	@Override
-	void step() {
+	public void step() {
 		li("state [] -> [] ", state, nextState);
 		state = nextState;
 	}
