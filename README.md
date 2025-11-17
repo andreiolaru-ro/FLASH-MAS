@@ -12,7 +12,7 @@ You should have received a copy of the GNU General Public License along with Fla
 
 # ![](identity/logo-BW-50.png) FLASH-MAS
 
-The Fast Lightweight Agent Shell MAS framework
+The Flexible Lightweight Agent Shell MAS framework
 
 ***Easy for beginners, powerful to experts***
 
