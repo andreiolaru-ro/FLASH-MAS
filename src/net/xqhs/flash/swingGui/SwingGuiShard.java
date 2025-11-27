@@ -60,6 +60,12 @@ public class SwingGuiShard extends GuiShard {
 				window.setVisible(true);
 			}
 			break;
+        case AGENT_STOP:
+            if (window != null) {
+                window.dispose();
+                window = null;
+            }
+            break;
 		default:
 			break;
 		}
