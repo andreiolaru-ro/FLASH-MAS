@@ -91,17 +91,11 @@ public class AgentGroup extends EntityCore<Node> {
 			AgentGroup ag = new AgentGroup(agents);
 			ag.configure(configuration);
 			
-			GridMap map = null;
-			for(EntityProxy<? extends Entity<?>> c : context) {
-				if(c instanceof GridMap) {
-					map = (GridMap) c;
-					agentMap.entrySet().stream().forEach(e -> ((GridMap) c).place(e.getValue(), e.getKey()));
-				}
-				if(c instanceof Executor) {
-					((Executor) c).register(ag);
-					agents.forEach(a -> ((Executor) c).register(a));
-				}
-			}
+			GridMap map = (GridMap) Loader.getClosestContext(context, GridMap.class);
+			Executor executor = (Executor) Loader.getClosestContext(context, Executor.class);
+			agents.forEach(a -> executor.register(a));
+			agentMap.entrySet().stream().forEach(e -> map.place(e.getValue(), e.getKey()));
+			
 			ag.map = map;
 			ag.d = d;
 			return ag;
