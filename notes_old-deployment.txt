@@ -1,0 +1,1 @@
+In IntelliJ -> Right click on old-deployment folder -> Exclude
