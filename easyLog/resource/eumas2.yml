@@ -1,0 +1,20 @@
+- e: "PeopleSorter"
+  level: ">"
+  match: ["Prediction result"]
+  out: ["count", "predictions done:","list:full"]
+  expect: ["count", "40"]
+- e: "*"
+  level: "*"
+  out: ["count", "warnings"]
+  expect: ["count", "0"]
+- e: "*"
+  level: "#"
+  out: ["count", "errors"]
+  expect: ["count", "0"]
+- e: "PeopleSorter"
+  level: ">"
+  fsm-from: "easyLog/resource/whichagent.dot"
+  fsm-start: "START"
+  fsm-expect: "NONE"
+  out: []
+  expect: ["count", "5"]

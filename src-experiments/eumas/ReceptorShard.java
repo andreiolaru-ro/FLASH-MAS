@@ -28,12 +28,17 @@ public class ReceptorShard extends AgentShardGeneral {
 		super.signalAgentEvent(event);
 		if(event.getType() != AgentEventType.AGENT_WAVE)
 			return;
-		String content = event.get(AgentWave.CONTENT);
-		li("received content:", content);
-		images.add(content);
-		
 		RemoteOperationShard remote = ((RemoteOperationShard) getAgentShard(
 				AgentShardDesignation.standardShard(StandardAgentShard.REMOTE)));
-		remote.sendOutput(new AgentWave(images.stream().collect(Collectors.joining("\n")), "received"));
+		String content = event.get(AgentWave.CONTENT);
+		li("received content:", content);
+		if(content.equals("do stop"))
+			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+		else if(content.equals("inactivate"))
+			remote.sendOutput(new AgentWave("inactive", "received"));
+		else {
+			images.add(content);
+			remote.sendOutput(new AgentWave(images.stream().collect(Collectors.joining("\n")), "received"));
+		}
 	}
 }

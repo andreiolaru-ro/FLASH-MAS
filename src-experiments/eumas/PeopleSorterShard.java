@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,6 +30,7 @@ public class PeopleSorterShard extends AgentShardGeneral {
 	Timer							timer				= null;
 	int								item				= 1;
 	MLDriver						mlDriver			= null;
+	String							currentController	= null;
 	
 	public PeopleSorterShard() {
 		super(AgentShardDesignation.customShard("Sorter"));
@@ -44,7 +45,7 @@ public class PeopleSorterShard extends AgentShardGeneral {
 		// ".yaml", paths);
 		// if(filename == null)
 		// return ler(false, "Script file cannot be found for script []. Tried paths: ", file, paths);
-		try (FileInputStream input = new FileInputStream(new File("src-experiments/eumas/People.yaml"))) {
+		try (FileInputStream input = new FileInputStream(new File("src-experiments/eumas/PeopleShort.yaml"))) {
 			script = new Yaml().loadAs(input, LinkedHashMap.class);
 		} catch(FileNotFoundException e) {
 			return ler(false, "Cannot load file [].", file, e);
@@ -54,6 +55,7 @@ public class PeopleSorterShard extends AgentShardGeneral {
 			return ler(false, "Script load failed from [] with []", file, e);
 		}
 		li("Scenario script loaded");
+		setHighlighted();
 		return true;
 	}
 	
@@ -100,6 +102,8 @@ public class PeopleSorterShard extends AgentShardGeneral {
 		if(!script.containsKey(Integer.valueOf(item))) {
 			timer.cancel();
 			li("Script done");
+			for(String t : new String[] { "NoPeople", "PedestriansPresent", "CrowdDriving" })
+				sendMessage(new AgentWave("do stop", t));
 			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 			return;
 		}
@@ -111,18 +115,25 @@ public class PeopleSorterShard extends AgentShardGeneral {
 		remote.sendOutput(new AgentWave(image, "current-image"));
 		remote.sendOutput(new AgentWave(Integer.valueOf(item).toString(), "nprocessed"));
 		item++;
-		ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", filename, false);
-		Double number = ((ArrayList<Double>) result.get(0)).get(0);
+		// ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", filename, false);
+		// Double number = ((ArrayList<Double>) result.get(0)).get(0);
+		String result = "demo";
+		Integer number = Integer.valueOf(new Random().nextInt(10));
 		li("Prediction result: [] / []", result, number);
 		
 		String targetAgent = null;
 		if(number.doubleValue() == 0)
 			targetAgent = "NoPeople";
 		else if(number.doubleValue() < 5)
-			targetAgent = "FewPeople";
+			targetAgent = "PedestriansPresent";
 		else
-			targetAgent = "MorePeople";
-		getMessagingShard().sendMessage(new AgentWave(image, targetAgent));
+			targetAgent = "CrowdDriving";
+		if(!targetAgent.equals(currentController)) {
+			sendMessage(new AgentWave("inactivate", currentController));
+			currentController = targetAgent;
+			li("Activate []", targetAgent);
+		}
+		sendMessage(new AgentWave(image, targetAgent));
 		
 		scheduleTimer();
 	}

@@ -33,10 +33,10 @@ public class Boot
 		a += " -node node1 central:web";
 		a += " -driver ML:mldriver";
 		a += " -pylon local:pylon1";
-		a += " -agent Sorter -shard messaging -shard EchoTesting -shard remoteOperation -shard gui from:sorter-gui.yaml -shard PeopleSorter script:people focus";
-		a += " -agent NoPeople -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting focus";
-		a += " -agent FewPeople -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting focus";
-		a += " -agent MorePeople -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting focus";
+		a += " -agent Sorter -shard messaging -shard EchoTesting -shard remoteOperation -shard gui from:sorter-gui.yaml -shard PeopleSorter script:people";
+		a += " -agent NoPeople -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting";
+		a += " -agent PedestriansPresent -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting";
+		a += " -agent CrowdDriving -shard messaging -shard Receptor -shard remoteOperation -shard gui from:receptor-gui.yaml -shard EchoTesting";
 		
 		FlashBoot.main(a.split(" "));
 	}

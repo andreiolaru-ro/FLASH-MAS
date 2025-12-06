@@ -1,0 +1,11 @@
+digraph Automaton {
+	START -> FEW [ label="PedestriansPresent" ];
+	START -> NONE [ label="NoPeople" ];
+	START -> CROWD [ label="CrowdDriving" ];
+	FEW -> CROWD [ label="CrowdDriving" ];
+	FEW -> NONE [ label="NoPeople" ];
+	NONE -> CROWD [ label="CrowdDriving" ];
+	NONE -> FEW [ label="PedestriansPresent" ];
+	CROWD -> NONE [ label="NoPeople" ];
+	CROWD -> FEW [ label="PedestriansPresent" ];
+}
