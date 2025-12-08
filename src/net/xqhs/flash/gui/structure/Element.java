@@ -39,16 +39,16 @@ public class Element implements Cloneable {
 	/**
 	 * the default role of an element
 	 */
-	public static final String	DEFAULT_ROLE			= AgentWave.CONTENT;
+	public static final String	DEFAULT_ROLE	= AgentWave.CONTENT;
 	/**
 	 * The default notify endpoint for an element.
 	 */
-	public static final String	DEFAULT_NOTIFY			= "$port/$role";
+	public static final String	DEFAULT_NOTIFY	= "$port/$role";
 	/**
 	 * Intent size to use when producing a {@link String} rendition of the structure.
 	 */
-	public static final int		INDENT_SIZE				= 8;
-
+	public static final int		INDENT_SIZE		= 8;
+	
 	/**
 	 * The Gson instance used for conversions to/from JSON.
 	 */
@@ -57,75 +57,76 @@ public class Element implements Cloneable {
 	/**
 	 * ID of this element
 	 */
-	protected String				id;
+	protected String					id;
 	/**
 	 * The list of child elements (applicable to block elements).
 	 */
-	protected List<Element>			children	= new ArrayList<>();
+	protected List<Element>				children	= new ArrayList<>();
 	/**
 	 * The properties of this element (could affect rendering the element).
 	 */
-	protected HashMap<String, String>	properties  = new HashMap<>();
+	protected HashMap<String, String>	properties	= new HashMap<>();
 	/**
 	 * Type of the element.
 	 */
-	protected String				type		= ElementType.CONTAINER.type;
+	protected String					type		= ElementType.CONTAINER.type;
 	/**
 	 * The port that this element is part of.
 	 */
-	protected String				port;
+	protected String					port;
 	/**
 	 * The role with which this element is associated.
 	 */
-	protected String				role 		= DEFAULT_ROLE;
+	protected String					role		= DEFAULT_ROLE;
 	/**
 	 * Value of the element (e.g. the text of a button / label).
 	 */
-	protected String				value;
+	protected String					value;
 	/**
 	 * The endpoint of the shard that added this element and will receive the events from it
 	 */
-	protected String				notify 		= DEFAULT_NOTIFY;
-
+	protected String					notify		= DEFAULT_NOTIFY;
+	
 	/**
 	 * Represents a style that the element can have
 	 */
 	protected static class ElementWhen {
 		/** The list of conditions that must be met for the style to be applied. */
 		protected HashMap<String, String> conditions = new HashMap<>();
-
+		
 		/** The style to apply to the element when the condition is met. */
 		protected String style;
-
+		
 		/**
-		 * A condition is a key-value pair where the key denotes the element whose value 
-		 * is used to determine the style of this element.
-		 * The keys are in one of the following formats: port/role, /role, port.
-		 * The second format is relative to the current element's port.
-		 * The last of these formats is synonymous with the first where role = "content".
+		 * A condition is a key-value pair where the key denotes the element whose value is used to determine the style
+		 * of this element. The keys are in one of the following formats: port/role, /role, port. The second format is
+		 * relative to the current element's port. The last of these formats is synonymous with the first where role =
+		 * "content".
+		 * 
 		 * @return - the map of conditions that must be met for the style to be applied
 		 */
 		public HashMap<String, String> getConditions() {
 			return conditions;
 		}
-
+		
 		/**
 		 * @return - the style to apply to the element when the condition is met
 		 */
 		public String getStyle() {
 			return style;
 		}
-
+		
 		/**
-		 * Set the conditions that must be met for the style to be applied
-		 * The special "style" key is stripped from the map.
+		 * Set the conditions that must be met for the style to be applied The special "style" key is stripped from the
+		 * map.
+		 * 
 		 * @param conditions
 		 *            - the map of conditions that must be met for the style to be applied
 		 * @see #getConditions()
 		 */
 		public ElementWhen(HashMap<String, String> conditions) {
 			this.conditions = conditions;
-			if (conditions.containsKey("style")) {
+			if(conditions.containsKey("style")) {
 				style = conditions.get("style");
 				conditions.remove("style");
 			}
@@ -283,7 +284,7 @@ public class Element implements Cloneable {
 	public String getNotify() {
 		return notify;
 	}
-
+	
 	/**
 	 * Set the endpoint of the shard that added this element
 	 *
@@ -293,16 +294,15 @@ public class Element implements Cloneable {
 	public void setNotify(String endpoint) {
 		this.notify = endpoint;
 	}
-
+	
 	/**
-	 * @return - the list of styles that the element can have
-	 * Note: this method must not be named getWhen() because it would clash with the
-	 * setter method for the when property used by SnakeYAML
+	 * @return - the list of styles that the element can have Note: this method must not be named getWhen() because it
+	 *         would clash with the setter method for the when property used by SnakeYAML
 	 */
 	public List<ElementWhen> getWhenConditions() {
 		return when;
 	}
-
+	
 	/**
 	 * Set the list of styles that the element can have
 	 *
@@ -312,7 +312,7 @@ public class Element implements Cloneable {
 	@JsonSetter
 	public void setWhen(List<HashMap<String, String>> whenMaps) {
 		this.when = new ArrayList<>();
-		for (HashMap<String, String> e : whenMaps) {
+		for(HashMap<String, String> e : whenMaps) {
 			this.when.add(new ElementWhen(e));
 		}
 	}
@@ -327,7 +327,8 @@ public class Element implements Cloneable {
 	public List<Element> getChildren(String childrenPort) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
-			if((childrenPort == null && e.getPort() == null) || (childrenPort != null && childrenPort.equals(e.getPort())))
+			if((childrenPort == null && e.getPort() == null)
+					|| (childrenPort != null && childrenPort.equals(e.getPort())))
 				result.add(e);
 		return result;
 	}
@@ -343,18 +344,18 @@ public class Element implements Cloneable {
 	 */
 	public Element getChild(String childPort, String childRole) {
 		Element result = null;
-		for (Element e : children) {
+		for(Element e : children) {
 			boolean portMatch = (childPort != null && childPort.equals(e.getPort()));
 			portMatch = portMatch || (childPort == null && e.getPort() == null);
 			boolean roleMatch = (childRole != null && childRole.equals(e.getRole()));
 			roleMatch = roleMatch || (childRole == null && e.getRole() == null);
-			if (portMatch && roleMatch) {
+			if(portMatch && roleMatch) {
 				result = e;
 				break;
 			}
-			if (ElementType.CONTAINER.type.equals(e.type)) {
+			if(ElementType.CONTAINER.type.equals(e.type)) {
 				result = e.getChild(childPort, childRole);
-				if (result != null)
+				if(result != null)
 					break;
 			}
 		}
@@ -365,27 +366,41 @@ public class Element implements Cloneable {
 	 * Return the child of the element if it matches the given id
 	 *
 	 * @param childID
-	 *            - the id to match
-	 * 			
-	 * @return - the child that matches the given id
+	 *            - the id to match. If <code>null</code>, the method will return <code>null</code> without searching.
+	 * @return - the child that matches the given id, or <code>null</code> if none found.
 	 */
 	public Element getChildWithId(String childID) {
-		for (Element e : children)
-			if (childID.equals(e.getId()))
-				return e;
-		return null;
+		return childID == null ? null
+				: getChildren().stream().filter(c -> childID.equals(c.getId())).findFirst().orElse(null);
 	}
-
+	
 	/**
-	 * Applies an update to this element and its children, according to the given wave.
-	 * The roles to which this update applies are the content elements of the wave.
+	 * Searches recursively in all children to find the element with the given ID.
+	 * 
+	 * @param ID
+	 *            - the identifier to look for. If <code>null</code>, the method will return <code>null</code> without
+	 *            searching.
+	 * @return - the element with that ID, or <code>null</code> if none found.
+	 */
+	public Element getElementWithId(String ID) {
+		if(ID == null)
+			return null;
+		if(ID.equals(getId()))
+			return this;
+		return getChildren().stream().map(c -> c.getElementWithId(ID)).filter(r -> r != null).findFirst().orElse(null);
+	}
+	
+	/**
+	 * Applies an update to this element and its children, according to the given wave. The roles to which this update
+	 * applies are the content elements of the wave.
 	 */
 	public void applyUpdate(String updatePort, AgentWave wave) {
 		List<String> roles = wave.getContentElements();
-
-		for (String updateRole : roles) {
+		
+		for(String updateRole : roles) {
 			Element element = this.getChild(updatePort, updateRole);
-			if (element == null) continue;
+			if(element == null)
+				continue;
 			element.setValue(wave.getValue(updateRole));
 		}
 	}
@@ -403,26 +418,26 @@ public class Element implements Cloneable {
 		result.addProperty("port", port);
 		result.addProperty("role", role);
 		result.addProperty("notify", notify);
-
+		
 		JsonArray whenArray = new JsonArray();
 		result.add("when", whenArray);
-		for (ElementWhen e : when) {
+		for(ElementWhen e : when) {
 			JsonObject whenObject = new JsonObject();
 			whenArray.add(whenObject);
 			whenObject.addProperty("style", e.getStyle());
-
+			
 			JsonObject conditionsObject = gson.toJsonTree(e.getConditions()).getAsJsonObject();
 			whenObject.add("conditions", conditionsObject);
 		}
-
+		
 		JsonArray childrenArray = new JsonArray();
 		result.add("children", childrenArray);
-		if (children != null)
-			for (Element child : children)
+		if(children != null)
+			for(Element child : children)
 				childrenArray.add(child.toJSON());
 		JsonObject propertiesObject = new JsonObject();
 		result.add("properties", propertiesObject);
-		for (Map.Entry<String, String> entry : properties.entrySet())
+		for(Map.Entry<String, String> entry : properties.entrySet())
 			propertiesObject.addProperty(entry.getKey(), entry.getValue());
 		return result;
 	}

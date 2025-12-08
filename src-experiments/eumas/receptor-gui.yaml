@@ -1,3 +1,12 @@
 children:
+  - type: container
+    id: "images"
+    properties : { layout : row }
+  - type: label
+    port: latest
+    value: "none"
+    properties : { tag: img, value: src, width: "200px"}
   - port: received
     value: "none"
+
+

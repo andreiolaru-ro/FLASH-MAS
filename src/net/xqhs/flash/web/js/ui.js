@@ -88,7 +88,21 @@ class AgentComponentBuilder {
     }
 
     label(el, id) {
-        return $('<label>').text(el.value).id(id);
+		console.log("props for", el.type, el.id, el.properties)
+		console.log("is tag", 'tag' in el.properties)
+        if ('tag' in el.properties) {
+			let e = $('<' + el.properties.tag + '>')
+			if ('value' in el.properties)
+				e.attr(el.properties.value, el.value)
+			else
+				e.text(el.value)
+			for (const [att, val] of Object.entries(el.properties)) {
+				if (att != 'tag' && att != 'value')
+					e.attr(att, val)
+			}
+			return e;
+		}
+		return $('<label>').text(el.value).id(id);
     }
 
     button(el, id) {
@@ -128,7 +142,8 @@ class AgentComponentBuilder {
     }
 
     build(el, id) {
-        if (!(el.type in this)) {
+		console.log("Building element", el.type, id);
+		if (!(el.type in this)) {
             console.warn(`No builder for element type ${el.type}`);
             return null;
         }

@@ -36,8 +36,8 @@ public class FlashBoot {
 	protected static final int	OUTPUT_TO_CONSOLE	= 1 << bitIndex++;
 	protected static final int	OUTPUT_TO_FILE		= 1 << bitIndex++;
 	protected static final int	OUTPUT_TO_EASYLOG	= 1 << bitIndex++;
-	// protected static final int LOG_OUTPUTS = OUTPUT_TO_CONSOLE;
-	protected static final int LOG_OUTPUTS = OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
+	protected static final int	LOG_OUTPUTS			= OUTPUT_TO_CONSOLE;
+	// protected static final int LOG_OUTPUTS = OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	// protected static final int LOG_OUTPUTS = OUTPUT_TO_FILE | OUTPUT_TO_EASYLOG | OUTPUT_TO_CONSOLE;
 	protected static final Level	GLOBAL_LOG_LEVEL	= Level.ALL;
 	private static final String		EASYLOG_CONFIG_FILE	= "resource/eumas2.yml";

@@ -198,6 +198,27 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	}
 	
 	/**
+	 * Adds a GUI element to a given container in the interface specification.
+	 * 
+	 * @param containerID
+	 *            - the ID of the container element to add to.
+	 * @param element
+	 *            - the element to add.
+	 * @return <code>true</code> if the element was added, <code>false</code> otherwise (e.g. if the container was not
+	 *         found).
+	 */
+	public boolean addGuiElementToContainer(String containerID, Element element) {
+		Element container = interfaceSpecification.getElementWithId(containerID);
+		if(container != null) {
+			container.addChild(element);
+			sendGuiUpdate();
+			lf("Element [] added to container [] in interface specification.", element, containerID);
+			return true;
+		}
+		return ler(false, "Container [] not found in interface specification.", containerID);
+	}
+	
+	/**
 	 * Removes a GUI element from the interface specification, and recursively removes all children
 	 * 
 	 * @param element

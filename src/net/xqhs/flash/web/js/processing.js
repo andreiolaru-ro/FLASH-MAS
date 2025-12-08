@@ -68,7 +68,10 @@ export function applyUpdatesOnPort(entityName, port, roles) {
         const id = idOf(entityName, port, role);
         const data = entity.data[id];
         console.log("Setting content to: ", id, content);
-        data.value = content;
+        if('src' in data) 
+			data.src = content // mockup
+		else
+			data.value = content;
         ['form', 'spinner'].indexOf(data.type) != -1 ? 
             $('#' + id).val(content) : $('#' + id).text(content);
 

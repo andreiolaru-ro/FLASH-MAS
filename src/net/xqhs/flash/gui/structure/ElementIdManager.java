@@ -96,7 +96,8 @@ public class ElementIdManager {
 	 * @param entity - the entity for which the ID is inserted.
 	 */
 	protected void insertIdInto(Element element, String entity) {
-		element.setId(makeID(entity, element.getPort(), element.getRole()));
+		if(element.getId() == null)
+			element.setId(makeID(entity, element.getPort(), element.getRole()));
 		idToElement.put(element.getId(), element);
 		if (entity != null)
 			idToEntity.put(element.getId(), entity);

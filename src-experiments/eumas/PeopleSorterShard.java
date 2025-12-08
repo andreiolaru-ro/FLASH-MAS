@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,7 +13,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
@@ -45,7 +44,7 @@ public class PeopleSorterShard extends AgentShardGeneral {
 		// ".yaml", paths);
 		// if(filename == null)
 		// return ler(false, "Script file cannot be found for script []. Tried paths: ", file, paths);
-		try (FileInputStream input = new FileInputStream(new File("src-experiments/eumas/PeopleShort.yaml"))) {
+		try (FileInputStream input = new FileInputStream(new File("src-experiments/eumas/PeopleDriving.yaml"))) {
 			script = new Yaml().loadAs(input, LinkedHashMap.class);
 		} catch(FileNotFoundException e) {
 			return ler(false, "Cannot load file [].", file, e);
@@ -100,25 +99,27 @@ public class PeopleSorterShard extends AgentShardGeneral {
 	@SuppressWarnings("unchecked")
 	protected void runTask() {
 		if(!script.containsKey(Integer.valueOf(item))) {
-			timer.cancel();
-			li("Script done");
-			for(String t : new String[] { "NoPeople", "PedestriansPresent", "CrowdDriving" })
-				sendMessage(new AgentWave("do stop", t));
-			getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
-			return;
+			item = 1;
+			// timer.cancel();
+			// li("Script done");
+			// for(String t : new String[] { "NoPeople", "PedestriansPresent", "CrowdDriving" })
+			// sendMessage(new AgentWave("do stop", t));
+			// getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+			// return;
 		}
 		
-		String image = script.get(Integer.valueOf(item)), filename = MLDriver.ML_DIRECTORY_PATH + "input/" + image;
+		String image = script.get(Integer.valueOf(item)),
+				filename = MLDriver.ML_DIRECTORY_PATH + "input/driving-images/2/" + image;
 		li("Getting prediction for []", image);
 		RemoteOperationShard remote = ((RemoteOperationShard) getAgentShard(
 				AgentShardDesignation.standardShard(StandardAgentShard.REMOTE)));
 		remote.sendOutput(new AgentWave(image, "current-image"));
 		remote.sendOutput(new AgentWave(Integer.valueOf(item).toString(), "nprocessed"));
 		item++;
-		// ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", filename, false);
-		// Double number = ((ArrayList<Double>) result.get(0)).get(0);
-		String result = "demo";
-		Integer number = Integer.valueOf(new Random().nextInt(10));
+		ArrayList<Object> result = mlDriver.predict("YOLOv8-pedestrians", filename, false);
+		Double number = ((ArrayList<Double>) result.get(0)).get(0);
+		// String result = "demo";
+		// Integer number = Integer.valueOf(new Random().nextInt(10));
 		li("Prediction result: [] / []", result, number);
 		
 		String targetAgent = null;
