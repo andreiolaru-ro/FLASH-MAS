@@ -2,35 +2,22 @@ package andrei.abms;
 
 import java.util.Objects;
 
+//assume top left corner of the map is (0,0)
 public class DistributionConfig {
-
-    private final int centerX;
-
-    private final int centerY;
 
     private final int populationSize;
 
     private final int squareMapSize;
 
-    public DistributionConfig(int centerX, int centerY, int populationSize, int squareMapSize) {
+    public DistributionConfig(int populationSize, int squareMapSize) {
         if (populationSize <= 0) {
             throw new IllegalArgumentException("Population size must be positive, got: " + populationSize);
         }
         if (squareMapSize <= 0) {
             throw new IllegalArgumentException("Square map size must be positive, got: " + squareMapSize);
         }
-        this.centerX = centerX;
-        this.centerY = centerY;
         this.populationSize = populationSize;
         this.squareMapSize = squareMapSize;
-    }
-
-    public int getCenterX() {
-        return centerX;
-    }
-
-    public int getCenterY() {
-        return centerY;
     }
 
     public int getPopulationSize() {
@@ -43,7 +30,7 @@ public class DistributionConfig {
 
     @Override
     public String toString() {
-        return "DistributionConfig[center=(" + centerX + "," + centerY + "), population=" + populationSize + ", squareMapSize=" + squareMapSize + "]";
+        return "DistributionConfig[origin=(0,0), population=" + populationSize + ", squareMapSize=" + squareMapSize + "]";
     }
 
     @Override
@@ -52,8 +39,6 @@ public class DistributionConfig {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         DistributionConfig other = (DistributionConfig) obj;
-        if (centerX != other.centerX) return false;
-        if (centerY != other.centerY) return false;
         if (populationSize != other.populationSize) return false;
         if (squareMapSize != other.squareMapSize) return false;
         return true;
@@ -61,6 +46,6 @@ public class DistributionConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(centerX, centerY, populationSize, squareMapSize);
+        return Objects.hash(populationSize, squareMapSize);
     }
 }
