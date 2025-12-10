@@ -16,7 +16,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class GridMap extends EntityCore<Node> implements Map, EntityProxy<GridMap> {
 	
 	java.util.Map<GridPosition, Agent> positions = new HashMap<>();
-	
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
@@ -49,6 +49,11 @@ public class GridMap extends EntityCore<Node> implements Map, EntityProxy<GridMa
 		positions.put(position, agent);
 		return true;
 	}
+
+    public boolean remove(GridPosition position) {
+        positions.remove(position);
+        return true;
+    }
 	
 	public Agent get(GridPosition pos) {
 		return positions.get(pos);
