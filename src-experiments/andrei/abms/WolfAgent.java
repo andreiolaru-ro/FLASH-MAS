@@ -4,7 +4,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.support.Pylon;
 
-public class WolfAgent implements Agent {
+public class WolfAgent implements StepAgent {
     @Override
     public boolean start() {
         return false;
@@ -48,5 +48,15 @@ public class WolfAgent implements Agent {
     @Override
     public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
         return null;
+    }
+
+    @Override
+    public void preStep() {
+
+    }
+
+    @Override
+    public void step() {
+
     }
 }
