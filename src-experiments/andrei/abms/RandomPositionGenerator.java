@@ -1,8 +1,6 @@
 package andrei.abms;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import andrei.abms.gridworld.GridMap;
 import andrei.abms.gridworld.GridPosition;
@@ -30,10 +28,10 @@ public class RandomPositionGenerator {
             used.add(key);
             GridPosition pos = new GridPosition(x, y);
             if (placedSheep < sheepCount) {
-                map.place(new SheepAgent(), pos);
+                map.place(new SheepAgent(map, pos, squareSize), pos);
                 placedSheep++;
             } else if (placedWolves < wolfCount) {
-                map.place(new WolfAgent(), pos);
+                map.place(new WolfAgent(map, pos, squareSize), pos);
                 placedWolves++;
             }
         }
@@ -47,11 +45,44 @@ public class RandomPositionGenerator {
         int squareSize = 8;
         int sheep = 10;
         int wolves = 5;
+        int steps = 10;
         DistributionConfig config = new DistributionConfig(sheep + wolves, squareSize);
+
         populateGridWithRandomAgents(config, map, sheep, wolves);
-        System.out.println("Map looks like this:");
-        for (int y = 0; y < squareSize; y++) {
-            for (int x = 0; x < squareSize; x++) {
+
+        System.out.println("Initial State:");
+        printMap(map, squareSize);
+
+        for (int step = 1; step <= steps; step++) {
+            System.out.println("\nStep " + step + ":");
+
+            //get all agents to shuffle them
+            List<StepAgent> agentsToMove = new ArrayList<>();
+
+            for (int y = 0; y < squareSize; y++) {
+                for (int x = 0; x < squareSize; x++) {
+                    GridPosition pos = new GridPosition(x, y);
+                    Object agent = map.get(pos);
+                    if (agent instanceof StepAgent stepAgent) {
+                        agentsToMove.add(stepAgent);
+                    }
+                }
+            }
+
+            Collections.shuffle(agentsToMove);//so that top left agent in (0,0) doesn't always have priority
+                                                //in choosing to move to a free space
+
+            for (StepAgent agent : agentsToMove) {
+                agent.step(); //every agents moves 1 time
+            }
+
+            printMap(map, squareSize);
+        }
+    }
+    
+    private static void printMap(GridMap map, int size) {
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
                 GridPosition pos = new GridPosition(x, y);
                 Object agent = map.get(pos);
                 if (agent instanceof SheepAgent) System.out.print("S");
