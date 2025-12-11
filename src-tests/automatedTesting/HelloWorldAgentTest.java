@@ -28,25 +28,20 @@ public class HelloWorldAgentTest {
 
     @Test
     public void testExecution() throws InterruptedException {
-		Thread bootThread = new Thread(() -> FlashBoot.main(HELLO_WORLD_CONFIG.split(" ")));
-        bootThread.start();
+		Thread th = new Thread(() -> FlashBoot.main(HELLO_WORLD_CONFIG.split(" ")));
+        th.start();
 
-        for (int i = 0; i < 10; i++) {
-            if (outContent.toString().contains("stopped")) {
-                break; // stop waiting if we already see the message
-            }
-            Thread.sleep(500); // check every 500ms
-        }
+        Thread.sleep(2000);
 
         String consoleOutput = outContent.toString();
 
         assertTrue("Agent start message not found", consoleOutput.contains("starting"));
         assertTrue("Hello World message not found", consoleOutput.contains("Hello World"));
         assertTrue("Agent stop message not found", consoleOutput.contains("stopped"));
-		int a = consoleOutput.indexOf("starting");
-		int b = consoleOutput.indexOf("Hello World");
-		int c = consoleOutput.indexOf("stopped");
-		assertTrue("Wrong sequence of events", a < b);
-		assertTrue("Wrong sequence of events", c < b);
+		int startingMessage = consoleOutput.indexOf("[HelloWorldAgent] starting");
+		int helloWorldMessage = consoleOutput.indexOf("Hello World");
+		int stoppedMessage = consoleOutput.indexOf("[HelloWorldAgent] stopped");
+		assertTrue("Wrong sequence of events", startingMessage < helloWorldMessage);
+		assertTrue("Wrong sequence of events", helloWorldMessage < stoppedMessage);
     }
 }
