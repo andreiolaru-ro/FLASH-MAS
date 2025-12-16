@@ -267,7 +267,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt("settings load")
-				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
+				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.ALL);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -346,10 +346,22 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		// remove ids (also from their direct contexts -- use the index) which only have default ids depending on them
 		// use List.containsAll
 		
-		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
+		HashMap<String, List<String>> toRemove = new HashMap<>();
+		MultiTreeMap localIDs = this.getSingleTree(LOCAL_ID_ATTRIBUTE);
+		for(String id : localIDs.getKeys())
 			if(autoCreated.contains(id)) {
 				// TODO
+				// must remove if empty
+				boolean remove = true;
+				for(String idSub : localIDs.getKeys())
+					if(localIDs.getATree(idSub).getValues(CONTEXT_ELEMENT_NAME).contains(id))
+						remove = false;
+				if(remove)
+					toRemove.put(id, localIDs.getATree(id).getValues(CONTEXT_ELEMENT_NAME));
 			}
+		log.lf("marked for removal entities: []", toRemove);
+		// go through all entities in the values of toRemove, remove elements to remove, must iterate through all
+		// hierarchical keys to identify the trees with the given ID
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
