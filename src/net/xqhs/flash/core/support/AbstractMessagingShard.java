@@ -109,7 +109,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	/**
 	 * Outgoing message hooks.
 	 */
-	protected transient Set<OutgoingMessageHook>	outgoingHooks	= new HashSet<>();
+	protected transient Set<OutgoingMessageHook>	outgoingHooks	= null;
 	
 	/**
 	 * No-argument constructor.
@@ -120,6 +120,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		outgoingHooks = new HashSet<>();
 		if(context instanceof ClassicMessagingPylonProxy) {
 			classicPylon = (ClassicMessagingPylonProxy) context;
 			classicInbox = new ClassicMessageReceiver() {
