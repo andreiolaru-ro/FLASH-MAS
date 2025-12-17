@@ -56,11 +56,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String	CLI_CATEGORY_PREFIX				= "-";
+	public static final String	CLI_CATEGORY_PREFIX	= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String	NAME_SEPARATOR					= ":";
+	public static final String	NAME_SEPARATOR		= ":";
 	/**
 	 * Separator for multiple values of the same parameter.
 	 */
@@ -267,7 +267,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponentExt log = (UnitComponentExt) new UnitComponentExt("settings load")
-				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.ALL);
+				.setLoggerType(PlatformUtils.platformLogType()).setLogLevel(Level.INFO);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -334,23 +334,20 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
-		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<>(), this, autoCreated, name_ids, log);
+		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(), new LinkedList<>(),
+				this, autoCreated, name_ids, log);
 		
 		addContext(deployment, new LinkedList<>(), name_ids);
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);
-		// create a reverse index from each id to the ids in its context
-		// iterate in reverse order
-		// remove ids (also from their direct contexts -- use the index) which only have default ids depending on them
-		// use List.containsAll
 		
+		// remove auto-created entities from all the contexts containing them if they don't contain other entities in
+		// their context.
 		HashMap<String, List<String>> toRemove = new HashMap<>();
 		MultiTreeMap localIDs = this.getSingleTree(LOCAL_ID_ATTRIBUTE);
 		for(String id : localIDs.getKeys())
 			if(autoCreated.contains(id)) {
-				// TODO
 				// must remove if empty
 				boolean remove = true;
 				for(String idSub : localIDs.getKeys())
@@ -360,8 +357,19 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					toRemove.put(id, localIDs.getATree(id).getValues(CONTEXT_ELEMENT_NAME));
 			}
 		log.lf("marked for removal entities: []", toRemove);
-		// go through all entities in the values of toRemove, remove elements to remove, must iterate through all
-		// hierarchical keys to identify the trees with the given ID
+		for(String id : toRemove.keySet()) {
+			for(String parentID : toRemove.get(id))
+				for(String subCategory : localIDs.getSingleTree(parentID).getHierarchicalNames()) {
+					MultiTreeMap subCat = localIDs.getSingleTree(parentID).getATree(subCategory);
+					for(String name : subCat.getHierarchicalNames())
+						for(MultiTreeMap tree : subCat.getTrees(name))
+							if(id.equals(tree.getSingleValue(LOCAL_ID_ATTRIBUTE))) {
+								subCat.remove(name, tree);
+								log.lf("removed one tree for [] (id: []) from []/[[]", name, id, parentID, subCategory);
+							}
+				}
+			localIDs.removeKey(id);
+		}
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
