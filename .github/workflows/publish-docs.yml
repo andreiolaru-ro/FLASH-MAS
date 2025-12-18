@@ -1,0 +1,53 @@
+name: Publish Docs with Pandoc
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Prepare Output Folder
+        run: |
+          mkdir public
+          cp -r doc/* public/
+
+      - name: Convert MD to HTML
+        run: |
+          find public -name "*.md" | while read file; do
+            echo "Converting $file..."
+            pandoc "$file" -o "${file%.md}.html" --standalone --metadata title="Documentatie"
+            rm "$file"
+          done
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

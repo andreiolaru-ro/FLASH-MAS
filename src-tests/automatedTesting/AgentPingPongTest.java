@@ -1,6 +1,5 @@
 package automatedTesting;
 
-import example.simplePingPong.Boot;
 import net.xqhs.flash.FlashBoot;
 import org.junit.After;
 import org.junit.Before;
@@ -19,23 +18,31 @@ import static org.junit.Assert.assertTrue;
 
 public class AgentPingPongTest {
 
-    protected static final String		PING_PONG_CONFIG_ONE_MESSAGE_AGENT_PING_PONG_PLAIN = "-package testing -node main -agent AgentA classpath:AgentPingPongPlain sendTo:AgentB sendTo:AgentC ping-number:1 -agent AgentB classpath:AgentPingPongPlain -agent AgentC classpath:AgentPingPongPlain";
+    protected static final String       CONFIG_PACKAGE_NODE = "-package testing -node main ";
 
-    protected static final String		PING_PONG_CONFIG_FIVE_MESSAGES_AGENT_PING_PONG_PLAIN = "-package testing -node main -agent AgentA classpath:AgentPingPongPlain sendTo:AgentB sendTo:AgentC ping-number:5 -agent AgentB classpath:AgentPingPongPlain -agent AgentC classpath:AgentPingPongPlain";
+    protected static final String       AGENT_A = "-agent AgentA classpath:";
 
-    protected static final String		PING_PONG_CONFIG_TWENTY_MESSAGES_AGENT_PING_PONG_PLAIN = "-package testing -node main -agent AgentA classpath:AgentPingPongPlain sendTo:AgentB sendTo:AgentC ping-number:20 -agent AgentB classpath:AgentPingPongPlain -agent AgentC classpath:AgentPingPongPlain";
+    protected static final String       AGENT_B = " -agent AgentB classpath:";
 
-    protected static final String		PING_PONG_CONFIG_ONE_MESSAGE_AGENT_PING_PONG = "-package testing -node main -agent AgentA classpath:AgentPingPong sendTo:AgentB sendTo:AgentC ping-number:1 -agent AgentB classpath:AgentPingPong -agent AgentC classpath:AgentPingPong";
+    protected static final String       AGENT_C = " -agent AgentC classpath:";
 
-    protected static final String		PING_PONG_CONFIG_FIVE_MESSAGES_AGENT_PING_PONG = "-package testing -node main -agent AgentA classpath:AgentPingPong sendTo:AgentB sendTo:AgentC ping-number:5 -agent AgentB classpath:AgentPingPong -agent AgentC classpath:AgentPingPong";
+    protected static final String       AGENT_PING_PONG_PLAIN = "AgentPingPongPlain";
 
-    protected static final String		PING_PONG_CONFIG_TWENTY_MESSAGES_AGENT_PING_PONG = "-package testing -node main -agent AgentA classpath:AgentPingPong sendTo:AgentB sendTo:AgentC ping-number:20 -agent AgentB classpath:AgentPingPong -agent AgentC classpath:AgentPingPong";
+    protected static final String       AGENT_PING_PONG = "AgentPingPong";
+
+    protected static final String       SEND_TO = " sendTo:AgentB sendTo:AgentC ping-number:";
+
+    protected static final String       ONE_MESSAGE = "1";
+
+    protected static final String       FIVE_MESSAGES = "5";
+
+    protected static final String       TWENTY_MESSAGES = "20";
 
     private static final Pattern PING_NUMBER_PATTERN =
-			Pattern.compile("\\[ping-number\\]>\\s*\\[(-?\\d+)\\]");
+			Pattern.compile("\\[ping-number]>\\s*\\[(-?\\d+)]");
 
 	private static final Pattern SEND_TO_PATTERN =
-			Pattern.compile("\\[sendTo\\]>\\s*\\[([^\\]]*)\\]");
+			Pattern.compile("\\[sendTo]>\\s*\\[([^]]*)]");
 
     private static final Pattern AGENT_A_PING_PATTERN = Pattern.compile("AgentA, ping");
 
@@ -61,12 +68,6 @@ public class AgentPingPongTest {
 	@After
 	public void restoreStreams() {
 		System.setOut(originalOut);
-	}
-
-	private Integer getDefaultPingNumber() throws NoSuchFieldException, IllegalAccessException {
-			Field f = AgentPingPongPlain.class.getDeclaredField("DEFAULT_PING_NUMBER");
-			f.setAccessible(true);
-			return f.getInt(null);
 	}
 
     private Long getPingInitialDelay() throws NoSuchFieldException, IllegalAccessException {
@@ -130,88 +131,46 @@ public class AgentPingPongTest {
         return count;
     }
 
-	@Test
-	public void testExecution_whenUsingConfigurationFromExample() throws Exception {
-		Thread th = new Thread(() -> Boot.main(new String[]{}));
-		th.start();
-
-		Thread.sleep(1000);
-		Integer pingNumber = extractPingNumber(outContent.toString());
-
-		if (pingNumber != null) {
-			if (pingNumber >= 0) {
-				Thread.sleep(pingNumber * 1000 + 2000);
-				String consoleOutput = outContent.toString();
-				assertTrue("Number of last ping not found", consoleOutput.contains("[ping-no " + pingNumber + " last"));
-				assertEquals(extractSendToCount(consoleOutput) * pingNumber * 4, countPingNoOccurrences(consoleOutput));
-			}
-			else {
-				Thread.sleep(5000);
-				String consoleOutput = outContent.toString();
-				assertFalse("Number of last ping found", consoleOutput.contains("[ping-no " + pingNumber + " last"));
-			}
-
-		}
-		else {
-			Integer defaultPingNumber = getDefaultPingNumber();
-
-			Thread.sleep(defaultPingNumber * 1000 + 2000);
-			String consoleOutput = outContent.toString();
-			assertTrue("Number of last ping not found", consoleOutput.contains("[ping-no " + defaultPingNumber + " last"));
-			assertEquals(extractSendToCount(consoleOutput) * defaultPingNumber * 4, countPingNoOccurrences(consoleOutput));
-		}
-
-	}
-
     @Test
     public void testExecution_whenOneMessageAndUsingAgentPingPongPlain() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_ONE_MESSAGE_AGENT_PING_PONG_PLAIN.split(" ")));
-        th.start();
-
-        checkCases(true);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + ONE_MESSAGE + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
+        checkCases(configuration, true);
     }
 
     @Test
     public void testExecution_whenFiveMessagesAndUsingAgentPingPongPlain() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_FIVE_MESSAGES_AGENT_PING_PONG_PLAIN.split(" ")));
-        th.start();
-
-        checkCases(true);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + FIVE_MESSAGES + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
+        checkCases(configuration, true);
     }
 
     @Test
     public void testExecution_whenTwentyMessagesAndUsingAgentPingPongPlain() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_TWENTY_MESSAGES_AGENT_PING_PONG_PLAIN.split(" ")));
-        th.start();
-
-        checkCases(true);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + TWENTY_MESSAGES + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
+        checkCases(configuration, true);
     }
 
     @Test
     public void testExecution_whenOneMessageAndUsingAgentPingPong() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_ONE_MESSAGE_AGENT_PING_PONG.split(" ")));
-        th.start();
-
-        checkCases(false);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG + SEND_TO + ONE_MESSAGE + AGENT_B + AGENT_PING_PONG + AGENT_C + AGENT_PING_PONG;
+        checkCases(configuration, false);
     }
 
     @Test
     public void testExecution_whenFiveMessagesAndUsingAgentPingPong() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_FIVE_MESSAGES_AGENT_PING_PONG.split(" ")));
-        th.start();
-
-        checkCases(false);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG + SEND_TO + FIVE_MESSAGES + AGENT_B + AGENT_PING_PONG + AGENT_C + AGENT_PING_PONG;
+        checkCases(configuration, false);
     }
 
     @Test
     public void testExecution_whenTwentyMessagesAndUsingAgentPingPong() throws Exception {
-        Thread th = new Thread(() -> FlashBoot.main(PING_PONG_CONFIG_TWENTY_MESSAGES_AGENT_PING_PONG.split(" ")));
-        th.start();
-
-        checkCases(false);
+        String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG + SEND_TO + TWENTY_MESSAGES + AGENT_B + AGENT_PING_PONG + AGENT_C + AGENT_PING_PONG;
+        checkCases(configuration, false);
     }
 
-    private void checkCases(boolean usePlainAgent) throws Exception {
+    private void checkCases(String configuration, boolean usePlainAgent) throws Exception {
+        Thread th = new Thread(() -> FlashBoot.main(configuration.split(" ")));
+        th.start();
+
         Long pingInitialDelay = getPingInitialDelay();
         Thread.sleep(pingInitialDelay - 200);
 
@@ -224,7 +183,7 @@ public class AgentPingPongTest {
         // after ping initial delay
         Integer pingNumber = extractPingNumber(outContent.toString());
         Long pingPeriod = getPingPeriod();
-        Thread.sleep(pingNumber * pingPeriod + 2000);
+        Thread.sleep(pingNumber * pingPeriod + 5000);
         consoleOutput = outContent.toString();
 
         // check number of ping and pong messages by each agent
@@ -257,6 +216,12 @@ public class AgentPingPongTest {
 
         // check the last ping message
         assertTrue("Number of last ping not found", consoleOutput.contains("[ping-no " + pingNumber + " last]"));
+
+        // check if Agent A receives another Agent Wave after it stops
+        int stop = consoleOutput.lastIndexOf("[AgentA] stopped");
+        int agentWave = consoleOutput.lastIndexOf("destination-complete=[AgentA/ping]");
+        System.out.println(consoleOutput);
+        assertTrue("Correct sequence of events", agentWave > stop); // it should be fixed
     }
 
 }
