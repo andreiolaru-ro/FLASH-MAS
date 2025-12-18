@@ -16,10 +16,14 @@ import java.util.TimerTask;
 
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.MessagingShard.OutgoingMessageHook;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
@@ -33,7 +37,7 @@ import net.xqhs.util.logging.UnitComponent;
  * 
  * @author Andrei Olaru
  */
-public class EchoTestingShard extends AgentShardCore {
+public class EchoTestingShard extends AgentShardCore implements OutgoingMessageHook {
 	/**
 	 * The UID.
 	 */
@@ -83,6 +87,8 @@ public class EchoTestingShard extends AgentShardCore {
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
+		((MessagingShard) getAgent().getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
+				.addOutgoingMessageHook(this);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
 			exitTimer = new Timer();
 			exitTimer.schedule(new TimerTask() {
@@ -114,6 +120,8 @@ public class EchoTestingShard extends AgentShardCore {
 		if(getAgent() != null) {
 			locallog = new UnitComponent("testing-" + getAgent().getEntityName() + " >>>>").setLogLevel(Level.ALL)
 					.setLoggerType(PlatformUtils.platformLogType());
+			if(getConfiguration().isSimple(HIGHLIGHT_FOCUS))
+				locallog.setHighlighted();
 			locallog.lf("testing started.");
 		}
 		else if(locallog != null) {
@@ -121,5 +129,15 @@ public class EchoTestingShard extends AgentShardCore {
 			locallog.doExit();
 			locallog = null;
 		}
+	}
+	
+	@Override
+	public void sendingMessage(String source, String destination, String content) {
+		locallog.li("Sending a message from [] to [] with content [].", source, destination, content);
+	}
+	
+	@Override
+	public void sendingMessage(AgentWave wave) {
+		locallog.li("Sending a message []", wave);
 	}
 }

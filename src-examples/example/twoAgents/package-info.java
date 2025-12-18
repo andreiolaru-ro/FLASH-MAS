@@ -13,14 +13,12 @@
  * 
  */
 /**
- * A simple deployment, testing the deployment (via XML file) of very basic scenarios. See <code>deployment.xml</code>.
+ * A simple deployment, testing the deployment (via XML file) of two agents communicating.
  * <p>
- * An agent that outputs to its log all the events that happen, placed in a default environment.
- * <p>
- * Expected output: the agent outputs the fact that it is starting (it received the agent started event). The agent
- * stops after a short while.
+ * Expected output: {@link example.twoAgents.AgentOne} sends a message to {@link example.twoAgents.AgentTwo}, which
+ * replies, then both agents stop.
  * 
  * @author andreiolaru
  *
  */
-package example.echoAgent;
+package example.twoAgents;

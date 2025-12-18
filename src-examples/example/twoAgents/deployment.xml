@@ -16,21 +16,15 @@
 	You should have received a copy of the GNU General Public License along with Flash-MAS. If not, see 
 	<http://www.gnu.org/licenses/>.
 -->
+
 <deployment xmlns="http://flash.xqhs.net/deployment-schema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
 
-	<package>bla</package>
+	<package>example.twoAgents</package>
+	<pylon kind="local">
+		<agent name = "AgentOne" classpath = "AgentOne" />
+		<agent name = "AgentTwo" classpath = "AgentTwo" />
+	</pylon>
 
-	<!--<loader for="agent:composite"/>
-
-		<agent name="AgentA" kind="composite">
-		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
-		</agent>
-		<agent>
-		<parameter name="name" value="AgentB" />
-		<parameter name="kind" value="composite" />
-		<shard name="testing" classpath="examples.composite.MonitoringTestFeature" />
-		</agent>
-	-->
 </deployment>

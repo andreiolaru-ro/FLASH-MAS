@@ -21,8 +21,7 @@ import net.xqhs.flash.core.support.MessagingShard;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardGeneral extends AgentShardCore
-{
+public class AgentShardGeneral extends AgentShardCore {
 	/**
 	 * The class UID.
 	 */
@@ -31,8 +30,7 @@ public class AgentShardGeneral extends AgentShardCore
 	/**
 	 * @see AgentShardCore#AgentShardCore(AgentShardDesignation)
 	 */
-	protected AgentShardGeneral(AgentShardDesignation designation)
-	{
+	protected AgentShardGeneral(AgentShardDesignation designation) {
 		super(designation);
 	}
 	
@@ -40,11 +38,10 @@ public class AgentShardGeneral extends AgentShardCore
 	 * Relay for {@link ShardContainer#getAgentShard(AgentShardDesignation)}.
 	 * 
 	 * @param designation
-	 *                        - the designation of the desired {@link AgentShard}.
+	 *            - the designation of the desired {@link AgentShard}.
 	 * @return the {@link AgentShard} instance, if any was found; <code>null</code> otherwise.
 	 */
-	final protected AgentShard getAgentShard(AgentShardDesignation designation)
-	{
+	final protected AgentShard getAgentShard(AgentShardDesignation designation) {
 		return getAgent().getAgentShard(designation);
 	}
 	
@@ -54,11 +51,9 @@ public class AgentShardGeneral extends AgentShardCore
 	 * 
 	 * @return an instance of {@link MessagingShard}.
 	 * @throws UnsupportedOperationException
-	 *                                           - if there is no messaging shard or it does not implement
-	 *                                           {@link MessagingShard}.
+	 *             - if there is no messaging shard or it does not implement {@link MessagingShard}.
 	 */
-	protected MessagingShard getMessagingShard()
-	{
+	protected MessagingShard getMessagingShard() {
 		AgentShard msd = getAgentShard(StandardAgentShard.MESSAGING.toAgentShardDesignation());
 		if(msd == null)
 			throw new UnsupportedOperationException("Messaging shard is not present.");
@@ -71,21 +66,20 @@ public class AgentShardGeneral extends AgentShardCore
 	 * Uses the {@link MessagingShard} to send a message.
 	 * 
 	 * @param content
-	 *                               - the content of the message.
+	 *            - the content of the message.
 	 * @param sourceInternalEndpoint
-	 *                               - the source endpoint of the message (as an internal endpoint, to which the address
-	 *                               of the agent will be added).
+	 *            - the source endpoint of the message (as an internal endpoint, to which the address of the agent will
+	 *            be added).
 	 * @param targetAgent
-	 *                               - the name of the target agent.
+	 *            - the name of the target agent.
 	 * @param targetPathElements
-	 *                               - internal elements in the target path.
+	 *            - internal elements in the target path.
 	 * @return <code>true</code> if the message has been successfully sent (as reported by the {@link MessagingShard}.
 	 * @throws UnsupportedOperationException
-	 *                                           if no usable {@link MessagingShard} has been found.
+	 *             if no usable {@link MessagingShard} has been found.
 	 */
 	protected boolean sendMessage(String content, String sourceInternalEndpoint, String targetAgent,
-			String... targetPathElements)
-	{
+			String... targetPathElements) {
 		MessagingShard msd = getMessagingShard();
 		return msd.sendMessage(AgentWave.makePath(msd.getAgentAddress(), sourceInternalEndpoint),
 				AgentWave.makePath(targetAgent, targetPathElements), content);
@@ -104,5 +98,22 @@ public class AgentShardGeneral extends AgentShardCore
 	protected boolean sendMessage(AgentWave wave) {
 		MessagingShard msd = getMessagingShard();
 		return msd.sendMessage(wave);
+	}
+	
+	/**
+	 * Same as {@link #sendMessage(AgentWave)}, but automatically adds the designation of this shard (configured in the
+	 * constructor) as the first source, if not already present and if the designation is not <code>null</code>. The
+	 * address of the agent will be added by the messaging shard.
+	 * 
+	 * @param wave
+	 *            - the wave to send (the source can be empty).
+	 * @return <code>true</code> if the message has been successfully sent (as reported by the {@link MessagingShard}.
+	 * @throws UnsupportedOperationException
+	 *             if no usable {@link MessagingShard} has been found.
+	 */
+	protected boolean sendMessageFromShard(AgentWave wave) {
+		if(getShardDesignation() != null && !getShardDesignation().toString().equals(wave.getFirstSource()))
+			wave.addSourceElementFirst(getShardDesignation().toString());
+		return sendMessage(wave);
 	}
 }

@@ -165,10 +165,12 @@ public class Node extends Unit implements Entity<Node> {
 	public Node(MultiTreeMap nodeConfiguration) {
 		if(nodeConfiguration != null) {
 			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			if(nodeConfiguration.containsKey(ACTIVE_PARAMETER_NAME))
+			if(nodeConfiguration.isSimple(ACTIVE_PARAMETER_NAME))
 				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
-			if(nodeConfiguration.containsKey(ACTIVE_CHECK_PARAMETER))
-				activeFor = Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER));
+			if(nodeConfiguration.isSimple(ACTIVE_CHECK_PARAMETER))
+				activeFor = nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER) != null
+						? Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER))
+						: -1; // keep node active if no value mentioned
 		}
 		setLoggerType(PlatformUtils.platformLogType());
 		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();

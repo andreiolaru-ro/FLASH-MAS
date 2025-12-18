@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Vector;
@@ -99,6 +100,27 @@ public class PlatformUtils {
 			break;
 		}
 		return null;
+	}
+	
+	/**
+	 * Creates a new instance of a class, sending no arguments to the constructor.
+	 * 
+	 * @param <T>
+	 *            the type of the object that should be returned.
+	 * @param className
+	 *            - the classpath to instantiate.
+	 * @return the newly instantiated object.
+	 */
+	public static <T extends Object> T quickInstance(String className) {
+		try {
+			@SuppressWarnings("unchecked")
+			T obj = (T) getClassFactory().loadClassInstance(className, null, true);
+			return obj;
+		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	/**
