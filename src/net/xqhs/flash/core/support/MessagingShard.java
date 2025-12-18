@@ -93,6 +93,15 @@ public interface MessagingShard extends AgentShard {
 	public void register(String entityName);
 	
 	/**
+	 * This can be called by non-agent entities to un-register their messaging shard, in case they are unable (or it
+	 * would not be practical) to use {@link #signalAgentEvent(AgentEvent)}.
+	 * 
+	 * @param entityName
+	 *            - the name of entity to be un-registered
+	 */
+	public void unregister(String entityName);
+	
+	/**
 	 * Method to be called by other shards in case they need to monitor outgoing messages.
 	 * <p>
 	 * Depending on the implementation of the {@link MessagingShard}, hooks may need to be re-added after agent

@@ -158,22 +158,24 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
+	public void unregister(String entityName) {
+		if(classicPylon != null)
+			classicPylon.unregister(entityName, classicInbox);
+		if(wavePylon != null)
+			wavePylon.unregister(entityName, waveInbox);
+	}
+	
+	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_START:
 			if(classicPylon == null && wavePylon == null)
 				throw new IllegalStateException("Shard is not currently added within a pylon");
-			if(classicPylon != null)
-				classicPylon.register(getAgent().getEntityName(), classicInbox);
-			else
-				wavePylon.register(getAgent().getEntityName(), waveInbox);
+			register(getAgent().getEntityName());
 			break;
 		case AGENT_STOP:
-			if(classicPylon != null)
-				classicPylon.unregister(getAgent().getEntityName(), classicInbox);
-			if(wavePylon != null)
-				wavePylon.unregister(getAgent().getEntityName(), waveInbox);
+			unregister(getAgent().getEntityName());
 			break;
 		default:
 			break;
