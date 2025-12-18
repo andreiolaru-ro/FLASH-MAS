@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.remoteOperation;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -25,6 +24,7 @@ import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
@@ -45,6 +45,10 @@ import net.xqhs.flash.web.WebEntity;
  * This class is used to monitor and control the MAS.
  */
 public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * Operations supported by the {@link CentralMonitoringAndControlEntity}.
@@ -225,7 +229,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	/**
 	 * The proxy to this entity.
 	 */
-	public ShardContainer									proxy;
+	public ShardContainer									centralProxy;
 	/**
 	 * Messaging shard for this entity.
 	 */
@@ -249,16 +253,20 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		super.configure(configuration);
 		this.setUnitName("M&C");
 		// this.setHighlighted();
-		proxy = new CentralEntityProxy();
+		centralProxy = new CentralEntityProxy();
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue(GUILoad.FILE_SOURCE_PARAMETER, DEFAULT_CONTROLS)
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
 		
-		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY))
+		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)) {
+			if(iface == null) {
+				lw("No interface specified. Defaulting to swing.");
+				iface = SWING_INTERFACE_SWITCH;
+			}
 			switch(iface) {
 			case WEB_INTERFACE_SWITCH: {
 				// TODO mock config -- to be added in deployment configuration?
 				gui = new WebEntity(WEB_INTERFACE_PORT); // maybe TODO: move this port to a configuration file
-				gui.addContext(proxy);
+				gui.addContext(centralProxy);
 				if(gui.start()) // starts now in order to be available before starting entities
 					li("web gui started");
 				break;
@@ -278,6 +286,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			default:
 				return ler(false, "unknown central GUI type");
 			}
+		}
 		return true;
 	}
 	
@@ -422,14 +431,6 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			le("[] unable to start. No messaging shard found.", getName());
 			return false;
 		}
-		// TODO hack
-		// Timer timer = new Timer();
-		// timer.schedule(new TimerTask() {
-		// @Override
-		// public void run() {
-		// centralMessagingShard.register(name);
-		// }
-		// }, 1000);
 		centralMessagingShard.register(name);
 		li("[] started successfully.", getName());
 		return true;
@@ -437,17 +438,8 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context) {
-		PylonProxy pylonProxy = (PylonProxy) context;
-		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
-				AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
-		try {
-			centralMessagingShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard,
-					null, true);
-		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
-				| InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		centralMessagingShard.addContext(proxy);
+		centralMessagingShard = (MessagingShard) AgentShardCore.instantiateRecommendedShard(
+				AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, centralProxy);
 		return centralMessagingShard.addGeneralContext(context);
 	}
 	
