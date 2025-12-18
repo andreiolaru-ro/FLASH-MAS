@@ -136,6 +136,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * Directories containing source files (especially for looking up various files).
 	 */
 	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
+	/**
+	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 */
+	public static final String		CENTRAL_NODE_KEY				= "central";
+	/**
+	 * The name of the Central M&C entity.
+	 */
+	public static final String		CENTRAL_MONITORING_ENTITY_NAME	= "Monitoring&Control_Entity";
 	
 	/**
 	 * Local IDs of default created entities.
@@ -145,21 +153,6 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The correspondence between names and local IDs, used to assign contexts by names.
 	 */
 	protected Map<String, String>	name_ids	= new HashMap<>();
-	
-	/**
-	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
-	 */
-	public static final String CENTRAL_NODE_KEY = "central";
-	
-	/**
-	 * Type for net.xqhs.flash.core.monitoring and control entity.
-	 */
-	public static final String MONITORING_TYPE = "net/xqhs/flash/core/monitoring";
-	
-	/**
-	 * The name of the Central M&C entity.
-	 */
-	public static final String CENTRAL_MONITORING_ENTITY_NAME = "Monitoring&Control_Entity";
 	
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration

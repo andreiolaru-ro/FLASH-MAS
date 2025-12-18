@@ -23,6 +23,7 @@ import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -233,11 +234,11 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
 					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
 							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
-			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+			node.registerEntity(AgentShardDesignation.StandardAgentShard.REMOTE.shardName(), centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 			
 			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-					DeploymentConfiguration.MONITORING_TYPE);
+					AgentShardDesignation.StandardAgentShard.REMOTE.shardName());
 		}
 		
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
