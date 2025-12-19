@@ -32,6 +32,11 @@ import net.xqhs.util.logging.Unit;
  */
 public class DefaultPylonImplementation extends EntityCore<Node> implements Pylon {
 	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 3604908995572960174L;
+	
+	/**
 	 * The default name for instances of this implementation.
 	 */
 	protected static final String DEFAULT_NAME = "Default";
