@@ -45,6 +45,9 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		 * Name of the operation to stop the agent remotely.
 		 */
 		REMOTE_STOP,
+		START_APPLICATION,
+		STOP_APPLICATION,
+		PAUSE_APPLICATION;
 	}
 	
 	/**
@@ -118,10 +121,23 @@ public class RemoteOperationShard extends AgentShardGeneral {
 					|| !SHARD_ENDPOINT.equals(((AgentWave) event).getFirstDestinationElement()))
 				break;
 			AgentWave wave = ((AgentWave) event).removeFirstDestinationElement(); // this entity name
+			String command = wave.getFirstDestinationElement().toUpperCase();
 			// original wave destination endpoint was AgentX/remote/remote_stop
 			if(wave.getFirstDestinationElement().toUpperCase().equals(Operations.REMOTE_STOP.toString())) {
 				li("Agent stopping requested remotely.");
 				getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+			}
+			if(command.equals(Operations.START_APPLICATION.toString())) {
+				li("Application Start requested remotely.");
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.APPLICATION_START));
+			}
+			if(command.equals(Operations.STOP_APPLICATION.toString())) {
+				li("Application Stop requested remotely.");
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.APPLICATION_STOP));
+			}
+			if(command.equals(Operations.PAUSE_APPLICATION.toString())) {
+				li("Application Pause requested remotely.");
+				getAgent().postAgentEvent(new AgentEvent(AgentEventType.APPLICATION_PAUSE));
 			}
 			
 			// // TODO this is not needed anymore, routing should be done directly
@@ -141,12 +157,15 @@ public class RemoteOperationShard extends AgentShardGeneral {
 			entityStatus[0] = Fields.RUNNING_STATUS_RUNNING;
 			break;
 		case AGENT_STOP:
-			entityStatus[0] = Fields.RUNNING_STATUS_STOPPED;
+			entityStatus[1] = Fields.RUNNING_STATUS_STOPPED;
 			break;
-		case SIMULATION_START:
+		case APPLICATION_START:
 			entityStatus[1] = Fields.APPLICATION_STATUS_RUNNING;
 			break;
-		case SIMULATION_PAUSE:
+		case APPLICATION_PAUSE:
+			entityStatus[1] = Fields.APPLICATION_STATUS_PAUSED;
+			break;
+		case APPLICATION_STOP:
 			entityStatus[1] = Fields.APPLICATION_STATUS_STOPPED;
 			break;
 		default:
@@ -166,8 +185,9 @@ public class RemoteOperationShard extends AgentShardGeneral {
 				sendGuiUpdate();
 			//$FALL-THROUGH$
 		case AGENT_STOP:
-		case SIMULATION_PAUSE:
-		case SIMULATION_START: {
+		case APPLICATION_PAUSE:
+		case APPLICATION_STOP:
+		case APPLICATION_START: {
 			String status = Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | "));
 			li("Status of [] is [].", getParentName(), status);
 			AgentWave update = CentralMonitoringAndControlEntity.UPDATE_ENTITY_STATUS

@@ -74,14 +74,19 @@ public class AgentEvent extends MultiValueMap
 		AFTER_MOVE(AgentSequenceType.CONSTRUCTIVE),
 		
 		/**
-		 * Event occurs when the start of the simulation is requested by the user.
+		 * Event occurs when the start of the application is requested by the user.
 		 */
-		SIMULATION_START(AgentSequenceType.UNORDERED),
+		APPLICATION_START(AgentSequenceType.UNORDERED),
 		
 		/**
-		 * Event occurs when the simulation is paused by the user.
+		 * Event occurs when the application is paused by the user.
 		 */
-		SIMULATION_PAUSE(AgentSequenceType.UNORDERED),
+		APPLICATION_PAUSE(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the application is stopped by the user.
+		 */
+		APPLICATION_STOP(AgentSequenceType.UNORDERED)
 		
 		;
 		

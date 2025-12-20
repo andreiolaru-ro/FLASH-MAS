@@ -74,7 +74,7 @@ public class ControlShardTest extends AgentShardGeneral
             case AGENT_START:
                 li("Shard of agent [] started.", thisAgent);
                 break;
-            case SIMULATION_START:
+            case APPLICATION_START:
                 li("Shard of agent [] started simulation.", thisAgent);
                 break;
             case AGENT_STOP:
@@ -95,7 +95,7 @@ public class ControlShardTest extends AgentShardGeneral
                 getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_STOP));
                 break;
             case "start_simulation":
-                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.SIMULATION_START));
+                getAgent().postAgentEvent(new AgentEvent(AgentEvent.AgentEventType.APPLICATION_START));
             default:
                 break;
         }

@@ -42,7 +42,7 @@ public class BasicChatShard extends AgentShardGeneral {
         if (event.getType() == AgentEventType.AGENT_WAVE) {
             AgentWave wave = (AgentWave) event;
             String[] source = wave.getSourceElements();
-            li("Recieved AgentWave from []", wave.getCompleteSource());
+            li("Received AgentWave from []", wave.getCompleteSource());
 
             if (DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME.equals(source[0])) {
                 handleGUIWave(wave);

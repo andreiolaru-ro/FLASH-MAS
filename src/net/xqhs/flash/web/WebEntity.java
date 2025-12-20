@@ -171,6 +171,24 @@ public class WebEntity extends CentralGUI {
 					JsonObject content = msg.get(MESSAGE_CONTENT).getAsJsonObject();
 					entity.sendNotification(source, subject, content);
 				}
+
+				if ("global_command".equals(scope)) {
+					String command = msg.get("command").getAsString();
+
+					if (command.equals("START_APPLICATION") ||
+							command.equals("STOP_APPLICATION") ||
+							command.equals("PAUSE_APPLICATION")) {
+
+						AgentWave wave = new AgentWave();
+						wave.resetDestination(command);
+						wave.addSourceElements(getShardDesignation().toString(), "web-ui");
+						cep.postAgentEvent(wave);
+
+						li("Forwarded global command [" + command + "] to M&C.");
+					} else {
+						le("Received unknown global command: " + command);
+					}
+				}
 			});
 			
 			System.out.println(WebEntity.class.getPackage().getName());

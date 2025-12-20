@@ -1,16 +1,17 @@
 /*******************************************************************************
  * Copyright (C) 2021 Andrei Olaru.
- * 
+ *
  * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
- * 
+ *
  * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash.gui.structure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,12 +31,13 @@ import net.xqhs.flash.core.agent.AgentWave;
 /**
  * Element class represents the structure of an element from GUI interface (e.g. whole interface, container (block),
  * button, label, text box, spinner, etc).
- * 
+ *
  * @author Florin Mihalache
  * @author andreiolaru
  * @author Valentin Mignot
  */
-public class Element implements Cloneable {
+public class Element implements Cloneable, Serializable {
+	private static final long	serialVersionUID		= 1L;
 	/**
 	 * the default role of an element
 	 */
@@ -53,7 +55,7 @@ public class Element implements Cloneable {
 	 * The Gson instance used for conversions to/from JSON.
 	 */
 	public static final Gson gson = new Gson();
-	
+
 	/**
 	 * ID of this element
 	 */
@@ -90,7 +92,8 @@ public class Element implements Cloneable {
 	/**
 	 * Represents a style that the element can have
 	 */
-	protected static class ElementWhen {
+	protected static class ElementWhen implements Serializable{
+		private final static long serialVersionUID = 1L;
 		/** The list of conditions that must be met for the style to be applied. */
 		protected HashMap<String, String> conditions = new HashMap<>();
 
@@ -98,7 +101,7 @@ public class Element implements Cloneable {
 		protected String style;
 
 		/**
-		 * A condition is a key-value pair where the key denotes the element whose value 
+		 * A condition is a key-value pair where the key denotes the element whose value
 		 * is used to determine the style of this element.
 		 * The keys are in one of the following formats: port/role, /role, port.
 		 * The second format is relative to the current element's port.
@@ -131,19 +134,19 @@ public class Element implements Cloneable {
 			}
 		}
 	}
-	
+
 	/**
 	 * The list of styles that the element can have
 	 */
-	protected transient List<ElementWhen> when = new ArrayList<>();
-	
+	protected List<ElementWhen> when = new ArrayList<>();
+
 	/**
 	 * @return - the list of child elements
 	 */
 	public List<Element> getChildren() {
 		return children;
 	}
-	
+
 	/**
 	 * Set the children of the element with the given list
 	 *
@@ -153,7 +156,7 @@ public class Element implements Cloneable {
 	public void setChildren(List<Element> children) {
 		this.children = children;
 	}
-	
+
 	/**
 	 * Add a child element to the list of children
 	 *
@@ -163,7 +166,7 @@ public class Element implements Cloneable {
 	public void addChild(Element element) {
 		this.children.add(element);
 	}
-	
+
 	/**
 	 * Add a list of child elements to the list of children
 	 *
@@ -173,14 +176,14 @@ public class Element implements Cloneable {
 	public void addAllChildren(List<Element> _children) {
 		this.children.addAll(_children);
 	}
-	
+
 	/**
 	 * @return - the id of the element
 	 */
 	public String getId() {
 		return id;
 	}
-	
+
 	/**
 	 * Set the id of the element
 	 *
@@ -190,14 +193,14 @@ public class Element implements Cloneable {
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
 	/**
 	 * @return - the type of the element
 	 */
 	public String getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Set the type of the element
 	 *
@@ -207,14 +210,14 @@ public class Element implements Cloneable {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
 	/**
 	 * @return - the properties of the element
 	 */
 	public HashMap<String, String> getProperties() {
 		return properties;
 	}
-	
+
 	/**
 	 * Set the properties of the element
 	 *
@@ -224,7 +227,7 @@ public class Element implements Cloneable {
 	public void setProperties(HashMap<String, String> properties) {
 		this.properties = properties;
 	}
-	
+
 	/**
 	 *
 	 * @return - the port of the element
@@ -232,7 +235,7 @@ public class Element implements Cloneable {
 	public String getPort() {
 		return port;
 	}
-	
+
 	/**
 	 * Set the port of the element
 	 *
@@ -242,14 +245,14 @@ public class Element implements Cloneable {
 	public void setPort(String port) {
 		this.port = port;
 	}
-	
+
 	/**
 	 * @return - the role of the element
 	 */
 	public String getRole() {
 		return role;
 	}
-	
+
 	/**
 	 * Set the role of the element
 	 *
@@ -259,14 +262,14 @@ public class Element implements Cloneable {
 	public void setRole(String role) {
 		this.role = role;
 	}
-	
+
 	/**
 	 * @return - the value of the element
 	 */
 	public String getValue() {
 		return value;
 	}
-	
+
 	/**
 	 * Set the value of the element
 	 *
@@ -276,7 +279,7 @@ public class Element implements Cloneable {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	
+
 	/**
 	 * @return - the endpoint of the shard that added this element
 	 */
@@ -316,7 +319,7 @@ public class Element implements Cloneable {
 			this.when.add(new ElementWhen(e));
 		}
 	}
-	
+
 	/**
 	 * Return the children of the element if they match the given port
 	 *
@@ -331,7 +334,7 @@ public class Element implements Cloneable {
 				result.add(e);
 		return result;
 	}
-	
+
 	/**
 	 * Return the child of the element that matches the given port and role
 	 *
@@ -360,13 +363,13 @@ public class Element implements Cloneable {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Return the child of the element if it matches the given id
 	 *
 	 * @param childID
 	 *            - the id to match
-	 * 			
+	 *
 	 * @return - the child that matches the given id
 	 */
 	public Element getChildWithId(String childID) {
@@ -389,7 +392,7 @@ public class Element implements Cloneable {
 			element.setValue(wave.getValue(updateRole));
 		}
 	}
-	
+
 	/**
 	 * Create a {@link JSONObject} from the element
 	 *
@@ -426,15 +429,15 @@ public class Element implements Cloneable {
 			propertiesObject.addProperty(entry.getKey(), entry.getValue());
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return toString(0).toString();
 	}
-	
+
 	/**
 	 * Creates a String rendition of the element.
-	 * 
+	 *
 	 * @param indent
 	 *            - the indentation level.
 	 * @return a string rendition.
@@ -453,12 +456,12 @@ public class Element implements Cloneable {
 		result.append("]  ");
 		return result;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(port, role);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
@@ -468,7 +471,7 @@ public class Element implements Cloneable {
 		Element other = (Element) obj;
 		return Objects.equals(port, other.port) && Objects.equals(role, other.role);
 	}
-	
+
 	@Override
 	public Object clone() {
 		Element result;

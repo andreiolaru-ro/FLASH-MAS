@@ -1,5 +1,5 @@
 import { appContext } from "./common.js";
-import { notifyEntity } from "./events.js";
+import { notifyEntity, sendGlobalCommand } from "./events.js";
 import { applyStyles } from "./processing.js";
 
 export function handleSidepanel() {
@@ -8,6 +8,11 @@ export function handleSidepanel() {
         $('#main-content').toggleClass('collapsed');
         $(this).hide();
     }).hide();
+
+    $('#global-start-application-btn').on('click', () => {
+        console.log("Start Application clicked");
+        sendGlobalCommand('START_APPLICATION');
+    });
 
     $('#sidepanel-close-btn').on('click', function () {
         $('#sidepanel').removeClass('open');
@@ -20,6 +25,61 @@ export function handleSidepanel() {
     // $('#global-pause-btn').on('click', () => sendData('pause-simulation_activate_0'));
     // $('#global-start-simulation-btn').on('click', () => sendData('start-simulation_activate_0'));
     // $('#global-stop-simulation-btn').on('click', () => sendData('stop-simulation_activate_0'));
+
+    const btnStart = $('#global-start-application-btn');
+    const btnPause = $('#global-pause-application-btn');
+    const btnStop = $('#global-stop-application-btn');
+
+    btnPause.prop('disabled', true);
+    btnStop.prop('disabled', true);
+
+    btnStart.on('click', () => {
+        sendGlobalCommand('START_APPLICATION');
+        btnPause.text("Pause");
+
+        btnStart.prop('disabled', true);
+        btnPause.prop('disabled', false);
+        btnStop.prop('disabled', false);
+    });
+
+    btnStop.on('click', () => {
+        sendGlobalCommand('STOP_APPLICATION');
+        btnPause.text("Pause");
+
+        btnStart.prop('disabled', false);
+        btnPause.prop('disabled', true);
+        btnStop.prop('disabled', true);
+    });
+
+    btnStart.on('click', () => {
+        console.log("Start Application clicked");
+        sendGlobalCommand('START_APPLICATION');
+
+        btnPause.text("Pause");
+    });
+    btnPause.on('click', function() {
+        const currentText = $(this).text();
+
+        if (currentText === "Pause") {
+
+            console.log("Pause clicked -> Sending PAUSE_APPLICATION");
+            sendGlobalCommand('PAUSE_APPLICATION');
+
+            $(this).text("Resume");
+
+        } else {
+            console.log("Resume clicked -> Sending START_APPLICATION");
+            sendGlobalCommand('START_APPLICATION');
+
+            $(this).text("Pause");
+        }
+    });
+    btnStop.on('click', () => {
+        console.log("Stop Application clicked");
+        sendGlobalCommand('STOP_APPLICATION');
+
+        btnPause.text("Pause");
+    });
 }
 
 export function updateEntitiesList() {

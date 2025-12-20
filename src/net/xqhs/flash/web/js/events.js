@@ -12,6 +12,7 @@ const PORT_SCOPE = 'port';
 
 const REGISTERED_SCOPE = 'registered';
 const NOTIFY_SCOPE = 'notify';
+const GLOBAL_COMMAND_SCOPE = 'global_command';
 
 let eventBus = null;
 
@@ -97,4 +98,13 @@ export function notifyEntity(trigger, entityName) {
     };
     console.log("Sending message", msg);
     eventBus.send(CLIENT_TO_SERVER, JSON.stringify(msg));
+}
+
+export function sendGlobalCommand(commandName) {
+    const msg = {
+        scope: GLOBAL_COMMAND_SCOPE,
+        command: commandName
+    };
+    console.log("Sending global command", msg);
+    eventBus.send('client-to-server', JSON.stringify(msg));
 }

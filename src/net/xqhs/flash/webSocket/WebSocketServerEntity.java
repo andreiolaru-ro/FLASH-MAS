@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import net.xqhs.util.logging.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -46,6 +47,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	{
 		setUnitName("websocket-server");
 		setLoggerType(PlatformUtils.platformLogType());
+		setLogLevel(Logger.Level.ALL);
 	}
 	
 	/**

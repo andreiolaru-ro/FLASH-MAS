@@ -74,9 +74,9 @@ public class PingBackTestComponent extends AgentShardGeneral
 				break;
 			case AGENT_STOP:
 				break;
-			case SIMULATION_START:
+			case APPLICATION_START:
 				break;
-			case SIMULATION_PAUSE:
+			case APPLICATION_PAUSE:
 				break;
 			default:
 				break;

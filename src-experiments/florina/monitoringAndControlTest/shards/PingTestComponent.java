@@ -18,7 +18,6 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardGeneral;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
-import test.compositePingPong.Boot;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -149,9 +148,9 @@ public class PingTestComponent extends AgentShardGeneral
 			case AGENT_STOP:
 				pingTimer.cancel();
 				break;
-			case SIMULATION_START:
+			case APPLICATION_START:
 				break;
-			case SIMULATION_PAUSE:
+			case APPLICATION_PAUSE:
 				break;
 			default:
 				break;
