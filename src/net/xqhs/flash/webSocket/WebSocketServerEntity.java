@@ -21,6 +21,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import net.xqhs.util.logging.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -46,6 +47,7 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 	{
 		setUnitName("websocket-server");
 		setLoggerType(PlatformUtils.platformLogType());
+		setLogLevel(Logger.Level.ALL);
 	}
 	
 	/**
