@@ -86,9 +86,17 @@ public class AgentEvent extends MultiValueMap
 		/**
 		 * Event occurs when the application is stopped by the user.
 		 */
-		APPLICATION_STOP(AgentSequenceType.UNORDERED)
-		
-		;
+		APPLICATION_STOP(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the simulation is started by the user.
+		 */
+		SIMULATION_START(AgentSequenceType.UNORDERED),
+
+		/**
+		 * Event occurs when the simulation is paused by the user.
+		 */
+		SIMULATION_PAUSE(AgentSequenceType.UNORDERED);
 		
 		/**
 		 * The sequence type that is characteristic to the event.

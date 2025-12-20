@@ -11,15 +11,18 @@
  ******************************************************************************/
 package net.xqhs.flash.core.shard;
 
-import java.io.Serializable;
-
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
+import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.composite.CompositeAgent;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
+import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
 /**
@@ -44,7 +47,7 @@ import net.xqhs.util.logging.Unit;
  * 
  * @author Andrei Olaru
  */
-public class AgentShardCore extends Unit implements AgentShard, Serializable {
+public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	/**
 	 * The class UID.
 	 */
@@ -63,10 +66,6 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 * The {@link CompositeAgent} instance that this instance is part of.
 	 */
 	private transient ShardContainer	parentAgent;
-	/**
-	 * Indicates the state of the shard.
-	 */
-	private boolean						isRunning;
 	
 	/**
 	 * The constructor assigns the designation to the shard.
@@ -89,7 +88,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 		shardConfiguration = new MultiTreeMap();
 		shardConfiguration.ensureLocked();
 		
-		setUnitName("/." + shardDesignation.toString());
+		if(shardDesignation != null)
+			setUnitName("/." + shardDesignation.toString());
 		shardInitializer();
 	}
 	
@@ -132,18 +132,8 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
-		if(configuration != null) {
-			configuration.ensureLocked();
-			shardConfiguration = configuration;
-		}
-		return true;
-	}
-	
-	/**
-	 * @return the shard configuration stored at {@link #configure(MultiTreeMap)} time.
-	 */
-	public MultiTreeMap getShardConfiguration() {
-		return shardConfiguration;
+		configuration.ensureLocked();
+		return super.configure(configuration);
 	}
 	
 	/**
@@ -151,12 +141,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean start() {
-		if(isRunning)
-			return ler(false, "Shard is already running");
 		if(getAgent() == null)
 			return ler(false, "Shards cannot start without being in context of an agent.");
-		isRunning = true;
-		return true;
+		return super.start();
 	}
 	
 	/**
@@ -164,17 +151,9 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	 */
 	@Override
 	public boolean stop() {
-		if(!isRunning)
-			return ler(false, "Shard is not running");
 		if(getAgent() == null)
 			throw new IllegalStateException("Shard is " + getShardDesignation() + " not in the context of an agent.");
-		isRunning = false;
-		return true;
-	}
-	
-	@Override
-	public boolean isRunning() {
-		return isRunning;
+		return super.stop();
 	}
 	
 	/**
@@ -281,26 +260,52 @@ public class AgentShardCore extends Unit implements AgentShard, Serializable {
 	/**
 	 * Retrieves the parent of the shard.
 	 * 
-	 * FIXME rename to <code>getParent()</code>.
-	 * 
-	 * @return the {@link ShardContainer} that is the parent of this shard; <code>null</code> if there is no parent set.
+	 * @return the {@link CompositeAgent} that is the parent of this shard; <code>null</code> if there is no parent set.
 	 */
 	final protected ShardContainer getAgent() {
 		return parentAgent;
-	}
-	
-	/**
-	 * Retrieves the name of the parent entity of the shard.
-	 *
-	 * @return the name of the parent entity.
-	 */
-	final protected String getParentName() {
-		return parentAgent.getEntityName();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<AgentShard> asContext() {
 		throw new UnsupportedOperationException("The AgentSharCore cannot be a context of another entity.");
+	}
+	
+	/**
+	 * Instantiate the {@link AgentShard} which is recommended by a Pylon (via
+	 * {@link PylonProxy#getRecommendedShardImplementation} for the given standard designation.
+	 * <p>
+	 * The shard is also added to the given context (if not <code>null</code>) and in the context of the given Pylon, so
+	 * that it is ready to use.
+	 * <p>
+	 * For other use cases on should perform the instantiation using
+	 * {@link ClassFactory#loadClassInstance(String, MultiTreeMap, boolean)}
+	 * 
+	 * @param shardDesignation
+	 *            - the designation for the shard.
+	 * @param pylon
+	 *            - the pylon to recommend the shard. Must not be <code>null</code>.
+	 * @param configuration
+	 *            - configuration for the shard. Can be <code>null</code>.
+	 * @param shardContext
+	 *            - the context in which to add the shard. Can be <code>null</code>.
+	 * @return the newly instantiated shard.
+	 */
+	public static AgentShard instantiateRecommendedShard(StandardAgentShard shardDesignation, PylonProxy pylon,
+			MultiTreeMap configuration, ShardContainer shardContext) {
+		if(pylon == null)
+			throw new IllegalArgumentException("The pylon cannot be null.");
+		MultiTreeMap config = configuration != null ? configuration : new MultiTreeMap();
+		config.addFirstValue(SimpleLoader.CLASSPATH_KEY,
+				pylon.getRecommendedShardImplementation(AgentShardDesignation.standardShard(shardDesignation)));
+		SimpleLoader loader = new SimpleLoader();
+		loader.configure(null, null, PlatformUtils.getClassFactory());
+		AgentShard shard = (AgentShard) loader.load(config);
+		if(shard != null && shardContext != null) {
+			shard.addContext(shardContext);
+			shard.addGeneralContext(pylon);
+		}
+		return shard;
 	}
 }

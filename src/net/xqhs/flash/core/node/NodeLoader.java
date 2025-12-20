@@ -23,6 +23,7 @@ import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -81,8 +82,9 @@ public class NodeLoader extends Unit implements Loader<Node> {
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
-			Node node = loadNode(nodeConfig, DeploymentConfiguration.filterContext(allEntities,
-					nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)),
+			Node node = loadNode(nodeConfig,
+					DeploymentConfiguration.filterContext(allEntities,
+							nodeConfig.getSingleValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE)),
 					DeploymentConfiguration.filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null)
 							.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE));
 			if(node != null) {
@@ -232,11 +234,11 @@ public class NodeLoader extends Unit implements Loader<Node> {
 							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
 					.addAll(DeploymentConfiguration.CENTRAL_NODE_KEY,
 							nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
-			node.registerEntity(DeploymentConfiguration.MONITORING_TYPE, centralEntity,
+			node.registerEntity(AgentShardDesignation.StandardAgentShard.REMOTE.shardName(), centralEntity,
 					DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 			
 			lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-					DeploymentConfiguration.MONITORING_TYPE);
+					AgentShardDesignation.StandardAgentShard.REMOTE.shardName());
 		}
 		
 		String toLoad = nodeConfiguration.getSingleValue(CategoryName.LOAD_ORDER.s());
@@ -288,7 +290,7 @@ public class NodeLoader extends Unit implements Loader<Node> {
 					List<Loader<?>> loaderList = null;
 					String log_catLoad = null, log_kindLoad = null;
 					int log_nLoader = 0;
-					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) { 
+					if(loaders.containsKey(catName) && !loaders.get(catName).isEmpty()) {
 						// if the category in loader list
 						log_catLoad = catName;
 						if(loaders.get(catName).containsKey(kind)) { // get loaders for this kind
@@ -358,9 +360,13 @@ public class NodeLoader extends Unit implements Loader<Node> {
 								DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 						
 						// find messaging pylons that can be used by the Node
-						EntityProxy<?> ctx = entity.asContext();
-						if(ctx != null && ctx instanceof MessagingPylonProxy)
-							messagingProxies.add((MessagingPylonProxy) ctx);
+						try {
+							EntityProxy<?> ctx = entity.asContext();
+							if(ctx != null && ctx instanceof MessagingPylonProxy)
+								messagingProxies.add((MessagingPylonProxy) ctx);
+						} catch(UnsupportedOperationException e) {
+							// nothing to do, means asContext is not implemented.
+						}
 						
 						loaded.put(local_id, entity);
 						node.registerEntity(catName, entity, id);

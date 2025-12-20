@@ -28,6 +28,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.ReentrantLock;
 
+import florina.monitoringAndControlTest.BootCompositeWebSocket;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.AgentShardGeneral;
+import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
+
 /**
  * An {@link AgentShard} implementation that sends messages to other agents.
  * <p>
@@ -148,9 +156,9 @@ public class PingTestComponent extends AgentShardGeneral
 			case AGENT_STOP:
 				pingTimer.cancel();
 				break;
-			case APPLICATION_START:
+			case SIMULATION_START:
 				break;
-			case APPLICATION_PAUSE:
+			case SIMULATION_PAUSE:
 				break;
 			default:
 				break;

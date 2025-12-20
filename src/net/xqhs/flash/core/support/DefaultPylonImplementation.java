@@ -49,15 +49,15 @@ public class DefaultPylonImplementation extends EntityCore<Node> implements Pylo
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
 		super.addContext(context);
-		nodeName = context.getEntityName();
+		nodeName = getContext().getEntityName();
 		lf("Added node context:", nodeName);
 		return true;
 	}
 	
 	@Override
 	public boolean removeContext(EntityProxy<Node> context) {
-		if(nodeName == null)
-			return ler(false, "No context was present, nothing to remove.");
+		if(!super.removeContext(context))
+			return false;
 		lf("Context removed:", nodeName);
 		nodeName = null;
 		return true;

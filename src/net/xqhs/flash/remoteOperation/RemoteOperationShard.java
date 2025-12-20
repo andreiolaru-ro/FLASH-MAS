@@ -173,14 +173,14 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		}
 		switch(event.getType()) {
 		case AGENT_START:
-			if(getShardConfiguration().containsKey(WAIT_PARAMETER_NAME))
+			if(getShardData().containsKey(WAIT_PARAMETER_NAME))
 				remoteDelayTimer.schedule(new TimerTask() {
 					@Override
 					public void run() {
 						sendGuiUpdate();
 						remoteDelayTimer.cancel();
 					}
-				}, Long.parseLong(getShardConfiguration().get(WAIT_PARAMETER_NAME)));
+				}, Long.parseLong(getShardData().get(WAIT_PARAMETER_NAME)));
 			else
 				sendGuiUpdate();
 			//$FALL-THROUGH$
@@ -189,7 +189,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		case APPLICATION_STOP:
 		case APPLICATION_START: {
 			String status = Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | "));
-			li("Status of [] is [].", getParentName(), status);
+			li("Status of [] is [].", getAgent().getEntityName(), status);
 			AgentWave update = CentralMonitoringAndControlEntity.UPDATE_ENTITY_STATUS
 					// FIXME this should be sent to each remote
 					.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, (Object[]) entityStatus)
@@ -202,7 +202,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		default:
 			// nothing to do
 		}
-		lf("Agent [] event unhandled [].", getParentName(), event);
+		lf("Agent [] event unhandled [].", getAgent().getEntityName(), event);
 	}
 	
 	/**
@@ -275,7 +275,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		String port = wave.getFirstDestinationElement();
 		
 		// the source is this shard, within this agent
-		wave.addSourceElements(getParentName(), SHARD_ENDPOINT);
+		wave.addSourceElements(getAgent().getEntityName(), SHARD_ENDPOINT);
 		// the wave already has the destination as port and the content to output to the port
 		wave.prependDestination(CentralMonitoringAndControlEntity.ENTITY_GUI_OUTPUT.s());
 		// FIXME this should be sent to each remote

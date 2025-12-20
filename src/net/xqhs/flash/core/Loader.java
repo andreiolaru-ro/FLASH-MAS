@@ -15,6 +15,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -32,12 +35,11 @@ import net.xqhs.util.logging.Logger;
  * {@link SimpleLoader} may be used.
  * 
  * @param <T>
- *                the type of {@link Entity} instance that the loader can load.
- * 
+ *            the type of {@link Entity} instance that the loader can load.
+ * 			
  * @author andreiolaru
  */
-public interface Loader<T extends Entity<?>>
-{
+public interface Loader<T extends Entity<?>> {
 	/**
 	 * Configures an instance of the loader based on deployment data.
 	 * 
@@ -82,8 +84,8 @@ public interface Loader<T extends Entity<?>>
 	 * to call {@link #preload}.
 	 * 
 	 * @param configuration
-	 *                          - the configuration of the entity that one intends to load. This COnfiguration may be
-	 *                          modified (added to) in this method.
+	 *            - the configuration of the entity that one intends to load. This COnfiguration may be modified (added
+	 *            to) in this method.
 	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
 	 *         if the entity cannot load with the given configuration.
 	 */
@@ -122,7 +124,7 @@ public interface Loader<T extends Entity<?>>
 	 * See also {@link #load(MultiTreeMap, List, List)}.
 	 * 
 	 * @param configuration
-	 *                          - the configuration data for the entity.
+	 *            - the configuration data for the entity.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(MultiTreeMap configuration);
@@ -141,6 +143,35 @@ public interface Loader<T extends Entity<?>>
 		 * Class.
 		 */
 		CLASS
+	}
+	
+	/**
+	 * Filters a list of context items to those items that belong to a given class or interface.
+	 * 
+	 * @param context
+	 *            - the list of context items.
+	 * @param type
+	 *            - the type to search for.
+	 * @return a list of context items matching the type.
+	 */
+	static List<EntityProxy<? extends Entity<?>>> getContextItems(List<EntityProxy<? extends Entity<?>>> context,
+			Class<?> type) {
+		return context.stream().filter(c -> type.isInstance(c)).collect(Collectors.toList());
+	}
+	
+	/**
+	 * Filters a list of context items to those items that belong to a given class or interface and returns the last
+	 * (presumably the "closest" context).
+	 * 
+	 * @param context
+	 *            - the list of context items.
+	 * @param type
+	 *            - the type to search for.
+	 * @return the last element matching the type.
+	 */
+	static EntityProxy<? extends Entity<?>> getClosestContext(List<EntityProxy<? extends Entity<?>>> context,
+			Class<?> type) {
+		return getContextItems(context, type).stream().reduce((first, second) -> second).orElse(null);
 	}
 	
 	/**
@@ -204,8 +235,7 @@ public interface Loader<T extends Entity<?>>
 	 * @return the full classpath of the first class that has been found, if any; <code>null</code> otherwise.
 	 */
 	static String autoFind(ClassFactory factory, List<String> packages, String given_cp, String upper_name,
-			String lower_name, String entity, List<String> checkedPaths)
-	{
+			String lower_name, String entity, List<String> checkedPaths) {
 		return autoFind(packages, given_cp, upper_name, lower_name, entity, checkedPaths, SearchItemType.CLASS,
 				factory);
 	}
@@ -246,13 +276,14 @@ public interface Loader<T extends Entity<?>>
 	 *            for classes.
 	 * @return <code>true</code> if the item is found / can be loaded.
 	 */
-	static boolean loadCheck(String path, SearchItemType searchType, Object... objects)
-	{
+	static boolean loadCheck(String path, SearchItemType searchType, Object... objects) {
 		ClassFactory factory;
 		File file;
 		switch(searchType) {
 		case CLASS:
-			factory = objects[0] != null ? (ClassFactory) objects[0] : PlatformUtils.getClassFactory();
+			factory = (objects.length > 0 && objects[0] != null && objects[0] instanceof ClassFactory)
+					? (ClassFactory) objects[0]
+					: PlatformUtils.getClassFactory();
 			return factory.canLoadClass(path);
 		case FILE:
 			try {
@@ -299,14 +330,12 @@ public interface Loader<T extends Entity<?>>
 					packages.add(pack.replace('.', '/'));
 			}
 		if(packages != null)
-			for(String p : packages)
-			{
+			for(String p : packages) {
 				paths.add(p + D + given_cp);
 				if(loadCheck(p + D + given_cp, searchType, others))
 					return p + D + given_cp;
 				if(searchType == SearchItemType.FILE)
-					for(String dir : DeploymentConfiguration.SOURCE_FILE_DIRECTORIES)
-					{
+					for(String dir : DeploymentConfiguration.SOURCE_FILE_DIRECTORIES) {
 						paths.add(dir + D + p + D + given_cp);
 						if(loadCheck(dir + D + p + D + given_cp, searchType, others))
 							return dir + D + p + D + given_cp;
@@ -318,8 +347,7 @@ public interface Loader<T extends Entity<?>>
 		if(upper_name == null)
 			return null;
 		clsNames.add(capitalize(upper_name) + capitalize(entity));
-		if(lower_name != null)
-		{
+		if(lower_name != null) {
 			clsNames.add(capitalize(lower_name) + capitalize(entity));
 			clsNames.add(capitalize(lower_name) + capitalize(upper_name) + capitalize(entity));
 		}
@@ -350,7 +378,7 @@ public interface Loader<T extends Entity<?>>
 	 * Makes the first letter of the given string upper-case.
 	 * 
 	 * @param s
-	 *              - the string.
+	 *            - the string.
 	 * @return the string with the first letter converted to upper-case.
 	 */
 	static String capitalize(String s)
@@ -370,6 +398,11 @@ public interface Loader<T extends Entity<?>>
 	static String toPackageName(String s) {
 		if(s.equals(s.toUpperCase())) // name is all-caps
 			return s.toLowerCase();
-		return s.substring(0, 1).toLowerCase() + s.substring(1);
+		if(!Character.isUpperCase(s.charAt(0))) // name starts with lower case -> leave it like that
+			return s;
+		Matcher m = Pattern.compile("[A-Z]+").matcher(s);
+		m.find(); // must match because tested before
+		int nCaps = m.group().length() - 1;
+		return s.substring(0, nCaps).toLowerCase() + s.substring(nCaps);
 	}
 }

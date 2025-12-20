@@ -47,13 +47,15 @@ public class DeploymentTest
 		
 		// simple deployments
 		
-		// test_args += " -node main";
-		test_args += " -package examples.compositePingPong -loader agent:composite";
-		// test_args += " -support some";
-		test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard MonitoringTest";
-		test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard MonitoringTestShard";
+		test_args += " -node main";
+		// test_args += " -package examples.compositePingPong -loader agent:composite";
+		test_args += " -pylon webSocket: serverPort:8888";
+		// test_args += " -agent composite:AgentA -shard messaging -shard PingTestComponent otherAgent:AgentB -shard
+		// MonitoringTest";
+		// test_args += " -agent composite:AgentB -shard messaging -shard PingBackTestComponent -shard
+		// MonitoringTestShard";
 		
-		// test_args = "-package deploymentTest -agent AgentA classpath:TestAgent";
+		test_args += " -agent AgentA classpath:TestAgent";
 		
 		// test_args = "src-deployment/ChatAgents/deployment-chatAgents.xml";
 		

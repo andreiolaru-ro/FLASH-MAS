@@ -183,11 +183,11 @@ public class MobileCompositeAgent extends CompositeAgent {
 		nonSerializedShardDesignations.forEach((designation, configuration) -> {
 			loader.preloadShard(designation.toString(), configuration, null, "PRE_LOADING_NON-SERIALIZED_SHARDS: ");
 			AgentShard shard = loader.loadShard(designation.toString(), configuration,
-					"LOADING_NON-SERIALIZED_SHARDS: ", agentName);
+					"LOADING_NON-SERIALIZED_SHARDS: ", getName());
 			addShard(shard);
 		});
 		
-		log("agent [] has shards [] after deserialization in order: []", agentName, shards, shardOrder);
+		log("agent has shards [] after deserialization in order: []", shards, shardOrder);
 	}
 	
 	/**
@@ -226,9 +226,9 @@ public class MobileCompositeAgent extends CompositeAgent {
 		if(exitEvent != null && MOVE_TRANSIENT_EVENT_PARAMETER.equals(exitEvent.get(TRANSIENT_EVENT_PARAMETER))) {
 			Node.NodeProxy nodeProxy = getNodeProxyContext();
 			if(nodeProxy != null) {
-				List<EntityProxy<? extends Entity<?>>> contexts = new ArrayList<>(agentContext);
+				List<EntityProxy<? extends Entity<?>>> contexts = new ArrayList<>(getFullContext());
 				contexts.forEach(this::removeGeneralContext);
-				nodeProxy.moveAgent(exitEvent.getValue(TARGET), agentName, serialize());
+				nodeProxy.moveAgent(exitEvent.getValue(TARGET), getName(), serialize());
 			}
 		}
 		return exitEvent;
@@ -282,11 +282,11 @@ public class MobileCompositeAgent extends CompositeAgent {
 				MultiTreeMap configuration = null;
 				if(shard instanceof NonSerializableShard) {
 					log("[] is instance of NonSerializableShard", shard);
-					configuration = ((NonSerializableShard) shard).getShardConfiguration();
+					configuration = ((NonSerializableShard) shard).getConfiguration();
 				}
 				else if(shard instanceof AgentShardCore) {
 					log("[] is instance of AgentShardCore", shard);
-					configuration = ((AgentShardCore) shard).getShardConfiguration();
+					configuration = ((AgentShardCore) shard).getConfiguration();
 				}
 				else
 					log("[] only designation available for shard", shard);
@@ -317,7 +317,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 	 * @return the proxy to the current node, if any; <code>null</code> otherwise.
 	 */
 	public NodeProxy getNodeProxyContext() {
-		for(EntityProxy<? extends Entity<?>> context : agentContext)
+		for(EntityProxy<? extends Entity<?>> context : getFullContext())
 			if(context instanceof NodeProxy)
 				return (NodeProxy) context;
 		return null;

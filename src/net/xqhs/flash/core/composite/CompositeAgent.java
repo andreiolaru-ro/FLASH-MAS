@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
@@ -30,6 +31,7 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Logger.Level;
@@ -47,7 +49,7 @@ import net.xqhs.util.logging.UnitComponent;
  *
  * @author Andrei Olaru
  */
-public class CompositeAgent implements CompositeAgentModel, Serializable {
+public class CompositeAgent extends EntityCore<Pylon> implements CompositeAgentModel {
 	/**
 	 * The serial UID.
 	 */
@@ -177,10 +179,6 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 */
 	protected ArrayList<AgentShardDesignation>				shardOrder		= new ArrayList<>();
 	/**
-	 * The list of all contexts this agent is placed in, in the order in which they were added.
-	 */
-	protected ArrayList<EntityProxy<? extends Entity<?>>>	agentContext	= new ArrayList<>();
-	/**
 	 * A synchronized queue of agent events, as posted by the shards or by the agent itself.
 	 */
 	protected LinkedBlockingQueue<AgentEvent>				eventQueue		= null;
@@ -198,10 +196,6 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 */
 	protected EntityProxy<Agent>							asContext		= new CompositeAgentShardContainer(this);
 	
-	/**
-	 * The agent name, if given.
-	 */
-	protected String					agentName;
 	/**
 	 * <b>*EXPERIMENTAL*</b>. This log is used only for important logging messages related to the agent's state. While
 	 * the agent will attempt to use its set name, this may not always succeed. This log should only be used by means of
@@ -234,8 +228,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 *            - the configuration, from which the name of the agent will be taken.
 	 */
 	public CompositeAgent(MultiTreeMap configuration) {
-		if(configuration != null && configuration.containsKey(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
-			agentName = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+		super.configure(configuration);
 	}
 	
 	/**
@@ -482,6 +475,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		case AGENT_START: // the agent has completed starting and all shards are up.
 			synchronized(eventQueue) {
 				agentState = AgentState.RUNNING;
+				super.start();
 				log("state is now ", agentState);
 			}
 			break;
@@ -495,6 +489,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 					agentState = AgentState.TRANSIENT;
 				else
 					agentState = AgentState.STOPPED;
+				super.stop();
 				log("state is now ", agentState);
 			}
 			eventQueue = null;
@@ -534,28 +529,13 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		return isTransient();
 	}
 	
-	/**
-	 * Context can be added to an agent only when it is not running.
-	 */
-	@Override
-	public boolean addContext(EntityProxy<Pylon> context) {
-		return addGeneralContext(context);
-	}
-	
-	/**
-	 * Context can be removed from an agent only when it is not running.
-	 */
-	@Override
-	public boolean removeContext(EntityProxy<Pylon> context) {
-		return removeGeneralContext(context);
-	}
-	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(isRunning()) {
 			return false;
 		}
-		agentContext.add(context);
+		if(!super.addGeneralContext(context))
+			return false;
 		for(AgentShard shard : shards.values()) {
 			shard.addGeneralContext(context);
 		}
@@ -566,10 +546,16 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(isRunning())
 			return false;
-		agentContext.remove(context);
+		if(!super.removeGeneralContext(context))
+			return false;
 		for(AgentShard shard : shards.values())
 			shard.removeGeneralContext(context);
 		return true;
+	}
+	
+	@Override
+	public boolean isMainContext(Object context) {
+		return context instanceof PylonProxy;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -602,7 +588,7 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 		if(!shardOrder.contains(shard.getShardDesignation()))
 			shardOrder.add(shard.getShardDesignation());
 		shard.addContext(this.asContext());
-		for(EntityProxy<? extends Entity<?>> context : agentContext)
+		for(EntityProxy<? extends Entity<?>> context : getFullContext())
 			shard.addGeneralContext(context);
 		return this;
 	}
@@ -645,16 +631,6 @@ public class CompositeAgent implements CompositeAgentModel, Serializable {
 	 */
 	protected AgentShard getShard(AgentShardDesignation designation) {
 		return shards.get(designation);
-	}
-	
-	/**
-	 * Returns the name of the agent. It is the name that has been set through the <code>AGENT_NAME</code> parameter.
-	 *
-	 * @return the name of the agent.
-	 */
-	@Override
-	public String getName() {
-		return agentName;
 	}
 	
 	/**

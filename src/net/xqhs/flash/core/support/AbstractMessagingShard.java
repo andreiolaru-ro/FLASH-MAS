@@ -11,6 +11,9 @@
  ******************************************************************************/
 package net.xqhs.flash.core.support;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -103,6 +106,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 * {@link #classicInbox} and {@link #waveInbox} can be not <code>null</code>.
 	 */
 	protected transient WaveReceiver				waveInbox		= null;
+	/**
+	 * Outgoing message hooks.
+	 */
+	protected transient Set<OutgoingMessageHook>	outgoingHooks	= null;
 	
 	/**
 	 * No-argument constructor.
@@ -113,6 +120,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		outgoingHooks = new HashSet<>();
 		if(context instanceof ClassicMessagingPylonProxy) {
 			classicPylon = (ClassicMessagingPylonProxy) context;
 			classicInbox = new ClassicMessageReceiver() {
@@ -150,22 +158,24 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	}
 	
 	@Override
+	public void unregister(String entityName) {
+		if(classicPylon != null)
+			classicPylon.unregister(entityName, classicInbox);
+		if(wavePylon != null)
+			wavePylon.unregister(entityName, waveInbox);
+	}
+	
+	@Override
 	public void signalAgentEvent(AgentEvent event) {
 		super.signalAgentEvent(event);
 		switch(event.getType()) {
 		case AGENT_START:
 			if(classicPylon == null && wavePylon == null)
 				throw new IllegalStateException("Shard is not currently added within a pylon");
-			if(classicPylon != null)
-				classicPylon.register(getAgent().getEntityName(), classicInbox);
-			else
-				wavePylon.register(getAgent().getEntityName(), waveInbox);
+			register(getAgent().getEntityName());
 			break;
 		case AGENT_STOP:
-			if(classicPylon != null)
-				classicPylon.unregister(getAgent().getEntityName(), classicInbox);
-			if(wavePylon != null)
-				wavePylon.unregister(getAgent().getEntityName(), waveInbox);
+			unregister(getAgent().getEntityName());
 			break;
 		default:
 			break;
@@ -230,11 +240,17 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
-		if(classicPylon != null)
+		if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(source, destination, content);
 			return classicPylon.send(source, destination, content);
+		}
 		else if(wavePylon != null) {
-			return wavePylon.send(new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
-					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress())));
+			AgentWave wave = new AgentWave(content).appendDestination(AgentWave.pathToElements(destination))
+					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress()));
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
+			return wavePylon.send(wave);
 		}
 		else
 			return false;
@@ -244,11 +260,18 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	public boolean sendMessage(AgentWave wave) {
 		if(!getAgentAddress().equals(wave.getFirstSource()))
 			wave.addSourceElementFirst(getAgentAddress());
-		if(wavePylon != null)
+		if(wavePylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave);
 			return wavePylon.send(wave);
-		else if(classicPylon != null)
+		}
+		else if(classicPylon != null) {
+			for(OutgoingMessageHook hook : outgoingHooks)
+				hook.sendingMessage(wave.getCompleteSource(), wave.getCompleteDestination(),
+						wave.getSerializedContent());
 			return classicPylon.send(wave.getCompleteSource(), wave.getCompleteDestination(),
 					wave.getSerializedContent());
+		}
 		else
 			return false;
 	}
@@ -268,6 +291,11 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		if(!endpoint.startsWith(externalPath))
 			throw new IllegalStateException("Endpoint address does not start with agent address");
 		return endpoint.substring(externalPath.length());
+	}
+	
+	@Override
+	public void addOutgoingMessageHook(OutgoingMessageHook hook) {
+		outgoingHooks.add(hook);
 	}
 	
 	/**

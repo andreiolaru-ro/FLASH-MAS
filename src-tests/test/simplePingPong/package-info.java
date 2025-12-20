@@ -14,7 +14,7 @@
  */
 /**
  * The scenario of two agents which ping messages between them (one sends and one replies). The scenario is given as
- * console arguments.
+ * console arguments. The agent definition is in package <code>testing</code>.
  * <p>
  * Run the Boot class.
  * <p>

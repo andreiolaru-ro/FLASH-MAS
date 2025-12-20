@@ -56,11 +56,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String	CLI_CATEGORY_PREFIX				= "-";
+	public static final String	CLI_CATEGORY_PREFIX	= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String	NAME_SEPARATOR					= ":";
+	public static final String	NAME_SEPARATOR		= ":";
 	/**
 	 * Separator for multiple values of the same parameter.
 	 */
@@ -136,6 +136,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * Directories containing source files (especially for looking up various files).
 	 */
 	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
+	/**
+	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
+	 */
+	public static final String		CENTRAL_NODE_KEY				= "central";
+	/**
+	 * The name of the Central M&C entity.
+	 */
+	public static final String		CENTRAL_MONITORING_ENTITY_NAME	= "Monitoring&Control_Entity";
 	
 	/**
 	 * Local IDs of default created entities.
@@ -145,21 +153,6 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The correspondence between names and local IDs, used to assign contexts by names.
 	 */
 	protected Map<String, String>	name_ids	= new HashMap<>();
-	
-	/**
-	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
-	 */
-	public static final String CENTRAL_NODE_KEY = "central";
-	
-	/**
-	 * Type for net.xqhs.flash.core.monitoring and control entity.
-	 */
-	public static final String MONITORING_TYPE = "net/xqhs/flash/core/monitoring";
-	
-	/**
-	 * The name of the Central M&C entity.
-	 */
-	public static final String CENTRAL_MONITORING_ENTITY_NAME = "Monitoring&Control_Entity";
 	
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
@@ -334,26 +327,47 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		List<String> categoryContext = new LinkedList<>();
 		categoryContext.add(CategoryName.DEPLOYMENT.s());
-		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(),
-				new LinkedList<>(), this, autoCreated, name_ids, log);
+		postProcess(deployment, CategoryName.DEPLOYMENT.s(), new MultiTreeMap(), new MultiTreeMap(), new LinkedList<>(),
+				this, autoCreated, name_ids, log);
 		
 		addContext(deployment, new LinkedList<>(), name_ids);
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);
-		// create a reverse index from each id to the ids in its context
-		// iterate in reverse order
-		// remove ids (also from their direct contexts -- use the index) which only have default ids depending on them
-		// use List.containsAll
 		
-		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
+		// remove auto-created entities from all the contexts containing them if they don't contain other entities in
+		// their context.
+		HashMap<String, List<String>> toRemove = new HashMap<>();
+		MultiTreeMap localIDs = this.getSingleTree(LOCAL_ID_ATTRIBUTE);
+		for(String id : localIDs.getKeys())
 			if(autoCreated.contains(id)) {
-				// TODO
+				// must remove if empty
+				boolean remove = true;
+				for(String idSub : localIDs.getKeys())
+					if(localIDs.getATree(idSub).getValues(CONTEXT_ELEMENT_NAME).contains(id))
+						remove = false;
+				if(remove)
+					toRemove.put(id, localIDs.getATree(id).getValues(CONTEXT_ELEMENT_NAME));
 			}
+		log.lf("marked for removal entities: []", toRemove);
+		for(String id : toRemove.keySet()) {
+			for(String parentID : toRemove.get(id))
+				for(String subCategory : localIDs.getSingleTree(parentID).getHierarchicalNames()) {
+					MultiTreeMap subCat = localIDs.getSingleTree(parentID).getATree(subCategory);
+					for(String name : subCat.getHierarchicalNames())
+						for(MultiTreeMap tree : subCat.getTrees(name))
+							if(id.equals(tree.getSingleValue(LOCAL_ID_ATTRIBUTE))) {
+								subCat.remove(name, tree);
+								log.lf("removed one tree for [] (id: []) from []/[[]", name, id, parentID, subCategory);
+							}
+				}
+			localIDs.removeKey(id);
+		}
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");
-		log.li("final config:", this);
+		log.li("final config:", new MultiTreeMap().addOneTree(CategoryName.DEPLOYMENT.s(), deployment));
+		log.lf("local IDs:", new MultiTreeMap().addSingleTree(LOCAL_ID_ATTRIBUTE, this.getATree(LOCAL_ID_ATTRIBUTE)));
 		
 		log.doExit();
 		lock();

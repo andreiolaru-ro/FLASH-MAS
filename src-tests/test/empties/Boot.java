@@ -23,7 +23,14 @@ public class Boot {
 	public static void main(String[] args) {
 		// FlashBoot.main(new String[] { THIS_DIRECTORY + "empty-scenario.xml" });
 		// FlashBoot.main(new String[] { THIS_DIRECTORY + "empty-nodes.xml" });
-		FlashBoot.main(new String[] { THIS_DIRECTORY + "empty-agents.xml" });
+		// FlashBoot.main(new String[] { THIS_DIRECTORY + "empty-agents.xml" });
+		
+		// empty scenario
+		// FlashBoot.main(new String[] {});
+		// CLI empty node:
+		FlashBoot.main("-node node1 -node node2".split(" "));
+		// empty scenario
+		// FlashBoot.main("-agent -agent".split(" "));
 	}
 	
 }
