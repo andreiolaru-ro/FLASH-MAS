@@ -30,7 +30,6 @@ import com.google.gson.JsonSyntaxException;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
@@ -49,6 +48,10 @@ import net.xqhs.flash.json.AgentWaveJson;
  * @author Andrei Olaru
  */
 public class WebSocketPylon extends DefaultPylonImplementation {
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * The tread that will manage messages.
@@ -132,7 +135,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected WebSocketClient				webSocketClient;
 	/**
 	 * For the entities in the scope of this pylon, the correspondence between their names and their
-	 * {@link ClassicMessageReceiver} instances.
+	 * {@link WaveReceiver} instances.
 	 */
 	protected HashMap<String, WaveReceiver>	messageReceivers	= new HashMap<>();
 	
@@ -162,14 +165,14 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		messagingProxy = new WaveMessagingPylonProxy() {
 			/**
 			 * The entity is both: - registered within the local instance which is useful for routing a message back to
-			 * the the {@link ClassicMessageReceiver} instance when it arrives from the server - registered to the
+			 * the the {@link WaveReceiver} instance when it arrives from the server - registered to the
 			 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
 			 * client
 			 *
 			 * @param entityName
 			 *            - the name of the entity
 			 * @param receiver
-			 *            - the {@link ClassicMessageReceiver} instance to receive messages
+			 *            - the {@link WaveReceiver} instance to receive messages
 			 * @return - an indication of success
 			 */
 			@Override
@@ -269,9 +272,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 						
 						/**
 						 * Receives a message from the server. The message was previously routed to this websocket
-						 * client address and it is further routed to a specific entity using the
-						 * {@link ClassicMessageReceiver} instance. The entity is searched within the context of this
-						 * support.
+						 * client address and it is further routed to a specific entity using the {@link WaveReceiver}
+						 * instance. The entity is searched within the context of this support.
 						 *
 						 * @param jsonString
 						 *            - the JSON string containing a message and routing information
