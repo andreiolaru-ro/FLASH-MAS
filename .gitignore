@@ -1,16 +1,22 @@
 /bin/
 /lib-all/
-.idea
-.xml
-*.iml
 /log-*.yaml
 /APDescription.txt
 /MTPs-Container-*.txt
 *__pycache__
-<<<<<<< HEAD
 /target/
 /ml-directory/
-=======
-/ml-directory/
-/target/
->>>>>>> refs/heads/open-system
+
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/contentModel.xml
