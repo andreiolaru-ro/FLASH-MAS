@@ -63,8 +63,8 @@ public class RandomPositionGenerator {
                 for (int x = 0; x < squareSize; x++) {
                     GridPosition pos = new GridPosition(x, y);
                     Object agent = map.get(pos);
-                    if (agent instanceof StepAgent stepAgent) {
-                        agentsToMove.add(stepAgent);
+                    if (agent instanceof StepAgent) {
+                        agentsToMove.add((StepAgent) agent);
                     }
                 }
             }
