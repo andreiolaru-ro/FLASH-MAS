@@ -2,14 +2,13 @@ package andrei.abms;
 
 import andrei.abms.gridworld.GridMap;
 import andrei.abms.gridworld.GridPosition;
-import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.agent.BaseAgent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class WolfAgent implements StepAgent {
+public class WolfAgent extends BaseAgent implements StepAgent {
     private final GridMap map;
     private GridPosition gridPosition;
     private final Random random = new Random();
@@ -19,50 +18,6 @@ public class WolfAgent implements StepAgent {
         this.map = map;
         this.gridPosition = gridPosition;
         this.mapSize = mapSize;
-    }
-    @Override
-    public boolean start() {
-        return false;
-    }
-
-    @Override
-    public boolean stop() {
-        return false;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public boolean addContext(EntityProxy<Pylon> context) {
-        return false;
-    }
-
-    @Override
-    public boolean removeContext(EntityProxy<Pylon> context) {
-        return false;
-    }
-
-    @Override
-    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return false;
-    }
-
-    @Override
-    public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        return false;
-    }
-
-    @Override
-    public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
-        return null;
     }
 
     @Override
