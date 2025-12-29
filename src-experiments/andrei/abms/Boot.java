@@ -32,7 +32,7 @@ public class Boot
 		a += " -package andrei.abms";
 		a += " -loader AgentGroup:AgentGroup";
 		a += " -node main";
-		a += " -map Grid vicinity:8neighbors classpath:gridworld.GridMap";
+		a += " -map Grid vicinity:8neighbors classpath:gridworld.GridTopology";
 		a += " -executor StepWise: steps:10";
 		a += " -AgentGroup g d:5 classpath:AgentGroup -agent CA";
 		

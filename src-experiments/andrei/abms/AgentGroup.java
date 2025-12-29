@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import andrei.abms.gridworld.GridMap;
+import andrei.abms.gridworld.GridTopology;
 import andrei.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -91,7 +91,7 @@ public class AgentGroup extends EntityCore<Node> {
 			AgentGroup ag = new AgentGroup(agents);
 			ag.configure(configuration);
 			
-			GridMap map = (GridMap) Loader.getClosestContext(context, GridMap.class);
+			GridTopology map = (GridTopology) Loader.getClosestContext(context, GridTopology.class);
 			Executor executor = (Executor) Loader.getClosestContext(context, Executor.class);
 			agents.forEach(a -> executor.register(a));
 			agentMap.entrySet().stream().forEach(e -> map.place(e.getValue(), e.getKey()));
@@ -116,7 +116,7 @@ public class AgentGroup extends EntityCore<Node> {
 	 */
 	protected List<Agent>		agents;
 	protected int				d;
-	protected GridMap			map;
+	protected GridTopology map;
 	
 	/**
 	 * Creates a new agent group with the given agents.

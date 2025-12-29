@@ -1,6 +1,6 @@
 package andrei.abms;
 
-import andrei.abms.gridworld.GridMap;
+import andrei.abms.gridworld.GridTopology;
 import andrei.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.agent.BaseAgent;
 import java.util.ArrayList;
@@ -9,12 +9,12 @@ import java.util.Random;
 import java.util.Set;
 
 public class WolfAgent extends BaseAgent implements StepAgent {
-    private final GridMap map;
+    private final GridTopology map;
     private GridPosition gridPosition;
     private final Random random = new Random();
     private final int mapSize;
 
-    public WolfAgent(GridMap map, GridPosition gridPosition, int mapSize) {
+    public WolfAgent(GridTopology map, GridPosition gridPosition, int mapSize) {
         this.map = map;
         this.gridPosition = gridPosition;
         this.mapSize = mapSize;

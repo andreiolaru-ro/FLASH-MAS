@@ -2,13 +2,13 @@ package andrei.abms;
 
 import java.util.*;
 
-import andrei.abms.gridworld.GridMap;
+import andrei.abms.gridworld.GridTopology;
 import andrei.abms.gridworld.GridPosition;
 
 public class RandomPositionGenerator {
     private static final int MAX_ATTEMPTS = 10000;
 
-    public static void populateGridWithRandomAgents(DistributionConfig config, GridMap map, int sheepCount, int wolfCount) {
+    public static void populateGridWithRandomAgents(DistributionConfig config, GridTopology map, int sheepCount, int wolfCount) {
         if (config == null) throw new IllegalArgumentException("DistributionConfig cannot be null");
         if (map == null) throw new IllegalArgumentException("Map cannot be null");
         int totalToPlace = sheepCount + wolfCount;
@@ -41,7 +41,7 @@ public class RandomPositionGenerator {
     }
 
     public static void main(String[] args) {
-        GridMap map = new GridMap();
+        GridTopology map = new GridTopology();
         int squareSize = 8;
         int sheep = 10;
         int wolves = 5;
@@ -80,7 +80,7 @@ public class RandomPositionGenerator {
         }
     }
     
-    private static void printMap(GridMap map, int size) {
+    private static void printMap(GridTopology map, int size) {
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
                 GridPosition pos = new GridPosition(x, y);

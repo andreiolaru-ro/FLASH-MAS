@@ -5,7 +5,7 @@ import java.util.Set;
 import andrei.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.agent.Agent;
 
-public interface Map {
+public interface Topology {
 	
 	Set<GridPosition> getVicinity(GridPosition pos);
 	

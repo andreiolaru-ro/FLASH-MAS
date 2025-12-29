@@ -6,14 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import andrei.abms.Map;
+import andrei.abms.Topology;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class GridMap extends EntityCore<Node> implements Map, EntityProxy<GridMap> {
+public class GridTopology extends EntityCore<Node> implements Topology, EntityProxy<GridTopology> {
 	
 	java.util.Map<GridPosition, Agent> positions = new HashMap<>();
 
@@ -65,7 +65,7 @@ public class GridMap extends EntityCore<Node> implements Map, EntityProxy<GridMa
 	}
 	
 	@Override
-	public EntityProxy<GridMap> asContext() {
+	public EntityProxy<GridTopology> asContext() {
 		return this;
 	}
 }

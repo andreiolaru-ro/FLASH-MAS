@@ -2,7 +2,7 @@ package andrei.abms;
 
 import java.util.Set;
 
-import andrei.abms.gridworld.GridMap;
+import andrei.abms.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.BaseAgent;
@@ -17,7 +17,7 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	protected static final String	STATE_PARAM			= "state";
 	protected int					state				= 0;
 	protected int					nextState;
-	protected GridMap				map;
+	protected GridTopology map;
 	
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -31,8 +31,8 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	public boolean start() {
 		super.start();
 		for(EntityProxy<? extends Entity<?>> c : getFullContext())
-			if(c instanceof GridMap)
-				map = (GridMap) c;
+			if(c instanceof GridTopology)
+				map = (GridTopology) c;
 		return true;
 	}
 	
