@@ -1,13 +1,15 @@
 package andrei.abms;
 
 import java.util.Set;
+import java.util.function.Function;
 
-import andrei.abms.gridworld.GridPosition;
-import net.xqhs.flash.core.agent.Agent;
+public interface Topology<P> {
 
-public interface Topology {
-	
-	Set<GridPosition> getVicinity(GridPosition pos);
-	
-	Set<Agent> getNeighbors(Agent agent);
+	Set<P> getVicinity(P pos);
+
+	boolean isValidPosition(P pos);
+
+	boolean canMoveInOneStep(P from, P to);
+
+	<A> Set<A> getNeighbors(P pos, Function<P, A> agentAtPosition);
 }

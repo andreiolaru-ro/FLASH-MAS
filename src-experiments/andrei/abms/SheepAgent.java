@@ -1,6 +1,5 @@
 package andrei.abms;
 
-import andrei.abms.gridworld.GridTopology;
 import andrei.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.agent.BaseAgent;
 
@@ -9,16 +8,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class SheepAgent extends BaseAgent implements StepAgent{
-    private final GridTopology map;
-    private GridPosition gridPosition;
-    private final int mapSize;
+public class SheepAgent extends BaseAgent implements StepAgent {
+    private final Simulation<GridPosition> simulation;
     private final Random random = new Random();
 
-    public SheepAgent(GridTopology map, GridPosition gridPosition, int mapSize) {
-        this.map = map;
-        this.gridPosition = gridPosition;
-        this.mapSize = mapSize;
+    public SheepAgent(Simulation<GridPosition> simulation) {
+        this.simulation = simulation;
     }
 
     @Override
@@ -27,28 +22,15 @@ public class SheepAgent extends BaseAgent implements StepAgent{
 
     @Override
     public void step() {
-        if (map == null || gridPosition == null) return;
+        GridPosition currentPos = simulation.getAgentPosition(this);
+        if (currentPos == null) return;
 
-        Set<GridPosition> neighbors = map.getVicinity(gridPosition);
-        List<GridPosition> free = new ArrayList<>();
+        Set<GridPosition> freeNeighbors = simulation.getFreeNeighbors(currentPos);
+        if (freeNeighbors.isEmpty()) return;
 
-        for (GridPosition n : neighbors) {
-            if (n.getX() < 0 || n.getX() >= mapSize ||
-                    n.getY() < 0 || n.getY() >= mapSize) {
-                continue;
-            }
-
-            if (map.get(n) == null) {
-                free.add(n);
-            }
-        }
-
-        if (!free.isEmpty()) {
-            GridPosition newPos = free.get(random.nextInt(free.size()));
-            map.place(this, newPos);
-            map.remove(this.gridPosition);
-            this.gridPosition = newPos;
-        }
+        List<GridPosition> freeList = new ArrayList<>(freeNeighbors);
+        GridPosition newPos = freeList.get(random.nextInt(freeList.size()));
+        simulation.moveAgent(this, newPos);
     }
 
 }

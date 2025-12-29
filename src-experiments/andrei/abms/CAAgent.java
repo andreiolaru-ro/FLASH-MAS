@@ -2,9 +2,9 @@ package andrei.abms;
 
 import java.util.Set;
 
+import andrei.abms.gridworld.GridPosition;
 import andrei.abms.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -17,8 +17,9 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	protected static final String	STATE_PARAM			= "state";
 	protected int					state				= 0;
 	protected int					nextState;
-	protected GridTopology map;
-	
+	protected GridTopology topology;
+	protected Simulation<GridPosition> simulation;
+
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
@@ -30,15 +31,24 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	@Override
 	public boolean start() {
 		super.start();
-		for(EntityProxy<? extends Entity<?>> c : getFullContext())
+		for(EntityProxy<? extends Entity<?>> c : getFullContext()) {
 			if(c instanceof GridTopology)
-				map = (GridTopology) c;
+				topology = (GridTopology) c;
+			if(c instanceof Simulation)
+				simulation = (Simulation<GridPosition>) c;
+		}
 		return true;
 	}
 	
 	@Override
 	public void preStep() {
-		Set<Agent> neighbors = map.getNeighbors(this);
+		GridPosition myPosition = simulation.getAgentPosition(this);
+		if (myPosition == null) {
+			nextState = 0;
+			return;
+		}
+
+		Set<StepAgent> neighbors = topology.getNeighbors(myPosition, pos -> simulation.getAgentAt(pos));
 		int liveNeighbors = neighbors.stream().mapToInt(a -> ((CAAgent) a).state).sum();
 		switch(liveNeighbors) {
 		case 2:

@@ -81,24 +81,28 @@ public class AgentGroup extends EntityCore<Node> {
 					lp.lf("loading agent [] with state ", agentName, state);
 					
 				}
-			// context.add(this); // make an agent group proxy
-			List<Entity<?>> entities = Deployment.get().loadEntities(new LinkedList<>(confs.values()), lp, context);
+
+			GridTopology topology = (GridTopology) Loader.getClosestContext(context, GridTopology.class);
+			Simulation<GridPosition> simulation = new Simulation<>(topology);
+			List<EntityProxy<? extends Entity<?>>> extendedContext = new ArrayList<>(context);
+			extendedContext.add(simulation.asContext());
+
+			List<Entity<?>> entities = Deployment.get().loadEntities(new LinkedList<>(confs.values()), lp, extendedContext);
 			List<Agent> agents = entities.stream().map(e -> (Agent) e).collect(Collectors.toList());
 			// assume same order
 			java.util.Map<GridPosition, Agent> agentMap = new LinkedHashMap<>();
 			for(int i = 0; i < agents.size(); i++)
 				agentMap.put(new ArrayList<>(confs.keySet()).get(i), agents.get(i));
-			AgentGroup ag = new AgentGroup(agents);
-			ag.configure(configuration);
-			
-			GridTopology map = (GridTopology) Loader.getClosestContext(context, GridTopology.class);
-			Executor executor = (Executor) Loader.getClosestContext(context, Executor.class);
-			agents.forEach(a -> executor.register(a));
-			agentMap.entrySet().stream().forEach(e -> map.place(e.getValue(), e.getKey()));
-			
-			ag.map = map;
-			ag.d = d;
-			return ag;
+		AgentGroup ag = new AgentGroup(agents);
+		ag.configure(configuration);
+
+		Executor executor = (Executor) Loader.getClosestContext(context, Executor.class);
+		agents.forEach(a -> executor.register(a));
+		agentMap.entrySet().stream().forEach(e -> simulation.placeAgent((StepAgent) e.getValue(), e.getKey()));
+
+		ag.simulation = simulation;
+		ag.d = d;
+		return ag;
 		}
 		
 		@Override
@@ -116,8 +120,8 @@ public class AgentGroup extends EntityCore<Node> {
 	 */
 	protected List<Agent>		agents;
 	protected int				d;
-	protected GridTopology map;
-	
+	protected Simulation<GridPosition> simulation;
+
 	/**
 	 * Creates a new agent group with the given agents.
 	 * 
@@ -132,7 +136,7 @@ public class AgentGroup extends EntityCore<Node> {
 		String ret = "\n";
 		for(int y = 0; y < d; y++) {
 			for(int x = 0; x < d; x++) {
-				CAAgent a = (CAAgent) map.get(new GridPosition(x, y));
+				CAAgent a = (CAAgent) simulation.getAgentAt(new GridPosition(x, y));
 				ret += a.state > 0 ? "X" : " ";
 			}
 			ret += "\n";
