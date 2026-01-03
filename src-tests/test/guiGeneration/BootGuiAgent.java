@@ -32,8 +32,11 @@ public class BootGuiAgent
 		test_args += " -package test.guiGeneration";
 
 		test_args += " -node main central:web";
-		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentB playerNumber:1";
-		test_args += " -agent composite:AgentB -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard BasicChat otherAgent:AgentA playerNumber:2";
+		test_args += " -pylon webSocket:pylon1 serverPort:8886";
+		test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui from:one-port.yml -shard test";
+		// test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui
+		// from:one-port.yml -shard test autocount:off";
+		test_args += " -agent AgentB -gui from:one-port.yml";
 		
 		FlashBoot.main(test_args.split(" "));
 	}
