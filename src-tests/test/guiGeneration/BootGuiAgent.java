@@ -32,6 +32,7 @@ public class BootGuiAgent
 		test_args += " -package test.guiGeneration";
 
 		test_args += " -node main central:web";
+		test_args += " -pylon webSocket:pylon1 serverPort:8886";
 		test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui from:one-port.yml -shard test";
 		// test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui
 		// from:one-port.yml -shard test autocount:off";
