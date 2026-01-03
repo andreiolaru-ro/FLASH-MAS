@@ -18,6 +18,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import net.xqhs.util.logging.Logger;
 
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -57,6 +58,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 	{
 		setUnitName("websocket-server");
 		setLoggerType(PlatformUtils.platformLogType());
+		setLogLevel(Logger.Level.ALL);
 	}
 	
 	/**
