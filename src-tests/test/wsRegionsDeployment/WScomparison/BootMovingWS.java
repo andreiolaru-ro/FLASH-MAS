@@ -42,7 +42,7 @@ public class BootMovingWS {
 			index = Integer.parseInt(args_[0]);
 		
 		for(int i = index < 0 ? 0 : index; i < (index < 0 ? 4 : index + 1); i++) {
-			args += " -node node" + i + " -monitor time: -pylon webSocket:Pylon" + i;
+			args += " -node node" + i + " keep:10 -monitor time: -pylon webSocket:Pylon" + i;
 			args += (i == 0 ? " serverPort:" : (" connectTo:ws://" + server + ":")) + serverPort;
 			
 			args += " -agent :" + names[i];
