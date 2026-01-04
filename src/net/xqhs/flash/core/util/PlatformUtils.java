@@ -23,9 +23,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Supplier;
 
 import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.LogWrapper.LoggerType;
+import net.xqhs.util.logging.Logger;
 
 /**
  * Platform-related functionality. All functions should be static.
@@ -60,7 +62,15 @@ public class PlatformUtils {
 	 * The argument for {@link LinkedBlockingQueue#wait(long)}, as wait without arguments does no wake, even if
 	 * notified, if the state f the queue does not change.
 	 */
-	public static final long GLOBAL_WAITING_TIME = 1000;
+	public static final long	GLOBAL_WAITING_TIME			= 1000;
+	/**
+	 * The default time to wait between tries in {@link #tryFor}.
+	 */
+	public static final long	DEFAULT_SPACE_BETWEEN_TRIES	= 1000;
+	/**
+	 * The default number of tries in {@link #tryFor}.
+	 */
+	public static final int		DEFAULT_NUMBER_OF_TRIES		= 10;
 	
 	/**
 	 * @return the current platform, as an instance of {@link Platform}.
@@ -208,6 +218,82 @@ public class PlatformUtils {
 	 */
 	public static void systemExit(int exitCode) {
 		System.exit(0);
+	}
+	
+	/**
+	 * Alias for {@link Supplier}.
+	 * 
+	 * @param <T>
+	 *            - the type of the return value.
+	 */
+	@FunctionalInterface
+	public interface CheckedSupplier<T> {
+		/**
+		 * Alias for {@link Supplier#get()}
+		 * 
+		 * @return the value.
+		 * @throws Exception
+		 */
+		T get() throws Exception;
+	}
+	
+	/**
+	 * Calls {@link #tryFor(Logger, String, CheckedSupplier, int, long)} with {@link #DEFAULT_NUMBER_OF_TRIES} and
+	 * {@link #DEFAULT_SPACE_BETWEEN_TRIES}.
+	 * 
+	 * @param log
+	 *            -- the log to use for error reporting. If <code>null</code>, no logging messages are issued.
+	 * @param message
+	 *            -- a description of the attempted operation, to be used in logging messages.
+	 * @param f
+	 *            -- the function to try, without arguments and returning a {@link Boolean} that indicates success.
+	 * @return <code>true</code> if the function return successfully in one of the number of tries.
+	 */
+	public static boolean tryFor(Logger log, String message, CheckedSupplier<Boolean> f) {
+		return tryFor(log, message, f, DEFAULT_NUMBER_OF_TRIES, DEFAULT_SPACE_BETWEEN_TRIES);
+	}
+	
+	/**
+	 * Try executing a function for a number of times.
+	 * 
+	 * @param log
+	 *            -- the log to use for error reporting. If <code>null</code>, no logging messages are issued.
+	 * @param message
+	 *            -- a description of the attempted operation, to be used in logging messages.
+	 * @param f
+	 *            -- the function to try, without arguments and returning a {@link Boolean} that indicates success.
+	 * @param times
+	 *            -- the number of times to try before failing.
+	 * @param spacing
+	 *            -- the time (in milliseconds) to wait between two tries.
+	 * @return <code>true</code> if the function return successfully in one of the number of tries.
+	 */
+	public static boolean tryFor(Logger log, String message, CheckedSupplier<Boolean> f, int times, long spacing) {
+		int timesLeft = times;
+		try {
+			while(timesLeft > 0) {
+				boolean res;
+				if(log != null)
+					log.lf("Trying []; tries left: []", message, Integer.valueOf(timesLeft));
+				try {
+					res = f.get().booleanValue();
+				} catch(Exception e) {
+					return log != null
+							? log.ler(false, "Exeption in try []: ", Integer.valueOf(-timesLeft), printException(e))
+							: false;
+				}
+				if(res) {
+					if(log != null)
+						log.lf("Succeded to [] in try []", message, Integer.valueOf(-timesLeft));
+					return true;
+				}
+				Thread.sleep(spacing);
+				timesLeft--;
+			}
+		} catch(InterruptedException e) {
+			return log != null ? log.ler(false, "Interrupted exeption: ", printException(e)) : false;
+		}
+		return false;
 	}
 	
 }
