@@ -44,23 +44,43 @@ public class BasicChatShard extends AgentShardGeneral {
             String[] source = wave.getSourceElements();
             li("Received AgentWave from []", wave.getCompleteSource());
 
-            if (DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME.equals(source[0])) {
-                handleGUIWave(wave);
-            } else if (otherAgent.equals(source[0])) {
-                guiShard.sendOutput(new AgentWave(wave.getContent(), "inbound"));
-            }
+
+			if (DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME.equals(source[0]) || "gui".equals(source[0])) {
+				handleGUIWave(wave);
+			}
+			else {
+				String senderName = source[0];
+				guiShard.sendOutput(new AgentWave(senderName + ": " + wave.getContent(), "inbound"));
+			}
         }
     }
 
-    private void handleGUIWave(AgentWave wave) {
-        String[] destination = wave.getDestinationElements();
-        if (destination.length < 2) return;
+	private void handleGUIWave(AgentWave wave) {
+		String[] source = wave.getSourceElements();
 
-        String port = destination[0];
-        String role = destination[1];
+		boolean portFound = false;
+		for (String element : source) {
+			if ("outbound".equals(element)) {
+				portFound = true;
+				break;
+			}
+		}
 
-        if ("outbound".equals(port) && "true".equals(wave.get("send"))) {
-            sendMessage(wave.getContent(), "outbound", otherAgent, "inbound");
-        }
-    }
+		boolean sendPressed = wave.containsKey("send");
+
+		if (portFound && sendPressed) {
+			String msgContent = (String) wave.get("content");
+
+			if (msgContent == null) {
+				String raw = wave.getContent();
+				if (raw != null) {
+					msgContent = raw;
+				}
+			}
+
+			if (msgContent != null && !msgContent.isEmpty()) {
+				sendMessage(msgContent, "outbound", otherAgent, "inbound");
+			}
+		}
+	}
 }

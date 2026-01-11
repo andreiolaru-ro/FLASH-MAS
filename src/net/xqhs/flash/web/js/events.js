@@ -5,14 +5,14 @@ import { updateEntitiesList } from "./ui.js";
 const CLIENT_TO_SERVER = 'client-to-server';
 const SERVER_TO_CLIENT = 'server-to-client';
 const WS_ENDPOINT = '/eventbus';
-const RECONNECTION_TIMEOUT = 5000;  // in ms
+const RECONNECTION_TIMEOUT = 5000;
 
 const GLOBAL_SCOPE = 'global';
 const PORT_SCOPE = 'port';
-
 const REGISTERED_SCOPE = 'registered';
 const NOTIFY_SCOPE = 'notify';
 const GLOBAL_COMMAND_SCOPE = 'global_command';
+const DEPLOYMENT_SCOPE = 'deployment';
 
 let eventBus = null;
 
@@ -34,8 +34,25 @@ export function connectToServer() {
 export function registerHandler() {
     eventBus.registerHandler(SERVER_TO_CLIENT,
         (_, message) => recvMessage(JSON.parse(message.body)));
-        
+
     eventBus.send(CLIENT_TO_SERVER, JSON.stringify({ scope: REGISTERED_SCOPE }));
+}
+
+export function sendDeployCommand(ip, rawArguments) {
+    if (!eventBus || eventBus.state !== EventBus.OPEN) {
+        alert("Not connected to server. Cannot send deploy command.");
+        return;
+    }
+
+    const msg = {
+        scope: DEPLOYMENT_SCOPE,
+        command: "DEPLOY_REMOTE",
+        targetIp: ip,
+        startupArgs: rawArguments
+    };
+
+    console.log("Sending deploy command via EventBus:", msg);
+    eventBus.send('client-to-server', JSON.stringify(msg));
 }
 
 function recvMessage(message) {
@@ -56,25 +73,9 @@ function recvMessage(message) {
     }
 }
 
-/**
- * Replaces dollar-sign variables in a string with values from a map.
- * @param {string} str - The string containing variables to replace.
- * @param {Record<string, string>} replaceMap - The map containing variable names and their values.
- * @example replaceVariables('$port/$role', { port: 'myPort', role: 'myRole' }) // returns 'myPort/myRole'
- */
 const replaceVariables = (str, replaceMap) =>
     str.replace(/\$([a-zA-Z_]\w*)/g, (_, key) => replaceMap[key] || '');
 
-/**
- * Used to send a message to the server when an element with a 'notify' property
- * is interacted with. The message contains the data from all the elements of the
- * port, indexed by their role. For buttons, the value 'true' is sent for the pressed
- * button and 'false' for the rest. Same for checkboxes. The message will be redirected 
- * by the server to the corresponding entity on the route given by the 'notify' property.
- * @param {InterfaceElement} trigger - The element that was interacted with.
- * @param {string} entityName - The name of the entity to notify.
- * @returns {void}
- */
 export function notifyEntity(trigger, entityName) {
     const notifyTarget = replaceVariables(trigger.notify || '', {
         entity: entityName,
@@ -96,7 +97,6 @@ export function notifyEntity(trigger, entityName) {
         subject: [entityName, ...notifyTarget.split('/')],
         content: content
     };
-    console.log("Sending message", msg);
     eventBus.send(CLIENT_TO_SERVER, JSON.stringify(msg));
 }
 
@@ -105,6 +105,5 @@ export function sendGlobalCommand(commandName) {
         scope: GLOBAL_COMMAND_SCOPE,
         command: commandName
     };
-    console.log("Sending global command", msg);
-    eventBus.send('client-to-server', JSON.stringify(msg));
+    eventBus.send(CLIENT_TO_SERVER, JSON.stringify(msg));
 }

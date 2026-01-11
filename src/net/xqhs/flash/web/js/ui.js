@@ -1,5 +1,5 @@
 import { appContext } from "./common.js";
-import { notifyEntity, sendGlobalCommand } from "./events.js";
+import {notifyEntity, sendDeployCommand, sendGlobalCommand} from "./events.js";
 import { applyStyles } from "./processing.js";
 
 export function handleSidepanel() {
@@ -80,6 +80,56 @@ export function handleSidepanel() {
 
         btnPause.text("Pause");
     });
+}
+
+const DEFAULT_ARGS = "-loader agent:composite -node nodeC -pylon webSocket:clientPylon connectTo:ws://127.0.0.1:8886 -agent composite:AgentC -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard test.guiGeneration.BasicChatShard otherAgent:AgentA";
+
+export function initDeployButton() {
+    const addBtn = document.getElementById('add-daemon-btn');
+    const ipInput = document.getElementById('new-daemon-ip');
+    const listContainer = document.getElementById('daemon-list');
+
+    if (addBtn) {
+        addBtn.onclick = () => {
+            const ip = ipInput.value.trim();
+            if (!ip) return alert("Please enter an IP address!");
+            addDaemonCard(ip, listContainer);
+        };
+
+        addDaemonCard("127.0.0.1", listContainer);
+    }
+}
+
+function addDaemonCard(ip, container) {
+    const card = document.createElement('div');
+    card.style = "border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
+
+    card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong style="font-size: 1.1em; color: #333;">Daemon: ${ip}</strong>
+            <button class="remove-btn" style="background:#ff4444; color:white; border:none; padding: 5px 10px; border-radius:4px; cursor:pointer;">Remove</button>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label style="font-size:0.85em; color: #666; display:block; margin-bottom: 5px;">Startup Arguments:</label>
+            <textarea class="args-input" style="width:100%; height:80px; font-family:monospace; font-size:0.85em; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">${DEFAULT_ARGS}</textarea>
+        </div>
+
+        <div style="display:flex;">
+            <button class="deploy-btn" style="background: #4CAF50; color: white; border:none; padding: 10px; border-radius:4px; cursor:pointer; width: 100%; font-weight: bold;">
+                DEPLOY NODE
+            </button>
+        </div>
+    `;
+
+    card.querySelector('.deploy-btn').onclick = () => {
+        const args = card.querySelector('.args-input').value;
+        sendDeployCommand(ip, args);
+    };
+
+    card.querySelector('.remove-btn').onclick = () => container.removeChild(card);
+
+    container.appendChild(card);
 }
 
 export function updateEntitiesList() {

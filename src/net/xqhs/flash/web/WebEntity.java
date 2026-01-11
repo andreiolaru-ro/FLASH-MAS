@@ -171,6 +171,15 @@ public class WebEntity extends CentralGUI {
 					JsonObject content = msg.get(MESSAGE_CONTENT).getAsJsonObject();
 					entity.sendNotification(source, subject, content);
 				}
+				else if ("deployment".equals(scope)) {
+					AgentWave wave = new AgentWave();
+
+					wave.resetDestination("DEPLOY_REQUEST");
+					wave.add(AgentWave.CONTENT, msg.toString());
+					cep.postAgentEvent(wave);
+
+					entity.li("Deployment command forwarded to M&C: " + msg.toString());
+				}
 
 				if ("global_command".equals(scope)) {
 					String command = msg.get("command").getAsString();
@@ -310,7 +319,7 @@ public class WebEntity extends CentralGUI {
 	}
 	
 	@Override
-	public boolean updateGui(String entity, Element guiSpecification) {
+	public synchronized boolean updateGui(String entity, Element guiSpecification) {
 		// Andrei Olaru: placed this here as a workaround, don't know why entity is null
 		if (entity == null)
 			return false;

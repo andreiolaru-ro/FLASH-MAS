@@ -52,6 +52,17 @@ You should have received a copy of the GNU General Public License along with Fla
                     <div class="side-drawer">
                         <button id="global-stop-application-btn">Stop application</button>
                     </div>
+                    <div id="deploy-panel" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; background: #f9f9f9;">
+                        <h3>Daemon Manager</h3>
+
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <input type="text" id="new-daemon-ip" placeholder="IP Daemon (ex: 127.0.0.1)" value="127.0.0.1" style="flex: 1;">
+                            <button id="add-daemon-btn" style="background: #2196F3; color: white;">+ Add Daemon</button>
+                        </div>
+
+                        <div id="daemon-list">
+                        </div>
+                    </div>
                 </div>
                 <div class="side-section" id="entities-list"></div>
             </div>
