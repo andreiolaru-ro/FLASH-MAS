@@ -1,7 +1,10 @@
-package net.xqhs.flash.abms;
+package abms.wolfSheepPredation;
 
 import java.util.*;
 
+import net.xqhs.flash.abms.DistributionConfig;
+import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.abms.StepAgent;
 import net.xqhs.flash.abms.gridworld.GridTopology;
 import net.xqhs.flash.abms.gridworld.GridPosition;
 

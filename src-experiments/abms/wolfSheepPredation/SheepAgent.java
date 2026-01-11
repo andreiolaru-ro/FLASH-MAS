@@ -1,17 +1,20 @@
-package net.xqhs.flash.abms;
+package abms.wolfSheepPredation;
 
+import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.abms.StepAgent;
 import net.xqhs.flash.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.agent.BaseAgent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class WolfAgent extends BaseAgent implements StepAgent {
+public class SheepAgent extends BaseAgent implements StepAgent {
     private final Simulation<GridPosition> simulation;
     private final Random random = new Random();
 
-    public WolfAgent(Simulation<GridPosition> simulation) {
+    public SheepAgent(Simulation<GridPosition> simulation) {
         this.simulation = simulation;
     }
 
@@ -31,4 +34,5 @@ public class WolfAgent extends BaseAgent implements StepAgent {
         GridPosition newPos = freeList.get(random.nextInt(freeList.size()));
         simulation.moveAgent(this, newPos);
     }
+
 }
