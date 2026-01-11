@@ -1,0 +1,20 @@
+Install GAMA. Then:
+
+Gama uses .gaml files to define models.
+
+1. gama.core: Contains the core spatial topology and geometry handling.
+https://github.com/gama-platform/gama/tree/main/gama.core/src/gama/core/common/geometry
+
+2. gama.extension.traffic: Source code for the complex traffic simulation skills.
+https://github.com/gama-platform/gama/blob/main/gama.extension.traffic/models/Driving%20Skill/models/Advanced%20models/Drive%20Random.gaml
+
+3. msi.gama.ext: Often contains the connectors to external GIS libraries like GeoTools.
+
+4. GAMAFile class or ShapeFile implementations to see how the data is parsed internally.
+
+I. The above are on this link: https://github.com/gama-platform/gama
+
+II. I need to read: https://gama-platform.org/wiki/RoadTrafficModel_step1
+
+the GAMA application's "Models Library" view.
+Here is the Tutorials/3D/Road Traffic/Models/Model7.gaml file
