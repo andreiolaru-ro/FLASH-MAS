@@ -1,4 +1,4 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import java.util.LinkedList;
 import java.util.List;

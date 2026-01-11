@@ -1,4 +1,4 @@
-package andrei.abms.gridworld;
+package net.xqhs.flash.abms.gridworld;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import andrei.abms.Topology;
+import net.xqhs.flash.abms.Topology;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.node.Node;

@@ -1,4 +1,4 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import java.util.Set;
 import java.util.function.Function;

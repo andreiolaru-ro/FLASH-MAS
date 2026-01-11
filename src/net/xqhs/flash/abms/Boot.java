@@ -9,7 +9,7 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import net.xqhs.flash.FlashBoot;
 
@@ -29,7 +29,7 @@ public class Boot
 		String a = "";
 		
 		a += " -load_order map;executor;AgentGroup";
-		a += " -package andrei.abms";
+		a += " -package net.xqhs.flash.abms";
 		a += " -loader AgentGroup:AgentGroup";
 		a += " -node main";
 		a += " -map Grid vicinity:8neighbors classpath:gridworld.GridTopology";

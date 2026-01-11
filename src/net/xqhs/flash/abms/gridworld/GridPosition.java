@@ -1,4 +1,4 @@
-package andrei.abms.gridworld;
+package net.xqhs.flash.abms.gridworld;
 
 /**
  * Implementation for positions in a rectangular grid.

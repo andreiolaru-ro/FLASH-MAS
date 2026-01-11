@@ -1,4 +1,4 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -6,8 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import andrei.abms.gridworld.GridTopology;
-import andrei.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.gridworld.GridTopology;
+import net.xqhs.flash.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;

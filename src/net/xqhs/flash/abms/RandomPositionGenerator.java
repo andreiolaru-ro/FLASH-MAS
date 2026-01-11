@@ -1,9 +1,9 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import java.util.*;
 
-import andrei.abms.gridworld.GridTopology;
-import andrei.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.gridworld.GridTopology;
+import net.xqhs.flash.abms.gridworld.GridPosition;
 
 public class RandomPositionGenerator {
     private static final int MAX_ATTEMPTS = 10000;

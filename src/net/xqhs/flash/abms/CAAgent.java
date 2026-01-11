@@ -1,9 +1,9 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import java.util.Set;
 
-import andrei.abms.gridworld.GridPosition;
-import andrei.abms.gridworld.GridTopology;
+import net.xqhs.flash.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;

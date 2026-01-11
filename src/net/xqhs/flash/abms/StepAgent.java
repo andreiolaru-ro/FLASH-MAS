@@ -1,4 +1,4 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
 import net.xqhs.flash.core.agent.Agent;
 

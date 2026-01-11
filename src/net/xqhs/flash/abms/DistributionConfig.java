@@ -1,6 +1,6 @@
-package andrei.abms;
+package net.xqhs.flash.abms;
 
-import andrei.abms.gridworld.GridTopology;
+import net.xqhs.flash.abms.gridworld.GridTopology;
 
 import java.util.Objects;
 
