@@ -31,6 +31,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  */
 public class AgentPingPong extends BaseAgent {
 	/**
+	 * The serial UID.
+	 */
+	private static final long		serialVersionUID			= 2098318382514974043L;
+	/**
 	 * The name of the component parameter that contains the id of the other agent.
 	 */
 	protected static final String	OTHER_AGENT_PARAMETER_NAME	= "sendTo";

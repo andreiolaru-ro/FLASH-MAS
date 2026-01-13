@@ -14,28 +14,26 @@ package test.guiGeneration;
 import net.xqhs.flash.FlashBoot;
 
 /**
- * Deployment testing.
+ * Runs one agent that offers a remote interface. The interface automatically increments a number (if
+ * <code>autocount:off</code> is not set), but the user is able to modify that number at runtime.
  */
-public class BootGuiAgent
-{
+public class BootGuiAgent {
 	/**
 	 * Performs test.
 	 * 
 	 * @param args
-	 *                 - not used.
+	 *            - not used.
 	 */
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		String test_args = "";
-
+		
 		test_args += " -loader agent:composite";
 		test_args += " -package test.guiGeneration";
-
+		
 		test_args += " -node main central:web";
 		test_args += " -pylon webSocket:pylon1 serverPort:8886";
-		test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui from:one-port.yml -shard test";
-		// test_args += " -agent composite:AgentA -shard messaging -shard control -shard monitoring -shard swingGui
-		// from:one-port.yml -shard test autocount:off";
+		test_args += " -agent composite:AgentA -shard messaging -shard remoteOperation -shard swingGui from:one-port.yml -shard test";
+		test_args += " autocount:off";
 		test_args += " -agent AgentB -gui from:one-port.yml";
 		
 		FlashBoot.main(test_args.split(" "));

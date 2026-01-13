@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.web;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -26,7 +25,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.Json;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -34,13 +32,8 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import net.xqhs.flash.core.DeploymentConfiguration;
-import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
-import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.util.OperationUtils;
-import net.xqhs.flash.core.util.OperationUtils.MonitoringOperation;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.remoteOperation.CentralGUI;
@@ -197,19 +190,18 @@ public class WebEntity extends CentralGUI {
 		}
 	}
 	
+	/**
+	 * The {@link CentralMonitoringAndControlEntity} that holds this instance.
+	 */
 	static CentralEntityProxy cep;
-	
-	// public static JsonObject agentMessages;
-	
-	private Element specification;
-	
+	/**
+	 * The {@link ElementIdManager} used for managing IDs for the web application.
+	 */
 	protected ElementIdManager idManager = new ElementIdManager();
-	
+	/**
+	 * The web server.
+	 */
 	private Vertx web;
-	
-	// protected boolean verticleReady = false;
-	
-	// private static boolean generated = false;
 	
 	@Override
 	public boolean start() {
@@ -364,5 +356,13 @@ public class WebEntity extends CentralGUI {
 		String message = buildMessage(PORT_SCOPE, subject, allRoles);
 		sendToClient(message);
 		return true;
+	}
+	
+	/**
+	 * Relay for the enclosed class.
+	 */
+	@Override
+	protected void li(String message, Object... arguments) {
+		super.li(message, arguments);
 	}
 }

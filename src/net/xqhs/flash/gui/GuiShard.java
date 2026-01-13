@@ -86,7 +86,7 @@ public class GuiShard extends IOShard {
 	}
 	
 	/**
-	 * Handles the {@link AgentEventType#AGENT_START} event to register the UIG to the {@link MonitoringShard}.
+	 * Handles the {@link AgentEventType#AGENT_START} event to register the UIG to the {@link RemoteOperationShard}.
 	 */
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
