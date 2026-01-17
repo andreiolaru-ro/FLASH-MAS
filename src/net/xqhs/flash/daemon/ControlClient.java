@@ -78,26 +78,4 @@ public class ControlClient {
 			return false;
 		}
 	}
-
-	// --- MAIN FOR TESTING ---
-	public static void main(String[] args) {
-		// Example Usage:
-		// Assume Daemon is running on 192.168.1.50
-		String targetIp = "127.0.0.1"; // Localhost for testing
-		int targetPort = 35274;
-		String jarToUpload = "out/artifacts/Flash_MAS_jar/Flash-MAS.jar"; // The built project JAR
-
-		// Arguments that the remote node needs to start
-		String serverIP = "127.0.0.1";
-		int serverPort = 8886;
-
-		String test_args = "";
-
-		test_args += " -package testing";
-		test_args += " -node main";
-		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
-		test_args += " -agent AgentB classpath:AgentPingPong";
-
-		deployAndStart(targetIp, targetPort, jarToUpload, test_args);
-	}
 }

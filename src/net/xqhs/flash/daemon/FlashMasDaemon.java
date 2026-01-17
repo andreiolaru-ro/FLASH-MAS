@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (C) 2021 Andrei Olaru.
+ * * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+ * * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ * * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.xqhs.flash.daemon;
 
 import java.io.*;
@@ -16,32 +23,37 @@ import java.util.List;
  */
 public class FlashMasDaemon {
 
-	// Default listening port
-	private static int PORT = 35274;
-
 	// The name of the JAR file to be executed/updated
 	private static final String NODE_JAR_NAME = "flash-node.jar";
 
-	// The folder name where the bundled JRE is expected (e.g., ./jre/bin/java)
+	// The folder name where the bundled JRE is expected
 	private static final String JRE_FOLDER_NAME = "jre";
 
-	public static void main(String[] args) {
-		// Allow port override via command line arguments
-		if (args.length > 0) {
-			try {
-				PORT = Integer.parseInt(args[0]);
-			} catch (NumberFormatException e) {
-				System.err.println("Invalid port argument. Using default: " + PORT);
-			}
-		}
+	private final int port;
+	private final boolean redirectOutput;
 
+	/**
+	 * Constructor for the Daemon.
+	 * @param port the port to listen on.
+	 * @param redirectOutput true to write child process output to .log files, false to inherit IO (console).
+	 */
+	public FlashMasDaemon(int port, boolean redirectOutput) {
+		this.port = port;
+		this.redirectOutput = redirectOutput;
+	}
+
+	/**
+	 * Starts the main listening loop.
+	 */
+	public void start() {
 		System.out.println("==================================================");
 		System.out.println("   Flash-MAS Daemon (Listener Mode)");
-		System.out.println("   Listening on PORT: " + PORT);
+		System.out.println("   Listening on PORT: " + port);
+		System.out.println("   Output Redirection: " + (redirectOutput ? "ENABLED (to files)" : "DISABLED (to console)"));
 		System.out.println("   Local JRE path check: ./" + JRE_FOLDER_NAME);
 		System.out.println("==================================================");
 
-		try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			while (true) {
 				try {
 					System.out.println("[INFO] Waiting for Controller connection...");
@@ -56,7 +68,7 @@ public class FlashMasDaemon {
 				}
 			}
 		} catch (IOException e) {
-			System.err.println("[CRITICAL] Could not start server on port " + PORT);
+			System.err.println("[CRITICAL] Could not start server on port " + port);
 			e.printStackTrace();
 		}
 	}
@@ -64,7 +76,7 @@ public class FlashMasDaemon {
 	/**
 	 * Handles the specific conversation with the Controller.
 	 */
-	private static void handleControllerConnection(Socket socket) {
+	private void handleControllerConnection(Socket socket) {
 		try (DataInputStream in = new DataInputStream(socket.getInputStream());
 			 DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
 
@@ -100,7 +112,7 @@ public class FlashMasDaemon {
 	/**
 	 * Downloads the JAR file sent by the Controller.
 	 */
-	private static void receiveJarFile(DataInputStream in) throws IOException {
+	private void receiveJarFile(DataInputStream in) throws IOException {
 		long fileSize = in.readLong();
 		System.out.println("[UPLOAD] Receiving JAR (" + fileSize + " bytes)...");
 
@@ -120,7 +132,7 @@ public class FlashMasDaemon {
 	/**
 	 * Starts the node process using ProcessBuilder and the bundled JRE.
 	 */
-	private static void startNodeProcess(String argsString, DataOutputStream out) throws IOException {
+	private void startNodeProcess(String argsString, DataOutputStream out) throws IOException {
 		// 1. Detect Java Executable
 		String javaBin = getJavaExecutablePath();
 		if (javaBin == null) {
@@ -129,7 +141,6 @@ public class FlashMasDaemon {
 		}
 
 		// 2. Build the command list
-		// Command: <java_path> -jar flash-node.jar <arguments>
 		List<String> command = new ArrayList<>();
 		command.add(javaBin);
 		command.add("-jar");
@@ -146,15 +157,23 @@ public class FlashMasDaemon {
 		// 3. Start the process
 		ProcessBuilder pb = new ProcessBuilder(command);
 
-		// Redirect output to log files (non-blocking for the daemon)
-		pb.redirectOutput(new File("node-stdout.log"));
-		pb.redirectError(new File("node-stderr.log"));
+		if (redirectOutput) {
+			// Redirect output to log files (non-blocking for the daemon)
+			pb.redirectOutput(new File("node-stdout.log"));
+			pb.redirectError(new File("node-stderr.log"));
+		} else {
+			// Pipe output to the Daemon's console
+			pb.inheritIO();
+		}
 
 		try {
 			Process process = pb.start();
 			long pid = process.pid();
 			System.out.println("[EXEC] Started successfully. PID: " + pid);
-			out.writeUTF("OK: Node started. PID: " + pid);
+
+			String logMsg = redirectOutput ? " Output redirected to logs." : " Output visible in console.";
+			out.writeUTF("OK: Node started. PID: " + pid + logMsg);
+
 		} catch (IOException e) {
 			System.err.println("[EXEC] Failed to start: " + e.getMessage());
 			out.writeUTF("ERROR: Start failed: " + e.getMessage());
@@ -163,9 +182,8 @@ public class FlashMasDaemon {
 
 	/**
 	 * Logic to find the Java executable.
-	 * Priority: 1. Bundled 'jre' folder. 2. System PATH.
 	 */
-	private static String getJavaExecutablePath() {
+	private String getJavaExecutablePath() {
 		String os = System.getProperty("os.name").toLowerCase();
 		boolean isWindows = os.contains("win");
 		String javaExecName = isWindows ? "java.exe" : "java";

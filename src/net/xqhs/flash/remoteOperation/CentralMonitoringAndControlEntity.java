@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (C) 2021 Andrei Olaru.
+ *
+ * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+ *
+ * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.xqhs.flash.remoteOperation;
 
 import java.lang.reflect.InvocationTargetException;
@@ -31,9 +42,18 @@ import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.web.WebEntity;
 
+/**
+ * This class is used to monitor and control the MAS.
+ */
 public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
+	/**
+	 * The serial UID.
+	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Operations supported by the {@link CentralMonitoringAndControlEntity}.
+	 */
 	@SuppressWarnings("hiding")
 	public enum Operations implements OperationName {
 		UPDATE_ENTITY_STATUS,
@@ -47,6 +67,12 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		PAUSE_APPLICATION
 		;
 
+		/**
+		 * If the first destination element is one of the supported operations, return it. Otherwise, return null.
+		 *
+		 * @param wave
+		 * @return the operation, or null if the first destination element is not a supported operation.
+		 */
 		public static Operations getRoute(AgentWave wave) {
 			try {
 				return valueOf(wave.getFirstDestinationElement().toUpperCase());
@@ -104,12 +130,24 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		}
 	}
 
+	/**
+	 * The central entity is a singleton.
+	 */
 	public class CentralEntityProxy implements ShardContainer {
-		@Override
-		public AgentShard getAgentShard(AgentShardDesignation designation) { return null; }
-		@Override
-		public String getEntityName() { return getName(); }
 
+		@Override
+		public AgentShard getAgentShard(AgentShardDesignation designation) {
+			return null;
+		}
+
+		@Override
+		public String getEntityName() {
+			return getName();
+		}
+
+		/**
+		 * This is expected to be called by the messaging shard.
+		 */
 		@Override
 		public boolean postAgentEvent(AgentEvent event) {
 			switch(event.getType()) {
@@ -126,25 +164,59 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		setLoggerType(PlatformUtils.platformLogType());
 	}
 
+	/**
+	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the web interface.
+	 */
 	public static final String    WEB_INTERFACE_SWITCH      = "web";
+	/**
+	 * Use this in conjunction with {@link DeploymentConfiguration#CENTRAL_NODE_KEY} to switch on the swing interface.
+	 */
 	public static final String    SWING_INTERFACE_SWITCH    = "swing";
+	/**
+	 * The default port for the web interface.
+	 */
 	public static final int       WEB_INTERFACE_PORT        = 8080;
+	/**
+	 * Endpoint element for this shard.
+	 */
 	protected static final String ENTITY_STATUS_ELEMENT     = "standard-status";
 	protected static final String ENTITY_APP_STATUS_ELEMENT = "standard-application-status";
 	protected static final String ENTITY_LABEL_ELEMENT      = "standard-name";
+	/**
+	 * File for configuring the default controls for entities.
+	 */
 	protected static final String DEFAULT_CONTROLS          = "controls.yml";
-
+	/**
+	 * Standard controls for all entities.
+	 */
 	protected Element                             standardCtrls;
+	/**
+	 * The proxy to this entity.
+	 */
 	public ShardContainer                         centralProxy;
+	/**
+	 * Messaging shard for this entity.
+	 */
 	private MessagingShard                        centralMessagingShard;
+	/**
+	 * The GUI for controlling the deployment.
+	 */
 	private CentralGUI                            gui;
+	/**
+	 * Data for entities.
+	 */
 	protected Map<String, EntityData>             entitiesData   = new HashMap<>();
+	/**
+	 * Keeps track of all nodes deployed in the system, along with their {@link List} of entities, indexed by their
+	 * categories and names.
+	 */
 	private HashMap<String, HashMap<String, List<String>>> allNodeEntities    = new LinkedHashMap<>();
 
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
 		this.setUnitName("M&C");
+		// this.setHighlighted();
 		centralProxy = new CentralEntityProxy();
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue(GUILoad.FILE_SOURCE_PARAMETER, DEFAULT_CONTROLS)
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
@@ -156,9 +228,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			}
 			switch(iface) {
 				case WEB_INTERFACE_SWITCH: {
-					gui = new WebEntity(WEB_INTERFACE_PORT);
+					// TODO mock config -- to be added in deployment configuration?
+					gui = new WebEntity(WEB_INTERFACE_PORT); // maybe TODO: move this port to a configuration file
 					gui.addContext(centralProxy);
-					if(gui.start())
+					if(gui.start()) // starts now in order to be available before starting entities
 						li("web gui started");
 					break;
 				}
@@ -181,6 +254,14 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		return true;
 	}
 
+	/**
+	 * Parses the received wave and calls the appropriate method.
+	 *
+	 * @param wave
+	 *            - the {@link AgentWave} to be parsed
+	 *
+	 * @return - an indication of success
+	 */
 	public boolean processWave(AgentWave wave) {
 		lf("Routing wave", wave);
 		String sourceEntity = wave.getFirstSource();
@@ -290,6 +371,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				Element interfaceStructure = (Element) wave.getObject(Fields.SPECIFICATION.name());
 				Element interfaceContainer = new Element();
 				if(interfaceStructure != null)
+					// must avoid adding it twice
 					for(Element child : interfaceStructure.getChildren())
 						if(!interfaceContainer.getChildren().contains(child))
 							interfaceContainer.addChild(child);
@@ -305,6 +387,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				return gui.updateGui(sourceEntity, interfaceContainer);
 
 			case ENTITY_GUI_OUTPUT:
+				// remove the name of Central; add the entity sending the output
 				return gui.sendOutput(wave.removeFirstDestinationElement().prependDestination(sourceEntity)
 						.recomputeCompleteDestination());
 
@@ -312,7 +395,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				li("GUI input to entity []: []", sourceEntity, wave.toString());
 				wave.removeFirstDestinationElement();
 
-				String[] sourceElements = wave.getSourceElements();
+				String[] sourceElements = wave.getSourceElements(); // source is gui/entity/port/role
 				String entityName = sourceElements[1];
 				String sourcePort = sourceElements[2], sourceRole = sourceElements[3];
 				EntityData entityData = entitiesData.get(entityName);
@@ -348,6 +431,17 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		}
 	}
 
+	/**
+	 * Sets up the standard controls for an entity.
+	 *
+	 * @param status
+	 *            - the status of the entity
+	 * @param appStatus
+	 *            - the application status for the entity
+	 * @param entityName
+	 *            - the name of the entity
+	 * @return an {@link Element} containing the standard controls for the entity
+	 */
 	protected Element setupStandardControls(String status, String appStatus, String entityName) {
 		Element element = (Element) standardCtrls.clone();
 		if(!element.getChildren(ENTITY_LABEL_ELEMENT).isEmpty())
@@ -367,6 +461,14 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			le("[] unable to start. No messaging shard found.", getName());
 			return false;
 		}
+		// TODO hack
+		// Timer timer = new Timer();
+		// timer.schedule(new TimerTask() {
+		// @Override
+		// public void run() {
+		// centralMessagingShard.register(name);
+		// }
+		// }, 1000);
 		centralMessagingShard.register(name);
 		li("[] started successfully.", getName());
 		return true;
