@@ -1,7 +1,9 @@
-package net.xqhs.flash.abms;
+package abms.ca;
 
 import java.util.Set;
 
+import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.abms.StepAgent;
 import net.xqhs.flash.abms.gridworld.GridPosition;
 import net.xqhs.flash.abms.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
@@ -14,7 +16,7 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	 * The serial UID.
 	 */
 	private static final long serialVersionUID = 1453941340763410471L;
-	protected static final String	STATE_PARAM			= "state";
+	public static final String	STATE_PARAM			= "state";
 	protected int					state				= 0;
 	protected int					nextState;
 	protected GridTopology topology;
@@ -67,5 +69,9 @@ public class CAAgent extends BaseAgent implements StepAgent {
 	public void step() {
 		li("state [] -> [] ", state, nextState);
 		state = nextState;
+	}
+
+	public int getState() {
+		return state;
 	}
 }

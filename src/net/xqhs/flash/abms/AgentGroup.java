@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import abms.ca.CAAgent;
 import net.xqhs.flash.abms.gridworld.GridTopology;
 import net.xqhs.flash.abms.gridworld.GridPosition;
 import net.xqhs.flash.core.CategoryName;
@@ -137,7 +138,7 @@ public class AgentGroup extends EntityCore<Node> {
 		for(int y = 0; y < d; y++) {
 			for(int x = 0; x < d; x++) {
 				CAAgent a = (CAAgent) simulation.getAgentAt(new GridPosition(x, y));
-				ret += a.state > 0 ? "X" : " ";
+				ret += a.getState() > 0 ? "X" : " ";
 			}
 			ret += "\n";
 		}
