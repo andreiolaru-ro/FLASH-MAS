@@ -14,11 +14,20 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class GridTopology extends EntityCore<Node> implements Topology<GridPosition>, EntityProxy<GridTopology> {
 
+	public static final String WIDTH = "width";
+	public static final String HEIGHT = "height";
+
 	private final int width;
 	private final int height;
 
 	public GridTopology() {
 		this(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	}
+
+	public GridTopology(MultiTreeMap multiTreeMap) {
+		this(readWidthAndHeight(multiTreeMap, WIDTH),
+				readWidthAndHeight(multiTreeMap, HEIGHT));
+		super.configure(multiTreeMap);
 	}
 
 	public GridTopology(int width, int height) {
@@ -27,8 +36,19 @@ public class GridTopology extends EntityCore<Node> implements Topology<GridPosit
 	}
 
 	@Override
-	public boolean configure(MultiTreeMap configuration) {
-		return super.configure(configuration);
+	public boolean configure(MultiTreeMap multiTreeMap) {
+		return super.configure(multiTreeMap);
+	}
+
+	private static int readWidthAndHeight(MultiTreeMap multiTreeMap, String dimension) {
+		if (multiTreeMap == null || !multiTreeMap.containsKey(dimension)) {
+			return Integer.MAX_VALUE;
+		}
+		try {
+			return Integer.parseInt(multiTreeMap.getAValue(dimension));
+		} catch (NumberFormatException e) {
+			return Integer.MAX_VALUE;
+		}
 	}
 	
 	@Override
