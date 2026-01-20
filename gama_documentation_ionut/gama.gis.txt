@@ -8,7 +8,7 @@ https://github.com/gama-platform/gama/tree/main/gama.core/src/gama/core/common/g
 2. gama.extension.traffic: Source code for the complex traffic simulation skills.
 https://github.com/gama-platform/gama/blob/main/gama.extension.traffic/models/Driving%20Skill/models/Advanced%20models/Drive%20Random.gaml
 
-3. msi.gama.ext: Often contains the connectors to external GIS libraries like GeoTools.
+3. gama.dependencies: Often contains the connectors to external GIS libraries like GeoTools.
 
 4. GAMAFile class or ShapeFile implementations to see how the data is parsed internally.
 
