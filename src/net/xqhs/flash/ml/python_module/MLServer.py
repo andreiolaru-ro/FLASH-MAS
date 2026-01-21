@@ -61,7 +61,7 @@ def predict():
             log("returned", ret)
             return ret
         except Exception as e:
-             flask.jsonify({'error': f'Model "{model_name}" failed to run with exception {e}.'}), 500
+             return flask.jsonify({'error': f'Model "{model_name}" failed to run with exception {e}.'}), 500
     else:
         return flask.jsonify({'error': f'Model "{model_name}" does not exist.'}), 404
 

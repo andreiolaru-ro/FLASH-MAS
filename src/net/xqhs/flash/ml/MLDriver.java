@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
@@ -25,9 +27,11 @@ import com.google.gson.JsonParser;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.support.WaveReceiver;
 
-public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> {
+public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>, AsyncDriver {
 	
 	/**
 	 * url of the python server
@@ -169,15 +173,22 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	 * Map of available datasets, and their config
 	 */
 	private Map<String, Map<String, Object>> datasetsList = new HashMap<>();
-	
+
+    private ExecutorService executorService;
+    private ExternalInterface externalInterface;
+
 	@Override
 	public boolean start() {
+        executorService = Executors.newFixedThreadPool(10);
+        externalInterface = new HTTPExternalInterface();
+        externalInterface.initialize(createConfigMap());
+
 		if(!super.start())
 			return false;
 		// start the python server, capture the server's stdin, stdout, stderr
 		li("starting Python ML server on port []...", Integer.valueOf(SERVER_PORT));
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python",
+			ProcessBuilder pb = new ProcessBuilder("python3",
 					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
 					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
 			// pb.directory(new File(<directory from where you want to run the command>));
@@ -245,6 +256,9 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	
 	@Override
 	public boolean stop() {
+        executorService.shutdown();
+        externalInterface.shutdown();
+
 		if(!super.stop())
 			return false;
 		if(this.serverProcess != null) {
@@ -554,5 +568,40 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver> 
 	public String getEntityName() {
 		return getName();
 	}
-	
+
+    private Map<String, Object> createConfigMap() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("host", SERVER_URL);
+        config.put("port", SERVER_PORT);
+        return config;
+    }
+
+    private String buildRequestFromWave(AgentWave wave) {
+        return wave.getContent();
+    }
+
+    @Override
+    public void receiveAsync(AgentWave wave, WaveReceiver callback) {
+        executorService.submit(() -> {
+            String request = buildRequestFromWave(wave);
+            externalInterface.sendAsync(request, new ExternalInterface.ResponseCallback() {
+                @Override
+                public void onResponse(String response) {
+                    AgentWave reply = wave.createReply(response);
+                    callback.receive(reply);
+                }
+
+                @Override
+                public void onError(Exception error) {
+                    AgentWave reply = wave.createReply("ERROR: " + error.getMessage());;
+                    callback.receive(reply);
+                }
+            });
+        });
+    }
+
+    @Override
+    public AgentWave receive(AgentWave wave) {
+        return wave.createReply("mocked instant reply");
+    }
 }
