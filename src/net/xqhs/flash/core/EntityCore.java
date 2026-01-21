@@ -1,5 +1,6 @@
 package net.xqhs.flash.core;
 
+import net.xqhs.flash.core.recorder.RecorderSupport;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
@@ -27,7 +28,7 @@ import static net.xqhs.flash.core.agent.AgentEvent.AgentEventType.*;
  * @param <P> - the type of {@link Entity} which is the direct (or main) context for this entity.
  * @author Andrei Olaru
  */
-public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable {
+public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable, RecorderSupport {
     /**
      * The parameter name for focusing (use the "highlighted" state of the log) logging on this entity.
      */

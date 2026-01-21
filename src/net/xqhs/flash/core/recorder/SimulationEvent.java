@@ -6,6 +6,13 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
+/**
+ * Data Transfer Object (DTO) representing a single recorded event in the simulation timeline.
+ * <p>
+ * Used for serialization by Gson. Contains the timestamp, source entity,
+ * event type, and any associated payload.
+ * </p>
+ */
 public class SimulationEvent implements Serializable {
     public final long timestamp;
     public final String entityName;

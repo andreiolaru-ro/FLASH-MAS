@@ -12,6 +12,15 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Singleton service responsible for capturing, buffering, and serializing simulation events
+ * to a JSON file in real-time.
+ * <p>
+ * This service uses a dedicated I/O thread to ensure that file writing operations
+ * do not block the execution of the agents or the main simulation loop.
+ * It implements a graceful shutdown mechanism to finalize the JSON structure.
+ * </p>
+ */
 public class RecorderService {
     private static final RecorderService instance = new RecorderService();
 
@@ -54,6 +63,11 @@ public class RecorderService {
         return instance;
     }
 
+    /**
+     * Captures an event from an agent and pushes it to the asynchronous buffer.
+     * * @param entityName The name of the agent generating the event.
+     * @param event The actual event object containing payload data.
+     */
     public static void record(String entityName, AgentEvent event) {
         try {
             RecorderService service = getInstance();

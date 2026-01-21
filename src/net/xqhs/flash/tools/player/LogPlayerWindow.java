@@ -11,6 +11,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Main GUI window for the Log Player tool.
+ * <p>
+ * Features include:
+ * <ul>
+ * <li>Loading and parsing large JSON simulation logs.</li>
+ * <li>Visual playback controls (Play, Pause, Timeline).</li>
+ * <li>Dynamic filtering based on identified agents.</li>
+ * <li>Read-only data table with auto-scrolling.</li>
+ * </ul>
+ * </p>
+ */
 public class LogPlayerWindow extends JFrame {
 
     private JTable logsTable;

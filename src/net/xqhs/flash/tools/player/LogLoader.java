@@ -13,6 +13,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Utility class designed to handle file I/O operations for simulation logs.
+ * <p>
+ * Uses Gson to parse the JSON array into a list of {@link net.xqhs.flash.core.recorder.SimulationEvent} objects.
+ * Ensures strict chronological sorting of events based on timestamps.
+ * </p>
+ */
 public class LogLoader {
 
     public static List<SimulationEvent> loadFromFile(String filePath) throws IOException {
