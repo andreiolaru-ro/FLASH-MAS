@@ -1,21 +1,13 @@
 package net.xqhs.flash.ml;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +16,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -160,11 +151,6 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	}
 	
 	/**
-	 * Use this to store the server process, to stop iit when needed.
-	 */
-	private Process serverProcess;
-	
-	/**
 	 * Map of available models, and their config
 	 */
 	private Map<String, Map<String, Object>> modelsList = new HashMap<>();
@@ -174,184 +160,73 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	 */
 	private Map<String, Map<String, Object>> datasetsList = new HashMap<>();
 
-    private ExecutorService executorService;
-    private ExternalInterface externalInterface;
+	/**
+	 * The Python interface for communication with the ML backend.
+	 * Can be injected via constructor for testing or different implementations.
+	 */
+    private PythonInterface pythonInterface;
+    
+    /**
+     * Default constructor - creates default HTTP-based Python interface.
+     * For production use via FLASH-MAS framework.
+     */
+    public MLDriver() {
+    	this(null);
+    }
+    
+    /**
+     * Constructor with dependency injection for testing or alternative implementations.
+     * 
+     * @param pythonInterface The Python interface implementation to use, or null for default HTTP implementation
+     */
+    public MLDriver(PythonInterface pythonInterface) {
+    	this.pythonInterface = pythonInterface;
+    }
+
 
 	@Override
 	public boolean start() {
-        executorService = Executors.newFixedThreadPool(10);
-        externalInterface = new HTTPExternalInterface();
-        externalInterface.initialize(createConfigMap());
+		// Create default Python interface if not injected
+		if (pythonInterface == null) {
+			pythonInterface = createDefaultPythonInterface();
+		}
+		
+		// Initialize Python interface (starts Python server)
+		Map<String, Object> config = new HashMap<>();
+		config.put("url", SERVER_URL);
+		config.put("port", SERVER_PORT);
+		config.put("serverFile", SERVER_FILE);
+
+        if (!pythonInterface.initialize(config)) {
+        	le("Failed to initialize Python interface");
+        	return false;
+        }
 
 		if(!super.start())
 			return false;
-		// start the python server, capture the server's stdin, stdout, stderr
-		li("starting Python ML server on port []...", Integer.valueOf(SERVER_PORT));
-		try {
-			ProcessBuilder pb = new ProcessBuilder("python3",
-					DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN] + "/"
-					+ MLDriver.class.getPackage().getName().replace('.', '/') + "/" + SERVER_FILE);
-			// pb.directory(new File(<directory from where you want to run the command>));
-			// pb.inheritIO();
-			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			serverProcess = pb.start();
-			int initialtries = 5, tries = initialtries;
-			int spaceBetweenTries = 2000;
-			boolean started = false, connected = false;
-			while(!started && tries-- >= 0) {
-				try { // wait for the process to start.
-					Thread.sleep(spaceBetweenTries);
-				} catch(InterruptedException e) {
-					e.printStackTrace();
-				}
-				if(serverProcess.isAlive())
-					started = true;
-			}
-			if(!started) {
-				serverProcess.destroyForcibly();
-				le("Python server could not start in the given time [].",
-						Integer.valueOf(initialtries * spaceBetweenTries));
-				return false;
-			}
-			lf("Attempt connection because server process is []", serverProcess.isAlive() ? "alive" : "dead");
-			tries = initialtries;
-			while(!connected && tries-- >= 0) {
-				// lf("try []", Integer.valueOf(tries));
-				try { // wait for the process to start.
-					Thread.sleep(spaceBetweenTries);
-				} catch(InterruptedException e) {
-					e.printStackTrace();
-				}
-				if(!serverProcess.isAlive()) {
-					lf("Server process is alive no more");
-					break;
-				}
-				try {
-					if(checkResponse(setupConnection(GET_MODELS_SERVICE, "GET", null)) == null)
-						continue;
-					lf("connected");
-					connected = true;
-				} catch(Exception e) {
-					// just wait
-				}
-			}
-			if(!serverProcess.isAlive()) {
-				le("Python server failed to start, error [].", Integer.valueOf(serverProcess.exitValue()));
-				return false;
-			}
-			if(!connected) {
-				le("Python server connection failed; no server available.");
-				return false;
-			}
-			li("Python server is up");
-			syncServerConfig();
-		} catch(IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+
+		syncServerConfig();
 		return true;
+	}
+	
+	/**
+	 * Creates the default Python interface implementation.
+	 * This is the only place that knows about PythonHTTPInterface.
+	 * Can be overridden by subclasses for different default implementations.
+	 * 
+	 * @return A new PythonHTTPInterface instance
+	 */
+	protected PythonInterface createDefaultPythonInterface() {
+		return new PythonHTTPInterface();
 	}
 	
 	@Override
 	public boolean stop() {
-        executorService.shutdown();
-        externalInterface.shutdown();
+        if (pythonInterface != null) {
+            pythonInterface.shutdown();
+        }
 
-		if(!super.stop())
-			return false;
-		if(this.serverProcess != null) {
-			try {
-				this.serverProcess.destroy();
-				this.serverProcess = null;
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Method to set up the connection to the python server, and send the request. At the moment, the request property
-	 * is always the same, but it could change in the future In such case, the method would take the request property as
-	 * parameter
-	 *
-	 * @param route_endpoint
-	 *            The endpoint of the route to connect to
-	 * @param request_method
-	 *            The request method to use
-	 * @param params
-	 *            The parameters to send to the server. If null, no parameters are sent
-	 * 			
-	 * @return The connection to the server
-	 */
-	protected HttpURLConnection setupConnection(String route_endpoint, String request_method,
-			Map<String, String> params) {
-		if(serverProcess == null || !serverProcess.isAlive()) {
-			le("Server process not active.");
-			return null;
-		}
-		try {
-			String location = SERVER_URL + ":" + SERVER_PORT + "/" + route_endpoint;
-			URL url = new URL(location);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod(request_method);
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			connection.setDoOutput(true);
-			
-			if(params != null) {
-				String PostData = "";
-				for(Map.Entry<String, String> param : params.entrySet()) {
-					PostData += param.getKey() + "=" + URLEncoder.encode(param.getValue(), "UTF-8") + "&";
-				}
-				DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-				wr.writeBytes(PostData);
-				wr.flush();
-			}
-			return connection;
-			
-		} catch(IOException e) {
-			le("Error: [] []", e.getMessage(), e.getStackTrace());
-			return null;
-		}
-	}
-	
-	/**
-	 * Method to check the response from the server. If the response code returned by the server is OK, a string
-	 * containing the response is returned
-	 *
-	 * @param connection
-	 *            The connection to the server
-	 * 			
-	 * @return The response from the server, if the response code is OK. Null otherwise
-	 */
-	protected String checkResponse(HttpURLConnection connection) {
-		if(connection == null)
-			return null;
-		try {
-			String response = "";
-			int responseCode = connection.getResponseCode();
-			boolean iserror = responseCode >= 400;
-			try (BufferedReader in = new BufferedReader(
-					new InputStreamReader(!iserror ? connection.getInputStream() : connection.getErrorStream()))) {
-				String line;
-				while((line = in.readLine()) != null) {
-					response += line;
-				}
-				if(iserror)
-					le("Error: [][]. Response: ", responseCode, connection.getResponseMessage(), response);
-				else
-					li("Response: []", response);
-				return !iserror ? response : null;
-			}
-			
-		} catch(IOException e) {
-			le("Error: [] []", e.getMessage(), e.getStackTrace());
-			return null;
-		}
+		return super.stop();
 	}
 	
 	/**
@@ -380,11 +255,7 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	 * containing the data of a model associated with its ID.
 	 */
 	public void syncServerConfig() {
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(GET_MODELS_SERVICE, "GET", null);
-		
-		// Check the response
-		String response = checkResponse(connection);
+		String response = pythonInterface.getModels();
 		if(response != null) {
 			this.modelsList = (Map<String, Map<String, Object>>) parseResponse("models", response);
 			li("available models: ", this.modelsList.keySet());
@@ -447,20 +318,11 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	 * @return The Id of the model if it is properly added, null if it is not
 	 */
 	public String addModel(String model_id, String model_path, Map<String, Object> model_config) {
-		// Convert the model_config to a JSON string
 		Gson gson = new Gson();
 		String jsonConfig = gson.toJson(model_config);
 		
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model_id);
-		postData.put(MODEL_FILE_PARAM, model_path);
-		postData.put(MODEL_CONFIG_PARAM, jsonConfig);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_MODEL_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
+		String response = pythonInterface.addModel(model_id, model_path, jsonConfig);
+		
 		if(response != null) {
 			lf("Model " + model_id + " added successfully");
 			Map<String, Object> values = (Map<String, Object>) parseResponse("model", response);
@@ -473,15 +335,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	}
 
 	public String addDataset(String dataset_name, String classes) {
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(DATASET_NAME_PARAM, dataset_name);
-		postData.put(DATASET_CLASSES_PARAM, classes);
-
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(ADD_DATASET_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
+		String response = pythonInterface.addDataset(dataset_name, classes);
+		
 		if(response != null) {
 			lf("Dataset " + dataset_name + " added successfully");
 			Map<String, Object> values = (Map<String, Object>) parseResponse("dataset", response);
@@ -508,19 +363,11 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	public ArrayList<Object> predict(String model, String data_path, boolean needEncode) {
 		String toPredict = data_path;
 		if(needEncode) {
-			// Encode the data
 			toPredict = encodeImage(data_path);
 		}
 		
-		// Create the request data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model);
-		postData.put(INPUT_DATA_PARAM, toPredict);
+		String response = pythonInterface.predict(model, toPredict);
 		
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(PREDICT_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
 		if(response != null) {
 			ArrayList<Object> prediction_list = (ArrayList<Object>) parseResponse("prediction", response);
 			li("Prediction: ", prediction_list);
@@ -542,15 +389,8 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 	 * @return The path to the exported model
 	 */
 	public String exportModel(String model_id, String export_directory) {
-		// Set up the form data
-		Map<String, String> postData = new HashMap<>();
-		postData.put(MODEL_NAME_PARAM, model_id);
-		postData.put(EXPORT_PATH_PARAM, export_directory);
+		String response = pythonInterface.exportModel(model_id, export_directory);
 		
-		// Set up the connection
-		HttpURLConnection connection = setupConnection(EXPORT_MODEL_SERVICE, "POST", postData);
-		// Check the response
-		String response = checkResponse(connection);
 		if(response != null) {
 			lf("Model [] exported successfully", model_id);
 			return export_directory + "/" + model_id + MODEL_ENDPOINT;
@@ -569,39 +409,17 @@ public class MLDriver extends EntityCore<Node> implements EntityProxy<MLDriver>,
 		return getName();
 	}
 
-    private Map<String, Object> createConfigMap() {
-        Map<String, Object> config = new HashMap<>();
-        config.put("host", SERVER_URL);
-        config.put("port", SERVER_PORT);
-        return config;
-    }
+	@Override
+	public void processAsync(AgentWave wave, WaveReceiver callback) {
+		if (pythonInterface != null && pythonInterface instanceof AsyncDriver) {
+			((AsyncDriver) pythonInterface).processAsync(wave, callback);
+		} else {
+			callback.receive(wave.createReply("ERROR: ML Driver not initialized properly"));
+		}
+	}
 
-    private String buildRequestFromWave(AgentWave wave) {
-        return wave.getContent();
-    }
-
-    @Override
-    public void receiveAsync(AgentWave wave, WaveReceiver callback) {
-        executorService.submit(() -> {
-            String request = buildRequestFromWave(wave);
-            externalInterface.sendAsync(request, new ExternalInterface.ResponseCallback() {
-                @Override
-                public void onResponse(String response) {
-                    AgentWave reply = wave.createReply(response);
-                    callback.receive(reply);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                    AgentWave reply = wave.createReply("ERROR: " + error.getMessage());;
-                    callback.receive(reply);
-                }
-            });
-        });
-    }
-
-    @Override
-    public AgentWave receive(AgentWave wave) {
-        return wave.createReply("mocked instant reply");
-    }
+	@Override
+	public AgentWave process(AgentWave wave) {
+		throw new UnsupportedOperationException("Only async processing supported. Use processAsync()");
+	}
 }

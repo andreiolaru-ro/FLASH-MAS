@@ -5,7 +5,7 @@ import net.xqhs.flash.core.support.WaveReceiver;
 
 /**
  * Interface for entities that can execute tasks asynchronously.
- * Supports both callback-based and Future-based async patterns.
+ * Supports callback-based async patterns.
  */
 public interface AsyncDriver {
 
@@ -16,15 +16,7 @@ public interface AsyncDriver {
      * @param wave The input wave containing request data
      * @param callback The receiver to call with the reply wave
      */
-    void receiveAsync(AgentWave wave, WaveReceiver callback);
+    void processAsync(AgentWave wave, WaveReceiver callback);
 
-
-    /**
-     * Receives a wave and processes it synchronously.
-     * Blocks until processing completes.
-     *
-     * @param wave The input wave
-     * @return The reply wave with results
-     */
-    AgentWave receive(AgentWave wave);
+    AgentWave process(AgentWave wave);
 }
