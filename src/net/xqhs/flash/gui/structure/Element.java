@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright (C) 2021 Andrei Olaru.
- *
+ * 
  * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
- *
+ * 
  * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- *
+ * 
  * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash.gui.structure;
@@ -37,7 +37,10 @@ import net.xqhs.flash.core.agent.AgentWave;
  * @author Valentin Mignot
  */
 public class Element implements Cloneable, Serializable {
-	private static final long	serialVersionUID		= 1L;
+	/**
+	 * Serial version UID.
+	 */
+	private static final long		serialVersionUID	= 1L;
 	/**
 	 * the default role of an element
 	 */
@@ -46,6 +49,10 @@ public class Element implements Cloneable, Serializable {
 	 * The default notify endpoint for an element.
 	 */
 	public static final String	DEFAULT_NOTIFY			= "$port/$role";
+	/**
+	 * The key used for style properties.
+	 */
+	public static final String 	STYLE_KEY				= "style";
 	/**
 	 * Intent size to use when producing a {@link String} rendition of the structure.
 	 */
@@ -92,20 +99,25 @@ public class Element implements Cloneable, Serializable {
 	/**
 	 * Represents a style that the element can have
 	 */
-	protected static class ElementWhen implements Serializable{
-		private final static long serialVersionUID = 1L;
-		/** The list of conditions that must be met for the style to be applied. */
+	protected static class ElementWhen implements Serializable {
+		/**
+		 * Serial version UID.
+		 */
+		private static final long serialVersionUID = 1L;
+		/**
+		 * The list of conditions that must be met for the style to be applied.
+		 */
 		protected HashMap<String, String> conditions = new HashMap<>();
 
 		/** The style to apply to the element when the condition is met. */
 		protected String style;
 
 		/**
-		 * A condition is a key-value pair where the key denotes the element whose value
-		 * is used to determine the style of this element.
-		 * The keys are in one of the following formats: port/role, /role, port.
-		 * The second format is relative to the current element's port.
-		 * The last of these formats is synonymous with the first where role = "content".
+		 * A condition is a key-value pair where the key denotes the element whose value is used to determine the style
+		 * of this element. The keys are in one of the following formats: port/role, /role, port. The second format is
+		 * relative to the current element's port. The last of these formats is synonymous with the first where role =
+		 * "content".
+		 *
 		 * @return - the map of conditions that must be met for the style to be applied
 		 */
 		public HashMap<String, String> getConditions() {
@@ -120,33 +132,34 @@ public class Element implements Cloneable, Serializable {
 		}
 
 		/**
-		 * Set the conditions that must be met for the style to be applied
-		 * The special "style" key is stripped from the map.
+		 * Set the conditions that must be met for the style to be applied The special "style" key is stripped from the
+		 * map.
+		 *
 		 * @param conditions
 		 *            - the map of conditions that must be met for the style to be applied
 		 * @see #getConditions()
 		 */
 		public ElementWhen(HashMap<String, String> conditions) {
 			this.conditions = conditions;
-			if (conditions.containsKey("style")) {
-				style = conditions.get("style");
-				conditions.remove("style");
+			if(conditions.containsKey(Element.STYLE_KEY)) {
+				style = conditions.get(Element.STYLE_KEY);
+				conditions.remove(Element.STYLE_KEY);
 			}
 		}
 	}
-
+	
 	/**
 	 * The list of styles that the element can have
 	 */
 	protected List<ElementWhen> when = new ArrayList<>();
-
+	
 	/**
 	 * @return - the list of child elements
 	 */
 	public List<Element> getChildren() {
 		return children;
 	}
-
+	
 	/**
 	 * Set the children of the element with the given list
 	 *
@@ -156,7 +169,7 @@ public class Element implements Cloneable, Serializable {
 	public void setChildren(List<Element> children) {
 		this.children = children;
 	}
-
+	
 	/**
 	 * Add a child element to the list of children
 	 *
@@ -166,7 +179,7 @@ public class Element implements Cloneable, Serializable {
 	public void addChild(Element element) {
 		this.children.add(element);
 	}
-
+	
 	/**
 	 * Add a list of child elements to the list of children
 	 *
@@ -176,14 +189,14 @@ public class Element implements Cloneable, Serializable {
 	public void addAllChildren(List<Element> _children) {
 		this.children.addAll(_children);
 	}
-
+	
 	/**
 	 * @return - the id of the element
 	 */
 	public String getId() {
 		return id;
 	}
-
+	
 	/**
 	 * Set the id of the element
 	 *
@@ -193,14 +206,14 @@ public class Element implements Cloneable, Serializable {
 	public void setId(String id) {
 		this.id = id;
 	}
-
+	
 	/**
 	 * @return - the type of the element
 	 */
 	public String getType() {
 		return type;
 	}
-
+	
 	/**
 	 * Set the type of the element
 	 *
@@ -210,14 +223,14 @@ public class Element implements Cloneable, Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
-
+	
 	/**
 	 * @return - the properties of the element
 	 */
 	public HashMap<String, String> getProperties() {
 		return properties;
 	}
-
+	
 	/**
 	 * Set the properties of the element
 	 *
@@ -227,7 +240,7 @@ public class Element implements Cloneable, Serializable {
 	public void setProperties(HashMap<String, String> properties) {
 		this.properties = properties;
 	}
-
+	
 	/**
 	 *
 	 * @return - the port of the element
@@ -235,7 +248,7 @@ public class Element implements Cloneable, Serializable {
 	public String getPort() {
 		return port;
 	}
-
+	
 	/**
 	 * Set the port of the element
 	 *
@@ -245,14 +258,14 @@ public class Element implements Cloneable, Serializable {
 	public void setPort(String port) {
 		this.port = port;
 	}
-
+	
 	/**
 	 * @return - the role of the element
 	 */
 	public String getRole() {
 		return role;
 	}
-
+	
 	/**
 	 * Set the role of the element
 	 *
@@ -262,14 +275,14 @@ public class Element implements Cloneable, Serializable {
 	public void setRole(String role) {
 		this.role = role;
 	}
-
+	
 	/**
 	 * @return - the value of the element
 	 */
 	public String getValue() {
 		return value;
 	}
-
+	
 	/**
 	 * Set the value of the element
 	 *
@@ -279,7 +292,7 @@ public class Element implements Cloneable, Serializable {
 	public void setValue(String value) {
 		this.value = value;
 	}
-
+	
 	/**
 	 * @return - the endpoint of the shard that added this element
 	 */
@@ -298,9 +311,8 @@ public class Element implements Cloneable, Serializable {
 	}
 
 	/**
-	 * @return - the list of styles that the element can have
-	 * Note: this method must not be named getWhen() because it would clash with the
-	 * setter method for the when property used by SnakeYAML
+	 * @return - the list of styles that the element can have Note: this method must not be named getWhen() because it
+	 *         would clash with the setter method for the when property used by SnakeYAML
 	 */
 	public List<ElementWhen> getWhenConditions() {
 		return when;
@@ -315,11 +327,11 @@ public class Element implements Cloneable, Serializable {
 	@JsonSetter
 	public void setWhen(List<HashMap<String, String>> whenMaps) {
 		this.when = new ArrayList<>();
-		for (HashMap<String, String> e : whenMaps) {
+		for(HashMap<String, String> e : whenMaps) {
 			this.when.add(new ElementWhen(e));
 		}
 	}
-
+	
 	/**
 	 * Return the children of the element if they match the given port
 	 *
@@ -330,11 +342,12 @@ public class Element implements Cloneable, Serializable {
 	public List<Element> getChildren(String childrenPort) {
 		List<Element> result = new LinkedList<>();
 		for(Element e : children)
-			if((childrenPort == null && e.getPort() == null) || (childrenPort != null && childrenPort.equals(e.getPort())))
+			if((childrenPort == null && e.getPort() == null)
+					|| (childrenPort != null && childrenPort.equals(e.getPort())))
 				result.add(e);
 		return result;
 	}
-
+	
 	/**
 	 * Return the child of the element that matches the given port and role
 	 *
@@ -346,53 +359,59 @@ public class Element implements Cloneable, Serializable {
 	 */
 	public Element getChild(String childPort, String childRole) {
 		Element result = null;
-		for (Element e : children) {
+		for(Element e : children) {
 			boolean portMatch = (childPort != null && childPort.equals(e.getPort()));
 			portMatch = portMatch || (childPort == null && e.getPort() == null);
 			boolean roleMatch = (childRole != null && childRole.equals(e.getRole()));
 			roleMatch = roleMatch || (childRole == null && e.getRole() == null);
-			if (portMatch && roleMatch) {
+			if(portMatch && roleMatch) {
 				result = e;
 				break;
 			}
-			if (ElementType.CONTAINER.type.equals(e.type)) {
+			if(ElementType.CONTAINER.type.equals(e.type)) {
 				result = e.getChild(childPort, childRole);
-				if (result != null)
+				if(result != null)
 					break;
 			}
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Return the child of the element if it matches the given id
 	 *
 	 * @param childID
 	 *            - the id to match
-	 *
+	 * 			
 	 * @return - the child that matches the given id
 	 */
 	public Element getChildWithId(String childID) {
-		for (Element e : children)
-			if (childID.equals(e.getId()))
+		for(Element e : children)
+			if(childID.equals(e.getId()))
 				return e;
 		return null;
 	}
 
 	/**
-	 * Applies an update to this element and its children, according to the given wave.
-	 * The roles to which this update applies are the content elements of the wave.
+	 * Applies an update to this element and its children, according to the given wave. The roles to which this update
+	 * applies are the content elements of the wave.
+	 *
+	 * @param updatePort
+	 *            - the port which received the update.
+	 * @param wave
+	 *            - the {@link AgentWave} containing entries for the roles of the given port.
 	 */
 	public void applyUpdate(String updatePort, AgentWave wave) {
 		List<String> roles = wave.getContentElements();
 
-		for (String updateRole : roles) {
+		for(String updateRole : roles) {
 			Element element = this.getChild(updatePort, updateRole);
-			if (element == null) continue;
+			if(element == null)
+				continue;
 			element.setValue(wave.getValue(updateRole));
 		}
 	}
-
+	
 	/**
 	 * Create a {@link JSONObject} from the element
 	 *
@@ -409,10 +428,10 @@ public class Element implements Cloneable, Serializable {
 
 		JsonArray whenArray = new JsonArray();
 		result.add("when", whenArray);
-		for (ElementWhen e : when) {
+		for(ElementWhen e : when) {
 			JsonObject whenObject = new JsonObject();
 			whenArray.add(whenObject);
-			whenObject.addProperty("style", e.getStyle());
+			whenObject.addProperty(Element.STYLE_KEY, e.getStyle());
 
 			JsonObject conditionsObject = gson.toJsonTree(e.getConditions()).getAsJsonObject();
 			whenObject.add("conditions", conditionsObject);
@@ -420,24 +439,24 @@ public class Element implements Cloneable, Serializable {
 
 		JsonArray childrenArray = new JsonArray();
 		result.add("children", childrenArray);
-		if (children != null)
-			for (Element child : children)
+		if(children != null)
+			for(Element child : children)
 				childrenArray.add(child.toJSON());
 		JsonObject propertiesObject = new JsonObject();
 		result.add("properties", propertiesObject);
-		for (Map.Entry<String, String> entry : properties.entrySet())
+		for(Map.Entry<String, String> entry : properties.entrySet())
 			propertiesObject.addProperty(entry.getKey(), entry.getValue());
 		return result;
 	}
-
+	
 	@Override
 	public String toString() {
 		return toString(0).toString();
 	}
-
+	
 	/**
 	 * Creates a String rendition of the element.
-	 *
+	 * 
 	 * @param indent
 	 *            - the indentation level.
 	 * @return a string rendition.
@@ -456,12 +475,12 @@ public class Element implements Cloneable, Serializable {
 		result.append("]  ");
 		return result;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(port, role);
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
@@ -471,7 +490,7 @@ public class Element implements Cloneable, Serializable {
 		Element other = (Element) obj;
 		return Objects.equals(port, other.port) && Objects.equals(role, other.role);
 	}
-
+	
 	@Override
 	public Object clone() {
 		Element result;

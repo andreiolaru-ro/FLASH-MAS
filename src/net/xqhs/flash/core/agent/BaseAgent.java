@@ -13,6 +13,11 @@ import net.xqhs.flash.core.support.PylonProxy;
  * other entities, but extending classes can change that,
  */
 public class BaseAgent extends EntityCore<Pylon> implements Agent {
+	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = -8256368668672575500L;
+	
 	@Override
 	public boolean isMainContext(Object context) {
 		return context instanceof PylonProxy;

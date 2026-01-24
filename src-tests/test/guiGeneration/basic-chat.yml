@@ -12,5 +12,5 @@ children:
     role: content
   - type: button
     port: outbound
-    role: send
+    role: activate
     value: Send

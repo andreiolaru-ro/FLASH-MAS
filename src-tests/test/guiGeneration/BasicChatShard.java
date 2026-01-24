@@ -15,10 +15,14 @@ import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
 public class BasicChatShard extends AgentShardGeneral {
     /** The serial version ID */
     private static final long serialVersionUID = -4289297018444620944L;
-    
-    private static final String CONFIG_OTHER_AGENT = "otherAgent";
-
+	/** Configuration key for the other agent name. */
+	private static final String CONFIG_OTHER_AGENT = "otherAgent";
+	/** The name of the other agent to chat with. */
     private String otherAgent;
+	/** Port name for sending outgoing messages. */
+	public static final String PORT_OUT = "outbound";
+	/** Port name for receiving incoming messages. */
+	public static final String PORT_IN = "inbound";
 
     /**
      * No-argument constructor.
@@ -35,41 +39,41 @@ public class BasicChatShard extends AgentShardGeneral {
         return true;
     }
 
-    @Override
-    public void signalAgentEvent(AgentEvent event) {
-        super.signalAgentEvent(event);
-        GuiShard guiShard = (GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation());
-        if (event.getType() == AgentEventType.AGENT_WAVE) {
-            AgentWave wave = (AgentWave) event;
-            String[] source = wave.getSourceElements();
-            li("Received AgentWave from []", wave.getCompleteSource());
+	@Override
+	public void signalAgentEvent(AgentEvent event) {
+		super.signalAgentEvent(event);
+		GuiShard guiShard = (GuiShard) getAgentShard(StandardAgentShard.GUI.toAgentShardDesignation());
+		if (event.getType() == AgentEventType.AGENT_WAVE) {
+			AgentWave wave = (AgentWave) event;
+			String[] source = wave.getSourceElements();
+			li("Received AgentWave from []", wave.getCompleteSource());
 
 
-			if (DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME.equals(source[0]) || "gui".equals(source[0])) {
+			if (DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME.equals(source[0]) || StandardAgentShard.GUI.toAgentShardDesignation().toString().equals(source[0])) {
 				handleGUIWave(wave);
 			}
 			else {
 				String senderName = source[0];
-				guiShard.sendOutput(new AgentWave(senderName + ": " + wave.getContent(), "inbound"));
+				guiShard.sendOutput(new AgentWave(senderName + ": " + wave.getContent(), PORT_IN) );
 			}
-        }
-    }
+		}
+	}
 
 	private void handleGUIWave(AgentWave wave) {
 		String[] source = wave.getSourceElements();
 
 		boolean portFound = false;
 		for (String element : source) {
-			if ("outbound".equals(element)) {
+			if (PORT_OUT.equals(element)) {
 				portFound = true;
 				break;
 			}
 		}
 
-		boolean sendPressed = wave.containsKey("send");
+		boolean sendPressed = wave.containsKey(GuiShard.ROLE_ACTIVATE);
 
 		if (portFound && sendPressed) {
-			String msgContent = (String) wave.get("content");
+			String msgContent = wave.getContent();
 
 			if (msgContent == null) {
 				String raw = wave.getContent();
@@ -79,7 +83,7 @@ public class BasicChatShard extends AgentShardGeneral {
 			}
 
 			if (msgContent != null && !msgContent.isEmpty()) {
-				sendMessage(msgContent, "outbound", otherAgent, "inbound");
+				sendMessage(msgContent, PORT_OUT, otherAgent, PORT_IN);
 			}
 		}
 	}

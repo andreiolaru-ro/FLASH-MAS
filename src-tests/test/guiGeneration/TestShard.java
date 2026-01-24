@@ -101,6 +101,10 @@ public class TestShard extends AgentShardGeneral {
 		}
 	}
 
+	/**
+	 * @param wave
+	 *            - the wave received.
+	 */
 	public void handleWave(AgentWave wave) {
 		li("Agent event from []: []", wave.getCompleteSource(), wave);
 		String[] subject = wave.getDestinationElements();

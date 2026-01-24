@@ -18,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -38,6 +40,7 @@ import net.xqhs.flash.core.util.Operation.Field;
 import net.xqhs.flash.core.util.Operation.OperationName;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.daemon.ControlClient;
+import net.xqhs.flash.daemon.FlashMasDaemon;
 import net.xqhs.flash.gui.GUILoad;
 import net.xqhs.flash.gui.structure.Element;
 import net.xqhs.flash.web.WebEntity;
@@ -77,9 +80,6 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			try {
 				return valueOf(wave.getFirstDestinationElement().toUpperCase());
 			} catch(Exception e) {
-				if (wave.getContent() != null && wave.getContent().toString().contains("DEPLOY_REMOTE")) {
-					return DEPLOY_REMOTE;
-				}
 				return null;
 			}
 		}
@@ -276,22 +276,16 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					String content = wave.getContent().toString();
 					li("M&C RECEIVED DEPLOY COMMAND: " + content);
 
+					JsonObject jsonObject = JsonParser.parseString(content).getAsJsonObject();
+
 					String targetIp = "";
-					if (content.contains("\"targetIp\":\"")) {
-						int start = content.indexOf("\"targetIp\":\"") + 12;
-						int end = content.indexOf("\"", start);
-						targetIp = content.substring(start, end);
+					if (jsonObject.has("targetIp") && !jsonObject.get("targetIp").isJsonNull()) {
+						targetIp = jsonObject.get("targetIp").getAsString();
 					}
 
 					String startupArgs = "";
-					if (content.contains("\"startupArgs\":\"")) {
-						int start = content.indexOf("\"startupArgs\":\"") + 15;
-						int end = content.indexOf("\"", start);
-						while(end < content.length() && content.charAt(end-1) == '\\') {
-							end = content.indexOf("\"", end + 1);
-						}
-						startupArgs = content.substring(start, end);
-						startupArgs = startupArgs.replace("\\\"", "\"");
+					if (jsonObject.has("startupArgs") && !jsonObject.get("startupArgs").isJsonNull()) {
+						startupArgs = jsonObject.get("startupArgs").getAsString();
 					}
 
 					String jarPath = "out/artifacts/Flash_MAS_jar/flash-mas.jar";
@@ -303,18 +297,17 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					if (!finalIp.isEmpty() && !finalArgs.isEmpty()) {
 						new Thread(() -> {
 							System.out.println(">>> Deploying to " + finalIp + " with args: " + finalArgs);
-							ControlClient.deployAndStart(finalIp, 35274, finalJarPath, finalArgs);
+							ControlClient.deployAndStart(finalIp, FlashMasDaemon.DEFAULT_PORT, finalJarPath, finalArgs);
 						}).start();
 					} else {
-						System.err.println("Deployment skipped: Missing IP or Arguments.");
+						System.err.println("Deployment skipped: Missing IP or Arguments in JSON.");
 					}
 					return true;
 				} catch (Exception e) {
-					System.err.println("Deployment Error: " + e.getMessage());
+					System.err.println("Deployment JSON Error: " + e.getMessage());
 					e.printStackTrace();
 					return false;
 				}
-
 			case REGISTER_ENTITIES:
 				String node = sourceEntity;
 				if(!allNodeEntities.containsKey(node))

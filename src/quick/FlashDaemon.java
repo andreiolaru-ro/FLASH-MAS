@@ -18,10 +18,9 @@ import net.xqhs.flash.daemon.FlashMasDaemon;
 public class FlashDaemon {
 
 	public static void main(String[] args) {
-		int port = 35274;
+		int port = FlashMasDaemon.DEFAULT_PORT;
 		boolean redirectOutput = false;
 
-		// Parse arguments
 		for (String arg : args) {
 			if ("-redirect".equals(arg)) {
 				redirectOutput = true;

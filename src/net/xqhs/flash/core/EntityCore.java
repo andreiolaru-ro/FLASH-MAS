@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Unit;
 
@@ -27,7 +28,7 @@ import net.xqhs.util.logging.Unit;
  * @param <P>
  *            - the type of {@link Entity} which is the direct (or main) context for this entity.
  */
-public class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable {
+public abstract class EntityCore<P extends Entity<?>> extends Unit implements ConfigurableEntity<P>, Serializable {
 	/**
 	 * The serial UID.
 	 */
@@ -228,5 +229,5 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	public <C extends Entity<P>> EntityProxy<C> asContext() {
 		throw new UnsupportedOperationException("This functionality is not implemented.");
 	}
-	
+
 }

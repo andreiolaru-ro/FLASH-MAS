@@ -257,7 +257,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		
 		AgentWave waveToServer = new AgentWave(entityName).addSourceElements(nodeName);
 		try {
-			webSocketClient.send(waveToServer.toSerializedString());
+			dispatcher.add(OUTBOUND.intValue(), waveToServer);
 			lf("Registered entity []/[] with this pylon: ", entityName, receiver, waveToServer);
 			return true;
 		} catch(Exception e) {
@@ -282,7 +282,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		AgentWave waveToServer = (AgentWave) new AgentWave(entityName).addSourceElements(nodeName).add(UNREGISTER_KEY,
 				UNREGISTER_KEY);
 		try {
-			webSocketClient.send(waveToServer.toSerializedString());
+			dispatcher.add(OUTBOUND.intValue(), waveToServer);
 			lf("Unregistered entity [] from this pylon: ", entityName, waveToServer);
 			return true;
 		} catch(Exception e) {

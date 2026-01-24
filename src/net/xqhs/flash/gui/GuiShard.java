@@ -63,6 +63,10 @@ public class GuiShard extends IOShard {
 	 * A reference to the {@link RemoteOperationShard} if one exists.
 	 */
 	protected RemoteOperationShard								remoteShard			= null;
+	/**
+	 * Activate role constant.
+	 */
+	public static final String									ROLE_ACTIVATE		= "activate";
 	
 	/**
 	 * No-argument constructor.
@@ -86,7 +90,7 @@ public class GuiShard extends IOShard {
 	}
 	
 	/**
-	 * Handles the {@link AgentEventType#AGENT_START} event to register the UIG to the {@link MonitoringShard}.
+	 * Handles the {@link AgentEventType#AGENT_START} event to register the UIG to the {@link RemoteOperationShard}.
 	 */
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
