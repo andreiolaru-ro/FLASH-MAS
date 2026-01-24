@@ -183,7 +183,7 @@ public class PythonHTTPInterface implements AsyncDriver, PythonInterface {
 
     private AgentWave doProcess(AgentWave wave) throws Exception {
         String endpoint = extractEndpoint(wave);
-        String requestData = buildRequestData(wave);
+        String requestData = buildRequestData(wave, endpoint);
 
         String response = sendHttpRequest(endpoint, requestData);
 
@@ -198,20 +198,47 @@ public class PythonHTTPInterface implements AsyncDriver, PythonInterface {
         return "predict";
     }
 
-    private String buildRequestData(AgentWave wave) throws UnsupportedEncodingException {
+    private String buildRequestData(AgentWave wave, String endpoint) throws UnsupportedEncodingException {
         StringBuilder data = new StringBuilder();
+        switch(endpoint) {
+            case "predict":
+                appendParam(data, "input_data", wave.getContent());
+                appendParam(data, "model_name", wave.get("model"));
+                break;
 
-        String content = wave.getContent();
-        if (content != null) {
-            data.append("input_data=").append(URLEncoder.encode(content, "UTF-8")).append("&");
-        }
+            case "add_model":
+                appendParam(data, "model_name", wave.get("model_name"));
+                appendParam(data, "model_file", wave.get("model_file"));
+                appendParam(data, "model_config", wave.get("model_config"));
+                break;
 
-        String model = wave.get("model");
-        if (model != null) {
-            data.append("model_name=").append(URLEncoder.encode(model, "UTF-8")).append("&");
+            case "add_dataset":
+                appendParam(data, "dataset_name", wave.get("dataset_name"));
+                appendParam(data, "dataset_classes", wave.get("dataset_classes"));
+                break;
+
+            case "export_model":
+                appendParam(data, "model_name", wave.get("model_name"));
+                appendParam(data, "export_directory_path", wave.get("export_path"));
+                break;
+
+            case "get_models":
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown endpoint: " + endpoint);
         }
 
         return data.toString();
+    }
+
+    private void appendParam(StringBuilder data, String key, String value) throws UnsupportedEncodingException {
+        if (value != null) {
+            if (!data.isEmpty()) {
+                data.append("&");
+            }
+            data.append(key).append("=").append(URLEncoder.encode(value, "UTF-8"));
+        }
     }
 
     private String sendHttpRequest(String endpoint, String postData) throws Exception {
