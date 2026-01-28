@@ -1,11 +1,12 @@
 name: Publish Docs with Pandoc
 
-on:
-  push:
-    branches:
-      - master
-      - documentation
-  workflow_dispatch:
+# Disabled for now
+#on:
+#  push:
+#    branches:
+#      - master
+#      - documentation
+#  workflow_dispatch:
 
 permissions:
   contents: read
@@ -30,7 +31,7 @@ jobs:
 
       - name: Prepare Output Folder
         run: |
-          mkdir public
+          mkdir -p public
           cp -r doc/* public/
           cp README.md public/index.md
 
