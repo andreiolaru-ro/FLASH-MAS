@@ -179,91 +179,101 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
-<h1 id="flash-mas"><img src="identity/logo-BW-50.png" /> FLASH-MAS</h1>
-<p>The Fast Lightweight Agent Shell MAS framework</p>
-<p><strong><em>Easy for beginners, powerful to experts</em></strong></p>
-<h2 id="intro">Intro</h2>
-<p>FLASH-MAS implements a model based on generic <em>entities</em>,
-which could be agents, agent groups, nodes, communication infrastructure
-elements, or agent components.</p>
-<p>FLASH-MAS is supposed to become compatible with other models and
-infrastructures, such as JADE or JaCaMo, and be a valid choice for ABMS
-simulations, by modularizing infrastructure services so that agents
-don’t need code changes when changing communication or deployment
-infrastructure.</p>
-<p>There are several targets that should make FLASH-MAS a good option
-for MAS developers, and these are also its main features:</p>
+<p>In order to support flexibility, the creation of entities should be
+performed via <em>Loaders</em>.</p>
+<p><strong>Do we need loaders at all?</strong></p>
+<p>Yes, for the cases where instantiating a class to create an entity is
+not enough.</p>
+<p>For instance, if we want to load a JADE agent (and we have access to
+a JADE platform), we cannot instantiate the agent directly, rather we
+need to call a method of a JADE container – this can be achieved via a
+specialized loader for JADE agents.</p>
+<h3 id="loaders">Loaders</h3>
+<p>In order to support entities which need a special means of creation
+(e.g. implementations that require that the class is produced by a
+factory), the creation process is abstracted into Loaders. It is
+recommended that most entities can be loaded through
+<code>SimpleLoader</code>, which just creates a new instance of the
+entity.</p>
+<h5 id="choosing-a-loader">Choosing a loader</h5>
 <ul>
-<li>system model – the way the entities in the system are structured and
-the way in which they interact</li>
-<li>deployment and configuration – the way one specifies a deployment;
-the way in which this deployment is loaded</li>
-<li>dynamics – how entities in the system can be reconfigured at
-runtime, supporting open and heterogeneous systems</li>
-<li>portability – the code for most of the core of FLASH-MAS is
-portable</li>
-<li>tools – tools are offered to be able to monitor and control the
-system</li>
-</ul>
-<h2 id="phases">Phases</h2>
-<p>The current phase of FLASH-MAS (branch <code>master</code>) uses an
-older type of entities, which interact by means of references and
-proxies – call this <strong>Nested-entity model</strong></p>
-<p>The future phase of FLASH-MAS uses the
-<strong><em>entity-operation</em></strong> model, in which entities
-interact only via the framework. See, for instance, branch <a
-href="https://github.com/andreiolaru-ro/FLASH-MAS/tree/opmodel-gabi"><code>opmodel</code></a>.</p>
-<h2 id="importing-into-your-ide">Importing into your IDE</h2>
+<li>the default loader is <code>SimpleLoader</code></li>
+<li>we can have various loaders, that can load various entities,
+potentially specified by kinds (see <a href="deployment.md">Deployment
+and Configuration</a>).
 <ul>
-<li>see <a href="doc/importing.md">importing</a></li>
-<li>see also chapter Source organization below</li>
-</ul>
-<h2 id="understanding-flash-mas">Understanding FLASH-MAS</h2>
-<p>Deploying a FLASH-MAS system means creating a <em>deployment
-configuration</em> specifying the <em>entities</em> in the system, and
-<em>booting the system</em>.</p>
+<li>identifying the appropriate loader, as well as the appropriate
+class, can be done using the <code>Loader.autoFind</code> static
+method</li>
+</ul></li>
+<li>loaders for an entity, applicable to its kind, will be tried in
+order.
 <ul>
-<li><p><a href="doc/concepts.md">Basic F-MAS concepts</a></p></li>
-<li><p><a href="doc/interaction.md">Interaction between
-entities</a></p></li>
-<li><p><a href="doc/loading.md">Loading entities and booting the
-system</a></p></li>
-<li><p><a href="doc/deployment.md">Deployment and
-configuration</a></p></li>
-<li><p><a href="doc/running.md">Running</a></p></li>
-<li><p><a href="doc/other.md">other remarks</a></p></li>
-<li><p>older <a href="doc/notes.md">notes file</a></p></li>
-</ul>
-<h2 id="source-documentation">Source documentation</h2>
-<p><a href="doc/javadoc/index.html">Javadoc here</a></p>
-<h2 id="source-organization">Source organization</h2>
+<li>for now, loaders for the same entity and the same kind cannot be
+chosen among and will be tried in order until one succeeds.
 <ul>
-<li><code>src</code> contains sources for FLASH-MAS functionality and
-for the <code>quick</code> package which enables quicker writing of CLI
-commands (see <a href="doc/running.md">running</a>).</li>
-<li><code>src-examples</code> contain sources for examples of FLASH-MAS
-deployments.</li>
-<li><code>src-tests</code> contains test to check the correct working of
-the framework.</li>
-<li><code>src-testing</code> contains sources for the ongoing work of
-various developers.</li>
-<li><code>src-schema</code> contains the schema for XML deployment
-files.</li>
-<li><code>doc</code> contains documentation markdown pages and
-javadoc.</li>
-<li><code>identity</code> contains visual identity information (e.g. the
-logo).</li>
-<li><code>lib</code> contains necessary libraries, organized in
-directories depending on what components the libraries are needed
-for.</li>
-<li><code>lib-all</code> contains all the libraries, and is
-(re-)generated by running <code>script/make-lib-all.sh</code>.</li>
-<li><code>script</code> contains scripts useful for maintaining the
-project.</li>
+<li>Workaround: loader should check in the entity’s configuration if any
+loader id is specified and compare this to an internal id.</li>
+<li>since loaders are tried in order, for a specific kind the first will
+be ‘default’
+<ul>
+<li>if no adequate kind is found, ‘’null’’ kind will be tried</li>
+</ul></li>
+<li>the default loader (SimpleLoader) will only be used if no loader for
+that type of entity is otherwise specified or otherwise succeeds.</li>
+</ul></li>
+</ul></li>
 </ul>
-<h2 id="license">License</h2>
-<p>FLASH-MAS is licensed under GPL v3.</p>
-<p>A lot of people contributed to FLASH-MAS throughout its life: <a
-href="CONTRIBUTORS.md">Contributors</a></p>
+<p>The Node is always loaded by the NodeLoader, which also loads all
+entities specified in the initial deployment.</p>
+<h3 id="loading-and-booting-the-system">Loading and Booting the
+system</h3>
+<p>See also <a href="running.md">running</a>.</p>
+<p>Normally, a FLASH-MAS deployment is booted via the
+<code>FlashBoot</code> class, which loads the deployment configuration
+for all the local nodes and starts those nodes. Main operations related
+to loading and starting the system are performed by
+<code>NodeLoader</code> which:</p>
+<ul>
+<li>loads the deployment configuration for all nodes declared in the
+deployment.</li>
+<li>loads the specified loaders. Loaders are organized by category and
+kind.
+<ul>
+<li>the default loader is the <code>SimpleLoader</code> or the first
+loader for the <code>null</code> category or the first loader for the
+<code>null</code> kind in the <code>null</code> category (if any).</li>
+</ul></li>
+<li>for each node, loads the entities which should be started on that
+node, considering the <strong><em>load order</em></strong> for the
+categories (the order in which categories should be loaded, e.g. pylons
+before agents)
+<ul>
+<li>in order to compute how to load an entity, its category and kind are
+considered (see <a href="deployment.md">deployment</a>)</li>
+<li>if there are loaders declared for this category, the loader for the
+entities kind is used
+<ul>
+<li>if the entity has no kind, the loader for the <code>null</code> kind
+in this category is used, and if no such loader exists, the loader for
+the first kind declared for the category</li>
+</ul></li>
+<li>otherwise, the default loader is used</li>
+<li>if loading fails with the chosen loader, the default loader is also
+tried.</li>
+<li>when the default loader is used, an appropriate class must be found
+to instantiate. This is done using <code>Loader#autoFind</code> which
+looks for a <code>classpath</code> parameter in the entity or otherwise
+tries to locate a class in the packages, according to the category and
+kind of the entity (see its documentation).</li>
+<li>when <code>Loader#load</code> is called, all the entities which form
+the context of the loaded entity are also transmitted.</li>
+<li>loaded entities which are in the <em>load order</em> or direct
+children of the node in the deployment configuration are
+<code>register</code>ed with the node</li>
+</ul></li>
+<li>then, <code>FlashBoot</code> <em>starts</em> the node(s), which in
+turn <em>start</em> the entities which exist in their scope</li>
+</ul>
 </body>
 </html>

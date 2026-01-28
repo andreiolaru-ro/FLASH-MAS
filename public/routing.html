@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<p><strong>tentative</strong></p>
+<ul>
+<li>general
+<ul>
+<li>on a node there are several pylons, managing various protocols</li>
+<li>there is an order of the pylons, the order in which they were
+added</li>
+<li>pylons are known by a <em>local pylon</em></li>
+<li>all entities register with the local pylon
+<ul>
+<li>although some specialized entities may only register with some
+pylons</li>
+</ul></li>
+<li>the local pylon sends messages via an <strong>appropriate</strong>
+pylon</li>
+</ul></li>
+<li>entity directory
+<ul>
+<li>correspondence between (short) entity names and their complete
+names</li>
+<li>short names can be used if they are in the directory</li>
+<li>if it is not in the directoy, it can be attempted to be used as a
+long name</li>
+<li>the short name if after the last slash, or if there is any double
+slash, everything after the double slash, if the group of 2 or more
+slashes is not preceded by a colon
+(e.g. http://server/path//entity/with/slashes)</li>
+<li>pairs can be given
+<ul>
+<li>in configuration</li>
+<li>when first sending to an entity</li>
+<li>when receiving from an entity</li>
+</ul></li>
+</ul></li>
+<li>directory servers
+<ul>
+<li>there is a number of directory servers</li>
+<li>any node is linked to a directory server
+<ul>
+<li>when looking for an entity not in the local directory, the message
+can be sent to the directory server, which
+<ul>
+<li>will relay the message to its destination</li>
+<li>will respond with the location of the destination, to be added to
+the local node directory</li>
+<li>will remember which nodes know about which entities, in order to
+send them updates</li>
+</ul></li>
+</ul></li>
+<li>when a new directory server gets connected
+<ul>
+<li>it is given the address of one of the already started directory
+servers</li>
+<li>it synchronizes with that server</li>
+</ul></li>
+<li>when an entity leaves from a node, the node stores [for a given
+time] the address of the node the entity move to
+<ul>
+<li>if a node receives a message for an entity which left that node, it
+redirects the message to the other location</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>Pylons can support mobility in different manners * no support * full,
+based on names containing the home server of the entity (like wsRegions)
+* partial * the infrastructure will move the agent * the agent must
+leave a proxy on its home server (shadow style), keeping the original
+name * the agent changes name according to its current server * the
+proxy relays all the messages (shadow-style, but handled by the proxy,
+not by the infrastructure)</p>
+<p><strong>efficient routing</strong></p>
+<p>in a distributed approach, regions are unavoidable as a means to
+divide the network and as servers that others can connect to (are
+routable)</p>
+<p><em>agent names without host name?</em></p>
+<ul>
+<li>short path protocol modification
+<ul>
+<li><p>normally messages for agent go through agent’s home
+server</p></li>
+<li><p>current region server can send to message sender an
+AGENT_LOCATION message</p></li>
+<li><p>the sending region server sends a Long_path_stop message through
+the long path, and a short_path_begin meessage directly to the agent’s
+current region</p></li>
+<li><p>the current region will wait for the long_path_stop message
+before accepting messages sent after the short_path_begin message. This
+happens on a per-agent/sending-region/current-region basis</p></li>
+<li><p>when the agent is leaving, the current region sends a
+short_path_stop message to all regions using short paths for that
+agent</p></li>
+<li><p>the sending region sends</p></li>
+<li><p>a short_path_end message to the current region signaling there
+will be no more messages via the short path; this will be relayed to the
+home region</p></li>
+<li><p>a long_path_resume message to the home region signaling that any
+messages after this one should be sent to the agent after all the
+messages from the current region, ending with the _short_path_end
+message</p></li>
+<li><p>the sending region will the route any messages for the agent via
+the long path</p></li>
+</ul></li>
+</ul>
+</body>
+</html>

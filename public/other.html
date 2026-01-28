@@ -179,91 +179,24 @@ Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 
 You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------- -->
-<h1 id="flash-mas"><img src="identity/logo-BW-50.png" /> FLASH-MAS</h1>
-<p>The Fast Lightweight Agent Shell MAS framework</p>
-<p><strong><em>Easy for beginners, powerful to experts</em></strong></p>
-<h2 id="intro">Intro</h2>
-<p>FLASH-MAS implements a model based on generic <em>entities</em>,
-which could be agents, agent groups, nodes, communication infrastructure
-elements, or agent components.</p>
-<p>FLASH-MAS is supposed to become compatible with other models and
-infrastructures, such as JADE or JaCaMo, and be a valid choice for ABMS
-simulations, by modularizing infrastructure services so that agents
-don’t need code changes when changing communication or deployment
-infrastructure.</p>
-<p>There are several targets that should make FLASH-MAS a good option
-for MAS developers, and these are also its main features:</p>
+<h3 id="concept-names-translation-from-tatami-to-flash-mas">Concept
+Names translation from tATAmI to FLASH-MAS</h3>
 <ul>
-<li>system model – the way the entities in the system are structured and
-the way in which they interact</li>
-<li>deployment and configuration – the way one specifies a deployment;
-the way in which this deployment is loaded</li>
-<li>dynamics – how entities in the system can be reconfigured at
-runtime, supporting open and heterogeneous systems</li>
-<li>portability – the code for most of the core of FLASH-MAS is
-portable</li>
-<li>tools – tools are offered to be able to monitor and control the
-system</li>
-</ul>
-<h2 id="phases">Phases</h2>
-<p>The current phase of FLASH-MAS (branch <code>master</code>) uses an
-older type of entities, which interact by means of references and
-proxies – call this <strong>Nested-entity model</strong></p>
-<p>The future phase of FLASH-MAS uses the
-<strong><em>entity-operation</em></strong> model, in which entities
-interact only via the framework. See, for instance, branch <a
-href="https://github.com/andreiolaru-ro/FLASH-MAS/tree/opmodel-gabi"><code>opmodel</code></a>.</p>
-<h2 id="importing-into-your-ide">Importing into your IDE</h2>
+<li>(tATAmI-2 name -&gt; FLASH-MAS name</li>
+<li>simulation (in terms of classes in the code) -&gt; deployment</li>
+<li>simulation (in terms of the process of running an experiment) -&gt;
+simulation</li>
+<li>visualization -&gt; net.xqhs.flash.core.monitoring / control</li>
+<li>component -&gt; feature -&gt; shard</li>
+<li>platform -&gt; support infrastructure + pylon
 <ul>
-<li>see <a href="doc/importing.md">importing</a></li>
-<li>see also chapter Source organization below</li>
+<li>the support infrastructure is the system-spanning virtual entity
+that offers services such as mobility</li>
+<li>the pylon is this entity’s concrete presence on a node</li>
+</ul></li>
+<li>ParameterSet -&gt; MultiValueMap</li>
+<li>TreeParameterSet -&gt; MultiTreeMap</li>
+<li>Support pylons (or pylons, for short)</li>
 </ul>
-<h2 id="understanding-flash-mas">Understanding FLASH-MAS</h2>
-<p>Deploying a FLASH-MAS system means creating a <em>deployment
-configuration</em> specifying the <em>entities</em> in the system, and
-<em>booting the system</em>.</p>
-<ul>
-<li><p><a href="doc/concepts.md">Basic F-MAS concepts</a></p></li>
-<li><p><a href="doc/interaction.md">Interaction between
-entities</a></p></li>
-<li><p><a href="doc/loading.md">Loading entities and booting the
-system</a></p></li>
-<li><p><a href="doc/deployment.md">Deployment and
-configuration</a></p></li>
-<li><p><a href="doc/running.md">Running</a></p></li>
-<li><p><a href="doc/other.md">other remarks</a></p></li>
-<li><p>older <a href="doc/notes.md">notes file</a></p></li>
-</ul>
-<h2 id="source-documentation">Source documentation</h2>
-<p><a href="doc/javadoc/index.html">Javadoc here</a></p>
-<h2 id="source-organization">Source organization</h2>
-<ul>
-<li><code>src</code> contains sources for FLASH-MAS functionality and
-for the <code>quick</code> package which enables quicker writing of CLI
-commands (see <a href="doc/running.md">running</a>).</li>
-<li><code>src-examples</code> contain sources for examples of FLASH-MAS
-deployments.</li>
-<li><code>src-tests</code> contains test to check the correct working of
-the framework.</li>
-<li><code>src-testing</code> contains sources for the ongoing work of
-various developers.</li>
-<li><code>src-schema</code> contains the schema for XML deployment
-files.</li>
-<li><code>doc</code> contains documentation markdown pages and
-javadoc.</li>
-<li><code>identity</code> contains visual identity information (e.g. the
-logo).</li>
-<li><code>lib</code> contains necessary libraries, organized in
-directories depending on what components the libraries are needed
-for.</li>
-<li><code>lib-all</code> contains all the libraries, and is
-(re-)generated by running <code>script/make-lib-all.sh</code>.</li>
-<li><code>script</code> contains scripts useful for maintaining the
-project.</li>
-</ul>
-<h2 id="license">License</h2>
-<p>FLASH-MAS is licensed under GPL v3.</p>
-<p>A lot of people contributed to FLASH-MAS throughout its life: <a
-href="CONTRIBUTORS.md">Contributors</a></p>
 </body>
 </html>
