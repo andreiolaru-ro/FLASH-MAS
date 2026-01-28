@@ -25,23 +25,23 @@ import java.util.stream.Collectors;
  */
 public class LogPlayerWindow extends JFrame {
 
-    private JTable logsTable;
-    private DefaultTableModel tableModel;
-    private JLabel statusLabel;
-    private JSlider timelineSlider;
-    private JButton btnPlay, btnPause;
-    private JPanel dynamicFilterPanel;
+    protected JTable logsTable;
+    protected DefaultTableModel tableModel;
+    protected JLabel statusLabel;
+    protected JSlider timelineSlider;
+    protected JButton btnPlay, btnPause;
+    protected JPanel dynamicFilterPanel;
 
-    private List<SimulationEvent> allEvents;
-    private List<SimulationEvent> visibleEvents;
+    protected List<SimulationEvent> allEvents;
+    protected List<SimulationEvent> visibleEvents;
 
-    private Timer playbackTimer;
-    private boolean isPlaying = false;
-    private Set<String> knownAgents = new HashSet<>();
-    private List<JCheckBox> agentCheckboxes = new ArrayList<>();
+    protected Timer playbackTimer;
+    protected boolean isPlaying = false;
+    protected Set<String> knownAgents = new HashSet<>();
+    protected List<JCheckBox> agentCheckboxes = new ArrayList<>();
 
-    private JCheckBox chkShowSystem;
-    private JCheckBox chkShowLogs;
+    protected JCheckBox chkShowSystem;
+    protected JCheckBox chkShowLogs;
 
     public LogPlayerWindow() {
         super("FLASH-MAS Log Player & Analyzer");
@@ -100,7 +100,7 @@ public class LogPlayerWindow extends JFrame {
 
                 int targetIndex = (int) (mousePercent * (visibleEvents.size() - 1));
 
-                long timestamp = visibleEvents.get(targetIndex).timestamp;
+                long timestamp = visibleEvents.get(targetIndex).getTimestamp();
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm:ss.SSS");
                 String timeText = sdf.format(new java.util.Date(timestamp));
 
@@ -193,8 +193,8 @@ public class LogPlayerWindow extends JFrame {
 
                 knownAgents.clear();
                 for (SimulationEvent evt : allEvents) {
-                    if (evt.entityName != null && !evt.entityName.isEmpty()) {
-                        knownAgents.add(evt.entityName);
+                    if (evt.getEntityName() != null && !evt.getEntityName().isEmpty()) {
+                        knownAgents.add(evt.getEntityName());
                     }
                 }
 
@@ -238,9 +238,9 @@ public class LogPlayerWindow extends JFrame {
         boolean showLog = chkShowLogs.isSelected();
 
         visibleEvents = allEvents.stream().filter(evt -> {
-            boolean isAgentSelected = selectedAgents.contains(evt.entityName);
+            boolean isAgentSelected = selectedAgents.contains(evt.getEntityName());
 
-            boolean isSystemEvent = evt.type.contains("START") || evt.type.contains("STOP");
+            boolean isSystemEvent = evt.getType().contains("START") || evt.getType().contains("STOP");
 
             if (!isAgentSelected) return false;
 
@@ -256,13 +256,13 @@ public class LogPlayerWindow extends JFrame {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm:ss.SSS");
 
         for (SimulationEvent evt : visibleEvents) {
-            String payloadStr = (evt.payload != null) ? evt.payload.toString() : "";
+            String payloadStr = (evt.getPayload() != null) ? evt.getPayload().toString() : "";
 
             tableModel.addRow(new Object[]{
-                    sdf.format(new java.util.Date(evt.timestamp)),
-                    evt.timestamp,
-                    evt.entityName,
-                    evt.type,
+                    sdf.format(new java.util.Date(evt.getTimestamp())),
+                    evt.getTimestamp(),
+                    evt.getEntityName(),
+                    evt.getType(),
                     payloadStr
             });
         }

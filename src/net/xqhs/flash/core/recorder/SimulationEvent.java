@@ -14,12 +14,12 @@ import java.util.Arrays;
  * </p>
  */
 public class SimulationEvent implements Serializable {
-    public final long timestamp;
-    public final String entityName;
-    public final String type;
-    public final Object payload;
+    protected final long timestamp;
+    protected final String entityName;
+    protected final String type;
+    protected final Object payload;
 
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+    protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
             .withZone(ZoneId.systemDefault());
 
     public SimulationEvent(String entityName, String type, Object payload) {
@@ -46,5 +46,21 @@ public class SimulationEvent implements Serializable {
                 type,
                 payloadString
         );
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Object getPayload() {
+        return payload;
     }
 }

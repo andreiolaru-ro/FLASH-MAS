@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Utility class designed to handle file I/O operations for simulation logs.
  * <p>
- * Uses Gson to parse the JSON array into a list of {@link net.xqhs.flash.core.recorder.SimulationEvent} objects.
+ * Uses Gson to parse the JSON array into a list of {@link SimulationEvent} objects.
  * Ensures strict chronological sorting of events based on timestamps.
  * </p>
  */
@@ -34,7 +34,7 @@ public class LogLoader {
                 return new ArrayList<>();
             }
 
-            Collections.sort(events, Comparator.comparingLong(o -> o.timestamp));
+            Collections.sort(events, Comparator.comparingLong(o -> o.getTimestamp()));
 
             System.out.println("[LogLoader] Loaded " + events.size() + " events from " + filePath);
             return events;

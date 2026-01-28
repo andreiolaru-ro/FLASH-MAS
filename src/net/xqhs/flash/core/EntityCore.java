@@ -2,6 +2,7 @@ package net.xqhs.flash.core;
 
 import net.xqhs.flash.core.recorder.RecorderSupport;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.Unit;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static net.xqhs.flash.core.agent.AgentEvent.AgentEventType.*;
+import static net.xqhs.flash.core.recorder.RecorderService.record;
 
 /**
  * Basic implementation of the {@link ConfigurableEntity} interface, supporting:
@@ -94,7 +96,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
             return ler(false, "Entity is already running");
         lf("[] starting", name);
         running = true;
-        net.xqhs.flash.core.recorder.RecorderService.record(this.getName(), AGENT_START.toString(), this.getClass().getName());
+        record(this.getName(), AGENT_START.toString(), this.getClass().getName());
         return true;
     }
 
@@ -107,7 +109,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
         if (!running)
             return ler(false, "Entity is already stopped");
         lf("[] stopped", name);
-        net.xqhs.flash.core.recorder.RecorderService.record(this.getName(), AGENT_STOP.toString());
+        record(this.getName(), AGENT_STOP.toString());
         running = false;
         return true;
     }
@@ -234,11 +236,10 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
      * Intercepted calls: li() info, le() error, lf() trace, etc.
      */
     @Override
-    protected void l(net.xqhs.util.logging.Logger.Level messageLevel, String message, Object... arguments) {
+    protected void l(Logger.Level messageLevel, String message, Object... arguments) {
         super.l(messageLevel, message, arguments);
         String formattedMessage = Unit.compose(message, arguments);
-        net.xqhs.flash.core.recorder.RecorderService.record(this.getUnitName(), "LOG_" + messageLevel.name(),
-                formattedMessage);
+        record(this.getUnitName(), "LOG", messageLevel.name(), formattedMessage);
     }
 
     // Fix for the console displaying the full path of entities
