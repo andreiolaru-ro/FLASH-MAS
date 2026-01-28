@@ -102,7 +102,7 @@ category-description
 
 category-property        ::= [^: ]+            [no whitespace or column]
 element_description      ::= (par:val | par)* category-description*
-element                 [basically anything, but interpreted as:]
+element_name             [basically anything, but interpreted as:]
         ::= part1:part2        [depending on category, can mean loader:id or type:id or category:type]
         | type:                [an unnamed element with the specified type/loader]
         | name                 [depending on category, a named element of the default type or an unnamed element with this type]

@@ -32,12 +32,13 @@ jobs:
         run: |
           mkdir public
           cp -r doc/* public/
+          cp README.md public/index.md
 
       - name: Convert MD to HTML
         run: |
           find public -name "*.md" | while read file; do
             echo "Converting $file..."
-            pandoc "$file" -o "${file%.md}.html" --standalone --metadata title="Documentatie"
+            pandoc "$file" -o "${file%.md}.html" --standalone --metadata title="Documentation"
             rm "$file"
           done
 

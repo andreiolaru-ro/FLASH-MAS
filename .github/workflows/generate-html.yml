@@ -1,0 +1,57 @@
+name: Generate HTML directly in Repo
+
+on:
+  push:
+    branches:
+      - master
+      - documentation
+    # Ignore commits made by bot
+    paths-ignore:
+      - 'public/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # script has access to write in repo
+
+jobs:
+  convert-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Prepare Output Folder
+        run: |
+          mkdir -p public
+          cp -r doc/* public/
+          cp README.md public/index.md
+
+      - name: Convert MD to HTML
+        run: |
+          find public -name "*.md" | while read file; do
+            echo "Converting $file..."
+            pandoc "$file" -o "${file%.md}.html" --standalone --metadata title="Documentation"
+            # delete .md files to remain just with HTML files
+            rm "$file"
+          done
+
+      - name: Commit and Push changes
+        run: |
+          # Configure Bot
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          
+          git add public/
+          
+          # Verify if there are changes before commit
+          if git diff --staged --quiet; then
+            echo "No change in documentation."
+          else
+            git commit -m "Auto-generated HTML documentation [skip ci]"
+            git push
+          fi
