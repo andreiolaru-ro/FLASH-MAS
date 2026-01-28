@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<p>Copyright (C) 2021 Andrei Olaru.</p>
+<p>This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people
+who have been previously involved with this project.</p>
+<p>Flash-MAS is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or any later
+version.</p>
+<p>Flash-MAS is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with Flash-MAS. If not, see <a href="http://www.gnu.org/licenses/"
+class="uri">http://www.gnu.org/licenses/</a>. ——————————————— –&gt; #
+Basic scenario</p>
+<ul>
+<li><p><strong>Agents</strong> – there are several agents</p></li>
+<li><p><strong>Communication</strong> – each agent periodically sends a
+message to another agent given in its configuration (the
+<em>favorite</em> agent)</p></li>
+<li><p><strong>Platforms</strong> – agents can be deployed on other
+platforms</p>
+<ul>
+<li>all features are available on all platforms</li>
+</ul></li>
+<li><p><strong>Interface</strong></p>
+<ul>
+<li>each agent has an interface displaying two text fields
+(<code>content</code> and <code>target</code>), a <code>send</code>
+button, and an area with all the received messages
+<ul>
+<li>the <code>target</code> field is pre-filled with a favorite agent
+which is given in the deployment</li>
+</ul></li>
+<li>each agent has a <code>quick send</code> button which sends a
+pre-set message to the favorite agent</li>
+<li>in the <em>reduced interface</em>, each agent presents only the
+<code>quick send</code></li>
+</ul></li>
+<li><p><strong>Monitoring &amp; Control</strong></p>
+<ul>
+<li>on a node featuring a control and monitoring entity, it is possible
+to
+<ul>
+<li>visualize all entities in the system (nodes, pylons, agents, and
+other, maybe not sub-agent entities)</li>
+<li>execute operations on the entities (start, stop, operations in the
+<em>reduced interface</em>)</li>
+</ul></li>
+</ul></li>
+<li><p><strong>ROS</strong></p>
+<ul>
+<li>some agents, instead of sending messages to other agent, send
+pre-set messages to pre-set ROS nodes</li>
+<li>if an interface is available, there are various buttons for
+different kind of messages to send (e.g. “curtains up” and “curtains
+down”)</li>
+</ul></li>
+<li><p><strong>Mobility</strong> – agents are able to move between any
+two nodes</p>
+<ul>
+<li>after moving, appropriate messaging, interface, and other platform-
+and node-specific shards will be loaded</li>
+<li>[if no interface] agents periodically move</li>
+<li>[if interface] each agent has a <code>move</code> button and moves
+to a pre-set or [if discovery] a random node</li>
+<li>[if control] the interface of the control entity features a
+<code>recall</code> button for each agent to <em>call</em> it to the
+node where the control entity lives</li>
+</ul></li>
+<li><p><strong>Discovery</strong> – agents are able to discover all the
+other agents and broadcast messages</p>
+<ul>
+<li>for messages where a target agent is not specified, a target agent
+will be picked randomly</li>
+<li>each agent is able to discover all the nodes</li>
+</ul></li>
+<li><p><strong>Agent arrays</strong></p>
+<ul>
+<li>the agents are generated as an agent array, randomly distributed
+over the set of nodes.</li>
+</ul></li>
+</ul>
+<p>Web App spec:</p>
+<p>layout: horizontal global children: - type: label port: node-name -
+type: button port: node-start role: activate value: Start - …. - type:
+container port: entities size: 10 –&gt; height pentru fiecare element,
+ce nu intră facem scroll; width maxim pentru elementele care intră
+direct sub acest container interfaces type: container port:
+extended-interfaces size: 6 columns: 3 –&gt; calculează width pentru
+elemente</p>
+</body>
+</html>

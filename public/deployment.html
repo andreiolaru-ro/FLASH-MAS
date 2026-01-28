@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<p>The principle in FLASH-MAS is to allow complex deployments if needed,
+but also to make simple deployments very easy to specify.</p>
+<p>While it is possible to instantiate entities and add their relations
+directly, in code, the <em>preferred</em> manner is to use a
+<em>deployment configuration</em> which contains all the necessary
+information for the entities to be created at startup on a particular
+node (and, potentially, not only).</p>
+<p>From an abstract perspective, the deployment configuration is a tree
+of nested entities and other items, with the root in the
+<em>deployment</em>.</p>
+<p>A lot of effort has been invested to ease the task of deploying a MAS
+using FLASH-MAS.</p>
+<h3 id="configuration">Configuration</h3>
+<p>The deployment configuration can be specified via a scenario XML file
+and/or via the CLI arguments. The information is gathered in a
+<code>DeploymentConfiguration</code> instance, which is a
+<code>MultiTreeMap</code> (see the class in the project). The
+information in the deployment configuration is organized on two main
+nodes:</p>
+<ul>
+<li>in the <code>deployment</code> node, the hierarchical structure of
+the entities is retained</li>
+<li>in the <code>#local-id</code> node, all the entities in the
+configuration are listed, by their locally-assigned identifier.</li>
+</ul>
+<p>Important takeouts:</p>
+<ul>
+<li><p>all deployment information can be provided both via the XML and
+via CLI arguments.</p></li>
+<li><p>information from the XML is loaded first, and information from
+the CLI is loaded second, so it can overwrite/refine information from
+the XML.</p></li>
+<li><p>all entities are assigned a <strong><em>local
+identifier</em></strong> in order to more easily read the
+output.</p></li>
+<li><p>the sequence of processing is:</p>
+<ul>
+<li><p>an initial tree is created in the
+<code>DeploymentConfiguration</code>constructor. It contains</p>
+<ul>
+<li>the default schema for the XML</li>
+<li>the default load order</li>
+<li>an unnamed node</li>
+<li>a local communication pylon</li>
+</ul></li>
+<li><p>the names of the XML file and of the XML schema files are
+searched for</p>
+<ul>
+<li><p>if the first argument does not start with <code>-</code> then it
+is considered as the name of the deployment XML file and the default
+schema is used</p></li>
+<li><p>otherwise, the arguments are searched for something like</p>
+<p><code>-deployment_file &lt;file-name&gt;</code></p>
+<p>and</p>
+<p><code>-schema &lt;file-name&gt;</code></p>
+<p>for the deployment file and the schema</p></li>
+</ul></li>
+<li><p>the XML file is loaded into the configuration tree, if
+any</p></li>
+<li><p>the CLI arguments are parsed and loaded into the configuration
+tree</p></li>
+<li><p>additional transformations on the tree are performed (see
+below)</p></li>
+</ul></li>
+</ul>
+<p>In principle, both the XML and the CLI arguments describe a tree-like
+structure of items. However, there are three issues:</p>
+<ol type="1">
+<li>CLI arguments are naturally a linear structure</li>
+<li>Some other issues arise which needs automated transformations on the
+tree</li>
+<li>Some help is given to the deployer regarding locating the classes
+for the entities to be loaded.</li>
+</ol>
+<h4 id="structure-and-pre-defined-items">Structure and pre-defined
+items</h4>
+<p>In the deployment configuration tree, there are two keys:
+<code>deployment</code> and <code>#local-id</code> (see above). The
+<code>deployment</code> key contains keys for each <em>category</em>.
+Each category then contains keys for the <em>name</em> of each entity
+(element) in that category. Each element then contains (besides its own
+parameters) keys for each subordinate category, and so on.</p>
+<p>All entities are described via key-value pairs (called
+<em>parameters</em>). Some entities have some predefined keys.</p>
+<p>The pre-defined items are defined in <code>CategoryName</code>. In
+principle, they are</p>
+<ul>
+<li>the pre-defined entities (deployment, node, pylon, agent,
+shard)</li>
+<li>settings:
+<ul>
+<li>the <code>deployment_file</code></li>
+<li>the <code>schema</code></li>
+<li>the list of available <code>packages</code> (see <a
+href="loading.md">loading</a>)</li>
+<li>the load order (see <a href="loading.md">loading</a>)</li>
+<li>available loaders (see <a href="loading.md">loading</a>)</li>
+</ul></li>
+</ul>
+<h4 id="xml">XML</h4>
+<p>For the XML deployment file, the schema is described in
+<code>src-schema/deployment-schema.xsd</code>. The most important XML
+node types are <code>parametric</code> and <code>entitybase</code>,
+which serve as base for all other XML node types.</p>
+<h4 id="cli">CLI</h4>
+<p>The CLI argument parser uses the following grammar:</p>
+<pre class="bnf"><code>CLI arguments 
+        ::= scenario-file? category-description*
+
+category-description     
+        ::= -category(:category-property)* element-name element_description
+        | -category(:category-property)* (val)*
+
+category-property        ::= [^: ]+            [no whitespace or column]
+element_description      ::= (par:val | par)* category-description*
+element_name             [basically anything, but interpreted as:]
+        ::= part1:part2        [depending on category, can mean loader:id or type:id or category:type]
+        | type:                [an unnamed element with the specified type/loader]
+        | name                 [depending on category, a named element of the default type or an unnamed element with this type]
+            [the exact variant is decided in Boot/NodeLoader, not in the CLI parser]
+
+category/par/val/part1/part2/type/name     ::= [^: ]     [no whitespace or column]</code></pre>
+<p>Examples:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quick.Boot</span> <span class="at">-agent</span> myAgent mission:compute</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quick.Boot</span> <span class="at">-node</span> 1 <span class="at">-agent</span> myAgent <span class="at">-agent</span> otherAgent <span class="at">-agent</span> thirdAgent</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quick.Boot</span> <span class="at">-node</span> 1 <span class="at">-agent</span> myAgent <span class="at">-agent</span> otherAgent <span class="at">-node</span> X <span class="at">-agent</span> thirdAgent</span></code></pre></div>
+<p>Remarks:</p>
+<ul>
+<li>All <code>name:val</code> pairs belong in an element.</li>
+<li>All elements belong in a category; all categories belong in elements
+or at the root level.</li>
+<li>Any element name is preceded by its category</li>
+<li>In the tree (implemented as a <code>MultiTreeMap</code>) there are
+two types of categories: simple values (which are strings) and
+not-simple-values (which are also trees). This cannot be distinguished
+in the grammar, but:
+<ul>
+<li>predefined categories are defined as being values or not</li>
+<li>not-predefined categories need to state their properties anyway,
+hence they will also state their property of being a simple value</li>
+</ul></li>
+<li>In order to correctly identify the appropriate <em>loader</em> for
+an entity, it is possible to specify, apart from its category
+(e.g. <em>pylon</em>), also its <strong><em>kind</em></strong>. This is
+done together with the identifier. Usually, this is specified like
+<code>-pylon local:local1</code>, where <code>local</code> is the kind
+and <code>local1</code> is the identifier; or
+<code>-agent jade:agent1</code>, where <code>jade</code> is the kind and
+<code>agent1</code> is the identifier. See more in <a
+href="loading.md">loading</a>.
+<ul>
+<li>whether this is possible for a category is specified in the
+appropriate <code>CategoryName</code> instance.</li>
+<li>the kind can also be specified as an individual parameter of the
+entity, such as <code>kind:jade</code></li>
+</ul></li>
+<li>The deployment configuration allows unnamed entities, but these
+cannot be referenced (such as for <in-context-of>).</li>
+</ul>
+<h5 id="making-a-linear-structure-into-a-tree-structure">Making a linear
+structure into a tree structure</h5>
+<p>This is done while parsing CLI arguments, by looking at the
+<em>category</em> of the element.</p>
+<p>Let’s start with an example: take the CLI command line:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quick.Boot</span> <span class="at">-node</span> central <span class="at">-node</span> node6 <span class="at">-pylon</span> local:comms <span class="at">-agent</span> Facilitator service:directory</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">-agent</span> MyAgent pingPeriod:5 <span class="at">-pylon</span> websocket:WS <span class="at">-agent</span> main1 <span class="at">-agent</span> main2 <span class="at">-agent</span> main3</span></code></pre></div>
+<p>The corresponding deployment configuration looks like this (parameter
+values in brackets):</p>
+<pre><code>deployment
+  node
+    central
+    node6
+      pylon
+        comms [kind:local]
+          agent
+            Facilitator [service=directory]
+            MyAgent [pingPeriod=5]
+        WS [kind:websocket]
+          agent
+            main1
+            main2
+            main3</code></pre>
+<p>At any time while parsing the arguments, there is a <em>current
+position</em> in the configuration tree where we “are”. The initial
+position is at the level of the deployment. For instance, after the
+arguments
+<code>-node node6 -pylon local:comms -agent Facilitator service:directory -agent MyAgent pingPeriod:5</code>,
+the current position in the tree is:</p>
+<pre><code>deployment
+  node
+    node6
+      pylon
+        comms [kind:local]
+          agent
+            Facilitator [service=directory]
+            MyAgent [pingPeriod=5]
+              *here*</code></pre>
+<p>Considering the <em>current position</em>, the following rules are
+used to integrate a new element of category <em>Cat</em>:</p>
+<ul>
+<li>if there is an ancestor of the current position which is of the same
+category <em>Cat</em>, the new element will be placed in that category
+<ul>
+<li>Example: see how the <code>WS</code> pylon is integrated in the
+example above. Although it is defined immediately after an agent, since
+there is a <code>pylon</code> category as an ancestor of the current
+position, <code>WS</code> is added in that category.</li>
+</ul></li>
+<li>if the category is not predefined, or a predefined parent category
+is not specified in <code>CategoryName</code> (such as nodes for pylons,
+pylons for agents, etc), the new element (and its category) is added at
+the current position.
+<ul>
+<li>Example:</li>
+</ul></li>
+<li>if the category is predefined and</li>
+<li>if the category is predefined or there is supposed the new element
+(and its category) is added at top level, in the
+<code>deployment</code>.</li>
+</ul>
+<h3 id="context">Context</h3>
+<p>Entities exist in the context of other entities. For instance, an
+agent exists in the context of a pylon, of a node, and of the
+deployment, but also potentially in a group, an organization, etc. We
+say that entities “above” are added to the context of elements “below”,
+and elements “below” are added in the context of elements”above”.</p>
+<p>Currently, all elements in categories which are declare (in
+<code>CategoryName</code>) as <em>visible on path</em> are visible to
+all elements below and, hence, are added to the context of elements
+below.</p>
+<p><strong>Discussion on visibility</strong></p>
+<ul>
+<li>It would be desired to be able to limit the visibility of a category
+to be no deeper than a specific other category.</li>
+<li>Can’t implement in visibility in the enum because lower level
+entities are not yet defined;</li>
+<li>Therefore, visibility can be implemented
+<ul>
+<li>in the deployment, through an attribute (TODO)</li>
+<li>ad-hoc by the implementation of each loader / each entity that loads
+other entities</li>
+<li>however, specifying visibility in the enum may be useless because
+loaders/entities can still pass any context to their children</li>
+</ul></li>
+</ul>
+<h3 id="porting">Porting</h3>
+<p>It is desired that, for instance, if there are multiple nodes
+declared in the deployment, and each should use a pylon with the same
+settings for all nodes, that the template specification of the pylon is
+only written once in the deployment. SImilarly, it may be desired that
+(some) loaders or some packages are available in all nodes, but only
+specified once.</p>
+<p>So, the use case is as follows:</p>
+<ul>
+<li>the ‘template’ pylon is described before any of the nodes.</li>
+<li>each node gets a separate actual pylon.</li>
+</ul>
+<p>This is done by means of <strong><em>porting</em></strong>, which is
+done after all of the deployment information is read from the XML and
+the CLI. The following rules are applied:</p>
+<ul>
+<li>an entity B can be ported from an entity A to an entity C (which is
+also its declared parent in hierarchy)</li>
+<li>the entity B must have been declared (in the deployment) as a
+descendant of entity A</li>
+<li>the configuration of a portable entity will be
+<strong>copied</strong> to all elements from the element where it has
+been declared down to its parent entity</li>
+<li>actual entity instances will be created only for the copy inside the
+parent (entity C), with new local identifiers.</li>
+</ul>
+<h3 id="parents">Parents</h3>
+<ul>
+<li>parents specify where an entity can be declared (inside which other
+entity)</li>
+<li>for an entity (of type) A with parent P:
+<ul>
+<li>the parent can be optional
+<ul>
+<li>the optional indication for parents is used to structure the
+entities in two ways:
+<ul>
+<li>determine whether an entity is in the correct context even if some
+entity types are missing from the context</li>
+<li>establish some hierarchy of entities that helps navigation when
+parsing CLI arguments</li>
+</ul></li>
+<li>if the parent can be auto-added, and a sibling instance P exists,
+entity A will be added automatically to instance P (the one with the
+highest priority)</li>
+</ul></li>
+<li>the parent can be mandatory
+<ul>
+<li>if the parent is mandatory, entity A must be declared inside an
+entity of type P (additional entities may exist between A and P in more
+custom deployments)</li>
+<li>;</li>
+</ul></li>
+<li>it is allowed to have <strong>intermediate</strong> entities between
+A and P, both in the optional and mandatory cases</li>
+</ul></li>
+</ul>
+</body>
+</html>

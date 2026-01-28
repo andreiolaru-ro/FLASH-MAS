@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<h3 id="entities">Entities</h3>
+<ul>
+<li>any part of the system which is persistent and has a life-cycle
+should be an <em>Entity</em>.
+<ul>
+<li>for instance, an agent is an entity, an artifact is an entity, an
+organization is an entity, or an agent group is an entity</li>
+<li>but entities are also other (or in fact, all) elements which are
+persistent in the deployment: nodes, communication infrastructures, and
+also sub-agent entities such as behaviors</li>
+</ul></li>
+<li>entities can be placed in the context of one-another. This is
+implemented differently in the two phases: for an entity C which is
+(included) in the context of entity P:
+<ul>
+<li>in the <em>nested-entity model</em>:
+<ul>
+<li>entity P has a reference to entity C</li>
+<li>the <code>class</code> of entity C is parametrized with the
+<code>class</code> of entity P</li>
+<li>entity C may have a reference to a proxy to entity P
+<ul>
+<li>this is because a reference to an entity offers <em>control</em>
+over that entity via methods such as <code>start</code>,
+<code>stop</code>, <code>addContext</code>, etc</li>
+</ul></li>
+<li>the method <code>C.addContext</code> is called to explicitly add P
+as a context of C</li>
+</ul></li>
+<li>in the <em>entity-operation model</em>:
+<ul>
+<li>entities P and C both have a reference to the framework (or some
+toolkit which the framework offers)</li>
+<li>relations are created as <code>in-scope-of</code> relations in the
+framework</li>
+</ul></li>
+</ul></li>
+</ul>
+<h4 id="nested-entity-model">Nested-entity model</h4>
+<p><strong>Implementation details</strong></p>
+<ul>
+<li>Entities implement <code>Entity</code></li>
+<li><code>ConfigurableEntity</code> is offered which offers a specific
+<code>configure</code> method; <code>ConfigurableEntity</code>
+implementations are expected to have zero-argument constructors.</li>
+<li>Entities should be loadable through <code>SimpleLoader</code> (which
+supports both methods above), and only for special cases (where a
+factory is needed) should specialized loaders be used</li>
+<li>Entity context
+<ul>
+<li>is all entities containing it, however</li>
+<li>a special case are the entities of the type specified in the class
+hierarchy (the generic parameter for the Entity interface), which are
+its <em>proper context</em></li>
+<li>while the <code>Entity</code> interface specifies both
+<code>addContext</code> and <code>addGeneralContext</code>, it is
+<strong>strongly recommended</strong> that
+<code>addGeneralContext</code> <em>always works</em> for instances of
+the proper context (as some loaders, such as <code>SimpleLoader</code>,
+only use <code>addGeneralContext</code> to add context to entities.</li>
+</ul></li>
+</ul>
+<p><strong>Life-cycle</strong></p>
+<ul>
+<li>an entity is instanced by a loader (see <a
+href="loading.md">Loaders</a>)</li>
+</ul>
+<p><strong>Access control</strong></p>
+<ul>
+<li>anyone with a reference to an entity is able to control it (start /
+stop / add/remove context)</li>
+<li>an entity can expose itself to another entity as a context; the
+instance given as context may (and generally should, to avoid casting to
+a more powerful interface) be different than the actual entity, and it
+should relay calls to the actual entity.</li>
+</ul>
+<h3 id="pre-defined-entities">Pre-defined entities</h3>
+<p>Some entity types are predefined, but a developer should be able to
+add any number of additional entity types.</p>
+<p>There are two types of pre-defined <em>virtual</em> entities which
+span the whole agent system are</p>
+<ul>
+<li><em>the deployment</em> – the entirety of the FLASH-MAS deployment;
+its life-cycle is identical to the life-cycle of the FLASH-MAS system;
+there is only one deployment.</li>
+<li>the support infrastructures – collections of entities (pylons),
+which offer services to other entities in the system, especially
+services which involve communication, especially across machines;
+<ul>
+<li>e.g. one support infrastructure may be able to offer id-based
+communication for all agents in a deployment.</li>
+</ul></li>
+</ul>
+<p>Pre-defined <em>actual</em> (<em>local</em>) entities are</p>
+<ul>
+<li><p><em>nodes</em> – they represent the presence of FLASH-MAS on a
+physical machine; normally a node for each machine is sufficient, but
+more complex setups may have more than one node on a machine;</p></li>
+<li><p><em>pylons</em> – they represent the presence of a support
+infrastructure on a node, and agents (or other entities) are able to use
+their services;</p></li>
+<li><p><em>agents</em> – the autonomous, pro-active entities that are
+able to interact among each other using support infrastructure (and,
+more concretely, pylons);</p></li>
+<li><p><em>shards</em> – entities encapsulating various functionality
+that may be useful o agents; the purpose of shards may be to:</p>
+<ul>
+<li>if the agent is a <strong>Composite Agent</strong>, the agent is
+composed exclusively by a set of shards which interact by means of an
+event queue;</li>
+<li>offer a more comfortable means for an agent to access the services
+offered by a pylon, when the pylon offers a <strong>specific</strong>
+implementation for a more general type of service (e.g. messaging);</li>
+<li>while it is perfectly possible for an agent of arbitrary
+implementation to skip using a shard and access the services offered by
+the pylon directly, using shards may be a more uniform manner of
+abstracting pylon services, since many shards may be already be
+implemented so that they can be used in composite agents.
+<ul>
+<li>shards may help store information and processes that are specific to
+both the pylon, and to the agent (e.g. need to move with the agent, so
+should remain attached to it)</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><strong>Do we need entities at all?</strong></p>
+<p>The only truly mandatory entities are nodes, pylons and agents, which
+are implicit in an agent system. But nodes can be automatically created
+and configured, and default pylon implementations are offered, so the
+developer may used them explicitly only when needed.</p>
+<h3 id="flexibility">Flexibility</h3>
+<p>Entities types and implementations are not fixed in any way. A
+developer can deploy any kind of entity, with any implementation.
+Moreover, the loading process of an entity is not fixed – a loader can
+be provided that loads the entity in a specific manner. All this can be
+done without any changes to the source of FLASH-MAS, as both entities
+and loaders are dynamically loaded at runtime.</p>
+</body>
+</html>
