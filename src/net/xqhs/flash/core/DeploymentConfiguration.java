@@ -95,6 +95,18 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String	CONTEXT_ELEMENT_NAME			= "in-context-of";
 	/**
+	 * The name of the element containing the description of the configuration, like in a CLI argument list.
+	 * <p>
+	 * We use this name both
+	 * <ul>
+	 * <li>to create a description of the configuration, so that entities can access it. In this context, each element
+	 * is in its own value; and
+	 * <li>as the name of the attribute in the XML containing a configuration string. In this case, the attribute
+	 * contains an entire, multi-argument, configuration string. TODO
+	 * </ul>
+	 */
+	public static final String	CONFIGURATION_STRING_NAME		= "configuration_string";
+	/**
 	 * Name of XML nodes for entities other than those in {@link CategoryName}.
 	 */
 	public static final String	GENERAL_ENTITY_NAME				= "entity";
@@ -123,19 +135,20 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Root package for FLASH classes.
 	 */
-	public static final String		ROOT_PACKAGE				= "net.xqhs.flash";
+	public static final String		ROOT_PACKAGE					= "net.xqhs.flash";
 	/**
 	 * Package for core FLASH functionality
 	 */
-	public static final String		CORE_PACKAGE				= ROOT_PACKAGE + ".core";
+	public static final String		CORE_PACKAGE					= ROOT_PACKAGE + ".core";
 	/**
 	 * The default directory for deployment files.
 	 */
-	public static final String		DEPLOYMENT_FILE_DIRECTORY	= "src-deployment/";
+	public static final String		DEPLOYMENT_FILE_DIRECTORY		= "src-deployment/";
 	/**
 	 * Directories containing source files (especially for looking up various files).
 	 */
-	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
+	public static final String[]	SOURCE_FILE_DIRECTORIES			= { "src", "src-testing", "src-tests",
+			"src-examples" };
 	/**
 	 * Flag to determine the central node. This will be assigned a CentralMonitoringAndControlEntity.
 	 */
@@ -144,15 +157,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The name of the Central M&C entity.
 	 */
 	public static final String		CENTRAL_MONITORING_ENTITY_NAME	= "Monitoring&Control_Entity";
-	
 	/**
 	 * Local IDs of default created entities.
 	 */
-	protected List<String>			autoCreated	= new LinkedList<>();
+	protected List<String>			autoCreated						= new LinkedList<>();
 	/**
 	 * The correspondence between names and local IDs, used to assign contexts by names.
 	 */
-	protected Map<String, String>	name_ids	= new HashMap<>();
+	protected Map<String, String>	name_ids						= new HashMap<>();
 	
 	/**
 	 * A node in the context stack. The context stack is used in order to keep track of location in the configuration
@@ -768,7 +780,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	protected static void readCLIArgs(Iterator<String> args, CtxtTriple baseContext, MultiTreeMap rootTree,
 			List<String> autoCreated, Map<String, String> name_ids, UnitComponentExt log) {
-		Deque<CtxtTriple> context = new LinkedList<>();
+		Deque<CtxtTriple> context = new LinkedList<>(); // the context stack
 		context.push(baseContext);
 		while(args.hasNext()) {
 			// log.lf(context.toString());
@@ -862,6 +874,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
 					context.push(new CtxtTriple(catName, subCatTree, node));
+					addToConfigurationString(context, a);
+					addToConfigurationString(context, name);
 				}
 			}
 			else {
@@ -876,6 +890,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						// place as value in the higher context
 						CtxtTriple placeholder = context.pop();
 						addParameter(context.peek().elemTree, paramCateg.s(), a, paramCateg.isUnique(), log);
+						addToConfigurationString(context, a);
 						context.push(placeholder);
 					}
 					else {
@@ -894,6 +909,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						parameter = a;
 					addParameter(context.peek().elemTree, parameter, value,
 							(CategoryName.byName(parameter) != null && CategoryName.byName(parameter).isUnique()), log);
+					addToConfigurationString(context, a);
 				}
 			}
 		}
@@ -947,6 +963,21 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				node.addOneValue(par, oneval);
 		else
 			node.addOneValue(par, val);
+	}
+	
+	/**
+	 * Goes through the entire context stack (of a CLI arguments parsing) and adds the given element to the
+	 * {@link #CONFIGURATION_STRING_NAME} key in the tree in each level of the context.
+	 * 
+	 * @param context
+	 *            - the context stack.
+	 * @param configurationElement
+	 *            - the element to add.
+	 */
+	protected static void addToConfigurationString(Deque<CtxtTriple> context, String configurationElement) {
+		for(CtxtTriple e : context)
+			if(e.elemTree != null)
+				e.elemTree.addOneValue(CONFIGURATION_STRING_NAME, configurationElement);
 	}
 	
 	/**
