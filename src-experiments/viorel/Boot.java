@@ -9,45 +9,31 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package net.xqhs.flash;
+package viorel;
 
-import java.util.Arrays;
-import java.util.List;
-
-import net.xqhs.flash.core.deployment.Deployment;
-import net.xqhs.flash.core.node.Node;
-import net.xqhs.util.logging.Logger.Level;
-import net.xqhs.util.logging.MasterLog;
+import net.xqhs.flash.FlashBoot;
 
 /**
- * Class that boots a Flash-MAS instance.
- * 
- * @author andreiolaru
+ * Deployment testing.
  */
-public class FlashBoot
+public class Boot
 {
-	// public static ByteArrayOutputStream stream = null;
 	/**
-	 * Main method. It calls {@link Deployment#loadDeployment} with the arguments received by the program.
+	 * Performs test.
 	 * 
 	 * @param args
-	 *            - the arguments received by the program.
+	 *                 - not used.
 	 */
 	public static void main(String[] args)
 	{
-		MasterLog.setLogLevel(Level.ALL);
-
-		// stream = new ByteArrayOutputStream();
-		// GlobalLogWrapper.setLogStream(stream);
-		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
-		// try {
-		// Thread.sleep(20000);
-		// } catch(InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		for(Node node : nodes)
-			node.start();
+		String test_args = "";
+		
+		test_args += " -package test.simplePingPong";
+		test_args += " -node main cli";
+		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		test_args += " -agent AgentB classpath:AgentPingPong";
+		
+		FlashBoot.main(test_args.split(" "));
 	}
 	
 }

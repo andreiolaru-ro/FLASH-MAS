@@ -327,8 +327,8 @@ public class TestClass {
 				elements.put(pylon.getKey(), pylon_elem);
 				
 				// CREATE NODE
-				Node node = new Node(
-						new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
+				Node node = new Node();
+				node.configure(new MultiTreeMap().addFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, node_name)
 								.addFirstValue("region-server", "ws://" + server_name));
 				node.addGeneralContext(pylon_elem.asContext());
 				elements.put(node_name, node);
