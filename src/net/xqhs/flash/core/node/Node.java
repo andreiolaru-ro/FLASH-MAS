@@ -62,6 +62,11 @@ import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
  */
 public class Node extends EntityCore<Node> {
 	/**
+	 * The serial UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * Proxy for a {@link Node}.
 	 */
 	public class NodeProxy implements EntityProxy<Node> {
@@ -83,6 +88,26 @@ public class Node extends EntityCore<Node> {
 		public void moveAgent(String destination, String agentName, String agentData) {
 			sendAgent(destination, agentName, agentData);
 		}
+	}
+	
+	/**
+	 * Indication of when to perform an action, such as starting or registering an entity.
+	 */
+	enum ActionTime {
+		/**
+		 * The action should not be performed.
+		 */
+		NONE,
+		
+		/**
+		 * The action should be performed now.
+		 */
+		NOW,
+		
+		/**
+		 * The action should be buffered and performed later.
+		 */
+		LATER,
 	}
 	
 	/**
@@ -119,15 +144,19 @@ public class Node extends EntityCore<Node> {
 	 * configuration.
 	 */
 	public static final int			INITIAL_ACTIVE_CHECK		= 5;
+	/**
+	 * The period (in milliseconds) at which to check for active entities.
+	 */
+	public static final long		ACTIVE_CHECK_PERIOD			= 1000;
 	
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
-	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
+	protected Map<String, List<Entity<?>>>	registeredEntities			= new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	protected List<Entity<?>>				entityOrder					= new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
@@ -135,20 +164,30 @@ public class Node extends EntityCore<Node> {
 	/**
 	 * The set of entity types considered as "active" and keeping the node from exiting.
 	 */
-	protected Set<String>					activeEntities		= new HashSet<>(Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	protected Set<String>					activeEntities				= new HashSet<>(
+			Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
 	/**
 	 * The time (in seconds) to check for active entities. if negative, the node will never close.
 	 */
-	protected long							activeFor			= INITIAL_ACTIVE_CHECK;
+	protected long							activeFor					= INITIAL_ACTIVE_CHECK;
 	/**
 	 * Monitors if all active entities still running.
 	 */
-	protected Timer							activeMonitor		= null;
+	protected Timer							activeMonitor				= null;
 	/**
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
 	protected PylonProxy					nodePylonProxy;
+	/**
+	 * The {@link AgentWave} used as a buffer for central registration messages, if registrations are done setting the
+	 * <code>cacheRegistration</code> parameter.
+	 */
+	protected AgentWave						centralRegistrationBuffer	= null;
+	/**
+	 * List of entities to start, that have been registered with delayed start.
+	 */
+	protected List<Entity<?>>				entitiesToStart				= null;
 	
 	/**
 	 * Creates a new {@link Node} instance.
@@ -173,7 +212,8 @@ public class Node extends EntityCore<Node> {
 	}
 	
 	/**
-	 * Method used to register entities added in the context of this node.
+	 * Call {@link #registerEntity(String, Entity, String, ActionTime, ActionTime)} without instructing the node to
+	 * start or to register the entity to the {@link CentralMonitoringAndControlEntity}.
 	 * 
 	 * @param entityType
 	 *            - the type of the entity.
@@ -183,6 +223,35 @@ public class Node extends EntityCore<Node> {
 	 *            - the name of the entity.
 	 */
 	public void registerEntity(String entityType, Entity<?> entity, String entityName) {
+		registerEntity(entityType, entity, entityName, ActionTime.NONE, ActionTime.NONE);
+	}
+	
+	/**
+	 * Method used to register entities added in the context of this node.
+	 * <p>
+	 * If the node has not already been started, all entities will be started and registered anyway during startup of
+	 * the node, regardless of the values of the last two parameters.
+	 * <p>
+	 * If the node has already been started, the last two parameters control if the entity is started and registered
+	 * immediately or it has to wait until
+	 * 
+	 * @param entityType
+	 *            - the type of the entity.
+	 * @param entity
+	 *            - a reference to the entity.
+	 * @param entityName
+	 *            - the name of the entity.
+	 * @param whenStart
+	 *            - if <code>NOW</code>, the {@link Entity#start()} method of the entity is called immediately. If
+	 *            <code>true</code> and the node has already been started, the entity is added to a list of entities to
+	 *            be started.
+	 * @param whenRegister
+	 *            - if <code>false</code>, the entity is registered immediately to
+	 *            {@link CentralMonitoringAndControlEntity}. If <code>true</code> and the node has already been started,
+	 *            the entity is added to a wave containing entities to be registered.
+	 */
+	public void registerEntity(String entityType, Entity<?> entity, String entityName, ActionTime whenStart,
+			ActionTime whenRegister) {
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
@@ -198,22 +267,67 @@ public class Node extends EntityCore<Node> {
 			} catch(UnsupportedOperationException e) {
 				// nothing to do, most likely asContext threw exception
 			}
+		
+		if(!startLater) {
+			lf("starting entity []...", entityName);
+			if(entity.start())
+				lf("entity [] started successfully.", entityName);
+			else
+				le("failed to start entity [].", entityName);
+		}
+		else if(isRunning()) {
+			if(entitiesToStart == null)
+				entitiesToStart = new LinkedList<>();
+			entitiesToStart.add(entity);
+		}
+		// otherwise the entity will be started anyway at node startup
+		
+		AgentWave wave = CentralMonitoringAndControlEntity.REGISTER_ENTITIES
+				.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+		wave.add(entity.getName(), entityType);
+		if(!registerLater) {
+			if(sendMessage(wave))
+				lf("entity [] registered successfully.", entityName);
+			else
+				le("failed to register entity [].", entityName);
+		}
+		else if(isRunning()) {
+			if(centralRegistrationBuffer == null)
+				centralRegistrationBuffer = wave;
+			else
+				centralRegistrationBuffer.add(entity.getName(), entityType);
+		}
+		// otherwise the entity will be registered anyway at node startup
 	}
 	
 	/**
-	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity} This lets it know what
-	 * entities are in the content of current node and what operations can be performed on them.
-	 *
-	 * @return - an indication of success.
+	 * Starts all entities that were registered with delayed start.
+	 * 
+	 * @return - <code>true</code> if all entities were started successfully, <code>false</code> if some failed.
 	 */
-	protected boolean registerEntitiesToCentralEntity() {
-		AgentWave wave = CentralMonitoringAndControlEntity.REGISTER_ENTITIES.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
-		registeredEntities.forEach((category, entities) -> {
-			entities.forEach(e -> {
-				wave.add(e.getName(), category);
-			});
-		});
-		return sendMessage(wave);
+	public boolean startPendingEntities() {
+		boolean allStarted = true;
+		for(Entity<?> entity : entitiesToStart) {
+			if(!entity.isRunning()) {
+				lf("starting entity []...", entity.getName());
+				if(entity.start())
+					lf("entity [] started successfully.", entity.getName());
+				else {
+					le("failed to start entity [].", entity.getName());
+					allStarted = false;
+				}
+			}
+		}
+		return allStarted;
+	}
+	
+	/**
+	 * Sends the pending entity registrations to the central entity.
+	 * 
+	 * @return an indication of success in sending the wave.
+	 */
+	public boolean registerPendingEntities() {
+		return sendMessage(centralRegistrationBuffer);
 	}
 	
 	@Override
@@ -221,20 +335,22 @@ public class Node extends EntityCore<Node> {
 		if(!super.start())
 			return false;
 		li("Starting node [] with entities [].", name, entityOrder);
+		centralRegistrationBuffer = CentralMonitoringAndControlEntity.REGISTER_ENTITIES
+				.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+		entitiesToStart = new LinkedList<>();
 		// must start entities before sending messages to M&C because M&C must be started too
 		for(Entity<?> entity : entityOrder) {
-			String entityName = entity.getName();
-			lf("starting entity []...", entityName);
-			if(entity.start())
-				lf("entity [] started successfully.", entityName);
-			else
-				le("failed to start entity [].", entityName);
+			entitiesToStart.add(entity);
+			centralRegistrationBuffer.add(entity.getName(), registeredEntities.entrySet().stream()
+					.filter(entry -> entry.getValue().contains(entity)).findFirst().get().getKey());
 		}
+		startPendingEntities();
+		
 		if(messagingShard != null)
 			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 		li("Node [] started.", name);
 		
-		if(getName() != null && registerEntitiesToCentralEntity())
+		if(getName() != null && registerPendingEntities())
 			lf("Entities successfully registered to control entity: ", entityOrder);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
@@ -244,7 +360,7 @@ public class Node extends EntityCore<Node> {
 				public void run() {
 					checkRunning();
 				}
-			}, activeFor * 1000, 1000);
+			}, activeFor * 1000, ACTIVE_CHECK_PERIOD);
 		}
 		return true;
 	}
