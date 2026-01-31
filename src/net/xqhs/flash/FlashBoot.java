@@ -39,6 +39,14 @@ public class FlashBoot
 
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
+
+        boolean shouldStart = true;
+        if (args.length > 0 && "no-start".equals(args[0])) {
+            shouldStart = false;
+
+            args = Arrays.copyOfRange(args, 1, args.length);
+        }
+
 		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
 		// try {
 		// Thread.sleep(20000);
@@ -46,8 +54,10 @@ public class FlashBoot
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-		for(Node node : nodes)
-			node.start();
+        if (shouldStart) {
+            for(Node node : nodes)
+                node.start();
+        }
 	}
 	
 }
