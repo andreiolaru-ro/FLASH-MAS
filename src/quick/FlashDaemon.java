@@ -12,8 +12,7 @@ import net.xqhs.flash.daemon.FlashMasDaemon;
 /**
  * Entry point for the Flash-MAS Node Daemon.
  * <p>
- * Parses command line arguments and starts the daemon instance.
- * usage: java quick.FlashDaemon [port] [-console]
+ * Usage: java quick.FlashDaemon [-port <number>] [-redirect]
  */
 public class FlashDaemon {
 
@@ -21,20 +20,43 @@ public class FlashDaemon {
 		int port = FlashMasDaemon.DEFAULT_PORT;
 		boolean redirectOutput = false;
 
-		for (String arg : args) {
-			if ("-redirect".equals(arg)) {
-				redirectOutput = true;
-			} else {
-				try {
-					port = Integer.parseInt(arg);
-				} catch (NumberFormatException e) {
-					System.err.println("Invalid port argument: " + arg + ". Using default: " + port);
-				}
+		for (int i = 0; i < args.length; i++) {
+			switch (args[i]) {
+				case "-redirect":
+					redirectOutput = true;
+					break;
+
+				case "--port":
+				case "-p":
+					if (i + 1 < args.length) {
+						try {
+							port = Integer.parseInt(args[i + 1]);
+							i++;
+						} catch (NumberFormatException e) {
+							System.err.println("[ERROR] Invalid port number provided: " + args[i + 1]);
+							return;
+						}
+					} else {
+						System.err.println("[ERROR] Missing argument for -port flag.");
+						return;
+					}
+					break;
+
+				default:
+					try {
+						port = Integer.parseInt(args[i]);
+					} catch (NumberFormatException e) {
+						System.out.println("[WARN] Ignoring unknown argument: " + args[i]);
+					}
+					break;
 			}
 		}
 
-		System.out.println("Starting Flash-MAS Daemon...");
-		System.out.println("Mode: " + (redirectOutput ? "FILE LOGGING" : "CONSOLE OUTPUT"));
+		System.out.println("==========================================");
+		System.out.println("   Starting Flash-MAS Daemon");
+		System.out.println("   PORT: " + port);
+		System.out.println("   LOGGING: " + (redirectOutput ? "File (node-std*.log)" : "Console"));
+		System.out.println("==========================================");
 
 		FlashMasDaemon daemon = new FlashMasDaemon(port, redirectOutput);
 		daemon.start();

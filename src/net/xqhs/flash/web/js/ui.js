@@ -1,7 +1,11 @@
 import { appContext } from "./common.js";
-import {notifyEntity, sendDeployCommand, sendGlobalCommand} from "./events.js";
+import {notifyEntity, sendDeployCommand, sendGlobalCommand, sendGlobalCommandWithPayload} from "./events.js";
 import { applyStyles } from "./processing.js";
 
+/**
+ * Initializes the side panel logic, including opening/closing behavior and
+ * binding handlers for global control buttons (Start, Stop, Pause Application).
+ */
 export function handleSidepanel() {
     $('#sidepanel-btn').on('click', function () {
         $('#sidepanel').toggleClass('open');
@@ -84,25 +88,62 @@ export function handleSidepanel() {
 
 const DEFAULT_ARGS = "-loader agent:composite -node nodeC -pylon webSocket:clientPylon connectTo:ws://127.0.0.1:8886 -agent composite:AgentC -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard test.guiGeneration.BasicChatShard otherAgent:AgentA";
 
+/**
+ * Initializes the "Deploy" section logic, binding events to the "Add Daemon" and "Deploy All" buttons.
+ */
 export function initDeployButton() {
     const addBtn = document.getElementById('add-daemon-btn');
     const ipInput = document.getElementById('new-daemon-ip');
     const listContainer = document.getElementById('daemon-list');
+    const deployAllBtn = document.getElementById('deploy-all-btn');
 
     if (addBtn) {
         addBtn.onclick = () => {
             const ip = ipInput.value.trim();
             if (!ip) return alert("Please enter an IP address!");
-            addDaemonCard(ip, listContainer);
+            addDaemonCard(ip, listContainer, " ... generic config ...");
         };
+    }
 
-        addDaemonCard("127.0.0.1", listContainer);
+    if (deployAllBtn) {
+        deployAllBtn.onclick = () => {
+            deployAll();
+        };
     }
 }
 
-function addDaemonCard(ip, container) {
+/**
+ * Updates the configuration arguments for daemons in the UI based on data received from the server.
+ * If a daemon card does not exist for an IP, it creates one.
+ *
+ * @param {Object} configMap - A map of IP addresses to configuration strings.
+ */
+export function updateNodeConfigs(configMap) {
+    const listContainer = document.getElementById('daemon-list');
+    if (!listContainer) return;
+
+    Object.keys(configMap).forEach(ip => {
+        const args = configMap[ip];
+        const exists = Array.from(listContainer.children).some(card => card.dataset.ip === ip);
+        if (!exists) {
+            addDaemonCard(ip, listContainer, args);
+        }
+    });
+}
+
+/**
+ * Adds a new visual card for a daemon to the specified container.
+ *
+ * @param {string} ip - The IP address of the daemon.
+ * @param {HTMLElement} container - The element to append the card to.
+ * @param {string} [initialArgs=""] - Optional initial startup arguments.
+ */
+function addDaemonCard(ip, container, initialArgs = "") {
+    const defaultText = initialArgs || "-loader agent:composite -node nodeC -pylon webSocket:clientPylon connectTo:ws://127.0.0.1:8886 -agent composite:AgentC -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard test.guiGeneration.BasicChatShard otherAgent:AgentA";
+
     const card = document.createElement('div');
-    card.style = "border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
+    card.classList.add('daemon-card');
+    card.dataset.ip = ip;
 
     card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -116,22 +157,36 @@ function addDaemonCard(ip, container) {
         </div>
 
         <div style="display:flex;">
-            <button class="deploy-btn" style="background: #4CAF50; color: white; border:none; padding: 10px; border-radius:4px; cursor:pointer; width: 100%; font-weight: bold;">
+            <button class="deploy-btn" style="background: #2196F3; color: white; border:none; padding: 10px; border-radius:4px; cursor:pointer; width: 100%; font-weight: bold;">
                 DEPLOY NODE
             </button>
         </div>
     `;
 
-    card.querySelector('.deploy-btn').onclick = () => {
-        const args = card.querySelector('.args-input').value;
-        sendDeployCommand(ip, args);
-    };
+    const deployBtn = card.querySelector('.deploy-btn');
+    if (deployBtn) {
+        deployBtn.onclick = () => {
+            const args = card.querySelector('.args-input').value;
+            import("./events.js").then(module => {
+                module.sendDeployCommand(ip, args);
+            });
+        };
+    }
 
-    card.querySelector('.remove-btn').onclick = () => container.removeChild(card);
+    const removeBtn = card.querySelector('.remove-btn');
+    if (removeBtn) {
+        removeBtn.onclick = () => {
+            container.removeChild(card);
+        };
+    }
 
     container.appendChild(card);
 }
 
+/**
+ * Refreshes the list of entities in the side panel.
+ * Handles checkbox selection logic for filtering which entities are displayed in the main view.
+ */
 export function updateEntitiesList() {
     $('#entities-list').empty();
     const selectedEntities = [];
@@ -185,6 +240,202 @@ function updateSelectedEntities() {
                 return item;
             })
         ));
+    }
+}
+
+/**
+ * Renders the list of daemons into the main table.
+ * Maintains user-edited configuration text even after a list refresh.
+ * Updates the "Deploy All" button count.
+ *
+ * @param {Array} list - Array of daemon objects containing status, IP, port, etc.
+ */
+export function renderDaemonList(list) {
+    const tbody = document.getElementById("daemon-list-body");
+    if (!tbody) return;
+
+    const currentConfigs = {};
+    document.querySelectorAll('.config-textarea').forEach(el => {
+        currentConfigs[el.getAttribute('data-ip')] = el.value;
+    });
+
+    tbody.innerHTML = "";
+
+    const deployAllBtn = document.getElementById('deploy-all-btn');
+    if (deployAllBtn) {
+        const readyCount = list ? list.filter(d => d.status === "ONLINE" && !d.deployed).length : 0;
+
+        deployAllBtn.innerText = `Deploy ${readyCount} configuration(s)`;
+
+        deployAllBtn.style.opacity = readyCount > 0 ? "1" : "0.6";
+        deployAllBtn.disabled = readyCount === 0;
+    }
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No daemons connected. Add one above.</td></tr>";
+        return;
+    }
+
+    list.forEach(d => {
+        const tr = document.createElement("tr");
+
+        let statusClass = "red";
+        let statusText = "OFFLINE";
+        if (d.status === "ONLINE") { statusClass = "green"; statusText = "ONLINE"; }
+        else if (d.status === "ERROR") { statusClass = "yellow"; statusText = "ERROR"; }
+
+        const statusCell = `<td><span class='status-dot ${statusClass}'></span> ${statusText}</td>`;
+
+        const addrCell = `<td><strong>${d.ip}</strong><br><span style='font-size:0.8em; color:#666'>:${d.port}</span></td>`;
+
+        const defaultArgs = `-loader agent:composite -node node_${d.ip.replace(/\./g,'_')} -pylon webSocket:clientPylon connectTo:ws://127.0.0.1:8886 -agent composite:AgentC -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard test.guiGeneration.BasicChatShard otherAgent:AgentA`;
+        const configVal = currentConfigs[d.ip] || defaultArgs;
+
+        const configCell = `<td class="config-cell">
+            <textarea id="config-${d.ip}" data-ip="${d.ip}" class="config-textarea" spellcheck="false" 
+            style="width:100%; height:60px; font-family:monospace; font-size:0.85em; resize:vertical;">${configVal}</textarea>
+        </td>`;
+
+        let deployBtn;
+        if (d.deployed) {
+            deployBtn = `<button class='deploy-btn' style="background-color:#28a745; color:white; cursor:default;" disabled>✔ Deployed</button>`;
+        } else if (d.status === "ONLINE") {
+            deployBtn = `<button class='deploy-btn' id="btn-deploy-${d.ip}" onclick="ui.deploySingle('${d.ip}', ${d.port})">🚀 Deploy</button>`;
+        } else {
+            deployBtn = `<button disabled style='opacity:0.5;'>Wait...</button>`;
+        }
+
+        const killJvmBtn = `<button onclick="ui.killNode('${d.ip}', ${d.port})" style="background:#ff9800; color:white; border:none; padding:4px 8px; font-size:11px; margin-left:5px; cursor:pointer;">Kill JVM</button>`;
+        const killDaemonBtn = `<button onclick="ui.killDaemon('${d.ip}', ${d.port})" style="background:#f44336; color:white; border:none; padding:4px 8px; font-size:11px; margin-left:5px; cursor:pointer;">Kill Daemon</button>`;
+
+        const actionCell = `<td class='daemon-actions' style="white-space:nowrap;">
+            ${deployBtn}
+            <div style="margin-top:5px;">${killJvmBtn} ${killDaemonBtn}</div>
+        </td>`;
+
+        tr.innerHTML = statusCell + addrCell + configCell + actionCell;
+        tbody.appendChild(tr);
+    });
+}
+
+/**
+ * Reads user input from the daemon form and sends a CONNECT_DAEMON command.
+ */
+export function connectDaemon() {
+    const ip = document.getElementById("new-daemon-ip").value;
+    const port = document.getElementById("new-daemon-port").value;
+    if (!ip) { alert("Please enter an IP"); return; }
+
+    sendGlobalCommandWithPayload("deployment", {
+        command: "CONNECT_DAEMON",
+        ip: ip,
+        port: parseInt(port)
+    });
+}
+
+/**
+ * Triggers deployment for a single daemon using its specific configuration.
+ *
+ * @param {string} ip - The IP of the target daemon.
+ * @param {number} port - The port of the target daemon.
+ */
+export function deploySingle(ip, port) {
+    const textArea = document.getElementById(`config-${ip}`);
+    if (!textArea) return;
+
+    const args = textArea.value.trim();
+
+    const btn = document.getElementById(`btn-deploy-${ip}`);
+    if(btn) { btn.innerText = "⏳ Sending..."; btn.disabled = true; }
+
+    sendGlobalCommandWithPayload("deployment", {
+        command: "DEPLOY_REMOTE",
+        targetIp: ip,
+        port: parseInt(port),
+        startupArgs: args
+    });
+}
+
+/**
+ * Triggers batch deployment for all online and undeployed daemons.
+ * Asks for user confirmation before proceeding.
+ */
+export function deployAll() {
+    const deployableButtons = [];
+    const textAreas = document.querySelectorAll('.config-textarea');
+
+    textAreas.forEach(ta => {
+        const ip = ta.getAttribute('data-ip');
+        const btn = document.getElementById(`btn-deploy-${ip}`);
+
+        if (btn && !btn.disabled) {
+            deployableButtons.push(btn);
+        }
+    });
+
+    if (deployableButtons.length === 0) {
+        alert("No undeployed, online nodes found to deploy.");
+        return;
+    }
+
+    if (confirm(`Are you sure you want to deploy ${deployableButtons.length} nodes?`)) {
+        deployableButtons.forEach(btn => btn.click());
+    }
+}
+
+/**
+ * Requests the latest list of daemons from the server.
+ */
+export function refreshDaemons() {
+    sendGlobalCommand("GET_DAEMONS_LIST");
+}
+
+/**
+ * Sends a command to kill the remote JVM (Node) on the specified IP.
+ *
+ * @param {string} ip - The IP of the target daemon.
+ * @param {number} port - The port of the target daemon.
+ */
+export function killNode(ip, port) {
+    if(!confirm(`Kill JVM on ${ip}?`)) return;
+    sendGlobalCommandWithPayload("deployment", {
+        command: "KILL_NODE_REMOTE",
+        ip: ip,
+        port: parseInt(port)
+    });
+}
+
+/**
+ * Sends a command to kill the remote Daemon process on the specified IP.
+ * This will result in a lost connection.
+ *
+ * @param {string} ip - The IP of the target daemon.
+ * @param {number} port - The port of the target daemon.
+ */
+export function killDaemon(ip, port) {
+    if(!confirm(`Kill DAEMON on ${ip}? Connection will be lost.`)) return;
+    sendGlobalCommandWithPayload("deployment", {
+        command: "KILL_DAEMON_REMOTE",
+        ip: ip,
+        port: parseInt(port)
+    });
+}
+
+/**
+ * Sends a command to kill ALL running JVMs (Nodes) across all connected daemons.
+ */
+export function killAllJVMs() {
+    if(confirm("⚠️ ARE YOU SURE?\nThis will kill ALL running Java Nodes (Agents).")) {
+        sendGlobalCommand("KILL_ALL_JVMS");
+    }
+}
+
+/**
+ * Sends a command to kill ALL connected Daemons.
+ */
+export function killAllDaemons() {
+    if(confirm("⚠️ CRITICAL WARNING\nThis will shut down ALL remote Daemons.\nYou will have to manually restart them on each machine.")) {
+        sendGlobalCommand("KILL_ALL_DAEMONS");
     }
 }
 
@@ -247,5 +498,3 @@ class AgentComponentBuilder {
         return $element;
     }
 };
-
-

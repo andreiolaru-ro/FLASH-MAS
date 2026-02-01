@@ -179,3 +179,137 @@ button.conditional-style-disabled {
     cursor: not-allowed;
     pointer-events: none;
 }
+
+.deploy-section {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.deploy-section summary {
+    background-color: #f5f5f5;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.deploy-section summary:hover {
+    background-color: #eeeeee;
+}
+
+#deploy-panel {
+    padding: 20px;
+    background-color: #fafafa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.deploy-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.deploy-controls input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.deploy-controls button {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.deploy-controls button:hover {
+    background-color: #1976D2;
+}
+
+.deploy-controls button:active {
+    background-color: #1565C0;
+}
+
+#daemon-list > div {
+    margin-top: 10px;
+}
+
+.deploy-controls .green-btn {
+    background-color: #4CAF50 !important;
+}
+
+.deploy-controls .green-btn:hover {
+    background-color: #43A047 !important;
+}
+
+.deploy-controls .green-btn:active {
+    background-color: #388E3C !important;
+}
+
+#daemon-section {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 2px solid #ddd;
+}
+
+.daemon-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.daemon-table th, .daemon-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+.daemon-table th {
+    background-color: #f4f4f4;
+}
+
+.status-dot {
+    height: 12px;
+    width: 12px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-dot.green { background-color: #28a745; box-shadow: 0 0 5px #28a745; }
+.status-dot.red   { background-color: #dc3545; box-shadow: 0 0 5px #dc3545; }
+.status-dot.yellow{ background-color: #ffc107; box-shadow: 0 0 5px #ffc107; }
+
+.daemon-actions button {
+    margin-right: 5px;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+
+.daemon-controls {
+    margin-bottom: 10px;
+}
+

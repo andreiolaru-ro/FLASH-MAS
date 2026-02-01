@@ -1,10 +1,10 @@
 import { connectToServer, registerHandler } from './events.js';
-import {handleSidepanel, initDeployButton} from './ui.js';
+import * as ui from './ui.js';
 
-handleSidepanel();
-initDeployButton();
+window.ui = ui;
+
+ui.handleSidepanel();
+ui.initDeployButton();
 
 await connectToServer();
-
 registerHandler();
-

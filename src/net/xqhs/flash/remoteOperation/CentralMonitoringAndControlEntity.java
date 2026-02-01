@@ -17,6 +17,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -67,7 +71,16 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		DEPLOY_REMOTE,
 		START_APPLICATION,
 		STOP_APPLICATION,
-		PAUSE_APPLICATION
+		PAUSE_APPLICATION,
+		CLIENT_CONNECTED,
+		SEND_NODE_CONFIGS,
+		CONNECT_DAEMON,
+		RESET_DAEMON_STATUSES,
+		GET_DAEMONS_LIST,
+		KILL_NODE_REMOTE,
+		KILL_DAEMON_REMOTE,
+		KILL_ALL_JVMS,
+		KILL_ALL_DAEMONS
 		;
 
 		/**
@@ -85,16 +98,90 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		}
 	}
 
+	/**
+	 * Fields used in operations.
+	 */
 	public enum Fields implements Field {
 		SPECIFICATION, RUNNING_STATUS, APPLICATION_STATUS, RUNNING_STATUS_RUNNING, RUNNING_STATUS_STOPPED, APPLICATION_STATUS_RUNNING, APPLICATION_STATUS_STOPPED, APPLICATION_STATUS_PAUSED, STATUS_UNKNOWN
 	}
 
+	/**
+	 * Operation definition for updating entity status.
+	 */
 	public static final Operation  UPDATE_ENTITY_STATUS   = new BaseOperation(Operations.UPDATE_ENTITY_STATUS, Fields.RUNNING_STATUS, Fields.APPLICATION_STATUS);
+	/**
+	 * Operation definition for updating entity GUI specification.
+	 */
 	public static final Operation  UPDATE_ENTITY_GUI     = new BaseOperation(Operations.UPDATE_ENTITY_GUI, Fields.SPECIFICATION);
+	/**
+	 * Operation definition for registering entities.
+	 */
 	public static final Operation  REGISTER_ENTITIES     = new BaseOperation(Operations.REGISTER_ENTITIES, (String[]) null);
+	/**
+	 * Operation definition for handling GUI output from an entity.
+	 */
 	public static final Operation  ENTITY_GUI_OUTPUT     = new BaseOperation(Operations.ENTITY_GUI_OUTPUT, (String[]) null);
+	/**
+	 * Operation definition for handling input from the GUI to an entity.
+	 */
 	public static final Operation  GUI_INPUT_TO_ENTITY       = new BaseOperation(Operations.GUI_INPUT_TO_ENTITY, (String[]) null);
 
+	/**
+	 * Configuration key for specifying remote daemons.
+	 */
+	public static final String CONFIG_DAEMONS_KEY = "remote.daemons";
+
+	/**
+	 * Interval in seconds for pinging daemons to check connectivity.
+	 */
+	private static final int DAEMON_PING_INTERVAL_SECONDS = 10;
+
+	/**
+	 * Default path to the JAR file to be deployed.
+	 */
+	private final String defaultJarPath = "out/artifacts/Flash_MAS_jar/flash-mas.jar";
+
+	/**
+	 * Information structure for tracking remote daemons.
+	 */
+	public static class DaemonInfo {
+		public String ip;
+		public int port;
+		public ControlClient.RemoteStatus status;
+		public boolean jarUploaded = false;
+		public boolean isDeployed = false;
+
+		/**
+		 * Creates a new DaemonInfo instance.
+		 * @param ip the IP address of the daemon.
+		 * @param port the port number of the daemon.
+		 */
+		public DaemonInfo(String ip, int port) {
+			this.ip = ip;
+			this.port = port;
+			this.status = ControlClient.RemoteStatus.UNREACHABLE;
+		}
+
+		/**
+		 * Gets the unique key for this daemon.
+		 * @return a string key in the format "ip:port".
+		 */
+		public String getKey() { return ip + ":" + port; }
+	}
+
+	/**
+	 * Map of known daemons indexed by their unique key (ip:port).
+	 */
+	private final Map<String, DaemonInfo> knownDaemons = new ConcurrentHashMap<>();
+
+	/**
+	 * Scheduler for background tasks like pinging daemons.
+	 */
+	private ScheduledExecutorService pingScheduler;
+
+	/**
+	 * Internal structure to hold state and configuration for registered entities.
+	 */
 	protected class EntityData {
 		String entityName;
 		String status;
@@ -211,6 +298,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	 * categories and names.
 	 */
 	private HashMap<String, HashMap<String, List<String>>> allNodeEntities    = new LinkedHashMap<>();
+	/**
+	 * Default configurations for nodes.
+	 */
+	protected Map<String, String> defaultNodeConfigurations = new HashMap<>();
 
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -220,7 +311,9 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		centralProxy = new CentralEntityProxy();
 		standardCtrls = GUILoad.load(new MultiTreeMap().addOneValue(GUILoad.FILE_SOURCE_PARAMETER, DEFAULT_CONTROLS)
 				.addOneValue(CategoryName.PACKAGE.s(), this.getClass().getPackage().getName()), getLogger());
+		String defaultArgs = "-loader agent:composite -node nodeC -pylon webSocket:clientPylon connectTo:ws://127.0.0.1:8886 -agent composite:AgentC -shard messaging -shard remoteOperation -shard swingGui from:basic-chat.yml -shard test.guiGeneration.BasicChatShard otherAgent:AgentA";
 
+		defaultNodeConfigurations.put("127.0.0.1", defaultArgs);
 		for(String iface : configuration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)) {
 			if(iface == null) {
 				lw("No interface specified. Defaulting to swing.");
@@ -251,14 +344,53 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					return ler(false, "unknown central GUI type");
 			}
 		}
+		if (configuration.containsKey(CONFIG_DAEMONS_KEY)) {
+			for (String daemonStr : configuration.getValues(CONFIG_DAEMONS_KEY)) {
+				try {
+					String[] parts = daemonStr.split(":");
+					String ip = parts[0];
+					int port = parts.length > 1 ? Integer.parseInt(parts[1]) : FlashMasDaemon.DEFAULT_PORT;
+
+					li("Config: Scheduling connection to daemon {}:{}", ip, port);
+					new Thread(() -> performConnect(ip, port)).start();
+
+				} catch (Exception e) {
+					le("Invalid daemon config format: " + daemonStr);
+				}
+			}
+		}
 		return true;
+	}
+
+	/**
+	 * Helper to perform "Connect": Add to list + Upload JAR.
+	 * @param ip the IP address of the remote daemon.
+	 * @param port the port number of the remote daemon.
+	 */
+	private void performConnect(String ip, int port) {
+		String key = ip + ":" + port;
+		DaemonInfo info = knownDaemons.computeIfAbsent(key, k -> new DaemonInfo(ip, port));
+
+		info.status = ControlClient.checkRemoteStatus(ip, port);
+
+		if (info.status == ControlClient.RemoteStatus.ONLINE) {
+			li("Daemon {}:{} is ONLINE. Attempting JAR Upload...", ip, port);
+			boolean uploaded = ControlClient.uploadJar(ip, port, defaultJarPath);
+			info.jarUploaded = uploaded;
+			if (uploaded) li("Initial Upload to {}:{} SUCCESS.", ip, port);
+			else le("Initial Upload to {}:{} FAILED.", ip, port);
+		} else {
+			le("Daemon {}:{} is UNREACHABLE. Added to list, will retry.", ip, port);
+		}
+
+		pushDaemonListToGui();
 	}
 
 	/**
 	 * Parses the received wave and calls the appropriate method.
 	 *
 	 * @param wave
-	 *            - the {@link AgentWave} to be parsed
+	 * - the {@link AgentWave} to be parsed
 	 *
 	 * @return - an indication of success
 	 */
@@ -288,26 +420,137 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 						startupArgs = jsonObject.get("startupArgs").getAsString();
 					}
 
-					String jarPath = "out/artifacts/Flash_MAS_jar/flash-mas.jar";
+					int targetPort = FlashMasDaemon.DEFAULT_PORT;
+					if (jsonObject.has("port") && !jsonObject.get("port").isJsonNull()) {
+						try {
+							targetPort = jsonObject.get("port").getAsInt();
+						} catch (NumberFormatException e) {
+							lw("Invalid port in JSON, using default: {}", FlashMasDaemon.DEFAULT_PORT);
+						}
+					}
 
 					final String finalIp = targetIp;
 					final String finalArgs = startupArgs;
-					final String finalJarPath = jarPath;
+					final String finalJarPath = defaultJarPath;
+					final int finalPort = targetPort;
 
 					if (!finalIp.isEmpty() && !finalArgs.isEmpty()) {
+
+						DaemonInfo dInfo = knownDaemons.computeIfAbsent(finalIp + ":" + finalPort, k -> new DaemonInfo(finalIp, finalPort));
+
 						new Thread(() -> {
-							System.out.println(">>> Deploying to " + finalIp + " with args: " + finalArgs);
-							ControlClient.deployAndStart(finalIp, FlashMasDaemon.DEFAULT_PORT, finalJarPath, finalArgs);
+							li(">>> Processing Deployment for " + finalIp + ":" + finalPort);
+
+							if (!dInfo.jarUploaded) {
+								li(">>> JAR not marked as uploaded. Uploading now...");
+								boolean uploaded = ControlClient.uploadJar(finalIp, finalPort, finalJarPath);
+								dInfo.jarUploaded = uploaded;
+								pushDaemonListToGui();
+							}
+
+							if (dInfo.jarUploaded) {
+								li(">>> Starting Node on " + finalIp + "...");
+								boolean started = ControlClient.startNode(finalIp, finalPort, finalArgs);
+
+								if (started) {
+									dInfo.isDeployed = true;
+									li(">>> Node successfully started on " + finalIp);
+								} else {
+									le(">>> Failed to start node on " + finalIp);
+								}
+
+								pushDaemonListToGui();
+							} else {
+								le(">>> Cannot start node. Upload failed.");
+							}
 						}).start();
+
 					} else {
-						System.err.println("Deployment skipped: Missing IP or Arguments in JSON.");
+						le("Deployment skipped: Missing IP or Arguments in JSON.");
 					}
 					return true;
 				} catch (Exception e) {
-					System.err.println("Deployment JSON Error: " + e.getMessage());
+					le("Deployment JSON Error: " + e.getMessage());
 					e.printStackTrace();
 					return false;
 				}
+			case KILL_ALL_JVMS:
+				li(">>> Received command: KILL ALL JVMs");
+				for (DaemonInfo info : knownDaemons.values()) {
+					if (info.status == ControlClient.RemoteStatus.ONLINE) {
+						new Thread(() -> {
+							li("Stopping JVM at " + info.ip);
+							boolean success = ControlClient.killRemoteNode(info.ip, info.port);
+							if (success) {
+								info.isDeployed = false;
+								String safeIp = info.ip.replace('.', '_');
+								removeNode("node_" + safeIp);
+								removeNode(info.ip);
+							}
+						}).start();
+					}
+				}
+				new Thread(() -> {
+					try { Thread.sleep(500); } catch (Exception e){}
+					pushDaemonListToGui();
+				}).start();
+				return true;
+			case KILL_ALL_DAEMONS:
+				li(">>> Received command: KILL ALL DAEMONS");
+				for (DaemonInfo info : knownDaemons.values()) {
+					new Thread(() -> {
+						li("Stopping Daemon at " + info.ip);
+						boolean success = ControlClient.killRemoteDaemon(info.ip, info.port);
+						info.status = ControlClient.RemoteStatus.UNREACHABLE;
+						info.isDeployed = false;
+
+						if (success) {
+							String safeIp = info.ip.replace('.', '_');
+							removeNode("node_" + safeIp);
+							removeNode(info.ip);
+						}
+					}).start();
+				}
+				new Thread(() -> {
+					try { Thread.sleep(500); } catch (Exception e){}
+					pushDaemonListToGui();
+				}).start();
+				return true;
+			case KILL_NODE_REMOTE:
+				handleKillCommand(wave, false);
+				return true;
+
+			case KILL_DAEMON_REMOTE:
+				handleKillCommand(wave, true);
+				return true;
+			case CONNECT_DAEMON:
+				try {
+					String conContent = wave.getContent().toString();
+					JsonObject conJson = JsonParser.parseString(conContent).getAsJsonObject();
+
+					if (!conJson.has("ip")) {
+						le("Connect command missing IP address.");
+						return false;
+					}
+
+					String conIp = conJson.get("ip").getAsString();
+					int conPort = conJson.has("port") ? conJson.get("port").getAsInt() : FlashMasDaemon.DEFAULT_PORT;
+
+					li("Manually connecting to daemon: " + conIp + ":" + conPort);
+					new Thread(() -> performConnect(conIp, conPort)).start();
+					return true;
+				} catch (Exception e) {
+					le("Error parsing CONNECT_DAEMON: " + e.getMessage());
+					return false;
+				}
+
+			case RESET_DAEMON_STATUSES:
+				li("Resetting all Daemon upload statuses.");
+				for(DaemonInfo di : knownDaemons.values()) {
+					di.jarUploaded = false;
+				}
+				pushDaemonListToGui();
+				return true;
 			case REGISTER_ENTITIES:
 				String node = sourceEntity;
 				if(!allNodeEntities.containsKey(node))
@@ -343,6 +586,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 
 					gui.updateGui(entityName, ed.getGuiSpecification());
 				}
+				if (gui instanceof WebEntity) {
+					WebEntity webGui = (WebEntity) gui;
+					webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
+				}
 				return true;
 
 			case UPDATE_ENTITY_STATUS:
@@ -377,8 +624,12 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 						.setGuiSpecification(interfaceContainer);
 				lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
-				return gui.updateGui(sourceEntity, interfaceContainer);
-
+				boolean updateResult = gui.updateGui(sourceEntity, interfaceContainer);
+				if (gui instanceof WebEntity) {
+					WebEntity webGui = (WebEntity) gui;
+					webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
+				}
+				return updateResult;
 			case ENTITY_GUI_OUTPUT:
 				// remove the name of Central; add the entity sending the output
 				return gui.sendOutput(wave.removeFirstDestinationElement().prependDestination(sourceEntity)
@@ -390,19 +641,45 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 
 				String[] sourceElements = wave.getSourceElements(); // source is gui/entity/port/role
 				String entityName = sourceElements[1];
-				String sourcePort = sourceElements[2], sourceRole = sourceElements[3];
+				String sourcePort = sourceElements[2];
+				String sourceRole = sourceElements[3];
+
 				EntityData entityData = entitiesData.get(entityName);
 
 				Element guiSpecification = entityData.getGuiSpecification();
 				Element sourceElement = guiSpecification.getChild(sourcePort, sourceRole);
 				HashMap<String, String> elementProperties = sourceElement.getProperties();
-				if("node".equals(elementProperties.getOrDefault("proxy", "")))
-					wave.prependDestination(entityData.getNodeName());
+
+				String nodeToKill = null;
+				if("node".equals(elementProperties.getOrDefault("proxy", ""))) {
+					nodeToKill = entityData.getNodeName();
+					wave.prependDestination(nodeToKill);
+				}
 
 				wave.recomputeCompleteDestination();
 				wave.addSourceElementFirst(getName());
-				return centralMessagingShard.sendMessage(wave);
 
+				boolean sent = centralMessagingShard.sendMessage(wave);
+
+				if ("standard-stop".equals(sourcePort) && nodeToKill != null && allNodeEntities.containsKey(nodeToKill)) {
+					removeNode(nodeToKill);
+				}
+
+				return sent;
+			case CLIENT_CONNECTED:
+				li("Web client connected. Sending default node configurations.");
+
+				AgentWave configWave = new AgentWave();
+				configWave.resetDestination(Operations.SEND_NODE_CONFIGS.name());
+
+				for (Map.Entry<String, String> entry : defaultNodeConfigurations.entrySet()) {
+					configWave.add(entry.getKey(), entry.getValue());
+				}
+
+				return gui.sendOutput(configWave);
+			case GET_DAEMONS_LIST:
+				pushDaemonListToGui();
+				return true;
 			case START_APPLICATION:
 				li("Broadcasting START to all agents.");
 				broadcastCommandToAgents("START_APPLICATION");
@@ -428,11 +705,11 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	 * Sets up the standard controls for an entity.
 	 *
 	 * @param status
-	 *            - the status of the entity
+	 * - the status of the entity
 	 * @param appStatus
-	 *            - the application status for the entity
+	 * - the application status for the entity
 	 * @param entityName
-	 *            - the name of the entity
+	 * - the name of the entity
 	 * @return an {@link Element} containing the standard controls for the entity
 	 */
 	protected Element setupStandardControls(String status, String appStatus, String entityName) {
@@ -463,6 +740,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		// }
 		// }, 1000);
 		centralMessagingShard.register(name);
+		startDaemonPingTask();
 		li("[] started successfully.", getName());
 		return true;
 	}
@@ -495,6 +773,121 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		return (EntityProxy<C>) centralProxy;
 	}
 
+	/**
+	 * Updates the GUI (if available) with the current list of known daemons.
+	 */
+	private void pushDaemonListToGui() {
+		if (gui instanceof WebEntity) {
+			((WebEntity) gui).sendDaemonList(knownDaemons.values());
+		}
+	}
+
+	/**
+	 * Starts the background task to ping daemons.
+	 */
+	private void startDaemonPingTask() {
+		pingScheduler = Executors.newSingleThreadScheduledExecutor();
+		pingScheduler.scheduleAtFixedRate(() -> {
+			try {
+				if (knownDaemons.isEmpty()) return;
+
+				boolean changed = false;
+				for (DaemonInfo daemon : knownDaemons.values()) {
+					ControlClient.RemoteStatus oldStatus = daemon.status;
+					ControlClient.RemoteStatus newStatus = ControlClient.checkRemoteStatus(daemon.ip, daemon.port);
+
+					daemon.status = newStatus;
+
+					if (oldStatus != newStatus) {
+						changed = true;
+						li("Daemon status changed: {}:{} -> {}", daemon.ip, daemon.port, newStatus);
+					}
+				}
+
+				if (changed && gui != null) {
+					pushDaemonListToGui();
+				}
+
+			} catch (Exception e) {
+				le("Error in Daemon Ping Loop", e);
+			}
+		}, 2, DAEMON_PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * Removes a node from the records and updates the GUI.
+	 * * @param nodeName the name of the node to remove.
+	 */
+	private void removeNode(String nodeName) {
+		if (allNodeEntities.containsKey(nodeName)) {
+			li("Removing entities for killed node: " + nodeName);
+			HashMap<String, List<String>> categories = allNodeEntities.get(nodeName);
+			if (categories != null) {
+				for (List<String> entityList : categories.values()) {
+					for (String en : entityList) {
+						entitiesData.remove(en);
+						if (gui instanceof WebEntity) {
+							((WebEntity) gui).removeEntityGui(en);
+						}
+					}
+				}
+			}
+			allNodeEntities.remove(nodeName);
+
+			if (gui instanceof WebEntity) {
+				WebEntity webGui = (WebEntity) gui;
+				webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
+			}
+		}
+	}
+
+	/**
+	 * Handles a kill command received from the UI.
+	 * @param wave the agent wave containing the command parameters.
+	 * @param killDaemon true if the command is to kill the daemon, false to kill the node (JVM).
+	 */
+	private void handleKillCommand(AgentWave wave, boolean killDaemon) {
+		try {
+			JsonObject json = JsonParser.parseString(wave.getContent().toString()).getAsJsonObject();
+			String ip = json.get("ip").getAsString();
+			int port = json.get("port").getAsInt();
+
+			DaemonInfo info = knownDaemons.get(ip + ":" + port);
+
+			new Thread(() -> {
+				boolean success;
+				if (killDaemon) {
+					success = ControlClient.killRemoteDaemon(ip, port);
+					if (success) {
+						if(info != null) {
+							info.status = ControlClient.RemoteStatus.UNREACHABLE;
+							info.isDeployed = false;
+						}
+					}
+				} else {
+					success = ControlClient.killRemoteNode(ip, port);
+					if (success) {
+						if(info != null) info.isDeployed = false;
+					}
+				}
+
+				if (success) {
+					String safeIp = ip.replace('.', '_');
+					removeNode("node_" + safeIp);
+					removeNode(ip);
+				}
+
+				pushDaemonListToGui();
+			}).start();
+		} catch (Exception e) {
+			le("Kill command failed", e);
+		}
+	}
+
+	/**
+	 * Broadcasts a global command to all known agents.
+	 * @param commandName the name of the command to broadcast.
+	 */
 	private void broadcastCommandToAgents(String commandName) {
 		for (String node : allNodeEntities.keySet()) {
 			HashMap<String, List<String>> categories = allNodeEntities.get(node);

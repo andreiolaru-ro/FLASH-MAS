@@ -23,64 +23,90 @@ You should have received a copy of the GNU General Public License along with Fla
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <div id="root">
-        <!-- Toggle Button for Side Panel -->
-        <button id="sidepanel-btn">
-            <span class="material-icons">menu</span>
-        </button>
+<div id="root">
+    <button id="sidepanel-btn">
+        <span class="material-icons">menu</span>
+    </button>
 
-        <!-- Collapsible Side Panel -->
-        <aside class="sidepanel open" id="sidepanel">
-            <div id="sidepanel-header">
-                <span>Global</span>
-                <button class="material-icons" id="sidepanel-close-btn">close</button>
-            </div>
-            <div id="sidepanel-content">
-                <div class="side-section">
-                    <div class="side-drawer">
-                        <button id="global-start-btn">Start</button>
-                    </div>
-                    <div class="side-drawer">
-                        <button id="global-stop-btn">Stop</button>
-                    </div>
-                    <div class="side-drawer">
-                        <button id="global-pause-application-btn">Pause application</button>
-                    </div>
-                    <div class="side-drawer">
-                        <button id="global-start-application-btn">Start application</button>
-                    </div>
-                    <div class="side-drawer">
-                        <button id="global-stop-application-btn">Stop application</button>
-                    </div>
-                    <div id="deploy-panel" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; background: #f9f9f9;">
-                        <h3>Daemon Manager</h3>
-
-                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <input type="text" id="new-daemon-ip" placeholder="IP Daemon (ex: 127.0.0.1)" value="127.0.0.1" style="flex: 1;">
-                            <button id="add-daemon-btn" style="background: #2196F3; color: white;">+ Add Daemon</button>
-                        </div>
-
-                        <div id="daemon-list">
-                        </div>
-                    </div>
+    <aside class="sidepanel open" id="sidepanel">
+        <div id="sidepanel-header">
+            <span>Global</span>
+            <button class="material-icons" id="sidepanel-close-btn">close</button>
+        </div>
+        <div id="sidepanel-content">
+            <div class="side-section">
+                <div class="side-drawer">
+                    <button id="global-start-btn">Start</button>
                 </div>
-                <div class="side-section" id="entities-list"></div>
+                <div class="side-drawer">
+                    <button id="global-stop-btn">Stop</button>
+                </div>
+                <div class="side-drawer">
+                    <button id="global-pause-application-btn">Pause application</button>
+                </div>
+                <div class="side-drawer">
+                    <button id="global-start-application-btn">Start application</button>
+                </div>
+                <div class="side-drawer">
+                    <button id="global-stop-application-btn">Stop application</button>
+                </div>
             </div>
-        </aside>
+            <div class="side-section" id="entities-list"></div>
+        </div>
+    </aside>
 
-        <!-- Main Content Area -->
-        <main class="collapsed" id="main-content">
-            <div id="main-header">
-                <h1>No selected entities</h1>
+    <main class="collapsed" id="main-content">
+
+        <details class="deploy-section" open>
+            <summary>
+                <span class="material-icons">dns</span>
+                <span>Deploy Nodes (Daemon Manager)</span>
+            </summary>
+
+            <div id="daemon-section" style="margin-top:20px; padding:15px; background:#fff; border:1px solid #ddd;">
+
+                <div class="daemon-controls" style="margin-bottom:15px; background:#f9f9f9; padding:10px;">
+                    <label>Add Daemon:</label>
+                    <input type="text" id="new-daemon-ip" placeholder="IP Address (e.g., 127.0.0.1)" />
+                    <input type="number" id="new-daemon-port" placeholder="Port" value="35274" style="width: 80px;" />
+                    <button onclick="ui.connectDaemon()">+ Connect</button>
+
+                    <span style="margin-left:20px; border-left:1px solid #ccc; padding-left:20px;">
+                    <button id="deploy-all-btn" onclick="ui.deployAll()" style="background-color: #28a745; color: white;">🚀 Deploy 0 configurations</button>
+                    <button onclick="ui.refreshDaemons()" style="background-color: #6c757d; color:white;">↻ Refresh</button>
+                </span>
+
+                    <span style="float:right;">
+                    <button onclick="ui.killAllJVMs()" style="background-color: #ff9800; color: white; margin-right:5px;">☠ Kill All JVMs</button>
+                    <button onclick="ui.killAllDaemons()" style="background-color: #d32f2f; color: white;">☠ Kill All Daemons</button>
+                </span>
+                </div>
+
+                <table class="daemon-table" style="width:100%; border-collapse:collapse;">
+                    <thead>
+                    <tr style="background:#eee; text-align:left;">
+                        <th style="padding:10px; width:100px;">Status</th>
+                        <th style="padding:10px; width:150px;">Address</th>
+                        <th style="padding:10px;">Configuration (Startup Arguments)</th>
+                        <th style="padding:10px; width:180px;">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="daemon-list-body">
+                    <tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">Waiting for data...</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div id="selected-entities-list"></div>
-        </main>
-    </div>
+        </details>
+        <div id="main-header">
+            <h1>No selected entities</h1>
+        </div>
+        <div id="selected-entities-list"></div>
+    </main>
+</div>
 
-    <script src="https://unpkg.com/@material/web@latest/material-components-web.min.js"></script>
-    <script type="module" src="js/main.js"></script>
-    <script type="module" src="js/events.js"></script>
-    <script type="module" src="js/ui.js"></script>
+<script src="https://unpkg.com/@material/web@latest/material-components-web.min.js"></script>
+<script type="module" src="js/main.js"></script>
+<script type="module" src="js/events.js"></script>
+<script type="module" src="js/ui.js"></script>
 </body>
-
 </html>

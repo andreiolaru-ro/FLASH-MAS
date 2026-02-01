@@ -12,6 +12,7 @@
 package net.xqhs.flash.web;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -39,7 +40,7 @@ import net.xqhs.flash.gui.structure.ElementIdManager;
 import net.xqhs.flash.remoteOperation.CentralGUI;
 import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
 import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.CentralEntityProxy;
-
+import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity.DaemonInfo;
 /**
  * Web entity for the connection between the MAS and the web interface.
  */
@@ -157,6 +158,16 @@ public class WebEntity extends CentralGUI {
 					JsonObject entities = getEntities();
 					String message = buildMessage("global", "entities list", entities);
 					vertx.eventBus().publish(SERVER_TO_CLIENT, message);
+
+					AgentWave wave = new AgentWave();
+					wave.resetDestination("CLIENT_CONNECTED");
+					wave.addSourceElements(getShardDesignation().toString(), "web-ui");
+					cep.postAgentEvent(wave);
+
+					AgentWave req = new AgentWave();
+					req.resetDestination(CentralMonitoringAndControlEntity.Operations.GET_DAEMONS_LIST.toString());
+					req.addSourceElements(getShardDesignation().toString(), "web-ui");
+					cep.postAgentEvent(req);
 				}
 				else if (NOTIFY_SCOPE.equals(scope)) {
 					JsonArray source = msg.get(MESSAGE_SOURCE_PORT).getAsJsonArray();
@@ -165,13 +176,18 @@ public class WebEntity extends CentralGUI {
 					entity.sendNotification(source, subject, content);
 				}
 				else if ("deployment".equals(scope)) {
-					AgentWave wave = new AgentWave();
+					String opName = CentralMonitoringAndControlEntity.Operations.DEPLOY_REMOTE.toString();
 
-					wave.resetDestination(CentralMonitoringAndControlEntity.Operations.DEPLOY_REMOTE.toString());
+					if (msg.has("command")) {
+						opName = msg.get("command").getAsString();
+					}
+
+					AgentWave wave = new AgentWave();
+					wave.resetDestination(opName);
 					wave.add(AgentWave.CONTENT, msg.toString());
 					cep.postAgentEvent(wave);
 
-					entity.li("Deployment command forwarded to M&C: " + msg.toString());
+					entity.li("Deployment command [" + opName + "] forwarded to M&C.");
 				}
 
 				if ("global_command".equals(scope)) {
@@ -179,8 +195,9 @@ public class WebEntity extends CentralGUI {
 
 					if (command.equals("START_APPLICATION") ||
 							command.equals("STOP_APPLICATION") ||
-							command.equals("PAUSE_APPLICATION")) {
-
+							command.equals("PAUSE_APPLICATION") ||
+							command.equals("KILL_ALL_JVMS") ||
+							command.equals("KILL_ALL_DAEMONS")) {
 						AgentWave wave = new AgentWave();
 						wave.resetDestination(command);
 						wave.addSourceElements(getShardDesignation().toString(), "web-ui");
@@ -262,7 +279,7 @@ public class WebEntity extends CentralGUI {
 	 * Sends a message to the client after a connection has been established.
 	 * @param message - the message to be sent.
 	 */
-	protected void sendToClient(String message) {
+	public void sendToClient(String message) {
 		web.eventBus().publish(SERVER_TO_CLIENT, message);
 	}
 
@@ -273,7 +290,7 @@ public class WebEntity extends CentralGUI {
 	 * @param content - the content of the message.
 	 * @return the message as a string.
 	 */
-	protected static String buildMessage(String scope, String subject, JsonObject content) {
+	public static String buildMessage(String scope, String subject, JsonObject content) {
 		JsonObject message = new JsonObject();
 		message.addProperty(MESSAGE_SCOPE, scope);
 		message.addProperty(MESSAGE_SUBJECT, subject);
@@ -308,6 +325,17 @@ public class WebEntity extends CentralGUI {
 			specifications.add(entityName, guiSpecification.toJSON());
 		});
 		return specifications;
+	}
+
+	/**
+	 * Removes an entity's GUI specification from the registry.
+	 * @param entityName The name of the entity to remove.
+	 */
+	public void removeEntityGui(String entityName) {
+		if (entityGUIs.containsKey(entityName)) {
+			entityGUIs.remove(entityName);
+			idManager.removeIdsWithPrefix(entityName);
+		}
 	}
 
 	@Override
@@ -361,6 +389,15 @@ public class WebEntity extends CentralGUI {
 
 	@Override
 	public boolean sendOutput(AgentWave wave) {
+		if (CentralMonitoringAndControlEntity.Operations.SEND_NODE_CONFIGS.toString().equals(wave.getFirstDestinationElement())) {
+			JsonObject content = new JsonObject();
+			for (String key : wave.getContentElements()) {
+				content.addProperty(key, wave.getValue(key));
+			}
+			String message = buildMessage("global", "node-configs", content);
+			sendToClient(message);
+			return true;
+		}
 		super.sendOutput(wave);
 		li("Sending output wave: []", wave.toString());
 
@@ -368,8 +405,8 @@ public class WebEntity extends CentralGUI {
 		String entity = wave.popDestinationElement();
 		String port = wave.popDestinationElement();
 		JsonObject subject = new JsonObject();
-		subject.addProperty("entity", entity);
-		subject.addProperty("port", port);
+		subject.addProperty(DeploymentConfiguration.GENERAL_ENTITY_NAME, entity);
+		subject.addProperty(PORT_SCOPE, port);
 
 		Element gui = entityGUIs.get(entity);
 		if (gui == null)
@@ -383,6 +420,28 @@ public class WebEntity extends CentralGUI {
 		String message = buildMessage(PORT_SCOPE, subject, allRoles);
 		sendToClient(message);
 		return true;
+	}
+
+	/**
+	 * Sends the list of daemons to the connected web clients.
+	 */
+	public void sendDaemonList(Collection<DaemonInfo> daemons) {
+		JsonArray array = new JsonArray();
+		for (DaemonInfo d : daemons) {
+			JsonObject obj = new JsonObject();
+			obj.addProperty("ip", d.ip);
+			obj.addProperty("port", d.port);
+			obj.addProperty("status", d.status.name());
+			obj.addProperty("uploaded", d.jarUploaded);
+			obj.addProperty("deployed", d.isDeployed);
+			array.add(obj);
+		}
+
+		JsonObject wrapper = new JsonObject();
+		wrapper.add("list", array);
+
+		String message = buildMessage("global", "daemons list", wrapper);
+		sendToClient(message);
 	}
 
 	/**

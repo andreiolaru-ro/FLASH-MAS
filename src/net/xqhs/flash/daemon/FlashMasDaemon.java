@@ -34,6 +34,8 @@ public class FlashMasDaemon extends Unit {
 		UPLOAD_JAR,
 		START_NODE,
 		CHECK_STATUS,
+		KILL_NODE,
+		KILL_DAEMON,
 		UNKNOWN;
 
 		public static DaemonCommand fromString(String commandStr) {
@@ -47,6 +49,7 @@ public class FlashMasDaemon extends Unit {
 
 	private static final String NODE_JAR_NAME = "flash-node.jar";
 	private static final String JRE_FOLDER_NAME = "jre";
+	private Process activeNodeProcess;
 
 	private final int port;
 	private final boolean redirectOutput;
@@ -104,16 +107,35 @@ public class FlashMasDaemon extends Unit {
 					receiveJarFile(in);
 					out.writeUTF("OK: JAR file updated successfully.");
 					break;
-
 				case START_NODE:
 					String arguments = in.readUTF();
 					startNodeProcess(arguments, out);
 					break;
-
 				case CHECK_STATUS:
 					out.writeUTF("OK: Daemon is running.");
 					break;
-
+				case KILL_NODE:
+					if (activeNodeProcess != null && activeNodeProcess.isAlive()) {
+						activeNodeProcess.destroyForcibly();
+						activeNodeProcess = null;
+						li("[INFO] Node killed by controller.");
+						out.writeUTF("OK: Node killed.");
+					} else {
+						out.writeUTF("ERROR: No active node.");
+					}
+					break;
+				case KILL_DAEMON:
+					out.writeUTF("OK: Daemon shutting down.");
+					out.flush();
+					li("[WARN] Exiting...");
+					if (activeNodeProcess != null && activeNodeProcess.isAlive()) {
+						activeNodeProcess.destroyForcibly();
+					}
+					new Thread(() -> {
+						try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+						System.exit(0);
+					}).start();
+					break;
 				case UNKNOWN:
 				default:
 					lw("[WARN] Unknown command string received: {}", commandStr);
@@ -178,8 +200,8 @@ public class FlashMasDaemon extends Unit {
 		}
 
 		try {
-			Process process = pb.start();
-			long pid = process.pid();
+			activeNodeProcess = pb.start();
+			long pid = activeNodeProcess.pid();
 			li("[EXEC] Started successfully. PID: {}", pid);
 
 			String logMsg = redirectOutput ? " Output redirected to logs." : " Output visible in console.";
