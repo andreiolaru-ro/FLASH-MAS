@@ -2,7 +2,6 @@ package net.xqhs.flash.openNode;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -17,6 +16,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * {@link #dynamicLoad}.
  */
 public class OpenNode extends Node {
+	/**
+	 * THe serial UID.
+	 */
+	private static final long	serialVersionUID	= 1L;
 	/**
 	 * The configuration must be retained, to use when loading further entities.
 	 */
@@ -52,7 +55,8 @@ public class OpenNode extends Node {
 				.getHierarchicalNames())
 			entitiesConfig.add(
 					deploymentTree.getSingleTree(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE).getSingleTree(entityName));
-		List<Entity<?>> entities = Deployment.get().loadEntities(entitiesConfig, this, pack, loaded);
-		startAndRegister(entities, false);
+		Deployment.get().loadEntities(entitiesConfig, this, pack, loaded);
+		registerPendingEntities();
+		startPendingEntities();
 	}
 }

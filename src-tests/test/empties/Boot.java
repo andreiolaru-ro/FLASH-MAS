@@ -28,9 +28,9 @@ public class Boot {
 		// empty scenario
 		// FlashBoot.main(new String[] {});
 		// CLI empty node:
-		FlashBoot.main("-node node1 -node node2".split(" "));
+		// FlashBoot.main("-node node1 -node node2".split(" "));
 		// empty scenario
-		// FlashBoot.main("-agent -agent".split(" "));
+		FlashBoot.main("-agent agent".split(" "));
 	}
 	
 }

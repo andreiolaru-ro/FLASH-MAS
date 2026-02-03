@@ -11,7 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import static net.xqhs.flash.core.CategoryName.PYLON;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -239,11 +242,20 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		// integrateName(compositeLoader, CategoryName.LOADER.s(),
 		// deployment.addSingleTreeGet(CategoryName.LOADER.s(), new MultiTreeMap()), this, new DumbLogger());
 		// default node
-		integrateName(new MultiTreeMap(), CategoryName.NODE.s(),
+		String defaultPylonName = "local:default";
+		List<String> nodeConf = new LinkedList<>(Arrays.asList(CLI_CATEGORY_PREFIX + CategoryName.NODE.s(), "null"));
+		List<String> pylonConf = Arrays.asList(CLI_CATEGORY_PREFIX + CategoryName.PYLON.s(), defaultPylonName);
+		nodeConf.addAll(pylonConf);
+		integrateName(
+				new MultiTreeMap().addAll(CONFIGURATION_STRING_NAME, nodeConf),
+				CategoryName.NODE.s(),
 				deployment.addSingleTreeGet(CategoryName.NODE.s(), new MultiTreeMap()), this, null, name_ids,
 				new DumbLogger());
 		// default pylon (local support)
-		integrateName(new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, "local:default"), CategoryName.PYLON.s(),
+		integrateName(
+				new MultiTreeMap().addOneValue(NAME_ATTRIBUTE_NAME, defaultPylonName).addAll(CONFIGURATION_STRING_NAME,
+						pylonConf),
+				PYLON.s(),
 				deployment.addSingleTreeGet(CategoryName.PYLON.s(), new MultiTreeMap()), this, null, name_ids,
 				new DumbLogger());
 		autoCreated.addAll(this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys());
@@ -280,7 +292,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponent log = new UnitComponent("settings load").setLoggerType(PlatformUtils.platformLogType())
-				.setLogLevel(Level.INFO);
+				.setLogLevel(Level.ALL);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -1018,7 +1030,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * <li>if there is no existing name of the entity, attempts to generate a name based on other attributes of the
 	 * entity (see name parts in {@link CategoryName}) and integrates the generated name in the entity's tree.
 	 * <li>integrates the tree describing the entity into the tree of its category, if a category tree is given, under
-	 * the given or generated name (or under the <code>null</code> name, if no name could be created. It is added as a
+	 * the given or generated name (or under the <code>null</code> name, if no name could be created). It is added as a
 	 * singleton value or not depending on the value returned by {@link CategoryName#isUnique()}; the default (e.g. if
 	 * no category data is found) is as a non-singleton value.
 	 * <li>the entity gets a unique generated id and is added to the local <i>id list</i>.

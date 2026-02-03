@@ -14,6 +14,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.node.Node.ActionTime;
 import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -254,7 +255,7 @@ public class Deployment extends Unit {
 							DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 					
 					loaded.put(local_id, entity);
-					hostNode.registerEntity(catName, entity, id);
+					hostNode.registerEntity(catName, entity, id, ActionTime.LATER, ActionTime.LATER);
 					newLoadedEntities.add(entity);
 				}
 				else

@@ -93,7 +93,7 @@ public class Node extends EntityCore<Node> {
 	/**
 	 * Indication of when to perform an action, such as starting or registering an entity.
 	 */
-	enum ActionTime {
+	public static enum ActionTime {
 		/**
 		 * The action should not be performed.
 		 */
@@ -230,10 +230,10 @@ public class Node extends EntityCore<Node> {
 	 * Method used to register entities added in the context of this node.
 	 * <p>
 	 * If the node has not already been started, all entities will be started and registered anyway during startup of
-	 * the node, regardless of the values of the last two parameters.
+	 * the node, if the last two parameters have not been set to <code>NONE</code>.
 	 * <p>
 	 * If the node has already been started, the last two parameters control if the entity is started and registered
-	 * immediately or it has to wait until
+	 * immediately (<code>NOW</code>), later (<code>LATER</code>) or not at all (<code>NONE</code>).
 	 * 
 	 * @param entityType
 	 *            - the type of the entity.
@@ -242,13 +242,9 @@ public class Node extends EntityCore<Node> {
 	 * @param entityName
 	 *            - the name of the entity.
 	 * @param whenStart
-	 *            - if <code>NOW</code>, the {@link Entity#start()} method of the entity is called immediately. If
-	 *            <code>true</code> and the node has already been started, the entity is added to a list of entities to
-	 *            be started.
+	 *            - when to start the entity. See above.
 	 * @param whenRegister
-	 *            - if <code>false</code>, the entity is registered immediately to
-	 *            {@link CentralMonitoringAndControlEntity}. If <code>true</code> and the node has already been started,
-	 *            the entity is added to a wave containing entities to be registered.
+	 *            - when to register the entity with {@link CentralMonitoringAndControlEntity}. See above.
 	 */
 	public void registerEntity(String entityType, Entity<?> entity, String entityName, ActionTime whenStart,
 			ActionTime whenRegister) {
@@ -268,36 +264,40 @@ public class Node extends EntityCore<Node> {
 				// nothing to do, most likely asContext threw exception
 			}
 		
-		if(!startLater) {
+		if(isRunning() && ActionTime.NOW.equals(whenStart)) {
+			// start now
 			lf("starting entity []...", entityName);
 			if(entity.start())
 				lf("entity [] started successfully.", entityName);
 			else
 				le("failed to start entity [].", entityName);
 		}
-		else if(isRunning()) {
+		if((!isRunning() && !ActionTime.NONE.equals(whenStart))
+				|| (isRunning() && ActionTime.LATER.equals(whenStart))) {
+			// start later
 			if(entitiesToStart == null)
 				entitiesToStart = new LinkedList<>();
 			entitiesToStart.add(entity);
 		}
-		// otherwise the entity will be started anyway at node startup
 		
 		AgentWave wave = CentralMonitoringAndControlEntity.REGISTER_ENTITIES
 				.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 		wave.add(entity.getName(), entityType);
-		if(!registerLater) {
+		if(isRunning() && ActionTime.NOW.equals(whenRegister)) {
+			// register now
 			if(sendMessage(wave))
 				lf("entity [] registered successfully.", entityName);
 			else
 				le("failed to register entity [].", entityName);
 		}
-		else if(isRunning()) {
+		if((!isRunning() && !ActionTime.NONE.equals(whenRegister))
+				|| (isRunning() && ActionTime.LATER.equals(whenRegister))) {
+			// register later
 			if(centralRegistrationBuffer == null)
 				centralRegistrationBuffer = wave;
 			else
 				centralRegistrationBuffer.add(entity.getName(), entityType);
 		}
-		// otherwise the entity will be registered anyway at node startup
 	}
 	
 	/**
@@ -307,7 +307,10 @@ public class Node extends EntityCore<Node> {
 	 */
 	public boolean startPendingEntities() {
 		boolean allStarted = true;
-		for(Entity<?> entity : entitiesToStart) {
+		LinkedList<Entity<?>> es = new LinkedList<>(entitiesToStart);
+		// TODO possible race condition
+		entitiesToStart.clear();
+		for(Entity<?> entity : es) {
 			if(!entity.isRunning()) {
 				lf("starting entity []...", entity.getName());
 				if(entity.start())
@@ -327,7 +330,10 @@ public class Node extends EntityCore<Node> {
 	 * @return an indication of success in sending the wave.
 	 */
 	public boolean registerPendingEntities() {
-		return sendMessage(centralRegistrationBuffer);
+		boolean ret = sendMessage(centralRegistrationBuffer);
+		// TODO possible race condition
+		centralRegistrationBuffer = null;
+		return ret;
 	}
 	
 	@Override
@@ -536,11 +542,10 @@ public class Node extends EntityCore<Node> {
 			String agentData = jo.get(OperationUtils.PARAMETERS).getAsString();
 			
 			MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
-			registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
-			lf("Starting agent [] after moving...", agent.getName());
 			agent.addGeneralContext(asContext());
 			agent.addContext(nodePylonProxy);
-			agent.start();
+			lf("Starting agent [] after moving...", agent.getName());
+			registerEntity(CategoryName.AGENT.toString(), agent, agent.getName(), ActionTime.NOW, ActionTime.NOW);
 		}
 	}
 	

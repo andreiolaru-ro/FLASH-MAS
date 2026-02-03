@@ -24,6 +24,7 @@ import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.SimpleLoader;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.deployment.LoadPack;
+import net.xqhs.flash.core.node.Node.ActionTime;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
@@ -133,7 +134,7 @@ public class NodeLoader implements Loader<Node> {
 						nodeConfiguration.getValues(DeploymentConfiguration.CENTRAL_NODE_KEY)));
 		centralEntity.addGeneralContext(node.nodePylonProxy);
 		node.registerEntity(AgentShardDesignation.StandardAgentShard.REMOTE.shardName(), centralEntity,
-				DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
+				DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, ActionTime.LATER, ActionTime.LATER);
 		
 		lp.lf("Entity [] of type [] registered.", DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
 				AgentShardDesignation.StandardAgentShard.REMOTE.shardName());
