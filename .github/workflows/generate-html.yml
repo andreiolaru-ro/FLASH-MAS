@@ -49,6 +49,9 @@ jobs:
           
             # Transforms rest of ".md" files into ".html"
             sed -i 's|\.md|.html|g' "$html_file"
+          
+            # Transforms doc/javadoc into javadoc
+            sed -i 's|doc/javadoc/|javadoc/|g' "$html_file"
           done
 
       - name: Commit and Push changes
