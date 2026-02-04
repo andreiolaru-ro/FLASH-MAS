@@ -30,14 +30,25 @@ jobs:
           mkdir -p public
           cp -r doc/* public/
           cp README.md public/index.md
+          cp CONTRIBUTORS.md public/CONTRIBUTORS.md
+          cp -r identity public/
 
       - name: Convert MD to HTML
         run: |
           find public -name "*.md" | while read file; do
             echo "Converting $file..."
-            pandoc "$file" -o "${file%.md}.html" --standalone --metadata title="Documentation"
-            # delete .md files to remain just with HTML files
+          
+            # Save the new html file name in html_file
+            html_file="${file%.md}.html"
+          
+            pandoc "$file" -o "$html_file" --standalone --metadata title="Documentation"
             rm "$file"
+          
+            # Transforms "doc/name.md" into "name.html"
+            sed -i 's|doc/\(.*\)\.md|\1.html|g' "$html_file"
+          
+            # Transforms rest of ".md" files into ".html"
+            sed -i 's|\.md|.html|g' "$html_file"
           done
 
       - name: Commit and Push changes
