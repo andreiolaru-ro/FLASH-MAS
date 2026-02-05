@@ -17,10 +17,13 @@ import java.util.Set;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.recorder.RecorderSupport;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.AgentShardDesignation.StandardAgentShard;
 import net.xqhs.util.logging.Debug.DebugItem;
+
+import static net.xqhs.flash.core.recorder.RecorderService.record;
 
 /**
  * Prototype class for shards offering messaging functionality, containing some general implementation-independent
@@ -43,7 +46,7 @@ import net.xqhs.util.logging.Debug.DebugItem;
  * 
  * @author Andrei Olaru
  */
-public abstract class AbstractMessagingShard extends AgentShardCore implements MessagingShard {
+public abstract class AbstractMessagingShard extends AgentShardCore implements MessagingShard, RecorderSupport {
 	/**
 	 * Debugging settings for messaging shards.
 	 * 
@@ -213,6 +216,9 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	 *            - the received wave.
 	 */
 	protected void receiveWave(AgentWave wave) {
+		//[HOOK] Record received wave
+		record(getAgentAddress(), wave, "WAVE_RECEIVED");
+
 		if(!getAgentAddress().equals(wave.getFirstDestinationElement()))
 			throw new IllegalStateException(
 					"The first element in destination endpoint (" + wave.getValues(AgentWave.DESTINATION_ELEMENT)
@@ -238,6 +244,9 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
+		//[HOOK] Record sent messages
+		record(getAgentAddress(), source, destination, content);
+
 		if(classicPylon != null) {
 			for(OutgoingMessageHook hook : outgoingHooks)
 				hook.sendingMessage(source, destination, content);
@@ -258,6 +267,10 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 	public boolean sendMessage(AgentWave wave) {
 		if(!getAgentAddress().equals(wave.getFirstSource()))
 			wave.addSourceElementFirst(getAgentAddress());
+
+		//[HOOK] Record sent waves
+		record(getAgentAddress(), wave, "WAVE_SENT");
+
 		if(wavePylon != null) {
 			for(OutgoingMessageHook hook : outgoingHooks)
 				hook.sendingMessage(wave);

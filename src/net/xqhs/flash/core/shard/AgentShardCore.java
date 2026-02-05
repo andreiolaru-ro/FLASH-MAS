@@ -25,6 +25,8 @@ import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.util.logging.Unit;
 
+import static net.xqhs.flash.core.recorder.RecorderService.record;
+
 /**
  * This class serves as base for the implementation of agent shards.
  * <p>
@@ -191,6 +193,12 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 */
 	@Override
 	public void signalAgentEvent(AgentEvent event) {
+		//[HOOK] Signal hook
+		if (getAgent() != null) {
+			record( getAgent().getEntityName(), this.getClass().getSimpleName(), "SHARD_SIGNAL",
+					(event != null && event.getType() != null) ? event.getType().toString() : "UNKNOWN");
+		}
+
 		// This method does nothing here.
 	}
 	
@@ -224,6 +232,10 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
 		parentAgent = (ShardContainer) parent;
+
+		//[HOOK] Record Shard attach
+		record(parentAgent.getEntityName(), this.getClass().getSimpleName(), "SHARD_ATTACH",
+				"Attached to agent: ", parentAgent.getEntityName());
 		parentChangeNotifier(null);
 		return true;
 	}
@@ -240,6 +252,11 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 			return ler(false, "Parent is not set");
 		if(parentAgent != parent)
 			return ler(false, "Argument is not the same as actual parent.");
+
+		//[HOOK] Record shard detach
+		record(parentAgent.getEntityName(), this.getClass().getSimpleName(), "SHARD_DETACH",
+				"Detached from agent: ", parentAgent.getEntityName());
+
 		parentAgent = null;
 		parentChangeNotifier((ShardContainer) parent);
 		return true;
@@ -247,12 +264,22 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		// [HOOK] Context
+		if (getAgent() != null) {
+			record(getAgent().getEntityName(), this.getClass().getSimpleName(), "CONTEXT_ADD",
+					"Context added: ", (context != null ? context.toString() : "null"));
+		}
 		// not supported here, but extending classes may call this because of good practice.
 		return true;
 	}
 	
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		//[HOOK] Record context removal
+		if (getAgent() != null) {
+			record(getAgent().getEntityName(), this.getClass().getSimpleName(), "CONTEXT_REMOVE",
+					"Context removed: ", (context != null ? context.toString() : "null"));
+		}
 		// not supported here, but extending classes may call this because of good practice.
 		return true;
 	}

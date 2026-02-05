@@ -4,11 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentWave;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,6 +61,36 @@ public class FileRecorder implements RecorderInterface {
         if (jsonWriter != null) {
             push(new SimulationEvent(entityName, eventType, args));
         }
+    }
+
+    @Override
+    public void record(String agent, String source, String dest, String content) {
+        if (jsonWriter == null) return;
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("source", source);
+        data.put("destination", dest);
+        data.put("content", content);
+
+        push(new SimulationEvent(agent, "MESSAGE_STRING", data));
+    }
+
+    @Override
+    public void record(String agent, AgentWave wave, String eventType) {
+        if (jsonWriter == null) return;
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("waveId", wave.hashCode());
+        data.put("fullSource", wave.getCompleteSource());
+        try {
+            data.put("currentDest", wave.getFirstDestinationElement());
+        } catch (Exception e) {
+            data.put("currentDest", "unknown");
+        }
+        data.put("fullDest", wave.getCompleteDestination());
+        data.put("content", wave.getSerializedContent());
+
+        push(new SimulationEvent(agent, eventType, data));
     }
 
     private void push(SimulationEvent event) {
