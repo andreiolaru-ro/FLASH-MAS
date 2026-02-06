@@ -1,11 +1,13 @@
-package net.xqhs.flash.abms.gridworld;
+package net.xqhs.flash.abms.space.gridworld;
+
+import net.xqhs.flash.abms.space.Position;
 
 /**
  * Implementation for positions in a rectangular grid.
  * 
  * @author Andrei Olaru
  */
-public class GridPosition
+public class GridPosition implements Position
 {
 	/**
 	 * x coordinate

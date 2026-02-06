@@ -4,7 +4,7 @@ import java.util.List;
 
 import net.xqhs.flash.abms.AgentGroup;
 import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.core.agent.Agent;
 
 public class WolfSheepGroup extends AgentGroup {

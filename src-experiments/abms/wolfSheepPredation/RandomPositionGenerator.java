@@ -5,8 +5,8 @@ import java.util.*;
 import net.xqhs.flash.abms.DistributionConfig;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.StepAgent;
-import net.xqhs.flash.abms.gridworld.GridTopology;
-import net.xqhs.flash.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.space.gridworld.GridPosition;
+import net.xqhs.flash.abms.space.gridworld.GridTopology;
 
 public class RandomPositionGenerator {
     private static final int MAX_ATTEMPTS = 10000;

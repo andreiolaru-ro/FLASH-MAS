@@ -1,4 +1,4 @@
-package net.xqhs.flash.abms.gridworld;
+package net.xqhs.flash.abms.space.gridworld;
 
 /**
  * Implementation for orthogonal and diagonal relative orientations in a rectangular grid.

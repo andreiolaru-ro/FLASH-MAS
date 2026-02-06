@@ -1,8 +1,8 @@
 package net.xqhs.flash.abms;
 
-import net.xqhs.flash.abms.gridworld.GridTopology;
-
 import java.util.Objects;
+
+import net.xqhs.flash.abms.space.gridworld.GridTopology;
 
 //assume top left corner of the map is (0,0)
 public class DistributionConfig {

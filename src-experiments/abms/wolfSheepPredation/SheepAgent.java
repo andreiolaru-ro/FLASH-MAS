@@ -7,7 +7,7 @@ import java.util.Set;
 
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.StepAgent;
-import net.xqhs.flash.abms.gridworld.GridPosition;
+import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.BaseAgent;
 

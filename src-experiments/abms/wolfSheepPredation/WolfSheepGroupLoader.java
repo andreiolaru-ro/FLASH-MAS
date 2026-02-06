@@ -7,8 +7,8 @@ import java.util.Random;
 
 import net.xqhs.flash.abms.Executor;
 import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.gridworld.GridPosition;
-import net.xqhs.flash.abms.gridworld.GridTopology;
+import net.xqhs.flash.abms.space.gridworld.GridPosition;
+import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;

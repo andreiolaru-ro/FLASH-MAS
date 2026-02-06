@@ -1,4 +1,4 @@
-package net.xqhs.flash.abms.gridworld;
+package net.xqhs.flash.abms.space.gridworld;
 
 import java.util.Arrays;
 import java.util.HashSet;
