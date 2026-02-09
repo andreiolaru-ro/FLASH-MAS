@@ -8,7 +8,6 @@ import java.util.Set;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.StepAgent;
 import net.xqhs.flash.abms.space.Position;
-import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.BaseAgent;
 
@@ -32,13 +31,13 @@ public class WolfAgent extends BaseAgent implements StepAgent {
             return;
         }
 
-        Set<GridPosition> freeNeighbors = simulation.getFreeNeighbors(currentPos);
+		Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
         if (freeNeighbors.isEmpty()) {
             return;
         }
 
-        List<GridPosition> freeList = new ArrayList<>(freeNeighbors);
-        GridPosition newPos = freeList.get(random.nextInt(freeList.size()));
+		List<Position> freeList = new ArrayList<>(freeNeighbors);
+		Position newPos = freeList.get(random.nextInt(freeList.size()));
         simulation.moveAgent(this, newPos);
     }
 }

@@ -1,9 +1,7 @@
 package net.xqhs.flash.abms.space.gridworld;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.abms.Topology;
@@ -60,27 +58,6 @@ public class GridTopology extends EntityCore<Node> implements Topology<GridPosit
 	@Override
 	public boolean isValidPosition(GridPosition pos) {
 		return pos != null && pos.getX() >= 0 && pos.getX() < width && pos.getY() >= 0 && pos.getY() < height;
-	}
-
-	@Override
-	public boolean canMoveInOneStep(GridPosition from, GridPosition to) {
-		Set<GridPosition> vicinity = getVicinity(from);
-		return vicinity.contains(to);
-	}
-
-	@Override
-	public <A> Set<A> getNeighbors(GridPosition pos, Function<GridPosition, A> agentAtPosition) {
-		Set<GridPosition> vicinity = getVicinity(pos);
-		Set<A> neighbors = new HashSet<>();
-		for (GridPosition neighborPos : vicinity) {
-			if (isValidPosition(neighborPos)) {
-				A agent = agentAtPosition.apply(neighborPos);
-				if (agent != null) {
-					neighbors.add(agent);
-				}
-			}
-		}
-		return neighbors;
 	}
 
 	public int getWidth() {
