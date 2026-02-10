@@ -62,7 +62,7 @@ public class StepWiseExecutor extends EntityCore<Node> implements Executor, Enti
 			public void run() {
 				for(int step = 0; step < nSteps; step++) {
 					li("Step []", step);
-					agentList.stream().forEach(a -> a.preStep());
+					// agentList.stream().forEach(a -> a.preStep());
 					agentList.stream().forEach(a -> a.step());
 					groupList.stream().forEach(g -> g.display());
 				}

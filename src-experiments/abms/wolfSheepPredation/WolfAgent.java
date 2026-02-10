@@ -38,6 +38,6 @@ public class WolfAgent extends BaseAgent implements StepAgent {
 
 		List<Position> freeList = new ArrayList<>(freeNeighbors);
 		Position newPos = freeList.get(random.nextInt(freeList.size()));
-        simulation.moveAgent(this, newPos);
+		e.moveToPosition(newPos);
     }
 }
