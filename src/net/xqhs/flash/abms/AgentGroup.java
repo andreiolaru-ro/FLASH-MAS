@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import abms.ca.CAAgent;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
-import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -83,10 +82,8 @@ public class AgentGroup extends EntityCore<Node> {
 					
 				}
 
-			GridTopology topology = (GridTopology) Loader.getClosestContext(context, GridTopology.class);
-			Simulation<GridPosition> simulation = new Simulation<>(topology);
 			List<EntityProxy<? extends Entity<?>>> extendedContext = new ArrayList<>(context);
-			extendedContext.add(simulation.asContext());
+			// extendedContext.add(simulation.asContext());
 
 			List<Entity<?>> entities = Deployment.get().loadEntities(new LinkedList<>(confs.values()), lp, extendedContext);
 			List<Agent> agents = entities.stream().map(e -> (Agent) e).collect(Collectors.toList());
@@ -97,11 +94,10 @@ public class AgentGroup extends EntityCore<Node> {
 		AgentGroup ag = new AgentGroup(agents);
 		ag.configure(configuration);
 
-		Executor executor = (Executor) Loader.getClosestContext(context, Executor.class);
+		SimulationExecutor executor = (SimulationExecutor) Loader.getClosestContext(context, SimulationExecutor.class);
 		agents.forEach(a -> executor.register(a));
-		agentMap.entrySet().stream().forEach(e -> simulation.placeAgent((StepAgent) e.getValue(), e.getKey()));
+		// agentMap.entrySet().stream().forEach(e -> simulation.placeAgent((StepAgent) e.getValue(), e.getKey()));
 
-		ag.simulation = simulation;
 		ag.d = d;
 		return ag;
 		}
@@ -121,7 +117,6 @@ public class AgentGroup extends EntityCore<Node> {
 	 */
 	protected List<Agent>		agents;
 	protected int				d;
-	protected Simulation<GridPosition> simulation;
 
 	/**
 	 * Creates a new agent group with the given agents.
@@ -134,15 +129,6 @@ public class AgentGroup extends EntityCore<Node> {
 	}
 	
 	protected void display() {
-		String ret = "\n";
-		for(int y = 0; y < d; y++) {
-			for(int x = 0; x < d; x++) {
-				CAAgent a = (CAAgent) simulation.getAgentAt(new GridPosition(x, y));
-				ret += a.getState() > 0 ? "X" : " ";
-			}
-			ret += "\n";
-		}
-		lf(ret);
 	}
 	
 }

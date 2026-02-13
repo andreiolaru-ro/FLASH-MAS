@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import net.xqhs.flash.abms.Executor;
+import net.xqhs.flash.abms.SimulationExecutor;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
@@ -44,7 +44,7 @@ public class WolfSheepGroupLoader implements Loader<WolfSheepGroup> {
 			List<MultiTreeMap> subordinateEntities) {
 		List<EntityProxy<? extends Entity<?>>> safeContext = context != null ? context : new ArrayList<>();
 		GridTopology topology = (GridTopology) Loader.getClosestContext(safeContext, GridTopology.class);
-		Executor executor = (Executor) Loader.getClosestContext(safeContext, Executor.class);
+		SimulationExecutor executor = (SimulationExecutor) Loader.getClosestContext(safeContext, SimulationExecutor.class);
 		if (topology == null || executor == null) {
 			return null;
 		}

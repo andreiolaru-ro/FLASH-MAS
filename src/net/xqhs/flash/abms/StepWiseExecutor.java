@@ -9,7 +9,7 @@ import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class StepWiseExecutor extends EntityCore<Node> implements Executor, EntityProxy<StepWiseExecutor> {
+public class StepWiseExecutor extends EntityCore<Node> implements SimulationExecutor, EntityProxy<StepWiseExecutor> {
 	
 	protected static final String	STEPS_PARAM	= "steps";
 	protected List<StepAgent>		agentList	= new LinkedList<>();
