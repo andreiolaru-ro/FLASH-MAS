@@ -2,17 +2,17 @@ package abms.wolfSheepPredation;
 
 import java.util.List;
 
-import net.xqhs.flash.abms.AgentGroup;
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.abms.EntityGroup;
+import net.xqhs.flash.core.Entity;
 
-public class WolfSheepGroup extends AgentGroup {
+public class WolfSheepGroup extends EntityGroup {
 	//this is the class (group) that displays the grid (like printMap() in RandomPositionGenerator)
 	private static final long serialVersionUID = 1L;
 	private int width;
 	private int height;
 
-	public WolfSheepGroup(List<Agent> agentList) {
-		super(agentList);
+	public WolfSheepGroup(List<Entity<?>> entityList) {
+		super(entityList);
 	}
 	
 	@Override

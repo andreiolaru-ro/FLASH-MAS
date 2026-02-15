@@ -3,14 +3,14 @@ package abms.ca;
 import java.util.Set;
 
 import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.StepAgent;
+import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class CAAgent extends BaseAgent implements StepAgent {
+public class CAAgent extends BaseAgent implements SteppableEntity {
 	
 	/**
 	 * The serial UID.
@@ -50,7 +50,7 @@ public class CAAgent extends BaseAgent implements StepAgent {
 			return;
 		}
 
-		Set<StepAgent> neighbors = topology.getNeighbors(myPosition, pos -> simulation.getAgentAt(pos));
+		Set<SteppableEntity> neighbors = topology.getNeighbors(myPosition, pos -> simulation.getAgentAt(pos));
 		int liveNeighbors = neighbors.stream().mapToInt(a -> ((CAAgent) a).state).sum();
 		switch(liveNeighbors) {
 		case 2:

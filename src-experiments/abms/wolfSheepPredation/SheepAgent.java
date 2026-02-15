@@ -5,59 +5,55 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.StepAgent;
-import net.xqhs.flash.abms.space.gridworld.GridPosition;
+import net.xqhs.flash.abms.EnvironmentLinkShard;
+import net.xqhs.flash.abms.SteppableEntity;
+import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.BaseAgent;
+import net.xqhs.flash.core.support.Pylon;
 
-public class SheepAgent extends BaseAgent implements StepAgent {
-
-    private Simulation<GridPosition> simulation;
-    private final Random random = new Random();
-
-    public SheepAgent() {
-    }
-
-    public SheepAgent(Simulation<GridPosition> simulation) {
-        this.simulation = simulation;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public boolean start() {
-        super.start();
-        if (simulation == null) {
-            for (Entity.EntityProxy<? extends Entity<?>> c : getFullContext()) {
-                if (c instanceof Simulation) {
-                    simulation = (Simulation<GridPosition>) c;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void preStep() {
-    }
-
-    @Override
-    public void step() {
-        if (simulation == null) {
-            return;
-        }
-        GridPosition currentPos = simulation.getAgentPosition(this);
-        if (currentPos == null) {
-            return;
-        }
-
-        Set<GridPosition> freeNeighbors = simulation.getFreeNeighbors(currentPos);
-        if (freeNeighbors.isEmpty()) {
-            return;
-        }
-
-        List<GridPosition> freeList = new ArrayList<>(freeNeighbors);
-        GridPosition newPos = freeList.get(random.nextInt(freeList.size()));
-        simulation.moveAgent(this, newPos);
-    }
+public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProxy<BaseAgent> {
+	
+	protected EnvironmentLinkShard	e		= new EnvironmentLinkShard();
+	protected final Random			random	= new Random();
+	
+	public SheepAgent() {
+		e.addContext(asContext());
+	}
+	
+	@Override
+	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
+		return (EntityProxy<C>) this;
+	}
+	
+	@Override
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		e.addGeneralContext(context);
+		return super.addGeneralContext(context);
+	}
+	
+	@Override
+	public void step() {
+		li("sheep step");
+		Position currentPos = e.getCurrentPosition();
+		if(currentPos == null) {
+			return;
+		}
+		
+		Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
+		if(freeNeighbors.isEmpty()) {
+			return;
+		}
+		
+		List<Position> freeList = new ArrayList<>(freeNeighbors);
+		Position newPos = freeList.get(random.nextInt(freeList.size()));
+		e.moveToPosition(newPos);
+	}
+	
+	@Override
+	public String getEntityName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -1,21 +1,17 @@
 package net.xqhs.flash.abms;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
-import net.xqhs.flash.core.agent.Agent;
-import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class StepWiseExecutor extends EntityCore<Node> implements SimulationExecutor, EntityProxy<StepWiseExecutor> {
+public class StepWiseExecutor extends EntityCore<Simulation>
+		implements SimulationExecutor, EntityProxy<StepWiseExecutor> {
 	
 	protected static final String	STEPS_PARAM	= "steps";
-	protected List<StepAgent>		agentList	= new LinkedList<>();
-	protected List<AgentGroup>		groupList	= new LinkedList<>();
 	int								nSteps;
 	Thread							executor;
+	Simulation						simulation;
 	
 	@Override
 	public String getEntityName() {
@@ -31,40 +27,36 @@ public class StepWiseExecutor extends EntityCore<Node> implements SimulationExec
 	}
 	
 	@Override
-	public boolean register(Agent agent) {
-		agentList.add((StepAgent) agent);
+	public boolean addContext(EntityProxy<Simulation> context) {
+		simulation = (Simulation) context;
+		simulation.registerExecutor(this);
+		// TODO why this does not work
 		return true;
 	}
 	
 	@Override
-	public boolean register(AgentGroup group) {
-		groupList.add(group);
+	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+		super.addGeneralContext(context);
+		if(!(context instanceof Simulation))
+			return true;
+		simulation = (Simulation) context;
+		simulation.registerExecutor(this);
 		return true;
 	}
 	
 	@Override
 	public boolean start() {
 		super.start();
-		li("Starting executor with [] groups and total of [] agents.", groupList.size(), agentList.size());
-		// groupList.stream().forEach(g -> g.prepareExecution());
+		li("Starting executor with [] contexts and [] agents.", simulation.getSimulationContexts().size(),
+				simulation.getSimulationObjects().size());
 		
-		int nStarted = 0;
-		for(Agent agent : agentList) {
-			if(agent.start())
-				nStarted++;
-			else
-				le("Agent [] could not be started.", agent.getName());
-		}
-		li("Started [] agents out of [].", Integer.valueOf(nStarted), Integer.valueOf(agentList.size()));
+		// TODO send suspend signal to non-step agents
 		
 		executor = new Thread() {
 			@Override
 			public void run() {
-				for(int step = 0; step < nSteps; step++) {
-					li("Step []", step);
-					// agentList.stream().forEach(a -> a.preStep());
-					agentList.stream().forEach(a -> a.step());
-					groupList.stream().forEach(g -> g.display());
+				for(long step = 0; step < nSteps; step++) {
+					runStep(step);
 				}
 				
 			}
@@ -73,16 +65,19 @@ public class StepWiseExecutor extends EntityCore<Node> implements SimulationExec
 		return true;
 	}
 	
+	protected void runStep(long step) {
+		li("Step []", Long.valueOf(step));
+		for(Entity<?> entity : simulation.getSimulationObjects())
+			if(entity instanceof SteppableEntity)
+				((SteppableEntity) entity).step();
+		// all entities have been stepped, now update the simulation contexts
+		for(SimulationContext context : simulation.getSimulationContexts())
+			context.validateAndExecutePendingActions();
+	}
+	
 	@Override
 	public boolean stop() {
-		int nStopped = 0;
-		for(Agent agent : agentList) {
-			if(agent.stop())
-				nStopped++;
-			else
-				le("Agent [] could not be stopped.", agent.getName());
-		}
-		li("Stopped [] agents out of [].", Integer.valueOf(nStopped), Integer.valueOf(agentList.size()));
+		li("Executor stopped.");
 		try {
 			executor.join();
 		} catch(InterruptedException e) {
@@ -91,6 +86,7 @@ public class StepWiseExecutor extends EntityCore<Node> implements SimulationExec
 		return super.stop();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<StepWiseExecutor> asContext() {
 		return this;

@@ -1,9 +1,6 @@
 package net.xqhs.flash.abms;
 
-import net.xqhs.flash.core.agent.Agent;
+import net.xqhs.flash.core.Entity;
 
-public interface SimulationExecutor {
-	public boolean register(Agent agent);
-	
-	public boolean register(AgentGroup group);
+public interface SimulationExecutor extends Entity<Simulation> {
 }

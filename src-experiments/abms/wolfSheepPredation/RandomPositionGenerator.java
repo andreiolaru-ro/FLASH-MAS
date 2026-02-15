@@ -4,7 +4,7 @@ import java.util.*;
 
 import net.xqhs.flash.abms.DistributionConfig;
 import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.StepAgent;
+import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 
@@ -65,11 +65,11 @@ public class RandomPositionGenerator {
         for (int step = 1; step <= steps; step++) {
             System.out.println("\nStep " + step + ":");
 
-            List<StepAgent> agentsToMove = new ArrayList<>(simulation.getAllAgents());
+            List<SteppableEntity> agentsToMove = new ArrayList<>(simulation.getAllAgents());
 
             Collections.shuffle(agentsToMove);
 
-            agentsToMove.forEach(StepAgent::step);
+            agentsToMove.forEach(SteppableEntity::step);
 
             printMap(simulation, width, height);
         }

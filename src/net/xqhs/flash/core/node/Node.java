@@ -301,7 +301,10 @@ public class Node extends EntityCore<Node> {
 		if(nodePylonProxy != null)
 			// only one pylon can be added as context for the node
 			return false;
-		super.addGeneralContext(context);
+		if(!super.addGeneralContext(context))
+			return false;
+		if(!(context instanceof PylonProxy))
+			return true;
 		PylonProxy pylonProxy = (PylonProxy) context;
 		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
@@ -359,7 +362,7 @@ public class Node extends EntityCore<Node> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public EntityProxy<Node> asContext() {
+	public EntityProxy<? extends Node> asContext() {
 		return new NodeProxy();
 	}
 	

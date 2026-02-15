@@ -1,8 +1,8 @@
-package net.xqhs.flash.abms;
+package net.xqhs.flash.abms.space;
 
 import java.util.Set;
 
-public interface Topology<P> {
+public interface Topology<P extends Position> {
 
 	Set<P> getVicinity(P pos);
 

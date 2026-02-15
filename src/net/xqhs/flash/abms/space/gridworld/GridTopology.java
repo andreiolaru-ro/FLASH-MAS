@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.xqhs.flash.abms.Topology;
+import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class GridTopology implements Topology<GridPosition> {

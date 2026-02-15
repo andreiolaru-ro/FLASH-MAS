@@ -1,8 +1,10 @@
 package net.xqhs.flash.abms;
 
 import java.util.Deque;
+import java.util.LinkedList;
 
 import net.xqhs.flash.abms.SimulationContext.ActionRecord.ActionStatus;
+import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.util.MultiValueMap;
@@ -59,7 +61,7 @@ public interface SimulationContext {
 			}
 		}
 		
-		protected Deque<ActionRecord> pendingActions;
+		protected Deque<ActionRecord> pendingActions = new LinkedList<>();
 		
 		@Override
 		public boolean addPendingAction(ActionRecord action) {
@@ -70,7 +72,16 @@ public interface SimulationContext {
 			return true;
 		}
 		
-		public abstract void validateAndExecutependingActions();
+		@Override
+		public abstract void validateAndExecutePendingActions();
+		
+		@Override
+		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+			super.addGeneralContext(context);
+			if(context instanceof Simulation)
+				((Simulation) context).registerEntity("context", this, name);
+			return true;
+		}
 	}
 	
 	public interface ActionData {
@@ -78,6 +89,8 @@ public interface SimulationContext {
 	}
 	
 	boolean addPendingAction(ActionRecord action);
+	
+	void validateAndExecutePendingActions();
 }
 
 
