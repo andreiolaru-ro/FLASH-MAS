@@ -53,7 +53,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 	
 	@Override
 	public String getEntityName() {
-		// TODO Auto-generated method stub
-		return null;
+		return getName() != null ? getName() : "Sheep";
 	}
 }

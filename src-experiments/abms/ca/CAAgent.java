@@ -1,9 +1,11 @@
 package abms.ca;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
+import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
@@ -11,7 +13,7 @@ import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class CAAgent extends BaseAgent implements SteppableEntity {
-	
+
 	/**
 	 * The serial UID.
 	 */
@@ -20,7 +22,8 @@ public class CAAgent extends BaseAgent implements SteppableEntity {
 	protected int					state				= 0;
 	protected int					nextState;
 	protected GridTopology topology;
-	protected Simulation<GridPosition> simulation;
+	protected Simulation simulation;
+	protected SpaceContext<GridPosition> space;
 
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -37,20 +40,28 @@ public class CAAgent extends BaseAgent implements SteppableEntity {
 			if(c instanceof GridTopology)
 				topology = (GridTopology) c;
 			if(c instanceof Simulation)
-				simulation = (Simulation<GridPosition>) c;
+				simulation = (Simulation) c;
+			if(c instanceof SpaceContext)
+				space = (SpaceContext<GridPosition>) c;
 		}
 		return true;
 	}
 	
-	@Override
 	public void preStep() {
-		GridPosition myPosition = simulation.getAgentPosition(this);
+		GridPosition myPosition = space.getPosition(this.asContext());
 		if (myPosition == null) {
 			nextState = 0;
 			return;
 		}
 
-		Set<SteppableEntity> neighbors = topology.getNeighbors(myPosition, pos -> simulation.getAgentAt(pos));
+		Set<GridPosition> vicinity = space.getVicinity(myPosition);
+		Set<SteppableEntity> neighbors = vicinity.stream()
+				.filter(topology::isValidPosition)
+				.flatMap(pos -> space.getEntitiesAt(pos).stream())
+				.filter(e -> e instanceof CAAgent)
+				.map(e -> (SteppableEntity) e)
+				.collect(Collectors.toSet());
+
 		int liveNeighbors = neighbors.stream().mapToInt(a -> ((CAAgent) a).state).sum();
 		switch(liveNeighbors) {
 		case 2:

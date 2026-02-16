@@ -80,6 +80,11 @@ public class SpaceContext<P extends Position> extends BaseContext
 				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty())
 				.collect(Collectors.toSet());
 	}
+
+	public Set<EntityProxy<?>> getEntitiesAt(P pos) {
+		Set<EntityProxy<?>> entities = entityInPosition.get(pos);
+		return entities != null ? entities : new java.util.HashSet<>();
+	}
 	
 	@Override
 	public void validateAndExecutePendingActions() {
@@ -124,7 +129,15 @@ public class SpaceContext<P extends Position> extends BaseContext
 	public Topology<? extends Position> getTopology() {
 		return topology;
 	}
-	
+
+	@Override
+	public String visualizeAsString() {
+		if (topology == null) {
+			return null;
+		}
+		return topology.visualize(entityInPosition);
+	}
+
 	// @Override
 	// public <A> Set<A> getNeighbors(GridPosition pos, Function<GridPosition, A> agentAtPosition) {
 	// Set<GridPosition> vicinity = getVicinity(pos);
@@ -139,5 +152,5 @@ public class SpaceContext<P extends Position> extends BaseContext
 	// }
 	// return neighbors;
 	// }
-	
+
 }

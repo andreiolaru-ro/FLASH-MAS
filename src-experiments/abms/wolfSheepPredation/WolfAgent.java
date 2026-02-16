@@ -53,7 +53,6 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 	
 	@Override
 	public String getEntityName() {
-		// TODO Auto-generated method stub
-		return null;
+		return getName() != null ? getName() : "Wolf";
 	}
 }

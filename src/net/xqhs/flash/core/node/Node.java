@@ -360,10 +360,10 @@ public class Node extends EntityCore<Node> {
 		return true;
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "unchecked"})
 	@Override
-	public EntityProxy<? extends Node> asContext() {
-		return new NodeProxy();
+	public <C extends Entity<Node>> EntityProxy<C> asContext() {
+		return (EntityProxy<C>) new NodeProxy();
 	}
 	
 	protected void checkRunning() {

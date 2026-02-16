@@ -56,6 +56,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	
 	public boolean moveToPosition(Position target) {
 		return space.addPendingAction(new ActionRecord(getAgent(),
-				new MultiValueMap().add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())));
+				new MultiValueMap()
+					.add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())
+					.addObject(SpaceActionData.MOVE_TARGET.s(), target)));
 	}
 }
