@@ -15,7 +15,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.util.logging.Debug.DebugItem;
 
 public class SpaceContext<P extends Position> extends BaseContext
-		implements SimulationContext, EntityProxy<SpaceContext> {
+		implements SimulationContext, EntityProxy<SpaceContext<P>> {
 	
 	enum ContextDebugItem implements DebugItem {
 		DEBUG_ALL_ACTIONS(true),
