@@ -1,10 +1,12 @@
 package net.xqhs.flash.abms.space.gridworld;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.abms.space.Topology;
+import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class GridTopology implements Topology<GridPosition> {
@@ -57,5 +59,34 @@ public class GridTopology implements Topology<GridPosition> {
 
 	public int getHeight() {
 		return height;
+	}
+
+	@Override
+	public String visualize(Map<GridPosition, Set<EntityProxy<?>>> entityInPosition) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n");
+
+		for (int y = height - 1; y >= 0; y--) {
+			for (int x = 0; x < width; x++) {
+				GridPosition pos = new GridPosition(x, y);
+				Set<EntityProxy<?>> entities = entityInPosition.get(pos);
+
+				if (entities == null || entities.isEmpty()) {
+					sb.append(". ");
+				} else {
+					EntityProxy<?> entity = entities.iterator().next();
+					String entityName = entity.getEntityName();
+					if (entityName != null && !entityName.isEmpty()) {
+						char symbol = Character.toUpperCase(entityName.charAt(0));
+						sb.append(symbol).append(" ");
+					} else {
+						sb.append("? ");
+					}
+				}
+			}
+			sb.append("\n");
+		}
+
+		return sb.toString();
 	}
 }

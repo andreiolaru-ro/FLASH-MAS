@@ -73,6 +73,7 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 		// all entities have been stepped, now update the simulation contexts
 		for(SimulationContext context : simulation.getSimulationContexts())
 			context.validateAndExecutePendingActions();
+		simulation.stepCompleted();
 	}
 	
 	@Override

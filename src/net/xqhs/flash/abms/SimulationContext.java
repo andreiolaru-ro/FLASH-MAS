@@ -74,7 +74,12 @@ public interface SimulationContext {
 		
 		@Override
 		public abstract void validateAndExecutePendingActions();
-		
+
+		@Override
+		public String visualizeAsString() {
+			return null;
+		}
+
 		@Override
 		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 			super.addGeneralContext(context);
@@ -89,8 +94,10 @@ public interface SimulationContext {
 	}
 	
 	boolean addPendingAction(ActionRecord action);
-	
+
 	void validateAndExecutePendingActions();
+
+	String visualizeAsString();
 }
 
 

@@ -55,5 +55,14 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	public EntityProxy<Simulation> asContext() {
 		return this;
 	}
-	
+
+	public void stepCompleted() {
+		for (SimulationContext context : simulationContexts) {
+			String visualization = context.visualizeAsString();
+			if (visualization != null) {
+				System.out.println(visualization);
+			}
+		}
+	}
+
 }
