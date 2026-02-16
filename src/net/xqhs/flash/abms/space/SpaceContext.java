@@ -104,7 +104,7 @@ public class SpaceContext<P extends Position> extends BaseContext
 					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "moving entity [] from [] to []", e.getEntityName(),
 							currentPosition, targetPosition);
 					entityInPosition.get(currentPosition).remove(e);
-					entityInPosition.get(targetPosition).add(e);
+					entityInPosition.computeIfAbsent(targetPosition, p -> new java.util.HashSet<>()).add(e);
 					entityPositions.put(e, targetPosition);
 				}
 			}
@@ -112,6 +112,7 @@ public class SpaceContext<P extends Position> extends BaseContext
 				le("Invalid action", a.getActionData().get(BaseActionData.ACTION.s()));
 			}
 		}
+		pendingActions.clear();
 	}
 	
 	@SuppressWarnings("unchecked")
