@@ -19,7 +19,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 	protected final Random			random	= new Random();
 	
 	public SheepAgent() {
-		e.addContext(asContext());
+		e.addGeneralContext(this);
 	}
 	
 	@Override

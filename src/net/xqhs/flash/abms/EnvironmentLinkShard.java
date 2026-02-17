@@ -22,28 +22,31 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	protected static final String SHARD_NAME = "Environment";
 	
 	SpaceContext space = null;
-	
+	EntityProxy<?>	entityProxy	= null;
+
 	public EnvironmentLinkShard() {
 		super(AgentShardDesignation.customShard(SHARD_NAME));
 	}
-	
+
 	<T> T getContext(Class<T> cls) {
 		for(Entity.EntityProxy<? extends Entity<?>> c : getFullContext())
 			if(cls.isInstance(c))
 				return cls.cast(c);
 		return null;
 	}
-	
+
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(context instanceof SpaceContext)
 			space = (SpaceContext) context;
+		else if(context instanceof SteppableEntity)
+			entityProxy = context;
 		return super.addGeneralContext(context);
 		// FIXME should actually be *closest* context
 	}
-	
+
 	public Position getCurrentPosition() {
-		return space.getPosition(getAgent());
+		return space.getPosition(entityProxy);
 	}
 	
 	public Set<Position> getVicinity(Position pos) {
@@ -55,7 +58,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	}
 	
 	public boolean moveToPosition(Position target) {
-		return space.addPendingAction(new ActionRecord(getAgent(),
+		return space.addPendingAction(new ActionRecord(entityProxy,
 				new MultiValueMap()
 					.add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())
 					.addObject(SpaceActionData.MOVE_TARGET.s(), target)));

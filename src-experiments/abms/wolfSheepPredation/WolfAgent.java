@@ -19,7 +19,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 	protected final Random			random	= new Random();
 	
 	public WolfAgent() {
-		e.addContext(asContext());
+		e.addGeneralContext(this);
 	}
 	
 	@Override
