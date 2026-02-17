@@ -20,8 +20,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class WolfSheepGroupLoader extends EntityGroupLoader {
 	private static final int	DEFAULT_SHEEP	= 10;
 	private static final int	DEFAULT_WOLVES	= 6;
-	private static final String	SHEEP_COUNT		= "numberOfSheep";
-	private static final String	WOLF_COUNT		= "numberOfWolves";
+	private static final String	SHEEP_COUNT		= "sheepCount";
+	private static final String	WOLF_COUNT		= "wolfCount";
 	
 	@Override
 	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
