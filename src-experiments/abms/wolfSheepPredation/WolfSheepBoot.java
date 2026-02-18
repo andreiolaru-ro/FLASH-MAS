@@ -3,18 +3,20 @@ package abms.wolfSheepPredation;
 import net.xqhs.flash.FlashBoot;
 
 public class WolfSheepBoot {
-	public static void main(String[] args_) {
-		String a = "";
+    public static void main(String[] args_) {
+        String a = "";
 
-		a += " -load_order simulation;executor;context;WolfSheepGroup";
-		a += " -package net.xqhs.flash.abms";
-		a += " -package abms.wolfSheepPredation";
-		a += " -loader WolfSheepGroup classpath:abms.wolfSheepPredation.WolfSheepGroupLoader";
-		a += " -node dummy -simulation sim classpath:Simulation";
-		a += " -executor StepWise:StepWise steps:10";
-		a += " -context Space:space width:6 height:6";
-		a += " -WolfSheepGroup g sheepCount:10 wolfCount:5";
+        a += " -load_order simulation;executor;context;WolfSheepGroup";
+        a += " -package net.xqhs.flash.abms";
+        a += " -package net.xqhs.flash.abms.communication";
+        a += " -package abms.wolfSheepPredation";
+        a += " -loader WolfSheepGroup classpath:abms.wolfSheepPredation.WolfSheepGroupLoader";
+        a += " -node dummy -simulation sim classpath:Simulation";
+        a += " -executor StepWise:StepWise steps:10";
+        a += " -context ProximityCommunication:communication";
+        a += " -context Space:space width:6 height:6";
+        a += " -WolfSheepGroup g sheepCount:10 wolfCount:5";
 
-		FlashBoot.main(a.split(" "));
-	}
+        FlashBoot.main(a.split(" "));
+    }
 }
