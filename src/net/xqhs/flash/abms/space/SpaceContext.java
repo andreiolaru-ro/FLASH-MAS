@@ -78,12 +78,14 @@ public class SpaceContext<P extends Position> extends BaseContext
 
 	public Set<P> getFreeNeighborPositions(P pos) {
 		return getVicinity(pos).stream()
+				.filter(p -> topology.isValidPosition(p))
 				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty())
 				.collect(Collectors.toSet());
 	}
 
 	public Set<P> getPassableNeighborPositions(P pos, Predicate<EntityProxy<?>> isPassable) {
 		return getVicinity(pos).stream()
+				.filter(p -> topology.isValidPosition(p))
 				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty()
 						|| entityInPosition.get(p).stream().allMatch(isPassable))
 				.collect(Collectors.toSet());
