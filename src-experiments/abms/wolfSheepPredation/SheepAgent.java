@@ -10,6 +10,8 @@ import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.support.Pylon;
 
@@ -20,6 +22,14 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 	
 	public SheepAgent() {
 		e.addGeneralContext(this);
+		e.addContext(new BaseAgentProxy() {
+			@Override
+			public boolean postAgentEvent(AgentEvent event) {
+				if(event.getType() == AgentEventType.AGENT_STOP)
+					stop();
+				return true;
+			}
+		});
 	}
 	
 	@Override

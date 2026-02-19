@@ -40,6 +40,11 @@ public class AgentManagementContext extends BaseContext
 
     @Override
     public void validateAndExecutePendingActions() {
+        if (space == null && simulation != null)
+            for (SimulationContext ctx : simulation.getSimulationContexts())
+                if (ctx instanceof SpaceContext)
+                    space = (SpaceContext<?>) ctx;
+
         for (ActionRecord action : pendingActions) {
             if (AgentManagementActionData.DESTROY_ACTION.s()
                     .equals(action.getActionData().get(BaseActionData.ACTION.s()))) {
@@ -51,8 +56,11 @@ public class AgentManagementContext extends BaseContext
                 }
 
                 EnvironmentLinkShard targetShard = agentShards.get(target);
-                if (targetShard != null)
-                    targetShard.notifyAgentDestroyed();
+                if (targetShard == null) {
+                    li("target [] already destroyed, skipping", target.getEntityName());
+                    continue;
+                }
+                targetShard.notifyAgentDestroyed();
 
                 if (space != null)
                     space.removeEntity(target);

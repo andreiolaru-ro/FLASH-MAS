@@ -10,6 +10,8 @@ import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.support.Pylon;
 
@@ -20,6 +22,14 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 	
 	public WolfAgent() {
 		e.addGeneralContext(this);
+		e.addContext(new BaseAgentProxy() {
+			@Override
+			public boolean postAgentEvent(AgentEvent event) {
+				if(event.getType() == AgentEventType.AGENT_STOP)
+					stop();
+				return true;
+			}
+		});
 	}
 	
 	@Override
@@ -40,12 +50,20 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 		if(currentPos == null) {
 			return;
 		}
-		
+
+		Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
+		for(EntityProxy<?> entity : entitiesHere) {
+			if(entity instanceof SheepAgent) {
+				li("wolf eats sheep [] at []", entity.getEntityName(), currentPos);
+				e.requestDestroyAgent(entity);
+			}
+		}
+
 		Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
 		if(freeNeighbors.isEmpty()) {
 			return;
 		}
-		
+
 		List<Position> freeList = new ArrayList<>(freeNeighbors);
 		Position newPos = freeList.get(random.nextInt(freeList.size()));
 		e.moveToPosition(newPos);

@@ -5,8 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EntityGroup.EntityGroupLoader;
 import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
@@ -58,7 +60,12 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		Collections.shuffle(positions, new Random());
 		
 		Simulation sim = (Simulation) Loader.getClosestContext(context, Simulation.class);
-		
+
+		AgentManagementContext agentManagement = null;
+		for(SimulationContext simulationContext : sim.getSimulationContexts())
+			if(simulationContext instanceof AgentManagementContext)
+				agentManagement = (AgentManagementContext) simulationContext;
+
 		List<Entity<?>> agents = new ArrayList<>();
 		int idx = 0;
 		for(int i = 0; i < sheepCount; i++) {
@@ -67,6 +74,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 			configureAgentName(sheep, name);
 			for(EntityProxy<? extends Entity<?>> c : context)
 				sheep.addGeneralContext(c);
+			if(agentManagement != null)
+				sheep.addGeneralContext(agentManagement.asContext());
 			space.place(sheep.asContext(), positions.get(idx++));
 			agents.add(sheep);
 			sim.registerEntity("agent", sheep, name);
@@ -77,6 +86,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 			configureAgentName(wolf, name);
 			for(EntityProxy<? extends Entity<?>> c : context)
 				wolf.addGeneralContext(c);
+			if(agentManagement != null)
+				wolf.addGeneralContext(agentManagement.asContext());
 			space.place(wolf.asContext(), positions.get(idx++));
 			agents.add(wolf);
 			sim.registerEntity("agent", wolf, name);

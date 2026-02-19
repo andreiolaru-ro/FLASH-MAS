@@ -16,39 +16,39 @@ import net.xqhs.util.logging.Debug.DebugItem;
 
 public class SpaceContext<P extends Position> extends BaseContext
 		implements SimulationContext, EntityProxy<SpaceContext<P>> {
-	
+
 	enum ContextDebugItem implements DebugItem {
 		DEBUG_ALL_ACTIONS(true),
-		
+
 		;
-		
+
 		private boolean activate;
-		
+
 		private ContextDebugItem(boolean activate) {
 			this.activate = activate;
 		}
-		
+
 		@Override
 		public boolean toBool() {
 			return activate;
 		}
 	}
-	
+
 	public enum SpaceActionData implements ActionData {
 		MOVE_ACTION, MOVE_TARGET,
-		
+
 		;
-		
+
 		@Override
 		public String s() {
 			return this.toString();
 		}
 	}
-	
+
 	protected Map<EntityProxy<?>, P>		entityPositions		= new HashMap<>();
 	protected Map<P, Set<EntityProxy<?>>>	entityInPosition	= new HashMap<>();
 	protected Topology<P>					topology;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
@@ -58,7 +58,7 @@ public class SpaceContext<P extends Position> extends BaseContext
 				Integer.parseInt(configuration.getAValue("height")));
 		return true;
 	}
-	
+
 	public boolean place(EntityProxy<?> entity, P pos) {
 		if(!topology.isValidPosition(pos))
 			return false;
@@ -66,15 +66,15 @@ public class SpaceContext<P extends Position> extends BaseContext
 		entityInPosition.computeIfAbsent(pos, p -> new java.util.HashSet<>()).add(entity);
 		return true;
 	}
-	
+
 	public P getPosition(EntityProxy<?> entity) {
 		return entityPositions.get(entity);
 	}
-	
+
 	public Set<P> getVicinity(P pos) {
 		return topology.getVicinity(pos);
 	}
-	
+
 	public Set<P> getFreeNeighborPositions(P pos) {
 		return getVicinity(pos).stream()
 				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty())
@@ -91,10 +91,10 @@ public class SpaceContext<P extends Position> extends BaseContext
 		Set<EntityProxy<?>> entities = entityInPosition.get(pos);
 		return entities != null ? entities : new java.util.HashSet<>();
 	}
-	
+
 	@Override
 	public void validateAndExecutePendingActions() {
-		
+
 		for(ActionRecord a : pendingActions) {
 			EntityProxy<?> e = a.getEntity();
 			if(SpaceActionData.MOVE_ACTION.s().equals(a.getActionData().get(BaseActionData.ACTION.s()))) {
@@ -102,7 +102,7 @@ public class SpaceContext<P extends Position> extends BaseContext
 				@SuppressWarnings("unchecked")
 				P targetPosition = (P) a.getActionData().getObject(SpaceActionData.MOVE_TARGET.s());
 				if(currentPosition == null)
-					le("no position found for", e.getEntityName());
+					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "skipping move for removed entity []", e.getEntityName());
 				else if(!a.getActionData().containsKey(SpaceActionData.MOVE_TARGET.s())
 						|| !topology.isValidPosition(targetPosition))
 					le("New position [] invalid for []", targetPosition, e.getEntityName());
@@ -120,19 +120,19 @@ public class SpaceContext<P extends Position> extends BaseContext
 		}
 		pendingActions.clear();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <C extends Entity<Simulation>> EntityProxy<C> asContext() {
 		return (EntityProxy<C>) this;
 	}
-	
+
 	@Override
 	public String getEntityName() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public Topology<? extends Position> getTopology() {
 		return topology;
 	}

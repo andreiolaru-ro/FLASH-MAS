@@ -12,6 +12,7 @@ public class WolfSheepBoot {
 		a += " -loader WolfSheepGroup classpath:abms.wolfSheepPredation.WolfSheepGroupLoader";
 		a += " -node dummy -simulation sim classpath:Simulation";
 		a += " -executor StepWise:StepWise steps:10";
+		a += " -context AgentManagement:agentManagement";
 		a += " -context Space:space width:6 height:6";
 		a += " -WolfSheepGroup g sheepCount:10 wolfCount:5";
 

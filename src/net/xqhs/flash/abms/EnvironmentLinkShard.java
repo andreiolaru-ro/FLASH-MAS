@@ -10,6 +10,8 @@ import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.util.MultiValueMap;
@@ -82,7 +84,6 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	}
 
 	public void notifyAgentDestroyed() {
-		if(entityProxy instanceof Entity)
-			((Entity<?>) entityProxy).stop();
+		getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
 	}
 }
