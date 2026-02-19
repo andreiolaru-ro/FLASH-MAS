@@ -58,6 +58,11 @@ public class GridTopology implements Topology<GridPosition> {
 	}
 
 	@Override
+	public int getDistance(GridPosition a, GridPosition b) {
+		return Math.max(Math.abs(a.getX() - b.getX()), Math.abs(a.getY() - b.getY()));
+	}
+
+	@Override
 	public boolean isValidPosition(GridPosition pos) {
 		return pos != null && pos.getX() >= 0 && pos.getX() < width && pos.getY() >= 0 && pos.getY() < height;
 	}

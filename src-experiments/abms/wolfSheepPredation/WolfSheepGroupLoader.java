@@ -25,9 +25,13 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 	private static final int	DEFAULT_SHEEP	= 10;
 	private static final int	DEFAULT_WOLVES	= 6;
 	private static final int	DEFAULT_GRASS	= 15;
+	private static final int	DEFAULT_WOLF_VISION	= 3;
+	private static final int	DEFAULT_SHEEP_VISION	= 2;
 	private static final String	SHEEP_COUNT		= "sheepCount";
 	private static final String	WOLF_COUNT		= "wolfCount";
 	private static final String	GRASS_COUNT		= "grassCount";
+	private static final String	WOLF_VISION		= "wolfVision";
+	private static final String	SHEEP_VISION	= "sheepVision";
 	
 	@Override
 	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
@@ -43,6 +47,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		int sheepCount = readInt(multiTreeMap, SHEEP_COUNT, DEFAULT_SHEEP);
 		int wolfCount = readInt(multiTreeMap, WOLF_COUNT, DEFAULT_WOLVES);
 		int grassCount = readInt(multiTreeMap, GRASS_COUNT, DEFAULT_GRASS);
+		int wolfVision = readInt(multiTreeMap, WOLF_VISION, DEFAULT_WOLF_VISION);
+		int sheepVision = readInt(multiTreeMap, SHEEP_VISION, DEFAULT_SHEEP_VISION);
 
 		@SuppressWarnings("unchecked")
 		SpaceContext<GridPosition> space = (SpaceContext<GridPosition>) Loader.getClosestContext(context,
@@ -76,6 +82,7 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		int idx = 0;
 		for(int i = 0; i < sheepCount; i++) {
 			SheepAgent sheep = new SheepAgent();
+			sheep.setVisionRange(sheepVision);
 			String name = "sheep" + i;
 			configureAgentName(sheep, name);
 			for(EntityProxy<? extends Entity<?>> c : context)
@@ -88,6 +95,7 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		}
 		for(int i = 0; i < wolfCount; i++) {
 			WolfAgent wolf = new WolfAgent();
+			wolf.setVisionRange(wolfVision);
 			String name = "wolf" + i;
 			configureAgentName(wolf, name);
 			for(EntityProxy<? extends Entity<?>> c : context)

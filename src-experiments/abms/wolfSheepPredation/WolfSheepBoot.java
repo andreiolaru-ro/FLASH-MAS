@@ -14,7 +14,7 @@ public class WolfSheepBoot {
 		a += " -executor StepWise:StepWise steps:10";
 		a += " -context AgentManagement:agentManagement";
 		a += " -context Space:space width:6 height:6";
-		a += " -WolfSheepGroup g sheepCount:10 wolfCount:5 grassCount:15";
+		a += " -WolfSheepGroup g sheepCount:10 wolfCount:5 grassCount:15 wolfVision:3 sheepVision:2";
 
 		FlashBoot.main(a.split(" "));
 	}

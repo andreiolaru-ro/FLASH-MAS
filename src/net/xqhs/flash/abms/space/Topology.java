@@ -11,5 +11,7 @@ public interface Topology<P extends Position> {
 
 	boolean isValidPosition(P pos);
 
+	int getDistance(P a, P b);
+
 	String visualize(Map<P, Set<EntityProxy<?>>> entityInPosition);
 }

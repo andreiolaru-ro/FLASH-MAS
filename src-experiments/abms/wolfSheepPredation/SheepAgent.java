@@ -2,12 +2,14 @@ package abms.wolfSheepPredation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
+import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentEvent;
@@ -20,6 +22,11 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 	
 	protected EnvironmentLinkShard	e		= new EnvironmentLinkShard();
 	protected final Random			random	= new Random();
+	protected int					visionRange	= 2;
+
+	public void setVisionRange(int visionRange) {
+		this.visionRange = visionRange;
+	}
 	
 	public SheepAgent() {
 		e.addGeneralContext(this);
@@ -66,6 +73,42 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 			return;
 		}
 
+		// Look for nearest grown grass within vision range
+		@SuppressWarnings("unchecked")
+		Topology<Position> topology = (Topology<Position>) e.getTopology();
+		Map<Position, Set<EntityProxy<?>>> visible = e.observe(visionRange);
+		Position nearestTarget = null;
+		int nearestDist = Integer.MAX_VALUE;
+		for(Map.Entry<Position, Set<EntityProxy<?>>> entry : visible.entrySet()) {
+			for(EntityProxy<?> entity : entry.getValue()) {
+				if(entity instanceof GrassAgent && ((GrassAgent) entity).isGrown()) {
+					int dist = topology.getDistance(currentPos, entry.getKey());
+					if(dist < nearestDist) {
+						nearestDist = dist;
+						nearestTarget = entry.getKey();
+					}
+				}
+			}
+		}
+
+		if(nearestTarget != null) {
+			// Move towards nearest grass
+			Position bestNeighbor = null;
+			int bestDist = Integer.MAX_VALUE;
+			for(Position neighbor : passableNeighbors) {
+				int dist = topology.getDistance(neighbor, nearestTarget);
+				if(dist < bestDist) {
+					bestDist = dist;
+					bestNeighbor = neighbor;
+				}
+			}
+			if(bestNeighbor != null) {
+				e.moveToPosition(bestNeighbor);
+				return;
+			}
+		}
+
+		// Random movement if outside of vision
 		List<Position> passableList = new ArrayList<>(passableNeighbors);
 		Position newPos = passableList.get(random.nextInt(passableList.size()));
 		e.moveToPosition(newPos);

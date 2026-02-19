@@ -1,5 +1,6 @@
 package net.xqhs.flash.abms;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -8,6 +9,7 @@ import net.xqhs.flash.abms.SimulationContext.ActionRecord;
 import net.xqhs.flash.abms.SimulationContext.BaseContext.BaseActionData;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.SpaceContext;
+import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
@@ -79,6 +81,14 @@ public class EnvironmentLinkShard extends AgentShardCore {
 
 	public Set<EntityProxy<?>> getEntitiesAt(Position pos) {
 		return space.getEntitiesAt(pos);
+	}
+
+	public Map<Position, Set<EntityProxy<?>>> observe(int range) {
+		return space.getEntitiesWithinRange(getCurrentPosition(), range);
+	}
+
+	public Topology<? extends Position> getTopology() {
+		return space.getTopology();
 	}
 
 	public boolean requestDestroyAgent(EntityProxy<?> target) {

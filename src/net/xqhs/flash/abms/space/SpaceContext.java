@@ -102,6 +102,23 @@ public class SpaceContext<P extends Position> extends BaseContext
 		return entities != null ? entities : new java.util.HashSet<>();
 	}
 
+	public Map<P, Set<EntityProxy<?>>> getEntitiesWithinRange(P center, int range) {
+		Map<P, Set<EntityProxy<?>>> result = new HashMap<>();
+		for(Map.Entry<P, Set<EntityProxy<?>>> entry : entityInPosition.entrySet()) {
+			P pos = entry.getKey();
+			if(pos.equals(center))
+				continue;
+			if(!topology.isValidPosition(pos))
+				continue;
+			if(topology.getDistance(center, pos) <= range) {
+				Set<EntityProxy<?>> entities = entry.getValue();
+				if(entities != null && !entities.isEmpty())
+					result.put(pos, entities);
+			}
+		}
+		return result;
+	}
+
 	@Override
 	public void validateAndExecutePendingActions() {
 
