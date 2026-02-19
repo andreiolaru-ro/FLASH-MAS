@@ -59,13 +59,14 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 			}
 		}
 
-		Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
-		if(freeNeighbors.isEmpty()) {
+		Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
+				entity -> entity instanceof GrassAgent);
+		if(passableNeighbors.isEmpty()) {
 			return;
 		}
 
-		List<Position> freeList = new ArrayList<>(freeNeighbors);
-		Position newPos = freeList.get(random.nextInt(freeList.size()));
+		List<Position> passableList = new ArrayList<>(passableNeighbors);
+		Position newPos = passableList.get(random.nextInt(passableList.size()));
 		e.moveToPosition(newPos);
 	}
 	

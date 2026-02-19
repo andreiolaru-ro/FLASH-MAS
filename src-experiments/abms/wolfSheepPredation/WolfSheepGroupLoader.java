@@ -22,8 +22,10 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class WolfSheepGroupLoader extends EntityGroupLoader {
 	private static final int	DEFAULT_SHEEP	= 10;
 	private static final int	DEFAULT_WOLVES	= 6;
+	private static final int	DEFAULT_GRASS	= 15;
 	private static final String	SHEEP_COUNT		= "sheepCount";
 	private static final String	WOLF_COUNT		= "wolfCount";
+	private static final String	GRASS_COUNT		= "grassCount";
 	
 	@Override
 	public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
@@ -38,7 +40,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		
 		int sheepCount = readInt(multiTreeMap, SHEEP_COUNT, DEFAULT_SHEEP);
 		int wolfCount = readInt(multiTreeMap, WOLF_COUNT, DEFAULT_WOLVES);
-		
+		int grassCount = readInt(multiTreeMap, GRASS_COUNT, DEFAULT_GRASS);
+
 		@SuppressWarnings("unchecked")
 		SpaceContext<GridPosition> space = (SpaceContext<GridPosition>) Loader.getClosestContext(context,
 				SpaceContext.class);
@@ -47,7 +50,7 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 			return null;
 		}
 		int totalCells = topology.getWidth() * topology.getHeight();
-		if(sheepCount + wolfCount > totalCells) {
+		if(sheepCount + wolfCount + grassCount > totalCells) {
 			return null;
 		}
 		
@@ -92,7 +95,15 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 			agents.add(wolf);
 			sim.registerEntity("agent", wolf, name);
 		}
-		
+		for(int i = 0; i < grassCount; i++) {
+			GrassAgent grass = new GrassAgent();
+			String name = "grass" + i;
+			configureGrassName(grass, name);
+			space.place(grass.asContext(), positions.get(idx++));
+			agents.add(grass);
+			sim.registerEntity("agent", grass, name);
+		}
+
 		WolfSheepGroup group = new WolfSheepGroup(agents);
 		group.configure(multiTreeMap);
 		return group;
@@ -118,5 +129,11 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		MultiTreeMap multiTreeMap = new MultiTreeMap();
 		multiTreeMap.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, name);
 		agent.configure(multiTreeMap);
+	}
+
+	private static void configureGrassName(GrassAgent grass, String name) {
+		MultiTreeMap multiTreeMap = new MultiTreeMap();
+		multiTreeMap.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, name);
+		grass.configure(multiTreeMap);
 	}
 }

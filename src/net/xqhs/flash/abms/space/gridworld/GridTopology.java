@@ -74,13 +74,37 @@ public class GridTopology implements Topology<GridPosition> {
 				if (entities == null || entities.isEmpty()) {
 					sb.append(". ");
 				} else {
-					EntityProxy<?> entity = entities.iterator().next();
-					String entityName = entity.getEntityName();
-					if (entityName != null && !entityName.isEmpty()) {
-						char symbol = Character.toUpperCase(entityName.charAt(0));
-						sb.append(symbol).append(" ");
+					char bestSymbol = 0;
+					int bestPriority = -1;
+					for (EntityProxy<?> entity : entities) {
+						String entityName = entity.getEntityName();
+						if (entityName == null || entityName.isEmpty())
+							continue;
+						char first = Character.toUpperCase(entityName.charAt(0));
+						int priority;
+						switch (first) {
+						case 'W':
+							priority = 3;
+							break;
+						case 'S':
+							priority = 2;
+							break;
+						case 'G':
+							priority = isGrown(entity) ? 1 : -1;
+							break;
+						default:
+							priority = 0;
+							break;
+						}
+						if (priority > bestPriority) {
+							bestPriority = priority;
+							bestSymbol = first;
+						}
+					}
+					if (bestPriority >= 0) {
+						sb.append(bestSymbol).append(" ");
 					} else {
-						sb.append("? ");
+						sb.append(". ");
 					}
 				}
 			}
@@ -88,5 +112,13 @@ public class GridTopology implements Topology<GridPosition> {
 		}
 
 		return sb.toString();
+	}
+
+	private static boolean isGrown(EntityProxy<?> entity) {
+		try {
+			return (boolean) entity.getClass().getMethod("isGrown").invoke(entity);
+		} catch (Exception e) {
+			return true;
+		}
 	}
 }

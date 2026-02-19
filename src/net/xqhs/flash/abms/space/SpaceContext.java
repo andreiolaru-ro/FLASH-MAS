@@ -3,6 +3,7 @@ package net.xqhs.flash.abms.space;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.abms.Simulation;
@@ -78,6 +79,13 @@ public class SpaceContext<P extends Position> extends BaseContext
 	public Set<P> getFreeNeighborPositions(P pos) {
 		return getVicinity(pos).stream()
 				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty())
+				.collect(Collectors.toSet());
+	}
+
+	public Set<P> getPassableNeighborPositions(P pos, Predicate<EntityProxy<?>> isPassable) {
+		return getVicinity(pos).stream()
+				.filter(p -> !entityInPosition.containsKey(p) || entityInPosition.get(p).isEmpty()
+						|| entityInPosition.get(p).stream().allMatch(isPassable))
 				.collect(Collectors.toSet());
 	}
 

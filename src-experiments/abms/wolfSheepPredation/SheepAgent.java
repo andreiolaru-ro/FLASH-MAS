@@ -12,6 +12,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.support.Pylon;
 
@@ -50,14 +51,23 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, EntityProx
 		if(currentPos == null) {
 			return;
 		}
-		
-		Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
-		if(freeNeighbors.isEmpty()) {
+
+		Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
+		for(EntityProxy<?> entity : entitiesHere) {
+			if(entity instanceof GrassAgent && ((GrassAgent) entity).isGrown()) {
+				li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
+				((GrassAgent) entity).postAgentEvent(new AgentWave("EAT"));
+			}
+		}
+
+		Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
+				entity -> entity instanceof GrassAgent);
+		if(passableNeighbors.isEmpty()) {
 			return;
 		}
-		
-		List<Position> freeList = new ArrayList<>(freeNeighbors);
-		Position newPos = freeList.get(random.nextInt(freeList.size()));
+
+		List<Position> passableList = new ArrayList<>(passableNeighbors);
+		Position newPos = passableList.get(random.nextInt(passableList.size()));
 		e.moveToPosition(newPos);
 	}
 	
