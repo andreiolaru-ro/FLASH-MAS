@@ -2,6 +2,7 @@ package net.xqhs.flash.abms;
 
 import java.util.Set;
 
+import net.xqhs.flash.abms.AgentManagementContext.AgentManagementActionData;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
 import net.xqhs.flash.abms.SimulationContext.BaseContext.BaseActionData;
 import net.xqhs.flash.abms.space.Position;
@@ -18,11 +19,12 @@ class GridSpatialContext extends SpaceContext {
 }
 
 public class EnvironmentLinkShard extends AgentShardCore {
-	
+
 	protected static final String SHARD_NAME = "Environment";
-	
+
 	SpaceContext space = null;
-	EntityProxy<?>	entityProxy	= null;
+	AgentManagementContext agentManagement = null;
+	EntityProxy<?>  entityProxy  = null;
 
 	public EnvironmentLinkShard() {
 		super(AgentShardDesignation.customShard(SHARD_NAME));
@@ -39,8 +41,12 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(context instanceof SpaceContext)
 			space = (SpaceContext) context;
+		else if(context instanceof AgentManagementContext)
+			agentManagement = (AgentManagementContext) context;
 		else if(context instanceof SteppableEntity)
 			entityProxy = context;
+		if(agentManagement != null && entityProxy != null)
+			agentManagement.registerAgent(entityProxy, this);
 		return super.addGeneralContext(context);
 		// FIXME should actually be *closest* context
 	}
@@ -48,19 +54,35 @@ public class EnvironmentLinkShard extends AgentShardCore {
 	public Position getCurrentPosition() {
 		return space.getPosition(entityProxy);
 	}
-	
+
 	public Set<Position> getVicinity(Position pos) {
 		return space.getVicinity(pos);
 	}
-	
+
 	public Set<Position> getFreeNeighborPositions(Position pos) {
 		return space.getFreeNeighborPositions(pos);
 	}
-	
+
 	public boolean moveToPosition(Position target) {
 		return space.addPendingAction(new ActionRecord(entityProxy,
 				new MultiValueMap()
 					.add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())
 					.addObject(SpaceActionData.MOVE_TARGET.s(), target)));
+	}
+
+	public Set<EntityProxy<?>> getEntitiesAt(Position pos) {
+		return space.getEntitiesAt(pos);
+	}
+
+	public boolean requestDestroyAgent(EntityProxy<?> target) {
+		return agentManagement.addPendingAction(new ActionRecord(entityProxy,
+				new MultiValueMap()
+					.add(BaseActionData.ACTION.s(), AgentManagementActionData.DESTROY_ACTION.s())
+					.addObject(AgentManagementActionData.DESTROY_TARGET.s(), target)));
+	}
+
+	public void notifyAgentDestroyed() {
+		if(entityProxy instanceof Entity)
+			((Entity<?>) entityProxy).stop();
 	}
 }

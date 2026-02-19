@@ -81,6 +81,12 @@ public class SpaceContext<P extends Position> extends BaseContext
 				.collect(Collectors.toSet());
 	}
 
+	public void removeEntity(EntityProxy<?> entity) {
+		P pos = entityPositions.remove(entity);
+		if(pos != null && entityInPosition.containsKey(pos))
+			entityInPosition.get(pos).remove(entity);
+	}
+
 	public Set<EntityProxy<?>> getEntitiesAt(P pos) {
 		Set<EntityProxy<?>> entities = entityInPosition.get(pos);
 		return entities != null ? entities : new java.util.HashSet<>();

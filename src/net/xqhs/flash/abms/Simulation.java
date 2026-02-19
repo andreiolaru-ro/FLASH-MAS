@@ -35,6 +35,10 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	public Set<Entity<?>> getSimulationObjects() {
 		return simulationObjects;
 	}
+
+	public void deregisterEntity(Entity<?> entity) {
+		simulationObjects.remove(entity);
+	}
 	
 	@Override
 	public boolean start() {
