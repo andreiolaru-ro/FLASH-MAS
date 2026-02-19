@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EntityGroup.EntityGroupLoader;
@@ -11,6 +12,7 @@ import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
+
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -49,6 +51,7 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		if(topology == null) {
 			return null;
 		}
+		topology.setDisplayProvider(WolfSheepGroupLoader::getDisplayChar);
 		int totalCells = topology.getWidth() * topology.getHeight();
 		if(sheepCount + wolfCount + grassCount > totalCells) {
 			return null;
@@ -135,5 +138,31 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 		MultiTreeMap multiTreeMap = new MultiTreeMap();
 		multiTreeMap.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, name);
 		grass.configure(multiTreeMap);
+	}
+
+	private static Character getDisplayChar(Set<EntityProxy<?>> entities) {
+		// Priority: W > S > G (grown only) > null (empty)
+		char best = 0;
+		int bestPriority = -1;
+		for(EntityProxy<?> entity : entities) {
+			String name = entity.getEntityName();
+			if(name == null || name.isEmpty())
+				continue;
+			char first = Character.toUpperCase(name.charAt(0));
+			int priority;
+			if(first == 'W')
+				priority = 3;
+			else if(first == 'S')
+				priority = 2;
+			else if(first == 'G')
+				priority = (entity instanceof GrassAgent && ((GrassAgent) entity).isGrown()) ? 1 : -1;
+			else
+				priority = 0;
+			if(priority > bestPriority) {
+				bestPriority = priority;
+				best = first;
+			}
+		}
+		return bestPriority >= 0 ? best : null;
 	}
 }
