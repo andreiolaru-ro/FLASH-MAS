@@ -271,6 +271,7 @@ public class MobileCompositeAgent extends CompositeAgent {
 		log("Serializing shards [] with the order [].", shards, shardOrder);
 		for(AgentShardDesignation designation : shards.keySet()) {
 			AgentShard shard = shards.get(designation);
+			shard.removeContext(asContext);
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
 				objectOutputStream.writeObject(shard);

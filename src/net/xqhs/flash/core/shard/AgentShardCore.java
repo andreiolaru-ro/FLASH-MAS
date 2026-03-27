@@ -167,7 +167,7 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 *            - the previous value for the parent, if any.
 	 */
 	protected void parentChangeNotifier(ShardContainer oldParent) {
-		if(getContext().getEntityName() != null)
+		if(getContext() != null && getContext().getEntityName() != null)
 			setUnitName(getContext().getEntityName() + "." + shardDesignation.toString());
 		// li("parent shift");
 	}
