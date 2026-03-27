@@ -256,6 +256,11 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 		throw new UnsupportedOperationException("The AgentSharCore cannot be a context of another entity.");
 	}
 	
+	@Override
+	public boolean isMainContext(Object context) {
+		return context instanceof Agent;
+	}
+	
 	/**
 	 * Instantiate the {@link AgentShard} which is recommended by a Pylon (via
 	 * {@link PylonProxy#getRecommendedShardImplementation} for the given standard designation.
