@@ -17,10 +17,10 @@ import net.xqhs.flash.core.support.Pylon;
 
 public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy<BaseAgent> {
 	
-	protected EnvironmentLinkShard	e		= new EnvironmentLinkShard();
-	protected final Random			random	= new Random();
-	protected int visionRange = 2;
-
+	protected EnvironmentLinkShard	e			= new EnvironmentLinkShard();
+	protected final Random			random		= new Random();
+	protected int					visionRange	= 2;
+	
 	public void setVisionRange(int visionRange) {
 		this.visionRange = visionRange;
 	}
@@ -29,6 +29,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 		e.addGeneralContext(this);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
 		return (EntityProxy<C>) this;
@@ -47,7 +48,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 		if(currentPos == null) {
 			return;
 		}
-
+		
 		Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
 		for(EntityProxy<?> entity : entitiesHere) {
 			if(entity instanceof SheepAgent) {
@@ -55,13 +56,13 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 				e.requestDestroyAgent(entity);
 			}
 		}
-
+		
 		Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
 				entity -> entity instanceof GrassAgent);
 		if(passableNeighbors.isEmpty()) {
 			return;
 		}
-
+		
 		// Look for nearest sheep within vision range
 		@SuppressWarnings("unchecked")
 		Topology<Position> topology = (Topology<Position>) e.getTopology();
@@ -79,7 +80,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 				}
 			}
 		}
-
+		
 		if(nearestTarget != null) {
 			// Move towards nearest sheep
 			Position bestNeighbor = null;
@@ -96,7 +97,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 				return;
 			}
 		}
-
+		
 		// Fallback: random movement
 		List<Position> passableList = new ArrayList<>(passableNeighbors);
 		Position newPos = passableList.get(random.nextInt(passableList.size()));

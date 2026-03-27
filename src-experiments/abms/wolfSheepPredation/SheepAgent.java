@@ -17,6 +17,7 @@ import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.Pylon;
 
 public class SheepAgent extends BaseAgent implements SteppableEntity, ShardContainer {
 	
@@ -54,6 +55,12 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		e.addGeneralContext(context);
 		return super.addGeneralContext(context);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
+		return (EntityProxy<C>) this;
 	}
 	
 	@Override
