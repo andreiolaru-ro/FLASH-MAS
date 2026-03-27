@@ -54,7 +54,7 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 	/**
 	 * The log.
 	 */
-	transient UnitComponent	locallog	= null;
+	UnitComponent	locallog	= null;
 	/**
 	 * Number of seconds after which the agent should exit. Negative numbers or a zero value are ignored.
 	 */

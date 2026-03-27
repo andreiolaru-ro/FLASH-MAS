@@ -62,18 +62,14 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 * will never be <code>null</code> after construction.
 	 */
 	private MultiTreeMap				shardConfiguration;
-	/**
-	 * The {@link CompositeAgent} instance that this instance is part of.
-	 */
-	private transient ShardContainer	parentAgent;
 	
 	/**
 	 * The constructor assigns the designation to the shard.
 	 * <p>
 	 * IMPORTANT: extending classes should only perform in the constructor initializations that do not depend on the
-	 * parent agent or on other shards, as when the shard is created, the {@link AgentShardCore#parentAgent} member is
-	 * <code>null</code>. The assignment of a parent (as any parent change) is notified to extending classes by calling
-	 * the method {@link AgentShardCore#parentChangeNotifier}.
+	 * parent agent (the shards's context -- @see {@link EntityCore}) or on other shards, as when the shard is created,
+	 * the context is <code>null</code>. The assignment of a parent (as any parent change) is notified to extending
+	 * classes by calling the method {@link AgentShardCore#parentChangeNotifier}.
 	 * <p>
 	 * Event registration is not dependent on the parent, so it can be performed in the constructor or in the
 	 * {@link #shardInitializer()} method.
@@ -171,8 +167,8 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 *            - the previous value for the parent, if any.
 	 */
 	protected void parentChangeNotifier(ShardContainer oldParent) {
-		if(parentAgent.getEntityName() != null)
-			setUnitName(parentAgent.getEntityName() + "." + shardDesignation.toString());
+		if(getContext().getEntityName() != null)
+			setUnitName(getContext().getEntityName() + "." + shardDesignation.toString());
 		// li("parent shift");
 	}
 	
@@ -219,11 +215,11 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 */
 	@Override
 	public final boolean addContext(EntityProxy<Agent> parent) {
-		if(parentAgent != null)
+		if(getContext() != null)
 			return ler(false, "Parent already set");
 		if(parent == null || !(parent instanceof ShardContainer))
 			return ler(false, "Parent should be a ShardContainer instance");
-		parentAgent = (ShardContainer) parent;
+		super.addContext(parent);
 		parentChangeNotifier(null);
 		return true;
 	}
@@ -236,11 +232,11 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 */
 	@Override
 	public final boolean removeContext(EntityProxy<Agent> parent) {
-		if(parentAgent == null)
+		if(getContext() == null)
 			return ler(false, "Parent is not set");
-		if(parentAgent != parent)
+		if(getContext() != parent)
 			return ler(false, "Argument is not the same as actual parent.");
-		parentAgent = null;
+		super.addContext(null);
 		parentChangeNotifier((ShardContainer) parent);
 		return true;
 	}
@@ -263,7 +259,7 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 	 * @return the {@link CompositeAgent} that is the parent of this shard; <code>null</code> if there is no parent set.
 	 */
 	final protected ShardContainer getAgent() {
-		return parentAgent;
+		return (ShardContainer) getContext();
 	}
 	
 	@SuppressWarnings("unchecked")
