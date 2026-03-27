@@ -60,6 +60,11 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		return this;
 	}
 
+	public void executionCompleted() {
+		// TODO change this when making simulation the node
+		stop();
+	}
+	
 	public void stepCompleted() {
 		for (SimulationContext context : simulationContexts) {
 			String visualization = context.visualizeAsString();
@@ -68,5 +73,4 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 			}
 		}
 	}
-
 }
