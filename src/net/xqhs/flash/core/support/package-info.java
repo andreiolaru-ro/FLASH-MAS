@@ -10,7 +10,8 @@
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 /**
- * Core classes dealing with support items, such as communication and mobility. Basic support implementations.
+ * Core classes dealing with support items, such as communication and mobility. Basic support implementations and tools
+ * for support infrastructures.
  * 
  * @author andreiolaru
  *

@@ -390,7 +390,7 @@ public class MultiValueMap extends Config implements Serializable {
 			ois.close();
 			return o;
 		} catch(IOException e) {
-			throw new RuntimeException("Serialization failed", e);
+			throw new RuntimeException("Deserialization failed", e);
 		}
 	}
 }

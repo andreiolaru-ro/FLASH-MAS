@@ -349,15 +349,35 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		// ====================================== remove default created entities
 		log.lf("default created entities: []", autoCreated);
-		// create a reverse index from each id to the ids in its context
-		// iterate in reverse order
-		// remove ids (also from their direct contexts -- use the index) which only have default ids depending on them
-		// use List.containsAll
 		
-		for(String id : this.getSingleTree(LOCAL_ID_ATTRIBUTE).getKeys())
+		// remove auto-created entities from all the contexts containing them if they don't contain other entities in
+		// their context.
+		HashMap<String, List<String>> toRemove = new HashMap<>();
+		MultiTreeMap localIDs = this.getSingleTree(LOCAL_ID_ATTRIBUTE);
+		for(String id : localIDs.getKeys())
 			if(autoCreated.contains(id)) {
-				// TODO
+				// must remove if empty
+				boolean remove = true;
+				for(String idSub : localIDs.getKeys())
+					if(localIDs.getATree(idSub).getValues(CONTEXT_ELEMENT_NAME).contains(id))
+						remove = false;
+				if(remove)
+					toRemove.put(id, localIDs.getATree(id).getValues(CONTEXT_ELEMENT_NAME));
 			}
+		log.lf("marked for removal entities: []", toRemove);
+		for(String id : toRemove.keySet()) {
+			for(String parentID : toRemove.get(id))
+				for(String subCategory : localIDs.getSingleTree(parentID).getHierarchicalNames()) {
+					MultiTreeMap subCat = localIDs.getSingleTree(parentID).getATree(subCategory);
+					for(String name : subCat.getHierarchicalNames())
+						for(MultiTreeMap tree : subCat.getTrees(name))
+							if(id.equals(tree.getSingleValue(LOCAL_ID_ATTRIBUTE))) {
+								subCat.remove(name, tree);
+								log.lf("removed one tree for [] (id: []) from []/[[]", name, id, parentID, subCategory);
+							}
+				}
+			localIDs.removeKey(id);
+		}
 		
 		log.lf("==============================================================");
 		log.lf("==============================================================");

@@ -41,7 +41,7 @@ public class BootCompositeNodeA
 		
 		args += " -node nodeA";
 		args += " -pylon webSocket:wsA serverPort:" + Integer.valueOf(MAIN_PORT);
-		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
+		args += " -agent composite:AgentA -shard messaging -shard PingTest n:12 otherAgent:AgentB -shard EchoTesting";
 		
 		FlashBoot.main(args.split(" "));
 	}

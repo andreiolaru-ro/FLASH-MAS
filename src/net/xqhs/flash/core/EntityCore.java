@@ -35,7 +35,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	/**
 	 * The parameter name for focusing (use the "highlighted" state of the log) logging on this entity.
 	 */
-	public static final String HIGHLIGHT_FOCUS = "focus";
+	public static final String	HIGHLIGHT_FOCUS		= "focus";
 	
 	/**
 	 * The {@link MultiTreeMap} with which this entity was {@link #configure}d.
@@ -134,7 +134,8 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 		if(mainContext != null)
 			fullContext.remove(mainContext);
 		mainContext = context;
-		fullContext.add(context);
+		if(context != null)
+			fullContext.add(context);
 		return true;
 	}
 	
