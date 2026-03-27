@@ -241,18 +241,6 @@ public class AgentShardCore extends EntityCore<Agent> implements AgentShard {
 		return true;
 	}
 	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		// not supported here, but extending classes may call this because of good practice.
-		return true;
-	}
-	
-	@Override
-	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		// not supported here, but extending classes may call this because of good practice.
-		return true;
-	}
-	
 	/**
 	 * Retrieves the parent of the shard.
 	 * 
