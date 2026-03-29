@@ -11,7 +11,10 @@
  ******************************************************************************/
 package net.xqhs.flash.daemon;
 
+import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.MasterLog;
 import net.xqhs.util.logging.Unit;
+import quick.FlashDaemon;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -51,27 +54,86 @@ public class FlashMasDaemon extends Unit {
 	private static final String JRE_FOLDER_NAME = "jre";
 	private Process activeNodeProcess;
 
-	private final int port;
-	private final boolean redirectOutput;
+	private int port;
+	private boolean redirectOutput;
 
 	public static final int DEFAULT_PORT = 35274;
 
+	public FlashMasDaemon() {
+		setUnitName("FlashMasDaemon");
+		this.port = DEFAULT_PORT;
+		this.redirectOutput = false;
+
+	}
+
 	public FlashMasDaemon(int port, boolean redirectOutput) {
+		setUnitName("FlashMasDaemon");
 		this.port = port;
 		this.redirectOutput = redirectOutput;
 	}
 
 	/**
+	 * Starts the daemon.
+	 */
+	public void start(String[] args) {
+		int port = FlashMasDaemon.DEFAULT_PORT;
+		boolean redirectOutput = false;
+
+		for (int i = 0; i < args.length; i++) {
+			switch (args[i]) {
+				case "-redirect":
+					redirectOutput = true;
+					break;
+
+				case "--port":
+				case "-p":
+					if (i + 1 < args.length) {
+						try {
+							port = Integer.parseInt(args[i + 1]);
+							i++;
+						} catch (NumberFormatException e) {
+							le("[ERROR] Invalid port number provided: " + args[i + 1]);
+							return;
+						}
+					} else {
+						le("[ERROR] Missing argument for -port flag.");
+						return;
+					}
+					break;
+
+				default:
+					try {
+						port = Integer.parseInt(args[i]);
+					} catch (NumberFormatException e) {
+						li("[WARN] Ignoring unknown argument: " + args[i]);
+					}
+					break;
+			}
+		}
+
+
+
+		li("==========================================");
+		li("   Starting Flash-MAS Daemon");
+		li("   PORT: " + port);
+		li("   LOGGING: " + (redirectOutput ? "File (node-std*.log)" : "Console"));
+		li("==========================================");
+		this.port = port;
+		this.redirectOutput = redirectOutput;
+		startListening();
+	}
+
+
+	/**
 	 * Starts the main listening loop.
 	 */
-	public void start() {
+	public void startListening() {
 		li("==================================================");
 		li("   Flash-MAS Daemon (Listener Mode)");
-		li("   Listening on PORT: {}", port);
-		li("   Output Redirection: {}", (redirectOutput ? "ENABLED (to files)" : "DISABLED (to console)"));
+		li("   Listening on PORT: ", this.port);
+		li("   Output Redirection: ", (redirectOutput ? "ENABLED (to files)" : "DISABLED (to console)"));
 		li("   Local JRE path check: ./" + JRE_FOLDER_NAME);
 		li("==================================================");
-
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			while (true) {
 				try {
