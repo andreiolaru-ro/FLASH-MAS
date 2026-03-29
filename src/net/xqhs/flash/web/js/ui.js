@@ -188,7 +188,11 @@ function addDaemonCard(ip, container, initialArgs = "") {
  * Handles checkbox selection logic for filtering which entities are displayed in the main view.
  */
 export function updateEntitiesList() {
-    $('#entities-list').empty();
+    const activeList = $('#entities-list');
+    const inactiveList = $('#inactive-entities-list');
+    activeList.empty();
+    inactiveList.empty();
+
     const selectedEntities = [];
     for (let [entityName, entity] of Object.entries(appContext.entities)) {
         const selected = appContext.selectedEntities.includes(entityName);
@@ -202,14 +206,32 @@ export function updateEntitiesList() {
         const label = $('<label>').text(entityName)
             .addClass('entity-label').attr('for', entityName + '-checkbox');
 
-        $('#entities-list').append(
-            $('<div>').attr('id', entity.id).addClass('side-drawer entity-item')
-                .append(checkbox, label)
-                .on('click', function () {
-                    checkbox.prop('checked', !checkbox.prop('checked'));
-                    checkbox.trigger('change')
-                })
-        );
+        let isInactive = false;
+        if(entity.data) {
+            for(let key in entity.data) {
+                if(entity.data[key].value === "INACTIVE") {
+                    isInactive = true;
+                    break;
+                }
+            }
+        }
+
+        const statusIndicator = $('<div>').addClass('entity-status-indicator')
+            .addClass(isInactive ? 'status-inactive' : 'status-active')
+            .attr('title', isInactive ? 'Inactive' : 'Active');
+
+        const entityItem = $('<div>').attr('id', entity.id).addClass('side-drawer entity-item')
+            .append(checkbox, label, statusIndicator)
+            .on('click', function () {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                checkbox.trigger('change')
+            });
+
+        if (isInactive) {
+            inactiveList.append(entityItem);
+        } else {
+            activeList.append(entityItem);
+        }
     }
     appContext.selectedEntities = selectedEntities;
     updateSelectedEntities();
@@ -231,8 +253,25 @@ function updateSelectedEntities() {
     $('#selected-entities-list').empty();
     for (let entityName of appContext.selectedEntities) {
         const entity = appContext.entities[entityName];
+        
+        // Determine status for the corner indicator
+        let isInactive = false;
+        if(entity.data) {
+            for(let key in entity.data) {
+                if(entity.data[key].value === "INACTIVE") {
+                    isInactive = true;
+                    break;
+                }
+            }
+        }
+        
+        const statusIndicator = $('<div>').addClass('entity-status-indicator-corner')
+            .addClass(isInactive ? 'status-inactive' : 'status-active')
+            .attr('title', isInactive ? 'Inactive' : 'Active');
+            
         const componentBuilder = new AgentComponentBuilder(entityName);
         $('#selected-entities-list').append($('<div>').addClass('selected-entity').append(
+            statusIndicator,
             $('<h2>').text(entityName),
             entity.children.map(childId => {
                 const child = entity.data[childId];

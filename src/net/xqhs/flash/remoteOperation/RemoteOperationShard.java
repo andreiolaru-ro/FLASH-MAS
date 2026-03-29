@@ -94,6 +94,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	protected Fields[]					entityStatus			= new Fields[2];
 	
 	Timer remoteDelayTimer = new Timer();
+	Timer agentKeepAliveTimer = new Timer();
 	
 	{
 		setUnitName(SHARD_ENDPOINT);
@@ -155,9 +156,21 @@ public class RemoteOperationShard extends AgentShardGeneral {
 			return;
 		case AGENT_START:
 			entityStatus[0] = Fields.RUNNING_STATUS_RUNNING;
+			agentKeepAliveTimer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					AgentWave keepAliveWave = CentralMonitoringAndControlEntity.KEEP_ALIVE
+							.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
+							.addSourceElements(SHARD_ENDPOINT);
+					sendMessage(keepAliveWave);
+				}
+			}, 0, 3000);
 			break;
 		case AGENT_STOP:
 			entityStatus[1] = Fields.RUNNING_STATUS_STOPPED;
+			if(agentKeepAliveTimer != null) {
+				agentKeepAliveTimer.cancel();
+			}
 			break;
 		case APPLICATION_START:
 			entityStatus[1] = Fields.APPLICATION_STATUS_RUNNING;

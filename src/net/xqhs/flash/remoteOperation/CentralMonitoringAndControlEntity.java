@@ -80,7 +80,8 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		KILL_NODE_REMOTE,
 		KILL_DAEMON_REMOTE,
 		KILL_ALL_JVMS,
-		KILL_ALL_DAEMONS
+		KILL_ALL_DAEMONS,
+		KEEP_ALIVE
 		;
 
 		/**
@@ -125,6 +126,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	 * Operation definition for handling input from the GUI to an entity.
 	 */
 	public static final Operation  GUI_INPUT_TO_ENTITY       = new BaseOperation(Operations.GUI_INPUT_TO_ENTITY, (String[]) null);
+	/**
+	 * Operation definition for keeping alive entities.
+	 */
+	public static final Operation  KEEP_ALIVE       = new BaseOperation(Operations.KEEP_ALIVE, (String[]) null);
 
 	/**
 	 * Configuration key for specifying remote daemons.
@@ -134,12 +139,12 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	/**
 	 * Interval in seconds for pinging daemons to check connectivity.
 	 */
-	private static final int DAEMON_PING_INTERVAL_SECONDS = 10;
+	protected static final int DAEMON_PING_INTERVAL_SECONDS = 10;
 
 	/**
 	 * Default path to the JAR file to be deployed.
 	 */
-	private final String defaultJarPath = "out/artifacts/Flash_MAS_jar/flash-mas.jar";
+	private final String defaultJarPath = "out/artifacts/Flash_MAS_jar/Flash-MAS.jar";
 
 	/**
 	 * Information structure for tracking remote daemons.
@@ -180,6 +185,11 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	private ScheduledExecutorService pingScheduler;
 
 	/**
+	 * Scheduler for background tasks like pinging agents.
+	 */
+	private ScheduledExecutorService agentKeepAliveScheduler;
+
+	/**
 	 * Internal structure to hold state and configuration for registered entities.
 	 */
 	protected class EntityData {
@@ -189,6 +199,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		boolean    registered = false;
 		Element    guiSpecification;
 		String nodeName;
+		long lastKeepAliveTime = System.currentTimeMillis();
 
 		public String getName() { return entityName; }
 		public String getStatus() { return status; }
@@ -403,6 +414,26 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			return ler(false, "Unknown operation [] from [].", wave.getFirstDestinationElement(), wave.getCompleteSource());
 
 		switch(op) {
+			case KEEP_ALIVE:
+				if(entitiesData.containsKey(sourceEntity)) {
+					entitiesData.get(sourceEntity).lastKeepAliveTime = System.currentTimeMillis();
+					
+					// Daca agentul era INACTIVE si si-a revenit, il marcam inapoi RUNNING. Statusul lui real
+					// ar trebui sa vina de la el, dar macar stergem semnalizarea rosie.
+					if ("INACTIVE".equals(entitiesData.get(sourceEntity).getStatus())) {
+						entitiesData.get(sourceEntity).setStatus(Fields.RUNNING_STATUS_RUNNING.name());
+						entitiesData.get(sourceEntity).setAppStatus(Fields.RUNNING_STATUS_RUNNING.name());
+						if(gui != null) {
+							gui.sendOutput(new AgentWave(Fields.RUNNING_STATUS_RUNNING.name(), sourceEntity, ENTITY_STATUS_ELEMENT));
+							gui.sendOutput(new AgentWave(Fields.RUNNING_STATUS_RUNNING.name(), sourceEntity, ENTITY_APP_STATUS_ELEMENT));
+							if (gui instanceof WebEntity) {
+								WebEntity webGui = (WebEntity) gui;
+								webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
+							}
+						}
+					}
+				}
+				return true;
 			case DEPLOY_REMOTE:
 				try {
 					String content = wave.getContent().toString();
@@ -650,22 +681,36 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				Element sourceElement = guiSpecification.getChild(sourcePort, sourceRole);
 				HashMap<String, String> elementProperties = sourceElement.getProperties();
 
-				String nodeToKill = null;
-				if("node".equals(elementProperties.getOrDefault("proxy", ""))) {
-					nodeToKill = entityData.getNodeName();
-					wave.prependDestination(nodeToKill);
-				}
+				String proxyTarget = elementProperties.getOrDefault("proxy", "");
 
 				wave.recomputeCompleteDestination();
 				wave.addSourceElementFirst(getName());
 
-				boolean sent = centralMessagingShard.sendMessage(wave);
+				if ("node".equals(proxyTarget) && !("standard-stop".equals(sourcePort) || "standard-start".equals(sourcePort))) {
+					String nodeToKill = entityData.getNodeName();
+					wave.prependDestination(nodeToKill);
 
-				if ("standard-stop".equals(sourcePort) && nodeToKill != null && allNodeEntities.containsKey(nodeToKill)) {
-					removeNode(nodeToKill);
+					return centralMessagingShard.sendMessage(wave);
+				} else {
+					wave.prependDestination("remote");
+					wave.prependDestination(entityName);
+
+					if ("standard-stop".equals(sourcePort)) {
+						wave.resetDestination(entityName, "remote", RemoteOperationShard.Operations.REMOTE_STOP.name());
+					} else if ("standard-start".equals(sourcePort)) {
+						entitiesData.get(entityName).setStatus(Fields.RUNNING_STATUS_RUNNING.name());
+						entitiesData.get(entityName).setAppStatus(Fields.RUNNING_STATUS_RUNNING.name());
+						
+						wave.resetDestination(entityName, "remote", RemoteOperationShard.Operations.START_APPLICATION.name());
+					}
+
+					boolean sent = centralMessagingShard.sendMessage(wave);
+
+					// Daca oprim agentul, vrem sa ii si schimbam statusul in UI rapid, desi el ar trebui sa raporteze singur.
+					// Dar ca si backup.
+					return sent;
 				}
 
-				return sent;
 			case CLIENT_CONNECTED:
 				li("Web client connected. Sending default node configurations.");
 
@@ -741,6 +786,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		// }, 1000);
 		centralMessagingShard.register(name);
 		startDaemonPingTask();
+		startAgentKeepAliveCheckTask();
 		li("[] started successfully.", getName());
 		return true;
 	}
@@ -812,6 +858,48 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				le("Error in Daemon Ping Loop", e);
 			}
 		}, 2, DAEMON_PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+	}
+
+	private void startAgentKeepAliveCheckTask() {
+		agentKeepAliveScheduler = Executors.newSingleThreadScheduledExecutor();
+		agentKeepAliveScheduler.scheduleAtFixedRate(() -> {
+			long now = System.currentTimeMillis();
+			boolean changed = false;
+
+			for (Map.Entry<String, EntityData> entry : entitiesData.entrySet()) {
+				EntityData ed = entry.getValue();
+				String entityName = ed.getName();
+
+				boolean isAgent = false;
+				for (HashMap<String, List<String>> categories : allNodeEntities.values()) {
+					if (categories.getOrDefault("agent", new LinkedList<>()).contains(entityName) ||
+						categories.getOrDefault("mobileComposite", new LinkedList<>()).contains(entityName)) {
+						isAgent = true;
+						break;
+					}
+				}
+
+				if (!isAgent) continue;
+
+				if (now - ed.lastKeepAliveTime > 10000) {
+					if (!"INACTIVE".equals(ed.getStatus())) {
+						ed.setStatus("INACTIVE");
+						ed.setAppStatus("INACTIVE");
+						changed = true;
+
+						if(gui != null) {
+							gui.sendOutput(new AgentWave("INACTIVE", ed.getName(), ENTITY_STATUS_ELEMENT));
+							gui.sendOutput(new AgentWave("INACTIVE", ed.getName(), ENTITY_APP_STATUS_ELEMENT));
+						}
+					}
+				}
+			}
+
+			if (changed && gui instanceof WebEntity) {
+				WebEntity webGui = (WebEntity) gui;
+				webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
+			}
+		}, 5, 5, TimeUnit.SECONDS);
 	}
 
 	/**
