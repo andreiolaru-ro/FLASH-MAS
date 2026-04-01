@@ -1,13 +1,12 @@
 package abms.wolfSheepPredation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EntityGroup.EntityGroupLoader;
+import net.xqhs.flash.abms.RandomContext;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.communication.ProximityCommunicationContext;
@@ -71,9 +70,15 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
                 positions.add(new GridPosition(x, y));
             }
         }
-        Collections.shuffle(positions, new Random());
-
         Simulation sim = (Simulation) Loader.getClosestContext(context, Simulation.class);
+
+        RandomContext randomContext = null;
+        for(SimulationContext simulationContext : sim.getSimulationContexts())
+            if(simulationContext instanceof RandomContext)
+                randomContext = (RandomContext) simulationContext;
+
+        randomContext.shuffle(positions);
+
         AgentManagementContext agentManagement = null;
         for(SimulationContext simulationContext : sim.getSimulationContexts())
             if(simulationContext instanceof AgentManagementContext)
@@ -100,6 +105,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
                 sheep.addGeneralContext(c);
             if(agentManagement != null)
                 sheep.addGeneralContext(agentManagement.asContext());
+            if(randomContext != null)
+                sheep.addGeneralContext(randomContext.asContext());
             if (proximityCommunication != null)
                 sheep.addGeneralContext(proximityCommunication.asContext());
             space.place(sheep.asContext(), positions.get(idx++));
@@ -115,6 +122,8 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
                 wolf.addGeneralContext(c);
             if(agentManagement != null)
                 wolf.addGeneralContext(agentManagement.asContext());
+            if(randomContext != null)
+                wolf.addGeneralContext(randomContext.asContext());
             if (proximityCommunication != null)
                 wolf.addGeneralContext(proximityCommunication.asContext());
             space.place(wolf.asContext(), positions.get(idx++));

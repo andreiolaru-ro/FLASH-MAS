@@ -25,6 +25,7 @@ import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 
+
 public class EnvironmentLinkShard extends AgentShardCore {
 
     protected static final String SHARD_NAME = "Environment";
@@ -34,6 +35,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     WaveReceiver waveInbox = null;
     List<AgentWave> receivedWaves = new ArrayList<>();
 	AgentManagementContext agentManagement = null;
+	RandomContext randomContext = null;
 
     public EnvironmentLinkShard() {
         super(AgentShardDesignation.customShard(SHARD_NAME));
@@ -45,6 +47,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
             space = (SpaceContext) context;
         else if(context instanceof AgentManagementContext)
             agentManagement = (AgentManagementContext) context;
+        else if (context instanceof RandomContext)
+            randomContext = (RandomContext) context;
         else if (context instanceof ProximityCommunicationContext) {
             proximityCommunication = (ProximityCommunicationContext) context;
             waveInbox = wave -> receivedWaves.add(wave);
@@ -132,5 +136,21 @@ public class EnvironmentLinkShard extends AgentShardCore {
         for (Position vpos : (Set<Position>) space.getVicinity(pos))
             result.addAll(space.getEntitiesAt(vpos));
         return result;
+    }
+
+    public int nextInt(int bound) {
+        return randomContext.nextInt(bound);
+    }
+
+    public double nextDouble() {
+        return randomContext.nextDouble();
+    }
+
+    public boolean nextBoolean() {
+        return randomContext.nextBoolean();
+    }
+
+    public double nextGaussian() {
+        return randomContext.nextGaussian();
     }
 }

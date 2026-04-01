@@ -3,7 +3,6 @@ package abms.wolfSheepPredation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
@@ -18,7 +17,6 @@ import net.xqhs.flash.core.support.Pylon;
 public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy<BaseAgent> {
 	
 	protected EnvironmentLinkShard	e			= new EnvironmentLinkShard();
-	protected final Random			random		= new Random();
 	protected int					visionRange	= 2;
 	
 	public void setVisionRange(int visionRange) {
@@ -100,7 +98,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 		
 		// Fallback: random movement
 		List<Position> passableList = new ArrayList<>(passableNeighbors);
-		Position newPos = passableList.get(random.nextInt(passableList.size()));
+		Position newPos = passableList.get(e.nextInt(passableList.size()));
 		e.moveToPosition(newPos);
 	}
 	

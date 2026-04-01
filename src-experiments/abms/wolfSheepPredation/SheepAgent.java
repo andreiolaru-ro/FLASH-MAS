@@ -3,7 +3,6 @@ package abms.wolfSheepPredation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
@@ -22,7 +21,6 @@ import net.xqhs.flash.core.support.Pylon;
 public class SheepAgent extends BaseAgent implements SteppableEntity, ShardContainer {
 	
 	protected EnvironmentLinkShard	e				= new EnvironmentLinkShard();
-	protected final Random			random			= new Random();
 	protected int					visionRange		= 2;
 	boolean							alertReceived	= false;
 	
@@ -144,7 +142,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 		
 		// Random movement if outside of vision
 		List<Position> passableList = new ArrayList<>(passableNeighbors);
-		Position newPos = passableList.get(random.nextInt(passableList.size()));
+		Position newPos = passableList.get(e.nextInt(passableList.size()));
 		e.moveToPosition(newPos);
 		
 		alertReceived = false;

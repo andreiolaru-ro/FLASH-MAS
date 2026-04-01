@@ -13,6 +13,7 @@ public class WolfSheepBoot {
 		a += " -node dummy -simulation sim classpath:Simulation";
 		a += " -executor StepWise:StepWise steps:10";
         a += " -context AgentManagement:agentManagement";
+        a += " -context Random:random seed:42";
         a += " -context ProximityCommunication:communication";
         a += " -context Space:space width:6 height:6";
 		a += " -WolfSheepGroup g sheepCount:10 wolfCount:5";
