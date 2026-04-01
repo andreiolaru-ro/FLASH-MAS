@@ -13,8 +13,9 @@ public class RandomContext extends SimulationContext.BaseContext
 
     protected Random random;
 
-    private RandomContext() {
+    public RandomContext(MultiTreeMap configuration) {
         random = new Random();
+        configure(configuration);
     }
 
     public RandomContext(long seed) {
