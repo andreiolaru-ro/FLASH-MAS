@@ -11,10 +11,14 @@ import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.BaseAgent;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 
-public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy<BaseAgent> {
+public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContainer {
 	
 	protected EnvironmentLinkShard	e			= new EnvironmentLinkShard();
 	protected int					visionRange	= 2;
@@ -26,7 +30,17 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, EntityProxy
 	public WolfAgent() {
 		e.addGeneralContext(this);
 	}
-	
+
+	@Override
+	public boolean postAgentEvent(AgentEvent event) {
+		return false;
+	}
+
+	@Override
+	public AgentShard getAgentShard(AgentShardDesignation designation) {
+		throw new UnsupportedOperationException();
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {

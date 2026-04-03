@@ -11,7 +11,7 @@ public class WolfSheepBoot {
 		a += " -package abms.wolfSheepPredation";
 		a += " -loader WolfSheepGroup classpath:abms.wolfSheepPredation.WolfSheepGroupLoader";
 		a += " -node dummy -simulation sim classpath:Simulation";
-		a += " -executor StepWise:StepWise steps:10";
+		a += " -executor StepWise:StepWise steps:100";
         a += " -context AgentManagement:agentManagement";
         a += " -context Random:random seed:42";
         a += " -context ProximityCommunication:communication";
