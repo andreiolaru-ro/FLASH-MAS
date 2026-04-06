@@ -32,6 +32,7 @@ jobs:
           cp README.md public/index.md
           cp CONTRIBUTORS.md public/CONTRIBUTORS.md
           cp -r identity public/
+          cp style.css public/style.css
 
       - name: Convert MD to HTML
         run: |
@@ -41,7 +42,7 @@ jobs:
             # Save the new html file name in html_file
             html_file="${file%.md}.html"
           
-            pandoc "$file" -o "$html_file" --standalone --metadata title="Documentation"
+            pandoc "$file" -o "$html_file" --standalone --css="style.css" --metadata title="Documentation"
             rm "$file"
           
             # Transforms "doc/name.md" into "name.html"
