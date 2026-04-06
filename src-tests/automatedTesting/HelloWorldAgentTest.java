@@ -45,3 +45,4 @@ public class HelloWorldAgentTest {
 		assertTrue("Wrong sequence of events", helloWorldMessage < stoppedMessage);
     }
 }
+
