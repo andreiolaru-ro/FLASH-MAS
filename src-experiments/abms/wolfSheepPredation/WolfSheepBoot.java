@@ -16,7 +16,7 @@ public class WolfSheepBoot {
         a += " -context Random:random seed:42";
         a += " -context ProximityCommunication:communication";
         a += " -context Space:space width:6 height:6";
-        a += " -WolfSheepGroup g -agent Sheep n:10 visionRange:2 -agent Wolf n:5 visionRange:3 -agent Grass n:15";
+        a += " -WolfSheepGroup g -patch Grass n:15 regrowthTime:5 -agent Sheep n:10 visionRange:2 -agent Wolf n:5 visionRange:3";
 
         FlashBoot.main(a.split(" "));
     }

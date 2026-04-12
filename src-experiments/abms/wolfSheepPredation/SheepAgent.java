@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
+import net.xqhs.flash.abms.PatchEvent;
 import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.Topology;
@@ -75,15 +76,17 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 
     @Override
     public void step() {
+        if (!e.isAlive())
+            return;
         li("sheep step");
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null)
             return;
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
-            if (entity instanceof GrassAgent && ((GrassAgent) entity).isGrown()) {
+            if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                 li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
-                ((GrassAgent) entity).postAgentEvent(new AgentWave("EAT"));
+                ((GrassPatch) entity).postPatchEvent(new PatchEvent("EAT"));
             }
         }
 
@@ -113,7 +116,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         List<Position> freeList = new ArrayList<>(freeNeighbors);
 
         Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
-                entity -> entity instanceof GrassAgent);
+                entity -> entity instanceof GrassPatch);
         if (passableNeighbors.isEmpty()) {
             return;
         }
@@ -125,7 +128,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         int nearestDist = Integer.MAX_VALUE;
         for (Map.Entry<Position, Set<EntityProxy<?>>> entry : visible.entrySet()) {
             for (EntityProxy<?> entity : entry.getValue()) {
-                if (entity instanceof GrassAgent && ((GrassAgent) entity).isGrown()) {
+                if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                     int dist = topology.getDistance(currentPos, entry.getKey());
                     if (dist < nearestDist) {
                         nearestDist = dist;
