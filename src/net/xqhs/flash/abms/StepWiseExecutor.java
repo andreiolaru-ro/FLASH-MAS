@@ -69,6 +69,8 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 		for(Entity<?> entity : simulation.getSimulationObjects())
 			if(entity instanceof SteppableEntity)
 				((SteppableEntity) entity).step();
+			else if(entity instanceof Patch)
+				((Patch) entity).step();
 		// all entities have been stepped, now update the simulation contexts
 		for(SimulationContext context : simulation.getSimulationContexts())
 			context.validateAndExecutePendingActions();
