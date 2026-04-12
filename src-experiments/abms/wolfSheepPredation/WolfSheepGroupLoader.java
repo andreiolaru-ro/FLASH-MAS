@@ -102,9 +102,14 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
                 String id = agentType.toLowerCase() + i;
                 entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
                         agentType + DeploymentConfiguration.NAME_SEPARATOR + id);
-                for (String key : typeConfig.getSimpleNames())
-                    if (!"n".equals(key) && !DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key))
-                        entityConfig.addOneValue(key, typeConfig.get(key));
+                // Copy user-defined parameters (e.g. visionRange), skip internal/framework keys
+                for (String key : typeConfig.getSimpleNames()) {
+                    if (key.startsWith("#") || "n".equals(key)
+                            || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
+                            || "package".equals(key) || "in-context-of".equals(key))
+                        continue;
+                    entityConfig.addOneValue(key, typeConfig.getAValue(key));
+                }
                 entityConfigs.add(entityConfig);
             }
         }
