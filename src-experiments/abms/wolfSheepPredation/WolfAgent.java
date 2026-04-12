@@ -1,16 +1,10 @@
 package abms.wolfSheepPredation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
@@ -18,6 +12,11 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContainer {
 
