@@ -17,107 +17,119 @@ import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContainer {
-	
-	protected EnvironmentLinkShard	e			= new EnvironmentLinkShard();
-	protected int					visionRange	= 2;
-	
-	public void setVisionRange(int visionRange) {
-		this.visionRange = visionRange;
-	}
-	
-	public WolfAgent() {
-		e.addGeneralContext(this);
-	}
 
-	@Override
-	public boolean postAgentEvent(AgentEvent event) {
-		return false;
-	}
+    protected static final String VISION_RANGE_PARAM = "visionRange";
 
-	@Override
-	public AgentShard getAgentShard(AgentShardDesignation designation) {
-		throw new UnsupportedOperationException();
-	}
+    protected EnvironmentLinkShard e = new EnvironmentLinkShard();
+    protected int visionRange = 2;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
-		return (EntityProxy<C>) this;
-	}
-	
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		e.addGeneralContext(context);
-		return super.addGeneralContext(context);
-	}
-	
-	@Override
-	public void step() {
-		li("wolf step");
-		Position currentPos = e.getCurrentPosition();
-		if(currentPos == null) {
-			return;
-		}
-		
-		Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
-		for(EntityProxy<?> entity : entitiesHere) {
-			if(entity instanceof SheepAgent) {
-				li("wolf eats sheep [] at []", entity.getEntityName(), currentPos);
-				e.requestDestroyAgent(entity);
-			}
-		}
-		
-		Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
-				entity -> entity instanceof GrassAgent);
-		if(passableNeighbors.isEmpty()) {
-			return;
-		}
-		
-		// Look for nearest sheep within vision range
-		@SuppressWarnings("unchecked")
-		Topology<Position> topology = (Topology<Position>) e.getTopology();
-		Map<Position, Set<EntityProxy<?>>> visible = e.observe(visionRange);
-		Position nearestTarget = null;
-		int nearestDist = Integer.MAX_VALUE;
-		for(Map.Entry<Position, Set<EntityProxy<?>>> entry : visible.entrySet()) {
-			for(EntityProxy<?> entity : entry.getValue()) {
-				if(entity instanceof SheepAgent) {
-					int dist = topology.getDistance(currentPos, entry.getKey());
-					if(dist < nearestDist) {
-						nearestDist = dist;
-						nearestTarget = entry.getKey();
-					}
-				}
-			}
-		}
-		
-		if(nearestTarget != null) {
-			// Move towards nearest sheep
-			Position bestNeighbor = null;
-			int bestDist = Integer.MAX_VALUE;
-			for(Position neighbor : passableNeighbors) {
-				int dist = topology.getDistance(neighbor, nearestTarget);
-				if(dist < bestDist) {
-					bestDist = dist;
-					bestNeighbor = neighbor;
-				}
-			}
-			if(bestNeighbor != null) {
-				e.moveToPosition(bestNeighbor);
-				return;
-			}
-		}
-		
-		// Fallback: random movement
-		List<Position> passableList = new ArrayList<>(passableNeighbors);
-		Position newPos = passableList.get(e.nextInt(passableList.size()));
-		e.moveToPosition(newPos);
-	}
-	
-	@Override
-	public String getEntityName() {
-		return getName() != null ? getName() : "Wolf";
-	}
+    public void setVisionRange(int visionRange) {
+        this.visionRange = visionRange;
+    }
+
+    public WolfAgent() {
+        e.addGeneralContext(this);
+    }
+
+    @Override
+    public boolean configure(MultiTreeMap configuration) {
+        if (!super.configure(configuration))
+            return false;
+        if (configuration.containsKey(VISION_RANGE_PARAM))
+            visionRange = Integer.parseInt(configuration.get(VISION_RANGE_PARAM));
+        return true;
+    }
+
+    @Override
+    public boolean postAgentEvent(AgentEvent event) {
+        return false;
+    }
+
+    @Override
+    public AgentShard getAgentShard(AgentShardDesignation designation) {
+        throw new UnsupportedOperationException();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <C extends Entity<Pylon>> EntityProxy<C> asContext() {
+        return (EntityProxy<C>) this;
+    }
+
+    @Override
+    public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        e.addGeneralContext(context);
+        return super.addGeneralContext(context);
+    }
+
+    @Override
+    public void step() {
+        li("wolf step");
+        Position currentPos = e.getCurrentPosition();
+        if (currentPos == null) {
+            return;
+        }
+
+        Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
+        for (EntityProxy<?> entity : entitiesHere) {
+            if (entity instanceof SheepAgent) {
+                li("wolf eats sheep [] at []", entity.getEntityName(), currentPos);
+                e.requestDestroyAgent(entity);
+            }
+        }
+
+        Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
+                entity -> entity instanceof GrassAgent);
+        if (passableNeighbors.isEmpty()) {
+            return;
+        }
+
+        // Look for nearest sheep within vision range
+        @SuppressWarnings("unchecked")
+        Topology<Position> topology = (Topology<Position>) e.getTopology();
+        Map<Position, Set<EntityProxy<?>>> visible = e.observe(visionRange);
+        Position nearestTarget = null;
+        int nearestDist = Integer.MAX_VALUE;
+        for (Map.Entry<Position, Set<EntityProxy<?>>> entry : visible.entrySet()) {
+            for (EntityProxy<?> entity : entry.getValue()) {
+                if (entity instanceof SheepAgent) {
+                    int dist = topology.getDistance(currentPos, entry.getKey());
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearestTarget = entry.getKey();
+                    }
+                }
+            }
+        }
+
+        if (nearestTarget != null) {
+            // Move towards nearest sheep
+            Position bestNeighbor = null;
+            int bestDist = Integer.MAX_VALUE;
+            for (Position neighbor : passableNeighbors) {
+                int dist = topology.getDistance(neighbor, nearestTarget);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestNeighbor = neighbor;
+                }
+            }
+            if (bestNeighbor != null) {
+                e.moveToPosition(bestNeighbor);
+                return;
+            }
+        }
+
+        // Fallback: random movement
+        List<Position> passableList = new ArrayList<>(passableNeighbors);
+        Position newPos = passableList.get(e.nextInt(passableList.size()));
+        e.moveToPosition(newPos);
+    }
+
+    @Override
+    public String getEntityName() {
+        return getName() != null ? getName() : "Wolf";
+    }
 }
