@@ -25,7 +25,6 @@ import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 
-
 public class EnvironmentLinkShard extends AgentShardCore {
 
     protected static final String SHARD_NAME = "Environment";
@@ -34,8 +33,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
     ProximityCommunicationContext proximityCommunication = null;
     WaveReceiver waveInbox = null;
     List<AgentWave> receivedWaves = new ArrayList<>();
-	AgentManagementContext agentManagement = null;
-	RandomContext randomContext = null;
+    AgentManagementContext agentManagement = null;
+    RandomContext randomContext = null;
 
     public EnvironmentLinkShard() {
         super(AgentShardDesignation.customShard(SHARD_NAME));
@@ -45,7 +44,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
         if (context instanceof SpaceContext)
             space = (SpaceContext) context;
-        else if(context instanceof AgentManagementContext)
+        else if (context instanceof AgentManagementContext)
             agentManagement = (AgentManagementContext) context;
         else if (context instanceof RandomContext)
             randomContext = (RandomContext) context;
@@ -53,20 +52,20 @@ public class EnvironmentLinkShard extends AgentShardCore {
             proximityCommunication = (ProximityCommunicationContext) context;
             waveInbox = wave -> receivedWaves.add(wave);
         }
-		if(!super.addGeneralContext(context))
-			return false;
+        if (!super.addGeneralContext(context))
+            return false;
 
-		if(proximityCommunication != null && getContext() != null && waveInbox != null)
-			proximityCommunication.register(getContext(), waveInbox);
+        if (proximityCommunication != null && getContext() != null && waveInbox != null)
+            proximityCommunication.register(getContext(), waveInbox);
 
-		if(agentManagement != null && getContext() != null)
-			agentManagement.registerAgent(getContext(), this);
+        if (agentManagement != null && getContext() != null)
+            agentManagement.registerAgent(getContext(), this);
         // FIXME should actually be *closest* context
-		return true;
+        return true;
     }
 
     public Position getCurrentPosition() {
-		return space.getPosition(getContext());
+        return space.getPosition(getContext());
     }
 
     public Set<Position> getVicinity(Position pos) {
@@ -82,7 +81,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public boolean moveToPosition(Position target) {
-		return space.addPendingAction(new ActionRecord(getContext(),
+        return space.addPendingAction(new ActionRecord(getContext(),
                 new MultiValueMap()
                         .add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())
                         .addObject(SpaceActionData.MOVE_TARGET.s(), target)));
@@ -100,8 +99,16 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return space.getTopology();
     }
 
+    public boolean isAlive() {
+        return agentManagement == null || !agentManagement.isMarkedForDestruction(getContext());
+    }
+
+    public boolean isTargetAlive(EntityProxy<?> target) {
+        return agentManagement == null || !agentManagement.isMarkedForDestruction(target);
+    }
+
     public boolean requestDestroyAgent(EntityProxy<?> target) {
-		return agentManagement.addPendingAction(new ActionRecord(getContext(),
+        return agentManagement.addPendingAction(new ActionRecord(getContext(),
                 new MultiValueMap()
                         .add(BaseActionData.ACTION.s(), AgentManagementActionData.DESTROY_ACTION.s())
                         .addObject(AgentManagementActionData.DESTROY_TARGET.s(), target)));
@@ -114,7 +121,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     public boolean broadcast(AgentWave wave) {
         if (proximityCommunication == null)
             return false;
-		return proximityCommunication.broadcast(getContext(), wave);
+        return proximityCommunication.broadcast(getContext(), wave);
     }
 
     public List<AgentWave> clearWaves() {
@@ -127,7 +134,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
 
     @SuppressWarnings("unchecked")
     public Set<EntityProxy<?>> getEntitiesInVicinity() {
-		if(space == null || getContext() == null)
+        if (space == null || getContext() == null)
             return Collections.emptySet();
         Position pos = getCurrentPosition();
         if (pos == null)
