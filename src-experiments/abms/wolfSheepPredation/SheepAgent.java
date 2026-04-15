@@ -80,8 +80,10 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             return;
         li("sheep step");
         Position currentPos = e.getCurrentPosition();
-        if (currentPos == null)
+        if (currentPos == null) {
+            alertReceived = false;
             return;
+        }
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
@@ -107,8 +109,10 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         }
 
         Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
-        if (freeNeighbors.isEmpty())
+        if (freeNeighbors.isEmpty()) {
+            alertReceived = false;
             return;
+        }
 
         if (wolfVisible || alertReceived)
             li("[] is running away", getEntityName());
@@ -118,6 +122,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
                 entity -> entity instanceof GrassPatch);
         if (passableNeighbors.isEmpty()) {
+            alertReceived = false;
             return;
         }
         // Look for nearest grown grass within vision range
@@ -151,6 +156,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             }
             if (bestNeighbor != null) {
                 e.moveToPosition(bestNeighbor);
+                alertReceived = false;
                 return;
             }
         }
@@ -159,7 +165,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         List<Position> passableList = new ArrayList<>(passableNeighbors);
         Position newPos = passableList.get(e.nextInt(passableList.size()));
         e.moveToPosition(newPos);
-
         alertReceived = false;
     }
 

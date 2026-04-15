@@ -124,6 +124,9 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return proximityCommunication.broadcast(getContext(), wave);
     }
 
+    /**
+     * Pull variant: the agent decides when to consume the waves accumulated by the context.
+     */
     public List<AgentWave> clearWaves() {
         if (receivedWaves.isEmpty())
             return Collections.emptyList();

@@ -76,6 +76,11 @@ public interface SimulationContext {
 		public abstract void validateAndExecutePendingActions();
 
 		@Override
+		public void sendEvents(Entity<?> entity) {
+			//default does nothing; contexts override to push events
+		}
+
+		@Override
 		public String visualizeAsString() {
 			return null;
 		}
@@ -96,6 +101,12 @@ public interface SimulationContext {
 	boolean addPendingAction(ActionRecord action);
 
 	void validateAndExecutePendingActions();
+
+	/**
+	 * Push pending events to the given entity via {@code postAgentEvent} (push model).
+	 * Called by the executor before each entity's step.
+	 */
+	void sendEvents(Entity<?> entity);
 
 	String visualizeAsString();
 }

@@ -1,7 +1,9 @@
 package net.xqhs.flash.abms.communication;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -13,22 +15,26 @@ import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.WaveReceiver;
 
 public class ProximityCommunicationContext extends SimulationContext.BaseContext implements EntityProxy<ProximityCommunicationContext> {
 
     protected static class BroadcastRecord {
         final EntityProxy<?> sender;
+        final Position senderPosition;
         final AgentWave wave;
 
-        BroadcastRecord(EntityProxy<?> sender, AgentWave wave) {
+        BroadcastRecord(EntityProxy<?> sender, Position senderPosition, AgentWave wave) {
             this.sender = sender;
+            this.senderPosition = senderPosition;
             this.wave = wave;
         }
     }
 
     protected Map<EntityProxy<?>, WaveReceiver> receivers = new HashMap<>();
     protected Queue<BroadcastRecord> pendingBroadcasts = new LinkedList<>();
+    protected Map<String, List<AgentWave>> pendingWaveEvents = new HashMap<>();
     protected SpaceContext space = null;
 
     @Override
@@ -52,7 +58,10 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
             le("No space context; broadcast dropped.");
             return false;
         }
-        pendingBroadcasts.add(new BroadcastRecord(sender, wave));
+        Position senderPosition = space.getPosition(sender);
+        if (senderPosition == null)
+            return false;
+        pendingBroadcasts.add(new BroadcastRecord(sender, senderPosition, wave));
         return true;
     }
 
@@ -60,21 +69,36 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
     @Override
     public void validateAndExecutePendingActions() {
         for (BroadcastRecord broadcastRecord : pendingBroadcasts) {
-            Position senderPosition = space.getPosition(broadcastRecord.sender);
-            if (senderPosition == null) {
-                le("Sender [] has no position; broadcast dropped.", broadcastRecord.sender.getEntityName());
-                continue;
-            }
-            Set<Position> vicinity = space.getVicinity(senderPosition);
+            Set<Position> vicinity = space.getVicinity(broadcastRecord.senderPosition);
             for (Position vpos : vicinity) {
                 for (EntityProxy<?> entity : (Set<EntityProxy<?>>) space.getEntitiesAt(vpos)) {
-                    WaveReceiver receiver = receivers.get(entity);
-                    if (receiver != null)
-                        receiver.receive(broadcastRecord.wave);
+                    // push model: queue delivery for entities that can receive agent events
+                    if (entity instanceof ShardContainer && entity.getEntityName() != null)
+                        pendingWaveEvents.computeIfAbsent(entity.getEntityName(), agentWaveList -> new ArrayList<>())
+                                .add(broadcastRecord.wave);
                 }
             }
         }
         pendingBroadcasts.clear();
+    }
+
+    @Override
+    public void sendEvents(Entity<?> entity) {
+        if (entity == null)
+            return;
+        String recipientKey = entity.getName();
+        if (recipientKey == null && entity instanceof EntityProxy<?>)
+            recipientKey = ((EntityProxy<?>) entity).getEntityName();
+        if (recipientKey == null)
+            return;
+        List<AgentWave> waves = pendingWaveEvents.remove(recipientKey);
+        if (waves == null || waves.isEmpty())
+            return;
+        if (!(entity instanceof ShardContainer))
+            return;
+        ShardContainer container = (ShardContainer) entity;
+        for (AgentWave wave : waves)
+            container.postAgentEvent(wave);
     }
 
     @SuppressWarnings("unchecked")

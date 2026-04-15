@@ -7,7 +7,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class StepWiseExecutor extends EntityCore<Simulation>
 		implements SimulationExecutor, EntityProxy<StepWiseExecutor> {
-	
+
 	protected static final String	STEPS_PARAM	= "steps";
 	int								nSteps;
 	Thread							executor;
@@ -66,13 +66,17 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 	
 	protected void runStep(long step) {
 		li("Step []", Long.valueOf(step));
-		for(Entity<?> entity : simulation.getSimulationObjects())
-			if(entity instanceof SteppableEntity)
-				((SteppableEntity) entity).step();
-			else if(entity instanceof Patch)
+		for (Entity<?> entity : simulation.getSimulationObjects()) {
+			for (SimulationContext context : simulation.getSimulationContexts())
+				context.sendEvents(entity);//push pending events to the entity
+			if (entity instanceof SteppableEntity)
+				((SteppableEntity) entity).step();//then execute the entity's step
+
+			else if (entity instanceof Patch)
 				((Patch) entity).step();
+		}
 		// all entities have been stepped, now update the simulation contexts
-		for(SimulationContext context : simulation.getSimulationContexts())
+		for (SimulationContext context : simulation.getSimulationContexts())
 			context.validateAndExecutePendingActions();
 		simulation.stepCompleted();
 	}
