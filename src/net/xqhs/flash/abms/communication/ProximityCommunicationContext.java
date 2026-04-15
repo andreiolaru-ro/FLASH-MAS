@@ -2,6 +2,7 @@ package net.xqhs.flash.abms.communication;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -91,14 +92,19 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
             recipientKey = ((EntityProxy<?>) entity).getEntityName();
         if (recipientKey == null)
             return;
-        List<AgentWave> waves = pendingWaveEvents.remove(recipientKey);
+        List<AgentWave> waves = pendingWaveEvents.get(recipientKey);
         if (waves == null || waves.isEmpty())
             return;
         if (!(entity instanceof ShardContainer))
             return;
         ShardContainer container = (ShardContainer) entity;
-        for (AgentWave wave : waves)
-            container.postAgentEvent(wave);
+        Iterator<AgentWave> it = waves.iterator();
+        while (it.hasNext()) {
+            if (container.postAgentEvent(it.next()))
+                it.remove(); // remove wave from queue
+        }
+        if (waves.isEmpty())
+            pendingWaveEvents.remove(recipientKey);
     }
 
     @SuppressWarnings("unchecked")

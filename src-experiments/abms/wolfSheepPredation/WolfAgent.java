@@ -44,6 +44,12 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public boolean postAgentEvent(AgentEvent event) {
+        switch (event.getType()) {
+            case AGENT_WAVE:
+                return true; //since atm only sheep send waves, wolf chooses to ignore message
+            default:
+                break;
+        }
         return false;
     }
 
