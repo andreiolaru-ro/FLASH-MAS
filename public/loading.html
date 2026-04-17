@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.html file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<p>In order to support flexibility, the creation of entities should be
+performed via <em>Loaders</em>.</p>
+<p><strong>Do we need loaders at all?</strong></p>
+<p>Yes, for the cases where instantiating a class to create an entity is
+not enough.</p>
+<p>For instance, if we want to load a JADE agent (and we have access to
+a JADE platform), we cannot instantiate the agent directly, rather we
+need to call a method of a JADE container – this can be achieved via a
+specialized loader for JADE agents.</p>
+<h3 id="loaders">Loaders</h3>
+<p>In order to support entities which need a special means of creation
+(e.g. implementations that require that the class is produced by a
+factory), the creation process is abstracted into Loaders. It is
+recommended that most entities can be loaded through
+<code>SimpleLoader</code>, which just creates a new instance of the
+entity.</p>
+<h5 id="choosing-a-loader">Choosing a loader</h5>
+<ul>
+<li>the default loader is <code>SimpleLoader</code></li>
+<li>we can have various loaders, that can load various entities,
+potentially specified by kinds (see <a href="deployment.html">Deployment
+and Configuration</a>).
+<ul>
+<li>identifying the appropriate loader, as well as the appropriate
+class, can be done using the <code>Loader.autoFind</code> static
+method</li>
+</ul></li>
+<li>loaders for an entity, applicable to its kind, will be tried in
+order.
+<ul>
+<li>for now, loaders for the same entity and the same kind cannot be
+chosen among and will be tried in order until one succeeds.
+<ul>
+<li>Workaround: loader should check in the entity’s configuration if any
+loader id is specified and compare this to an internal id.</li>
+<li>since loaders are tried in order, for a specific kind the first will
+be ‘default’
+<ul>
+<li>if no adequate kind is found, ‘’null’’ kind will be tried</li>
+</ul></li>
+<li>the default loader (SimpleLoader) will only be used if no loader for
+that type of entity is otherwise specified or otherwise succeeds.</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>The Node is always loaded by the NodeLoader, which also loads all
+entities specified in the initial deployment.</p>
+<h3 id="loading-and-booting-the-system">Loading and Booting the
+system</h3>
+<p>See also <a href="running.html">running</a>.</p>
+<p>Normally, a FLASH-MAS deployment is booted via the
+<code>FlashBoot</code> class, which loads the deployment configuration
+for all the local nodes and starts those nodes. Main operations related
+to loading and starting the system are performed by
+<code>NodeLoader</code> which:</p>
+<ul>
+<li>loads the deployment configuration for all nodes declared in the
+deployment.</li>
+<li>loads the specified loaders. Loaders are organized by category and
+kind.
+<ul>
+<li>the default loader is the <code>SimpleLoader</code> or the first
+loader for the <code>null</code> category or the first loader for the
+<code>null</code> kind in the <code>null</code> category (if any).</li>
+</ul></li>
+<li>for each node, loads the entities which should be started on that
+node, considering the <strong><em>load order</em></strong> for the
+categories (the order in which categories should be loaded, e.g. pylons
+before agents)
+<ul>
+<li>in order to compute how to load an entity, its category and kind are
+considered (see <a href="deployment.html">deployment</a>)</li>
+<li>if there are loaders declared for this category, the loader for the
+entities kind is used
+<ul>
+<li>if the entity has no kind, the loader for the <code>null</code> kind
+in this category is used, and if no such loader exists, the loader for
+the first kind declared for the category</li>
+</ul></li>
+<li>otherwise, the default loader is used</li>
+<li>if loading fails with the chosen loader, the default loader is also
+tried.</li>
+<li>when the default loader is used, an appropriate class must be found
+to instantiate. This is done using <code>Loader#autoFind</code> which
+looks for a <code>classpath</code> parameter in the entity or otherwise
+tries to locate a class in the packages, according to the category and
+kind of the entity (see its documentation).</li>
+<li>when <code>Loader#load</code> is called, all the entities which form
+the context of the loaded entity are also transmitted.</li>
+<li>loaded entities which are in the <em>load order</em> or direct
+children of the node in the deployment configuration are
+<code>register</code>ed with the node</li>
+</ul></li>
+<li>then, <code>FlashBoot</code> <em>starts</em> the node(s), which in
+turn <em>start</em> the entities which exist in their scope</li>
+</ul>
+</body>
+</html>

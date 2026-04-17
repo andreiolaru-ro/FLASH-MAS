@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<h2 id="eclipse">Eclipse</h2>
+<p>Importing the project in Eclipse is trivial because the root
+directory contains a <code>.project</code> and a <code>.classpath</code>
+file.</p>
+<p>Just use Import project, Java project, and give the root directory of
+the project.</p>
+<h2 id="intellij-idea">IntelliJ IDEA</h2>
+<h3 id="importing-the-project-as-an-eclipse-project">Importing the
+project as an Eclipse Project</h3>
+<ul>
+<li>Create the project with <strong>New Project</strong>, using
+<code>FLASH-MAS</code> as project name and using the existing location
+of the <code>FLASH-MAS</code> directory as Location.</li>
+<li>A warning is expected, that the directory is not empty.</li>
+<li>Go to Project Structure (click on the wheel in the title bar, select
+project Structure)
+<ul>
+<li>select the SDK (whatever you have installed)</li>
+<li>select language level 8</li>
+<li>go to Modules in the structure to the left of the window</li>
+<li>click on <code>+</code>, selet Import Module, be sure
+<code>FLASH-MAS</code> (the project root directory) is selected, click
+Ok
+<ul>
+<li>select Import module from external model, select Eclipse, Next</li>
+<li>Next (for Eclipse projects directory)</li>
+<li>Select all, Next</li>
+<li>Create</li>
+</ul></li>
+</ul></li>
+<li>Done</li>
+</ul>
+<h3 id="setting-up-the-project-manually">Setting up the project
+manually</h3>
+<p>In order to import the project, extract the <code>.idea</code>
+directory in the <code>intellijsetup.idea.zip</code> archive to the root
+directory, such that there exist the file
+<code>&lt;project root&gt;/.idea/workspace.xml</code></p>
+<p>if this does not work, see the next section.</p>
+<h2 id="other-ides">Other IDEs</h2>
+<p>In order to be able to compile and execute the project it is
+necessary that in the project setup: * all directories beginning with
+<code>src</code> are set as source folders * all the <code>.jar</code>
+files in <code>lib/</code> are set as libraries * Java compliance level
+is set to Java 8 (1.8)</p>
+</body>
+</html>

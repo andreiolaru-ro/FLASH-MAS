@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="lib/ros/jetty-client-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/jetty-http-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/ros/jetty-util-9.4.3.v20170317.jar"/>
-	<classpathentry kind="lib" path="lib/gui/snakeyaml-1.25.jar"/>
 	<classpathentry kind="lib" path="lib/ros/websocket-api-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/netty-all-4.1.47.Final.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/vertx-core-3.9.0.jar"/>
@@ -28,10 +27,12 @@
 	<classpathentry kind="lib" path="lib/webserver/jackson-core-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/webserver/jackson-databind-2.10.2.jar"/>
 	<classpathentry kind="lib" path="lib/websocket/Java-WebSocket-1.4.0-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/gui/snakeyaml-2.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

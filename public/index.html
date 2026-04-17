@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.html file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<h1 id="flash-mas"><img src="identity/logo-BW-50.png" /> FLASH-MAS</h1>
+<p><a
+href="https://github.com/andreiolaru-ro/FLASH-MAS/actions/workflows/run-tests.yml"><img
+src="https://github.com/andreiolaru-ro/FLASH-MAS/actions/workflows/run-tests.yml/badge.svg?branch=documentation"
+alt="Java CI with Maven" /></a></p>
+<p>The Fast Lightweight Agent Shell MAS framework</p>
+<p><strong><em>Easy for beginners, powerful to experts</em></strong></p>
+<h2 id="intro">Intro</h2>
+<p>FLASH-MAS implements a model based on generic <em>entities</em>,
+which could be agents, agent groups, nodes, communication infrastructure
+elements, or agent components.</p>
+<p>FLASH-MAS is supposed to become compatible with other models and
+infrastructures, such as JADE or JaCaMo, and be a valid choice for ABMS
+simulations, by modularizing infrastructure services so that agents
+don’t need code changes when changing communication or deployment
+infrastructure.</p>
+<p>There are several targets that should make FLASH-MAS a good option
+for MAS developers, and these are also its main features:</p>
+<ul>
+<li>system model – the way the entities in the system are structured and
+the way in which they interact</li>
+<li>deployment and configuration – the way one specifies a deployment;
+the way in which this deployment is loaded</li>
+<li>dynamics – how entities in the system can be reconfigured at
+runtime, supporting open and heterogeneous systems</li>
+<li>portability – the code for most of the core of FLASH-MAS is
+portable</li>
+<li>tools – tools are offered to be able to monitor and control the
+system</li>
+</ul>
+<h2 id="phases">Phases</h2>
+<p>The current phase of FLASH-MAS (branch <code>master</code>) uses an
+older type of entities, which interact by means of references and
+proxies – call this <strong>Nested-entity model</strong></p>
+<p>The future phase of FLASH-MAS uses the
+<strong><em>entity-operation</em></strong> model, in which entities
+interact only via the framework. See, for instance, branch <a
+href="https://github.com/andreiolaru-ro/FLASH-MAS/tree/opmodel-gabi"><code>opmodel</code></a>.</p>
+<h2 id="importing-into-your-ide">Importing into your IDE</h2>
+<ul>
+<li>see <a href="importing.html">importing</a></li>
+<li>see also chapter Source organization below</li>
+</ul>
+<h2 id="understanding-flash-mas">Understanding FLASH-MAS</h2>
+<p>Deploying a FLASH-MAS system means creating a <em>deployment
+configuration</em> specifying the <em>entities</em> in the system, and
+<em>booting the system</em>.</p>
+<ul>
+<li><p><a href="concepts.html">Basic F-MAS concepts</a></p></li>
+<li><p><a href="interaction.html">Interaction between
+entities</a></p></li>
+<li><p><a href="loading.html">Loading entities and booting the
+system</a></p></li>
+<li><p><a href="deployment.html">Deployment and
+configuration</a></p></li>
+<li><p><a href="running.html">Running</a></p></li>
+<li><p><a href="other.html">other remarks</a></p></li>
+<li><p>older <a href="notes.html">notes file</a></p></li>
+</ul>
+<h2 id="source-documentation">Source documentation</h2>
+<p><a href="javadoc/index.html">Javadoc here</a></p>
+<h2 id="source-organization">Source organization</h2>
+<ul>
+<li><code>src</code> contains sources for FLASH-MAS functionality and
+for the <code>quick</code> package which enables quicker writing of CLI
+commands (see <a href="running.html">running</a>).</li>
+<li><code>src-examples</code> contain sources for examples of FLASH-MAS
+deployments.</li>
+<li><code>src-tests</code> contains test to check the correct working of
+the framework.</li>
+<li><code>src-testing</code> contains sources for the ongoing work of
+various developers.</li>
+<li><code>src-schema</code> contains the schema for XML deployment
+files.</li>
+<li><code>doc</code> contains documentation markdown pages and
+javadoc.</li>
+<li><code>identity</code> contains visual identity information (e.g. the
+logo).</li>
+<li><code>lib</code> contains necessary libraries, organized in
+directories depending on what components the libraries are needed
+for.</li>
+<li><code>lib-all</code> contains all the libraries, and is
+(re-)generated by running <code>script/make-lib-all.sh</code>.</li>
+<li><code>script</code> contains scripts useful for maintaining the
+project.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>FLASH-MAS is licensed under GPL v3.</p>
+<p>A lot of people contributed to FLASH-MAS throughout its life: <a
+href="CONTRIBUTORS.html">Contributors</a></p>
+</body>
+</html>
