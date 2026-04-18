@@ -87,8 +87,10 @@ public class EchoTestingShard extends AgentShardCore implements OutgoingMessageH
 		locallog.li(eventMessage);
 		// if (getAgentLog() != null)
 		// getAgentLog().info(eventMessage);
-		((MessagingShard) getAgent().getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)))
-				.addOutgoingMessageHook(this);
+		MessagingShard msg = ((MessagingShard) getAgent()
+				.getAgentShard(AgentShardDesignation.standardShard(StandardAgentShard.MESSAGING)));
+		if(msg != null)
+			msg.addOutgoingMessageHook(this);
 		if(event.getType().equals(AgentEventType.AGENT_START) && exitAfter > 0) {
 			exitTimer = new Timer();
 			exitTimer.schedule(new TimerTask() {
