@@ -1,10 +1,10 @@
 /bin/
 /lib-all/
 .idea
-.xml
 /log-*.yaml
 /APDescription.txt
 /MTPs-Container-*.txt
 *__pycache__
 /target/
 /ml-directory/
+

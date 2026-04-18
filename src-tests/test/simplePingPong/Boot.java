@@ -30,8 +30,8 @@ public class Boot
 		
 		test_args += " -package testing";
 		test_args += " -node main";
-		test_args += " -agent PingPong:AgentA sendTo:AgentB";
-		test_args += " -agent PingPong:AgentB";
+		test_args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		test_args += " -agent AgentB classpath:AgentPingPong";
 		
 		FlashBoot.main(test_args.split(" "));
 	}

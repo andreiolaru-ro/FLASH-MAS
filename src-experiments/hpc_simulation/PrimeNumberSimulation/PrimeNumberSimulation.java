@@ -16,11 +16,6 @@ import net.xqhs.flash.local.LocalPylon;
 class PrimeNumbersNode extends Node
 {
     public static final int MAX_THREADS = 3;
-    public PrimeNumbersNode(MultiTreeMap configuration)
-    {
-
-        super(configuration);
-    }
 
     public void registerAgentsInNode(MasterAgent master,  ArrayList<PrimeNumberAgent> agentList) {
         registerEntity("Agent", master, master.getName());
@@ -96,7 +91,8 @@ public class PrimeNumberSimulation {
 
         MultiTreeMap configuration = new MultiTreeMap();
         configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "testNode");
-        PrimeNumbersNode node = new PrimeNumbersNode(configuration);
+		PrimeNumbersNode node = new PrimeNumbersNode();
+		node.configure(configuration);
 		LocalPylon pylon = new LocalPylon();
 
 
