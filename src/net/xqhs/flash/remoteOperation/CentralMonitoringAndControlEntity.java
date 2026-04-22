@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -81,7 +82,9 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		KILL_DAEMON_REMOTE,
 		KILL_ALL_JVMS,
 		KILL_ALL_DAEMONS,
-		KEEP_ALIVE
+		KEEP_ALIVE,
+		SUBSCRIBE_METRICS,
+		RECEIVE_METRIC
 		;
 
 		/**
@@ -142,6 +145,11 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	protected static final int DAEMON_PING_INTERVAL_SECONDS = 10;
 
 	/**
+	 * Interval in seconds for pinging agents to check connectivity.
+	 */
+	protected static final int AGENT_KEEP_ALIVE_INTERVAL_SECONDS = 10;
+
+	/**
 	 * Default path to the JAR file to be deployed.
 	 */
 	private final String defaultJarPath = "out/artifacts/Flash_MAS_jar/Flash-MAS.jar";
@@ -199,7 +207,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		boolean    registered = false;
 		Element    guiSpecification;
 		String nodeName;
-		long lastKeepAliveTime = System.currentTimeMillis();
+		long lastKeepAliveTime = -1;
 
 		public String getName() { return entityName; }
 		public String getStatus() { return status; }
@@ -414,12 +422,61 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			return ler(false, "Unknown operation [] from [].", wave.getFirstDestinationElement(), wave.getCompleteSource());
 
 		switch(op) {
+			case SUBSCRIBE_METRICS:
+				try {
+					String subContent = wave.getContent().toString();
+					JsonObject subJson = JsonParser.parseString(subContent).getAsJsonObject();
+					String targetCategory = subJson.get("category").getAsString();
+					String metricName = subJson.get("metric").getAsString();
+					
+					li("UI Subscribed to metric [] for filter []", metricName, targetCategory);
+
+					Pattern pattern;
+					try {
+						pattern = Pattern.compile(targetCategory, Pattern.CASE_INSENSITIVE);
+					} catch (Exception e) {
+						pattern = Pattern.compile(Pattern.quote(targetCategory), Pattern.CASE_INSENSITIVE);
+					}
+					
+					for (String n : allNodeEntities.keySet()) {
+						HashMap<String, List<String>> categories = allNodeEntities.get(n);
+						for (String cat : categories.keySet()) {
+							for (String agentName : categories.get(cat)) {
+								if (pattern.matcher(cat).find() || pattern.matcher(agentName).find()) {
+									AgentWave reqWave = new AgentWave(metricName);
+									reqWave.resetDestination(agentName, "VisualizationTest", "START_REPORTING_METRIC");
+									reqWave.addSourceElements(getName());
+									if (centralMessagingShard != null) {
+										centralMessagingShard.sendMessage(reqWave);
+									}
+								}
+							}
+						}
+					}
+					return true;
+				} catch(Exception e) {
+					le("Error in SUBSCRIBE_METRICS: " + e.getMessage());
+					return false;
+				}
+
+			case RECEIVE_METRIC:
+				if(gui instanceof WebEntity) {
+					WebEntity webGui = (WebEntity) gui;
+					JsonObject metricData = new JsonObject();
+					metricData.addProperty("agent", sourceEntity);
+					
+					try {
+						metricData.add("data", JsonParser.parseString(wave.getContent().toString()));
+					} catch (Exception e) {
+						metricData.addProperty("data", wave.getContent().toString());
+					}
+					webGui.sendToClient(WebEntity.buildMessage("metrics", "metric_update", metricData));
+				}
+				return true;
+
 			case KEEP_ALIVE:
 				if(entitiesData.containsKey(sourceEntity)) {
 					entitiesData.get(sourceEntity).lastKeepAliveTime = System.currentTimeMillis();
-					
-					// Daca agentul era INACTIVE si si-a revenit, il marcam inapoi RUNNING. Statusul lui real
-					// ar trebui sa vina de la el, dar macar stergem semnalizarea rosie.
 					if ("INACTIVE".equals(entitiesData.get(sourceEntity).getStatus())) {
 						entitiesData.get(sourceEntity).setStatus(Fields.RUNNING_STATUS_RUNNING.name());
 						entitiesData.get(sourceEntity).setAppStatus(Fields.RUNNING_STATUS_RUNNING.name());
@@ -598,10 +655,16 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					ed.registered = true;
 					ed.setNodeName(node);
 
+					boolean isAgent = "agent".equals(category) || "mobileComposite".equals(category);
+					if (isAgent) {
+						ed.lastKeepAliveTime = System.currentTimeMillis();
+					}
+
 					if(ed.getStatus() == null) {
 						ed.setStatus(Fields.STATUS_UNKNOWN.name());
 						ed.setAppStatus(Fields.STATUS_UNKNOWN.name());
 					}
+					
 					Element standardControls = setupStandardControls(ed.getStatus(), ed.getAppStatus(), entityName);
 					if(ed.getGuiSpecification() == null) {
 						ed.setGuiSpecification(standardControls);
@@ -613,6 +676,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 								guiSpec.addChild(child);
 						}
 					}
+
 					li("Registered entity []/[] in []", category, entityName, node);
 
 					gui.updateGui(entityName, ed.getGuiSpecification());
@@ -648,10 +712,11 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 							interfaceContainer.addChild(child);
 				if(!entitiesData.containsKey(sourceEntity) || !entitiesData.get(sourceEntity).registered)
 					lw("Entity [] not yet registered when [].", sourceEntity, op);
-				else
+				else {
 					interfaceContainer.addAllChildren(setupStandardControls(entitiesData.get(sourceEntity).getStatus(),
 							entitiesData.get(sourceEntity).getAppStatus(), entitiesData.get(sourceEntity).getName())
 							.getChildren());
+				}
 				entitiesData.computeIfAbsent(sourceEntity, (k) -> new EntityData().setName(sourceEntity))
 						.setGuiSpecification(interfaceContainer);
 				lf("Interface of [] reset to:", sourceEntity, interfaceContainer);
@@ -706,8 +771,6 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 
 					boolean sent = centralMessagingShard.sendMessage(wave);
 
-					// Daca oprim agentul, vrem sa ii si schimbam statusul in UI rapid, desi el ar trebui sa raporteze singur.
-					// Dar ca si backup.
 					return sent;
 				}
 
@@ -868,20 +931,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 
 			for (Map.Entry<String, EntityData> entry : entitiesData.entrySet()) {
 				EntityData ed = entry.getValue();
-				String entityName = ed.getName();
 
-				boolean isAgent = false;
-				for (HashMap<String, List<String>> categories : allNodeEntities.values()) {
-					if (categories.getOrDefault("agent", new LinkedList<>()).contains(entityName) ||
-						categories.getOrDefault("mobileComposite", new LinkedList<>()).contains(entityName)) {
-						isAgent = true;
-						break;
-					}
-				}
+				if (ed.lastKeepAliveTime == -1) continue;
 
-				if (!isAgent) continue;
-
-				if (now - ed.lastKeepAliveTime > 10000) {
+				if (now - ed.lastKeepAliveTime > AGENT_KEEP_ALIVE_INTERVAL_SECONDS * 1000) {
 					if (!"INACTIVE".equals(ed.getStatus())) {
 						ed.setStatus("INACTIVE");
 						ed.setAppStatus("INACTIVE");
@@ -899,7 +952,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 				WebEntity webGui = (WebEntity) gui;
 				webGui.sendToClient(WebEntity.buildMessage("global", "entities list", webGui.getEntities()));
 			}
-		}, 5, 5, TimeUnit.SECONDS);
+		}, 5, AGENT_KEEP_ALIVE_INTERVAL_SECONDS, TimeUnit.SECONDS);
 	}
 
 	/**

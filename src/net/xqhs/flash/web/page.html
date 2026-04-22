@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License along with Fla
     <script src="js/lib/jquery-3.7.1.min.js"></script>
     <script src="js/lib/sockjs.js"></script>
     <script src="js/lib/vertx-eventbus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://unpkg.com/@material/web@latest/material-components-web.min.css">
@@ -101,10 +103,95 @@ You should have received a copy of the GNU General Public License along with Fla
                 </table>
             </div>
         </details>
+
+        <details class="viz-section" open>
+            <summary style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="material-icons">bar_chart</span>
+                    <span>Visualizations Dashboard</span>
+                </div>
+                <div id="viz-header-controls" style="display:flex; align-items:center;">
+                    <button id="btn-open-viz-modal" style="background:#6200ea; color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.9rem;">+ Add Plot</button>
+                </div>
+            </summary>
+            <div id="viz-dashboard"></div>
+        </details>
+
         <div id="main-header">
             <h1>No selected entities</h1>
         </div>
         <div id="selected-entities-list"></div>
+
+        <!-- Add Visualization Modal -->
+        <div id="viz-modal" class="viz-modal">
+            <div class="viz-modal-content">
+                <div class="viz-modal-header">
+                    <h2>Add New Visualization</h2>
+                    <span class="viz-modal-close material-icons">close</span>
+                </div>
+                <div class="viz-modal-body">
+                    <div class="viz-form-group">
+                        <label>Title:</label>
+                        <input type="text" id="viz-title" placeholder="e.g., Agent Positions">
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Chart Type:</label>
+                        <select id="viz-type">
+                            <option value="scatter">2D Scatter Plot</option>
+                            <option value="heatmap">2D Grid (Heatmap)</option>
+                            <option value="line">Line Chart (Time Series)</option>
+                            <option value="bar">Bar Chart (Histogram)</option>
+                            <option value="graph">Network Graph</option>
+                        </select>
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Agent Filter (Regex/Name):</label>
+                        <input type="text" id="viz-category" placeholder="e.g., human, car, composite">
+                    </div>
+                    <div class="viz-form-group">
+                        <label>X-Axis Property (Optional):</label>
+                        <input type="text" id="viz-xaxis" placeholder="e.g., x">
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Y-Axis Property (Optional):</label>
+                        <input type="text" id="viz-yaxis" placeholder="e.g., y">
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Value Property (Z-Axis / Heatmap):</label>
+                        <input type="text" id="viz-zaxis" placeholder="e.g., energy, pheromone">
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Width:</label>
+                        <select id="viz-width">
+                            <option value="w-100">100%</option>
+                            <option value="w-75">75%</option>
+                            <option value="w-66">66%</option>
+                            <option value="w-50">50%</option>
+                            <option value="w-33">33%</option>
+                            <option value="w-25">25%</option>
+                        </select>
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Height:</label>
+                        <select id="viz-height">
+                            <option value="h-1">1 Unit (350px)</option>
+                            <option value="h-2">2 Units (720px)</option>
+                            <option value="h-3">3 Units (1090px)</option>
+                        </select>
+                    </div>
+                    <div class="viz-form-group">
+                        <label>Color Rule (JSON) (Optional):</label>
+                        <input type="text" id="viz-color-rule" placeholder='{"property":"state", "map":{"infected":"red","healthy":"green"}}'>
+                    </div>
+                    <div class="viz-form-group">
+                        <button id="btn-save-viz" style="background:#4CAF50; color:white; border:none; padding:10px; width:100%; border-radius:4px; cursor:pointer; margin-top:10px; font-weight:bold;">Create Widget</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="file" id="import-yaml-file" style="display: none;" accept=".yaml,.yml">
+
     </main>
 </div>
 

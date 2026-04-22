@@ -96,9 +96,25 @@ export function sendDeployCommand(ip, rawArguments) {
  */
 function recvMessage(message) {
     console.log('Received message', message);
+    
+    if (message.scope === 'metrics' && message.subject === 'metric_update') {
+        import("./visualizations.js").then(viz => {
+            viz.handleIncomingMetric(message.content.agent, message.content.data);
+        });
+        return;
+    }
+
     if (message.scope === GLOBAL_SCOPE) {
         if (message.subject === 'entities list') {
+            const oldEntities = Object.keys(appContext.entities || {});
             appContext.entities = processSpec(message.content);
+            const newEntities = Object.keys(appContext.entities || {});
+            
+            const removedEntities = oldEntities.filter(e => !newEntities.includes(e));
+            import("./visualizations.js").then(viz => {
+                removedEntities.forEach(agent => viz.removeAgentFromVisualizations(agent));
+            });
+            
             console.log('Received new entities data', appContext.entities);
             import("./ui.js").then(ui => ui.updateEntitiesList());
             return;
@@ -122,6 +138,20 @@ function recvMessage(message) {
         const entityName = message.subject.entity;
         const port = message.subject.port;
         applyUpdatesOnPort(entityName, port, message.content);
+        
+        if (port === 'standard-status' || port === 'standard-application-status') {
+            const entity = appContext.entities[entityName];
+            if (entity && entity.data) {
+                for (let key in entity.data) {
+                    if (entity.data[key].port === 'standard-status' && entity.data[key].value === 'INACTIVE') {
+                        import("./visualizations.js").then(viz => {
+                            viz.removeAgentFromVisualizations(entityName);
+                        });
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 

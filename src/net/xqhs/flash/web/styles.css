@@ -352,3 +352,188 @@ button.conditional-style-disabled {
     background-color: #F44336;
     box-shadow: 0 0 5px #F44336;
 }
+
+.viz-section {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.viz-section summary {
+    background-color: #f5f5f5;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.viz-section summary:hover {
+    background-color: #eeeeee;
+}
+
+#viz-dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: min-content;
+    gap: 20px;
+    padding: 20px;
+    background-color: #fafafa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.viz-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.viz-card.dragging {
+    opacity: 0.4;
+    box-shadow: 0 5px 15px rgba(98, 0, 234, 0.4);
+    border: 2px dashed #6200ea;
+}
+
+.viz-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    cursor: grab;
+}
+
+.viz-card-header:active {
+    cursor: grabbing;
+}
+
+.viz-card-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #555;
+    pointer-events: none; /* Let header handle drag */
+}
+
+.viz-controls select, .viz-controls button {
+    font-size: 0.75rem;
+    padding: 2px 5px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.viz-controls button.remove-viz {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+.w-25 { grid-column: span 3; }
+.w-33 { grid-column: span 4; }
+.w-50 { grid-column: span 6; }
+.w-66 { grid-column: span 8; }
+.w-75 { grid-column: span 9; }
+.w-100 { grid-column: span 12; }
+
+.viz-card.break-row {
+    grid-column-start: 1;
+}
+
+.h-1 { height: 350px; }
+.h-2 { height: 720px; }
+.h-3 { height: 1090px; }
+
+.viz-canvas {
+    width: 100%;
+    flex-grow: 1;
+    min-height: 200px;
+}
+
+/* Modal Styles */
+.viz-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.viz-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.viz-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.viz-modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.viz-modal-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.viz-modal-close:hover,
+.viz-modal-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.viz-form-group {
+    margin-bottom: 15px;
+}
+
+.viz-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.viz-form-group input,
+.viz-form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.9rem;
+}

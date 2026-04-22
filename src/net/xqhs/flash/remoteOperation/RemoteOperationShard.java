@@ -92,6 +92,11 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 * Fields describing entity status.
 	 */
 	protected Fields[]					entityStatus			= new Fields[2];
+
+	/**
+	 * Keep alive timer in seconds;
+	 */
+	protected long timeDelay = 10000;
 	
 	Timer remoteDelayTimer = new Timer();
 	Timer agentKeepAliveTimer = new Timer();
@@ -164,7 +169,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 							.addSourceElements(SHARD_ENDPOINT);
 					sendMessage(keepAliveWave);
 				}
-			}, 0, 3000);
+			}, 0, timeDelay);
 			break;
 		case AGENT_STOP:
 			entityStatus[1] = Fields.RUNNING_STATUS_STOPPED;

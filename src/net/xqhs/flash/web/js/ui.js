@@ -185,7 +185,7 @@ function addDaemonCard(ip, container, initialArgs = "") {
 
 /**
  * Refreshes the list of entities in the side panel.
- * Handles checkbox selection logic for filtering which entities are displayed in the main view.
+ * Groups entities by their prefix to prevent the sidebar from becoming overloaded.
  */
 export function updateEntitiesList() {
     const activeList = $('#entities-list');
@@ -194,56 +194,147 @@ export function updateEntitiesList() {
     inactiveList.empty();
 
     const selectedEntities = [];
+    const activeGroups = {};
+    const inactiveGroups = {};
+
     for (let [entityName, entity] of Object.entries(appContext.entities)) {
-        const selected = appContext.selectedEntities.includes(entityName);
-        if (selected) selectedEntities.push(entityName);
-
-        const checkbox = $('<input>').addClass('entity-checkbox')
-            .attr('type', 'checkbox').attr('name', entityName + '-checkbox')
-            .attr('checked', selected)
-            .on('change', e => handleEntityCheckboxChange(e.target.checked, entityName))
-            .on('click', e => e.stopPropagation());
-        const label = $('<label>').text(entityName)
-            .addClass('entity-label').attr('for', entityName + '-checkbox');
-
         let isInactive = false;
+        let isAgent = false;
         if(entity.data) {
             for(let key in entity.data) {
                 if(entity.data[key].value === "INACTIVE") {
                     isInactive = true;
-                    break;
+                }
+                if(entity.data[key].port === "standard-status") {
+                    isAgent = true;
                 }
             }
         }
 
-        const statusIndicator = $('<div>').addClass('entity-status-indicator')
-            .addClass(isInactive ? 'status-inactive' : 'status-active')
-            .attr('title', isInactive ? 'Inactive' : 'Active');
+        const groupMatch = entityName.match(/^([a-zA-Z&]+)/);
+        const groupName = groupMatch ? groupMatch[1] : 'Others';
 
-        const entityItem = $('<div>').attr('id', entity.id).addClass('side-drawer entity-item')
-            .append(checkbox, label, statusIndicator)
-            .on('click', function () {
-                checkbox.prop('checked', !checkbox.prop('checked'));
-                checkbox.trigger('change')
+        const targetGroupMap = isInactive ? inactiveGroups : activeGroups;
+        if (!targetGroupMap[groupName]) {
+            targetGroupMap[groupName] = [];
+        }
+        targetGroupMap[groupName].push({ entityName, entity, isAgent, isInactive });
+    }
+
+    function renderGroups(groupsObj, containerDiv, isInactiveList = false) {
+        for (let [groupName, members] of Object.entries(groupsObj)) {
+            members.sort((a, b) => {
+                if (a.isInactive && !b.isInactive) return -1;
+                if (!a.isInactive && b.isInactive) return 1;
+                return a.entityName.localeCompare(b.entityName, undefined, {numeric: true});
             });
 
-        if (isInactive) {
-            inactiveList.append(entityItem);
-        } else {
-            activeList.append(entityItem);
+            const groupDetails = $('<details>').addClass('side-group').css({'margin-bottom': '10px'});
+            if (isInactiveList) {
+                groupDetails.prop('open', true);
+            }
+
+            const summaryBg = isInactiveList ? '#ffcdd2' : '#e0e0e0';
+            const summaryColor = isInactiveList ? '#c62828' : '#333';
+            const warningIcon = isInactiveList ? '<span class="material-icons" style="font-size:16px; margin-right:5px;">error_outline</span>' : '';
+
+            const groupSummary = $('<summary>').css({
+                'padding': '10px', 
+                'background': summaryBg, 
+                'color': summaryColor,
+                'cursor': 'pointer', 
+                'font-weight': 'bold', 
+                'display': 'flex', 
+                'align-items': 'center',
+                'border-radius': '4px',
+                'user-select': 'none',
+                'border': isInactiveList ? '1px solid #ef9a9a' : 'none'
+            });
+            
+            const groupCheckbox = $('<input>').attr('type', 'checkbox').css({'margin-right': '10px', 'transform': 'scale(1.2)'})
+                .on('click', e => e.stopPropagation())
+                .on('change', e => {
+                    const isChecked = e.target.checked;
+                    members.forEach(m => {
+                        handleEntityCheckboxChange(isChecked, m.entityName, false);
+                    });
+                    updateSelectedEntities();
+                    groupDetails.find('.entity-checkbox').prop('checked', isChecked);
+                });
+
+            groupSummary.append(groupCheckbox, $(`<span>${warningIcon}${groupName} (${members.length})</span>`));
+            groupDetails.append(groupSummary);
+            
+            const groupContent = $('<div>').addClass('side-group-content').css({
+                'padding-left': '10px', 
+                'max-height': '350px', 
+                'overflow-y': 'auto',
+                'border-left': '2px solid #e0e0e0',
+                'margin-left': '5px'
+            });
+
+            members.forEach(m => {
+                const { entityName, entity, isAgent, isInactive } = m;
+                const selected = appContext.selectedEntities.includes(entityName);
+                if (selected) selectedEntities.push(entityName);
+
+                const checkbox = $('<input>').addClass('entity-checkbox')
+                    .attr('type', 'checkbox').attr('name', entityName + '-checkbox')
+                    .attr('checked', selected)
+                    .on('change', e => handleEntityCheckboxChange(e.target.checked, entityName, true))
+                    .on('click', e => e.stopPropagation());
+                
+                const label = $('<label>').text(entityName)
+                    .addClass('entity-label').attr('for', entityName + '-checkbox')
+                    .css({
+                        'color': isInactive ? '#c62828' : 'inherit',
+                        'font-weight': isInactive ? 'bold' : 'normal'
+                    });
+
+                const entityItem = $('<div>').attr('id', entity.id).addClass('side-drawer entity-item').css({
+                    'border-bottom': '1px solid #f0f0f0',
+                    'padding': '8px 5%',
+                    'background': isInactive ? '#fff5f5' : 'transparent'
+                })
+                .append(checkbox, label)
+                .on('click', function () {
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    checkbox.trigger('change');
+                });
+
+                if (isAgent) {
+                    const statusIndicator = $('<div>').addClass('entity-status-indicator')
+                        .addClass(isInactive ? 'status-inactive' : 'status-active')
+                        .attr('title', isInactive ? 'Inactive' : 'Active');
+                    entityItem.append(statusIndicator);
+                }
+
+                groupContent.append(entityItem);
+            });
+            
+            groupDetails.append(groupContent);
+            containerDiv.append(groupDetails);
         }
     }
+
+    renderGroups(activeGroups, activeList, false);
+    renderGroups(inactiveGroups, inactiveList, true);
+
     appContext.selectedEntities = selectedEntities;
     updateSelectedEntities();
 }
 
-function handleEntityCheckboxChange(checked, entityName) {
+function handleEntityCheckboxChange(checked, entityName, updateUI = true) {
     if (checked) {
-        appContext.selectedEntities.push(entityName);
+        if (!appContext.selectedEntities.includes(entityName)) {
+            appContext.selectedEntities.push(entityName);
+        }
     } else {
         appContext.selectedEntities = appContext.selectedEntities.filter(e => e != entityName);
     }
-    updateSelectedEntities();
+    if (updateUI) {
+        updateSelectedEntities();
+    }
 }
 
 function updateSelectedEntities() {
@@ -253,32 +344,48 @@ function updateSelectedEntities() {
     $('#selected-entities-list').empty();
     for (let entityName of appContext.selectedEntities) {
         const entity = appContext.entities[entityName];
+        if(!entity) continue;
         
-        // Determine status for the corner indicator
         let isInactive = false;
+        let isAgent = false;
         if(entity.data) {
             for(let key in entity.data) {
                 if(entity.data[key].value === "INACTIVE") {
                     isInactive = true;
-                    break;
+                }
+                if(entity.data[key].port === "standard-status") {
+                    isAgent = true;
                 }
             }
         }
         
-        const statusIndicator = $('<div>').addClass('entity-status-indicator-corner')
-            .addClass(isInactive ? 'status-inactive' : 'status-active')
-            .attr('title', isInactive ? 'Inactive' : 'Active');
+        let statusIndicator = null;
+        if (isAgent) {
+            statusIndicator = $('<div>').addClass('entity-status-indicator-corner')
+                .addClass(isInactive ? 'status-inactive' : 'status-active')
+                .attr('title', isInactive ? 'Inactive' : 'Active');
+        }
             
         const componentBuilder = new AgentComponentBuilder(entityName);
-        $('#selected-entities-list').append($('<div>').addClass('selected-entity').append(
-            statusIndicator,
+        let entityContainer = $('<div>').addClass('selected-entity');
+        
+        if (isInactive) {
+            entityContainer.css('border', '2px solid #ef5350');
+            entityContainer.css('box-shadow', '0 0 10px rgba(239, 83, 80, 0.4)');
+        }
+
+        if (statusIndicator) {
+            entityContainer.append(statusIndicator);
+        }
+        entityContainer.append(
             $('<h2>').text(entityName),
             entity.children.map(childId => {
                 const child = entity.data[childId];
                 const item = componentBuilder.build(child, childId);
                 return item;
             })
-        ));
+        );
+        $('#selected-entities-list').append(entityContainer);
     }
 }
 
