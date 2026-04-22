@@ -98,7 +98,6 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 */
 	protected long timeDelay = 10000;
 	
-	Timer remoteDelayTimer = new Timer();
 	Timer agentKeepAliveTimer = new Timer();
 	
 	{
@@ -145,7 +144,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 				li("Application Pause requested remotely.");
 				getAgent().postAgentEvent(new AgentEvent(AgentEventType.APPLICATION_PAUSE));
 			}
-			
+
 			// // TODO this is not needed anymore, routing should be done directly
 			// if(CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY ==
 			// CentralMonitoringAndControlEntity.Operations
@@ -159,68 +158,73 @@ public class RemoteOperationShard extends AgentShardGeneral {
 			// wave);
 			// }
 			return;
+
 		case AGENT_START:
 			entityStatus[0] = Fields.RUNNING_STATUS_RUNNING;
+
+			long initialDelay = 0;
+			if(getShardData().containsKey(WAIT_PARAMETER_NAME)) {
+				initialDelay = Long.parseLong(getShardData().get(WAIT_PARAMETER_NAME));
+			}
+
 			agentKeepAliveTimer.scheduleAtFixedRate(new TimerTask() {
+				private boolean isFirstRun = true;
+
 				@Override
 				public void run() {
+					if (isFirstRun) {
+						sendGuiUpdate();
+						isFirstRun = false;
+					}
 					AgentWave keepAliveWave = CentralMonitoringAndControlEntity.KEEP_ALIVE
 							.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME)
 							.addSourceElements(SHARD_ENDPOINT);
 					sendMessage(keepAliveWave);
 				}
-			}, 0, timeDelay);
-			break;
+			}, initialDelay, timeDelay);
+
+			sendStatusUpdate();
+			return;
+
 		case AGENT_STOP:
 			entityStatus[1] = Fields.RUNNING_STATUS_STOPPED;
 			if(agentKeepAliveTimer != null) {
 				agentKeepAliveTimer.cancel();
 			}
-			break;
+			sendStatusUpdate();
+			return;
+
 		case APPLICATION_START:
 			entityStatus[1] = Fields.APPLICATION_STATUS_RUNNING;
-			break;
+			sendStatusUpdate();
+			return;
+
 		case APPLICATION_PAUSE:
 			entityStatus[1] = Fields.APPLICATION_STATUS_PAUSED;
-			break;
+			sendStatusUpdate();
+			return;
+
 		case APPLICATION_STOP:
 			entityStatus[1] = Fields.APPLICATION_STATUS_STOPPED;
-			break;
-		default:
-			break;
-		}
-		switch(event.getType()) {
-		case AGENT_START:
-			if(getShardData().containsKey(WAIT_PARAMETER_NAME))
-				remoteDelayTimer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						sendGuiUpdate();
-						remoteDelayTimer.cancel();
-					}
-				}, Long.parseLong(getShardData().get(WAIT_PARAMETER_NAME)));
-			else
-				sendGuiUpdate();
-			//$FALL-THROUGH$
-		case AGENT_STOP:
-		case APPLICATION_PAUSE:
-		case APPLICATION_STOP:
-		case APPLICATION_START: {
-			String status = Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | "));
-			li("Status of [] is [].", getAgent().getEntityName(), status);
-			AgentWave update = CentralMonitoringAndControlEntity.UPDATE_ENTITY_STATUS
-					// FIXME this should be sent to each remote
-					.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, (Object[]) entityStatus)
-					.addSourceElements(SHARD_ENDPOINT);
-			if(!sendMessage(update))
-				le("Status sending failed. Wave is []", update);
-			// TODO: change interfaceSpecification to reflect the new status
+			sendStatusUpdate();
 			return;
-		}
+
 		default:
-			// nothing to do
+			break;
 		}
+
 		lf("Agent [] event unhandled [].", getAgent().getEntityName(), event);
+	}
+
+	private void sendStatusUpdate() {
+		String status = Arrays.stream(entityStatus).map(p -> p.toString()).collect(Collectors.joining(" | "));
+		li("Status of [] is [].", getAgent().getEntityName(), status);
+		AgentWave update = CentralMonitoringAndControlEntity.UPDATE_ENTITY_STATUS
+				// FIXME this should be sent to each remote
+				.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME, (Object[]) entityStatus)
+				.addSourceElements(SHARD_ENDPOINT);
+		if(!sendMessage(update))
+			le("Status sending failed. Wave is []", update);
 	}
 	
 	/**
