@@ -62,10 +62,6 @@ public enum CategoryName {
 	 */
 	AGENT(new CatPar().isIdentifiable().hasPartName("kind", "id", Is.OPTIONAL).hasParent(PYLON)),
 	/**
-	 * Patches (non-agent entities) in the deployment, such as grass cells in a grid.
-	 */
-	PATCH(new CatPar().isIdentifiable().isNotEntity().hasPartName("kind", "id", Is.OPTIONAL)),
-	/**
 	 * Shards to be deployed in agents (hierarchical key).
 	 */
 	SHARD(new CatPar().hasParent(AGENT).isPortableFrom(DEPLOYMENT)),

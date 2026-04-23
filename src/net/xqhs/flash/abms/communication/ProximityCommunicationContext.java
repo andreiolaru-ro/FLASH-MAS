@@ -1,14 +1,15 @@
 package net.xqhs.flash.abms.communication;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.Set;
 
+import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.space.Position;
@@ -17,7 +18,6 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.WaveReceiver;
 
 public class ProximityCommunicationContext extends SimulationContext.BaseContext implements EntityProxy<ProximityCommunicationContext> {
 
@@ -33,8 +33,18 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
         }
     }
 
-    protected Map<EntityProxy<?>, WaveReceiver> receivers = new HashMap<>();
+    protected static class TargetedWaveRecord {
+        final EntityProxy<?> target;
+        final AgentWave wave;
+
+        TargetedWaveRecord(EntityProxy<?> target, AgentWave wave) {
+            this.target = target;
+            this.wave = wave;
+        }
+    }
+
     protected Queue<BroadcastRecord> pendingBroadcasts = new LinkedList<>();
+    protected Queue<TargetedWaveRecord> pendingTargetedWaves = new LinkedList<>();
     protected Map<String, List<AgentWave>> pendingWaveEvents = new HashMap<>();
     protected SpaceContext space = null;
 
@@ -43,15 +53,6 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
         if (context instanceof SpaceContext)
             space = (SpaceContext) context;
         return super.addGeneralContext(context);
-    }
-
-    public boolean register(EntityProxy<?> entity, WaveReceiver receiver) {
-        receivers.put(entity, receiver);
-        return true;
-    }
-
-    public boolean unregister(EntityProxy<?> entity, WaveReceiver registeredReceiver) {
-        return receivers.remove(entity, registeredReceiver);
     }
 
     public boolean broadcast(EntityProxy<?> sender, AgentWave wave) {
@@ -66,21 +67,37 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
         return true;
     }
 
+    public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
+        if (target == null || target.getEntityName() == null)
+            return false;
+        pendingTargetedWaves.add(new TargetedWaveRecord(target, wave));
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void validateAndExecutePendingActions() {
+        // Resolve broadcasts to targeted deliveries
         for (BroadcastRecord broadcastRecord : pendingBroadcasts) {
             Set<Position> vicinity = space.getVicinity(broadcastRecord.senderPosition);
             for (Position vpos : vicinity) {
                 for (EntityProxy<?> entity : (Set<EntityProxy<?>>) space.getEntitiesAt(vpos)) {
-                    // push model: queue delivery for entities that can receive agent events
-                    if (entity instanceof ShardContainer && entity.getEntityName() != null)
-                        pendingWaveEvents.computeIfAbsent(entity.getEntityName(), agentWaveList -> new ArrayList<>())
+                    if ((entity instanceof ShardContainer || entity instanceof Patch)
+                            && entity.getEntityName() != null)
+                        pendingWaveEvents.computeIfAbsent(entity.getEntityName(), k -> new ArrayList<>())
                                 .add(broadcastRecord.wave);
                 }
             }
         }
         pendingBroadcasts.clear();
+
+        // Resolve targeted waves
+        for (TargetedWaveRecord record : pendingTargetedWaves) {
+            String targetName = record.target.getEntityName();
+            if (targetName != null)
+                pendingWaveEvents.computeIfAbsent(targetName, k -> new ArrayList<>()).add(record.wave);
+        }
+        pendingTargetedWaves.clear();
     }
 
     @Override
@@ -95,14 +112,24 @@ public class ProximityCommunicationContext extends SimulationContext.BaseContext
         List<AgentWave> waves = pendingWaveEvents.get(recipientKey);
         if (waves == null || waves.isEmpty())
             return;
-        if (!(entity instanceof ShardContainer))
-            return;
-        ShardContainer container = (ShardContainer) entity;
-        Iterator<AgentWave> it = waves.iterator();
-        while (it.hasNext()) {
-            if (container.postAgentEvent(it.next()))
-                it.remove(); // remove wave from queue
+
+        // Deliver to ShardContainer (agents) or Patch entities
+        if (entity instanceof ShardContainer) {
+            ShardContainer container = (ShardContainer) entity;
+            Iterator<AgentWave> it = waves.iterator();
+            while (it.hasNext()) {
+                if (container.postAgentEvent(it.next()))
+                    it.remove();
+            }
+        } else if (entity instanceof Patch) {
+            Patch patch = (Patch) entity;
+            Iterator<AgentWave> it = waves.iterator();
+            while (it.hasNext()) {
+                if (patch.postAgentEvent(it.next()))
+                    it.remove();
+            }
         }
+
         if (waves.isEmpty())
             pendingWaveEvents.remove(recipientKey);
     }

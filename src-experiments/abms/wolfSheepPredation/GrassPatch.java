@@ -1,10 +1,11 @@
 package abms.wolfSheepPredation;
 
-import net.xqhs.flash.abms.PatchEvent;
 import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
+import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -51,14 +52,15 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
     }
 
     @Override
-    public boolean postPatchEvent(PatchEvent event) {
-        if ("EAT".equals(event.getType())) {
-            if (grown) {
+    public boolean postAgentEvent(AgentEvent event) {
+        if (event.getType() == AgentEventType.AGENT_WAVE) {
+            String content = event.get("content");
+            if ("EAT".equals(content) && grown) {
                 grown = false;
                 regrowthCountdown = regrowthTime;
                 li("grass eaten, regrowing in [] steps", regrowthTime);
+                return true;
             }
-            return true;
         }
         return false;
     }

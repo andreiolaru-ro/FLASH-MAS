@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
-import net.xqhs.flash.abms.PatchEvent;
+import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.Topology;
@@ -27,6 +27,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
     protected EnvironmentLinkShard e = new EnvironmentLinkShard();
     protected int visionRange = 2;
     boolean alertReceived = false;
+    protected Simulation simulation;
 
     public void setVisionRange(int visionRange) {
         this.visionRange = visionRange;
@@ -49,6 +50,13 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
     public boolean postAgentEvent(AgentEvent event) {
         switch (event.getType()) {
             case AGENT_WAVE:
+                String content = event.get("content");
+                if ("DESTROY".equals(content)) {
+                    li("[] is being eaten, deregistering", getEntityName());
+                    if (simulation != null)
+                        simulation.deregisterEntity((Entity<?>) this);
+                    return true;
+                }
                 alertReceived = true;
                 return true;
             default:
@@ -64,6 +72,8 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if (context instanceof Simulation)
+            simulation = (Simulation) context;
         e.addGeneralContext(context);
         return super.addGeneralContext(context);
     }
@@ -76,8 +86,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 
     @Override
     public void step() {
-        if (!e.isAlive())
-            return;
         li("sheep step");
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null) {
@@ -88,7 +96,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                 li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
-                ((GrassPatch) entity).postPatchEvent(new PatchEvent("EAT"));
+                e.sendWaveTo(entity, new AgentWave("EAT"));
             }
         }
 

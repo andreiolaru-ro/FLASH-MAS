@@ -22,6 +22,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class WolfSheepGroupLoader extends EntityGroupLoader {
 
+    private static final String[] CATEGORY_NAMES = {"agent", "patch"};
+
     @Override
     public boolean preload(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context) {
         return true;
@@ -68,104 +70,54 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
                 positions.add(new GridPosition(x, y));
         randomContext.shuffle(positions);
 
-        // Count total agents and patches needed
-        int totalEntities = 0;
-        List<String> agentTypes = new ArrayList<>();
-        if (multiTreeMap.getTreeKeys().contains("agent")) {
-            MultiTreeMap agentTree = multiTreeMap.getATree("agent");
-            agentTypes = agentTree.getTreeKeys();
-            for (String agentType : agentTypes)
-                totalEntities += readInt(agentTree.getATree(agentType), "n", 0);
-        }
-        List<String> patchTypes = new ArrayList<>();
-        if (multiTreeMap.getTreeKeys().contains("patch")) {
-            MultiTreeMap patchTree = multiTreeMap.getATree("patch");
-            patchTypes = patchTree.getTreeKeys();
-            for (String patchType : patchTypes)
-                totalEntities += readInt(patchTree.getATree(patchType), "n", 0);
-        }
-        if (totalEntities > totalCells)
-            return null;
-
-        // Build agent configurations for Deployment.loadEntities()
+        // Count total entities and build configs for all categories (agent + patch)
+        // Agents may be nested inside patch configs (e.g. -patch Grass ... -agent Sheep ...)
         List<MultiTreeMap> entityConfigs = new ArrayList<>();
-        if (multiTreeMap.getTreeKeys().contains("agent")) {
-            MultiTreeMap agentTree = multiTreeMap.getATree("agent");
-            for (String agentType : agentTypes) {
-                MultiTreeMap typeConfig = agentTree.getATree(agentType);
-                int n = readInt(typeConfig, "n", 0);
-                for (int i = 0; i < n; i++) {
-                    MultiTreeMap entityConfig = new MultiTreeMap();
-                    entityConfig.addSingleValue(DeploymentConfiguration.CATEGORY_ATTRIBUTE_NAME, "agent");
-                    String id = agentType.toLowerCase() + i;
-                    entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
-                            agentType + DeploymentConfiguration.NAME_SEPARATOR + id);
-                    for (String key : typeConfig.getSimpleNames()) {
-                        if (key.startsWith("#") || "n".equals(key)
-                                || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
-                                || "package".equals(key) || "in-context-of".equals(key))
-                            continue;
-                        entityConfig.addOneValue(key, typeConfig.getAValue(key));
+        List<String> entityCategories = new ArrayList<>();
+
+        for (String category : CATEGORY_NAMES) {
+            // Look at top level first
+            if (multiTreeMap.getTreeKeys().contains(category)) {
+                MultiTreeMap categoryTree = multiTreeMap.getATree(category);
+                addEntityConfigs(categoryTree, category, entityConfigs, entityCategories);
+            }
+            // Also look for this category nested inside other categories' type configs
+            for (String otherCategory : CATEGORY_NAMES) {
+                if (otherCategory.equals(category) || !multiTreeMap.getTreeKeys().contains(otherCategory))
+                    continue;
+                MultiTreeMap otherTree = multiTreeMap.getATree(otherCategory);
+                for (String typeName : otherTree.getTreeKeys()) {
+                    MultiTreeMap typeConfig = otherTree.getATree(typeName);
+                    if (typeConfig.getTreeKeys().contains(category)) {
+                        MultiTreeMap nestedTree = typeConfig.getATree(category);
+                        addEntityConfigs(nestedTree, category, entityConfigs, entityCategories);
                     }
-                    entityConfigs.add(entityConfig);
                 }
             }
         }
 
-        lp.lf("Loading [] agents...", Integer.valueOf(entityConfigs.size()));
-        List<Entity<?>> agents = Deployment.get().loadEntities(entityConfigs, lp, new ArrayList<>(context));
+        if (entityConfigs.size() > totalCells)
+            return null;
 
+        // Load all entities together
+        lp.lf("Loading [] entities...", Integer.valueOf(entityConfigs.size()));
+        List<Entity<?>> allEntities = Deployment.get().loadEntities(entityConfigs, lp, new ArrayList<>(context));
+
+        // Place and register all entities
         int idx = 0;
-        for (Entity<?> entity : agents) {
-            if (agentManagement != null)
+        for (Entity<?> entity : allEntities) {
+            String category = entityCategories.get(idx);
+            if (agentManagement != null && "agent".equals(category))
                 entity.addGeneralContext(agentManagement.asContext());
             if (randomContext != null)
                 entity.addGeneralContext(randomContext.asContext());
             if (proximityCommunication != null)
                 entity.addGeneralContext(proximityCommunication.asContext());
+            entity.addGeneralContext(sim.asContext());
             space.place(entity.asContext(), positions.get(idx));
-            sim.registerEntity("agent", entity, entity.getName());
+            sim.registerEntity(category, entity, entity.getName());
             idx++;
         }
-
-        // Build and place patches
-        List<Entity<?>> patches = new ArrayList<>();
-        if (multiTreeMap.getTreeKeys().contains("patch")) {
-            MultiTreeMap patchTree = multiTreeMap.getATree("patch");
-            for (String patchType : patchTypes) {
-                MultiTreeMap typeConfig = patchTree.getATree(patchType);
-                int n = readInt(typeConfig, "n", 0);
-                for (int i = 0; i < n; i++) {
-                    MultiTreeMap entityConfig = new MultiTreeMap();
-                    entityConfig.addSingleValue(DeploymentConfiguration.CATEGORY_ATTRIBUTE_NAME, "patch");
-                    String id = patchType.toLowerCase() + i;
-                    entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
-                            patchType + DeploymentConfiguration.NAME_SEPARATOR + id);
-                    for (String key : typeConfig.getSimpleNames()) {
-                        if (key.startsWith("#") || "n".equals(key)
-                                || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
-                                || "package".equals(key) || "in-context-of".equals(key))
-                            continue;
-                        entityConfig.addOneValue(key, typeConfig.getAValue(key));
-                    }
-                    entityConfigs.add(entityConfig);
-                }
-            }
-            lp.lf("Loading [] patches...", Integer.valueOf(entityConfigs.size() - agents.size()));
-            patches = Deployment.get().loadEntities(
-                    entityConfigs.subList(agents.size(), entityConfigs.size()), lp, new ArrayList<>(context));
-
-            for (Entity<?> patch : patches) {
-                if (randomContext != null)
-                    patch.addGeneralContext(randomContext.asContext());
-                space.place(patch.asContext(), positions.get(idx));
-                sim.registerEntity("patch", patch, patch.getName());
-                idx++;
-            }
-        }
-
-        List<Entity<?>> allEntities = new ArrayList<>(agents);
-        allEntities.addAll(patches);
 
         WolfSheepGroup group = new WolfSheepGroup(allEntities);
         group.configure(multiTreeMap);
@@ -175,6 +127,30 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
     @Override
     public WolfSheepGroup load(MultiTreeMap multiTreeMap) {
         return load(multiTreeMap, null, null);
+    }
+
+    private static void addEntityConfigs(MultiTreeMap categoryTree, String category,
+                                           List<MultiTreeMap> entityConfigs, List<String> entityCategories) {
+        for (String typeName : categoryTree.getTreeKeys()) {
+            MultiTreeMap typeConfig = categoryTree.getATree(typeName);
+            int n = readInt(typeConfig, "n", 0);
+            for (int i = 0; i < n; i++) {
+                MultiTreeMap entityConfig = new MultiTreeMap();
+                entityConfig.addSingleValue(DeploymentConfiguration.CATEGORY_ATTRIBUTE_NAME, category);
+                String id = typeName.toLowerCase() + i;
+                entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
+                        typeName + DeploymentConfiguration.NAME_SEPARATOR + id);
+                for (String key : typeConfig.getSimpleNames()) {
+                    if (key.startsWith("#") || "n".equals(key)
+                            || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
+                            || "package".equals(key) || "in-context-of".equals(key))
+                        continue;
+                    entityConfig.addOneValue(key, typeConfig.getAValue(key));
+                }
+                entityConfigs.add(entityConfig);
+                entityCategories.add(category);
+            }
+        }
     }
 
     private static int readInt(MultiTreeMap multiTreeMap, String key, int fallback) {

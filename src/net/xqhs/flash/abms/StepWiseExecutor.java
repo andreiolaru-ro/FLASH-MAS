@@ -1,5 +1,8 @@
 package net.xqhs.flash.abms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
@@ -66,16 +69,28 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 	
 	protected void runStep(long step) {
 		li("Step []", Long.valueOf(step));
-		for (Entity<?> entity : simulation.getSimulationObjects()) {
-			for (SimulationContext context : simulation.getSimulationContexts())
-				context.sendEvents(entity);//push pending events to the entity
+		// Iterate over a copy to avoid ConcurrentModificationException when entities deregister during the step
+		List<Entity<?>> snapshot = new ArrayList<>(simulation.getSimulationObjects());
+		for (Entity<?> entity : snapshot) {
+			// Check if entity is still registered before sending events
+			if (!simulation.getSimulationObjects().contains(entity))
+				continue;
+			// Push pending events to the entity from all contexts
+			for (SimulationContext context : simulation.getSimulationContexts()) {
+				context.sendEvents(entity);
+				// If the entity deregistered during event processing, stop
+				if (!simulation.getSimulationObjects().contains(entity))
+					break;
+			}
+			// Check again after all events have been delivered
+			if (!simulation.getSimulationObjects().contains(entity))
+				continue;
 			if (entity instanceof SteppableEntity)
-				((SteppableEntity) entity).step();//then execute the entity's step
-
+				((SteppableEntity) entity).step();
 			else if (entity instanceof Patch)
 				((Patch) entity).step();
 		}
-		// all entities have been stepped, now update the simulation contexts
+		// All entities have been stepped, now update the simulation contexts
 		for (SimulationContext context : simulation.getSimulationContexts())
 			context.validateAndExecutePendingActions();
 		simulation.stepCompleted();

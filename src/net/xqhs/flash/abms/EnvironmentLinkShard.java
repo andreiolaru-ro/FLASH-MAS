@@ -1,8 +1,6 @@
 package net.xqhs.flash.abms;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -16,12 +14,9 @@ import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
 import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.agent.AgentEvent;
-import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 
@@ -31,8 +26,6 @@ public class EnvironmentLinkShard extends AgentShardCore {
 
     SpaceContext space = null;
     ProximityCommunicationContext proximityCommunication = null;
-    WaveReceiver waveInbox = null;
-    List<AgentWave> receivedWaves = new ArrayList<>();
     AgentManagementContext agentManagement = null;
     RandomContext randomContext = null;
 
@@ -48,15 +41,10 @@ public class EnvironmentLinkShard extends AgentShardCore {
             agentManagement = (AgentManagementContext) context;
         else if (context instanceof RandomContext)
             randomContext = (RandomContext) context;
-        else if (context instanceof ProximityCommunicationContext) {
+        else if (context instanceof ProximityCommunicationContext)
             proximityCommunication = (ProximityCommunicationContext) context;
-            waveInbox = wave -> receivedWaves.add(wave);
-        }
         if (!super.addGeneralContext(context))
             return false;
-
-        if (proximityCommunication != null && getContext() != null && waveInbox != null)
-            proximityCommunication.register(getContext(), waveInbox);
 
         if (agentManagement != null && getContext() != null)
             agentManagement.registerAgent(getContext(), this);
@@ -99,14 +87,6 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return space.getTopology();
     }
 
-    public boolean isAlive() {
-        return agentManagement == null || !agentManagement.isMarkedForDestruction(getContext());
-    }
-
-    public boolean isTargetAlive(EntityProxy<?> target) {
-        return agentManagement == null || !agentManagement.isMarkedForDestruction(target);
-    }
-
     public boolean requestDestroyAgent(EntityProxy<?> target) {
         return agentManagement.addPendingAction(new ActionRecord(getContext(),
                 new MultiValueMap()
@@ -115,7 +95,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public void notifyAgentDestroyed() {
-        getAgent().postAgentEvent(new AgentEvent(AgentEventType.AGENT_STOP));
+        // no-op: destruction is now handled via events and self-deregistration
     }
 
     public boolean broadcast(AgentWave wave) {
@@ -124,15 +104,10 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return proximityCommunication.broadcast(getContext(), wave);
     }
 
-    /**
-     * Pull variant: the agent decides when to consume the waves accumulated by the context.
-     */
-    public List<AgentWave> clearWaves() {
-        if (receivedWaves.isEmpty())
-            return Collections.emptyList();
-        List<AgentWave> result = new ArrayList<>(receivedWaves);
-        receivedWaves.clear();
-        return result;
+    public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
+        if (proximityCommunication == null)
+            return false;
+        return proximityCommunication.sendWaveTo(target, wave);
     }
 
     @SuppressWarnings("unchecked")
