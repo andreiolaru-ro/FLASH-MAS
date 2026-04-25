@@ -785,6 +785,46 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			String a = args.next();
 			if(a.trim().length() == 0)
 				continue;
+
+			// Start of Issue #69
+
+			// Switch context to root
+			if(a.equals("<<")) {
+				// Popping everything untill we reach root
+				while (context.size() > 1) {
+					context.pop();
+				}
+				// Temporary log message (good for testing i believe)
+				log.lf("Context reset to root via <<.");
+				continue;
+			}
+			else if(a.startsWith("<")) {
+				String targetCategName = a.substring(1);
+				boolean categExistsInContext = false;
+				// Checking to see if the category exists in the current context
+				for (CtxtTriple ctx : context) {
+					if (ctx.category.equals(targetCategName)) {
+						categExistsInContext = true;
+						break;
+					}
+				}
+
+				if (categExistsInContext) {
+					// Going up util we find the wanted category
+					while (!context.peek().category.equals(targetCategName)) {
+						context.pop();
+					}
+					// Temporary log message (good for testing)
+					log.lf("Context moved up to category [].", targetCategName);
+				}
+				else {
+					// Special case : the given category does not exist in the current context
+					log.lw("Tree control failed: category [] doesn't exist in the current context hierarchy.", targetCategName);
+				}
+				continue;
+			}
+			// End of issue #69
+
 			if(isCategoryDefinition(a)) {
 				// get category
 				String catName = getCategoryName(a);
