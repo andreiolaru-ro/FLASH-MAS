@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.xqhs.flash.core.CategoryName;
@@ -428,7 +429,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					JsonObject subJson = JsonParser.parseString(subContent).getAsJsonObject();
 					String targetCategory = subJson.get("category").getAsString();
 					String metricName = subJson.get("metric").getAsString();
-					
+
 					li("UI Subscribed to metric [] for filter []", metricName, targetCategory);
 
 					Pattern pattern;
@@ -437,7 +438,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					} catch (Exception e) {
 						pattern = Pattern.compile(Pattern.quote(targetCategory), Pattern.CASE_INSENSITIVE);
 					}
-					
+
 					for (String n : allNodeEntities.keySet()) {
 						HashMap<String, List<String>> categories = allNodeEntities.get(n);
 						for (String cat : categories.keySet()) {
@@ -464,12 +465,24 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					WebEntity webGui = (WebEntity) gui;
 					JsonObject metricData = new JsonObject();
 					metricData.addProperty("agent", sourceEntity);
-					
-					try {
-						metricData.add("data", JsonParser.parseString(wave.getContent().toString()));
-					} catch (Exception e) {
-						metricData.addProperty("data", wave.getContent().toString());
+
+					JsonObject data = new JsonObject();
+					for(String key : wave.getContentElements()) {
+						List<String> values = wave.getValues(key);
+						if(values.size() == 1) {
+							try {
+								data.add(key, JsonParser.parseString(values.get(0)));
+							} catch(Exception e) {
+								data.addProperty(key, values.get(0));
+							}
+						} else {
+							JsonArray arr = new JsonArray();
+							for(String v : values)
+								arr.add(v);
+							data.add(key, arr);
+						}
 					}
+					metricData.add("data", data);
 					webGui.sendToClient(WebEntity.buildMessage("metrics", "metric_update", metricData));
 				}
 				return true;
@@ -664,7 +677,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 						ed.setStatus(Fields.STATUS_UNKNOWN.name());
 						ed.setAppStatus(Fields.STATUS_UNKNOWN.name());
 					}
-					
+
 					Element standardControls = setupStandardControls(ed.getStatus(), ed.getAppStatus(), entityName);
 					if(ed.getGuiSpecification() == null) {
 						ed.setGuiSpecification(standardControls);
@@ -765,7 +778,7 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 					} else if ("standard-start".equals(sourcePort)) {
 						entitiesData.get(entityName).setStatus(Fields.RUNNING_STATUS_RUNNING.name());
 						entitiesData.get(entityName).setAppStatus(Fields.RUNNING_STATUS_RUNNING.name());
-						
+
 						wave.resetDestination(entityName, "remote", RemoteOperationShard.Operations.START_APPLICATION.name());
 					}
 
