@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash-MAS Log Player & FSM Viewer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- D3.js and HPCC-js (WebAssembly Graphviz) -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm@1.12.8/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-graphviz@4.4.0/build/d3-graphviz.min.js"></script>
+
+    <style>
+        /* Custom Scrollbar for a modern look */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        #graph-container svg { width: 100%; height: 100%; }
+
+        .active-row { background-color: #374151 !important; border-left: 4px solid #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 h-screen flex flex-col font-sans overflow-hidden">
+
+<!-- TOP NAVBAR -->
+<header class="bg-gray-800 border-b border-gray-700 h-16 flex items-center justify-between px-6 shrink-0">
+    <div class="flex items-center gap-3">
+        <i class="ph-fill ph-cpu text-3xl text-blue-500"></i>
+        <h1 class="text-xl font-bold text-white tracking-wide">Flash-MAS <span class="font-light text-gray-400">Log Player</span></h1>
+    </div>
+
+    <div class="flex gap-4">
+        <label class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors border border-gray-600">
+            <i class="ph ph-file-code"></i> Load JSON
+            <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+        </label>
+        <label class="cursor-pointer bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg">
+            <i class="ph ph-git-merge"></i> Load FSM (.dot)
+            <input type="file" id="dotFileInput" accept=".dot,.fsm" class="hidden">
+        </label>
+    </div>
+</header>
+
+<!-- MAIN CONTENT AREA -->
+<div class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR: FILTERS -->
+    <aside class="w-72 bg-gray-800 border-r border-gray-700 flex flex-col shrink-0">
+        <div class="p-4 border-b border-gray-700 bg-gray-800/50">
+            <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Data Status</h2>
+            <p id="statusLabel" class="text-xs text-gray-500">Waiting for JSON file...</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+            <!-- Agent Filters -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="ph ph-users"></i> Filter Agents
+                    </h3>
+                    <button id="toggleAllAgentsBtn" class="text-xs text-blue-400 hover:text-blue-300">Toggle All</button>
+                </div>
+                <div id="agentFiltersContainer" class="space-y-2 text-sm">
+                    <p class="text-gray-500 italic text-xs">Please load a JSON file first.</p>
+                </div>
+            </div>
+
+            <hr class="border-gray-700">
+
+            <!-- Event Category Filters -->
+            <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                    <i class="ph ph-list-dashes"></i> Event Types
+                </h3>
+                <div id="eventFiltersContainer" class="space-y-4 text-sm">
+                    <p class="text-gray-500 italic text-xs">Please load a JSON file first.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CENTER AREA: GRAPH & TABLE -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- GRAPHVIZ VIEW -->
+        <div class="h-1/2 bg-white relative shrink-0 border-b border-gray-700 flex flex-col">
+            <div class="absolute top-2 left-4 z-10 bg-white/80 backdrop-blur px-3 py-1 rounded shadow text-xs font-bold text-gray-800 border border-gray-200">
+                <i class="ph ph-graph"></i> Protocol View (FSM)
+            </div>
+            <div id="graph-container" class="flex-1 w-full h-full flex items-center justify-center text-gray-400 bg-slate-50 cursor-move">
+                <p id="graph-placeholder" class="text-sm">Waiting for .dot file to render the protocol...</p>
+            </div>
+        </div>
+
+        <!-- LOGS TABLE -->
+        <div class="flex-1 overflow-hidden flex flex-col bg-gray-900">
+            <div class="overflow-x-auto overflow-y-auto flex-1">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-gray-800 text-gray-400 sticky top-0 z-10 shadow">
+                    <tr>
+                        <th class="px-4 py-2 w-24">Time</th>
+                        <th class="px-4 py-2 w-32">Timestamp</th>
+                        <th class="px-4 py-2 w-48">Agent</th>
+                        <th class="px-4 py-2 w-24">Category</th>
+                        <th class="px-4 py-2 w-48">Event Type</th>
+                        <th class="px-4 py-2">Payload (Content)</th>
+                    </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="divide-y divide-gray-800">
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500 italic">No logs loaded.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- BOTTOM PLAYBACK CONTROLS -->
+<footer class="h-20 bg-gray-800 border-t border-gray-700 flex items-center px-6 shrink-0 gap-6">
+
+    <!-- Buttons -->
+    <div class="flex items-center gap-2">
+        <button id="btnPlay" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow" disabled>
+            <i class="ph-fill ph-play text-xl"></i>
+        </button>
+        <button id="btnPause" class="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="ph-fill ph-pause text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Slider & Time -->
+    <div class="flex-1 flex flex-col gap-1 mt-2">
+        <input type="range" id="timelineSlider" min="0" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500" disabled>
+        <div class="flex justify-between text-xs text-gray-400 font-mono mt-1">
+            <span id="lblCurrentTime">00:00:00.000</span>
+            <span id="lblProgress">0 / 0</span>
+        </div>
+    </div>
+
+</footer>
+
+<!-- LOGIC SCRIPT -->
+<script>
+    // --- State Variables ---
+    let allEvents = []; // Stores all loaded log events
+    let visibleEvents = []; // Stores filtered events currently available for playback
+    let knownAgents = new Set(); // Unique set of agent names extracted from logs
+    let knownEventTypes = new Set(); // Unique set of event types extracted from logs
+
+    // Filters State
+    let agentFilters = {}; // Maps agent name to boolean (is active)
+    let categoryFilters = {}; // Maps event type to boolean (is active)
+
+    // Playback State
+    let playbackTimer = null; // Reference to the setInterval timer
+    let isPlaying = false; // Flag indicating if playback is active
+    let currentIndex = 0; // The index of the currently active log entry
+    // Number of log items to render simultaneously to optimize DOM performance (Virtual Scrolling)
+    let tableWindowSize = 100;
+
+    // --- DOM Elements ---
+    const jsonFileInput = document.getElementById('jsonFileInput');
+    const dotFileInput = document.getElementById('dotFileInput');
+    const statusLabel = document.getElementById('statusLabel');
+
+    const agentFiltersContainer = document.getElementById('agentFiltersContainer');
+    const eventFiltersContainer = document.getElementById('eventFiltersContainer');
+    const toggleAllAgentsBtn = document.getElementById('toggleAllAgentsBtn');
+
+    const logsTableBody = document.getElementById('logsTableBody');
+
+    const btnPlay = document.getElementById('btnPlay');
+    const btnPause = document.getElementById('btnPause');
+    const timelineSlider = document.getElementById('timelineSlider');
+    const lblCurrentTime = document.getElementById('lblCurrentTime');
+    const lblProgress = document.getElementById('lblProgress');
+    const graphContainer = document.getElementById('graph-container');
+    const graphPlaceholder = document.getElementById('graph-placeholder');
+
+    // --- D3 Graphviz Initialization ---
+    let graphvizInstance = null; // Holds the instance of the Graphviz renderer
+
+    // --- Event Listeners ---
+    jsonFileInput.addEventListener('change', handleJsonUpload);
+    dotFileInput.addEventListener('change', handleDotUpload);
+
+    btnPlay.addEventListener('click', startPlayback);
+    btnPause.addEventListener('click', stopPlayback);
+
+    timelineSlider.addEventListener('input', handleSliderDrag);
+    toggleAllAgentsBtn.addEventListener('click', toggleAllAgents);
+
+    // --- File Handlers ---
+
+    /**
+     * Handles the upload of the main JSON log file.
+     * Parses the JSON, sorts events chronologically, extracts metadata,
+     * builds the filter UI, and triggers the initial rendering.
+     */
+    function handleJsonUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        statusLabel.textContent = `Loading ${file.name}...`;
+        stopPlayback(); // Stop any ongoing playback when loading new data
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                allEvents = JSON.parse(e.target.result);
+
+                // Ensure strict chronological sorting based on timestamps,
+                // mirroring the logic in the original Java implementation.
+                allEvents.sort((a, b) => a.timestamp - b.timestamp);
+
+                extractMetadata();
+                buildFiltersUI();
+                applyFilters();
+
+                statusLabel.innerHTML = `Successfully loaded.<br><span class="text-white">${allEvents.length}</span> total logs.`;
+
+            } catch (err) {
+                alert("Error parsing JSON: " + err.message);
+                statusLabel.textContent = "Error loading file.";
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    /**
+     * Handles the upload of the FSM graph definition file (.dot or .fsm).
+     * Passes the file content to the Graphviz rendering engine.
+     */
+    function handleDotUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dotContent = e.target.result;
+            renderFsmGraph(dotContent);
+        };
+        reader.readAsText(file);
+    }
+
+    // --- Graph Rendering ---
+
+    /**
+     * Renders the provided DOT syntax string into an interactive SVG graph
+     * using the d3-graphviz library. Initializes the instance if necessary.
+     */
+    function renderFsmGraph(dotCode) {
+        graphPlaceholder.style.display = 'none'; // Hide placeholder text
+
+        // Initialize graphviz instance on first use to configure animations and interactions
+        if (!graphvizInstance) {
+            try {
+                graphvizInstance = d3.select("#graph-container").graphviz()
+                    .transition(function () {
+                        // Add a smooth transition effect when the graph updates or first renders
+                        return d3.transition("main").ease(d3.easeLinear).delay(100).duration(500);
+                    })
+                    .logEvents(false) // Disable verbose logging from d3-graphviz
+                    .fit(true) // Automatically scale the graph to fit the container
+                    .zoom(true); // Enable panning and zooming interactions
+            } catch (err) {
+                console.error("Failed to initialize d3-graphviz", err);
+                alert("Initialization failed. Please ensure your browser has internet access to load WebAssembly modules.");
+                return;
+            }
+        }
+
+        // Execute the render pipeline with the loaded DOT code
+        graphvizInstance.renderDot(dotCode).on("error", function() {
+            console.error("Error rendering DOT file");
+            alert("Failed to render the DOT file. Please check its syntax.");
+        });
+    }
+
+    // --- Filtering Logic ---
+
+    /**
+     * Iterates through all loaded events to compile unique sets
+     * of participating agents and observed event types.
+     */
+    function extractMetadata() {
+        knownAgents.clear();
+        knownEventTypes.clear();
+
+        allEvents.forEach(evt => {
+            if (evt.entityName) knownAgents.add(evt.entityName);
+            if (evt.type) knownEventTypes.add(evt.type);
+        });
+    }
+
+    /**
+     * Dynamically generates the HTML for the sidebar filters based on
+     * the metadata extracted from the current log file.
+     */
+    function buildFiltersUI() {
+        // 1. Build Agent Filters
+        agentFiltersContainer.innerHTML = '';
+        agentFilters = {};
+
+        Array.from(knownAgents).sort().forEach(agent => {
+            agentFilters[agent] = true; // All agents selected by default
+
+            const label = document.createElement('label');
+            label.className = 'flex items-center gap-2 cursor-pointer hover:bg-gray-700/50 p-1 rounded';
+            label.innerHTML = `
+                <input type="checkbox" checked value="${agent}" class="agent-cb rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600 focus:ring-offset-gray-800">
+                <span class="truncate" title="${agent}">${agent}</span>
+            `;
+            // Re-apply filters whenever a checkbox state changes
+            label.querySelector('input').addEventListener('change', (e) => {
+                agentFilters[agent] = e.target.checked;
+                applyFilters();
+            });
+            agentFiltersContainer.appendChild(label);
+        });
+
+        // 2. Build Event Category Filters
+        eventFiltersContainer.innerHTML = '';
+        categoryFilters = {};
+
+        // Group raw event types into logical categories for better UI organization
+        const categories = {
+            'Lifecycle': [],
+            'Messaging': [],
+            'Logging': [],
+            'Other': []
+        };
+
+        Array.from(knownEventTypes).forEach(type => {
+            const upper = type.toUpperCase();
+            if (upper.includes("START") || upper.includes("STOP") || upper.includes("INIT")) {
+                categories['Lifecycle'].push(type);
+            } else if (upper.includes("MESSAGE") || upper.includes("WAVE") || upper.includes("SEND") || upper.includes("RECEIVE") || upper.includes("SHARD")) {
+                categories['Messaging'].push(type);
+            } else if (upper.includes("LOG") || upper.includes("INFO") || upper.includes("WARN") || upper.includes("ERROR")) {
+                categories['Logging'].push(type);
+            } else {
+                categories['Other'].push(type);
+            }
+        });
+
+        // Render filter groups
+        Object.entries(categories).forEach(([catName, types]) => {
+            if (types.length === 0) return; // Skip empty categories
+
+            const catDiv = document.createElement('div');
+            catDiv.className = 'bg-gray-800 p-2 rounded border border-gray-700';
+            catDiv.innerHTML = `<h4 class="text-xs font-bold text-gray-400 mb-2 uppercase">${catName}</h4>`;
+
+            types.sort().forEach(type => {
+                categoryFilters[type] = true; // All event types selected by default
+
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-2 cursor-pointer hover:bg-gray-700/50 p-1 rounded text-xs';
+                label.innerHTML = `
+                    <input type="checkbox" checked value="${type}" class="type-cb rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600 focus:ring-offset-gray-800">
+                    <span class="truncate" title="${type}">${type}</span>
+                `;
+                label.querySelector('input').addEventListener('change', (e) => {
+                    categoryFilters[type] = e.target.checked;
+                    applyFilters();
+                });
+                catDiv.appendChild(label);
+            });
+
+            eventFiltersContainer.appendChild(catDiv);
+        });
+    }
+
+    /**
+     * Toggles the selection state of all agent filters simultaneously.
+     * Useful for quickly isolating a single agent when dealing with large systems.
+     */
+    function toggleAllAgents() {
+        // Check if all are currently selected to determine the toggle direction
+        const allChecked = Object.values(agentFilters).every(val => val === true);
+        const newState = !allChecked;
+
+        document.querySelectorAll('.agent-cb').forEach(cb => {
+            cb.checked = newState;
+            agentFilters[cb.value] = newState;
+        });
+        applyFilters();
+    }
+
+    /**
+     * Evaluates the entire event dataset against the current filter states
+     * to produce the active `visibleEvents` array. Resets playback state.
+     */
+    function applyFilters() {
+        visibleEvents = allEvents.filter(evt => {
+            // Check against agent filters
+            if (evt.entityName && !agentFilters[evt.entityName]) return false;
+            // Check against event type filters
+            if (evt.type && !categoryFilters[evt.type]) return false;
+            return true;
+        });
+
+        currentIndex = 0; // Reset playback position
+
+        // Update UI controls based on the availability of filtered data
+        if (visibleEvents.length > 0) {
+            timelineSlider.disabled = false;
+            btnPlay.disabled = false;
+            timelineSlider.max = visibleEvents.length - 1;
+            timelineSlider.value = 0;
+        } else {
+            // Disable controls if no events match the criteria
+            timelineSlider.disabled = true;
+            btnPlay.disabled = true;
+            btnPause.disabled = true;
+            lblCurrentTime.textContent = "00:00:00.000";
+            lblProgress.textContent = "0 / 0";
+        }
+
+        renderTableWindow();
+    }
+
+    // --- Table & Playback Logic ---
+
+    /**
+     * Renders the log table view.
+     * Implements a simplified "Virtual Scrolling" technique: instead of inserting
+     * potentially tens of thousands of rows into the DOM (which causes severe browser lag),
+     * it only renders a small sliding "window" of rows surrounding the current playback index.
+     */
+    function renderTableWindow() {
+        logsTableBody.innerHTML = '';
+
+        if (visibleEvents.length === 0) {
+            logsTableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500 italic">No events match the current filters.</td></tr>';
+            return;
+        }
+
+        // Calculate the boundaries of the sliding render window
+        let startIdx = Math.max(0, currentIndex - Math.floor(tableWindowSize / 2));
+        let endIdx = Math.min(visibleEvents.length - 1, startIdx + tableWindowSize);
+
+        // Adjust start index if the window is near the end of the dataset to maintain window size
+        startIdx = Math.max(0, endIdx - tableWindowSize);
+
+        // Use a DocumentFragment for efficient bulk DOM insertion
+        const fragment = document.createDocumentFragment();
+
+        for (let i = startIdx; i <= endIdx; i++) {
+            const evt = visibleEvents[i];
+            const tr = document.createElement('tr');
+
+            // Visually highlight the currently active row during playback or seeking
+            if (i === currentIndex) {
+                tr.className = 'active-row';
+                // Ensure the active row is visible by scrolling it to the center
+                setTimeout(() => tr.scrollIntoView({ block: 'center', behavior: 'smooth' }), 0);
+            } else {
+                tr.className = 'hover:bg-gray-800 transition-colors';
+            }
+
+            // Re-calculate the broad category for display purposes
+            let cat = "Other";
+            let typeUp = (evt.type || "").toUpperCase();
+            if (typeUp.includes("START") || typeUp.includes("STOP")) cat = "Lifecycle";
+            else if (typeUp.includes("MESSAGE") || typeUp.includes("WAVE")) cat = "Messaging";
+            else if (typeUp.includes("LOG")) cat = "Log";
+
+            // Format the payload, converting objects to strings if necessary
+            let payloadStr = "";
+            if (evt.payload) {
+                payloadStr = typeof evt.payload === 'object' ? JSON.stringify(evt.payload) : evt.payload;
+            }
+
+            // Construct row HTML
+            tr.innerHTML = `
+                <td class="px-4 py-2 font-mono text-gray-400">${formatTime(evt.timestamp)}</td>
+                <td class="px-4 py-2 font-mono text-xs text-gray-500">${evt.timestamp}</td>
+                <td class="px-4 py-2 font-bold ${getAgentColorClass(evt.entityName)}">${evt.entityName || '-'}</td>
+                <td class="px-4 py-2 text-xs uppercase tracking-wider text-gray-500">${cat}</td>
+                <td class="px-4 py-2 text-blue-300 font-mono text-xs">${evt.type || '-'}</td>
+                <td class="px-4 py-2 text-gray-300 text-xs truncate max-w-md" title='${payloadStr.replace(/'/g, "&#39;")}'>${payloadStr}</td>
+            `;
+
+            fragment.appendChild(tr);
+        }
+
+        logsTableBody.appendChild(fragment);
+        updateProgressLabels();
+    }
+
+    /**
+     * Returns a Tailwind text color class based on the agent's role
+     * to improve readability during fast playback.
+     */
+    function getAgentColorClass(agentName) {
+        if (!agentName) return 'text-gray-400';
+        if (agentName.includes("Market")) return 'text-amber-400'; // Market entities are yellow/amber
+        if (agentName.includes("Live")) return 'text-emerald-400'; // Active human/live agents are green
+        if (agentName.includes("Mocked")) return 'text-purple-400'; // Simulated/replayed agents are purple
+        return 'text-gray-300';
+    }
+
+    /**
+     * Converts a raw Unix timestamp into a readable HH:mm:ss.SSS format.
+     */
+    function formatTime(ts) {
+        if (!ts) return "00:00:00.000";
+        const d = new Date(ts);
+        return d.toISOString().substring(11, 23);
+    }
+
+    /**
+     * Updates the UI labels and slider position to reflect the current playback index.
+     */
+    function updateProgressLabels() {
+        if (visibleEvents.length > 0) {
+            const ts = visibleEvents[currentIndex].timestamp;
+            lblCurrentTime.textContent = formatTime(ts);
+            lblProgress.textContent = `${currentIndex + 1} / ${visibleEvents.length}`;
+            timelineSlider.value = currentIndex;
+        }
+    }
+
+    // --- Playback ---
+
+    /**
+     * Initiates the automated playback sequence.
+     */
+    function startPlayback() {
+        if (visibleEvents.length === 0) return;
+
+        // Loop back to start if playback is initiated at the end of the sequence
+        if (currentIndex >= visibleEvents.length - 1) {
+            currentIndex = 0;
+        }
+
+        isPlaying = true;
+        btnPlay.disabled = true;
+        btnPause.disabled = false;
+
+        // Disable filters visually and functionally during playback to prevent
+        // concurrent modification issues with the index state
+        agentFiltersContainer.style.pointerEvents = 'none';
+        agentFiltersContainer.style.opacity = '0.5';
+        eventFiltersContainer.style.pointerEvents = 'none';
+        eventFiltersContainer.style.opacity = '0.5';
+
+        // Trigger the step function continuously
+        playbackTimer = setInterval(playNextStep, 150); // Advance every 150ms
+    }
+
+    /**
+     * Halts the automated playback sequence.
+     */
+    function stopPlayback() {
+        isPlaying = false;
+        btnPlay.disabled = false;
+        btnPause.disabled = true;
+
+        // Re-enable filter interaction
+        agentFiltersContainer.style.pointerEvents = 'auto';
+        agentFiltersContainer.style.opacity = '1';
+        eventFiltersContainer.style.pointerEvents = 'auto';
+        eventFiltersContainer.style.opacity = '1';
+
+        clearInterval(playbackTimer);
+    }
+
+    /**
+     * Advances the playback index by one step and triggers a UI update.
+     */
+    function playNextStep() {
+        if (currentIndex < visibleEvents.length - 1) {
+            currentIndex++;
+            renderTableWindow(); // Updates table, highlights row, and auto-scrolls
+        } else {
+            stopPlayback(); // Automatically stop when reaching the end
+        }
+    }
+
+    /**
+     * Handles user interaction with the timeline slider, allowing manual seeking
+     * through the event sequence.
+     */
+    function handleSliderDrag(e) {
+        const val = parseInt(e.target.value, 10);
+        if (!isNaN(val) && visibleEvents.length > 0) {
+            currentIndex = val;
+
+            updateProgressLabels(); // Update time indicators instantly
+
+            // Only render the heavy table view if we aren't currently auto-playing
+            if (!isPlaying) {
+                renderTableWindow();
+            }
+        }
+    }
+
+</script>
+</body>
+</html>

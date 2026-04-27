@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
+
+    <package>Tiberiu.energyMarket</package>
+    <pylon kind="local">
+        <agent name="MarketAgent" classpath="MarketAgent" />
+
+        <agent name="Live_Prosumer_A" classpath="ProsumerAgent" />
+        <agent name="Live_Prosumer_B" classpath="ProsumerAgent" />
+
+        <agent name="Mocked_House_1" classpath="PlaybackProsumerAgent" />
+        <agent name="Mocked_House_2" classpath="PlaybackProsumerAgent" />
+        <agent name="Mocked_House_3" classpath="PlaybackProsumerAgent" />
+    </pylon>
+
+</deployment>

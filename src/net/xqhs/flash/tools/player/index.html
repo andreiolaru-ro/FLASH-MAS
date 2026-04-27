@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flash-MAS Hybrid Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .active-row { background-color: #1e293b !important; border-left: 4px solid #3b82f6; }
+        .mode-live { color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.1); }
+        .mode-mocked { color: #8b5cf6; border-color: #8b5cf6; background: rgba(139,92,246,0.1); }
+        .divergent { background-color: rgba(245, 158, 11, 0.15) !important; border-left: 4px solid #f59e0b !important; }
+        .match-row { background-color: rgba(16, 185, 129, 0.05); }
+
+        /* Custom Scrollbar for sidebars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-200 h-screen flex flex-col font-sans overflow-hidden">
+
+<header class="h-16 border-b border-gray-800 bg-gray-900 flex items-center justify-between px-6 shrink-0">
+    <div class="flex items-center gap-3">
+        <i class="ph-fill ph-cpu text-emerald-500 text-3xl"></i>
+        <h1 class="text-xl font-bold tracking-tight">Flash-MAS <span class="font-light text-gray-400">Hybrid Control</span></h1>
+    </div>
+    <div class="flex gap-3 items-center">
+        <select id="speedSelect" class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 outline-none cursor-pointer" onchange="changeSpeed(this.value)">
+            <option value="1">1x Speed (Real Time)</option>
+            <option value="2">2x Speed</option>
+            <option value="5">5x Speed</option>
+            <option value="10">10x Speed</option>
+            <option value="1000">MAX (Fast Forward)</option>
+        </select>
+        <button id="btnLaunch" class="bg-emerald-600 px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-500 disabled:opacity-30 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)]" disabled>Start Simulation</button>
+        <label class="bg-gray-800 border border-gray-700 px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-700 transition-colors">
+            Load JSON Log <input type="file" id="jsonInput" class="hidden" accept=".json">
+        </label>
+    </div>
+</header>
+
+<div class="flex flex-1 overflow-hidden">
+    <aside class="w-80 border-r border-gray-800 bg-gray-900 flex flex-col p-4 shrink-0">
+        <!-- AGENTS FILTER -->
+        <div class="flex justify-between items-end mb-3">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Agents Topology</h2>
+            <button onclick="toggleAllVisibility()" class="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                <i class="ph ph-eye"></i> Toggle Visibility
+            </button>
+        </div>
+
+        <div id="agentList" class="overflow-y-auto space-y-2 pr-2 max-h-[35%] shrink-0">
+            <p class="text-xs text-gray-600 italic">No agents loaded yet.</p>
+        </div>
+
+        <!-- EVENT TYPES FILTER -->
+        <h2 class="text-xs font-bold text-gray-500 uppercase mt-6 mb-3 tracking-wider">Event Types</h2>
+        <div id="eventFiltersContainer" class="flex-1 overflow-y-auto space-y-3 pr-2">
+            <p class="text-xs text-gray-600 italic">Load JSON to view filters.</p>
+        </div>
+
+        <div class="mt-4 p-4 bg-black/50 rounded-xl border border-gray-800 shadow-inner shrink-0">
+            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Current Start Index</p>
+            <div id="startIndexLabel" class="text-3xl font-mono text-blue-400 mt-1">0</div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        <div id="statusAlert" class="bg-blue-900/40 border-b border-blue-500/50 text-blue-300 text-sm px-6 py-3 hidden flex items-center gap-3 backdrop-blur-sm absolute top-0 w-full z-20">
+            <i class="ph ph-arrows-clockwise animate-spin text-xl"></i> <span id="statusAlertText">Engine Hot-Swapping...</span>
+        </div>
+
+        <div class="flex-1 overflow-auto bg-[#0a0a0a] relative">
+            <table class="w-full text-left text-[11px] whitespace-nowrap table-fixed">
+                <thead class="bg-gray-900/95 backdrop-blur text-gray-400 sticky top-0 z-10 shadow-md">
+                <tr>
+                    <th class="px-4 py-3 w-16">Idx</th>
+                    <th class="px-4 py-3 w-32">Entity</th>
+                    <th class="px-4 py-3 w-40">Event Type</th>
+                    <th class="px-4 py-3 w-1/3">Historical Log (Expected)</th>
+                    <th class="px-4 py-3 border-l border-gray-800">Live Execution (Actual)</th>
+                </tr>
+                </thead>
+                <tbody id="logTable" class="divide-y divide-gray-800/50"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<footer class="h-20 border-t border-gray-800 bg-gray-900 flex items-center px-6 gap-6 shrink-0">
+    <div class="flex gap-3">
+        <button id="btnPlay" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center disabled:opacity-20 transition-colors" disabled><i class="ph-fill ph-play text-xl"></i></button>
+        <button id="btnPause" class="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 border border-gray-700 flex items-center justify-center disabled:opacity-20 transition-colors" disabled><i class="ph-fill ph-pause text-xl"></i></button>
+    </div>
+    <div class="flex-1">
+        <input type="range" id="timeline" class="w-full h-2 bg-gray-800 rounded-lg accent-blue-500 cursor-pointer" disabled>
+        <div class="flex justify-between text-[10px] text-gray-500 mt-2 font-mono tracking-wider">
+            <span id="txtTime">STEP: 0</span>
+            <span id="txtStatus" class="text-emerald-500/70">Ready to boot.</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    let events = [], agentModes = {}, agentRegistry = {};
+    let startIndex = 0, currentIndex = 0, isSyncing = false;
+
+    // Divergence Tracking System
+    let baseStartIndex = 0;
+    let liveEventMapping = {};
+    let agentSequenceCounters = {};
+
+    // State Filters
+    let agentVisibility = {};
+    let eventTypeVisibility = {};
+
+    document.getElementById('jsonInput').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = JSON.parse(ev.target.result);
+            events = Array.isArray(data) ? data : (data.events || []);
+
+            events.sort((a, b) => a.timestamp - b.timestamp);
+
+            events.forEach(e => {
+                if (e.type === "AGENT_START" && e.payload && e.payload.length > 0) {
+                    agentRegistry[e.entityName] = e.payload[0];
+                }
+            });
+
+            const agents = [...new Set(events.map(e => e.entityName).filter(n => n && n !== "local" && n !== "local pylon"))];
+
+            extractMetadata();
+            renderAgents(agents);
+            initTable();
+
+            document.getElementById('btnLaunch').disabled = false;
+            document.getElementById('timeline').max = events.length - 1;
+        };
+        reader.readAsText(e.target.files[0]);
+    };
+
+    function extractMetadata() {
+        let types = new Set();
+        events.forEach(e => {
+            if (e.type) types.add(e.type);
+            if (e.entityName && agentVisibility[e.entityName] === undefined) {
+                agentVisibility[e.entityName] = true;
+            }
+        });
+        renderEventTypes(Array.from(types));
+    }
+
+    function renderAgents(agents) {
+        document.getElementById('agentList').innerHTML = agents.map(name => {
+            agentModes[name] = 'mocked';
+            let isVis = agentVisibility[name] !== false;
+
+            return `
+            <div class="p-3 bg-gray-800/40 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
+                <div class="text-[11px] font-bold mb-2 truncate text-gray-300" title="${name}">${name}</div>
+                <div class="flex gap-1.5">
+                    <button onclick="toggleVisibility('${name}')" id="vis-${name}" class="px-2.5 py-1.5 text-[10px] rounded bg-gray-700 hover:bg-gray-600 ${isVis ? 'text-blue-400' : 'text-gray-500'} transition-colors" title="Toggle Visibility">
+                        <i class="ph-fill ${isVis ? 'ph-eye' : 'ph-eye-slash'} text-sm"></i>
+                    </button>
+                    <button onclick="toggleMode('${name}')" id="btn-${name}" class="flex-1 py-1.5 text-[10px] rounded font-bold mode-mocked transition-all">MOCKED</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderEventTypes(types) {
+        const container = document.getElementById('eventFiltersContainer');
+        container.innerHTML = '';
+
+        const categories = { 'Lifecycle': [], 'Messaging': [], 'Logging': [], 'Other': [] };
+
+        types.forEach(type => {
+            eventTypeVisibility[type] = eventTypeVisibility[type] ?? true;
+            const upper = (type || "").toUpperCase();
+            if (upper.includes("START") || upper.includes("STOP") || upper.includes("INIT")) categories['Lifecycle'].push(type);
+            else if (upper.includes("MESSAGE") || upper.includes("WAVE") || upper.includes("SEND") || upper.includes("RECEIVE") || upper.includes("SHARD")) categories['Messaging'].push(type);
+            else if (upper.includes("LOG") || upper.includes("INFO") || upper.includes("WARN") || upper.includes("ERROR")) categories['Logging'].push(type);
+            else categories['Other'].push(type);
+        });
+
+        Object.entries(categories).forEach(([catName, catTypes]) => {
+            if (catTypes.length === 0) return;
+            const catDiv = document.createElement('div');
+            catDiv.className = 'bg-gray-800/40 p-2.5 rounded-lg border border-gray-700/50';
+            catDiv.innerHTML = `<h4 class="text-[10px] font-bold text-gray-500 mb-2.5 uppercase tracking-wider">${catName}</h4>`;
+
+            catTypes.sort().forEach(type => {
+                const label = document.createElement('label');
+                label.className = 'flex items-start gap-2 cursor-pointer hover:bg-gray-700/40 p-1.5 rounded text-[10px] text-gray-300';
+                label.innerHTML = `
+                    <input type="checkbox" ${eventTypeVisibility[type] ? 'checked' : ''} value="${type}" class="mt-0.5 rounded bg-gray-700 border-gray-600 text-blue-500">
+                    <span class="break-all leading-tight" title="${type}">${type}</span>
+                `;
+                label.querySelector('input').addEventListener('change', (e) => {
+                    eventTypeVisibility[type] = e.target.checked;
+                    updateTableRows();
+                });
+                catDiv.appendChild(label);
+            });
+            container.appendChild(catDiv);
+        });
+    }
+
+    window.toggleVisibility = function(name) {
+        agentVisibility[name] = !agentVisibility[name];
+        const btn = document.getElementById(`vis-${name}`);
+        if (agentVisibility[name]) {
+            btn.innerHTML = '<i class="ph-fill ph-eye text-sm"></i>';
+            btn.classList.replace('text-gray-500', 'text-blue-400');
+        } else {
+            btn.innerHTML = '<i class="ph-fill ph-eye-slash text-sm"></i>';
+            btn.classList.replace('text-blue-400', 'text-gray-500');
+        }
+        updateTableRows();
+    };
+
+    window.toggleAllVisibility = function() {
+        const anyHidden = Object.values(agentVisibility).some(v => !v);
+        const newState = anyHidden ? true : false;
+
+        Object.keys(agentVisibility).forEach(name => {
+            agentVisibility[name] = newState;
+            const btn = document.getElementById(`vis-${name}`);
+            if (btn) {
+                btn.innerHTML = newState ? '<i class="ph-fill ph-eye text-sm"></i>' : '<i class="ph-fill ph-eye-slash text-sm"></i>';
+                if (newState) btn.classList.replace('text-gray-500', 'text-blue-400');
+                else btn.classList.replace('text-blue-400', 'text-gray-500');
+            }
+        });
+        updateTableRows();
+    };
+
+    window.toggleMode = async (name) => {
+        const btn = document.getElementById(`btn-${name}`);
+        const newMode = agentModes[name] === 'mocked' ? 'live' : 'mocked';
+        agentModes[name] = newMode;
+
+        btn.className = `flex-1 py-1.5 text-[10px] rounded font-bold transition-all mode-${newMode}`;
+        btn.textContent = newMode.toUpperCase();
+
+        if (isSyncing) {
+            showAlert(`<i class="ph-fill ph-arrows-clockwise animate-spin"></i> Hot-Swapping ${name} to ${newMode.toUpperCase()}...`);
+            resetDivergenceTracking();
+            await fetch(`/control?command=${newMode === 'live' ? 'promote' : 'demote'}&agentName=${name}`);
+        }
+        updateTableRows();
+    };
+
+    window.changeSpeed = (speed) => {
+        if (isSyncing) fetch(`/control?command=speed&value=${speed}`);
+    };
+
+    function resetDivergenceTracking() {
+        liveEventMapping = {};
+        agentSequenceCounters = {};
+        baseStartIndex = startIndex;
+        for(let name in agentModes) {
+            if (agentModes[name] === 'live') {
+                agentSequenceCounters[name] = 0;
+            }
+        }
+    }
+
+    function showAlert(html) {
+        const alert = document.getElementById('statusAlert');
+        document.getElementById('statusAlertText').innerHTML = html;
+        alert.classList.remove('hidden');
+        setTimeout(() => alert.classList.add('hidden'), 3500);
+    }
+
+    function processLiveEvents(liveEvs) {
+        if (!liveEvs || liveEvs.length === 0) return false;
+        let uiNeedsUpdate = false;
+
+        liveEvs.forEach(liveEv => {
+            let agent = liveEv.entityName;
+            if (agentModes[agent] !== 'live') return;
+
+            let currentSequenceCount = agentSequenceCounters[agent] || 0;
+            let expectedHistIndex = -1;
+            let occurrences = 0;
+
+            for (let i = baseStartIndex; i < events.length; i++) {
+                if (events[i].entityName === agent) {
+                    if (occurrences === currentSequenceCount) {
+                        expectedHistIndex = i;
+                        break;
+                    }
+                    occurrences++;
+                }
+            }
+
+            if (expectedHistIndex !== -1) {
+                liveEventMapping[expectedHistIndex] = liveEv;
+                agentSequenceCounters[agent] = currentSequenceCount + 1;
+                uiNeedsUpdate = true;
+            }
+        });
+
+        return uiNeedsUpdate;
+    }
+
+    window.selectRow = function(i) {
+        if(!isSyncing) {
+            startIndex = i;
+            document.getElementById('startIndexLabel').textContent = i;
+            updateTableRows();
+        }
+    };
+
+    // Render full table schema once to enable continuous scrolling
+    function initTable() {
+        const tbody = document.getElementById('logTable');
+        let html = '';
+
+        for (let i = 0; i < events.length; i++) {
+            const ev = events[i];
+            const isLive = agentModes[ev.entityName] === 'live';
+            let payloadEscaped = JSON.stringify(ev.payload).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+
+            html += `
+                <tr id="row-${i}" class="cursor-pointer hover:bg-gray-800/30 transition-colors" onclick="selectRow(${i})">
+                    <td class="px-4 py-2.5 text-gray-600 font-mono text-[10px]">${i}</td>
+                    <td class="px-4 py-2.5 font-bold ${isLive ? 'text-emerald-400' : 'text-purple-400'}">${ev.entityName || 'sys'}</td>
+                    <td class="px-4 py-2.5 text-blue-300 font-mono text-[10px]">${ev.type}</td>
+                    <td class="px-4 py-2.5 text-gray-400 truncate max-w-[300px] font-mono text-[10px]" title="${payloadEscaped}">${JSON.stringify(ev.payload)}</td>
+                    <td id="comp-${i}" class="px-4 py-2.5 border-l border-gray-800/50 truncate max-w-[400px]"></td>
+                </tr>
+            `;
+        }
+        tbody.innerHTML = html;
+        updateTableRows();
+    }
+
+    // Apply fast CSS updates for styling states without rebuilding the DOM
+    function updateTableRows() {
+        for (let i = 0; i < events.length; i++) {
+            const ev = events[i];
+            const liveEv = liveEventMapping[i];
+            const isLive = agentModes[ev.entityName] === 'live';
+
+            let isVisible = (agentVisibility[ev.entityName] !== false) && (eventTypeVisibility[ev.type] !== false);
+            let rowClass = isVisible ? '' : 'hidden ';
+
+            rowClass += (i === currentIndex && isSyncing ? 'active-row ' : '');
+            let comparisonHtml = '';
+
+            if (isLive) {
+                if (liveEv) {
+                    let histPayloadStr = JSON.stringify(ev.payload);
+                    let livePayloadStr = JSON.stringify(liveEv.payload);
+                    let isMatch = (ev.type === liveEv.type) && (histPayloadStr === livePayloadStr);
+
+                    if (isMatch) {
+                        comparisonHtml = `<span class="text-emerald-400 font-bold tracking-wider"><i class="ph-fill ph-check-circle mr-1"></i>MATCH</span> <span class="text-gray-500 ml-2">${livePayloadStr}</span>`;
+                        rowClass += 'match-row ';
+                    } else {
+                        comparisonHtml = `<span class="text-amber-500 font-bold tracking-wider"><i class="ph-fill ph-warning mr-1"></i>DIVERG:</span> <span class="text-amber-200/80 ml-1 font-mono">${liveEv.type} &rarr; ${livePayloadStr}</span>`;
+                        rowClass += 'divergent ';
+                    }
+                } else {
+                    if (i < baseStartIndex) {
+                        comparisonHtml = `<span class="text-gray-600 text-xs italic"><i class="ph ph-fast-forward mr-1"></i>Skipped via Fast-Forward</span>`;
+                    } else if (i < currentIndex) {
+                        comparisonHtml = `<span class="text-red-400 text-xs font-bold"><i class="ph-fill ph-x-circle mr-1"></i>Missed Event</span>`;
+                        rowClass += 'divergent ';
+                    } else {
+                        comparisonHtml = `<span class="text-blue-400/50 text-xs"><i class="ph-bold ph-spinner animate-spin mr-1 inline-block"></i>Awaiting Live...</span>`;
+                    }
+                }
+            } else {
+                comparisonHtml = `<span class="text-purple-400/30 text-xs"><i class="ph-fill ph-robot mr-1"></i>Ignored (Mocked Playback)</span>`;
+            }
+
+            const rowElement = document.getElementById(`row-${i}`);
+            const compElement = document.getElementById(`comp-${i}`);
+
+            if (rowElement) {
+                let finalClass = rowClass + "cursor-pointer hover:bg-gray-800/30 transition-colors";
+                if (rowElement.className !== finalClass) rowElement.className = finalClass;
+            }
+
+            if (compElement && compElement.innerHTML !== comparisonHtml) {
+                compElement.innerHTML = comparisonHtml;
+            }
+        }
+    }
+
+    async function poll() {
+        if (!isSyncing) return;
+        try {
+            const res = await fetch('/status');
+            const status = await res.json();
+
+            if (status.currentIndex !== undefined && status.currentIndex !== -1) {
+                let needsRender = false;
+
+                if (currentIndex !== status.currentIndex) {
+                    currentIndex = status.currentIndex;
+                    needsRender = true;
+                }
+
+                if (processLiveEvents(status.liveEvents)) {
+                    needsRender = true;
+                }
+
+                if (needsRender) {
+                    updateTableRows();
+                    const active = document.querySelector('.active-row:not(.hidden)');
+                    if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+                    document.getElementById('txtTime').textContent = `STEP: ${currentIndex} / ${events.length}`;
+                    document.getElementById('timeline').value = currentIndex;
+                }
+            }
+        } catch (e) {}
+    }
+    setInterval(poll, 250);
+
+    document.getElementById('btnLaunch').onclick = async () => {
+        isSyncing = true;
+        resetDivergenceTracking();
+
+        let speed = document.getElementById('speedSelect').value;
+        changeSpeed(speed);
+
+        showAlert(`<i class="ph-fill ph-rocket-launch animate-pulse text-xl"></i> Booting Native Flash-MAS Runtime...`);
+
+        await fetch('/launch', {
+            method: 'POST',
+            body: JSON.stringify({ logData: events, agentModes: agentModes, startIndex: startIndex, agentRegistry: agentRegistry })
+        });
+
+        document.getElementById('btnPlay').disabled = false;
+        document.getElementById('btnPause').disabled = false;
+    };
+
+    document.getElementById('btnPlay').onclick = () => fetch('/control?command=play');
+    document.getElementById('btnPause').onclick = () => fetch('/control?command=pause');
+</script>
+</body>
+</html>

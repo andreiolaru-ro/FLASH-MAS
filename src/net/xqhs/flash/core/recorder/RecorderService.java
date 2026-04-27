@@ -4,28 +4,40 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 
 /**
- * Singleton Facade for the Recording subsystem.
- * Determines at startup whether to use a real FileRecorder or a dummy NullRecorder.
- * JIT compiler should completely ignore the dummy, leading to zero overhead when ENABLED is set to false.
+ * RecorderService - Singleton Facade for the logging and monitoring subsystem.
+ * <p>
+ * Decouples agent logic from the storage mechanism. Reads System Properties
+ * initialized by the WebBridge to dynamically determine if events should be
+ * saved to a local JSON file or streamed live to the Web UI.
+ * </p>
  */
 public class RecorderService {
-    public static final boolean ENABLED = true;
+
     protected static final RecorderInterface backend;
 
     static {
-        if (ENABLED) {
-            backend = new FileRecorder();
-        } else {
+        // Read configuration flags injected by the hybrid controller
+        boolean enabled = Boolean.parseBoolean(System.getProperty("flash.recorder.enabled", "true"));
+        boolean fileMode = Boolean.parseBoolean(System.getProperty("flash.recorder.file_mode", "true"));
+
+        if (!enabled) {
             backend = new NullRecorder();
+            System.out.println("[RECORDER] Subsystem is DISABLED.");
+        } else if (fileMode) {
+            backend = new FileRecorder();
+            System.out.println("[RECORDER] Active Backend: FileRecorder (Writing to local JSON disk)");
+        } else {
+            // Stream directly to the Single Page Application UI
+            backend = new WebRecorder();
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(backend::shutdown));
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (backend != null) backend.shutdown();
+        }));
     }
 
     private RecorderService() {}
 
-    /**
-     * Public Accessor - Methods delegate to the active backend
-     */
     public static void record(String entityName, AgentEvent event) {
         backend.record(entityName, event);
     }
@@ -40,9 +52,5 @@ public class RecorderService {
 
     public static void record(String agent, AgentWave wave, String eventType) {
         backend.record(agent, wave, eventType);
-    }
-
-    public static RecorderInterface getInstance() {
-        return backend;
     }
 }
