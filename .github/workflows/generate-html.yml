@@ -32,7 +32,6 @@ jobs:
           cp README.md public/index.md
           cp CONTRIBUTORS.md public/CONTRIBUTORS.md
           cp -r identity public/
-          cp style.css public/style.css
 
       - name: Convert MD to HTML
         run: |
