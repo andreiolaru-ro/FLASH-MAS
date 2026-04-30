@@ -63,7 +63,31 @@ public class Deployment extends Unit {
 	public LoadPack getBasicLoadPack(Logger log) {
 		return new LoadPack(PlatformUtils.getClassFactory(), deploymentID, log != null ? log : getLogger());
 	}
-	
+
+
+    /**
+     * Extracts the node names that are given as arguments to the -select category.
+     * @param args - the arguments sent to the CLI
+     * @return a list of Strings representing the node names that are selected
+     */
+    public List<String> getSelectedNodes(List<String> args) {
+        List<String> selectedNodes = new LinkedList<>();
+
+        for (int i = 0; i < args.size(); i++) {
+            if (args.get(i).equals("-select")) {
+                i++;
+                while (i < args.size() && !args.get(i).startsWith("-")) {
+                    selectedNodes.add(args.get(i));
+                    i++;
+                }
+                i--;
+            }
+        }
+
+        return selectedNodes;
+    }
+
+
 	/**
 	 * Loads a deployment starting from command line arguments.
 	 * <p>
@@ -100,6 +124,26 @@ public class Deployment extends Unit {
 				.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		NodeLoader nodeLoader = new NodeLoader();
 		nodeLoader.configure(null, getBasicLoadPack(null));
+
+        List<String> selectedNodes = getSelectedNodes(args);
+
+        // filter the nodesTree by the selected nodes so that only those nodes will be loaded and started
+        if (!selectedNodes.isEmpty()) {
+            List<MultiTreeMap> filteredNodesTrees = new LinkedList<>();
+            for (MultiTreeMap node : nodesTrees) {
+                String name = node.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+                if (selectedNodes.contains(name)) {
+                    filteredNodesTrees.add(node);
+                }
+            }
+
+            nodesTrees = filteredNodesTrees;
+            lf("Node selection active. Selected nodes: []", selectedNodes);
+        }
+        if (!selectedNodes.isEmpty() && nodesTrees.isEmpty()) {
+            lw("No matching nodes found for selection: []", selectedNodes);
+        }
+
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
