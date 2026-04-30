@@ -225,6 +225,11 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		}
 		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
 			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+		else{
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT; 
+			li("No WebSocket server address or port specified. Defaulting to []", webSocketServerAddress);
+		}
+			
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		return true;
