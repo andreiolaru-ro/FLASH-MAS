@@ -61,6 +61,14 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 * The prefix for Websocket server address.
 	 */
 	public static final String	WS_PROTOCOL_PREFIX				= "ws://";
+	/**
+	 * The default host address for the WebSocket server.
+	 */
+	public static final String	WS_DEFAULT_HOST					= "192.168.1.100";
+	/**
+	 * The default port for the WebSocket server.
+	 */
+	public static final String	WS_DEFAULT_PORT					= "8080";
 	
 	/**
 	 * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
@@ -107,7 +115,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	/**
 	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
 	 */
-	public WebSocketPylon() {
+	public WebSocketPylon() {	
 		dispatcher = new Dispatcher<>(getLogger());
 		OUTBOUND = Integer.valueOf(dispatcher.addProcessor(this::sendMessage, true));
 		INBOUND = Integer.valueOf(dispatcher.addProcessor(this::receiveMessage));
@@ -118,7 +126,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				return registerEntity(entityName, receiver);
 			}
 			
-			@Override
+			@Override	
 			public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
 				return unregisterEntity(entityName, registeredReceiver);
 			}
