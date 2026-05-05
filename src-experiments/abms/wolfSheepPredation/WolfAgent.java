@@ -86,11 +86,9 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
             }
         }
 
-        Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
-                entity -> entity instanceof GrassPatch);
-        if (passableNeighbors.isEmpty()) {
+        Set<Position> neighbors = e.getValidNeighborPositions(currentPos);
+        if (neighbors.isEmpty())
             return;
-        }
 
         // Look for nearest sheep within vision range
         @SuppressWarnings("unchecked")
@@ -114,7 +112,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
             // Move towards nearest sheep
             Position bestNeighbor = null;
             int bestDist = Integer.MAX_VALUE;
-            for (Position neighbor : passableNeighbors) {
+            for (Position neighbor : neighbors) {
                 int dist = topology.getDistance(neighbor, nearestTarget);
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -128,8 +126,8 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
         }
 
         // Fallback: random movement
-        List<Position> passableList = new ArrayList<>(passableNeighbors);
-        Position newPos = passableList.get(e.nextInt(passableList.size()));
+        List<Position> neighborList = new ArrayList<>(neighbors);
+        Position newPos = neighborList.get(e.nextInt(neighborList.size()));
         e.moveToPosition(newPos);
     }
 

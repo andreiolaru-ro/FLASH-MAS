@@ -3,7 +3,6 @@ package net.xqhs.flash.abms;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import net.xqhs.flash.abms.AgentManagementContext.AgentManagementActionData;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
@@ -60,12 +59,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return space.getVicinity(pos);
     }
 
-    public Set<Position> getFreeNeighborPositions(Position pos) {
-        return space.getFreeNeighborPositions(pos);
-    }
-
-    public Set<Position> getPassableNeighborPositions(Position pos, Predicate<EntityProxy<?>> isPassable) {
-        return space.getPassableNeighborPositions(pos, isPassable);
+    public Set<Position> getValidNeighborPositions(Position pos) {
+        return space.getValidNeighborPositions(pos);
     }
 
     public boolean moveToPosition(Position target) {

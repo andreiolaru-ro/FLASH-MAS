@@ -6,6 +6,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -16,6 +17,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * loading agents' levels meets or exceeds the food's level.
  */
 public class FoodPatch extends EntityCore<Pylon> implements Patch, EntityProxy<Patch> {
+
+    public static final String COLLECTED_WAVE_CONTENT = "COLLECTED";
 
     private int level = 1;
     private boolean collected = false;
@@ -57,8 +60,8 @@ public class FoodPatch extends EntityCore<Pylon> implements Patch, EntityProxy<P
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEventType.AGENT_WAVE) {
-            String content = event.get("content");
-            if ("COLLECTED".equals(content) && !collected) {
+            String content = event.get(AgentWave.CONTENT);
+            if (COLLECTED_WAVE_CONTENT.equals(content) && !collected) {
                 collected = true;
                 li("food [] collected!", getEntityName());
                 return true;

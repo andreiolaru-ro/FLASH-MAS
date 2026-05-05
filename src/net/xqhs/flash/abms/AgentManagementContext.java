@@ -15,6 +15,8 @@ import net.xqhs.flash.core.shard.ShardContainer;
 public class AgentManagementContext extends BaseContext
         implements SimulationContext, EntityProxy<AgentManagementContext> {
 
+    public static final String DESTROY_WAVE_CONTENT = "DESTROY";
+
     public enum AgentManagementActionData implements ActionData {
         DESTROY_ACTION, DESTROY_TARGET;
 
@@ -90,7 +92,7 @@ public class AgentManagementContext extends BaseContext
 
         // Send DESTROY wave to the entity; it will self-deregister in postAgentEvent
         if (entity instanceof ShardContainer) {
-            ((ShardContainer) entity).postAgentEvent(new AgentWave("DESTROY"));
+            ((ShardContainer) entity).postAgentEvent(new AgentWave(DESTROY_WAVE_CONTENT));
             pendingDestroyEvents.remove(proxy);
         }
     }

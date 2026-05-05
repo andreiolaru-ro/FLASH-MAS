@@ -1,8 +1,6 @@
 package abms.lbForaging;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -10,7 +8,6 @@ import java.util.TreeMap;
 import abms.lbForaging.ForagingContext.ForagingActionData;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
 import net.xqhs.flash.abms.SimulationContext.BaseContext.BaseActionData;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -32,23 +29,36 @@ import net.xqhs.flash.core.util.MultiValueMap;
  * Forager agent for the Level-Based Foraging environment.
  * Uses tabular Independent Q-Learning (IQL) with epsilon-greedy exploration.
  *
- * Actions: NONE(0), NORTH(1), SOUTH(2), WEST(3), EAST(4), LOAD(5)
- *
  * State representation: a string encoding of the agent's local observation
  * (relative positions and levels of visible food items and agents).
  */
 public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardContainer {
 
-    // Action constants
-    public static final int ACTION_NONE = 0;
-    public static final int ACTION_NORTH = 1;
-    public static final int ACTION_SOUTH = 2;
-    public static final int ACTION_WEST = 3;
-    public static final int ACTION_EAST = 4;
-    public static final int ACTION_LOAD = 5;
-    public static final int NUM_ACTIONS = 6;
+    public enum ForagerAction {
+        NONE(null),
+        NORTH(GridOrientation.NORTH),
+        SOUTH(GridOrientation.SOUTH),
+        WEST(GridOrientation.WEST),
+        EAST(GridOrientation.EAST),
+        LOAD(null);
 
-    private static final String[] ACTION_NAMES = {"NONE", "NORTH", "SOUTH", "WEST", "EAST", "LOAD"};
+        private final GridOrientation direction;
+
+        ForagerAction(GridOrientation direction) {
+            this.direction = direction;
+        }
+
+        public GridOrientation getDirection() {
+            return direction;
+        }
+
+        public boolean isMovement() {
+            return direction != null;
+        }
+    }
+
+    private static final ForagerAction[] ACTIONS = ForagerAction.values();
+    private static final int NUM_ACTIONS = ACTIONS.length;
 
     // Agent parameters
     private int level = 1;
@@ -61,12 +71,12 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
     private double epsilonDecay = 0.999;
     private double epsilonMin = 0.01;
 
-    // Q-table: state -> action -> Q-value
+    // Q-table: state -> action (by ordinal) -> Q-value
     private final Map<String, double[]> qTable = new HashMap<>();
 
     // State tracking for Q-learning updates
     private String previousState = null;
-    private int previousAction = -1;
+    private ForagerAction previousAction = null;
     private double pendingReward = 0.0;
     private boolean hasNewReward = false;
 
@@ -154,13 +164,13 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
         if (previousState != null) {
             double reward = hasNewReward ? pendingReward : -0.01; // small step penalty
             cumulativeReward += reward;
-            updateQ(previousState, previousAction, reward, currentState);
+            updateQ(previousState, previousAction.ordinal(), reward, currentState);
             pendingReward = 0.0;
             hasNewReward = false;
         }
 
         // Select action
-        int action = selectAction(currentState);
+        ForagerAction action = selectAction(currentState);
 
         // Execute action
         executeAction(action, (GridPosition) currentPos);
@@ -222,64 +232,65 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
     /**
      * Epsilon-greedy action selection.
      */
-    private int selectAction(String state) {
+    private ForagerAction selectAction(String state) {
         if (e.nextDouble() < epsilon) {
-            return e.nextInt(NUM_ACTIONS);
+            return ACTIONS[e.nextInt(NUM_ACTIONS)];
         }
         double[] qValues = getQValues(state);
-        int bestAction = 0;
+        int bestIdx = 0;
         double bestValue = qValues[0];
         for (int a = 1; a < NUM_ACTIONS; a++) {
             if (qValues[a] > bestValue) {
                 bestValue = qValues[a];
-                bestAction = a;
+                bestIdx = a;
             }
         }
-        return bestAction;
+        return ACTIONS[bestIdx];
+    }
+
+    /**
+     * Tests whether the given action can be successfully executed from the given position.
+     */
+    public boolean testAction(ForagerAction action, GridPosition currentPos) {
+        if (action == ForagerAction.NONE)
+            return true;
+        if (action == ForagerAction.LOAD)
+            return hasFoodInRange(currentPos);
+        // Movement action
+        GridPosition targetPos = currentPos.getNeighborPosition(action.getDirection());
+        return e.getValidNeighborPositions(currentPos).contains(targetPos);
     }
 
     /**
      * Execute the selected action.
      */
-    private void executeAction(int action, GridPosition currentPos) {
-        switch (action) {
-            case ACTION_NONE:
-                break;
-            case ACTION_NORTH:
-                tryMove(currentPos, GridOrientation.NORTH);
-                break;
-            case ACTION_SOUTH:
-                tryMove(currentPos, GridOrientation.SOUTH);
-                break;
-            case ACTION_WEST:
-                tryMove(currentPos, GridOrientation.WEST);
-                break;
-            case ACTION_EAST:
-                tryMove(currentPos, GridOrientation.EAST);
-                break;
-            case ACTION_LOAD:
-                tryLoad(currentPos);
-                break;
+    private void executeAction(ForagerAction action, GridPosition currentPos) {
+        if (action == ForagerAction.NONE)
+            return;
+        if (action == ForagerAction.LOAD) {
+            tryLoad(currentPos);
+            return;
         }
+        tryMove(currentPos, action.getDirection());
     }
 
     private void tryMove(GridPosition currentPos, GridOrientation direction) {
         GridPosition targetPos = currentPos.getNeighborPosition(direction);
-
-        // Check if target is valid and passable (food items are passable)
-        @SuppressWarnings("unchecked")
-        Topology<Position> topology = (Topology<Position>) e.getTopology();
-        if (!topology.isValidPosition(targetPos))
-            return;
-
-        Set<Position> passable = e.getPassableNeighborPositions(currentPos,
-                entity -> entity instanceof FoodPatch);
-        // Also try free neighbors
-        Set<Position> free = e.getFreeNeighborPositions(currentPos);
-
-        if (free.contains(targetPos) || passable.contains(targetPos)) {
+        if (e.getValidNeighborPositions(currentPos).contains(targetPos))
             e.moveToPosition(targetPos);
-        }
+    }
+
+    private boolean hasFoodInRange(GridPosition currentPos) {
+        Set<EntityProxy<?>> here = e.getEntitiesAt(currentPos);
+        for (EntityProxy<?> entity : here)
+            if (entity instanceof FoodPatch && !((FoodPatch) entity).isCollected())
+                return true;
+        Set<Position> vicinity = e.getVicinity(currentPos);
+        for (Position vPos : vicinity)
+            for (EntityProxy<?> entity : e.getEntitiesAt(vPos))
+                if (entity instanceof FoodPatch && !((FoodPatch) entity).isCollected())
+                    return true;
+        return false;
     }
 
     private void tryLoad(GridPosition currentPos) {

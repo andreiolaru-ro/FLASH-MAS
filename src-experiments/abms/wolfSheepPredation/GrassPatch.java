@@ -6,11 +6,14 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<Patch> {
+
+    public static final String EAT_WAVE_CONTENT = "EAT";
 
     private static final int DEFAULT_REGROWTH_TIME = 3; //every 3 steps
 
@@ -54,8 +57,8 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEventType.AGENT_WAVE) {
-            String content = event.get("content");
-            if ("EAT".equals(content) && grown) {
+            String content = event.get(AgentWave.CONTENT);
+            if (EAT_WAVE_CONTENT.equals(content) && grown) {
                 grown = false;
                 regrowthCountdown = regrowthTime;
                 li("grass eaten, regrowing in [] steps", regrowthTime);

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -50,8 +51,8 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
     public boolean postAgentEvent(AgentEvent event) {
         switch (event.getType()) {
             case AGENT_WAVE:
-                String content = event.get("content");
-                if ("DESTROY".equals(content)) {
+                String content = event.get(AgentWave.CONTENT);
+                if (AgentManagementContext.DESTROY_WAVE_CONTENT.equals(content)) {
                     li("[] is being eaten, deregistering", getEntityName());
                     if (simulation != null)
                         simulation.deregisterEntity((Entity<?>) this);
@@ -96,7 +97,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                 li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
-                e.sendWaveTo(entity, new AgentWave("EAT"));
+                e.sendWaveTo(entity, new AgentWave(GrassPatch.EAT_WAVE_CONTENT));
             }
         }
 
@@ -116,8 +117,8 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             e.broadcast(new AgentWave("wolf-alert"));
         }
 
-        Set<Position> freeNeighbors = e.getFreeNeighborPositions(currentPos);
-        if (freeNeighbors.isEmpty()) {
+        Set<Position> neighbors = e.getValidNeighborPositions(currentPos);
+        if (neighbors.isEmpty()) {
             alertReceived = false;
             return;
         }
@@ -125,14 +126,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         if (wolfVisible || alertReceived)
             li("[] is running away", getEntityName());
 
-        List<Position> freeList = new ArrayList<>(freeNeighbors);
-
-        Set<Position> passableNeighbors = e.getPassableNeighborPositions(currentPos,
-                entity -> entity instanceof GrassPatch);
-        if (passableNeighbors.isEmpty()) {
-            alertReceived = false;
-            return;
-        }
         // Look for nearest grown grass within vision range
         @SuppressWarnings("unchecked")
         Topology<Position> topology = (Topology<Position>) e.getTopology();
@@ -155,7 +148,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             // Move towards nearest grass
             Position bestNeighbor = null;
             int bestDist = Integer.MAX_VALUE;
-            for (Position neighbor : passableNeighbors) {
+            for (Position neighbor : neighbors) {
                 int dist = topology.getDistance(neighbor, nearestTarget);
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -170,8 +163,8 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         }
 
         // Random movement if outside of vision
-        List<Position> passableList = new ArrayList<>(passableNeighbors);
-        Position newPos = passableList.get(e.nextInt(passableList.size()));
+        List<Position> neighborList = new ArrayList<>(neighbors);
+        Position newPos = neighborList.get(e.nextInt(neighborList.size()));
         e.moveToPosition(newPos);
         alertReceived = false;
     }
