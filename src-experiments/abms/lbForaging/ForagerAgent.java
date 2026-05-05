@@ -17,6 +17,8 @@ import net.xqhs.flash.abms.space.gridworld.GridOrientation;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
+import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
+import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -83,6 +85,10 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
     // Cumulative reward for logging
     private double cumulativeReward = 0.0;
 
+    // Communication
+    public static final String HELP_AT_PREFIX = "HELP_AT:";
+    private GridPosition helpTarget = null;
+
     // Environment link
     protected EnvironmentLinkShard e = new EnvironmentLinkShard();
     protected Simulation simulation;
@@ -121,6 +127,17 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     @Override
     public boolean postAgentEvent(AgentEvent event) {
+        if (event.getType() == AgentEventType.AGENT_WAVE) {
+            String content = event.get(AgentWave.CONTENT);
+            if (content != null && content.startsWith(HELP_AT_PREFIX)) {
+                String coords = content.substring(HELP_AT_PREFIX.length());
+                String[] parts = coords.split(",");
+                int x = Integer.parseInt(parts[0]);
+                int y = Integer.parseInt(parts[1]);
+                helpTarget = new GridPosition(x, y);
+                return true;
+            }
+        }
         return false;
     }
 
@@ -157,23 +174,68 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
         if (currentPos == null)
             return;
 
+        GridPosition gridPos = (GridPosition) currentPos;
+
         // Observe current state
         String currentState = encodeState(currentPos);
 
         // Q-learning update from previous step
         if (previousState != null) {
             double reward = hasNewReward ? pendingReward : -0.01; // small step penalty
+            // Reward shaping: small bonus for being adjacent to uncollected food
+            if (hasFoodInRange(gridPos))
+                reward += 0.05;
             cumulativeReward += reward;
             updateQ(previousState, previousAction.ordinal(), reward, currentState);
             pendingReward = 0.0;
             hasNewReward = false;
         }
 
-        // Select action
-        ForagerAction action = selectAction(currentState);
+        // If near food, broadcast help and try to LOAD
+        if (hasFoodInRange(gridPos)) {
+            // Broadcast help request with food position
+            GridPosition foodPos = findNearestFoodPosition(gridPos);
+            if (foodPos != null)
+                e.broadcast(new AgentWave(HELP_AT_PREFIX + foodPos.getX() + "," + foodPos.getY()));
+            // Always try to LOAD when near food
+            executeAction(ForagerAction.LOAD, gridPos);
+            previousState = currentState;
+            previousAction = ForagerAction.LOAD;
+            epsilon = Math.max(epsilonMin, epsilon * epsilonDecay);
+            return;
+        }
 
-        // Execute action
-        executeAction(action, (GridPosition) currentPos);
+        // If we received a help request, move toward the target
+        if (helpTarget != null) {
+            @SuppressWarnings("unchecked")
+            Topology<Position> topology = (Topology<Position>) e.getTopology();
+            Set<Position> neighbors = e.getValidNeighborPositions(currentPos);
+            Position bestNeighbor = null;
+            int bestDist = Integer.MAX_VALUE;
+            for (Position neighbor : neighbors) {
+                int dist = topology.getDistance(neighbor, helpTarget);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestNeighbor = neighbor;
+                }
+            }
+            if (bestNeighbor != null && bestDist < topology.getDistance(currentPos, helpTarget)) {
+                e.moveToPosition(bestNeighbor);
+                previousState = currentState;
+                previousAction = ForagerAction.NONE;
+                // Clear help target once we're adjacent to it
+                if (bestDist <= 1)
+                    helpTarget = null;
+                epsilon = Math.max(epsilonMin, epsilon * epsilonDecay);
+                return;
+            }
+            // Can't get closer, clear target
+            helpTarget = null;
+        }
+
+        // Default: Q-learning exploration
+        ForagerAction action = selectAction(currentState);
+        executeAction(action, gridPos);
 
         // Store for next update
         previousState = currentState;
@@ -291,6 +353,19 @@ public class ForagerAgent extends BaseAgent implements SteppableEntity, ShardCon
                 if (entity instanceof FoodPatch && !((FoodPatch) entity).isCollected())
                     return true;
         return false;
+    }
+
+    private GridPosition findNearestFoodPosition(GridPosition currentPos) {
+        // Check current position
+        for (EntityProxy<?> entity : e.getEntitiesAt(currentPos))
+            if (entity instanceof FoodPatch && !((FoodPatch) entity).isCollected())
+                return currentPos;
+        // Check vicinity
+        for (Position vPos : e.getVicinity(currentPos))
+            for (EntityProxy<?> entity : e.getEntitiesAt(vPos))
+                if (entity instanceof FoodPatch && !((FoodPatch) entity).isCollected())
+                    return (GridPosition) vPos;
+        return null;
     }
 
     private void tryLoad(GridPosition currentPos) {

@@ -25,8 +25,8 @@ public class LBForagingBoot {
         a += " -context Space:space width:8 height:8";
         a += " -context Foraging:foraging";
         a += " -LBForagingGroup g";
-        a += " -patch Food n:5 level:2";
-        a += " -agent Forager n:3 level:1 visionRange:2";
+        a += " -patch Food n:3 level:2";
+        a += " -agent Forager n:5 level:1 visionRange:2";
 
         FlashBoot.main(a.split(" "));
     }
