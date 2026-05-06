@@ -367,6 +367,10 @@ public class DeploymentConfiguration extends MultiTreeMap {
 								subCat.remove(name, tree);
 								log.lf("removed one tree for [] (id: []) from []/[[]", name, id, parentID, subCategory);
 							}
+							if(subCat.getHierarchicalNames().isEmpty()) {
+								localIDs.getSingleTree(parentID).removeKey(subCategory);
+								log.lf("removed empty category [] from []", subCategory, parentID);
+							}
 				}
 			localIDs.removeKey(id);
 		}
