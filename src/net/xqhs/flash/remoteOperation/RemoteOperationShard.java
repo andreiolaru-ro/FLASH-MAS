@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (C) 2021 Andrei Olaru.
+ *
+ * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
+ *
+ * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.xqhs.flash.remoteOperation;
 
 import java.util.Arrays;
@@ -71,8 +82,9 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 */
 	public static final String		WAIT_PARAMETER_NAME		= "wait";
 	/**
-	 * Parameter for the minimum time (in ms) between two consecutive updates sent to the Monitoring &amp; Control
-	 * entity. Use {@code -1} to send updates immediately (no rate limiting).
+	 * Parameter for the minimum poll interval (in ms) for {@link PropertyContainer}s.
+	 * Controls how often {@link #sendUpdate()} is called for the metric data path.
+	 * Use {@code -1} to disable periodic property polling.
 	 */
 	public static final String		UPDATE_FREQUENCY_PARAM	= "update-frequency";
 	/**
@@ -85,53 +97,46 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	protected static final String	INTERFACE_SPECIFICATION	= "children: [{ type: button, value: Stop, port: "
 			+ REMOTE_STOP.s() + ", role: stop" + ", when: [{ standard-status: " + Fields.RUNNING_STATUS_STOPPED.name()
 			+ ", style: disabled }], notify: " + SHARD_ENDPOINT + "/" + REMOTE_STOP.s() + " }]";
-	
+
 	/**
 	 * The interface specification for this agent, which will be sent to central monitoring entities / web
 	 * application(s).
 	 */
-	protected Element					interfaceSpecification	= new Element();
+	protected Element						interfaceSpecification	= new Element();
 	/**
 	 * Local remotes.
 	 */
-	protected Set<RemoteLocalReceiver>	localRemotes			= new HashSet<>();
+	protected Set<RemoteLocalReceiver>		localRemotes			= new HashSet<>();
 	/**
 	 * Away remotes.
 	 */
-	protected Set<String>				awayRemotes				= new HashSet<>();
+	protected Set<String>					awayRemotes				= new HashSet<>();
 	/**
 	 * Fields describing entity status.
 	 */
-	protected Fields[]					entityStatus			= new Fields[2];
+	protected Fields[]						entityStatus			= new Fields[2];
 	/**
 	 * Keepalive period in milliseconds.
 	 */
-	protected long						timeDelay				= 10000;
+	protected long							timeDelay				= 10000;
 	/**
 	 * Minimum time (ms) between two updates sent to the M&amp;C entity. {@code -1} means send immediately.
 	 */
-	protected long						updateFrequency			= -1;
+	protected long							updateFrequency			= -1;
 	/**
-	 * Timestamp (ms) of the last update sent to the M&amp;C entity.
+	 * Buffered output waves per port, for the {@link #sendOutput} path.
+	 * Each port keeps only the latest wave — a new {@link #sendOutput} call on the same port overwrites completely.
 	 */
-	protected long						lastUpdate				= 0;
-	/**
-	 * The pending update wave; new output waves are merged into this and flushed by {@link #sendUpdate()}.
-	 */
-	protected AgentWave					wave					= null;
+	protected Map<String, AgentWave>		bufferedOutputs			= new LinkedHashMap<>();
 	/**
 	 * Combined keepalive + initial GUI-registration timer (replaces the former separate remoteDelay timer).
 	 * On the first tick it also sends the GUI update; on subsequent ticks it only sends keepalives.
 	 */
-	Timer								agentKeepAliveTimer		= new Timer();
-	/**
-	 * One-shot timer used to defer {@link #sendUpdate()} when rate limiting is active.
-	 */
-	protected Timer						sendUpdateTimer			= null;
+	Timer									agentKeepAliveTimer		= new Timer();
 	/**
 	 * Periodic timer that fires {@link #sendUpdate()} when {@link PropertyContainer}s are registered.
 	 */
-	protected Timer						periodicSendUpdateTimer	= null;
+	protected Timer							periodicSendUpdateTimer	= null;
 	/**
 	 * Maps property name to the {@link PropertyContainer} that registered it, used to detect duplicates.
 	 */
@@ -140,10 +145,6 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 * Maps each {@link PropertyContainer} to the set of property names it owns.
 	 */
 	protected Map<PropertyContainer, Set<String>>	propertyContainers		= new LinkedHashMap<>();
-	/**
-	 * Maps each {@link PropertyContainer} to its destination address ([0] = root entity, [1..n] = path elements).
-	 */
-	protected Map<PropertyContainer, String[]>		containerDestinations	= new LinkedHashMap<>();
 
 	{
 		setUnitName(SHARD_ENDPOINT);
@@ -246,10 +247,6 @@ public class RemoteOperationShard extends AgentShardGeneral {
 			case AGENT_STOP:
 				entityStatus[1] = Fields.RUNNING_STATUS_STOPPED;
 				agentKeepAliveTimer.cancel();
-				if(sendUpdateTimer != null) {
-					sendUpdateTimer.cancel();
-					sendUpdateTimer = null;
-				}
 				if(periodicSendUpdateTimer != null) {
 					periodicSendUpdateTimer.cancel();
 					periodicSendUpdateTimer = null;
@@ -344,15 +341,14 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	}
 
 	/**
-	 * Relays a GUI output wave to the M&amp;C entity, with optional rate limiting controlled by
-	 * {@link #UPDATE_FREQUENCY_PARAM}.
+	 * Buffers a GUI output wave for the given port and sends it immediately to M&amp;C.
 	 * <p>
-	 * If we are within the minimum update period, the wave is merged into {@link #wave} and a one-shot timer is
-	 * scheduled (if none exists) to call {@link #sendUpdate()} once the period has elapsed. Otherwise
-	 * {@link #sendUpdate()} is called immediately.
+	 * If a wave was already buffered for the same port, it is replaced completely (latest-wins per port).
+	 * No rate limiting is applied here — {@link net.xqhs.flash.web.WebEntity} handles batching at its
+	 * own frequency before forwarding to the GUI.
 	 *
 	 * @param wave
-	 *            the output wave to send.
+	 *            the output wave; its first destination element must be the target port.
 	 */
 	public void sendOutput(AgentWave wave) {
 		// TODO check if waves are cloned when sending. Must clone waves because their destination / source parameters
@@ -366,32 +362,26 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		// FIXME this should be sent to each remote
 		wave.prependDestination(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
 		interfaceSpecification.applyUpdate(port, wave);
-		long now = System.currentTimeMillis();
-		boolean withinFrequency = updateFrequency >= 0 && (now - lastUpdate) < updateFrequency;
-		mergeIntoWave(wave);
-		if(withinFrequency) {
-			if(sendUpdateTimer == null) {
-				sendUpdateTimer = new Timer(true);
-				long delay = updateFrequency - (now - lastUpdate);
-				sendUpdateTimer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						sendUpdate();
-					}
-				}, Math.max(0, delay));
-			}
-		}
-		else {
-			sendUpdate();
-		}
+		bufferedOutputs.put(port, wave);
+		sendUpdate();
 	}
 
 	/**
-	 * Flushes the pending wave and collects properties from all registered {@link PropertyContainer}s.
+	 * Flushes all buffered output waves (one per port) and collects properties from all registered
+	 * {@link PropertyContainer}s, sending one wave per container to {@code RECEIVE_METRIC}.
 	 * <p>
 	 * If {@link PropertyContainer}s are registered but {@link #updateFrequency} is negative, an error is logged.
 	 */
 	public void sendUpdate() {
+		if(!bufferedOutputs.isEmpty()) {
+			for(AgentWave buffered : bufferedOutputs.values()) {
+				if(!sendMessage(buffered))
+					le("sendUpdate (buffered output) failed. Wave is []", buffered);
+				else
+					lf("Buffered output wave sent.");
+			}
+			bufferedOutputs.clear();
+		}
 		if(!propertyContainers.isEmpty()) {
 			if(updateFrequency < 0)
 				le("PropertyContainers are registered but update-frequency is -1; periodic sends not possible.");
@@ -400,37 +390,24 @@ public class RemoteOperationShard extends AgentShardGeneral {
 					Map<String, String> props = entry.getKey().getProperties(entry.getValue());
 					if(props == null)
 						continue;
-					String[] dest = containerDestinations.get(entry.getKey());
-					if(dest == null || dest.length == 0) {
-						le("PropertyContainer has no destination set – skipping.");
-						continue;
-					}
-					String[] extraElements = new String[dest.length - 1];
-					System.arraycopy(dest, 1, extraElements, 0, extraElements.length);
-					AgentWave containerWave = new AgentWave(null, dest[0], extraElements);
+					AgentWave containerWave = new AgentWave(null,
+							DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
+							CentralMonitoringAndControlEntity.Operations.RECEIVE_METRIC.toString());
 					for(Map.Entry<String, String> prop : props.entrySet())
 						containerWave.add(prop.getKey(), prop.getValue());
 					containerWave.addSourceElements(getAgent().getEntityName());
 					if(!sendMessage(containerWave))
 						le("sendUpdate (PropertyContainer) failed. Wave is []", containerWave);
 					else
-						lf("PropertyContainer update sent to [].", dest[0]);
+						lf("PropertyContainer update sent.");
 				}
 		}
-		if(wave != null) {
-			if(!sendMessage(wave))
-				le("sendUpdate failed. Wave is []", wave);
-			else
-				lf("Output wave sent.");
-			wave = null;
-		}
-		lastUpdate = System.currentTimeMillis();
-		sendUpdateTimer = null;
 	}
 
 	/**
 	 * Registers a {@link PropertyContainer} that will supply values for the given properties at each
-	 * {@link #sendUpdate()} call.
+	 * {@link #sendUpdate()} call. Properties are always sent to {@code RECEIVE_METRIC} on the central
+	 * monitoring entity.
 	 * <p>
 	 * Logs an error and returns without registering if any property is already owned by another container. On the
 	 * first successful registration a periodic {@link #sendUpdate()} timer is started (error if
@@ -440,13 +417,8 @@ public class RemoteOperationShard extends AgentShardGeneral {
 	 *            the container that will provide property values.
 	 * @param properties
 	 *            the set of property names this container is responsible for.
-	 * @param destinationAgent
-	 *            the root destination entity name.
-	 * @param destinationElements
-	 *            additional path elements of the destination.
 	 */
-	public void registerOutputProperties(PropertyContainer callback, Set<String> properties,
-										 String destinationAgent, String... destinationElements) {
+	public void registerOutputProperties(PropertyContainer callback, Set<String> properties) {
 		for(String prop : properties)
 			if(registeredProperties.containsKey(prop)) {
 				le("Property [] is already registered by another container – registration aborted.", prop);
@@ -455,11 +427,7 @@ public class RemoteOperationShard extends AgentShardGeneral {
 		for(String prop : properties)
 			registeredProperties.put(prop, callback);
 		propertyContainers.put(callback, properties);
-		String[] dest = new String[1 + destinationElements.length];
-		dest[0] = destinationAgent;
-		System.arraycopy(destinationElements, 0, dest, 1, destinationElements.length);
-		containerDestinations.put(callback, dest);
-		lf("PropertyContainer registered for properties: [], destination: []", properties, dest[0]);
+		lf("PropertyContainer registered for properties: []", properties);
 		if(periodicSendUpdateTimer == null) {
 			if(updateFrequency < 0)
 				le("PropertyContainer registered but update-frequency is -1; cannot schedule periodic sendUpdate.");
@@ -473,24 +441,6 @@ public class RemoteOperationShard extends AgentShardGeneral {
 				}, updateFrequency, updateFrequency);
 				lf("Periodic sendUpdate timer started with period [] ms.", updateFrequency);
 			}
-		}
-	}
-
-	/**
-	 * Merges all content elements from {@code incoming} into {@link #wave} (latest-wins per key).
-	 *
-	 * @param incoming
-	 *            the wave to absorb.
-	 */
-	private void mergeIntoWave(AgentWave incoming) {
-		if(wave == null) {
-			wave = incoming;
-			return;
-		}
-		for(String key : incoming.getContentElements()) {
-			wave.removeKey(key);
-			for(String value : incoming.getValues(key))
-				wave.add(key, value);
 		}
 	}
 }

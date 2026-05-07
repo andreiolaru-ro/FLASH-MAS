@@ -13,8 +13,11 @@ package net.xqhs.flash.web;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -86,6 +89,18 @@ public class WebEntity extends CentralGUI {
 
 	/** Is the web server started? */
 	protected boolean isRunning = false;
+
+	/**
+	 * Accumulated updates pending to be sent to the GUI: entity → port/metric → role → value.
+	 * Latest-wins per port — a new update on the same port replaces the previous one.
+	 */
+	protected final Map<String, Map<String, Map<String, String>>> pendingUpdates = new ConcurrentHashMap<>();
+
+	/**
+	 * How often (ms) WebEntity flushes accumulated updates to the GUI.
+	 * Independent of the agent's {@code update-frequency}.
+	 */
+	protected static final long GUI_UPDATE_FREQUENCY_MS = 200;
 
 	/** The Gson object used for JSON serialization and deserialization */
 	protected static final Gson gson = new Gson();
@@ -256,6 +271,7 @@ public class WebEntity extends CentralGUI {
 		VertxOptions options = new VertxOptions();
 		web = Vertx.vertx(options);
 		web.deployVerticle(new ServerVerticle(this));
+		web.setPeriodic(GUI_UPDATE_FREQUENCY_MS, id -> flushUpdates());
 		isRunning = true;
 		return true;
 	}
@@ -349,7 +365,7 @@ public class WebEntity extends CentralGUI {
 		super.updateGui(entity, guiSpecification);
 
 		String message = buildMessage("entity", "update",
-			guiSpecification.toJSON());
+				guiSpecification.toJSON());
 		sendToClient(message);
 		return true;
 	}
@@ -363,8 +379,8 @@ public class WebEntity extends CentralGUI {
 	public void sendNotification(JsonArray source, JsonArray subject, JsonObject content) {
 		AgentWave wave = new AgentWave();
 		wave.resetDestination(
-			CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString(),
-			gson.fromJson(subject, String[].class)
+				CentralMonitoringAndControlEntity.Operations.GUI_INPUT_TO_ENTITY.toString(),
+				gson.fromJson(subject, String[].class)
 		);
 		for (Entry<String, JsonElement> entry : content.entrySet()) {
 			String key = entry.getKey();
@@ -389,37 +405,79 @@ public class WebEntity extends CentralGUI {
 
 	@Override
 	public boolean sendOutput(AgentWave wave) {
-		if (CentralMonitoringAndControlEntity.Operations.SEND_NODE_CONFIGS.toString().equals(wave.getFirstDestinationElement())) {
+		if(CentralMonitoringAndControlEntity.Operations.SEND_NODE_CONFIGS.toString().equals(wave.getFirstDestinationElement())) {
 			JsonObject content = new JsonObject();
-			for (String key : wave.getContentElements()) {
+			for(String key : wave.getContentElements())
 				content.addProperty(key, wave.getValue(key));
-			}
-			String message = buildMessage("global", "node-configs", content);
-			sendToClient(message);
+			sendToClient(buildMessage("global", "node-configs", content));
 			return true;
 		}
 		super.sendOutput(wave);
-		li("Sending output wave: []", wave.toString());
+		li("Accumulating output wave: []", wave.toString());
 
 		// wave destination is entity/port
 		String entity = wave.popDestinationElement();
 		String port = wave.popDestinationElement();
-		JsonObject subject = new JsonObject();
-		subject.addProperty(DeploymentConfiguration.GENERAL_ENTITY_NAME, entity);
-		subject.addProperty(PORT_SCOPE, port);
 
-		Element gui = entityGUIs.get(entity);
-		if (gui == null)
+		if(entityGUIs.get(entity) == null)
 			return ler(false, "GUI for entity [] not present.", entity);
 
-		JsonObject allRoles = new JsonObject();
-		for (String role : wave.getContentElements()) {
-			allRoles.addProperty(role, wave.getValue(role));
-		}
-
-		String message = buildMessage(PORT_SCOPE, subject, allRoles);
-		sendToClient(message);
+		Map<String, String> roles = new LinkedHashMap<>();
+		for(String role : wave.getContentElements())
+			roles.put(role, wave.getValue(role));
+		accumulate(entity, port, roles);
 		return true;
+	}
+
+	/**
+	 * Accumulates metric key-value pairs for the given entity.
+	 * Each metric is stored as a separate port entry with a single {@code "value"} role.
+	 * Called from {@link net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity} on {@code RECEIVE_METRIC}.
+	 *
+	 * @param entity  the source entity name.
+	 * @param metrics map of metric name → current string value.
+	 */
+	public void accumulateMetric(String entity, Map<String, String> metrics) {
+		for(Map.Entry<String, String> e : metrics.entrySet()) {
+			Map<String, String> valueMap = new LinkedHashMap<>();
+			valueMap.put("value", e.getValue());
+			accumulate(entity, e.getKey(), valueMap);
+		}
+	}
+
+	/**
+	 * Adds or replaces the roles for a given entity/port in {@link #pendingUpdates}.
+	 * Latest-wins: a new call with the same entity+port overwrites the previous entry completely.
+	 *
+	 * @param entity the entity name.
+	 * @param port   the port or metric name.
+	 * @param roles  map of role → value.
+	 */
+	protected void accumulate(String entity, String port, Map<String, String> roles) {
+		pendingUpdates
+				.computeIfAbsent(entity, k -> new ConcurrentHashMap<>())
+				.put(port, roles);
+	}
+
+	/**
+	 * Flushes all accumulated updates to the GUI as a single batch message and clears the pending map.
+	 * Called periodically by the Vertx timer started in {@link #start()}.
+	 */
+	protected void flushUpdates() {
+		if(pendingUpdates.isEmpty())
+			return;
+		JsonObject batch = new JsonObject();
+		pendingUpdates.forEach((entity, ports) -> {
+			JsonObject entityJson = new JsonObject();
+			ports.forEach((port, roles) -> {
+				JsonObject rolesJson = new JsonObject();
+				roles.forEach(rolesJson::addProperty);
+				entityJson.add(port, rolesJson);
+			});
+			batch.add(entity, entityJson);
+		});
+		pendingUpdates.clear();
+		sendToClient(buildMessage("updates", "batch", batch));
 	}
 
 	/**

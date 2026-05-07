@@ -24,8 +24,8 @@ public class BootAllVisualizationsTest {
 	/** How often Cell* agents send heatmap updates to the UI (ms). */
 	private static final int CELL_UPDATE_FREQUENCY_MS  = 2000;
 
-	private static final int AGENT_COUNT = 50;
-	private static final int CELL_COUNT  = 50;
+	private static final int AGENT_COUNT = 500;
+	private static final int CELL_COUNT  = 500;
 
 	public static void main(String[] args) {
 		String test_args = "";

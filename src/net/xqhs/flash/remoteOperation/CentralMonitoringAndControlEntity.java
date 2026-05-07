@@ -463,27 +463,13 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 			case RECEIVE_METRIC:
 				if(gui instanceof WebEntity) {
 					WebEntity webGui = (WebEntity) gui;
-					JsonObject metricData = new JsonObject();
-					metricData.addProperty("agent", sourceEntity);
-
-					JsonObject data = new JsonObject();
+					Map<String, String> metrics = new LinkedHashMap<>();
 					for(String key : wave.getContentElements()) {
 						List<String> values = wave.getValues(key);
-						if(values.size() == 1) {
-							try {
-								data.add(key, JsonParser.parseString(values.get(0)));
-							} catch(Exception e) {
-								data.addProperty(key, values.get(0));
-							}
-						} else {
-							JsonArray arr = new JsonArray();
-							for(String v : values)
-								arr.add(v);
-							data.add(key, arr);
-						}
+						if(!values.isEmpty())
+							metrics.put(key, values.get(0));
 					}
-					metricData.add("data", data);
-					webGui.sendToClient(WebEntity.buildMessage("metrics", "metric_update", metricData));
+					webGui.accumulateMetric(sourceEntity, metrics);
 				}
 				return true;
 

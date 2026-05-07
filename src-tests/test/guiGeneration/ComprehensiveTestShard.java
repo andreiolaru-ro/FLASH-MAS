@@ -9,7 +9,6 @@ import java.util.TimerTask;
 
 import com.google.gson.JsonArray;
 
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -24,7 +23,7 @@ import net.xqhs.flash.remoteOperation.RemoteOperationShard;
  * <p><b>Two concerns are deliberately separated:</b>
  * <ul>
  *   <li>The <b>simulation</b> runs on its own 1-second internal timer,
- *       updating x, y, energy, state continuously — independently of sends.
+ *       updating x, y, energy, state and color continuously — independently of sends.
  *   <li>The <b>send rate</b> is controlled entirely by RemoteOperationShard's
  *       {@code update-frequency} parameter. {@link #getProperties} is a pure
  *       reader — it never advances state itself.
@@ -32,11 +31,10 @@ import net.xqhs.flash.remoteOperation.RemoteOperationShard;
  *
  * <p><b>Two send paths via RemoteOperationShard:</b>
  * <ul>
- *   <li>{@link RemoteOperationShard#registerOutputProperties} — x, y, energy,
- *       state are sent periodically to {@code RECEIVE_METRIC}.
- *   <li>{@link RemoteOperationShard#sendOutput} — neighbours (once on start)
- *       and color (whenever state changes) are pushed through
- *       {@code ENTITY_GUI_OUTPUT}.
+ *   <li>{@link RemoteOperationShard#registerOutputProperties} — x, y, energy, state, color
+ *       are sent periodically to {@code RECEIVE_METRIC}.
+ *   <li>{@link RemoteOperationShard#sendOutput} — neighbours (once on start) are pushed
+ *       through {@code ENTITY_GUI_OUTPUT}.
  * </ul>
  */
 public class ComprehensiveTestShard extends AgentShardGeneral implements PropertyContainer {
@@ -44,12 +42,12 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 	private static final long serialVersionUID = 1L;
 	private final Random random = new Random();
 
-	// ── simulated state (written by simulation timer, read by getProperties) ─
-	private volatile double  x      = random.nextDouble() * 100;
-	private volatile double  y      = random.nextDouble() * 100;
-	private volatile int     energy = 50 + random.nextInt(50);
-	private volatile String  state  = "healthy";
-	private volatile String  color  = stateToColor("healthy");
+	// ── simulated state (written by simulation timer, read by getProperties) ──
+	private volatile double x      = random.nextDouble() * 100;
+	private volatile double y      = random.nextDouble() * 100;
+	private volatile int    energy = 50 + random.nextInt(50);
+	private volatile String state  = "healthy";
+	private volatile String color  = stateToColor("healthy");
 	private JsonArray neighbours;
 
 	/** Drives state updates every second — decoupled from the send rate. */
@@ -66,9 +64,9 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 	public static final String PROP_Y      = "y";
 	public static final String PROP_ENERGY = "energy";
 	public static final String PROP_STATE  = "state";
+	public static final String PROP_COLOR  = "color";
 
 	/** Sent via sendOutput → ENTITY_GUI_OUTPUT (immediate / event-driven). */
-	public static final String PORT_COLOR      = "color";
 	public static final String PORT_NEIGHBOURS = "neighbours";
 
 	public ComprehensiveTestShard() {
@@ -89,16 +87,11 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 				buildNeighbours();
 				startSimulation();
 
-				// PATH 1: periodic metric snapshots via registerOutputProperties
 				remoteOp.registerOutputProperties(
 						this,
-						Set.of(PROP_X, PROP_Y, PROP_ENERGY, PROP_STATE),
-						DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-						"RECEIVE_METRIC");
+						Set.of(PROP_X, PROP_Y, PROP_ENERGY, PROP_STATE, PROP_COLOR));
 
-				// PATH 2: one-shot sends via sendOutput
 				sendNeighbours();
-				sendColor(color);
 				break;
 
 			case AGENT_STOP:
@@ -116,9 +109,9 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 	// ── Simulation timer (advances state, does NOT send) ─────────────────────
 
 	/**
-	 * Starts a 1-second timer that advances x/y/energy/state.
-	 * This runs independently of {@code update-frequency} — the simulation
-	 * always steps every second; only the sends are rate-limited.
+	 * Starts a 1-second timer that advances x/y/energy/state/color.
+	 * Runs independently of {@code update-frequency} — simulation always steps
+	 * every second; only the sends are rate-limited.
 	 */
 	private void startSimulation() {
 		simulationTimer = new Timer(true);
@@ -138,14 +131,9 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 				else if (energy < 60) newState = "warning";
 				else                  newState = "healthy";
 
-				// When state changes → push color immediately via sendOutput (PATH 2)
 				if(!newState.equals(state)) {
 					state = newState;
-					String newColor = stateToColor(state);
-					if(!newColor.equals(color)) {
-						color = newColor;
-						sendColor(color); // immediate, event-driven
-					}
+					color = stateToColor(state);
 				}
 			}
 		}, 0, SIMULATION_STEP_MS);
@@ -155,8 +143,7 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 
 	/**
 	 * Called by {@link RemoteOperationShard} every {@code update-frequency} ms.
-	 * Returns the <em>current</em> state — does not advance the simulation.
-	 * The simulation runs on its own 1-second timer.
+	 * Returns the current state snapshot — does not advance the simulation.
 	 */
 	@Override
 	public Map<String, String> getProperties(Set<String> properties) {
@@ -165,6 +152,7 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 		result.put(PROP_Y,      String.valueOf(y));
 		result.put(PROP_ENERGY, String.valueOf(energy));
 		result.put(PROP_STATE,  state);
+		result.put(PROP_COLOR,  color);
 		return result;
 	}
 
@@ -182,19 +170,6 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 			wave.add("neighbour", neighbours.get(i).getAsString());
 		remoteOp.sendOutput(wave);
 		li("Sent neighbours via sendOutput: []", neighbours);
-	}
-
-	/**
-	 * Sends a color update via {@link RemoteOperationShard#sendOutput}.
-	 * Called immediately whenever state transitions (healthy/warning/critical).
-	 *
-	 * @param colorValue CSS color string e.g. {@code "#2ecc71"}
-	 */
-	private void sendColor(String colorValue) {
-		if(remoteOp == null) return;
-		AgentWave wave = new AgentWave(colorValue, PORT_COLOR);
-		remoteOp.sendOutput(wave);
-		li("Sent color via sendOutput: []", colorValue);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────

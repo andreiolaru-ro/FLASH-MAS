@@ -92,9 +92,7 @@ public class HeatmapTestShard extends AgentShardGeneral implements PropertyConta
 
 				remoteOp.registerOutputProperties(
 						this,
-						Set.of("x", "y", "energy"),
-						DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME,
-						"RECEIVE_METRIC");
+						Set.of("x", "y", "energy"));
 				break;
 			}
 			case AGENT_STOP:

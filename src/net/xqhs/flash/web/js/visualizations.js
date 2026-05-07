@@ -9,6 +9,12 @@ export function saveConfig() {
         delete copy.chartInstance;
         delete copy.agentDataMap;
         delete copy.agentLinksMap;
+        delete copy.lastHeatmapCategoriesX;
+        delete copy.lastHeatmapCategoriesY;
+        delete copy.heatmapMinX;
+        delete copy.heatmapMaxX;
+        delete copy.heatmapMinY;
+        delete copy.heatmapMaxY;
         return copy;
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(configToSave));
@@ -75,6 +81,12 @@ export function initVisualizations() {
                 delete copy.chartInstance;
                 delete copy.agentDataMap;
                 delete copy.agentLinksMap;
+                delete copy.lastHeatmapCategoriesX;
+                delete copy.lastHeatmapCategoriesY;
+                delete copy.heatmapMinX;
+                delete copy.heatmapMaxX;
+                delete copy.heatmapMinY;
+                delete copy.heatmapMaxY;
                 return copy;
             });
             const yamlStr = jsyaml.dump(configToSave);
@@ -258,14 +270,10 @@ export function createVisualizationWidget(viz, containerElement) {
                 name: 'Agents',
                 type: 'scatter',
                 symbolSize: 12,
-                itemStyle: { color: '#6200ea' },
                 data: []
             }]
         };
     } else if (viz.type === 'heatmap') {
-        // We will start with empty category axes.
-        // As data comes in, we dynamically compute the bounds (minX, maxX, minY, maxY)
-        // and rebuild the axes arrays to exactly fit the data grid.
         viz.heatmapMinX = Infinity;
         viz.heatmapMaxX = -Infinity;
         viz.heatmapMinY = Infinity;
@@ -289,18 +297,8 @@ export function createVisualizationWidget(viz, containerElement) {
                 { type: 'inside', yAxisIndex: 0, filterMode: 'none' }
             ],
             grid: { left: '10%', right: '15%', bottom: '15%', containLabel: true },
-            xAxis: { 
-                type: 'category', 
-                data: [], 
-                name: viz.xAxisProperty || 'X', 
-                splitArea: { show: true } 
-            },
-            yAxis: { 
-                type: 'category', 
-                data: [], 
-                name: viz.yAxisProperty || 'Y', 
-                splitArea: { show: true } 
-            },
+            xAxis: { type: 'category', data: [], name: viz.xAxisProperty || 'X', splitArea: { show: true } },
+            yAxis: { type: 'category', data: [], name: viz.yAxisProperty || 'Y', splitArea: { show: true } },
             visualMap: {
                 min: 0,
                 max: 100,
@@ -334,11 +332,7 @@ export function createVisualizationWidget(viz, containerElement) {
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
             xAxis: { type: 'category', data: [] },
             yAxis: { type: 'value', name: 'Count' },
-            series: [{
-                type: 'bar',
-                data: [],
-                itemStyle: { color: '#03a9f4' }
-            }]
+            series: [{ type: 'bar', data: [], itemStyle: { color: '#03a9f4' } }]
         };
     } else if (viz.type === 'graph') {
         option = {
@@ -364,7 +358,6 @@ export function handleIncomingMetric(agentName, metricData) {
     if (!metricData) return;
 
     visualizationsConfig.forEach(viz => {
-        // Only update this visualization if the agent name starts with the configured category prefix.
         if (viz.targetCategory && !agentName.startsWith(viz.targetCategory))
             return;
 
@@ -373,13 +366,8 @@ export function handleIncomingMetric(agentName, metricData) {
             const yVal = metricData[viz.yAxisProperty];
 
             if (xVal !== undefined && yVal !== undefined) {
-                let itemStyle = undefined;
-                if (viz.colorRule && viz.colorRule.property) {
-                    const stateVal = metricData[viz.colorRule.property];
-                    if (stateVal && viz.colorRule.map[stateVal]) {
-                        itemStyle = { color: viz.colorRule.map[stateVal] };
-                    }
-                }
+                const agentColor = metricData['color'];
+                const itemStyle = { color: agentColor || '#6200ea' };
                 const dataPoint = { name: agentName, value: [xVal, yVal, agentName], itemStyle: itemStyle };
                 viz.agentDataMap.set(agentName, dataPoint);
                 if (viz.chartInstance) {
@@ -396,20 +384,10 @@ export function handleIncomingMetric(agentName, metricData) {
                 const gridY = Math.round(Number(yVal));
                 const gridZ = Number(zVal);
 
-                const dataPoint = { 
-                    name: agentName, 
-                    value: [gridX, gridY, gridZ] 
-                };
-                
-                viz.agentDataMap.set(agentName, dataPoint);
+                viz.agentDataMap.set(agentName, { name: agentName, value: [gridX, gridY, gridZ] });
 
                 if (viz.chartInstance) {
-                    // Calculate dynamic bounds based on all currently known agents
-                    let minX = Infinity;
-                    let maxX = -Infinity;
-                    let minY = Infinity;
-                    let maxY = -Infinity;
-
+                    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
                     viz.agentDataMap.forEach(d => {
                         minX = Math.min(minX, d.value[0]);
                         maxX = Math.max(maxX, d.value[0]);
@@ -417,28 +395,23 @@ export function handleIncomingMetric(agentName, metricData) {
                         maxY = Math.max(maxY, d.value[1]);
                     });
 
-                    // Add a small padding (1 unit) around the data bounds
-                    minX = minX === Infinity ? 0 : minX - 1;
+                    minX = minX === Infinity  ? 0  : minX - 1;
                     maxX = maxX === -Infinity ? 10 : maxX + 1;
-                    minY = minY === Infinity ? 0 : minY - 1;
+                    minY = minY === Infinity  ? 0  : minY - 1;
                     maxY = maxY === -Infinity ? 10 : maxY + 1;
 
-                    // Rebuild the category arrays to exactly match the min-max range
                     const categoriesX = [];
-                    for (let i = minX; i <= maxX; i++) { categoriesX.push(String(i)); }
-
+                    for (let i = minX; i <= maxX; i++) categoriesX.push(String(i));
                     const categoriesY = [];
-                    for (let i = minY; i <= maxY; i++) { categoriesY.push(String(i)); }
+                    for (let i = minY; i <= maxY; i++) categoriesY.push(String(i));
 
-                    // Save categories to viz object so tooltip formatter can use them
                     viz.lastHeatmapCategoriesX = categoriesX;
                     viz.lastHeatmapCategoriesY = categoriesY;
 
-                    // Map agent absolute coordinates to array indices for ECharts
                     const dataWithIndices = Array.from(viz.agentDataMap.values()).map(d => [
-                        d.value[0] - minX, // Index on X axis
-                        d.value[1] - minY, // Index on Y axis
-                        d.value[2]         // Z Value
+                        d.value[0] - minX,
+                        d.value[1] - minY,
+                        d.value[2]
                     ]);
 
                     viz.chartInstance.setOption({
@@ -451,17 +424,12 @@ export function handleIncomingMetric(agentName, metricData) {
         } else if (viz.type === 'graph') {
             const targets = metricData[viz.xAxisProperty];
             if (targets !== undefined) {
-                let itemStyle = undefined;
-                if (viz.colorRule && viz.colorRule.property) {
-                    const stateVal = metricData[viz.colorRule.property];
-                    if (stateVal && viz.colorRule.map[stateVal]) {
-                        itemStyle = { color: viz.colorRule.map[stateVal] };
-                    }
-                }
+                const agentColor = metricData['color'];
+                const itemStyle = agentColor ? { color: agentColor } : { color: '#03a9f4' };
                 if (!viz.agentDataMap.has(agentName)) {
-                    viz.agentDataMap.set(agentName, { name: agentName, symbolSize: 20, itemStyle: itemStyle || { color: '#03a9f4' } });
+                    viz.agentDataMap.set(agentName, { name: agentName, symbolSize: 20, itemStyle: itemStyle });
                 } else {
-                    if (itemStyle) viz.agentDataMap.get(agentName).itemStyle = itemStyle;
+                    viz.agentDataMap.get(agentName).itemStyle = itemStyle;
                 }
 
                 let targetArray = [];
@@ -497,7 +465,6 @@ export function handleIncomingMetric(agentName, metricData) {
             const val = metricData[viz.xAxisProperty];
             if (val !== undefined) {
                 viz.agentDataMap.set(agentName, val);
-
                 const counts = {};
                 viz.agentDataMap.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
                 viz.chartInstance.setOption({
@@ -512,13 +479,10 @@ export function handleIncomingMetric(agentName, metricData) {
                     viz.agentDataMap.set(agentName, []);
                 }
                 const history = viz.agentDataMap.get(agentName);
-
                 let numVal = Number(val);
                 if (isNaN(numVal)) numVal = 0;
-
                 history.push(numVal);
                 if (history.length > 50) history.shift();
-
                 if (viz.chartInstance) {
                     const series = [];
                     viz.agentDataMap.forEach((hist, agent) => {
@@ -539,20 +503,9 @@ export function setupVizModal() {
 
     if (!modal || !btnOpen || !spanClose || !btnSave) return;
 
-    btnOpen.onclick = (e) => {
-        e.preventDefault();
-        modal.style.display = 'block';
-    };
-
-    spanClose.onclick = () => {
-        modal.style.display = 'none';
-    };
-
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    };
+    btnOpen.onclick = (e) => { e.preventDefault(); modal.style.display = 'block'; };
+    spanClose.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = (event) => { if (event.target === modal) modal.style.display = 'none'; };
 
     btnSave.onclick = () => {
         const title = document.getElementById('viz-title').value;
@@ -563,21 +516,10 @@ export function setupVizModal() {
         const zaxis = document.getElementById('viz-zaxis') ? document.getElementById('viz-zaxis').value : '';
         const widthCls = document.getElementById('viz-width').value;
         const heightCls = document.getElementById('viz-height').value;
-        const colorRuleStr = document.getElementById('viz-color-rule').value;
 
         if (!title || !category) {
             alert("Title and Target Category are required!");
             return;
-        }
-
-        let colorRule = null;
-        if (colorRuleStr) {
-            try {
-                colorRule = JSON.parse(colorRuleStr);
-            } catch(e) {
-                alert("Invalid JSON for Color Rule!");
-                return;
-            }
         }
 
         const newVizConfig = {
@@ -590,7 +532,6 @@ export function setupVizModal() {
             zAxisProperty: zaxis,
             widthClass: widthCls,
             heightClass: heightCls,
-            colorRule: colorRule,
             chartInstance: null,
             agentDataMap: new Map()
         };
@@ -613,8 +554,6 @@ export function setupVizModal() {
             metric: metricName
         });
 
-        console.log("Subscribed and created widget dynamically:", newVizConfig);
-
         modal.style.display = 'none';
 
         document.getElementById('viz-title').value = '';
@@ -622,7 +561,6 @@ export function setupVizModal() {
         document.getElementById('viz-xaxis').value = '';
         document.getElementById('viz-yaxis').value = '';
         if (document.getElementById('viz-zaxis')) document.getElementById('viz-zaxis').value = '';
-        if (document.getElementById('viz-color-rule')) document.getElementById('viz-color-rule').value = '';
     };
 }
 
@@ -641,9 +579,8 @@ export function removeAgentFromVisualizations(agentName) {
                 changed = true;
             }
             viz.agentLinksMap.forEach((links, source) => {
-                const initialLength = links.length;
                 const newLinks = links.filter(l => l.target !== agentName);
-                if (newLinks.length !== initialLength) {
+                if (newLinks.length !== links.length) {
                     viz.agentLinksMap.set(source, newLinks);
                     changed = true;
                 }
@@ -654,35 +591,24 @@ export function removeAgentFromVisualizations(agentName) {
             if (viz.type === 'scatter') {
                 viz.chartInstance.setOption({ series: [{ data: Array.from(viz.agentDataMap.values()) }] });
             } else if (viz.type === 'heatmap') {
-                let minX = Infinity;
-                let maxX = -Infinity;
-                let minY = Infinity;
-                let maxY = -Infinity;
-
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
                 viz.agentDataMap.forEach(d => {
                     minX = Math.min(minX, d.value[0]);
                     maxX = Math.max(maxX, d.value[0]);
                     minY = Math.min(minY, d.value[1]);
                     maxY = Math.max(maxY, d.value[1]);
                 });
-
-                minX = minX === Infinity ? 0 : minX - 1;
+                minX = minX === Infinity  ? 0  : minX - 1;
                 maxX = maxX === -Infinity ? 10 : maxX + 1;
-                minY = minY === Infinity ? 0 : minY - 1;
+                minY = minY === Infinity  ? 0  : minY - 1;
                 maxY = maxY === -Infinity ? 10 : maxY + 1;
-
                 const categoriesX = [];
-                for (let i = minX; i <= maxX; i++) { categoriesX.push(String(i)); }
-
+                for (let i = minX; i <= maxX; i++) categoriesX.push(String(i));
                 const categoriesY = [];
-                for (let i = minY; i <= maxY; i++) { categoriesY.push(String(i)); }
-
+                for (let i = minY; i <= maxY; i++) categoriesY.push(String(i));
                 const dataWithIndices = Array.from(viz.agentDataMap.values()).map(d => [
-                    d.value[0] - minX,
-                    d.value[1] - minY,
-                    d.value[2]
+                    d.value[0] - minX, d.value[1] - minY, d.value[2]
                 ]);
-
                 viz.chartInstance.setOption({
                     xAxis: { data: categoriesX },
                     yAxis: { data: categoriesY },

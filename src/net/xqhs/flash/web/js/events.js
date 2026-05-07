@@ -96,10 +96,24 @@ export function sendDeployCommand(ip, rawArguments) {
  */
 function recvMessage(message) {
     console.log('Received message', message);
-    
-    if (message.scope === 'metrics' && message.subject === 'metric_update') {
+
+    if (message.scope === 'updates' && message.subject === 'batch') {
         import("./visualizations.js").then(viz => {
-            viz.handleIncomingMetric(message.content.agent, message.content.data);
+            const batch = message.content;
+            Object.entries(batch).forEach(([agentName, ports]) => {
+                const metricData = {};
+                Object.entries(ports).forEach(([port, roles]) => {
+                    if (Object.keys(roles).length === 1 && roles['value'] !== undefined) {
+                        metricData[port] = roles['value'];
+                    } else {
+                        Object.entries(roles).forEach(([role, value]) => {
+                            metricData[role] = value;
+                        });
+                        metricData['_port'] = port;
+                    }
+                });
+                viz.handleIncomingMetric(agentName, metricData);
+            });
         });
         return;
     }
@@ -109,12 +123,12 @@ function recvMessage(message) {
             const oldEntities = Object.keys(appContext.entities || {});
             appContext.entities = processSpec(message.content);
             const newEntities = Object.keys(appContext.entities || {});
-            
+
             const removedEntities = oldEntities.filter(e => !newEntities.includes(e));
             import("./visualizations.js").then(viz => {
                 removedEntities.forEach(agent => viz.removeAgentFromVisualizations(agent));
             });
-            
+
             console.log('Received new entities data', appContext.entities);
             import("./ui.js").then(ui => ui.updateEntitiesList());
             return;
@@ -138,7 +152,7 @@ function recvMessage(message) {
         const entityName = message.subject.entity;
         const port = message.subject.port;
         applyUpdatesOnPort(entityName, port, message.content);
-        
+
         if (port === 'standard-status' || port === 'standard-application-status') {
             const entity = appContext.entities[entityName];
             if (entity && entity.data) {
