@@ -52,7 +52,15 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The class UID.
 	 */
 	private static final long serialVersionUID = 5157567185843194635L;
-	
+
+	/**
+	 * Tree control command to go to root.
+	 */
+	public static final String CLI_ROOT_NAVIGATION          = "<<";
+	/**
+	 * Prefix for tree control command to go to a parent category.
+	 */
+	public static final String CLI_PARENT_NAVIGATION_PREFIX = "<";
 	/**
 	 * Prefix of category names used in CLI.
 	 */
@@ -789,16 +797,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			// Start of Issue #69
 
 			// Switch context to root
-			if(a.equals("<<")) {
+			if(a.equals(CLI_ROOT_NAVIGATION)) {
 				// Popping everything until we reach root
 				while (context.size() > 1) {
 					context.pop();
 				}
-				// Temporary log message (good for testing i believe)
-				log.lf("Context reset to root via <<.");
+				// Log message for testing
+				log.lf("Context reset to root via [].", CLI_ROOT_NAVIGATION);
 				continue;
 			}
-			else if(a.startsWith("<")) {
+			else if(a.startsWith(CLI_PARENT_NAVIGATION_PREFIX)) {
 				String targetCatName = a.substring(1);
 				boolean categExistsInContext = false;
 				// Checking to see if the category exists in the current context
@@ -814,7 +822,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					while (!context.peek().category.equals(targetCatName)) {
 						context.pop();
 					}
-					// Temporary log message (good for testing)
+					// Log message for testing
 					log.lf("Context moved up to category [].", targetCatName);
 				}
 				else {

@@ -30,6 +30,8 @@ public class Boot {
 		// a += " -load_order agent;dummy -node node1 -agent composite:A -shard EchoTesting exit:2 -dummy D classpath:DummyEntity";
 
 		// ---  Tree control tests  ---
+		// Uncomment one test case at a time and run to check the output
+
 		// Test 1: "<node" (dummy should be put in the node's context):
 		// a += " -load_order agent;dummy -node node1 -agent composite:A -shard EchoTesting exit:2 <node -dummy D classpath:DummyEntity";
 
