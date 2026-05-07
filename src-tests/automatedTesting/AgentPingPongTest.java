@@ -63,6 +63,7 @@ public class AgentPingPongTest {
 	@Before
 	public void setUpStreams() {
 		System.setOut(new PrintStream(outContent));
+		System.out.println("WARNING: Tests may take longer to complete due to timing-based assertions. Please wait...");
 	}
 
 	@After
