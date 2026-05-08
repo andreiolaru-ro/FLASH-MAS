@@ -248,8 +248,8 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				return false;
 			}
 			if (configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME).isEmpty()){
-				li("No WebSocket host specified. Defaulting to []", WS_DEFAULT_HOST);
 				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
+				li("No WebSocket host specified. Defaulting to []", webSocketServerAddress);
 			}
 			else
 				webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
