@@ -58,6 +58,10 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	public static final String	WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
 	/**
+	 * The name for the server.
+	 */
+	public static final String	WEBSOCKET_SERVER_NAME			= "server";
+	/**
 	 * The prefix for Websocket server address.
 	 */
 	public static final String	WS_PROTOCOL_PREFIX				= "ws://";
@@ -218,13 +222,38 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
-		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
+		if(configuration.isSimple(WEBSOCKET_SERVER_NAME)){
 			hasServer = true;
-			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
-			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort;
+			li("WebSocket server configured with default port and host.");
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + WS_DEFAULT_PORT;
 		}
-		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
-			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+		else if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
+			hasServer = true;
+			if(configuration.getFirstValue(WEBSOCKET_SERVER_PORT_NAME) == null){
+				le("Null serverPort value");
+				return false;
+			}
+			if (configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME).isEmpty()){
+				li("No WebSocket server port specified. Defaulting to []", WS_DEFAULT_PORT);
+				serverPort = Integer.parseInt(WS_DEFAULT_PORT);
+			}
+			else {
+				serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
+			}
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + String.valueOf(serverPort);
+		}
+		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)){
+			if(configuration.getFirstValue(WEBSOCKET_SERVER_ADDRESS_NAME) == null){
+				le("Null connectTo value");
+				return false;
+			}
+			if (configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME).isEmpty()){
+				li("No WebSocket host specified. Defaulting to []", WS_DEFAULT_HOST);
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
+			}
+			else
+				webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+		}
 		else{
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT; 
 			li("No WebSocket server address or port specified. Defaulting to []", webSocketServerAddress);
