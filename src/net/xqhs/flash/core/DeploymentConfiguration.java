@@ -868,12 +868,12 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(args.hasNext()) {
 						name = args.next();
 
-						if(isCategoryDefinition(name)) {
-							lookahead = name;
-							name = null;
-						} else if("-".equals(name)) {
-							name = null;
-						}
+                        if("-".equals(name)) {
+                            name = null;
+                        } else if(isCategoryDefinition(name)) {
+                            lookahead = name;
+                            name = null;
+                        }
 					}
 
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
