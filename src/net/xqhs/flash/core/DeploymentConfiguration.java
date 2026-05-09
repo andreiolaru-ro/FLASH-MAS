@@ -857,39 +857,39 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				
 				// integrate in current context.
 				CtxtTriple cCtxt = context.peek();
-                if(cCtxt.elemTree == null)
-                    log.le("Unable to integrate category [] in current context [] which does not support subordinate categories.",
-                            catName, cCtxt.category);
-                else if(category != null && category.isValue()) { // it is a simple value
-                    context.push(new CtxtTriple(catName, null, null));
-                }
-                else { // it is an entity; get entity name
-                    String name = null;
-                    if(args.hasNext()) {
-                        name = args.next();
+				if(cCtxt.elemTree == null)
+					log.le("Unable to integrate category [] in current context [] which does not support subordinate categories.",
+							catName, cCtxt.category);
+				else if(category != null && category.isValue()) { // it is a simple value
+					context.push(new CtxtTriple(catName, null, null));
+				}
+				else { // it is an entity; get entity name
+					String name = null;
+					if(args.hasNext()) {
+						name = args.next();
 
-                        if(isCategoryDefinition(name)) {
-                            lookahead = name;
-                            name = null;
-                        } else if("-".equals(name)) {
-                            name = null;
-                        }
-                    }
+						if(isCategoryDefinition(name)) {
+							lookahead = name;
+							name = null;
+						} else if("-".equals(name)) {
+							name = null;
+						}
+					}
 
-                    MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
-                    MultiTreeMap node;
-                    if(name != null && subCatTree.isHierarchical(name))
-                        node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
-                                : subCatTree.getFirstTree(name);
-                    else {
-                        node = new MultiTreeMap();
-                        if(name != null) {
-                            node.addOneValue(NAME_ATTRIBUTE_NAME, name);
-                        }
-                        integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
-                    }
-                    context.push(new CtxtTriple(catName, subCatTree, node));
-                }
+					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
+					MultiTreeMap node;
+					if(name != null && subCatTree.isHierarchical(name))
+						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
+								: subCatTree.getFirstTree(name);
+					else {
+						node = new MultiTreeMap();
+						if(name != null) {
+							node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						}
+						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
+					}
+					context.push(new CtxtTriple(catName, subCatTree, node));
+				}
 			}
 			else {
 				if(context.size() <= 1) {
