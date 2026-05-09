@@ -45,6 +45,11 @@ public class Deployment extends Unit {
 	 * The ID of the deployment.
 	 */
 	String deploymentID = null;
+
+    /**
+     * Field set by the no-start category name. If true, then no node should start.
+     */
+    private boolean noStart = false;
 	
 	/**
 	 * @return the singleton instance of the deployment.
@@ -52,6 +57,13 @@ public class Deployment extends Unit {
 	public static Deployment get() {
 		return deployment;
 	}
+
+    /**
+     * @return the value of the noStart field
+     */
+    public boolean isNoStart() {
+        return noStart;
+    }
 	
 	/**
 	 * Creates a basic {@link LoadPack} using the current deployment ID and a given {@link Logger}.
@@ -103,6 +115,9 @@ public class Deployment extends Unit {
 
         MultiTreeMap deploymentTree = DeploymentConfiguration
                 .filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null).get(0);
+
+        // check if no_start category name is set true
+        noStart = Boolean.parseBoolean(deploymentTree.getSingleValue(CategoryName.NO_START.s()));
 
         // get the list of the selected nodes from the SELECT category
         List<String> selectedNodes = deploymentTree.getValues(CategoryName.SELECT.s());

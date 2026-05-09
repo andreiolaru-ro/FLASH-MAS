@@ -929,7 +929,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * @return the category name.
 	 */
 	protected static String getCategoryName(String arg) {
-		return isCategoryDefinition(arg) ? arg.substring(1) : null;
+		return isCategoryDefinition(arg) ? arg.substring(1).replace("-", "_") : null;
 	}
 	
 	/**

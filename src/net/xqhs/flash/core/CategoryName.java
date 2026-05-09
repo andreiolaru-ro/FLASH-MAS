@@ -98,6 +98,11 @@ public enum CategoryName {
      * Nodes to be loaded and started (only the selected nodes will be loaded and started).
      */
     SELECT(new CatPar().isValue().hasParent(DEPLOYMENT)),
+
+    /**
+     * A special category name which indicates that no node should be started.
+     */
+    NO_START(new CatPar().isUnique().isValue().hasParent(DEPLOYMENT))
     ;
 
 	/**
