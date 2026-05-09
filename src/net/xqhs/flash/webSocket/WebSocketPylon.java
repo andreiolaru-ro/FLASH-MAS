@@ -68,7 +68,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	/**
 	 * The default host address for the WebSocket server.
 	 */
-	public static final String	WS_DEFAULT_HOST					= "192.168.1.100";
+	public static final String	WS_DEFAULT_HOST					= "localhost";
 	/**
 	 * The default port for the WebSocket server.
 	 */
