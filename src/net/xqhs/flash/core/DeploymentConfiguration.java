@@ -275,7 +275,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			ContentHolder<XMLTree> loadedXML) throws ConfigLockedException {
 		locked();
 		UnitComponent log = new UnitComponent("settings load").setLoggerType(PlatformUtils.platformLogType())
-				.setLogLevel(Level.INFO);
+				.setLogLevel(Level.ALL);
 		MultiTreeMap deploymentCat = this.getSingleTree(CategoryName.DEPLOYMENT.s());
 		MultiTreeMap deployment = deploymentCat.getSingleTree(null);
 		
@@ -580,6 +580,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						child, caller);
 				return false;
 			}
+			/* 
+			if(CategoryName.byName(child) != null && CategoryName.byName(child).portableFrom() == null
+					&& caller.equals(CategoryName.byName(child).getParent())) {
+				// child is a declared category, is not portable, AND belongs here -> return false
+				log.lf("Found non-portable category [] inside caller category; caller category [] will be lifted instead of ported. ",
+						child, caller);
+				return false;
+			}
+			*/
+			
 			if(tree.isHierarchical(child))
 				if(tree.isSingleton(child)) {
 					if(!allPortable(tree.getATree(child), caller, log))
