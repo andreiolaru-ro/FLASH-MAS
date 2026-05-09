@@ -102,7 +102,7 @@ public enum CategoryName {
     /**
      * A special category name which indicates that no node should be started.
      */
-    NO_START(new CatPar().isUnique().isValue().hasParent(DEPLOYMENT))
+    NOSTART(new CatPar().isUnique().isValue().hasParent(DEPLOYMENT))
     ;
 
 	/**

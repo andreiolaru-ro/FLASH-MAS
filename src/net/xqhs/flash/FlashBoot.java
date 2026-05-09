@@ -40,13 +40,9 @@ public class FlashBoot
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
         boolean shouldStart = true;
-        //if (args.length > 0 && "-no-start".equals(args[0])) {
-            // shouldStart = false;
-            // args = Arrays.copyOfRange(args, 1, args.length);
-        //}
 
 		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
-        shouldStart = !Deployment.get().isNoStart();
+        shouldStart = Deployment.get().doStart();
 
 		// try {
 		// Thread.sleep(20000);
