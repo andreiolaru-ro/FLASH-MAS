@@ -1,4 +1,4 @@
-package test.deployment;
+package test.deployment.params;
 
 import net.xqhs.flash.FlashBoot;
 
@@ -11,7 +11,7 @@ Two auxiliary files are used:
     invalid-schema.xsd} — a malformed XSD schema file
 Expected output for each run: "Deployment file load failed."
 */
-public class fileCheck {
+public class FileCheck {
 
 	static final String THIS_DIRECTORY = "src-tests/test/deployment/";
 	public static void main(String[] args) {
