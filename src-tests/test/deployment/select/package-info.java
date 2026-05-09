@@ -4,4 +4,4 @@
  *
  */
 
-package deployment.select;
+package test.deployment.select;

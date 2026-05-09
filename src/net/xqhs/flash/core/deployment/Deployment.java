@@ -64,30 +64,6 @@ public class Deployment extends Unit {
 		return new LoadPack(PlatformUtils.getClassFactory(), deploymentID, log != null ? log : getLogger());
 	}
 
-
-    /**
-     * Extracts the node names that are given as arguments to the -select category.
-     * @param args - the arguments sent to the CLI
-     * @return a list of Strings representing the node names that are selected
-     */
-    public List<String> getSelectedNodes(List<String> args) {
-        List<String> selectedNodes = new LinkedList<>();
-
-        for (int i = 0; i < args.size(); i++) {
-            if (args.get(i).equals("-select")) {
-                i++;
-                while (i < args.size() && !args.get(i).startsWith("-")) {
-                    selectedNodes.add(args.get(i));
-                    i++;
-                }
-                i--;
-            }
-        }
-
-        return selectedNodes;
-    }
-
-
 	/**
 	 * Loads a deployment starting from command line arguments.
 	 * <p>
@@ -125,7 +101,11 @@ public class Deployment extends Unit {
 		NodeLoader nodeLoader = new NodeLoader();
 		nodeLoader.configure(null, getBasicLoadPack(null));
 
-        List<String> selectedNodes = getSelectedNodes(args);
+        MultiTreeMap deploymentTree = DeploymentConfiguration
+                .filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null).get(0);
+
+        // get the list of the selected nodes from the SELECT category
+        List<String> selectedNodes = deploymentTree.getValues(CategoryName.SELECT.s());
 
         // filter the nodesTree by the selected nodes so that only those nodes will be loaded and started
         if (!selectedNodes.isEmpty()) {

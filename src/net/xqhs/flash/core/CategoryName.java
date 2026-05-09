@@ -93,9 +93,13 @@ public enum CategoryName {
 	 */
 	LOADER(new CatPar().isIdentifiable().isNotEntity().hasPartName("for", "kind", Is.OPTIONAL).hasParent(NODE)
 			.isPortableFrom(DEPLOYMENT)),
-	
-	;
-	
+
+    /**
+     * Nodes to be loaded and started (only the selected nodes will be loaded and started).
+     */
+    SELECT(new CatPar().isValue().hasParent(DEPLOYMENT)),
+    ;
+
 	/**
 	 * Values in this enumeration indicate whether a constraint is optional or mandatory.
 	 */
