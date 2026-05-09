@@ -247,12 +247,30 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				le("Null connectTo value");
 				return false;
 			}
-			if (configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME).isEmpty()){
+
+			if(configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME).isEmpty()){
 				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
 				li("No WebSocket host specified. Defaulting to []", webSocketServerAddress);
 			}
 			else
 				webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+
+			if(webSocketServerAddress.matches("^:?[0-9]*$")){ // matches :port or port
+				int port = Integer.parseInt(webSocketServerAddress.replace(":",""));
+				if (port < 1024 || port > 49151){
+					le("Port [] is outside the registered ports range", Integer.valueOf(port));
+					return false;
+				}
+				li("WebSocket assuming port []. Defaulting to host []", Integer.valueOf(port), WS_DEFAULT_HOST);
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + port;
+			}
+			else{
+				// connectTo:host
+				li("WebSocket assuming host []. Defaulting to port []", webSocketServerAddress , WS_DEFAULT_PORT);
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress + ":" + WS_DEFAULT_PORT;
+				li("Full address []",webSocketServerAddress); 
+			}
+
 		}
 		else{
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT; 
