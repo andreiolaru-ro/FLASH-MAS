@@ -309,12 +309,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					deployment.getSingleValue(CategoryName.DEPLOYMENT_FILE.s()),
 					deployment.getSingleValue(CategoryName.SCHEMA.s()));
 			
-			// ====================================== validate schema file before parsing
-			String schemaPath = deployment.getSingleValue(CategoryName.SCHEMA.s());
-			if(schemaPath != null && !new File(schemaPath).exists()) {
-				log.le("Schema file [] does not exist. Deployment file load failed.", schemaPath);
-				return this;
-			}
+
 			// ====================================== context management
 			Deque<CtxtTriple> context = null; // categories & elements context
 			// do not create a base context here, the deployment will be generated only in XMLtree
