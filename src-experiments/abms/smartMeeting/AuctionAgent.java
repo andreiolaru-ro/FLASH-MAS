@@ -2,16 +2,15 @@ package abms.smartMeeting;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
+import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
-import net.xqhs.flash.abms.space.Position;
+import net.xqhs.flash.abms.space.graph.GraphTopology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -28,17 +27,27 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             AgentShardDesignation.customShard("Environment");
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
-    private int visionRange = 4;
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
+
+    // Auction state
+    private enum AuctionState {IDLE, COLLECTING_BIDS}
+
+    private AuctionState auctionState = AuctionState.IDLE;
     private MeetingRequest currentRequest;
+    private String currentRequesterName;
     private Map<String, RoomBid> receivedBids = new LinkedHashMap<>();
-    private int bidWaitSteps = 2;
+    private int bidWaitSteps = 7;
     private int currentWaitStep = 0;
-    private int requestCounter = 0;
-    private int cooldownSteps = 4;
-    private int currentCooldown = 0;
-    private int releaseAfterSteps = 8;
+
+    // Active reservations for release tracking
+    private int releaseAfterSteps = 15;
     private List<ActiveReservation> activeReservations = new ArrayList<>();
+
+    // Queue of pending booking requests from PersonAgents
+    private Queue<AgentWave> pendingBookingRequests = new LinkedList<>();
+
+    // Simulation reference for finding PersonAgents
+    private Simulation simulation;
 
     public AuctionAgent() {
         e.addGeneralContext(this);
@@ -48,15 +57,14 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     public boolean configure(MultiTreeMap configuration) {
         if (!super.configure(configuration))
             return false;
-        visionRange = readInt(configuration, "visionRange", visionRange);
-        bidWaitSteps = readInt(configuration, "bidWaitSteps", bidWaitSteps);
-        cooldownSteps = readInt(configuration, "cooldownSteps", cooldownSteps);
         releaseAfterSteps = readInt(configuration, "releaseAfterSteps", releaseAfterSteps);
         return true;
     }
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if (context instanceof Simulation)
+            simulation = (Simulation) context;
         e.addGeneralContext(context);
         return super.addGeneralContext(context);
     }
@@ -83,72 +91,58 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     @Override
     public void step() {
+        computeBidWaitIfNeeded();
         releaseExpiredReservations();
         processIncomingWaves();
-        if (currentRequest == null) {
-            if (currentCooldown > 0) {
-                currentCooldown--;
-                return;
-            }
-            currentRequest = createUserRequest();
-            receivedBids.clear();
-            currentWaitStep = 0;
-            broadcastRequestForProposals(currentRequest);
-            li("created meeting request [] for [] attendees", currentRequest.getRequestId(),
-                    Integer.valueOf(currentRequest.getAttendees()));
-            return;
-        }
 
-        currentWaitStep++;
-        if (currentWaitStep < bidWaitSteps)
-            return;
+        switch (auctionState) {
+            case IDLE:
+                AgentWave bookingWave = pendingBookingRequests.poll();
+                if (bookingWave == null)
+                    return;
+                MeetingRequest originalRequest = SmartMeetingMessageCodec.decodeMeetingRequest(bookingWave);
+                currentRequesterName = originalRequest.getRequesterName();
+                // Replace requester with auction agent's name so rooms send bids back here
+                currentRequest = new MeetingRequest(originalRequest.getRequestId(), getEntityName(),
+                        originalRequest.getAttendees(), originalRequest.getDurationMinutes(),
+                        originalRequest.getPreferredSlot(), originalRequest.getRequiredEquipment(),
+                        originalRequest.getPriority());
+                receivedBids.clear();
+                currentWaitStep = 0;
+                auctionState = AuctionState.COLLECTING_BIDS;
+                broadcastRFP(currentRequest);
+                li("started auction for [] from person [] (waiting [] steps for bids)",
+                        currentRequest.getRequestId(), currentRequesterName,
+                        Integer.valueOf(bidWaitSteps));
+                break;
 
-        List<RoomBid> bids = collectBids();
-        RoomBid winner = selectBestBid(bids);
-        if (winner != null) {
-            acceptBid(winner);
-            rememberActiveReservation(winner);
-            rejectLosingBids(winner);
-            li("accepted room [] from [] with score []", winner.getRoomId(), winner.getRoomAgentName(),
-                    Integer.valueOf(winner.getScore()));
-        } else {
-            li("no feasible bid for request []", currentRequest.getRequestId());
+            case COLLECTING_BIDS:
+                currentWaitStep++;
+                if (currentWaitStep < bidWaitSteps)
+                    return;
+                resolveAuction();
+                auctionState = AuctionState.IDLE;
+                break;
         }
-        currentRequest = null;
-        currentCooldown = cooldownSteps;
     }
 
     private void processIncomingWaves() {
         while (!incomingWaves.isEmpty()) {
             AgentWave wave = incomingWaves.poll();
             try {
-                if (SmartMeetingMessageCodec.decodeType(wave) == SmartMeetingMessageType.BID)
-                    handleBid(wave);
+                SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
+                switch (type) {
+                    case BOOKING_REQUEST:
+                        pendingBookingRequests.add(wave);
+                        break;
+                    case BID:
+                        handleBid(wave);
+                        break;
+                    default:
+                        break;
+                }
             } catch (IllegalArgumentException ignored) {
-                // Message belongs to another scenario.
             }
-        }
-    }
-
-    private MeetingRequest createUserRequest() {
-        int attendees = 2 + e.nextInt(9);
-        int duration = e.nextBoolean() ? 30 : 60;
-        int start = (9 * 60) + (e.nextInt(8) * 30);
-        Set<EquipmentType> equipment = new LinkedHashSet<>();
-        if (e.nextBoolean())
-            equipment.add(EquipmentType.PROJECTOR);
-        if (e.nextInt(4) == 0)
-            equipment.add(EquipmentType.VIDEO_CONFERENCE);
-        if (e.nextInt(5) == 0)
-            equipment.add(EquipmentType.WHITEBOARD);
-        return new MeetingRequest("REQ-" + (++requestCounter), getEntityName(), attendees, duration,
-                new TimeSlot(start, start + duration), equipment, 1 + e.nextInt(3));
-    }
-
-    private void broadcastRequestForProposals(MeetingRequest request) {
-        for (EntityProxy<?> entity : getVisibleEntities()) {
-            if (entity instanceof RoomAgent)
-                e.sendWaveTo(entity, SmartMeetingMessageCodec.encodeRequestForProposals(request));
         }
     }
 
@@ -159,8 +153,58 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         receivedBids.put(bid.getRoomAgentName(), bid);
     }
 
-    private List<RoomBid> collectBids() {
-        return new ArrayList<>(receivedBids.values());
+    private void broadcastRFP(MeetingRequest request) {
+        // Send RFP to each room individually via graph-routed hop-by-hop delivery
+        if (simulation == null)
+            return;
+        for (Entity<?> entity : simulation.getSimulationObjects()) {
+            if (entity instanceof RoomAgent)
+                e.sendWaveTo(entity.asContext(),
+                        SmartMeetingMessageCodec.encodeRequestForProposals(request));
+        }
+    }
+
+    private void resolveAuction() {
+        List<RoomBid> bids = new ArrayList<>(receivedBids.values());
+        RoomBid winner = selectBestBid(bids);
+
+        EntityProxy<?> personRef = findPersonAgent(currentRequesterName);
+
+        if (winner != null) {
+            // Send accept to winning room (hop-by-hop through graph)
+            EntityProxy<?> roomRef = findGraphEntity(winner.getRoomAgentName());
+            if (roomRef != null)
+                e.sendWaveTo(roomRef, SmartMeetingMessageCodec.encodeAcceptBid(winner));
+            activeReservations.add(new ActiveReservation(winner.getRoomAgentName(),
+                    "RES-" + winner.getRoomId() + "-" + winner.getRequestId(), releaseAfterSteps));
+
+            // Reject losing bids
+            for (RoomBid bid : bids) {
+                if (bid.getRoomAgentName().equals(winner.getRoomAgentName()))
+                    continue;
+                EntityProxy<?> loserRef = findGraphEntity(bid.getRoomAgentName());
+                if (loserRef != null)
+                    e.sendWaveTo(loserRef, SmartMeetingMessageCodec.encodeRejectBid(bid.getRequestId()));
+            }
+
+            // Respond to person (direct, 1 step)
+            if (personRef != null)
+                e.sendDirect(personRef, SmartMeetingMessageCodec.encodeBookingResponse(
+                        currentRequest.getRequestId(), true, winner.getRoomId(), null));
+
+            li("auction [] WON by room [] (score []) from [] bids",
+                    currentRequest.getRequestId(), winner.getRoomId(),
+                    Integer.valueOf(winner.getScore()), Integer.valueOf(bids.size()));
+        } else {
+            if (personRef != null)
+                e.sendDirect(personRef, SmartMeetingMessageCodec.encodeBookingResponse(
+                        currentRequest.getRequestId(), false, null, "no feasible room"));
+            li("auction [] FAILED — no feasible bid from [] responses",
+                    currentRequest.getRequestId(), Integer.valueOf(bids.size()));
+        }
+
+        currentRequest = null;
+        currentRequesterName = null;
     }
 
     private static RoomBid selectBestBid(List<RoomBid> bids) {
@@ -174,65 +218,44 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         return best;
     }
 
-    private void acceptBid(RoomBid bid) {
-        EntityProxy<?> target = findVisibleEntity(bid.getRoomAgentName());
-        if (target != null)
-            e.sendWaveTo(target, SmartMeetingMessageCodec.encodeAcceptBid(bid));
-    }
-
-    private void rememberActiveReservation(RoomBid bid) {
-        activeReservations.add(new ActiveReservation(bid.getRoomAgentName(),
-                buildReservationId(bid), releaseAfterSteps));
-    }
-
     private void releaseExpiredReservations() {
         List<ActiveReservation> released = new ArrayList<>();
         for (ActiveReservation reservation : activeReservations) {
             reservation.remainingSteps--;
             if (reservation.remainingSteps > 0)
                 continue;
-
-            EntityProxy<?> target = findVisibleEntity(reservation.roomAgentName);
+            EntityProxy<?> target = findGraphEntity(reservation.roomAgentName);
             if (target != null) {
                 e.sendWaveTo(target, SmartMeetingMessageCodec.encodeReleaseRoom(reservation.reservationId));
-                li("released reservation [] for room agent []", reservation.reservationId,
-                        reservation.roomAgentName);
+                li("released reservation [] for room []", reservation.reservationId, reservation.roomAgentName);
             }
             released.add(reservation);
         }
         activeReservations.removeAll(released);
     }
 
-    private void rejectLosingBids(RoomBid winner) {
-        for (RoomBid bid : receivedBids.values()) {
-            if (winner.getRoomAgentName().equals(bid.getRoomAgentName()))
-                continue;
-            EntityProxy<?> target = findVisibleEntity(bid.getRoomAgentName());
-            if (target != null)
-                e.sendWaveTo(target, SmartMeetingMessageCodec.encodeRejectBid(bid.getRequestId()));
+    private void computeBidWaitIfNeeded() {
+        if (bidWaitSteps > 0 && bidWaitSteps != 7)
+            return; // already computed
+        if (e.getTopology() instanceof GraphTopology) {
+            int diameter = ((GraphTopology) e.getTopology()).getDiameter();
+            bidWaitSteps = 2 * diameter + 1;
+            li("computed bidWaitSteps = [] (graph diameter = [])",
+                    Integer.valueOf(bidWaitSteps), Integer.valueOf(diameter));
         }
     }
 
-    private EntityProxy<?> findVisibleEntity(String entityName) {
-        for (EntityProxy<?> entity : getVisibleEntities())
-            if (entityName != null && entityName.equals(entity.getEntityName()))
-                return entity;
+    private EntityProxy<?> findGraphEntity(String entityName) {
+        if (entityName == null || simulation == null)
+            return null;
+        for (Entity<?> entity : simulation.getSimulationObjects())
+            if (entityName.equals(entity.asContext().getEntityName()))
+                return entity.asContext();
         return null;
     }
 
-    private static String buildReservationId(RoomBid bid) {
-        return "RES-" + bid.getRoomId() + "-" + bid.getRequestId();
-    }
-
-    private Set<EntityProxy<?>> getVisibleEntities() {
-        Set<EntityProxy<?>> result = new LinkedHashSet<>();
-        Position current = e.getCurrentPosition();
-        if (current != null)
-            result.addAll(e.getEntitiesAt(current));
-        result.addAll(e.getEntitiesInVicinity());
-        for (Set<EntityProxy<?>> entities : e.observe(visionRange).values())
-            result.addAll(entities);
-        return result;
+    private EntityProxy<?> findPersonAgent(String personName) {
+        return findGraphEntity(personName);
     }
 
     private static int readInt(MultiTreeMap configuration, String key, int fallback) {

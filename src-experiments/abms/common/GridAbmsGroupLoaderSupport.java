@@ -7,7 +7,7 @@ import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.RandomContext;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
-import net.xqhs.flash.abms.communication.ProximityCommunicationContext;
+import net.xqhs.flash.abms.communication.CommunicationContext;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
@@ -37,7 +37,7 @@ public final class GridAbmsGroupLoaderSupport {
         SpaceContext<GridPosition> space = null;
         RandomContext randomContext = null;
         AgentManagementContext agentManagement = null;
-        ProximityCommunicationContext proximityCommunication = null;
+        CommunicationContext communication = null;
         for (SimulationContext simulationContext : simulation.getSimulationContexts()) {
             if (simulationContext instanceof SpaceContext)
                 space = (SpaceContext<GridPosition>) simulationContext;
@@ -45,8 +45,8 @@ public final class GridAbmsGroupLoaderSupport {
                 randomContext = (RandomContext) simulationContext;
             if (simulationContext instanceof AgentManagementContext)
                 agentManagement = (AgentManagementContext) simulationContext;
-            if (simulationContext instanceof ProximityCommunicationContext)
-                proximityCommunication = (ProximityCommunicationContext) simulationContext;
+            if (simulationContext instanceof CommunicationContext)
+                communication = (CommunicationContext) simulationContext;
         }
 
         if (space == null || randomContext == null)
@@ -56,11 +56,11 @@ public final class GridAbmsGroupLoaderSupport {
             return null;
         topology.setDisplayProvider(displayProvider);
 
-        if (proximityCommunication != null)
-            proximityCommunication.addGeneralContext(space.asContext());
+        if (communication != null)
+            communication.addGeneralContext(space.asContext());
 
         return new ResolvedGridContexts(simulation, space, topology, randomContext,
-                agentManagement, proximityCommunication);
+                agentManagement, communication);
     }
 
     public static List<GridPosition> createShuffledPositions(GridTopology topology, RandomContext randomContext) {
@@ -100,8 +100,8 @@ public final class GridAbmsGroupLoaderSupport {
                 entity.addGeneralContext(gridContexts.agentManagement.asContext());
             if (gridContexts.randomContext != null)
                 entity.addGeneralContext(gridContexts.randomContext.asContext());
-            if (gridContexts.proximityCommunication != null)
-                entity.addGeneralContext(gridContexts.proximityCommunication.asContext());
+            if (gridContexts.communication != null)
+                entity.addGeneralContext(gridContexts.communication.asContext());
             entity.addGeneralContext(gridContexts.space.asContext());
             entity.addGeneralContext(gridContexts.simulation.asContext());
             gridContexts.space.place(entity.asContext(), positions.get(idx));
@@ -167,17 +167,17 @@ public final class GridAbmsGroupLoaderSupport {
         public final GridTopology topology;
         public final RandomContext randomContext;
         public final AgentManagementContext agentManagement;
-        public final ProximityCommunicationContext proximityCommunication;
+        public final CommunicationContext communication;
 
         ResolvedGridContexts(Simulation simulation, SpaceContext<GridPosition> space,
                 GridTopology topology, RandomContext randomContext, AgentManagementContext agentManagement,
-                ProximityCommunicationContext proximityCommunication) {
+                CommunicationContext communication) {
             this.simulation = simulation;
             this.space = space;
             this.topology = topology;
             this.randomContext = randomContext;
             this.agentManagement = agentManagement;
-            this.proximityCommunication = proximityCommunication;
+            this.communication = communication;
         }
     }
 

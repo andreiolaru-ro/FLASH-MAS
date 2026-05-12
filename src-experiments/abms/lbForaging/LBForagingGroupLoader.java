@@ -9,7 +9,7 @@ import net.xqhs.flash.abms.EntityGroup.EntityGroupLoader;
 import net.xqhs.flash.abms.RandomContext;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
-import net.xqhs.flash.abms.communication.ProximityCommunicationContext;
+import net.xqhs.flash.abms.communication.CommunicationContext;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
@@ -43,7 +43,7 @@ public class LBForagingGroupLoader extends EntityGroupLoader {
         SpaceContext<GridPosition> space = null;
         RandomContext randomContext = null;
         AgentManagementContext agentManagement = null;
-        ProximityCommunicationContext proximityCommunication = null;
+        CommunicationContext proximityCommunication = null;
         ForagingContext foragingContext = null;
         for (SimulationContext simulationContext : sim.getSimulationContexts()) {
             if (simulationContext instanceof SpaceContext)
@@ -52,8 +52,8 @@ public class LBForagingGroupLoader extends EntityGroupLoader {
                 randomContext = (RandomContext) simulationContext;
             if (simulationContext instanceof AgentManagementContext)
                 agentManagement = (AgentManagementContext) simulationContext;
-            if (simulationContext instanceof ProximityCommunicationContext)
-                proximityCommunication = (ProximityCommunicationContext) simulationContext;
+            if (simulationContext instanceof CommunicationContext)
+                proximityCommunication = (CommunicationContext) simulationContext;
             if (simulationContext instanceof ForagingContext)
                 foragingContext = (ForagingContext) simulationContext;
         }

@@ -57,6 +57,29 @@ public final class SmartMeetingMessageCodec {
         return wave;
     }
 
+    public static AgentWave encodeBookingRequest(MeetingRequest request) {
+        AgentWave wave = baseWave(SmartMeetingMessageType.BOOKING_REQUEST);
+        wave.add(REQUEST_ID, request.getRequestId());
+        wave.add(REQUESTER, request.getRequesterName());
+        wave.add(ATTENDEES, String.valueOf(request.getAttendees()));
+        wave.add(DURATION, String.valueOf(request.getDurationMinutes()));
+        wave.add(SLOT, request.getPreferredSlot().toString());
+        wave.add(EQUIPMENT, EquipmentType.serialize(request.getRequiredEquipment()));
+        wave.add(PRIORITY, String.valueOf(request.getPriority()));
+        return wave;
+    }
+
+    public static AgentWave encodeBookingResponse(String requestId, boolean accepted, String roomId, String reason) {
+        AgentWave wave = baseWave(SmartMeetingMessageType.BOOKING_RESPONSE);
+        wave.add(REQUEST_ID, requestId);
+        wave.add("result", accepted ? "accepted" : "rejected");
+        if (roomId != null)
+            wave.add(ROOM_ID, roomId);
+        if (reason != null)
+            wave.add(REASON, reason);
+        return wave;
+    }
+
     public static SmartMeetingMessageType decodeType(AgentWave wave) {
         String type = wave.get(TYPE);
         if (type == null)

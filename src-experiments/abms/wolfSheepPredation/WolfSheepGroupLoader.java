@@ -9,7 +9,7 @@ import net.xqhs.flash.abms.EntityGroup.EntityGroupLoader;
 import net.xqhs.flash.abms.RandomContext;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
-import net.xqhs.flash.abms.communication.ProximityCommunicationContext;
+import net.xqhs.flash.abms.communication.CommunicationContext;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.gridworld.GridPosition;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
@@ -50,14 +50,14 @@ public class WolfSheepGroupLoader extends EntityGroupLoader {
 
         RandomContext randomContext = null;
         AgentManagementContext agentManagement = null;
-        ProximityCommunicationContext proximityCommunication = null;
+        CommunicationContext proximityCommunication = null;
         for (SimulationContext simulationContext : sim.getSimulationContexts()) {
             if (simulationContext instanceof RandomContext)
                 randomContext = (RandomContext) simulationContext;
             if (simulationContext instanceof AgentManagementContext)
                 agentManagement = (AgentManagementContext) simulationContext;
-            if (simulationContext instanceof ProximityCommunicationContext)
-                proximityCommunication = (ProximityCommunicationContext) simulationContext;
+            if (simulationContext instanceof CommunicationContext)
+                proximityCommunication = (CommunicationContext) simulationContext;
         }
         if (proximityCommunication != null)
             proximityCommunication.addGeneralContext(space.asContext());

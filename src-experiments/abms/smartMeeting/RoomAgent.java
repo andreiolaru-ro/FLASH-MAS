@@ -8,8 +8,8 @@ import java.util.Queue;
 import java.util.Set;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
+import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
-import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -31,8 +31,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private Set<EquipmentType> equipment = new LinkedHashSet<>();
     private List<Reservation> reservations = new ArrayList<>();
     private boolean occupied = false;
-    private int visionRange = 4;
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
+    private Simulation simulation;
 
     public RoomAgent() {
         e.addGeneralContext(this);
@@ -45,7 +45,6 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
         if (configuration.containsKey("roomId"))
             roomId = configuration.getAValue("roomId");
         capacity = readInt(configuration, "capacity", capacity);
-        visionRange = readInt(configuration, "visionRange", visionRange);
         if (configuration.containsKey("equipment"))
             equipment = EquipmentType.parseSet(configuration.getAValue("equipment"));
         return true;
@@ -53,6 +52,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
+        if (context instanceof Simulation)
+            simulation = (Simulation) context;
         e.addGeneralContext(context);
         return super.addGeneralContext(context);
     }
@@ -109,7 +110,7 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private void handleRequestForProposals(AgentWave wave) {
         MeetingRequest request = SmartMeetingMessageCodec.decodeMeetingRequest(wave);
         RoomBid bid = evaluateRequest(request);
-        EntityProxy<?> requester = findVisibleEntity(request.getRequesterName());
+        EntityProxy<?> requester = findEntity(request.getRequesterName());
         if (requester != null)
             e.sendWaveTo(requester, SmartMeetingMessageCodec.encodeBid(bid));
         li("room [] bid for [] feasible: [] score: []", getRoomId(), request.getRequestId(),
@@ -207,21 +208,12 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
         return "unavailable";
     }
 
-    private EntityProxy<?> findVisibleEntity(String entityName) {
-        if (entityName == null)
+    private EntityProxy<?> findEntity(String entityName) {
+        if (entityName == null || simulation == null)
             return null;
-        Position current = e.getCurrentPosition();
-        if (current != null)
-            for (EntityProxy<?> entity : e.getEntitiesAt(current))
-                if (entityName.equals(entity.getEntityName()))
-                    return entity;
-        for (EntityProxy<?> entity : e.getEntitiesInVicinity())
-            if (entityName.equals(entity.getEntityName()))
-                return entity;
-        for (Set<EntityProxy<?>> entities : e.observe(visionRange).values())
-            for (EntityProxy<?> entity : entities)
-                if (entityName.equals(entity.getEntityName()))
-                    return entity;
+        for (Entity<?> entity : simulation.getSimulationObjects())
+            if (entityName.equals(entity.asContext().getEntityName()))
+                return entity.asContext();
         return null;
     }
 

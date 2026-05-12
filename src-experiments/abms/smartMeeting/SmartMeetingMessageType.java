@@ -5,5 +5,7 @@ public enum SmartMeetingMessageType {
     BID,
     ACCEPT_BID,
     REJECT_BID,
-    RELEASE_ROOM
+    RELEASE_ROOM,
+    BOOKING_REQUEST,
+    BOOKING_RESPONSE
 }

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.SimulationContext.BaseContext;
+import net.xqhs.flash.abms.space.graph.GraphTopology;
 import net.xqhs.flash.abms.space.gridworld.GridTopology;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
@@ -53,9 +54,12 @@ public class SpaceContext<P extends Position> extends BaseContext
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
-		// FIXME
-		topology = (Topology<P>) new GridTopology(Integer.parseInt(configuration.getAValue("width")),
-				Integer.parseInt(configuration.getAValue("height")));
+		String topoType = configuration.getAValue("topology");
+		if ("graph".equals(topoType))
+			topology = (Topology<P>) new GraphTopology(configuration);
+		else
+			topology = (Topology<P>) new GridTopology(Integer.parseInt(configuration.getAValue("width")),
+					Integer.parseInt(configuration.getAValue("height")));
 		return true;
 	}
 
@@ -148,6 +152,10 @@ public class SpaceContext<P extends Position> extends BaseContext
 	public String getEntityName() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public Set<EntityProxy<?>> getAllEntities() {
+		return new java.util.HashSet<>(entityPositions.keySet());
 	}
 
 	public Topology<? extends Position> getTopology() {

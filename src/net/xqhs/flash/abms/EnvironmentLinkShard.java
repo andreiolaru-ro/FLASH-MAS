@@ -7,7 +7,8 @@ import java.util.Set;
 import net.xqhs.flash.abms.AgentManagementContext.AgentManagementActionData;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
 import net.xqhs.flash.abms.SimulationContext.BaseContext.BaseActionData;
-import net.xqhs.flash.abms.communication.ProximityCommunicationContext;
+import net.xqhs.flash.abms.communication.CommunicationContext;
+import net.xqhs.flash.abms.communication.GraphCommunicationContext;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
@@ -24,7 +25,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     protected static final String SHARD_NAME = "Environment";
 
     SpaceContext space = null;
-    ProximityCommunicationContext proximityCommunication = null;
+    CommunicationContext communication = null;
     AgentManagementContext agentManagement = null;
     RandomContext randomContext = null;
 
@@ -40,8 +41,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
             agentManagement = (AgentManagementContext) context;
         else if (context instanceof RandomContext)
             randomContext = (RandomContext) context;
-        else if (context instanceof ProximityCommunicationContext)
-            proximityCommunication = (ProximityCommunicationContext) context;
+        else if (context instanceof CommunicationContext)
+            communication = (CommunicationContext) context;
         if (!super.addGeneralContext(context))
             return false;
 
@@ -78,6 +79,12 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return space.getEntitiesWithinRange(getCurrentPosition(), range);
     }
 
+    public Set<EntityProxy<?>> getAllEntities() {
+        if (space == null)
+            return Collections.emptySet();
+        return space.getAllEntities();
+    }
+
     public Topology<? extends Position> getTopology() {
         return space.getTopology();
     }
@@ -94,15 +101,23 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public boolean broadcast(AgentWave wave) {
-        if (proximityCommunication == null)
+        if (communication == null)
             return false;
-        return proximityCommunication.broadcast(getContext(), wave);
+        return communication.broadcast(getContext(), wave);
     }
 
     public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
-        if (proximityCommunication == null)
+        if (communication == null)
             return false;
-        return proximityCommunication.sendWaveTo(target, wave);
+        if (communication instanceof GraphCommunicationContext)
+            return ((GraphCommunicationContext) communication).sendWaveFromTo(getContext(), target, wave);
+        return communication.sendWaveTo(target, wave);
+    }
+
+    public boolean sendDirect(EntityProxy<?> target, AgentWave wave) {
+        if (communication instanceof GraphCommunicationContext)
+            return ((GraphCommunicationContext) communication).sendDirect(target, wave);
+        return sendWaveTo(target, wave);
     }
 
     @SuppressWarnings("unchecked")
