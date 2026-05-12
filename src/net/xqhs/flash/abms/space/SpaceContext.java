@@ -54,8 +54,8 @@ public class SpaceContext<P extends Position> extends BaseContext
 	@Override
 	public boolean configure(MultiTreeMap configuration) {
 		super.configure(configuration);
-		String topoType = configuration.getAValue("topology");
-		if ("graph".equals(topoType))
+		String topologyType = configuration.getAValue("topology");
+		if ("graph".equals(topologyType))
 			topology = (Topology<P>) new GraphTopology(configuration);
 		else
 			topology = (Topology<P>) new GridTopology(Integer.parseInt(configuration.getAValue("width")),
