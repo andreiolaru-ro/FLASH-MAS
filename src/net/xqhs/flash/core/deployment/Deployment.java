@@ -45,6 +45,11 @@ public class Deployment extends Unit {
 	 * The ID of the deployment.
 	 */
 	String deploymentID = null;
+
+    /**
+     * Field set by the nostart category name. If false, then no node should start.
+     */
+    private boolean start = true;
 	
 	/**
 	 * @return the singleton instance of the deployment.
@@ -52,6 +57,13 @@ public class Deployment extends Unit {
 	public static Deployment get() {
 		return deployment;
 	}
+
+    /**
+     * @return the value of the start field.
+     */
+    public boolean doStart() {
+        return start;
+    }
 	
 	/**
 	 * Creates a basic {@link LoadPack} using the current deployment ID and a given {@link Logger}.
@@ -63,7 +75,7 @@ public class Deployment extends Unit {
 	public LoadPack getBasicLoadPack(Logger log) {
 		return new LoadPack(PlatformUtils.getClassFactory(), deploymentID, log != null ? log : getLogger());
 	}
-	
+
 	/**
 	 * Loads a deployment starting from command line arguments.
 	 * <p>
@@ -100,6 +112,33 @@ public class Deployment extends Unit {
 				.get(0).getAValue(DeploymentConfiguration.LOCAL_ID_ATTRIBUTE);
 		NodeLoader nodeLoader = new NodeLoader();
 		nodeLoader.configure(null, getBasicLoadPack(null));
+
+        MultiTreeMap deploymentTree = DeploymentConfiguration
+                .filterCategoryInContext(allEntities, CategoryName.DEPLOYMENT.s(), null).get(0);
+
+        // check if no_start category name is set
+        start = !deploymentTree.isSet(CategoryName.NOSTART.s());
+
+        // get the list of the selected nodes from the SELECT category
+        List<String> selectedNodes = deploymentTree.getValues(CategoryName.SELECT.s());
+
+        // filter the nodesTree by the selected nodes so that only those nodes will be loaded and started
+        if (!selectedNodes.isEmpty()) {
+            List<MultiTreeMap> filteredNodesTrees = new LinkedList<>();
+            for (MultiTreeMap node : nodesTrees) {
+                String name = node.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
+                if (selectedNodes.contains(name)) {
+                    filteredNodesTrees.add(node);
+                }
+            }
+
+            nodesTrees = filteredNodesTrees;
+            lf("Node selection active. Selected nodes: []", selectedNodes);
+        }
+        if (!selectedNodes.isEmpty() && nodesTrees.isEmpty()) {
+            lw("No matching nodes found for selection: []", selectedNodes);
+        }
+
 		for(MultiTreeMap nodeConfig : nodesTrees) {
 			lf("Loading node ", EntityIndex.mockPrint(CategoryName.NODE.s(),
 					nodeConfig.getFirstValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME)));
