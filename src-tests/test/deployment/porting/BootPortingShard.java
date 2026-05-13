@@ -16,7 +16,7 @@ import net.xqhs.flash.FlashBoot;
 public class BootPortingShard {
     
     public static void main(String[] args_) {
-        String args = "no-start"
+		String args = "-nostart t "
             + " -package testing"
             + " -shard messaging"
             + " -agent AgentA classpath:AgentPingPong"

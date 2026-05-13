@@ -17,10 +17,10 @@ public class BootPorting {
     static String THIS_DIRECTORY = "src-tests/test/deployment/porting/";
     
     public static void main(String[] args_) {
-        //String args = "no-start " + THIS_DIRECTORY + "scenario1.xml";
-        //String args = "no-start " + THIS_DIRECTORY + "scenario2.xml";
-        //String args = "no-start " + THIS_DIRECTORY + "scenario3.xml";
-        String args = "no-start " + THIS_DIRECTORY + "scenario4.xml";
+		// String args = "-nostart t " + THIS_DIRECTORY + "scenario1.xml";
+		// String args = "-nostart t " + THIS_DIRECTORY + "scenario2.xml";
+		// String args = "-nostart t " + THIS_DIRECTORY + "scenario3.xml";
+		String args = "-nostart t " + THIS_DIRECTORY + "scenario4.xml";
         FlashBoot.main(args.split(" "));
     }
 }
