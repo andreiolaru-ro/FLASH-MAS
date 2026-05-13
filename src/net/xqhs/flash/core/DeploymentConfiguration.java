@@ -780,19 +780,23 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		Deque<CtxtTriple> context = new LinkedList<>();
 		if(baseContext != null)
 			context.push(baseContext);
-		while(args.hasNext()) {
+		String lookahead = null;
+		while(lookahead != null || args.hasNext()) {
 			// log.lf(context.toString());
-			String a = args.next();
+			String a;
+			if(lookahead != null) {
+				a = lookahead;
+				lookahead = null;
+			}
+			else {
+				a = args.next();
+			}
 			if(a.trim().length() == 0)
 				continue;
 			if(isCategoryDefinition(a)) {
 				// get category
 				String catName = getCategoryName(a);
 				CategoryName category = CategoryName.byName(getCategoryName(a));
-				if(!args.hasNext()) { // must check this before creating any trees
-					log.lw("Empty category [] in CLI arguments.", catName);
-					return;
-				}
 				
 				// create / find the context
 				// search upwards in the current context for a parent or at least an ancestor
@@ -860,15 +864,28 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					context.push(new CtxtTriple(catName, null, null));
 				}
 				else { // it is an entity; get entity name
-					String name = args.next();
+					String name = null;
+					if(args.hasNext()) {
+						name = args.next();
+
+                        if("-".equals(name)) {
+                            name = null;
+                        } else if(isCategoryDefinition(name)) {
+                            lookahead = name;
+                            name = null;
+                        }
+					}
+
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 					MultiTreeMap node;
-					if(subCatTree.isHierarchical(name))
+					if(name != null && subCatTree.isHierarchical(name))
 						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
 								: subCatTree.getFirstTree(name);
 					else {
 						node = new MultiTreeMap();
-						node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						if(name != null) {
+							node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						}
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
 					context.push(new CtxtTriple(catName, subCatTree, node));
