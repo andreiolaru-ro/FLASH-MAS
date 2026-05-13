@@ -521,7 +521,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			}
 		for(String rem : toRemove)
 			liftedEntities.removeKey(rem);
-			
+		
 		// go deeper into child elements
 		for(String childCatName : new LinkedList<>(elemTree.getKeys())) { // go deeper
 			if(elemTree.isHierarchical(childCatName))
@@ -780,6 +780,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		Deque<CtxtTriple> context = new LinkedList<>();
 		if(baseContext != null)
 			context.push(baseContext);
+		// the lookahead may store the next token, parsed elsewhere
 		String lookahead = null;
 		while(lookahead != null || args.hasNext()) {
 			// log.lf(context.toString());
@@ -867,15 +868,15 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					String name = null;
 					if(args.hasNext()) {
 						name = args.next();
-
-                        if("-".equals(name)) {
-                            name = null;
-                        } else if(isCategoryDefinition(name)) {
-                            lookahead = name;
-                            name = null;
-                        }
+						
+						if(CLI_CATEGORY_PREFIX.equals(name))
+							name = null;
+						else if(isCategoryDefinition(name)) {
+							lookahead = name;
+							name = null;
+						}
 					}
-
+					
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 					MultiTreeMap node;
 					if(name != null && subCatTree.isHierarchical(name))
@@ -883,9 +884,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 								: subCatTree.getFirstTree(name);
 					else {
 						node = new MultiTreeMap();
-						if(name != null) {
+						if(name != null)
 							node.addOneValue(NAME_ATTRIBUTE_NAME, name);
-						}
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
 					context.push(new CtxtTriple(catName, subCatTree, node));
