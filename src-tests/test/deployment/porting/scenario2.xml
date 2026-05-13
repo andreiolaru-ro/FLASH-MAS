@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://flash.xqhs.net/deployment-schema 
+    ../../../src-schema/deployment-schema.xsd">
+
+    <package>testing</package>
+    <loader for="agent" classpath="net.xqhs.flash.deployment.CompositeAgentLoader" />
+    <pylon kind="local" />
+
+    <node name="node1">
+        <entity type="agentarray">
+            <entity type="agent" kind="composite" />
+        </entity>
+    </node>
+
+</deployment>
