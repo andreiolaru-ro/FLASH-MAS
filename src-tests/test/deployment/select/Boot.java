@@ -14,7 +14,9 @@ public class Boot {
      *              -not used.
      */
     public static void main(String[] args) {
-        String test_args = "-nostart true -select node1 node3 -node node1 -node node2 -node node3 -node node4";
+		boolean addNoStart = false;
+		String test_args = (addNoStart ? "-nostart true " : "")
+				+ "-select node1 node3 -node node1 -node node2 -node node3 -node node4";
 
         FlashBoot.main(test_args.split(" "));
     }
