@@ -11,7 +11,6 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -53,27 +52,27 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The class UID.
 	 */
 	private static final long serialVersionUID = 5157567185843194635L;
-
+	
 	/**
 	 * Tree control command to go to root.
 	 */
-	public static final String CLI_ROOT_NAVIGATION          = "<<";
+	public static final String	CLI_ROOT_NAVIGATION				= "<<";
 	/**
 	 * Prefix for tree control command to go to a parent category.
 	 */
-	public static final String CLI_PARENT_NAVIGATION_PREFIX = "<";
+	public static final String	CLI_PARENT_NAVIGATION_PREFIX	= "<";
 	/**
 	 * Prefix of category names used in CLI.
 	 */
-	public static final String	CLI_CATEGORY_PREFIX	= "-";
+	public static final String	CLI_CATEGORY_PREFIX				= "-";
 	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
-	public static final String	NAME_SEPARATOR		= ":";
+	public static final String	NAME_SEPARATOR					= ":";
 	/**
 	 * Separator for multiple values of the same parameter.
 	 */
-	public static final String	VALUE_SEPARATOR		= ";";
+	public static final String	VALUE_SEPARATOR					= ";";
 	// cannot use : because many values are URLs and contain ':'
 	/**
 	 * Separator for elements in the load order setting.
@@ -299,17 +298,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			deployment.setValue(CategoryName.DEPLOYMENT_FILE.s(), programArguments.get(0));
 			deploymentArgPresent = true;
 		}
-			for(Iterator<String> it = programArguments.iterator(); it.hasNext();) {
-				String arg = it.next();
-				if(isCategoryDefinition(arg) && (getCategoryName(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
-						|| getCategoryName(arg).equals(CategoryName.SCHEMA.s()))) {
-					String val = null;
-					if(!it.hasNext() || isCategoryDefinition(val = it.next()))
-						throw new IllegalArgumentException(
-								"Program argument after " + arg + " should be a correct value.");
-					deployment.setValue(getCategoryName(arg), val);
-				}
+		for(Iterator<String> it = programArguments.iterator(); it.hasNext();) {
+			String arg = it.next();
+			if(isCategoryDefinition(arg) && (getCategoryName(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
+					|| getCategoryName(arg).equals(CategoryName.SCHEMA.s()))) {
+				String val = null;
+				if(!it.hasNext() || isCategoryDefinition(val = it.next()))
+					throw new IllegalArgumentException("Program argument after " + arg + " should be a correct value.");
+				deployment.setValue(getCategoryName(arg), val);
 			}
+		}
 		
 		// ====================================== parse deployment file
 		if(deployment.isSet(CategoryName.DEPLOYMENT_FILE.s())) {
@@ -317,7 +315,6 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					deployment.getSingleValue(CategoryName.DEPLOYMENT_FILE.s()),
 					deployment.getSingleValue(CategoryName.SCHEMA.s()));
 			
-
 			// ====================================== context management
 			Deque<CtxtTriple> context = null; // categories & elements context
 			// do not create a base context here, the deployment will be generated only in XMLtree
@@ -589,15 +586,13 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						child, caller);
 				return false;
 			}
-			/* 
-			if(CategoryName.byName(child) != null && CategoryName.byName(child).portableFrom() == null
-					&& caller.equals(CategoryName.byName(child).getParent())) {
-				// child is a declared category, is not portable, AND belongs here -> return false
-				log.lf("Found non-portable category [] inside caller category; caller category [] will be lifted instead of ported. ",
-						child, caller);
-				return false;
-			}
-			*/
+			/*
+			 * if(CategoryName.byName(child) != null && CategoryName.byName(child).portableFrom() == null &&
+			 * caller.equals(CategoryName.byName(child).getParent())) { // child is a declared category, is not
+			 * portable, AND belongs here -> return false log.
+			 * lf("Found non-portable category [] inside caller category; caller category [] will be lifted instead of ported. "
+			 * , child, caller); return false; }
+			 */
 			
 			if(tree.isHierarchical(child))
 				if(tree.isSingleton(child)) {
@@ -813,13 +808,13 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			}
 			if(a.trim().length() == 0)
 				continue;
-
+			
 			// Start of Issue #69
-
+			
 			// Switch context to root
 			if(a.equals(CLI_ROOT_NAVIGATION)) {
 				// Popping everything until we reach root
-				while (context.size() > 1) {
+				while(context.size() > 1) {
 					context.pop();
 				}
 				// Log message for testing
@@ -830,16 +825,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				String targetCatName = a.substring(1);
 				boolean categExistsInContext = false;
 				// Checking to see if the category exists in the current context
-				for (CtxtTriple ctx : context) {
-					if (ctx.category.equals(targetCatName)) {
+				for(CtxtTriple ctx : context) {
+					if(ctx.category.equals(targetCatName)) {
 						categExistsInContext = true;
 						break;
 					}
 				}
-
-				if (categExistsInContext) {
+				
+				if(categExistsInContext) {
 					// Going up util we find the wanted category
-					while (!context.peek().category.equals(targetCatName)) {
+					while(!context.peek().category.equals(targetCatName)) {
 						context.pop();
 					}
 					// Log message for testing
@@ -847,12 +842,13 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				}
 				else {
 					// Special case : the given category does not exist in the current context
-					log.lw("Tree control failed: category [] doesn't exist in the current context hierarchy.", targetCatName);
+					log.lw("Tree control failed: category [] doesn't exist in the current context hierarchy.",
+							targetCatName);
 				}
 				continue;
 			}
 			// End of issue #69
-
+			
 			if(isCategoryDefinition(a)) {
 				// get category
 				String catName = getCategoryName(a);
