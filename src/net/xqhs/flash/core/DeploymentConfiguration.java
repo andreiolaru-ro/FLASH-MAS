@@ -11,6 +11,7 @@
  ******************************************************************************/
 package net.xqhs.flash.core;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -298,13 +299,12 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			deployment.setValue(CategoryName.DEPLOYMENT_FILE.s(), programArguments.get(0));
 			deploymentArgPresent = true;
 		}
-		else
 			for(Iterator<String> it = programArguments.iterator(); it.hasNext();) {
 				String arg = it.next();
 				if(isCategoryDefinition(arg) && (getCategoryName(arg).equals(CategoryName.DEPLOYMENT_FILE.s())
 						|| getCategoryName(arg).equals(CategoryName.SCHEMA.s()))) {
 					String val = null;
-					if(it.hasNext() || isCategoryDefinition(val = it.next()))
+					if(!it.hasNext() || isCategoryDefinition(val = it.next()))
 						throw new IllegalArgumentException(
 								"Program argument after " + arg + " should be a correct value.");
 					deployment.setValue(getCategoryName(arg), val);
@@ -317,6 +317,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					deployment.getSingleValue(CategoryName.DEPLOYMENT_FILE.s()),
 					deployment.getSingleValue(CategoryName.SCHEMA.s()));
 			
+
 			// ====================================== context management
 			Deque<CtxtTriple> context = null; // categories & elements context
 			// do not create a base context here, the deployment will be generated only in XMLtree
