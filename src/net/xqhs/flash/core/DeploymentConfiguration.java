@@ -52,7 +52,15 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The class UID.
 	 */
 	private static final long serialVersionUID = 5157567185843194635L;
-	
+
+	/**
+	 * Tree control command to go to root.
+	 */
+	public static final String CLI_ROOT_NAVIGATION          = "<<";
+	/**
+	 * Prefix for tree control command to go to a parent category.
+	 */
+	public static final String CLI_PARENT_NAVIGATION_PREFIX = "<";
 	/**
 	 * Prefix of category names used in CLI.
 	 */
@@ -804,6 +812,46 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			}
 			if(a.trim().length() == 0)
 				continue;
+
+			// Start of Issue #69
+
+			// Switch context to root
+			if(a.equals(CLI_ROOT_NAVIGATION)) {
+				// Popping everything until we reach root
+				while (context.size() > 1) {
+					context.pop();
+				}
+				// Log message for testing
+				log.lf("Context reset to root via [].", CLI_ROOT_NAVIGATION);
+				continue;
+			}
+			else if(a.startsWith(CLI_PARENT_NAVIGATION_PREFIX)) {
+				String targetCatName = a.substring(1);
+				boolean categExistsInContext = false;
+				// Checking to see if the category exists in the current context
+				for (CtxtTriple ctx : context) {
+					if (ctx.category.equals(targetCatName)) {
+						categExistsInContext = true;
+						break;
+					}
+				}
+
+				if (categExistsInContext) {
+					// Going up util we find the wanted category
+					while (!context.peek().category.equals(targetCatName)) {
+						context.pop();
+					}
+					// Log message for testing
+					log.lf("Context moved up to category [].", targetCatName);
+				}
+				else {
+					// Special case : the given category does not exist in the current context
+					log.lw("Tree control failed: category [] doesn't exist in the current context hierarchy.", targetCatName);
+				}
+				continue;
+			}
+			// End of issue #69
+
 			if(isCategoryDefinition(a)) {
 				// get category
 				String catName = getCategoryName(a);
