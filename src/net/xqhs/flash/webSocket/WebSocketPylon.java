@@ -119,7 +119,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	/**
 	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
 	 */
-	public WebSocketPylon() {	
+	public WebSocketPylon() {
 		dispatcher = new Dispatcher<>(getLogger());
 		OUTBOUND = Integer.valueOf(dispatcher.addProcessor(this::sendMessage, true));
 		INBOUND = Integer.valueOf(dispatcher.addProcessor(this::receiveMessage));
@@ -130,7 +130,7 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 				return registerEntity(entityName, receiver);
 			}
 			
-			@Override	
+			@Override
 			public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
 				return unregisterEntity(entityName, registeredReceiver);
 			}
@@ -222,68 +222,63 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
-		if(configuration.isSimple(WEBSOCKET_SERVER_NAME)){
+		if(configuration.isSimple(WEBSOCKET_SERVER_NAME)) {
 			hasServer = true;
 			li("WebSocket server configured with default port and host.");
 			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + WS_DEFAULT_PORT;
 		}
 		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
 			hasServer = true;
-			if(configuration.getFirstValue(WEBSOCKET_SERVER_PORT_NAME) == null){
-				le("Null serverPort value");
-				return false;
-			}
-			if (configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME).isEmpty()){
+			if(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME) == null)
+				return ler(false, "Null value for paramtere []", WEBSOCKET_SERVER_PORT_NAME);
+			if(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME).isEmpty()) {
 				li("No WebSocket server port specified. Defaulting to []", WS_DEFAULT_PORT);
 				serverPort = Integer.parseInt(WS_DEFAULT_PORT);
 			}
-			else {
+			else
 				try {
 					serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
-				} catch (Exception e) {
-					le("Failed to parse server port:", PlatformUtils.printException(e));
+				} catch(Exception e) {
+					le("Failed to parse server port []:", configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME),
+							PlatformUtils.printException(e));
 					return false;
 				}
-			}
-			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + String.valueOf(serverPort);
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + String.valueOf(serverPort);
 		}
-		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)){
+		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)) {
 			String connectTo_value = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
-			if(connectTo_value == null){
-				le("Null connectTo value");
-				return false;
-			}
-			if(connectTo_value.isEmpty()){
+			if(connectTo_value == null)
+				return ler(false, "Null value for parameter []", WEBSOCKET_SERVER_ADDRESS_NAME);
+			if(connectTo_value.isEmpty()) {
 				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
 				li("No WebSocket host specified. Defaulting to []", webSocketServerAddress);
 			}
-			if(connectTo_value.matches("^:?[0-9]*$")){ // matches :port or port
-				int port = Integer.parseInt(webSocketServerAddress.replace(":",""));
-				if (port < 1024 || port > 49151){
-					le("Port [] is outside the registered ports range", Integer.valueOf(port));
-					return false;
-				}
+			if(connectTo_value.matches("^:?[0-9]*$")) { // matches :port or port
+				int port = Integer.parseInt(webSocketServerAddress.replace(":", ""));
+				if(port < 1024 || port > 49151)
+					return ler(false, "Port [] is outside the registered ports range", Integer.valueOf(port));
 				li("WebSocket assuming port []. Defaulting to host []", Integer.valueOf(port), WS_DEFAULT_HOST);
 				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + port;
 			}
-			if(connectTo_value.matches("^(?!.*:).*[a-zA-Z.].*$")){ // matches any string without a colon and containing letters or dots, assuming it's a host
-				li("WebSocket assuming host []. Defaulting to port []", webSocketServerAddress , WS_DEFAULT_PORT);
+			if(connectTo_value.matches("^(?!.*:).*[a-zA-Z.].*$")) {
+				// matches any string without a colon and containing letters or dots, assuming it's a host
+				li("WebSocket assuming host []. Defaulting to port []", webSocketServerAddress, WS_DEFAULT_PORT);
 				webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress + ":" + WS_DEFAULT_PORT;
-				li("Full address []",webSocketServerAddress); 
+				li("Full address []", webSocketServerAddress);
 			}
 			if(connectTo_value.matches("^\\S+:[0-9]*$")) // matches host:port
-				webSocketServerAddress = WS_PROTOCOL_PREFIX + connectTo_value;
+				webSocketServerAddress = (connectTo_value.startsWith(WS_PROTOCOL_PREFIX) ? "" : WS_PROTOCOL_PREFIX)
+						+ connectTo_value;
 			if(hasServer == true && !(WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort)
-				.equals(webSocketServerAddress)){
-				lw("Pylon is configured as both local server and client connected to []", webSocketServerAddress); 
-				// + open issue on how this behaves
+					.equals(webSocketServerAddress)) {
+				lw("Pylon is configured as both local server and client connected to []", webSocketServerAddress);
 			}
 		}
 		if(hasServer == false && webSocketServerAddress == null) {
-			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT; 
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
 			li("No WebSocket server address or port specified. Defaulting to []", webSocketServerAddress);
 		}
-			
+		
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		return true;
