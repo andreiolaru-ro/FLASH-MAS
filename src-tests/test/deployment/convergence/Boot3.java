@@ -4,7 +4,14 @@ import net.xqhs.flash.FlashBoot;
 
 /**
  * Test 3: full deployment in XML, additional parameters added through CLI for same agents.
- */
+ * <p>
+ * Expected behavior: agents specified in CLI with the same name as agents in XML should be treated
+ * as the same agents, with the CLI parameters added to their configuration.
+ * <p>
+ * Current limitation: the framework creates duplicate agent instances instead of merging the
+ * configurations. The ping-number:3 parameter from CLI is not applied to the XML agents, which
+ * still send the default 5 ping messages.
+*/
 
 public class Boot3
 {
