@@ -367,6 +367,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 								subCat.remove(name, tree);
 								log.lf("removed one tree for [] (id: []) from []/[[]", name, id, parentID, subCategory);
 							}
+							// after removing the entity, check if the category key is now empty and remove it as well,
+        					// to avoid leaving empty category keys in the configuration tree.
 							if(subCat.getHierarchicalNames().isEmpty()) {
 								localIDs.getSingleTree(parentID).removeKey(subCategory);
 								log.lf("removed empty category [] from []", subCategory, parentID);
