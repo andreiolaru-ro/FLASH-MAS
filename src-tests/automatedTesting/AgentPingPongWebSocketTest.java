@@ -28,8 +28,6 @@ public class AgentPingPongWebSocketTest {
 
     private static final Pattern SERVER_STARTED_PATTERN = Pattern.compile("Server started successfully.");
     private static final Pattern CLIENT_CONNECTED_PATTERN = Pattern.compile("connected to \\[ws://localhost:8886]");
-    private static final Pattern AGENT_A_RECEIVED_REPLY_PATTERN = Pattern.compile("\\[AgentA] event: \\[\\{EVENT_TYPE=\\[AGENT_WAVE], content=\\[ping-(no \\d+|last \\d+) reply]");
-    private static final Pattern AGENT_B_RECEIVED_PING_PATTERN = Pattern.compile("\\[AgentB] event: \\[\\{EVENT_TYPE=\\[AGENT_WAVE], content=\\[ping-(no \\d+|last \\d+)]");
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -87,18 +85,14 @@ public class AgentPingPongWebSocketTest {
         assertTrue("AgentA should be registered on node1", consoleOutput.contains("Registered entity [AgentA] on [node1]"));
         assertTrue("AgentB should be registered on node2", consoleOutput.contains("Registered entity [AgentB] on [node2]"));
 
-        // 3. Verify Message Exchange Integrity
-        int pingsReceivedByB = countOccurrences(AGENT_B_RECEIVED_PING_PATTERN, consoleOutput);
-        int repliesReceivedByA = countOccurrences(AGENT_A_RECEIVED_REPLY_PATTERN, consoleOutput);
-
-        // Assert that B received at least 1 ping
-        assertTrue("AgentB should have received pings.", pingsReceivedByB > 0);
-
-        // Because AgentA triggers its shutdown immediately after sending the last ping,
-        // it usually misses the final reply. Therefore, replies received by A will be
-        // either equal to or exactly one less than the pings received by B.
-        assertTrue("AgentA should receive replies for the pings (allowing for the last dropped reply due to shutdown).",
-                repliesReceivedByA == pingsReceivedByB || repliesReceivedByA == pingsReceivedByB - 1);
+        // 3. Check order of ping and pong messages
+        for (int i = 1; i < 4; i++) {
+            int currentPing = consoleOutput.lastIndexOf("[ping-no " + i + "]");
+            int currentPong = consoleOutput.lastIndexOf("[ping-no " + i + " reply]");
+            int nextPing = consoleOutput.lastIndexOf("[ping-no " + (i + 1) + "]");
+            assertTrue("Wrong sequence of events", currentPing < currentPong);
+            assertTrue("Wrong sequence of events", currentPong < nextPing);
+        }
 
         // 4. Verify Final State and Disconnection
         assertTrue("AgentA should send the last ping.", consoleOutput.contains("ping-last 5"));

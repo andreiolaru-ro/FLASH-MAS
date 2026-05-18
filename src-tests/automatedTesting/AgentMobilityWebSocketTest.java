@@ -37,10 +37,6 @@ public class AgentMobilityWebSocketTest {
     protected static final String DEPLOYMENT_ARGS = PRELUDE + NODE_A + NODE_A_AGENTS + NODE_B + NODE_B_AGENTS;
 
     private static final Pattern SERVER_STARTED_PATTERN = Pattern.compile("Server started successfully.");
-    private static final Pattern AGENT_A1_MIGRATION_TO_B_PATTERN = Pattern.compile("preparing to move to \\[nodeB]");
-    private static final Pattern AGENT_A1_MIGRATION_TO_A_PATTERN = Pattern.compile("preparing to move to \\[nodeA]");
-    private static final Pattern AGENT_A1_SERIALIZATION_PATTERN = Pattern.compile("Serializing shards \\[\\{");
-    private static final Pattern AGENT_B1_RECEIVED_PING_PATTERN = Pattern.compile("agent \\[agentB1] event: \\[\\{EVENT_TYPE=\\[AGENT_WAVE], content=\\[ping-(no \\d+|last \\d+)]");
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -63,6 +59,55 @@ public class AgentMobilityWebSocketTest {
             count++;
         }
         return count;
+    }
+
+    /**
+     * Verifies that a sequence of patterns appears in the console output in the correct order.
+     * This ensures that events happen in the expected sequence.
+     * 
+     * @param patterns List of Patterns to match in order
+     * @param consoleOutput The console output to check
+     * @return true if all patterns appear in order, false otherwise
+     */
+    private boolean verifySequence(java.util.List<Pattern> patterns, String consoleOutput) {
+        int currentPosition = 0;
+        for (Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(consoleOutput);
+            matcher.region(currentPosition, consoleOutput.length());
+            if (matcher.find()) {
+                currentPosition = matcher.end();
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Verifies the mobility sequence for a specific agent across nodes.
+     * Checks that: message exchange -> migration preparation -> serialization ->
+     * deserialization on new node -> message exchange resumes
+     */
+    private void verifyMobilityCycle(String consoleOutput, String agentName, String sourceNode, String targetNode) {
+        java.util.List<Pattern> mobilitySequence = new java.util.ArrayList<>();
+        
+        // Phase 1: Messages before migration on source node
+        mobilitySequence.add(Pattern.compile("agent \\[" + agentName + "] event:.*AGENT_WAVE.*content=\\[ping"));
+        
+        // Phase 2: Migration initiation
+        mobilitySequence.add(Pattern.compile("preparing to move to \\[" + targetNode + "]"));
+        
+        // Phase 3: Serialization
+        mobilitySequence.add(Pattern.compile("Serializing shards"));
+        
+        // Phase 4: Agent arrives on target node
+        mobilitySequence.add(Pattern.compile("agent has moved successfully"));
+        
+        // Phase 5: Messages resume on target node
+        mobilitySequence.add(Pattern.compile("agent \\[" + agentName + "] event:.*AFTER_MOVE"));
+        
+        assertTrue("Mobility sequence not verified for " + agentName + " from " + sourceNode + " to " + targetNode,
+                   verifySequence(mobilitySequence, consoleOutput));
     }
 
     @Test
@@ -93,18 +138,11 @@ public class AgentMobilityWebSocketTest {
         // 1. Verify WebSocket Infrastructure
         assertEquals("WebSocket server should start exactly once.", 1, countOccurrences(SERVER_STARTED_PATTERN, consoleOutput));
 
-        // 2. Verify Migrations
-        assertEquals("agentA1 should initiate migration to nodeB.", 1, countOccurrences(AGENT_A1_MIGRATION_TO_B_PATTERN, consoleOutput));
-        assertEquals("agentA1 should initiate return migration to nodeA.", 1, countOccurrences(AGENT_A1_MIGRATION_TO_A_PATTERN, consoleOutput));
+        // 2. Verify Mobility Sequences - ensuring proper order of events during migration
+        verifyMobilityCycle(consoleOutput, "agentA1", "nodeA", "nodeB");
+        verifyMobilityCycle(consoleOutput, "agentA1", "nodeB", "nodeA");
 
-        // Assert serialization occurs during the process
-        assertTrue("agentA1 should serialize its shards during migration.", countOccurrences(AGENT_A1_SERIALIZATION_PATTERN, consoleOutput) >= 2);
-
-        // 3. Verify Message Exchange Integrity (Ping/Pong)
-        int pingsReceivedByB1 = countOccurrences(AGENT_B1_RECEIVED_PING_PATTERN, consoleOutput);
-        assertTrue("agentB1 should have received multiple pings during the lifecycle.", pingsReceivedByB1 > 5);
-
-        // 4. Verify Final State
+        // 3. Verify Final State
         assertTrue("agentA1 should stop after its tasks are complete.", consoleOutput.contains("[agentA1] stopped"));
         assertTrue("agentB1 should stop.", consoleOutput.contains("[agentB1] stopped"));
     }

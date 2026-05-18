@@ -9,45 +9,22 @@
  * 
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package example.webSocketDeployment;
+package example.localDeployment;
 
 import net.xqhs.flash.FlashBoot;
 
 /**
  * Deployment testing.
  */
-public class BootCompositeDeployment
-{
+public class BootXML {
 	/**
-	 * Designation for shards.
-	 */
-	public static final String	FUNCTIONALITY	= "TESTING";
-	/**
-	 * Different designation for shards.
-	 */
-	public static final String	MONITORING		= "MONITORING";
-	
-	/**
-	 * Performs test
+	 * Boots example.
 	 * 
 	 * @param args_
-	 *                 - not used.
+	 *            - not used.
 	 */
-	public static void main(String[] args_)
-	{
-		String args = "";
-		
-		args += " -package testing -loader agent:composite";
-		
-		args += " -node node1";
-		args += " -pylon webSocket:pylon1 serverPort:8886";
-		args += " -agent composite:AgentA -shard messaging -shard PingTest otherAgent:AgentB -shard EchoTesting";
-		
-		args += " -node node2";
-		args += " -pylon webSocket:pylon2 connectTo:ws://localhost:8886";
-		args += " -agent composite:AgentB -shard messaging -shard PingBackTest -shard EchoTesting";
-		
-		FlashBoot.main(args.split(" "));
+	public static void main(String[] args_) {
+		FlashBoot.main(new String[] { "src-examples/example/localDeployment/deployment.xml" });
 	}
 	
 }
