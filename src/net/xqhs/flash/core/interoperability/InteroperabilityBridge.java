@@ -63,7 +63,7 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 			String sourceName = wave.getFirstSource();
 			InteroperableMessagingPylonProxy sourceProxy = interoperabilityRouter.getRoutingDestination(sourceName);
 			if (sourceProxy == null) {
-				le("Cannot find routing destination for [].", sourceName);
+				le("Cannot find source [].", sourceName);
 				le("No reason to try updating routing info.");
 				return;
 			}

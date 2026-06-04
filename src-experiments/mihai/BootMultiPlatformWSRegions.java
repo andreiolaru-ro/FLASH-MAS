@@ -15,7 +15,6 @@ public class BootMultiPlatformWSRegions {
 
 		args += " -node nodeA keep:50";
 		args += " -pylon WSRegions:pylonA isServer:localhost:8885";
-//		args += " -agent agentA -shard messaging -shard EchoTesting exit:30";
 
 		args += " -node nodeB keep:50";
 		args += " -pylon WSRegions:pylonB isServer:localhost:8886";

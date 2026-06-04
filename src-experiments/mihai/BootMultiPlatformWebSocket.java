@@ -15,7 +15,6 @@ public class BootMultiPlatformWebSocket {
 
 		args += " -node nodeA keep:50";
 		args += " -pylon webSocket:pylonA isServer:localhost:8885 serverName:WS-A";
-//		args += " -agent agentA -shard messaging -shard EchoTesting exit:30";
 
 		args += " -node nodeB keep:50";
 		args += " -pylon webSocket:pylonB isServer:localhost:8886 serverName:WS-B";
