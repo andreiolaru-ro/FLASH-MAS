@@ -10,7 +10,7 @@ public class BootCyclicWSRegions {
 
 		args += " -node nodeB keep:50";
 		args += " -pylon WSRegions:pylonB isServer:localhost:8886";
-		args += " -agent :ws://localhost:8886/agentB -shard messaging -shard EchoTesting -shard PingTest otherAgent:ws://localhost:8887/agentC";
+		args += " -agent :ws://localhost:8886/agentB -shard messaging -shard EchoTesting";
 
 		args += " -node nodeC keep:50";
 		args += " -pylon WSRegions:pylonC isServer:localhost:8887";

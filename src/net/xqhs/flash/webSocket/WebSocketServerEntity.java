@@ -197,21 +197,24 @@ public class WebSocketServerEntity extends Unit implements Entity<Node> {
 					return;
 				}
 
-				// send to bridge
-				String bridgeDestination = interoperabilityRouter.getRoutingDestination(destination);
-				if (bridgeDestination != null) {
-					lf("Trying to send to bridge entity [], [].", bridgeDestination, message);
-
-					WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
-					if (bridgeDestinationWebSocket != null) {
-						message = InteroperabilityRouter.prependDestinationToMessage(message, bridgeDestination);
-
-						bridgeDestinationWebSocket.send(message.toString());
-						lf("Sent to bridge []: []. ", bridgeDestination, message);
-						return;
+				// send to bridge — try all candidates in order of distance, skip unavailable ones
+				List<String> bridgeCandidates = interoperabilityRouter.getRoutingDestinations(destination);
+				if (bridgeCandidates != null) {
+					boolean sent = false;
+					for (String bridgeDestination : bridgeCandidates) {
+						lf("Trying to send to bridge entity [], [].", bridgeDestination, message);
+						WebSocket bridgeDestinationWebSocket = entityToWebSocket.get(bridgeDestination);
+						if (bridgeDestinationWebSocket != null) {
+							JsonObject bridgeMessage = InteroperabilityRouter.prependDestinationToMessage(message, bridgeDestination);
+							bridgeDestinationWebSocket.send(bridgeMessage.toString());
+							lf("Sent to bridge []: []. ", bridgeDestination, bridgeMessage);
+							sent = true;
+							break;
+						}
+						lf("Bridge entity [] has no active websocket, trying next candidate.", bridgeDestination);
 					}
-
-					le("Failed to find websocket for the bridge entity [] in order to route to [].", bridgeDestination, destination);
+					if (!sent)
+						le("No available bridge found to route to [].", destination);
 					return;
 				}
 

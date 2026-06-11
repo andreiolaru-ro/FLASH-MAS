@@ -93,7 +93,13 @@ public class WSRegionsPylon extends DefaultPylonImplementation {
 
 		@Override
 		public String getPlatformPrefix() {
-			return HomeServerAddressName.split(PLATFORM_PREFIX_SEPARATOR)[0];
+			int authorityStart = HomeServerAddressName.indexOf("://");
+			if (authorityStart >= 0) {
+				int pathStart = HomeServerAddressName.indexOf('/', authorityStart + 3);
+				if (pathStart >= 0)
+					return HomeServerAddressName.substring(0, pathStart);
+			}
+			return HomeServerAddressName;
 		}
 	}
 

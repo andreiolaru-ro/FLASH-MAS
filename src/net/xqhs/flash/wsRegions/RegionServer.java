@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -684,33 +685,26 @@ public class RegionServer extends Unit implements Entity<Node> {
 			sendMessage(agm.getClientConnection(), target, message);
 		}
 		else {
-			// send to bridge
-			String bridgeDestination = interoperabilityRouter.getRoutingDestination(target);
-			if (bridgeDestination != null) {
-				lf("Trying to send message to bridge entity [].", bridgeDestination);
+			// send to bridge — try all candidates in order of distance, skip unavailable ones
+			List<String> bridgeCandidates = interoperabilityRouter.getRoutingDestinations(target);
+			if (bridgeCandidates != null) {
+				boolean sent = false;
+				for (String bridgeDestination : bridgeCandidates) {
+					lf("Trying to send message to bridge entity [].", bridgeDestination);
 
-				AgentStatus bridge = regionHomeAgents.get(bridgeDestination);
-				if (bridge != null) {
-					JsonObject modifiedMessage = InteroperabilityRouter.prependDestinationToMessage(msg, bridgeDestination);
+					AgentStatus bridge = regionHomeAgents.get(bridgeDestination);
+					if (bridge != null) {
+						JsonObject modifiedMessage = InteroperabilityRouter.prependDestinationToMessage(msg, bridgeDestination);
+						sendMessage(bridge.getClientConnection(), bridgeDestination, modifiedMessage.toString());
+						lf("Sent message to bridge entity [].", bridgeDestination);
+						sent = true;
+						break;
+					}
 
-					sendMessage(bridge.getClientConnection(), bridgeDestination, modifiedMessage.toString());
-					lf("Sent message to bridge entity [].", bridgeDestination);
-					return;
+					lf("Bridge entity [] has no active websocket, trying next candidate.", bridgeDestination);
 				}
-
-				String regServer = null;
-				try {
-					regServer = extractHomeRegion(bridgeDestination);
-				} catch (Exception e) {
-					le("Unable to parse destination []", bridgeDestination);
-					return;
-				}
-				dbg(Dbg.DEBUG_WSREGIONS, "Bridge [] location isn't known. Sending message to home Region Server []", bridgeDestination, regServer);
-				if (homeServers.containsKey(regServer))
-					sendMessage(homeServers.get(regServer).client, bridgeDestination, message);
-				else
-					le("Region server [] not connected; known servers: ", regServer, homeServers.keySet());
-
+				if (!sent)
+					le("No available bridge found to route to [].", target);
 				return;
 			}
 

@@ -1,8 +1,10 @@
 package net.xqhs.flash.core.interoperability;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -41,29 +43,43 @@ public class InteroperabilityRouter<T> {
 
 	}
 
-	public T getRoutingDestination(String finalDestination) {
-//		if (platformPrefixToRoutingDestination == null || finalDestination == null)
-//			return null;
-//
-//		T routingDestination = platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination));
-//		if (routingDestination == null)
-//			return null;
-//
-//		return routingDestination;
-
-		if (platformPrefixToRoutingDestination == null || finalDestination == null) {
+	/**
+	 * Returns all known routing destinations for the given final destination address, ordered by ascending distance
+	 * (closest bridges first). This allows callers to try each candidate in order and skip any that are unavailable.
+	 *
+	 * @param finalDestination
+	 *            - the address of the final destination
+	 * @return an ordered {@link List} of routing destinations, or <code>null</code> if none are known
+	 */
+	public List<T> getRoutingDestinations(String finalDestination) {
+		if (platformPrefixToRoutingDestination == null || finalDestination == null)
 			return null;
-		}
 
-		if (platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination)) == null) {
+		TreeMap<Integer, Set<T>> routesForPrefix = platformPrefixToRoutingDestination
+				.get(getPlatformPrefixFromAddress(finalDestination));
+		if (routesForPrefix == null || routesForPrefix.isEmpty())
 			return null;
-		}
 
-		return platformPrefixToRoutingDestination.get(getPlatformPrefixFromAddress(finalDestination)).firstEntry().getValue().iterator().next();
+		List<T> result = new ArrayList<>();
+		for (Set<T> candidates : routesForPrefix.values())
+			result.addAll(candidates);
+		return result;
 	}
 
 	public static String getPlatformPrefixFromAddress(String address) {
-		return address.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR)[0];
+		String[] parts = address.split(InteroperableMessagingPylonProxy.PLATFORM_PREFIX_SEPARATOR);
+		if (parts.length < 2)
+			return address;
+
+		int authorityStart = address.indexOf("://");
+		if (authorityStart >= 0) {
+			int pathStart = address.indexOf('/', authorityStart + 3);
+			if (pathStart >= 0)
+				return address.substring(0, pathStart);
+			return address;
+		}
+
+		return parts[0];
 	}
 
 	public Set<String> getAllPlatformPrefixes() {
@@ -237,14 +253,28 @@ public class InteroperabilityRouter<T> {
 			if (shortestRoute.keySet().isEmpty())
 				continue;
 
-			int distance = shortestRoute.get("distance").getAsInt();
-			int currentDistance = -1;
-			if (platformPrefixToRoutingDestination.get(destination) != null)
-				currentDistance = platformPrefixToRoutingDestination.get(destination).firstKey().intValue();
+			// distance reported by the source, plus 1 hop to reach the source itself
+			int distance = shortestRoute.get("distance").getAsInt() + 1;
 
-			if (currentDistance < distance) {
-				infoUpdated = true;
+			// skip if source is already registered at a shorter or equal distance for this destination
+			if (platformPrefixToRoutingDestination.get(destination) != null) {
+				boolean alreadyKnownShorter = false;
+				for (Map.Entry<Integer, Set<T>> entry : platformPrefixToRoutingDestination.get(destination).entrySet()) {
+					if (entry.getValue().contains(source) && entry.getKey() <= distance) {
+						alreadyKnownShorter = true;
+						break;
+					}
+				}
+				if (alreadyKnownShorter)
+					continue;
+			}
+
+			// only flag as updated if this source+distance combination is actually new
+			if (platformPrefixToRoutingDestination.get(destination) == null
+					|| platformPrefixToRoutingDestination.get(destination).get(distance) == null
+					|| !platformPrefixToRoutingDestination.get(destination).get(distance).contains(source)) {
 				addRoutingDestinationForPlatform(destination, source, distance);
+				infoUpdated = true;
 			}
 		}
 		

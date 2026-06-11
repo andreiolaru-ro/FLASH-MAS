@@ -1,6 +1,7 @@
 package net.xqhs.flash.core.interoperability;
 
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -61,7 +62,8 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 
 			String content = wave.get(InteroperableMessagingPylonProxy.MULTI_PLATFORM_ROUTING_INFORMATION);
 			String sourceName = wave.getFirstSource();
-			InteroperableMessagingPylonProxy sourceProxy = interoperabilityRouter.getRoutingDestination(sourceName);
+			List<InteroperableMessagingPylonProxy> sourceProxies = interoperabilityRouter.getRoutingDestinations(sourceName);
+			InteroperableMessagingPylonProxy sourceProxy = (sourceProxies != null && !sourceProxies.isEmpty()) ? sourceProxies.get(0) : null;
 			if (sourceProxy == null) {
 				le("Cannot find source [].", sourceName);
 				le("No reason to try updating routing info.");
@@ -107,7 +109,8 @@ public class InteroperabilityBridge extends Unit implements Entity<Pylon> {
 		wave.recomputeCompleteDestination();
 
 		String destination = wave.getFirstDestinationElement();
-		InteroperableMessagingPylonProxy pylonProxy = interoperabilityRouter.getRoutingDestination(destination);
+		List<InteroperableMessagingPylonProxy> pylonProxies = interoperabilityRouter.getRoutingDestinations(destination);
+		InteroperableMessagingPylonProxy pylonProxy = (pylonProxies != null && !pylonProxies.isEmpty()) ? pylonProxies.get(0) : null;
 
 		if (pylonProxy != null) {
 			li("Found routing destination [] for [].", pylonProxy.getPlatformPrefix(), wave.toString());

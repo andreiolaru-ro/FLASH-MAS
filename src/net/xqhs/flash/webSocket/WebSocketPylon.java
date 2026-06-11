@@ -182,7 +182,13 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 
 		@Override
 		public String getPlatformPrefix() {
-			return webSocketServerAddress.split(PLATFORM_PREFIX_SEPARATOR)[0];
+			int authorityStart = webSocketServerAddress.indexOf("://");
+			if (authorityStart >= 0) {
+				int pathStart = webSocketServerAddress.indexOf('/', authorityStart + 3);
+				if (pathStart >= 0)
+					return webSocketServerAddress.substring(0, pathStart);
+			}
+			return webSocketServerAddress;
 		}
 	}
 	
