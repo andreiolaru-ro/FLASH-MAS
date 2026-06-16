@@ -1,27 +1,80 @@
 package abms.smartMeeting;
 
-import net.xqhs.flash.FlashBoot;
+import java.util.List;
 
+import org.json.simple.JSONObject;
+
+import abms.common.BatchRunner;
+import abms.common.JsonConfig;
+import net.xqhs.util.logging.Logger.Level;
+
+/**
+ * Entry point for the Smart Meeting simulation. Scenario configuration (graph topology,
+ * number of auction/room/person agents and the request parameter ranges) is read from a
+ * JSON file under {@code resources/config/smartmeeting/}.
+ */
 public class SmartMeetingBoot {
-    public static void main(String[] args) {
-        String a = "";
-        a += " -load_order simulation;executor;context;SmartMeetingGroup";
-        a += " -package net.xqhs.flash.abms";
-        a += " -package abms.smartMeeting";
-        a += " -loader SmartMeetingGroup classpath:abms.smartMeeting.SmartMeetingGroupLoader";
-        a += " -node dummy -simulation sim classpath:Simulation";
-        a += " -executor StepWise:StepWise steps:60";
-        a += " -context AgentManagement:agentManagement";
-        a += " -context Random:random seed:42";
-        a += " -context GraphCommunication:communication";
-        a += " -context Space:space topology:graph"
-                + " nodes:lobby,r1,r2,r3,r4,r5,r6"
-                + " edges:lobby-r1,lobby-r2,lobby-r3,r1-r4,r3-r5,r5-r6";
-        a += " -SmartMeetingGroup g";
-        a += " -agent Auction n:1 releaseAfterSteps:20";
-        a += " -agent Room n:6 capacity:8 equipment:PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE";
-        a += " -agent Person n:3 auctionAgent:auction0";
+    public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-7n-light.json";
 
-        FlashBoot.main(a.split(" "));
+    public static void main(String[] args) {
+        String configPath = args.length > 0 ? args[0] : DEFAULT_CONFIG_PATH;
+        final JsonConfig config = JsonConfig.load(configPath);
+        final String scenarioName = config.getString("scenarioName", "sm-unnamed");
+        final int runs = config.getInt("runs", 1);
+        final int steps = config.getInt("steps", 60);
+        final long baseSeed = config.getLong("baseSeed", 42);
+        Level logLevel = parseLogLevel(config.getString("logLevel", "ERROR"));
+
+        System.out.println("SmartMeeting scenario: " + scenarioName + " (" + configPath + ")");
+        System.out.println("Running " + runs + " run(s), " + steps + " step(s) each, baseSeed=" + baseSeed);
+
+        BatchRunner.run(runs, logLevel,
+                runIndex -> buildBootString(config, baseSeed + runIndex, steps),
+                new SmRunStats(scenarioName));
+    }
+
+    private static String buildBootString(JsonConfig config, long seed, int steps) {
+        JSONObject graph = config.getObject("graph");
+        List<String> nodes = JsonConfig.getStringList(graph, "nodes");
+        List<String> edges = JsonConfig.getStringList(graph, "edges");
+
+        StringBuilder a = new StringBuilder();
+        a.append(" -load_order simulation;executor;context;SmartMeetingGroup");
+        a.append(" -package net.xqhs.flash.abms");
+        a.append(" -package abms.smartMeeting");
+        a.append(" -loader SmartMeetingGroup classpath:abms.smartMeeting.SmartMeetingGroupLoader");
+        a.append(" -node dummy -simulation sim classpath:Simulation");
+        a.append(" -executor StepWise:StepWise steps:").append(steps);
+        a.append(" -context AgentManagement:agentManagement");
+        a.append(" -context Random:random seed:").append(seed);
+        a.append(" -context GraphCommunication:communication");
+        a.append(" -context Space:space topology:graph");
+        a.append(" nodes:").append(String.join(",", nodes));
+        a.append(" edges:").append(String.join(",", edges));
+        a.append(" -SmartMeetingGroup g");
+        for (JSONObject agent : config.getObjectList("agents")) {
+            String kind = JsonConfig.getString(agent, "kind", "Agent");
+            int count = JsonConfig.getInt(agent, "count", 0);
+            JSONObject params = (JSONObject) agent.get("params");
+            a.append(" -agent ").append(kind).append(" n:").append(count);
+            appendParams(a, params);
+        }
+        return a.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void appendParams(StringBuilder a, JSONObject params) {
+        if (params == null) return;
+        for (Object keyObj : params.keySet()) {
+            String key = keyObj.toString();
+            Object v = params.get(key);
+            a.append(' ').append(key).append(':').append(v);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private static Level parseLogLevel(String name) {
+        try { return Level.valueOf(name.toUpperCase()); }
+        catch (IllegalArgumentException e) { return Level.ERROR; }
     }
 }

@@ -1,7 +1,9 @@
 package abms.lbForaging;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.abms.AgentManagementContext;
@@ -151,6 +153,14 @@ public class LBForagingGroupLoader extends EntityGroupLoader {
         for (String typeName : categoryTree.getTreeKeys()) {
             MultiTreeMap typeConfig = categoryTree.getATree(typeName);
             int n = readInt(typeConfig, "n", 0);
+            Map<String, String[]> overrides = new LinkedHashMap<>();
+            for (String key : typeConfig.getSimpleNames()) {
+                if (!key.endsWith("List") || key.length() <= 4) continue;
+                String base = key.substring(0, key.length() - 4);
+                String raw = typeConfig.getAValue(key);
+                if (raw != null)
+                    overrides.put(base, raw.split("\\|", -1));
+            }
             for (int i = 0; i < n; i++) {
                 MultiTreeMap entityConfig = new MultiTreeMap();
                 entityConfig.addSingleValue(DeploymentConfiguration.CATEGORY_ATTRIBUTE_NAME, category);
@@ -158,11 +168,17 @@ public class LBForagingGroupLoader extends EntityGroupLoader {
                 entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
                         typeName + DeploymentConfiguration.NAME_SEPARATOR + id);
                 for (String key : typeConfig.getSimpleNames()) {
-                    if (key.startsWith("#") || "n".equals(key)
+                    if (key.startsWith("#") || "n".equals(key) || key.endsWith("List")
                             || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
                             || "package".equals(key) || "in-context-of".equals(key))
                         continue;
+                    if (overrides.containsKey(key))
+                        continue; // overridden per-instance below
                     entityConfig.addOneValue(key, typeConfig.getAValue(key));
+                }
+                for (Map.Entry<String, String[]> e : overrides.entrySet()) {
+                    String[] vals = e.getValue();
+                    entityConfig.addOneValue(e.getKey(), vals[i % vals.length]);
                 }
                 entityConfigs.add(entityConfig);
                 entityCategories.add(category);

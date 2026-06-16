@@ -41,6 +41,10 @@ public class ForagingContext extends SimulationContext.BaseContext
     private int currentStep = 0;
     private int totalFoodCount = 0;
     private int collectedFoodCount = 0;
+    private int firstCollectionStep = -1;
+    private int lastCollectionStep = -1;
+    private int cooperativeCollections = 0;
+    private int soloCollections = 0;
 
     // Pending reward events: agent -> reward value
     private final Map<EntityProxy<?>, Double> pendingRewards = new HashMap<>();
@@ -68,6 +72,22 @@ public class ForagingContext extends SimulationContext.BaseContext
 
     public int getCurrentStep() {
         return currentStep;
+    }
+
+    public int getFirstCollectionStep() {
+        return firstCollectionStep;
+    }
+
+    public int getLastCollectionStep() {
+        return lastCollectionStep;
+    }
+
+    public int getCooperativeCollections() {
+        return cooperativeCollections;
+    }
+
+    public int getSoloCollections() {
+        return soloCollections;
     }
 
     @Override
@@ -129,6 +149,13 @@ public class ForagingContext extends SimulationContext.BaseContext
                 // Food is collected
                 food.setCollected(true);
                 collectedFoodCount++;
+                if (firstCollectionStep < 0)
+                    firstCollectionStep = currentStep;
+                lastCollectionStep = currentStep;
+                if (intents.size() > 1)
+                    cooperativeCollections++;
+                else
+                    soloCollections++;
 
                 // Remove food from space
                 space.removeEntity(food);

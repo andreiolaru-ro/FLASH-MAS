@@ -1,7 +1,9 @@
 package abms.common;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.RandomContext;
@@ -132,6 +134,7 @@ public final class GridAbmsGroupLoaderSupport {
         for (String typeName : categoryTree.getTreeKeys()) {
             MultiTreeMap typeConfig = categoryTree.getATree(typeName);
             int n = readInt(typeConfig, "n", 0);
+            Map<String, String[]> overrides = collectPerInstanceOverrides(typeConfig);
             for (int i = 0; i < n; i++) {
                 MultiTreeMap entityConfig = new MultiTreeMap();
                 entityConfig.addSingleValue(DeploymentConfiguration.CATEGORY_ATTRIBUTE_NAME, category);
@@ -139,16 +142,41 @@ public final class GridAbmsGroupLoaderSupport {
                 entityConfig.addOneValue(DeploymentConfiguration.NAME_ATTRIBUTE_NAME,
                         typeName + DeploymentConfiguration.NAME_SEPARATOR + id);
                 for (String key : typeConfig.getSimpleNames()) {
-                    if (key.startsWith("#") || "n".equals(key)
+                    if (key.startsWith("#") || "n".equals(key) || key.endsWith("List")
                             || DeploymentConfiguration.NAME_ATTRIBUTE_NAME.equals(key)
                             || "package".equals(key) || "in-context-of".equals(key))
                         continue;
+                    if (overrides.containsKey(key))
+                        continue; // overridden per-instance below
                     entityConfig.addOneValue(key, typeConfig.getAValue(key));
+                }
+                for (Map.Entry<String, String[]> e : overrides.entrySet()) {
+                    String[] vals = e.getValue();
+                    entityConfig.addOneValue(e.getKey(), vals[i % vals.length]);
                 }
                 bundle.entityConfigs.add(entityConfig);
                 bundle.entityCategories.add(category);
             }
         }
+    }
+
+    /**
+     * Per-instance overrides. Any param key of the form {@code <base>List} is treated as a
+     * pipe-separated list of values, one per entity instance, that overrides the matching
+     * {@code <base>} key. Pipe is used because some base values (equipment sets, duration
+     * choices) are themselves comma-separated. If the list is shorter than the instance
+     * count, it cycles.
+     */
+    private static Map<String, String[]> collectPerInstanceOverrides(MultiTreeMap typeConfig) {
+        Map<String, String[]> result = new LinkedHashMap<>();
+        for (String key : typeConfig.getSimpleNames()) {
+            if (!key.endsWith("List") || key.length() <= 4) continue;
+            String base = key.substring(0, key.length() - 4);
+            String raw = typeConfig.getAValue(key);
+            if (raw == null) continue;
+            result.put(base, raw.split("\\|", -1));
+        }
+        return result;
     }
 
     private static int readInt(MultiTreeMap configuration, String key, int fallback) {

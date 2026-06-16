@@ -1,6 +1,7 @@
 package abms.smartMeeting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,12 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     // Simulation reference for finding PersonAgents
     private Simulation simulation;
 
+    // Per-run stats
+    private int currentStep = 0;
+    private int auctionStartedStep = -1;
+    private final List<AuctionOutcome> outcomes = new ArrayList<>();
+    private final Map<String, Integer> winsPerRoom = new LinkedHashMap<>();
+
     public AuctionAgent() {
         e.addGeneralContext(this);
     }
@@ -91,6 +98,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     @Override
     public void step() {
+        currentStep++;
         computeBidWaitIfNeeded();
         releaseExpiredReservations();
         processIncomingWaves();
@@ -109,6 +117,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                         originalRequest.getPriority());
                 receivedBids.clear();
                 currentWaitStep = 0;
+                auctionStartedStep = currentStep;
                 auctionState = AuctionState.COLLECTING_BIDS;
                 broadcastRFP(currentRequest);
                 li("started auction for [] from person [] (waiting [] steps for bids)",
@@ -169,6 +178,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         RoomBid winner = selectBestBid(bids);
 
         EntityProxy<?> personRef = findPersonAgent(currentRequesterName);
+        int feasibleCount = 0;
+        for (RoomBid bid : bids)
+            if (bid.isFeasible()) feasibleCount++;
 
         if (winner != null) {
             // Send accept to winning room (hop-by-hop through graph)
@@ -195,27 +207,55 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             li("auction [] WON by room [] (score []) from [] bids",
                     currentRequest.getRequestId(), winner.getRoomId(),
                     Integer.valueOf(winner.getScore()), Integer.valueOf(bids.size()));
+            winsPerRoom.merge(winner.getRoomId(), 1, Integer::sum);
+            outcomes.add(new AuctionOutcome(currentRequest.getRequestId(), currentRequesterName,
+                    auctionStartedStep, currentStep, true, winner.getRoomId(), winner.getScore(),
+                    bids.size(), feasibleCount, null));
         } else {
             if (personRef != null)
                 e.sendDirect(personRef, SmartMeetingMessageCodec.encodeBookingResponse(
                         currentRequest.getRequestId(), false, null, "no feasible room"));
             li("auction [] FAILED — no feasible bid from [] responses",
                     currentRequest.getRequestId(), Integer.valueOf(bids.size()));
+            outcomes.add(new AuctionOutcome(currentRequest.getRequestId(), currentRequesterName,
+                    auctionStartedStep, currentStep, false, null, 0, bids.size(), feasibleCount,
+                    "no feasible room"));
         }
 
         currentRequest = null;
         currentRequesterName = null;
+        auctionStartedStep = -1;
     }
 
-    private static RoomBid selectBestBid(List<RoomBid> bids) {
-        RoomBid best = null;
+    /**
+     * Selects the highest-scoring feasible bid. When two or more bids tie on score the
+     * winner is drawn uniformly at random from the tied set, so that across many runs the
+     * winner distribution is not anchored to entity-set iteration order.
+     */
+    private RoomBid selectBestBid(List<RoomBid> bids) {
+        int bestScore = Integer.MIN_VALUE;
+        List<RoomBid> bestTier = new ArrayList<>();
         for (RoomBid bid : bids) {
-            if (!bid.isFeasible())
-                continue;
-            if (best == null || bid.getScore() > best.getScore())
-                best = bid;
+            if (!bid.isFeasible()) continue;
+            if (bid.getScore() > bestScore) {
+                bestScore = bid.getScore();
+                bestTier.clear();
+                bestTier.add(bid);
+            } else if (bid.getScore() == bestScore) {
+                bestTier.add(bid);
+            }
         }
-        return best;
+        if (bestTier.isEmpty()) return null;
+        if (bestTier.size() == 1) return bestTier.get(0);
+        return bestTier.get(e.nextInt(bestTier.size()));
+    }
+
+    public List<AuctionOutcome> getOutcomes() {
+        return Collections.unmodifiableList(outcomes);
+    }
+
+    public Map<String, Integer> getWinsPerRoom() {
+        return Collections.unmodifiableMap(winsPerRoom);
     }
 
     private void releaseExpiredReservations() {
@@ -282,6 +322,38 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             this.roomAgentName = roomAgentName;
             this.reservationId = reservationId;
             this.remainingSteps = remainingSteps;
+        }
+    }
+
+    public static class AuctionOutcome {
+        public final String requestId;
+        public final String requesterName;
+        public final int startStep;
+        public final int resolutionStep;
+        public final boolean won;
+        public final String winnerRoomId;
+        public final int winnerScore;
+        public final int bidsReceived;
+        public final int feasibleBids;
+        public final String failureReason;
+
+        public AuctionOutcome(String requestId, String requesterName, int startStep, int resolutionStep,
+                boolean won, String winnerRoomId, int winnerScore, int bidsReceived, int feasibleBids,
+                String failureReason) {
+            this.requestId = requestId;
+            this.requesterName = requesterName;
+            this.startStep = startStep;
+            this.resolutionStep = resolutionStep;
+            this.won = won;
+            this.winnerRoomId = winnerRoomId;
+            this.winnerScore = winnerScore;
+            this.bidsReceived = bidsReceived;
+            this.feasibleBids = feasibleBids;
+            this.failureReason = failureReason;
+        }
+
+        public int latencySteps() {
+            return resolutionStep - startStep;
         }
     }
 }
