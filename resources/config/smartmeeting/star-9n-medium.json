@@ -1,0 +1,44 @@
+{
+  "scenarioName": "sm-star-9n-medium",
+  "description": "Star topology (lobby + 8 rooms, diameter 2), with heterogeneous rooms and persons. Room capacities span 4..20 seats; equipment ranges from a single PROJECTOR up to the full PROJECTOR/WHITEBOARD/VIDEO_CONFERENCE/PRINTER set. The 5 persons cover five distinct profiles (small huddle / standup / dev meeting / planning / all-hands). With diameter 2 the bid window is 5 steps -- the topology is fast, the differentiation is in the suitability score, not in the latency.",
+  "runs": 100,
+  "steps": 90,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "graph": {
+    "nodes": ["lobby", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"],
+    "edges": ["lobby-r1", "lobby-r2", "lobby-r3", "lobby-r4", "lobby-r5", "lobby-r6", "lobby-r7", "lobby-r8"]
+  },
+  "agents": [
+    {
+      "kind": "Auction",
+      "count": 1,
+      "params": { "releaseAfterSteps": 20 }
+    },
+    {
+      "kind": "Room",
+      "count": 8,
+      "params": {
+        "capacityList": "4|5|6|8|10|12|15|20",
+        "equipmentList": "PROJECTOR|WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER"
+      }
+    },
+    {
+      "kind": "Person",
+      "count": 5,
+      "params": {
+        "auctionAgent": "auction0",
+        "startMin": 540,
+        "startMax": 720,
+        "startStep": 30,
+        "attendeesMinList": "2|3|5|7|9",
+        "attendeesMaxList": "4|5|7|10|15",
+        "durationsList": "30|30,60|60|60|60,90",
+        "priorityMinList": "3|2|1|2|1",
+        "priorityMaxList": "3|3|3|3|2",
+        "equipmentPoolList": "PROJECTOR|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER",
+        "equipmentProbList": "0.3|0.5|0.7|0.8|1.0"
+      }
+    }
+  ]
+}

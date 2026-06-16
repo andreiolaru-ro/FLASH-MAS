@@ -1,0 +1,44 @@
+{
+  "scenarioName": "sm-tree-7n-contention",
+  "description": "High-contention regime on the 7-node tree, now with heterogeneous rooms AND heterogeneous persons. 4 rooms span from a 4-seat huddle (WHITEBOARD only) to a 12-seat conference room (full equipment). 8 persons span four request profiles (tiny / small / medium / large team), each with their own attendee range, duration choice, equipment pool, and priority distribution. The auction's suitability score now does real work: most requests can only be satisfied by a subset of rooms, and feasibility is no longer uniform across the room fleet.",
+  "runs": 100,
+  "steps": 120,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "graph": {
+    "nodes": ["lobby", "r1", "r2", "r3", "r4", "r5", "r6"],
+    "edges": ["lobby-r1", "lobby-r2", "lobby-r3", "r1-r4", "r3-r5", "r5-r6"]
+  },
+  "agents": [
+    {
+      "kind": "Auction",
+      "count": 1,
+      "params": { "releaseAfterSteps": 20 }
+    },
+    {
+      "kind": "Room",
+      "count": 4,
+      "params": {
+        "capacityList": "4|6|8|12",
+        "equipmentList": "WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER"
+      }
+    },
+    {
+      "kind": "Person",
+      "count": 8,
+      "params": {
+        "auctionAgent": "auction0",
+        "startMin": 540,
+        "startMax": 720,
+        "startStep": 30,
+        "attendeesMinList": "2|2|4|4|5|6|8|10",
+        "attendeesMaxList": "3|3|6|6|8|8|12|12",
+        "durationsList": "30|30|30,60|30,60|60|60|60,90|60,90",
+        "priorityMinList": "3|3|2|2|1|1|1|1",
+        "priorityMaxList": "3|3|3|3|2|2|2|2",
+        "equipmentPoolList": "PROJECTOR|PROJECTOR|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE",
+        "equipmentProbList": "0.3|0.3|0.6|0.6|0.8|0.8|0.9|0.9"
+      }
+    }
+  ]
+}
