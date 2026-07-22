@@ -14,7 +14,7 @@
  */
 /**
  * These tests are meant to be standard tests (sort of like unit tests) which can verify various parts of the
- * implementation.
+ * implementation. These tests are meant to be run manually.
  * <p>
  * These are <b>not</b> the tests used by developers to test their ongoing work.
  * 
