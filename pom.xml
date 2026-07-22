@@ -84,6 +84,21 @@
                 </executions>
             </plugin>
 
+            <!-- Activate maven-surefire-plugin with ordered test execution via TestSuite -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <testFailureIgnore>true</testFailureIgnore>
+
+                    <!-- Run only the AllTestsSuite which controls test execution order -->
+                    <includes>
+                        <include>**/AllTestsSuite.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
 <!--         To package the project with all dependencies (Fat JAR), this plugin is necessary. The command used to generate the Fat Jar is "mvn clean package". -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
