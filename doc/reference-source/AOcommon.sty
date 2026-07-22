@@ -1,0 +1,379 @@
+%
+%  Copyright (C) 2025 Andrei Olaru. http://cs.andreiolaru.ro
+%
+
+%% ============ AUTO includes: graphicx, multirow, array, verbatim, amsmath
+
+%% ====================================================== COMMAND INDEX
+
+% \languagesetting \fontsetting \skipgraphicx \mathfont \loadamsfonts \loadcite \loadurl \initsubsup
+% \amicity* \tatami \flash
+% \qro (romanian quote) \td \mathize \mrm \mit \code[S] \ra \Ra \la \dodot \smallitem \nl
+% \refAccessDate \footlink[date]{text}{url}
+% \tw \pw \ph \spk
+
+% \bibPath \picPath \picLocal
+% \picsFrom \picsPush{new path} \picsPop(work on \picSpec)
+% \picA \picR \picS/Ss/Sw/Sh \picG \pic/sc/w/h (on picLocal) + templates on figure layout and figures for listings
+% \logoCS / CStext / CSfull / ACS / LIP / UPMC / AIMAS / AIMASshort
+
+% \axrst \axr \axi (inside enumerate) \axin/out \axri/o \axcont		(just indenting)
+% \bxrst \bxr \bxri/o \bxcont
+% \lcrst \cl \clcont \clc \clm \crm \ck \clin/out	(inside tabular)
+
+% \doitemize[itemsep] \doitemizeT[itemsep and topsep] \dooneitem \doenum
+% \domini[wid]{content}
+% \dominis[vspace]{left proportion}{right prop.}{left content}{right content}	\splitminisL (same, with vert line)
+
+% \todo[pre]{content} \tx[content] (prints TODO: anyway) \todoA[not printed]{content} \todoX[not printed]{not printed} 
+% source for \todoC - colored todo
+% \response for review responses
+
+%% ====================================================== USAGE
+
+% from the RSH article folders. just:
+% \usepackage{../_package/AOcommon}
+%
+% from other locations:
+% \def\elementsroot{path/to/RSH/}\usepackage{\elementsroot_package/AOcommon}
+
+% code for new packages (plus the instructions above):
+% \ifdefined\flatpack\usepackage{AOcommon}\else\ifdefined\elementsroot\usepackage{\elementsroot_package/AOcommon}\else\usepackage{../_package/AOcommon}\fi\fi
+
+% to add in Eclipse: New file --> link to file system --> extend variable to obtain TEX_PACKAGE/AOcommon.sty
+
+
+% samples in chapters below
+
+
+%% ====================================================== SECTIONS
+
+% == sample. in comment: separator, number of pages, section index and content
+
+% =============================================================================
+% 2		1. title + introduction
+% \section{Introduction}\label{sec:intro}
+
+
+% == template
+
+% % =============================================================================
+% % p		. 
+% \section{}\label{sec:}
+
+
+% \subsection{}\label{sec:}
+
+
+%% ====================================================== LANGUAGE & FONT
+
+% \newcommand{\languagesetting}{romanian}
+% optional: (necessary for romanian)
+% \newcommand{\fontsetting}{T1}
+\ifdefined\languagesetting
+% 	\usepackage[utf8x]{inputenc}
+	\usepackage[\languagesetting]{babel}
+\else
+	\usepackage[english]{babel}
+\fi
+\ifdefined\fontsetting
+	\usepackage[\fontsetting]{fontenc}
+\fi
+
+%% ====================================================== PACKAGES
+
+% some templates may conflict with graphicx
+\ifdefined\skipgraphicx
+	\usepackage{\skipgraphicx}
+\else
+	\usepackage{graphicx}
+\fi
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{verbatim}
+
+% \newcommand{\mathfont}{cmex10}
+\ifdefined\mathfont
+	\usepackage[\mathfont]{amsmath}
+\else
+	\usepackage{amsmath}
+\fi
+\newcommand{\loadamsfonts}{\usepackage{amsfonts}}
+
+\newcommand{\loadcite}{\usepackage{cite}} % better management of citation, hyphenation of citations, etc
+\newcommand{\loadurl}{\usepackage{url}}
+
+\newcommand{\initsubsup}{
+\ifdefined\flatpack\input{inlinesubsup}\else
+\ifdefined\elementsroot
+	\input{\elementsroot_package/inlinesubsup}
+\else
+	\input{../_package/inlinesubsup}
+\fi\fi
+}
+
+
+%% ====================================================== AMICITY specials
+
+\newcommand{\amicity}{\underline{AmIciT}y}
+\newcommand{\amicityMi}{\underline{AmIciT}y:Mi}
+\newcommand{\amicityp}{AmIciTy}
+\newcommand{\amicitypMi}{AmIciTy:Mi}
+
+\newcommand{\tatami}[1][]{\mbox{t\textrm{\scshape ata}m\textrm{\scshape i}\ifx\\#1\\\else-#1\fi}}
+% old
+% \newcommand{\tatami}[1][]{\mbox{tATAmI\ifx\\#1\\\else-#1\fi}}
+% add this in individual documents
+% \newcommand{\ta}[1]{\tatami[#1]}
+\newcommand{\flash}[1][\ ]{\mbox{\textrm{\scshape Flash-mas}}#1}
+\newcommand{\flashT}[1][\ ]{F{\small LASH-MAS}#1}
+\newcommand{\fmas}[1][\ ]{\flash[#1]}
+\newcommand{\fmasT}[1][\ ]{\flashT[#1]}
+\newcommand{\aif}[1][ ]{AI Folk#1}
+\newcommand{\defineF}{\newcommand{\f}[1][\ ]{\mbox{\textrm{\scshape Flash}}##1}}
+
+%% ====================================================== MATH & SYMBOLS
+
+\newcommand{\td}{\text{-}}
+\mathchardef\td="2D
+\newcommand{\qro}[1]{,\hskip-.15ex,#1''}
+
+\newcommand{\mathize}[1]{\ensuremath{#1}}
+\newcommand{\mtit}[1]{\mathize{\mathit{#1}}}
+\newcommand{\unmathize}[1]{\ifmmode \textrm{#1}\else #1\fi} % deprecated
+\newcommand{\mrm}[1]{\ifmmode\textrm{#1}\else#1\fi}
+
+\newcommand{\code}[1]{{\tt\small #1}}
+\newcommand{\codeS}[1]{{\tt\footnotesize #1}}
+
+\newcommand{\ra}[1][]{\mathize{\xrightarrow{#1}}}
+\newcommand{\Ra}{\mathize{\Rightarrow}}
+\ifdefined\la
+	\renewcommand{\la}[1][]{\mathize{\xleftarrow{#1}}}
+\else
+	\newcommand{\la}[1][]{\mathize{\xleftarrow{#1}}}
+\fi
+\newcommand{\angles}[1]{\mathize{\langle#1\rangle}}
+
+\newcommand{\dodot}{$\cdot\;$}
+\newcommand{\smallitem}{\item[\dodot]}
+\newcommand{\nl}{\newline}
+
+\newcommand{\refAccessDate}{\today}
+\newcommand{\footlink}[3][\refAccessDate]{\footnote{\raggedright #2 (\url{#3}, accessed #1)}}
+\newcommand{\footlinkS}[2][]{\footnote{\raggedright #1 \href{#2}{#2}}}
+
+%% ====================================================== LENGTHS
+
+\newcommand{\tw}{\textwidth}
+\newcommand{\pw}{\paperwidth}
+\newcommand{\ph}{\paperheight}
+\newcommand{\spk}[1]{\setlength{\parskip}{#1}}
+
+%% ====================================================== PATHS
+
+\ifdefined\flatpack
+	\newcommand{\bibPath}{}
+	\newcommand{\picPath}{}
+\else
+	\ifdefined\elementsroot
+		\newcommand{\bibPath}{\elementsroot_bib/}
+		\newcommand{\picPath}{\elementsroot_pic/}
+	\else
+		\newcommand{\bibPath}{../_bib/}
+		\newcommand{\picPath}{../_pic/}
+	\fi
+\fi
+\newcommand{\picLocal}{pic/}
+
+%% ====================================================== PICTURES
+
+\newcommand{\picSpec}{}
+\newcommand{\picSpecSave}{}
+\newcommand{\picsFrom}[1]{\renewcommand{\picSpec}{#1}}
+\newcommand{\picsPush}[1]{\let\picSpecSave\picSpec \def\picSpec{#1}}
+\newcommand{\picsPop}{\let\picSpec\picSpecSave}
+\newcommand{\picSw}[2][.8\textwidth]{\picS[width = #1]{#2}}
+\newcommand{\picSh}[2][.8\textwidth]{\picS[height = #1]{#2}}
+\newcommand{\picSs}[2][1]{\picS[scale = #1]{#2}}
+\newcommand{\picS}[2][scale = 1.0]{\picG[#1]{\picSpec#2}}
+\newcommand{\picA}[2][scale = 1.0]{\picG[#1]{art-1/#2}}
+\newcommand{\picR}[2][scale = 1.0]{\picG[#1]{ref-1/#2}}
+\newcommand{\picG}[2][scale = 1.0]{\includegraphics[#1]{\picPath#2}}
+\newcommand{\picPub}[2][scale = 1.0]{\picG[#1]{zPub/#2}}
+\newcommand{\pic}[2][scale = 1.0]{\includegraphics[#1]{\picLocal#2}}
+\newcommand{\picsc}[2][1.0]{\includegraphics[scale = #1]{\picLocal#2}}
+\newcommand{\picw}[2][\tw]{\includegraphics[width = #1]{\picLocal#2}}
+\newcommand{\pich}[2][\ph]{\includegraphics[height = #1]{\picLocal#2}}
+
+\newcommand{\logoCS}[1][.145\ph]{\picPub[height = #1]{cs}}
+\newcommand{\logoCStext}{\parbox[c][5ex][c]{18ex}{\color{blue!50!white} \raggedright Computer Science \par \& Engineering \par Department}}
+\newcommand{\logoCSfull}[1][.7cm]{\picPub[height = #1]{cs-full}}
+\newcommand{\logoACS}[1][.145\ph]{\picPub[height = #1]{acs}}
+\newcommand{\logoLIP}[1][.7cm]{\picPub[height = #1]{lip6}}
+\newcommand{\logoUPMC}[1][.6cm]{\picPub[height = #1]{upmc}}
+\newcommand{\logoUPB}[1][.7cm]{\picPub[height = #1]{upb}}
+\newcommand{\logoAIMAS}[1][.45cm]{\picPub[height = #1]{ai-mas}}
+\newcommand{\logoAIMASshort}[1][.45cm]{\picPub[height = #1]{ai-mas-short}}
+
+
+% == sample
+% \renewcommand{\picSpec}{amicity/Ctx/}
+% \input{figuresPAPER}
+
+% \newcommand{\figConf}[1][.5]{
+% \begin{figure}[t]\centering		% use figure* for two-column figures
+% 
+% \begin{tabular}{ c p{.005\tw} c p{.005\tw} c }
+% \picS[scale=#1]{CFP-conf-13} && \picS[scale=#1]{CFP-pattern} && \picS[scale=#1]{CFP-match-13} \\
+% (a) && (b) && (c) \\
+% \end{tabular}
+% 
+% \caption{An example of context graph (a), context pattern (b), and the match between them (c) (the solved part is emphasized by the dashed enclosure). Some relations have been annotated with subscripts to be able to differentiate them in the text.}
+% \label{fig:Conf}
+% \end{figure}
+% }
+
+% == template		% use arguments if necessary		% use figure* for two-column figures
+% \newcommand{\figXXXX}[1][]{
+% \begin{figure}[t]\centering
+
+% \picS{}
+% \picS[scale = 1.0]{}
+% \picSw[\tw]{}
+% \picSh[2cm]{}
+ 
+% \caption{}\label{fig:XXXX}
+% \end{figure}
+% }
+
+% == template for listing figures (only inside of figure provided)
+% % the minipage is necessary to have the whole listing, including numbers, inside the text width
+% % don't know a way to frame the numbers too
+% \begin{minipage}{.9\tw}
+% \lstset{language=XML, basicstyle=\scriptsize, numbers=left, tabsize=2, frame=single}
+% \begin{lstlisting}
+% 	... listing ...
+% \end{lstlisting}
+% \end{minipage}
+% % \vspace{-2ex} % if really necessary
+
+
+
+%% ====================================================== CODE
+
+% Code display:
+% 
+% to use from the exterior:
+% place inside (you may skip the bars):
+% \begin{tabular}{ |@{ }>{\footnotesize}p{2ex}@{ }l@{ }p{.28\tw} |} \hline \lcrst	% increase first columns to max digits + 1
+% ... code ...
+% \hline \end{tabular}
+%
+% \lcrst to reset the counters and all
+% \cl for code line
+% \clcont to continue the same line of code on a new line
+% \clin to increase the indent
+% \clout to decrease the indent
+
+
+\newcounter{indentlen}	% indenting length (in ex)
+\newcommand{\axrst}{\setcounter{indentlen}{0}}			% resets the indent
+\newcounter{linecounter}	% line counter
+\newcommand{\lcrst}[1][0]{\axrst \setcounter{linecounter}{#1}}	% resets line counter and indent
+\newcommand{\lc}{\addtocounter{linecounter}{1} \arabic{linecounter}}	% increments line counter and displays line number
+
+% for use without tabular
+\newcommand{\ax}{\hspace*{\value{indentlen} ex}}		% actually does the indenting
+\newcommand{\axr}[1][0ex]{\par\hspace*{\value{indentlen} ex}\hspace*{#1}}	% actually does the indenting; %  add space optionally
+\newcommand{\axi}{\item\hspace*{\value{indentlen} ex}}	% actually does the indenting, use inside enumerate
+\newcommand{\axin}{\addtocounter{indentlen}{2}}			% increases indent
+\newcommand{\axri}{\axin\axr}							% increases indent and creates new line
+\newcommand{\axro}{\axout\axr}							% decreases indent and creates new line
+\newcommand{\axout}{\addtocounter{indentlen}{-2}}		% decreases indent
+\newcommand{\axcont}{\nl\axin\ax\axout}					% increases indent just for the current line
+
+% for use without tabular, prints line numbers
+\newcommand{\bxrst}{\lcrst\axrst}
+\newcommand{\bx}{{\normalfont\footnotesize\lc. }\ax}
+\newcommand{\bxr}{\par\bx}
+\newcommand{\bxri}{\axin\bxr}
+\newcommand{\bxro}{\axout\bxr}
+\newcommand{\bxcont}{\axin\axr\axout}
+
+% use these inside a tabular environment:			% one code line: number, indent, code, comment
+\newcommand{\cl}[2][]{\lc. & \ax #2 & #1 \\}			% normal font
+\newcommand{\clcont}[2][]{ & \ax \hskip1ex #2 & #1 \\}	% 1 indented line, normal font
+\newcommand{\clc}[2][]{\cl[#1]{\code{#2}}}				% code font
+\newcommand{\clm}[2][]{\cl[#1]{\mathize{#2}}}			% math font
+\newcommand{\clin}{\axin}								% increases indent
+\newcommand{\clout}{\axout}								% decreases indent
+\newcommand{\crm}[2][]{\textrm{#1#2}\ifmmode\ \fi}						% roman text
+\newcommand{\ck}[2][]{\textrm{#1\textbf{#2}}\ifmmode\ \fi}				% roman text, bold
+
+%% ====================================================== ENUMERATIONS
+
+\newcommand{\doitemize}[2][1ex]{{ \spk{0ex}	% simple itemizer
+\begin{itemize} \setlength{\topsep}{0ex} \setlength{\itemsep}{#1}
+#2\end{itemize}}}
+
+\newcommand{\doitemizeT}[2][1ex]{{ \spk{#1}	% simple itemizer
+\begin{itemize} \setlength{\topsep}{#1} \setlength{\itemsep}{#1}
+#2\end{itemize}}}
+
+\newcommand{\dooneitem}[1]{\doitemize{\item #1}}
+
+\newcommand{\doenum}[2][1ex]{{ \spk{0ex}	% simple enumerator
+\begin{enumerate} \setlength{\topsep}{0ex} \setlength{\itemsep}{#1}
+#2\end{enumerate}}}
+
+%% ====================================================== MINIS & LAYOUT
+
+\newcommand{\mini}[2][\tw]{
+\begin{minipage}{#1}
+#2
+\end{minipage}
+}
+\let\domini\mini
+
+% vspace, left proportion, right proportion, left content, right content
+\newcommand{\splitminis}[5][1ex]{{	\centering
+\begin{tabular}{@{}c@{}c@{}}
+\mini[#2\tw]{	\vspace*{#1} #4 \vspace*{#1}	}
+&
+\mini[#3\tw]{	\vspace*{#1} #5 \vspace*{#1}	}\\
+\end{tabular}
+}}
+\newcommand{\splitminisL}[5][1ex]{{	\centering	% with separating line
+\begin{tabular}{@{}c@{}|c@{}c@{}}
+\mini[#2\tw]{	\vspace*{#1} #4 \vspace*{#1}	}
+&
+\mini[#3\tw]{	\vspace*{#1} #5 \vspace*{#1}	}\\
+\end{tabular}
+}}
+\let\dominis\splitminis
+
+
+%% ====================================================== TODOS & PAPER REVIEW
+
+% use \def\auxilliaries
+% use \def\showsolved
+\newcommand{\auxilliary}[1]{\ifdefined\auxilliaries {\small [#1]}\fi}
+\newcommand{\auxilliarysolved}[1]{\ifdefined\auxilliaries\ifdefined\showsolved {\small [//#1//]}\fi\fi}
+\newcommand{\todo}[2][TODO: ]{\auxilliary{#1#2}} % prints TODO and second argument; TODO can be replaced by 1st arg
+\newcommand{\tx}[1][]{\todo[TODO\ifx#1\\\else: \fi]{#1}} % shorter, prints 'TODO' followed by optional argument
+\newcommand{\todoA}[2][]{\todo{#2}} % does not print the optional argument; calls \todo on second
+\newcommand{\todoX}[2][]{}	% prints nothing
+\newcommand{\done}[2][]{\auxilliarysolved{\tx[#1][#2]}} % change \todo* to this
+\newcommand{\dx}[1][]{\done{#1}} % change \tx to this
+%% insert in main source if needed
+%% \usepackage{color}\newcommand{\todoC}[2][red]{{[\color{#1}\todo{#2}]}}
+\newcommand{\ftr}[1][todo]{\auxilliary{\it [#1]}}
+
+\newcommand{\response}[2]{
+{\it #1} % the review
+\par\vspace*{.5ex}
+{\noindent #2} % the response
+}
+
+
