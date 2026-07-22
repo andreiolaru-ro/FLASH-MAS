@@ -1,10 +1,10 @@
 package example.compositeMobility;
 
-import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
-
 import java.util.Arrays;
 import java.util.List;
+
+import net.xqhs.flash.core.deployment.Deployment;
+import net.xqhs.flash.core.node.Node;
 
 /**
  * Main class
@@ -68,7 +68,7 @@ public class Boot {
 		a += " -pylon webSocket:pylonB connectTo:ws://localhost:" + WS_PORT;
 		a += nodeB_agents;
 		
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(a.split(" ")));
+		List<Node> nodes = new Deployment().loadDeployment(Arrays.asList(a.split(" ")));
 		nodes.forEach(node -> node.start());
 	}
 }
