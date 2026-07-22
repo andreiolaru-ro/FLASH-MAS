@@ -63,8 +63,8 @@
                             <sources>
                                 <source>src</source>
                                 <source>src-examples</source>
-                                <source>src-tests</source>
                                 <source>src-experiments</source>
+                                <source>src-tests-manual</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -176,7 +176,7 @@
             <artifactId>XML</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/core/net.xqhs.XML.jar</systemPath>
+            <systemPath>${jarlib}/core/net.xqhs.XML.jar</systemPath>
         </dependency>
 
         <!-- Logging-modern (Local File) -->
@@ -185,7 +185,7 @@
             <artifactId>Logging-modern</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/core/Logging-modern.jar</systemPath>
+            <systemPath>${jarlib}/core/Logging-modern.jar</systemPath>
         </dependency>
         <!-- Add other core dependencies similarly -->
 
