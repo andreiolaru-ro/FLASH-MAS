@@ -1,17 +1,18 @@
 package automatedTesting;
 
-import net.xqhs.flash.FlashBoot;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import net.xqhs.flash.FlashBoot;
 
 /**
  * Test class for the WebSocket deployment scenario using composite agents.
@@ -34,7 +35,7 @@ public class AgentPingPongWebSocketTest {
 
     @Before
     public void setUpStreams() {
-        System.setOut(new PrintStream(outContent));
+		System.setOut(new PrintStream(outContent));
         System.out.println("WARNING: WebSocket tests take longer to complete due to network/server startup. Please wait...");
     }
 
@@ -52,7 +53,7 @@ public class AgentPingPongWebSocketTest {
         return count;
     }
 
-    @Test
+	@Test
     public void testExecution() throws Exception {
         Thread th = new Thread(() -> FlashBoot.main(DEPLOYMENT_ARGS.split(" ")));
         th.start();
@@ -100,7 +101,9 @@ public class AgentPingPongWebSocketTest {
         assertTrue("AgentB should stop after the limit.", consoleOutput.contains("[AgentB] stopped"));
 
         // 5. Verify Pylons unregistered the entities
-        assertTrue("Pylon1 should unregister AgentA.", consoleOutput.contains("\"unregister\":\"unregister\"}"));
-        assertTrue("Pylon2 should unregister AgentB.", consoleOutput.contains("\"entityName\":\"AgentB\",\"unregister\":\"unregister\"}"));
+		assertTrue("Pylon1 should unregister AgentA.",
+				consoleOutput.contains("Unregistered entity [AgentA] on [node1]. "));
+		assertTrue("Pylon2 should unregister AgentB.",
+				consoleOutput.contains("Unregistered entity [AgentB] on [node2]."));
     }
 }
