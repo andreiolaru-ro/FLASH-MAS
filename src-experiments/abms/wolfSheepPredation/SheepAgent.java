@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import aggregate_logging.ALogging;
 import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
@@ -97,6 +98,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                 li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
+                ALogging.getInstance().li_agr(ALogging.testingLog, entity.getEntityName(), currentPos);
                 e.sendWaveTo(entity, new AgentWave(GrassPatch.EAT_WAVE_CONTENT));
             }
         }
