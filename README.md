@@ -40,26 +40,26 @@ The future phase of FLASH-MAS uses the ***entity-operation*** model, in which en
 
 ## Importing into your IDE
 
-* see [importing](doc/importing.md)
+* see [importing](doc/wiki/importing.md)
 * see also chapter Source organization below
 
 ## Understanding FLASH-MAS
 
 Deploying a FLASH-MAS system means creating a *deployment configuration* specifying the *entities* in the system, and *booting the system*.
 
-* [Basic F-MAS concepts](doc/concepts.md) 
+* [Basic F-MAS concepts](doc/wiki/concepts.md) 
 
-* [Interaction between entities](doc/interaction.md)
+* [Interaction between entities](doc/wiki/interaction.md)
 
-* [Loading entities and booting the system](doc/loading.md)
+* [Loading entities and booting the system](doc/wiki/loading.md)
 
-* [Deployment and configuration](doc/deployment.md)
+* [Deployment and configuration](doc/wiki/deployment.md)
 
-* [Running](doc/running.md)
+* [Running](doc/wiki/running.md)
 
-* [other remarks](doc/other.md) 
+* [other remarks](doc/wiki/other.md) 
 
-* older [notes file](doc/notes.md)
+* older [notes file](doc/wiki/notes.md)
 
 ## Source documentation
 
@@ -67,7 +67,7 @@ Deploying a FLASH-MAS system means creating a *deployment configuration* specify
 
 ## Source organization
 
-* `src` contains sources for FLASH-MAS functionality and for the `quick` package which enables quicker writing of CLI commands (see [running](doc/running.md)).
+* `src` contains sources for FLASH-MAS functionality and for the `quick` package which enables quicker writing of CLI commands (see [running](doc/wiki/running.md)).
 * `src-examples` contain sources for examples of FLASH-MAS deployments.
 * `src-tests` contains test to check the correct working of the framework.
 * `src-testing` contains sources for the ongoing work of various developers.
