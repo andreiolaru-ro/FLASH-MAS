@@ -55,7 +55,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             case AGENT_WAVE:
                 String content = event.get(AgentWave.CONTENT);
                 if (AgentManagementContext.DESTROY_WAVE_CONTENT.equals(content)) {
-//                    li("[] is being eaten, deregistering", getEntityName());
                     ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_EATEN, this.getEntityName());
                     if (simulation != null)
                         simulation.deregisterEntity((Entity<?>) this);
@@ -90,7 +89,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 
     @Override
     public void step() {
-//        li("sheep step");
         ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_STEP, this.getEntityName());
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null) {
@@ -100,14 +98,12 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
-//                li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
                 ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_EATS_GRASS, this.getEntityName(), entity.getEntityName(), currentPos);
                 e.sendWaveTo(entity, new AgentWave(GrassPatch.EAT_WAVE_CONTENT));
             }
         }
 
         if (alertReceived) {
-//            li("[] received danger alert from neighbor", getEntityName());
             ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_RECEIVED_ALERT, this.getEntityName());
         }
 
@@ -119,7 +115,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             }
 
         if (wolfVisible) {
-//            li("[] spots a wolf nearby, broadcasting", getEntityName());
             ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_SPOTS_WOLF, this.getEntityName());
             e.broadcast(new AgentWave("wolf-alert"));
         }
@@ -131,7 +126,6 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         }
 
         if (wolfVisible || alertReceived) {
-//            li("[] is running away", getEntityName());
             ALogging.getInstance().li_agr(WolfSheepLog.SHEEP_RUNS_AWAY, this.getEntityName());
         }
 
