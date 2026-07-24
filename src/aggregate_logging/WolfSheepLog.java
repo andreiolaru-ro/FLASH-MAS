@@ -6,6 +6,11 @@ import java.util.Set;
 
 public enum WolfSheepLog implements LogAggregate {
     SHEEP_EATS_GRASS("sheep eats grass [] at coordinates []"),
+    SHEEP_STEP("sheep step"),
+    SHEEP_EATEN("sheep eaten and deregistered"),
+    SHEEP_RECEIVED_ALERT("sheep received danger alert from neighbor"),
+    SHEEP_SPOTS_WOLF("sheep spot a wolf nearby and broadcast"),
+    SHEEP_RUNS_AWAY("sheep ran away"),
     WOLF_MOVES("wolf moved to []");
 
     private final String messageTemplate;
