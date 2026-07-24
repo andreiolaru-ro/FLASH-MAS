@@ -23,6 +23,14 @@ public class ALogging {
         }
     }
 
+    public void print_agr(LogAggregate log) {
+        if (log != null)
+            log.printSummary();
+    }
+    public void clear_agr(LogAggregate log) {
+        if (log != null)
+            log.clear();
+    }
     public void printAllSummaries() {
         for (LogAggregate log : this.activeLogs) {
             log.printSummary();

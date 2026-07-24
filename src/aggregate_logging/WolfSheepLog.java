@@ -21,7 +21,6 @@ public enum WolfSheepLog implements LogAggregate {
     private int callCount = 0;
 
     WolfSheepLog(String messageTemplate) {
-
         this.messageTemplate = messageTemplate;
         int nrUniqueFields = messageTemplate.split("\\[\\]", -1).length - 1;
         for (int i = 0; i < nrUniqueFields; i++)
@@ -59,7 +58,9 @@ public enum WolfSheepLog implements LogAggregate {
 
     @Override
     public void clear() {
-        this.uniqueEntities.clear();
-        this.callCount = 0;
+        uniqueEntities.clear();
+        for (Set<String> field: uniqueFields)
+            field.clear();
+        callCount = 0;
     }
 }
