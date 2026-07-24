@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.html file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<p><strong>“Easy for beginners, powerful to experts”</strong></p>
+<h1 id="current-targets">Current targets</h1>
+<ul>
+<li>move endpoint management into a new AgentWave class.</li>
+<li>use the MessagingShard interface to describe messaging shard
+capabilities.</li>
+</ul>
+<h3 id="configuration">Configuration</h3>
+<ul>
+<li>creating default node and support
+<ul>
+<li>remove default entities that are not useful
+<ul>
+<li>retain the ids of default created entities</li>
+<li>check if there is any entity in their context which is not
+default</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="deployment-loading">Deployment / loading</h3>
+<ul>
+<li>document portability in CategoryName</li>
+<li>creating a “null” entity is not the same with the entity with a null
+(Java null) name</li>
+<li>CLI does not allow for entities with no name</li>
+<li>move deployment loading from NodeLoader to a new DeploymentLoader
+class?</li>
+</ul>
+<h3 id="communication">Communication</h3>
+<ul>
+<li>move message queue management to a
+AbstractMessagingPylonImplementation</li>
+<li>rename DefaultPylonImplementation to
+AbstractPylonImplementation</li>
+<li>think whether to use AgentWave in send() instead of
+source-destination-content</li>
+</ul>
+<h3 id="utilities">Utilities</h3>
+<ul>
+<li>implement getAppropriateTree / addAppropriateTree methods</li>
+</ul>
+<h3 id="general-todos">General TODOs</h3>
+<ul>
+<li>establish a policy for when to use exceptions and when to use return
+values</li>
+<li>make MultiTreeMap contain, rather than extend, MultiValueMap? (in
+order to avoid functionality ambiguity between the two)
+<ul>
+<li>or rather maybe just contain a hashmap and not be related to
+MultiValueMap at all?</li>
+</ul></li>
+<li>ConfigurableEntity#configure should throw exceptions and return the
+entity itself.</li>
+<li>TreeObjectSet<T> would be nice – simple keys can only be assigned to
+T values
+<ul>
+<li>TreeParameterSet would extend TreeObjectSet<String></li>
+</ul></li>
+</ul>
+<h1 id="basic-concepts-and-philosophy">Basic Concepts and
+Philosophy</h1>
+<p>There are several targets that should make FLASH-MAS a good option
+for MAS developers, and these are also its main features:</p>
+<ul>
+<li>system model – the way the entities in the system are structured and
+the way in which they interact</li>
+<li>deployment and configuration – the way one specifies a deployment;
+the way in which this deployment is loaded</li>
+<li>dynamics – how entities in the system can be reconfigured at
+runtime</li>
+<li>portability – the code for most of the core of FLASH-MAS is
+portable</li>
+<li>tools – tools are offered to be able to monitor and control the
+system</li>
+</ul>
+<h2 id="system-model">System model</h2>
+<h3 id="entities">Entities</h3>
+<ul>
+<li>any part of the system which is persistent and has a life-cycle
+should be an Entity.</li>
+<li>entities can be placed in the context of one-another. This
+organization is visible in the generic arguments of the Entity
+interface.</li>
+</ul>
+<p><strong>Implementation</strong></p>
+<ul>
+<li>Entities implement <code>Entity</code></li>
+<li><code>ConfigurableEntity</code> is offered which offers a specific
+<code>configure</code> method; <code>ConfigurableEntity</code>
+implementations are expected to have zero-argument constructors.</li>
+<li>Entities should be loadable through SimpleLoader (which supports
+both methods above), and only for special cases (where a factory is
+needed) should specialized loaders be used</li>
+<li>Entity context
+<ul>
+<li>is all entities containing it, however</li>
+<li>a special case are the entities of the type specified in the class
+hierarchy (the generic parameter for the Entity interface), which are
+its <em>proper context</em></li>
+<li>while the <code>Entity</code> interface specifies both
+<code>addContext</code> and <code>addGeneralContext</code>, it is
+<strong>strongly recommended</strong> that
+<code>addGeneralContext</code> <em>always works</em> for instances of
+the proper context (as some loaders, such as <code>SimpleLoader</code>,
+only use <code>addGeneralContext</code> to add context to entities.</li>
+</ul></li>
+</ul>
+<p><strong>Life-cycle</strong></p>
+<ul>
+<li>an entity is instanced by a loader (see <em>Loaders</em> below)
+<ul>
+<li>some pre-instantiation</li>
+</ul></li>
+</ul>
+<p><strong>Access control</strong></p>
+<ul>
+<li>anyone with a reference to an entity is able to control it (start /
+stop / add/remove context)</li>
+<li>an entity can expose itself to another entity as a context; the
+instance given as context may (and generally should, to avoid casting to
+a more powerful interface) be different than the actual entity, and it
+should relay calls to the actual entity.</li>
+</ul>
+<h3 id="pre-defined-entities">Pre-defined entities</h3>
+<p>Some entity types are predefined, but a developer should be able to
+add any number of additional entity types.</p>
+<p>There are two types of pre-defined <em>virtual</em> entities which
+span the whole agent system are</p>
+<ul>
+<li><em>the deployment</em> – the entirety of the FLASH-MAS deployment;
+its life-cycle is identical to the life-cycle of the FLASH-MAS system;
+there is only one deployment.</li>
+<li>the support infrastructures – collections of entities (pylons),
+which offer services to other entities in the system, especially
+services which involve communication, especially across machines;
+<ul>
+<li>e.g. one support infrastructure may be able to offer id-based
+communication for all agents in a deployment.</li>
+</ul></li>
+</ul>
+<p>Pre-defined <em>actual</em> entities are</p>
+<ul>
+<li><p><em>nodes</em> – they represent the presence of FLASH-MAS on a
+physical machine; normally a node for each machine is sufficient, but
+more complex setups may have more than one node on a machine;</p></li>
+<li><p><em>pylons</em> – they represent the presence of a support
+infrastructure on a node, and agents (or other entities) are able to use
+their services;</p></li>
+<li><p><em>agents</em> – the autonomous, pro-active entities that are
+able to interact among each other using support infrastructure (and,
+more concretely, pylons);</p></li>
+<li><p><em>shards</em> – entities encapsulating various functionality
+that may be useful o agents; the purpose of shards may be to:</p>
+<ul>
+<li>if the agent is a <strong>Composite Agent</strong>, the agent is
+composed exclusively by a set of shards which interact by means of an
+event queue;</li>
+<li>offer a more comfortable means for an agent to access the services
+offered by a pylon, when the pylon offers a <strong>specific</strong>
+implementation for a more general type of service (e.g. messaging);</li>
+<li>while it is perfectly possible for an agent of arbitrary
+implementation to skip using a shard and access the services offered by
+the pylon directly, using shards may be a more uniform manner of
+abstracting pylon services, since many shards may be already be
+implemented so that they can be used in composite agents.</li>
+<li>shards may help store information and processes that are specific to
+both the pylon, and to the agent (e.g. need to move with the agent, so
+should remain attached to it)</li>
+</ul></li>
+</ul>
+<p>** Do we need entities at all? **</p>
+<p>The only truly mandatory entities are nodes, pylons and agents, which
+are implicit in an agent system. But nodes can be automatically created
+and configured, and default pylon implementations are offered, so the
+developer may used them explicitly only when needed.</p>
+<h3 id="loaders">Loaders</h3>
+<p>In order to support entities which need a special means of creation
+(e.g. implementations that require that the class is produced by a
+factory), the creation process is abstracted into Loaders. It is
+recommended that most entities can be loaded through
+<code>SimpleLoader</code>, which just creates a new instance of the
+entity.</p>
+<p>Choosing a loader</p>
+<ul>
+<li>the default loader is <code>SimpleLoader</code></li>
+<li>we can have various loaders, that can load various entities,
+potentially specified by kinds (see Deployment and Configuration).</li>
+<li>loaders for an entity, applicable to its kind, will be tried in
+order.
+<ul>
+<li>for now, loaders for the same entity and the same kind cannot be
+chosen among and will be tried in order until one succeeds.
+<ul>
+<li>Workaround: loader should check in the entity’s configuration if any
+loader id is specified and compare this to an internal id.</li>
+<li>since loaders are tried in order, for a specific kind the first will
+be ‘default’
+<ul>
+<li>if no adequate kind found, ‘’null’’ kind will be tried</li>
+</ul></li>
+<li>the default loader (SimpleLoader) will only be used if no loader for
+that type of entity is otherwise specified or otherwise succeeds.</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>The same policy goes for Support Infrastructures (first is default,
+if none specified then we use the default in NodeLoader
+(LocalSupport)).</p>
+<p>The Node is always loaded by the NodeLoader.</p>
+<p>** Do we need loaders at all? **</p>
+<p>Yes, for the cases where instantiating a class to create an entity is
+not enough.</p>
+<h3 id="concept-names-translation-from-tatami-to-flash-mas">Concept
+Names translation from tATAmI to FLASH-MAS</h3>
+<ul>
+<li>(tATAmI-2 name -&gt; FLASH-MAS name</li>
+<li>simulation (in terms of classes in the code) -&gt; deployment</li>
+<li>simulation (in terms of the process of running an experiment) -&gt;
+simulation</li>
+<li>visualization -&gt; net.xqhs.flash.core.monitoring / control</li>
+<li>component -&gt; feature -&gt; shard</li>
+<li>platform -&gt; support infrastructure + pylon
+<ul>
+<li>the support infrastructure is the system-spanning virtual entity
+that offers services such as mobility</li>
+<li>the pylon is this entity’s concrete presence on a node</li>
+</ul></li>
+<li>ParameterSet -&gt; MultiValueMap</li>
+<li>TreeParameterSet -&gt; MultiTreeMap</li>
+<li>Support pylons (or pylons, for short)</li>
+</ul>
+<h1 id="services-shards">Services / shards</h1>
+<ul>
+<li>each shard uses one service (pylon)</li>
+<li>one support infrastructure (hence also one pylon) may offer multiple
+services</li>
+<li>pylons may recommend shard implementations</li>
+</ul>
+<h1 id="configuration-1">Configuration</h1>
+<p>Deployment configuration contains:</p>
+<ul>
+<li>node information
+<ul>
+<li>Schema &amp; deployment XML (simple keys, first value counts)</li>
+<li>general configuration settings (e.g. network configuration) for this
+node (tree key)</li>
+<li>the load order – what entities to load and order in which to load
+entities</li>
+<li>package list (simple key, all values are relevant)</li>
+<li>loaders (specified for entities and kinds)</li>
+<li>support infrastructures</li>
+<li>agents</li>
+<li>shards</li>
+<li>other entities</li>
+</ul></li>
+</ul>
+<p>Assembling parts to form a name would be done <em>only</em> for
+entities for which this union can stand for its identifier.</p>
+<p>Unnamed entities are allowed, but cannot be referenced (such as for
+<in-context-of>).</p>
+<p>There is a root category, namely DEPLOYMENT. If no NODE is specified,
+a default one will be created for entities that need to be inside a node
+(e.g. agents, etc). This implicit node will be the first node among the
+nodes with no name. If a node with no name has already been introduced,
+it will be the same one.</p>
+<p>The local node is the first node not specifically designated as
+remote.</p>
+<p><strong>Future</strong></p>
+<ul>
+<li>translate the CategoryName enum into a set of rules (could be a
+MultiTreeMap?) that is further adjustable in the configuration.</li>
+</ul>
+<h2 id="context">Context</h2>
+<p><strong>Visibility</strong></p>
+<ul>
+<li>Can’t implement in visibility in the enum because lower level
+entities are not yet defined;</li>
+<li>Therefore, visibility can be implemented
+<ul>
+<li>in the deployment, through an attribute (TODO)</li>
+<li>ad-hoc by the implementation of each loader / each entity that loads
+other entities</li>
+<li>however, specifying visibility in the enum bay be useless because
+loaders/entities can still pass any context to their children</li>
+</ul></li>
+</ul>
+<p><strong>Porting</strong></p>
+<ul>
+<li>an entity B can be ported from an entity A to an entity C (which is
+also its declared parent in hierarchy)</li>
+<li>the entity B must have been declared (in the deployment) as a
+descendant of entity A</li>
+<li>the configuration of a portable entity will be
+<strong>copied</strong> to all elements from the element where it has
+been declared down to its parent entity</li>
+<li>actual entity instances will be created only for the copy inside the
+parent (entity C)</li>
+</ul>
+<p><strong>Parents</strong></p>
+<ul>
+<li>parents specify where an entity can be declared (inside which other
+entity)</li>
+<li>for an entity (of type) A with parent P:
+<ul>
+<li>the parent can be optional
+<ul>
+<li>the optional indication for parents is used to structure the
+entities in two ways:
+<ul>
+<li>determine whether an entity is in the correct context even if some
+entity types are missing from the context (TODO: add example)</li>
+<li>establish some hierarchy of entities that helps navigation when
+parsing CLI arguments</li>
+</ul></li>
+<li>if the parent can be auto-added, and a sibling instance P exists,
+entity A will be added automatically to instance P (the one with the
+highest priority)</li>
+</ul></li>
+<li>the parent can be mandatory
+<ul>
+<li>if the parent is mandatory, entity A must be declared inside an
+entity of type P (additional entities may exist between A and P in more
+custom deployments)</li>
+<li>if the parent must be auto-added, it is;</li>
+<li>if the parent can be auto-generated (is a property of the parent),
+the deployment configuration will attempt to generate a parent P (this
+may lead to further generation of auto-generated parents)</li>
+<li>if the parent cannot be auto-generated or auto-added (or no
+appropriate sibling exists), it is an error;</li>
+</ul></li>
+<li>it is allowed to have <strong>intermediate</strong> entities between
+A and P, both in the optional and mandatory cases</li>
+</ul></li>
+</ul>
+<p><strong>TODO</strong></p>
+<ul>
+<li>identifiability is probably useless at configuration phase; should
+support duplicate names for all entities; should add all entities to the
+entity list</li>
+<li>is auto-generating nodes (and auto-generating in general) still
+necessary, since a default node is created at the beginning?</li>
+</ul>
+<p><strong>TODO: test cases</strong></p>
+<ul>
+<li>no deployment file (or file not found)</li>
+<li>no schema file</li>
+<li>invalid deployment file</li>
+<li>intermediate entities between predefined levels (e.g. node -&gt;
+agentarray -&gt; agent)
+<ul>
+<li>what happens to porting? and how are correct parents
+considered?</li>
+</ul></li>
+<li>multiple support instances to port (with no name, or with the same
+name)</li>
+<li>nested support instances to port / to auto-add agents to</li>
+<li>support instances to auto-add agents to, nested under other
+entities</li>
+<li>agents to be loaded are nested under other structures;
+<ul>
+<li>agents don’t need to be loaded because they already have been loaded
+by said structures</li>
+</ul></li>
+<li>check correct porting of non-hierarchical things, such as packages,
+load order, etc</li>
+<li>deployment of unnamed agents, with parameters or without</li>
+</ul>
+<h2 id="xml">XML</h2>
+<p>Each SettingsName contains information on how to assemble elements
+from the XML into a name, if necessary. E.g. support kind and id can be
+assembled into kind:id.</p>
+<h2 id="cli">CLI</h2>
+<p>All name:val pairs belong in an element</p>
+<p>All elements belong in a category; all categories belong in elements
+or at the root level</p>
+<p>The root level is the local node, which may not be specifically
+identified. Lacking a specific “-node name” element introduction, a name
+for it will be automatically generated</p>
+<ul>
+<li>this way, remote nodes may be specified as well.</li>
+<li>the first node is the local node</li>
+</ul>
+<p>There are two types of categories: simple values and
+not-simple-values. This cannot be distinguished in the grammar, but</p>
+<ul>
+<li>predefined categories are defined as being values or not</li>
+<li>not-predefined categories need to state their properties anyway,
+hence they will also state their property of being a simple value</li>
+</ul>
+<p><em>Category properties</em> are meta-properties which describe
+dynamically properties like the ones in CategoryName, for categories
+which are not pre-defined</p>
+<ul>
+<li><p>this should be allowed only for categories that are not
+predefined (maybe?)</p></li>
+<li><p>only properties that exist in CategoryName will be allowed</p>
+<p>CLI arguments ::= scenario-file? category-description<em>
+category-description ::= -category(:category-property)</em> element
+element_description |</p>
+<pre><code>                              -category(:category-property)* (val)*    [actually indistinguishable from the other case]</code></pre>
+<p>category-property ::= [^: ]+ [no space or column] element_description
+::= (par:val | par)* category-description* [if just par, value will be
+null] element ::= // basically anything, but interpreted as:</p>
+<pre><code>                          part1:part2        [depending on category, can mean loader:id or type:id category:type]
+                          type:                [an unnamed element with the specified type/loader]
+                          name                [depending on category, a named element of the default type or an unnamed element with this type]
+                                                  [the exact variant is decided in Boot/NodeLoader, not in the CLI parser]</code></pre>
+<p>category/par/val/part1/part2/type/name ::= [^: ] [no space or
+column]</p></li>
+</ul>
+<h2 id="fusion">Fusion</h2>
+<p>Cases where one of the sources contains only a partially specified
+name are managed by the specific loader or entity that uses that
+configuration.</p>
+<h2 id="todo">TODO</h2>
+<ul>
+<li><p>implement description of not-pre-defined categories</p>
+<ul>
+<li>can we specify category properties in the XML?</li>
+</ul></li>
+<li><p>check duplicate names for identifiable entities / check
+identifiables</p></li>
+<li><p>check if in the end unique entities are unique</p></li>
+<li><p>implement all properties also as attributes in the
+configuration</p></li>
+<li><p>protect agents from intrusive / malicious shards?</p></li>
+<li><p>multiple shards per type</p></li>
+</ul>
+<h2 id="future">Future</h2>
+<ul>
+<li><p>introduce entities with required name / required kind</p></li>
+<li><p>should an empty no-attributes agent tag be admissible? In what
+scenario?</p></li>
+<li><p>-i for interactive console which allows adding (and removing)
+support / agents / other entities</p></li>
+<li><p>-select to select the local node configuration in the deployment
+file (e.g. have the same deployment file for multiple nodes and just
+select different local nodes)</p></li>
+<li><p>introduce tree control: “&lt;categ” goes back to categ and
+&lt;&lt; goes to root (above nodes) //&gt;</p></li>
+<li><p>between a category and its mandatory parent there may also be
+other categories (use case: agent arrays as entities that can be managed
+as a whole)</p></li>
+<li><p>fuse trees from XML and CLI in the case of elements with optional
+parents</p></li>
+<li><p>implement <em>q</em> attribute in XML that is parsed by the CLI
+parser</p></li>
+<li><p>implement special categories such as</p>
+<ul>
+<li>-all-of:always category par:val+ (copy/fuse the subordinate tree to
+all children of category)</li>
+<li>-all-of:missing category par:val+ (insert the values in the
+subordinate tree in all children of category, but only if no such
+parameter is already defined).</li>
+</ul></li>
+</ul>
+<h1 id="loading-boot">Loading / Boot</h1>
+<p><strong>Sequence</strong></p>
+<ul>
+<li>load the configuration (done in NodeLoader)
+<ul>
+<li>create a node</li>
+<li>load all entities in the configuration – nothing is running yet, but
+a loaded entity can take registrations</li>
+<li>all contexts are added</li>
+<li>the node registers all entities which have loaded successfully and
+are
+<ul>
+<li>present in the load order, or</li>
+<li>direct children in the deployment configuration</li>
+</ul></li>
+</ul></li>
+<li>start the deployment (by starting each node on the current machine)
+<ul>
+<li>start the entities registered in the node, in the order in which
+they have been loaded</li>
+</ul></li>
+</ul>
+<h2 id="future-1">Future</h2>
+<ul>
+<li>maybe: multiple default location for classes. E.g. for agent loaders
+possible classpath can be:
+<ul>
+<li>the given classpath</li>
+<li>the given classpath, in the flash package</li>
+<li>flash package + kind + for + KindForLoader</li>
+<li>flash package + core + agent</li>
+</ul></li>
+<li>multiple support implementations
+<ul>
+<li>multiple shards with the same designation</li>
+</ul></li>
+<li>interfaces for common shards (e.g. messaging, kb, etc)</li>
+</ul>
+<h1 id="workings">Workings</h1>
+<h2 id="changed">Changed</h2>
+<ul>
+<li>Shards can be started and stopped regardless of agent state.</li>
+</ul>
+<h1 id="general">General</h1>
+</body>
+</html>
