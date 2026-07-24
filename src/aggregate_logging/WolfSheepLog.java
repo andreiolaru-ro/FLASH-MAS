@@ -1,9 +1,9 @@
 package aggregate_logging;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-// User domain
 public enum WolfSheepLog implements LogAggregate {
     SHEEP_EATS_GRASS("sheep eats grass [] at coordinates []"),
     WOLF_MOVES("wolf moved to []");
@@ -11,25 +11,44 @@ public enum WolfSheepLog implements LogAggregate {
     private final String messageTemplate;
 
     private final Set<String> uniqueEntities = new HashSet<>();
-    private int callCount = 0; // Each constant gets its own counter too
+    private final ArrayList<Set<String>> uniqueFields = new ArrayList<>();
+    private int callCount = 0;
 
     WolfSheepLog(String messageTemplate) {
+
         this.messageTemplate = messageTemplate;
+        int nrUniqueFields = messageTemplate.split("\\[\\]", -1).length - 1;
+        for (int i = 0; i < nrUniqueFields; i++)
+            uniqueFields.add(new HashSet<>());
     }
 
     @Override
     public void register(String entityName, Object... args) {
-        this.uniqueEntities.add(entityName);
-        this.callCount++;
+        uniqueEntities.add(entityName);
+        for (int i = 0; i < args.length; i++)
+            uniqueFields.get(i).add(args[i].toString());
+        callCount++;
     }
-
+    private String filledTemplate() {
+        StringBuilder sb = new StringBuilder();
+        int lastIndex = 0;
+        for (Set<String> uniqueField : uniqueFields) {
+            int bracketIndex = messageTemplate.indexOf("[]", lastIndex);
+            sb.append(messageTemplate, lastIndex, bracketIndex);
+            sb.append("[");
+            sb.append(uniqueField.size());
+            sb.append(" entries]");
+            lastIndex = bracketIndex + 2;
+        }
+        if (lastIndex != messageTemplate.length())
+            sb.append(messageTemplate, lastIndex, messageTemplate.length());
+        return sb.toString();
+    }
     @Override
     public void printSummary() {
-        System.out.println("Log: " + this.name());
-        System.out.println("Template: " + this.messageTemplate);
-        System.out.println("Unique entities involved: " + this.uniqueEntities.size());
-        System.out.println("Total actions: " + this.callCount);
-        System.out.println("-------------------------");
+        System.out.println("Total " + this.name() + " actions: " + callCount);
+        System.out.println("[" + uniqueEntities.size() + " entities] "
+                            + filledTemplate());
     }
 
     @Override
