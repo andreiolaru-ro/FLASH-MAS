@@ -128,8 +128,9 @@ public class SpaceContext<P extends Position> extends BaseContext
 						|| !topology.isValidPosition(targetPosition))
 					le("New position [] invalid for []", targetPosition, e.getEntityName());
 				else {
-					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "moving entity [] from [] to []", e.getEntityName(),
-							currentPosition, targetPosition);
+//                  TODO: Check if this is still needed or should be deleted
+//					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "moving entity [] from [] to []", e.getEntityName(),
+//							currentPosition, targetPosition);
 					entityInPosition.get(currentPosition).remove(e);
 					entityInPosition.computeIfAbsent(targetPosition, p -> new java.util.HashSet<>()).add(e);
 					entityPositions.put(e, targetPosition);
