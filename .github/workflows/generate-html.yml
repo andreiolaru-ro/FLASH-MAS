@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - documentation
     # Ignore commits made by bot
     paths-ignore:
       - 'public/**'
@@ -19,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ssh-key: ${{secrets.JAVADOC_DEPLOY}}
 
       - name: Install Pandoc
         run: |
