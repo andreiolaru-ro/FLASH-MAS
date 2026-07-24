@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	This file intentionally contains invalid XML content.
+	Used by fileCheck tests to verify graceful failure when
+	the deployment file cannot be parsed.
+-->
+<this_is_not_a_valid_deployment>
+	<broken_tag>
+</this_is_not_a_valid_deployment>

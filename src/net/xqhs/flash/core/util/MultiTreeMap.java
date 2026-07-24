@@ -918,17 +918,21 @@ public class MultiTreeMap extends MultiValueMap {
 	 *            details.
 	 * @return the String rendition of this tree, indented.
 	 */
-	protected String toString(String indent, String baseIndent, int depth, boolean shorter) {
+	public String toString(String indent, String baseIndent, int depth, boolean shorter) {
 		String SINGLE = "-", MULTI = ">";
 		String SHORT_SEP = shorter ? "," : "";
 		String NEW_ENTRY = shorter ? "" : "]:";
 		String NEW_LEVEL = shorter && indent.length() > baseIndent.length() ? ">" : "";
 		String KEY_IN = shorter ? "" : "[", KEY_OUT = shorter ? "" : "]";
+		String EMPTY = "<>";
+		String SEP = shorter ? "," : "\n";
 		
 		if(depth == 0)
 			return SHORT_SEP;
 		String ret = NEW_LEVEL;
 		boolean justtree = false; // if true, the tree has already started to print
+		if(backingMap.isEmpty())
+			ret += EMPTY;
 		for(String name : backingMap.keySet())
 			if(simpleKeys.contains(name)) {
 				if(shorter) // no short printing for simple keys
@@ -956,9 +960,8 @@ public class MultiTreeMap extends MultiValueMap {
 				}
 			}
 		// if(ret.length() > 0)
-		String sep = shorter ? "," : "\n";
-		if(!ret.endsWith(sep))
-			ret += sep;
+		if(!ret.endsWith(SEP))
+			ret += SEP;
 		return ret;
 	}
 }

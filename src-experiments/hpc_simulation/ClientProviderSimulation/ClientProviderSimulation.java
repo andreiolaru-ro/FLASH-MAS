@@ -24,10 +24,6 @@ enum ProviderServices {
 class ClientProviderNode extends Node {
 	public static final int MAX_THREADS = 31;
 	
-	public ClientProviderNode(MultiTreeMap configuration) {
-		super(configuration);
-	}
-	
 	public void registerUsersInNode(ArrayList<UserAgent> agentList) {
 		
 		for(Agent agent : agentList) {
@@ -248,7 +244,8 @@ public class ClientProviderSimulation {
 		
 		MultiTreeMap configuration = new MultiTreeMap();
 		configuration.add(DeploymentConfiguration.NAME_ATTRIBUTE_NAME, "testNode");
-		ClientProviderNode node = new ClientProviderNode(configuration);
+		ClientProviderNode node = new ClientProviderNode();
+		node.configure(configuration);
 		LocalPylon pylon = new LocalPylon();
 		
 		/*

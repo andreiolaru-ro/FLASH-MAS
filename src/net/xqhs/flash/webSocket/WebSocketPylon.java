@@ -12,33 +12,25 @@
 package net.xqhs.flash.webSocket;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Vector;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.ClassicMessageReceiver;
 import net.xqhs.flash.core.support.DefaultPylonImplementation;
 import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
 import net.xqhs.flash.core.support.WaveReceiver;
+import net.xqhs.flash.core.util.Dispatcher;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.MultiValueMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.flash.json.AgentWaveJson;
+import net.xqhs.util.logging.LoggerClassic;
 
 /**
  * WebSocket support implementation that allows agents to send messages whether they are inside the same JVM or not. The
@@ -49,52 +41,14 @@ import net.xqhs.flash.json.AgentWaveJson;
  * @author Andrei Olaru
  */
 public class WebSocketPylon extends DefaultPylonImplementation {
-	
 	/**
-	 * The tread that will manage messages.
-	 * 
-	 * @author Andrei Olaru
+	 * The serial UID.
 	 */
-	class MessageThread implements Runnable {
-		@Override
-		public void run() {
-			while(useThread) {
-				if(messageQueue.isEmpty())
-					try {
-						synchronized(messageQueue) {
-							messageQueue.wait(PlatformUtils.GLOBAL_WAITING_TIME);
-						}
-					} catch(InterruptedException e) {
-						// do nothing
-					}
-				else {
-					Map.Entry<WebSocketMessagingShard, Vector<String>> event = messageQueue.poll();
-					event.getKey().receiveMessage(event.getValue().get(0), event.getValue().get(1),
-							event.getValue().get(2));
-				}
-			}
-		}
-	}
-	
-	/**
-	 * The key in the JSON object which is assigned to the name of the node on which an entity executes (for
-	 * registration messages).
-	 */
-	public static final String	MESSAGE_NODE_KEY	= "nodeName";
-	/**
-	 * The key in the JSON object which is assigned to the name of the entity (for registration messages).
-	 */
-	public static final String	MESSAGE_ENTITY_KEY	= "entityName";
+	private static final long	serialVersionUID				= 1L;
 	/**
 	 * If this key is present, the entity will be unregistered.
 	 */
-	public static final String	UNREGISTER_KEY		= "unregister";
-	
-	/**
-	 * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
-	 */
-	public MessagingPylonProxy messagingProxy = null;
-	
+	public static final String	UNREGISTER_KEY					= "unregister";
 	/**
 	 * The attribute name of server address of this instance.
 	 */
@@ -104,24 +58,38 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	 */
 	public static final String	WEBSOCKET_SERVER_PORT_NAME		= "serverPort";
 	/**
+	 * The name for the server.
+	 */
+	public static final String	WEBSOCKET_SERVER_NAME			= "server";
+	/**
 	 * The prefix for Websocket server address.
 	 */
 	public static final String	WS_PROTOCOL_PREFIX				= "ws://";
+	/**
+	 * The default host address for the WebSocket server.
+	 */
+	public static final String	WS_DEFAULT_HOST					= "localhost";
+	/**
+	 * The default port for the WebSocket server.
+	 */
+	public static final String	WS_DEFAULT_PORT					= "8080";
 	
+	/**
+	 * The proxy to this pylon, to be referenced by any entities in the scope of this pylon.
+	 */
+	public MessagingPylonProxy				messagingProxy		= null;
 	/**
 	 * <code>true</code> if there is a Websocket server configured on the local node.
 	 */
-	protected boolean hasServer;
-	
+	protected boolean						hasServer;
 	/**
 	 * For the case in which a server must be created on this node, the port the server is bound to.
 	 */
-	protected int					serverPort	= -1;
+	protected int							serverPort			= -1;
 	/**
 	 * For the case in which a server must be created on this node, the entity that represents the server.
 	 */
-	protected WebSocketServerEntity	serverEntity;
-	
+	protected WebSocketServerEntity			serverEntity;
 	/**
 	 * The address of the Websocket server that the client should connect to.
 	 */
@@ -132,100 +100,44 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	protected WebSocketClient				webSocketClient;
 	/**
 	 * For the entities in the scope of this pylon, the correspondence between their names and their
-	 * {@link ClassicMessageReceiver} instances.
+	 * {@link WaveReceiver} instances.
 	 */
 	protected HashMap<String, WaveReceiver>	messageReceivers	= new HashMap<>();
-	
 	/**
-	 * If <code>true</code>, a separate thread will be used to buffer messages. Otherwise, only method calling will be
-	 * used.
-	 * <p>
-	 * If a thread is used, {@link WaveMessagingPylonProxy#send(AgentWave)} will always return true.
-	 * <p>
-	 * <b>WARNING:</b> not using a thread may lead to race conditions and deadlocks. Use only if you know what you are
-	 * doing.
+	 * The dispatcher for outgoing messages.
 	 */
-	protected boolean													useThread	= true;
+	protected Dispatcher<AgentWave>			dispatcher;
 	/**
-	 * The queue of messages to process to be processed by the {@link #messageThread}.
+	 * The index of the in-bound messages queue with the {@link #dispatcher}.
 	 */
-	protected Queue<Map.Entry<WebSocketMessagingShard, Vector<String>>>	messageQueue;
+	protected Integer						INBOUND				= null;
 	/**
-	 * The thread processing the messages in the {@link #messageQueue}.
+	 * The index of the out-bound messages queue with the {@link #dispatcher}.
 	 */
-	protected Thread													messageThread;
+	protected Integer						OUTBOUND			= null;
 	
 	/**
 	 * The constructor, with the mission of building the {@link MessagingPylonProxy}.
 	 */
 	public WebSocketPylon() {
+		dispatcher = new Dispatcher<>(getLogger());
+		OUTBOUND = Integer.valueOf(dispatcher.addProcessor(this::sendMessage, true));
+		INBOUND = Integer.valueOf(dispatcher.addProcessor(this::receiveMessage));
+		
 		messagingProxy = new WaveMessagingPylonProxy() {
-			/**
-			 * The entity is both: - registered within the local instance which is useful for routing a message back to
-			 * the the {@link ClassicMessageReceiver} instance when it arrives from the server - registered to the
-			 * {@link WebSocketServerEntity} using an entity registration format message which is sent by the local
-			 * client
-			 *
-			 * @param entityName
-			 *            - the name of the entity
-			 * @param receiver
-			 *            - the {@link ClassicMessageReceiver} instance to receive messages
-			 * @return - an indication of success
-			 */
 			@Override
 			public boolean register(String entityName, WaveReceiver receiver) {
-				if(messageReceivers.containsKey(entityName))
-					return ler(false, "Entity [] already registered with this pylon [].", entityName, thisPylon());
-				messageReceivers.put(entityName, receiver);
-				JsonObject messageToServer = new JsonObject();
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
-				lf("Registered entity []/[] with this pylon []: ", entityName, receiver, thisPylon(), messageToServer);
-				return true;
+				return registerEntity(entityName, receiver);
 			}
 			
 			@Override
 			public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
-				if(!messageReceivers.remove(entityName, registeredReceiver))
-					return false;
-				JsonObject messageToServer = new JsonObject();
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				messageToServer.addProperty(MESSAGE_ENTITY_KEY, entityName);
-				messageToServer.addProperty(UNREGISTER_KEY, UNREGISTER_KEY);
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
-				lf("Unregistered entity [] from this pylon []: ", entityName, thisPylon(), messageToServer);
-				return true;
+				return unregisterEntity(entityName, registeredReceiver);
 			}
 			
-			/**
-			 * Send a message to an entity.
-			 *
-			 * @param wave
-			 *            - the wave to send.
-			 * @return - an indication of success
-			 */
 			@Override
 			public boolean send(AgentWave wave) {
-				if(messageReceivers.containsKey(wave.getFirstDestinationElement())) {
-					messageReceivers.get(wave.getFirstDestinationElement()).receive(wave);
-					return true;
-				}
-				JsonObject messageToServer = AgentWaveJson.toJson(wave);
-				messageToServer.addProperty(MESSAGE_NODE_KEY, getNodeName());
-				try {
-					webSocketClient.send(messageToServer.toString());
-				} catch(Exception e) {
-					le("Failed to send message:", (Object[]) e.getStackTrace());
-				}
+				dispatcher.add(OUTBOUND.intValue(), wave);
 				return true;
 			}
 			
@@ -251,123 +163,56 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean start() {
 		if(hasServer) {
 			serverEntity = new WebSocketServerEntity(serverPort);
-			serverEntity.start();
+			if(!serverEntity.start())
+				return ler(false, "Server entity failed to start");
 		}
-		
-		try {
-			int tries = 10;
-			long spaceBetweenTries = 1000;
-			while(tries > 0) {
-				try {
-					lf("Trying connection to WS server [] tries left: []", webSocketServerAddress,
-							Integer.valueOf(tries));
-					webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
-						@Override
-						public void onOpen(ServerHandshake serverHandshake) {
-							lf("connected to []", getURI());
-						}
-						
-						/**
-						 * Receives a message from the server. The message was previously routed to this websocket
-						 * client address and it is further routed to a specific entity using the
-						 * {@link ClassicMessageReceiver} instance. The entity is searched within the context of this
-						 * support.
-						 *
-						 * @param jsonString
-						 *            - the JSON string containing a message and routing information
-						 */
-						@Override
-						public void onMessage(String jsonString) {
-							JsonObject message;
-							try {
-								message = JsonParser.parseString(jsonString).getAsJsonObject();
-							} catch(JsonSyntaxException e) {
-								le("Exception [] when parsing []", e.getStackTrace(), jsonString);
-								return;
-							}
-							
-							String destination;
-							try {
-								destination = message.get(AgentWave.DESTINATION_ELEMENT).getAsJsonArray().get(0)
-										.getAsString();
-							} catch(Exception e) {
-								le("Unable to parse destination in ", message);
-								return;
-							}
-							if(!messageReceivers.containsKey(destination) || messageReceivers.get(destination) == null)
-								le("Entity [] does not exist in the scope of this pylon [].", destination, thisPylon());
-							else {
-								AgentWave wave;
-								try {
-									message.remove(MESSAGE_NODE_KEY);
-									wave = AgentWaveJson.toAgentWave(message);
-								} catch(Exception e) {
-									le("Unable to convert message to AgentWave because []: []", e,
-											message);
-									return;
-								}
-								messageReceivers.get(destination).receive(wave);
-							}
-						}
-						
-						@Override
-						public void onClose(int i, String s, boolean b) {
-							lw("Closed with exit code " + i);
-						}
-						
-						@Override
-						public void onError(Exception e) {
-							le(Arrays.toString(e.getStackTrace()));
-						}
-					};
-				} catch(URISyntaxException e) {
-					e.printStackTrace();
-					return false;
+		LoggerClassic log = getLogger();
+		PlatformUtils.tryFor(getLogger(), "connection to WebSocket server at " + webSocketServerAddress, () -> {
+			webSocketClient = new WebSocketClient(new URI(webSocketServerAddress)) {
+				@Override
+				public void onOpen(ServerHandshake serverHandshake) {
+					log.lf("connected to []", getURI());
+					dispatcher.resume(OUTBOUND.intValue());
 				}
-				if(webSocketClient.connectBlocking())
-					break;
-				Thread.sleep(spaceBetweenTries);
-				tries--;
-			}
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-			return false;
-		}
+				
+				@Override
+				public void onMessage(String string) {
+					receiveMessage(string);
+				}
+				
+				@Override
+				public void onClose(int i, String s, boolean b) {
+					log.lw("Closed with exit code " + i);
+					dispatcher.suspend(OUTBOUND.intValue());
+				}
+				
+				@Override
+				public void onError(Exception e) {
+					log.le(Arrays.toString(e.getStackTrace()));
+				}
+			};
+			if(webSocketClient.connectBlocking())
+				return Boolean.TRUE;
+			return Boolean.FALSE;
+		});
 		
 		if(!super.start())
 			return false;
-		if(useThread) {
-			messageQueue = new LinkedBlockingQueue<>();
-			messageThread = new Thread(new MessageThread());
-			messageThread.start();
-		}
-		li("Started" + (useThread ? " [with thread]." : "[without thread]"));
+		// li("Started" + (useThread ? " [with thread]." : "[without thread]"));
 		return true;
 	}
 	
 	@Override
 	public boolean stop() {
+		dispatcher.stop();
 		super.stop();
-		if(useThread) {
-			useThread = false; // signal to the thread
-			synchronized(messageQueue) {
-				messageQueue.clear();
-				messageQueue.notifyAll();
-			}
-			try {
-				messageThread.join();
-			} catch(InterruptedException e) {
-				e.printStackTrace();
-			}
-			messageQueue = null;
-			messageThread = null;
-		}
+		
 		if(hasServer)
 			serverEntity.stop();
 		try {
 			webSocketClient.closeBlocking();
-		} catch(InterruptedException x) {
-			x.printStackTrace();
+		} catch(InterruptedException e) {
+			le("Failed to close client:", PlatformUtils.printException(e));
 		}
 		li("Stopped");
 		return true;
@@ -377,13 +222,63 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 	public boolean configure(MultiTreeMap configuration) {
 		if(!super.configure(configuration))
 			return false;
+		if(configuration.isSimple(WEBSOCKET_SERVER_NAME)) {
+			hasServer = true;
+			li("WebSocket server configured with default port and host.");
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + WS_DEFAULT_PORT;
+		}
 		if(configuration.isSimple(WEBSOCKET_SERVER_PORT_NAME)) {
 			hasServer = true;
-			serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
-			webSocketServerAddress = WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort;
+			if(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME) == null)
+				return ler(false, "Null value for paramtere []", WEBSOCKET_SERVER_PORT_NAME);
+			if(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME).isEmpty()) {
+				li("No WebSocket server port specified. Defaulting to []", WS_DEFAULT_PORT);
+				serverPort = Integer.parseInt(WS_DEFAULT_PORT);
+			}
+			else
+				try {
+					serverPort = Integer.parseInt(configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME));
+				} catch(Exception e) {
+					le("Failed to parse server port []:", configuration.getAValue(WEBSOCKET_SERVER_PORT_NAME),
+							PlatformUtils.printException(e));
+					return false;
+				}
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + String.valueOf(serverPort);
 		}
-		else if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME))
-			webSocketServerAddress = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+		if(configuration.isSimple(WEBSOCKET_SERVER_ADDRESS_NAME)) {
+			String connectTo_value = configuration.getAValue(WEBSOCKET_SERVER_ADDRESS_NAME);
+			if(connectTo_value == null)
+				return ler(false, "Null value for parameter []", WEBSOCKET_SERVER_ADDRESS_NAME);
+			if(connectTo_value.isEmpty()) {
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
+				li("No WebSocket host specified. Defaulting to []", webSocketServerAddress);
+			}
+			if(connectTo_value.matches("^:?[0-9]*$")) { // matches :port or port
+				int port = Integer.parseInt(webSocketServerAddress.replace(":", ""));
+				if(port < 1024 || port > 49151)
+					return ler(false, "Port [] is outside the registered ports range", Integer.valueOf(port));
+				li("WebSocket assuming port []. Defaulting to host []", Integer.valueOf(port), WS_DEFAULT_HOST);
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + port;
+			}
+			if(connectTo_value.matches("^(?!.*:).*[a-zA-Z.].*$")) {
+				// matches any string without a colon and containing letters or dots, assuming it's a host
+				li("WebSocket assuming host []. Defaulting to port []", webSocketServerAddress, WS_DEFAULT_PORT);
+				webSocketServerAddress = WS_PROTOCOL_PREFIX + webSocketServerAddress + ":" + WS_DEFAULT_PORT;
+				li("Full address []", webSocketServerAddress);
+			}
+			if(connectTo_value.matches("^\\S+:[0-9]*$")) // matches host:port
+				webSocketServerAddress = (connectTo_value.startsWith(WS_PROTOCOL_PREFIX) ? "" : WS_PROTOCOL_PREFIX)
+						+ connectTo_value;
+			if(hasServer == true && !(WS_PROTOCOL_PREFIX + PlatformUtils.getLocalHostURI() + ":" + serverPort)
+					.equals(webSocketServerAddress)) {
+				lw("Pylon is configured as both local server and client connected to []", webSocketServerAddress);
+			}
+		}
+		if(hasServer == false && webSocketServerAddress == null) {
+			webSocketServerAddress = WS_PROTOCOL_PREFIX + WS_DEFAULT_HOST + ":" + WS_DEFAULT_PORT;
+			li("No WebSocket server address or port specified. Defaulting to []", webSocketServerAddress);
+		}
+		
 		if(configuration.isSimple(DeploymentConfiguration.NAME_ATTRIBUTE_NAME))
 			name = configuration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
 		return true;
@@ -396,48 +291,117 @@ public class WebSocketPylon extends DefaultPylonImplementation {
 		return super.getRecommendedShardImplementation(shardName);
 	}
 	
-	/**
-	 * @return the name of the local node, as configured in {@link DefaultPylonImplementation}.
-	 */
-	protected String getNodeName() {
-		return nodeName;
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EntityProxy<Pylon> asContext() {
 		return messagingProxy;
 	}
 	
-	@Override
-	protected void le(String message, Object... arguments) {
-		super.le(message, arguments);
-	}
-	
-	@Override
-	protected void lw(String message, Object... arguments) {
-		super.lw(message, arguments);
-	}
-	
-	@Override
-	protected void li(String message, Object... arguments) {
-		super.li(message, arguments);
-	}
-	
-	@Override
-	protected void lf(String message, Object... arguments) {
-		super.lf(message, arguments);
-	}
-	
-	@Override
-	protected boolean ler(boolean ret, String message, Object... arguments) {
-		return super.ler(ret, message, arguments);
+	/**
+	 * The entity is both:
+	 * <ul>
+	 * <li>registered within the local instance which is useful for routing a message back to the the
+	 * {@link WaveReceiver} instance when it arrives from the server
+	 * <li>registered to the {@link WebSocketServerEntity} using an entity registration format message which is sent by
+	 * the local client
+	 * </ul>
+	 *
+	 * @param entityName
+	 *            - the name of the entity
+	 * @param receiver
+	 *            - the {@link WaveReceiver} instance to receive messages
+	 * @return an indication of success
+	 */
+	protected boolean registerEntity(String entityName, WaveReceiver receiver) {
+		if(messageReceivers.containsKey(entityName))
+			return ler(false, "Entity [] already registered with this pylon.", entityName);
+		messageReceivers.put(entityName, receiver);
+		
+		AgentWave waveToServer = new AgentWave(entityName).addSourceElements(nodeName);
+		try {
+			dispatcher.add(OUTBOUND.intValue(), waveToServer);
+			lf("Registered entity []/[] with this pylon: ", entityName, receiver, waveToServer);
+			return true;
+		} catch(Exception e) {
+			le("Failed to send message:", PlatformUtils.printException(e));
+			return false;
+		}
 	}
 	
 	/**
-	 * @return this pylon, to be provided to embedded instances.
+	 * The entity is unregistered from the local instance and the server.
+	 * 
+	 * @param entityName
+	 *            - the name of the entity
+	 * @param registeredReceiver
+	 *            - the {@link WaveReceiver} instance to receive messages
+	 * @return an indication of success
 	 */
-	WebSocketPylon thisPylon() {
-		return this;
+	protected boolean unregisterEntity(String entityName, WaveReceiver registeredReceiver) {
+		if(!messageReceivers.remove(entityName, registeredReceiver))
+			return false;
+		
+		AgentWave waveToServer = (AgentWave) new AgentWave(entityName).addSourceElements(nodeName).add(UNREGISTER_KEY,
+				UNREGISTER_KEY);
+		try {
+			dispatcher.add(OUTBOUND.intValue(), waveToServer);
+			lf("Unregistered entity [] from this pylon: ", entityName, waveToServer);
+			return true;
+		} catch(Exception e) {
+			le("Failed to send message:", PlatformUtils.printException(e));
+			return false;
+		}
+	}
+	
+	/**
+	 * Sends the given wave.
+	 * 
+	 * @param wave
+	 *            - the {@link AgentWave} to send.
+	 * @return an indication of success.
+	 */
+	protected boolean sendMessage(AgentWave wave) {
+		if(messageReceivers.containsKey(wave.getFirstDestinationElement())) {
+			messageReceivers.get(wave.getFirstDestinationElement()).receive(wave);
+			return true;
+		}
+		try {
+			webSocketClient.send(wave.toSerializedString());
+		} catch(Exception e) {
+			le("Failed to send message []:", wave, PlatformUtils.printException(e));
+		}
+		return true;
+	}
+	
+	/**
+	 * Receives a message from the server. The message was previously routed to this websocket client address and no
+	 * must be de-serialized and routed internally.
+	 *
+	 * @param waveString
+	 *            - the string containing the serialized message.
+	 */
+	protected void receiveMessage(String waveString) {
+		AgentWave wave;
+		try {
+			wave = (AgentWave) MultiValueMap.fromSerializedString(waveString);
+			dispatcher.add(INBOUND.intValue(), wave);
+		} catch(Exception e) {
+			le("Exception [] when parsing []", e, waveString);
+		}
+	}
+	
+	/**
+	 * Process a wave destined to an entity in this pylon. It is further routed to a specific entity using the
+	 * appropriate {@link WaveReceiver} instance. The entity is searched within the context of this pylon.
+	 * 
+	 * @param wave
+	 *            - the wave to process.
+	 */
+	protected void receiveMessage(AgentWave wave) {
+		String destination = wave.getFirstDestinationElement();
+		if(!messageReceivers.containsKey(destination) || messageReceivers.get(destination) == null)
+			le("Entity [] does not exist in the scope of this pylon.", destination);
+		else
+			messageReceivers.get(destination).receive(wave);
 	}
 }

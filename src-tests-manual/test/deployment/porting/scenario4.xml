@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://flash.xqhs.net/deployment-schema 
+    ../../../src-schema/deployment-schema.xsd">
+
+    <package>testing</package>
+
+    <pylon kind="local" name="PA" />
+    <pylon kind="local" name="PB" />
+
+    <agent name="AgentA" classpath="AgentPingPong" />
+    <agent name="AgentB" classpath="AgentPingPong" />
+
+</deployment>

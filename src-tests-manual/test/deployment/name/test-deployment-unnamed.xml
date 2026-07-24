@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../../../src-schema/deployment-schema.xsd">
+    <load_order>pylon;agent</load_order>
+    <node>
+            <agent classpath="testing.AgentPingPong">
+                <parameter name="param" value="val"/>
+            </agent>
+    </node>
+</deployment>
