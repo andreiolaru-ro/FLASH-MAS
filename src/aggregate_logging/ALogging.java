@@ -15,13 +15,6 @@ public class ALogging {
         return instance;
     }
 
-    public void li_agr(LogAggregate log, String entityName, Object... args) {
-        if (log != null) {
-            this.activeLogs.add(log);
-            log.register(entityName, args);
-        }
-    }
-
     public void li_agr(LogAggregate log,  Entity<?> entity, String msg, Object... args) {
         if (log == null) return;
         Map<String, MessageSummary> logMap = logs.computeIfAbsent(log, k -> new HashMap<>());
@@ -42,7 +35,7 @@ public class ALogging {
         }
     }
 
-    public void printAll() {
+    public void printAllAgr() {
         for (Map.Entry<LogAggregate, Map<String, MessageSummary>> entry : logs.entrySet()) {
             LogAggregate log = entry.getKey();
             Map<String, MessageSummary> logMap = entry.getValue();

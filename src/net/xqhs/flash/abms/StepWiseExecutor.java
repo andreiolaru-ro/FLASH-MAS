@@ -62,7 +62,7 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 				for(long step = 0; step < nSteps; step++)
 					runStep(step);
 				simulation.executionCompleted();
-                ALogging.getInstance().printAllSummaries();
+                ALogging.getInstance().printAllAgr();
 			}
 		};
 		executor.start();

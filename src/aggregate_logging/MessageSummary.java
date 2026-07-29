@@ -28,8 +28,7 @@ public class MessageSummary {
     }
 
     public void printSummary() {
-        System.out.println("Total " + msg + " actions: " + callCount);
-        System.out.println("[" + uniqueEntities.size() + " entities] "
+        System.out.println("[" + callCount + " actions | " + uniqueEntities.size() + " entities] "
                 + filledPlaceholders());
     }
 

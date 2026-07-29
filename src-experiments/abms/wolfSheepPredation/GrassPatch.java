@@ -1,7 +1,7 @@
 package abms.wolfSheepPredation;
 
 import aggregate_logging.ALogging;
-import aggregate_logging.WolfSheepLog;
+import aggregate_logging.Category;
 import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
@@ -47,7 +47,7 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
             regrowthCountdown--;
             if (regrowthCountdown <= 0) {
                 grown = true;
-                ALogging.getInstance().li_agr(WolfSheepLog.GRASS_REGROWN, getEntityName());
+                ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "grass regrow");
             }
         }
     }
@@ -63,7 +63,7 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
             if (EAT_WAVE_CONTENT.equals(content) && grown) {
                 grown = false;
                 regrowthCountdown = regrowthTime;
-                ALogging.getInstance().li_agr(WolfSheepLog.GRASS_EATEN, getEntityName());
+                ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "grass eaten");
                 return true;
             }
         }
