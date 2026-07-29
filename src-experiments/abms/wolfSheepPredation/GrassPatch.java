@@ -63,7 +63,7 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
             if (EAT_WAVE_CONTENT.equals(content) && grown) {
                 grown = false;
                 regrowthCountdown = regrowthTime;
-                ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "grass eaten");
+                ALogging.getInstance().li_agr(Category.EATING, this, "grass eaten");
                 return true;
             }
         }
