@@ -178,6 +178,38 @@ public class PythonBridgeDriver implements AsyncDriver {
         return venvBinDir().resolve(isWindows() ? "pip.exe" : "pip").toString();
     }
 
+    private volatile String systemPythonCommandCache;
+
+    /**
+     * The system Python command to use for creating the venv (not the venv's own python -- that doesn't exist
+     * yet at this point). On Windows this is always "python". On Linux/Mac, some setups don't have a "python3"
+     * binary at all and only have "python" already pointing to Python 3 (e.g. some distros, some conda setups),
+     * while others have both. So: only fall back to "python3" if plain "python" isn't already Python 3 -- don't
+     * assume "python3" exists just because this isn't Windows.
+     */
+    private synchronized String systemPythonCommand() {
+        if(systemPythonCommandCache != null)
+            return systemPythonCommandCache;
+        if(isWindows())
+            return systemPythonCommandCache = "python";
+        systemPythonCommandCache = isPython3("python") ? "python" : "python3";
+        return systemPythonCommandCache;
+    }
+
+
+    private boolean isPython3(String command) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(command, "-c",
+                    "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)");
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            boolean finished = p.waitFor(5, TimeUnit.SECONDS);
+            return finished && p.exitValue() == 0;
+        } catch(IOException | InterruptedException e) {
+            return false;
+        }
+    }
+
     /** Creates the venv at {@link #venvPath} if it isn't already there. Never activates it through a shell. */
     private boolean ensureVenv() {
         if(Files.isDirectory(venvBinDir())) {
@@ -188,7 +220,8 @@ public class PythonBridgeDriver implements AsyncDriver {
         try {
             if(venvPath.getParent() != null)
                 Files.createDirectories(venvPath.getParent());
-            String pythonCmd = isWindows() ? "python" : "python3";
+            String pythonCmd = systemPythonCommand();
+            System.out.println("[PythonBridgeDriver] using system python command: " + pythonCmd);
             ProcessBuilder pb = new ProcessBuilder(pythonCmd, "-m", "venv", venvPath.toString());
             pb.redirectErrorStream(true);
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
@@ -351,9 +384,13 @@ public class PythonBridgeDriver implements AsyncDriver {
         String endpoint = (destinations != null && destinations.length > 0) ? destinations[0] : "call";
 
         StringBuilder data = new StringBuilder();
-        String content = wave.getContent();
-        if(content != null)
-            data.append("input=").append(URLEncoder.encode(content, "UTF-8"));
+        for(String key : wave.getContentElements()) {
+            for(String value : wave.getValues(key)) {
+                if(data.length() > 0)
+                    data.append("&");
+                data.append(URLEncoder.encode(key, "UTF-8")).append("=").append(URLEncoder.encode(value, "UTF-8"));
+            }
+        }
 
         URL url = new URL(serverUrl + ":" + serverPort + "/" + endpoint);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
