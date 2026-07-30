@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -216,12 +218,10 @@ public class Node extends EntityCore<Node> {
 	
 	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
 		for(Entity<?> entity : entities) {
-			String entityName = entity.getName();
-			lf("starting entity []...", entityName);
 			if(entity.start())
-				lf("entity [] started successfully.", entityName);
+                ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
 			else
-				le("failed to start entity [].", entityName);
+                ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
 		}
 		
 		if(isNodeStart) {
@@ -271,11 +271,10 @@ public class Node extends EntityCore<Node> {
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
-				lf("stopping entity []...", entity.getName());
 				if(entity.stop())
-					lf("entity [] stopped successfully.", entity.getName());
+                    ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
 				else
-					le("failed to stop entity [].", entity.getName());
+                    ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
 		sendStatusUpdate();
