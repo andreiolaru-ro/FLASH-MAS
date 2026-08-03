@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
+
+	<node name="main">
+		<pylon kind="local" name="def"/>
+	</node>
+
+</deployment>

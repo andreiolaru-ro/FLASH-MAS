@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
+
+	<pylon kind="local">
+		<parameter name="in-context-of" value="main"/>
+		<agent name="PingPong:AgentA" classpath="AgentPingPong">
+			<parameter name="sendTo" value="AgentB"/>
+		</agent>
+		<agent name="PingPong:AgentB" classpath="AgentPingPong"/>
+	</pylon>
+
+</deployment>
