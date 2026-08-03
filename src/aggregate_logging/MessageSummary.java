@@ -19,7 +19,8 @@ public class MessageSummary {
     }
 
     public void register(Entity<?> entity, Object ...args) {
-        uniqueEntities.add(entity.getName());
+        if (entity != null)
+            uniqueEntities.add(entity.getName());
         // Safely iterate to prevent IndexOutOfBoundsException if subsequent calls pass more arguments
         int fieldsToProcess = Math.min(args.length, uniqueFields.size());
         for (int i = 0; i < fieldsToProcess; i++)

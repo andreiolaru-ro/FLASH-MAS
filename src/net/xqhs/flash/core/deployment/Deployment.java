@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -299,10 +301,8 @@ public class Deployment extends Unit {
 			cp = Loader.autoFind(loadPack.getClassFactory(), loadPack.getPackages(), cp, kind, id, catName,
 					checkedPaths);
 			if(cp == null)
-				le("Class for [] []/[]/[] can not be found; tried paths ", catName, name, kind, local_id, checkedPaths);
+                ALogging.getInstance().li_agr(Category.ERRORS, null, "class for [] not found", catName);
 			else {
-				lf("Trying to load []/[] [][] using default loader [], from classpath []", name, local_id, catName,
-						kind, loadPack.getDefaultLoader().getClass().getName(), cp);
 				// add the CP -- will be first
 				entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
 			}
@@ -310,12 +310,12 @@ public class Deployment extends Unit {
 				entity = loadPack.getDefaultLoader().load(entityConfig, context, subEntities);
 		}
 		if(entity != null) {
-			li("Entity []/[] of type [] successfully loaded.", name, local_id, catName);
+            ALogging.getInstance().li_agr(Category.LOADING, entity, "entity loaded");
 			entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 					DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 		}
 		else
-			le("Could not load entity []/[] of type [].", name, local_id, catName);
+            ALogging.getInstance().li_agr(Category.ERRORS, null, "entity failed loading");
 		return new SimpleEntry<>(id, entity);
 	}
 }
