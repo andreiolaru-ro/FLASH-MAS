@@ -22,6 +22,7 @@ import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.ml.AsyncDriver;
+import net.xqhs.util.logging.Unit;
 
 /**
  * Java-Python bridge, built on the client - flask server model:
@@ -31,58 +32,86 @@ import net.xqhs.flash.ml.AsyncDriver;
  * retrying until the server starts or a give-up limit is reached.</li>
  * </ul>
  */
-public class PythonBridgeDriver implements AsyncDriver {
+
+public class PythonBridgeDriver extends Unit implements AsyncDriver {
+
+    // ==================== defaults & configuration constants ====================
+
+    /** Default base URL of the Flask server. */
+    protected static final String	DEFAULT_SERVER_URL						= "http://localhost";
+    /** Default port the Flask server listens on. Must match {@code SERVER_PORT} in bridge_server.py. */
+    protected static final int		DEFAULT_SERVER_PORT						= 5099;
+    /** Default server script location, relative to this class's package under the main source root. */
+    protected static final String	DEFAULT_SERVER_SCRIPT_RELATIVE_PATH		= "python_module/bridge_server.py";
+    /** Default venv location: at the project root. */
+    protected static final String	DEFAULT_VENV_PATH						= "pythonBridge-venv";
+    /** Endpoint used when a wave carries no destination element at all. */
+    protected static final String	DEFAULT_ENDPOINT						= "call";
+    /** Endpoint used to poll whether the server has finished starting up. */
+    protected static final String	PING_ENDPOINT							= "ping";
+
+    protected static final String	WINDOWS_VENV_BIN_DIR					= "Scripts";
+    protected static final String	UNIX_VENV_BIN_DIR						= "bin";
+    protected static final String	WINDOWS_PYTHON_EXECUTABLE				= "python.exe";
+    protected static final String	UNIX_PYTHON_EXECUTABLE					= "python";
+    protected static final String	WINDOWS_PIP_EXECUTABLE					= "pip.exe";
+    protected static final String	UNIX_PIP_EXECUTABLE					    = "pip";
+    protected static final String	WINDOWS_SYSTEM_PYTHON_COMMAND			= "python";
+    protected static final String	UNIX_SYSTEM_PYTHON_COMMAND_FALLBACK	    = "python3";
 
     /**
      * Has to match python_module/util.py's import_functionality() on a failed import.
      */
-    private static final Pattern	MISSING_PACKAGE_PATTERN	= Pattern
+    protected static final Pattern	MISSING_PACKAGE_PATTERN				= Pattern
             .compile("unavailable \\(use pip install ([\\w\\-.]+)");
 
-
-    private static final int		MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE	= 5;
-    private static final int		MAX_TOTAL_ATTEMPTS						= 100;
-    private static final int		START_TIMEOUT_MS		= 10000;
-    private static final int		START_POLL_MS			= 300;
-
+    protected static final int		MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE	= 5;
+    protected static final int		MAX_TOTAL_ATTEMPTS						= 100;
+    /** How long to wait, per start attempt, for either a failure or a successful connection. */
+    protected static final int		START_TIMEOUT_MS						= 10000;
+    protected static final int		START_POLL_MS							= 300;
     /** How long to wait for `python -m venv` / `pip install` to finish. */
-    private static final int		VENV_CREATE_TIMEOUT_S	= 60;
-    private static final int		PIP_INSTALL_TIMEOUT_S	= 120;
+    protected static final int		VENV_CREATE_TIMEOUT_S					= 60;
+    protected static final int		PIP_INSTALL_TIMEOUT_S					= 120;
 
-    private final String			serverUrl;
-    private final int				serverPort;
-    private final Path				serverScriptPath;
-    private final Path				venvPath;
+    // ==================== instance state ====================
 
-    private final ExecutorService	executor				= Executors.newFixedThreadPool(4);
-    private volatile Process		serverProcess;
-    private volatile boolean		ready					= false;
+    protected final String			serverUrl;
+    protected final int				serverPort;
+    protected final Path			serverScriptPath;
+    protected final Path			venvPath;
+
+    protected final ExecutorService	executor								= Executors.newFixedThreadPool(4);
+    protected volatile Process		serverProcess;
+    protected volatile boolean		ready									= false;
+    protected volatile String		systemPythonCommandCache;
 
     /**
      * @param serverUrl
-     *            e.g. "http://localhost"
+     *            e.g. {@link #DEFAULT_SERVER_URL}
      * @param serverPort
      *            port the Flask server will listen on
      * @param serverScriptRelativePath
-     *            path to the server script, relative to this class's package (e.g. "python_module/bridge_server.py")
+     *            path to the server script, relative to this class's package (e.g.
+     *            {@link #DEFAULT_SERVER_SCRIPT_RELATIVE_PATH})
      * @param venvRelativePath
      *            where to create/reuse the venv, relative to the working directory the JVM was started from (e.g.
-     *            "src/net/xqhs/flash/pythonBridge/python_module/venv")
+     *            {@link #DEFAULT_VENV_PATH})
      */
     public PythonBridgeDriver(String serverUrl, int serverPort, String serverScriptRelativePath,
                               String venvRelativePath) {
+        setUnitName(getClass().getSimpleName());
         this.serverUrl = serverUrl;
         this.serverPort = serverPort;
         this.serverScriptPath = Paths.get(
                 DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN],
-                PythonBridgeDriver.class.getPackage().getName().replace('.', '/'), serverScriptRelativePath);
+                getClass().getPackage().getName().replace('.', '/'), serverScriptRelativePath);
         this.venvPath = Paths.get(venvRelativePath);
     }
 
-    /** Convenience constructor using the bundled bridge_server.py, a local venv next to it, and port 5099. */
+    /** Convenience constructor using all the defaults above. */
     public PythonBridgeDriver() {
-        this("http://localhost", 5099, "python_module/bridge_server.py",
-                "src/net/xqhs/flash/pythonBridge/python_module/venv");
+        this(DEFAULT_SERVER_URL, DEFAULT_SERVER_PORT, DEFAULT_SERVER_SCRIPT_RELATIVE_PATH, DEFAULT_VENV_PATH);
     }
 
     /**
@@ -108,8 +137,7 @@ public class PythonBridgeDriver implements AsyncDriver {
                 return true;
             }
             if(result.missingPackages.isEmpty()) {
-                System.err.println(
-                        "[PythonBridgeDriver] server failed to start and reported no missing package; giving up.");
+                le("Server failed to start and reported no missing package; giving up.");
                 return false;
             }
 
@@ -121,22 +149,21 @@ public class PythonBridgeDriver implements AsyncDriver {
                 lastProblem = currentProblem;
                 attemptsOnCurrentProblem = 1;
             }
-            System.out.println("[PythonBridgeDriver] missing: " + currentProblem + " (attempt "
-                    + attemptsOnCurrentProblem + "/" + MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE + " on this package)");
+            li("Missing: [] (attempt []/[] on this package)", currentProblem,
+                    Integer.valueOf(attemptsOnCurrentProblem), Integer.valueOf(MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE));
 
             if(attemptsOnCurrentProblem > MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE) {
-                System.err.println("[PythonBridgeDriver] giving up: '" + currentProblem + "' still missing after "
-                        + MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE + " install attempts.");
+                le("Giving up: '[]' still missing after [] install attempts.", currentProblem,
+                        Integer.valueOf(MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE));
                 return false;
             }
 
             for(String pkg : result.missingPackages) {
-                System.out.println("[PythonBridgeDriver] installing missing package into venv: " + pkg);
+                li("Installing missing package into venv: []", pkg);
                 pipInstall(pkg);
             }
         }
-        System.err.println("[PythonBridgeDriver] giving up after " + MAX_TOTAL_ATTEMPTS
-                + " total attempts (safety net).");
+        le("Giving up after [] total attempts (safety net).", Integer.valueOf(MAX_TOTAL_ATTEMPTS));
         return false;
     }
 
@@ -162,23 +189,21 @@ public class PythonBridgeDriver implements AsyncDriver {
 
     // ==================== venv management ====================
 
-    private boolean isWindows() {
+    protected boolean isWindows() {
         return System.getProperty("os.name", "").toLowerCase().contains("win");
     }
 
-    private Path venvBinDir() {
-        return venvPath.resolve(isWindows() ? "Scripts" : "bin");
+    protected Path venvBinDir() {
+        return venvPath.resolve(isWindows() ? WINDOWS_VENV_BIN_DIR : UNIX_VENV_BIN_DIR);
     }
 
-    private String venvPythonExecutable() {
-        return venvBinDir().resolve(isWindows() ? "python.exe" : "python").toString();
+    protected String venvPythonExecutable() {
+        return venvBinDir().resolve(isWindows() ? WINDOWS_PYTHON_EXECUTABLE : UNIX_PYTHON_EXECUTABLE).toString();
     }
 
-    private String venvPipExecutable() {
-        return venvBinDir().resolve(isWindows() ? "pip.exe" : "pip").toString();
+    protected String venvPipExecutable() {
+        return venvBinDir().resolve(isWindows() ? WINDOWS_PIP_EXECUTABLE : UNIX_PIP_EXECUTABLE).toString();
     }
-
-    private volatile String systemPythonCommandCache;
 
     /**
      * The system Python command to use for creating the venv (not the venv's own python -- that doesn't exist
@@ -187,17 +212,18 @@ public class PythonBridgeDriver implements AsyncDriver {
      * while others have both. So: only fall back to "python3" if plain "python" isn't already Python 3 -- don't
      * assume "python3" exists just because this isn't Windows.
      */
-    private synchronized String systemPythonCommand() {
+    protected synchronized String systemPythonCommand() {
         if(systemPythonCommandCache != null)
             return systemPythonCommandCache;
         if(isWindows())
-            return systemPythonCommandCache = "python";
-        systemPythonCommandCache = isPython3("python") ? "python" : "python3";
+            return systemPythonCommandCache = WINDOWS_SYSTEM_PYTHON_COMMAND;
+        systemPythonCommandCache = isPython3(UNIX_PYTHON_EXECUTABLE) ? UNIX_PYTHON_EXECUTABLE
+                : UNIX_SYSTEM_PYTHON_COMMAND_FALLBACK;
         return systemPythonCommandCache;
     }
 
-
-    private boolean isPython3(String command) {
+    /** Runs `<command> -c "..."` and checks whether it reports itself as Python 3. */
+    protected boolean isPython3(String command) {
         try {
             ProcessBuilder pb = new ProcessBuilder(command, "-c",
                     "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)");
@@ -211,17 +237,17 @@ public class PythonBridgeDriver implements AsyncDriver {
     }
 
     /** Creates the venv at {@link #venvPath} if it isn't already there. Never activates it through a shell. */
-    private boolean ensureVenv() {
+    protected boolean ensureVenv() {
         if(Files.isDirectory(venvBinDir())) {
-            System.out.println("[PythonBridgeDriver] reusing existing venv at " + venvPath);
+            li("Reusing existing venv at []", venvPath);
             return true;
         }
-        System.out.println("[PythonBridgeDriver] creating venv at " + venvPath + " ...");
+        li("Creating venv at [] ...", venvPath);
         try {
             if(venvPath.getParent() != null)
                 Files.createDirectories(venvPath.getParent());
             String pythonCmd = systemPythonCommand();
-            System.out.println("[PythonBridgeDriver] using system python command: " + pythonCmd);
+            li("Using system python command: []", pythonCmd);
             ProcessBuilder pb = new ProcessBuilder(pythonCmd, "-m", "venv", venvPath.toString());
             pb.redirectErrorStream(true);
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
@@ -229,22 +255,22 @@ public class PythonBridgeDriver implements AsyncDriver {
             boolean finished = p.waitFor(VENV_CREATE_TIMEOUT_S, TimeUnit.SECONDS);
             if(!finished) {
                 p.destroyForcibly();
-                System.err.println("[PythonBridgeDriver] venv creation timed out.");
+                le("Venv creation timed out.");
                 return false;
             }
             if(p.exitValue() != 0) {
-                System.err.println("[PythonBridgeDriver] venv creation failed, exit code " + p.exitValue());
+                le("Venv creation failed, exit code []", Integer.valueOf(p.exitValue()));
                 return false;
             }
             return true;
         } catch(IOException | InterruptedException e) {
-            e.printStackTrace();
+            le("Venv creation failed with exception: []", e);
             return false;
         }
     }
 
     /** Runs `<venv>/pip install <pkg>` directly -- no shell, no activation. */
-    private boolean pipInstall(String pkg) {
+    protected boolean pipInstall(String pkg) {
         try {
             ProcessBuilder pb = new ProcessBuilder(venvPipExecutable(), "install", pkg);
             pb.redirectErrorStream(true);
@@ -257,16 +283,16 @@ public class PythonBridgeDriver implements AsyncDriver {
             }
             return p.exitValue() == 0;
         } catch(IOException | InterruptedException e) {
-            e.printStackTrace();
+            le("Pip install failed for [] with exception: []", pkg, e);
             return false;
         }
     }
 
     // ==================== server startup ====================
 
-    private static class AttemptResult {
-        boolean			started			= false;
-        List<String>	missingPackages	= new ArrayList<>();
+    protected static class AttemptResult {
+        protected boolean			started			= false;
+        protected List<String>	    missingPackages	= new ArrayList<>();
     }
 
     /**
@@ -274,7 +300,7 @@ public class PythonBridgeDriver implements AsyncDriver {
      * reporting a missing package (see {@link #MISSING_PACKAGE_PATTERN}), that's recorded in the result so the
      * caller can install it and retry. If the process stays alive, polls the HTTP endpoint until it answers.
      */
-    private AttemptResult attemptStart() {
+    protected AttemptResult attemptStart() {
         AttemptResult result = new AttemptResult();
         try {
             ProcessBuilder pb = new ProcessBuilder(venvPythonExecutable(), serverScriptPath.toString());
@@ -286,7 +312,7 @@ public class PythonBridgeDriver implements AsyncDriver {
                 String line;
                 try {
                     while((line = reader.readLine()) != null) {
-                        System.out.println("[bridge_server] " + line);
+                        lf("[bridge_server] []", line);
                         Matcher m = MISSING_PACKAGE_PATTERN.matcher(line);
                         if(m.find())
                             result.missingPackages.add(m.group(1).trim());
@@ -326,18 +352,18 @@ public class PythonBridgeDriver implements AsyncDriver {
                     return result;
                 }
             }
-            System.err.println("[PythonBridgeDriver] server did not answer within " + START_TIMEOUT_MS + "ms.");
+            le("Server did not answer within []ms.", Integer.valueOf(START_TIMEOUT_MS));
             serverProcess.destroyForcibly();
             return result;
         } catch(IOException e) {
-            e.printStackTrace();
+            le("Failed to start server process: []", e);
             return result;
         }
     }
 
-    private boolean testConnection() {
+    protected boolean testConnection() {
         try {
-            URL url = new URL(serverUrl + ":" + serverPort + "/ping");
+            URL url = new URL(serverUrl + ":" + serverPort + "/" + PING_ENDPOINT);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(500);
@@ -373,15 +399,18 @@ public class PythonBridgeDriver implements AsyncDriver {
     }
 
     /**
-     * Sends the wave's content as the "input" form field to the endpoint named by the wave's first destination
-     * element (defaulting to "call"), and wraps the response as the reply's content.
+     * Sends every payload key/value pair from the wave as its own form field, to the endpoint named by the wave's first
+     * destination element (defaulting to {@link #DEFAULT_ENDPOINT}), and wraps the response as the reply's
+     * content. A key can carry more than one value, so each
+     * value is sent as a separate "key=value" pair -- the Python side reads repeated keys with
+     * {@code request.form.getlist(key)}.
      */
-    private AgentWave doProcess(AgentWave wave) throws Exception {
+    protected AgentWave doProcess(AgentWave wave) throws Exception {
         if(!ready)
             throw new IllegalStateException("Python bridge server is not ready.");
 
         String[] destinations = wave.getDestinationElements();
-        String endpoint = (destinations != null && destinations.length > 0) ? destinations[0] : "call";
+        String endpoint = (destinations != null && destinations.length > 0) ? destinations[0] : DEFAULT_ENDPOINT;
 
         StringBuilder data = new StringBuilder();
         for(String key : wave.getContentElements()) {
