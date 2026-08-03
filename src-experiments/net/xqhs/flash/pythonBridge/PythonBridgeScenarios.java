@@ -21,7 +21,7 @@ public class PythonBridgeScenarios extends Unit {
     }
 
     public void runAll() throws InterruptedException {
-        li("=== STARTING MOCKED PYTHON-BRIDGE SCENARIOS ===");
+        li("Starting mocked PYTHON-BRIDGE scenarios");
 
         MockAsyncDriver driver = new MockAsyncDriver();
         driver.configure(new MultiTreeMap().addSingleValue(
@@ -41,12 +41,9 @@ public class PythonBridgeScenarios extends Unit {
 
         li("\nStopping MockAsyncDriver...");
         driver.stop();
-        li("=== MOCKED PYTHON-BRIDGE SCENARIOS COMPLETED ===");
+        li("Mocked PYTHON-BRIDGE scenarios completed");
     }
 
-    /**
-     * Helper method to construct the wave using the destination field and dynamically route to process/processAsync.
-     */
     private void sendWave(MockAsyncDriver driver, String destination, Map<String, String> payload, WaveReceiver callback) {
         AgentWave wave = new AgentWave();
         wave.appendDestination(destination);
@@ -71,14 +68,14 @@ public class PythonBridgeScenarios extends Unit {
     }
 
     public void testQuickSync(MockAsyncDriver driver) {
-        li("\n--- Scenario 1: Quick Sync Call ---");
+        li("\n Scenario 1: Quick Sync Call");
         Map<String, String> payload = new HashMap<>();
         payload.put("payload", "hello_world");
         sendWave(driver, "quickSync", payload, null);
     }
 
     public void testSlowSync(MockAsyncDriver driver) {
-        li("\n--- Scenario 2: Slow Sync Call ---");
+        li("\n Scenario 2: Slow Sync Call");
         Map<String, String> payload = new HashMap<>();
         payload.put("payload", "heavy_computation");
         payload.put("delayMs", "1500");
@@ -86,7 +83,7 @@ public class PythonBridgeScenarios extends Unit {
     }
 
     public void testSlowAsync(MockAsyncDriver driver) {
-        li("\n--- Scenario 3: Slow Async Call (Non-blocking) ---");
+        li("\n Scenario 3: Slow Async Call (Non-blocking)");
         Map<String, String> payload = new HashMap<>();
         payload.put("payload", "async_image_processing");
         payload.put("delayMs", "2000");
@@ -97,9 +94,9 @@ public class PythonBridgeScenarios extends Unit {
             li("[Callback Scenario 3] Time since request: " + (System.currentTimeMillis() - start) + " ms");
         });
     }
-
+    
     public void testSubscribeProgress(MockAsyncDriver driver) {
-        li("\n--- Scenario 4: Subscribe to Progress Notifications ---");
+        li("\n Scenario 4: Subscribe to Progress Notifications");
         Map<String, String> payload = new HashMap<>();
         payload.put("taskName", "ModelTrainingTask");
 
@@ -111,7 +108,7 @@ public class PythonBridgeScenarios extends Unit {
     }
 
     public void testCommonCallback(MockAsyncDriver driver) {
-        li("\n--- Scenario 5: Post several processings, same callback for all ---");
+        li("\n Scenario 5: Post several processings, same callback for all");
         
         WaveReceiver sharedCallback = reply -> {
             String taskName = reply.get("taskName");
@@ -148,16 +145,6 @@ public class PythonBridgeScenarios extends Unit {
         Map<String, String> payloadB2 = new HashMap<>();
         payloadB2.put("taskName", "Registered_Task_B2");
 
-        // Here we send async but pass a dummy callback because in MockAsyncDriver, it expects callback to be handled by the registered one.
-        // Wait, sendWave routes to processAsync if callback is not null. If callback is null, it routes to process (sync).
-        // The original code was: driver.processAsync(processWave1, null);
-        // But our sendWave method decides sync/async based on if callback is null.
-        // If we pass null to sendWave, it will call driver.process(). But we want driver.processAsync() with a null callback.
-        // To fix this, let's create a dummy callback that does nothing, just to trigger processAsync in sendWave, 
-        // OR we can update sendWave to take a boolean isAsync. 
-        // Actually, if we just use driver.processAsync directly for this specific edge case it's fine.
-        // Or we pass a dummy lambda: reply -> {}
-        
         sendWave(driver, "processCommon", payloadB1, reply -> {});
         sendWave(driver, "processCommon", payloadB2, reply -> {});
     }

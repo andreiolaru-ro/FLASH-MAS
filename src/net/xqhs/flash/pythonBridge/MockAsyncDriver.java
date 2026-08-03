@@ -123,8 +123,7 @@ public class MockAsyncDriver extends EntityCore<Node> implements EntityProxy<Moc
             try {
                 delayMs = Long.parseLong(delayStr);
             } catch (NumberFormatException e) {
-                // default
-            }
+                }
         }
         try {
             Thread.sleep(delayMs);
@@ -145,8 +144,7 @@ public class MockAsyncDriver extends EntityCore<Node> implements EntityProxy<Moc
             try {
                 delayMs = Long.parseLong(delayStr);
             } catch (NumberFormatException e) {
-                // default
-            }
+                }
         }
         final long finalDelay = delayMs;
         executor.submit(() -> {
