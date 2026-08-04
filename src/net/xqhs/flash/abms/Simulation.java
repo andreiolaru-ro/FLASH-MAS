@@ -55,7 +55,6 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		if(!super.start())
 			return false;
 		lastInstance = this;
-		li("Starting simulation with [] contexts and [] objects.", simulationContexts.size(), simulationObjects);
 		// return executor.start();
 		return true;
 	}

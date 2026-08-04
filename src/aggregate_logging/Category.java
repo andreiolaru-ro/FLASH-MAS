@@ -5,5 +5,5 @@ public enum Category implements LogAggregate {
     EATING,
     COMMUNICATION,
     ERRORS,
-    LOADING
+    SETUP
 }

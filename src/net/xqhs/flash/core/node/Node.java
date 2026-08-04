@@ -188,8 +188,7 @@ public class Node extends EntityCore<Node> {
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
-		
+        ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
 		// find if entity is a messaging pylon that can be used by the Node
 		if(nodePylonProxy == null)
 			try {
@@ -248,8 +247,7 @@ public class Node extends EntityCore<Node> {
 	public boolean start() {
 		if(!super.start())
 			return false;
-		li("Starting node [] with entities [].", name, entityOrder);
-		
+
 		startAndRegister(entityOrder, true);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
@@ -266,7 +264,6 @@ public class Node extends EntityCore<Node> {
 	
 	@Override
 	public boolean stop() {
-		li("Stopping node [] with entities [].", name, entityOrder);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {

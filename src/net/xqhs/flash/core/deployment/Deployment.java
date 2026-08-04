@@ -310,7 +310,7 @@ public class Deployment extends Unit {
 				entity = loadPack.getDefaultLoader().load(entityConfig, context, subEntities);
 		}
 		if(entity != null) {
-            ALogging.getInstance().li_agr(Category.LOADING, entity, "entity loaded");
+            ALogging.getInstance().li_agr(Category.SETUP, entity, "entity loaded");
 			entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 					DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 		}
