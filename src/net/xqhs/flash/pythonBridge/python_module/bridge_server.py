@@ -23,6 +23,9 @@ app = Flask(__name__)
 def ping():
     return jsonify({"status": "ok"})
 
+@app.route('/list', methods=['GET'])
+def list_demo_packages():
+    return jsonify({"available_demo_packages": DEMO_PACKAGES})
 
 @app.route('/call', methods=['POST'])
 def call():
