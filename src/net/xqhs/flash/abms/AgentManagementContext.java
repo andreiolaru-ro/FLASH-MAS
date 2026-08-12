@@ -62,7 +62,7 @@ public class AgentManagementContext extends BaseContext
                 }
 
                 if (!agentShards.containsKey(target)) {
-                    li("target [] already destroyed, skipping", target.getEntityName());
+//                    li("target [] already destroyed, skipping", target.getEntityName());
                     continue;
                 }
 
