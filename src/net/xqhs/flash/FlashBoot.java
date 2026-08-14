@@ -35,11 +35,13 @@ public class FlashBoot
 	 */
 	public static void main(String[] args)
 	{
+        long startTime = System.currentTimeMillis();
 		MasterLog.setLogLevel(Level.ALL);
 
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
 		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
+        long endDeploymentTime = System.currentTimeMillis();
 		// try {
 		// Thread.sleep(20000);
 		// } catch(InterruptedException e) {
@@ -48,6 +50,9 @@ public class FlashBoot
 		// }
 		for(Node node : nodes)
 			node.start();
+
+        long deploymentTime = endDeploymentTime - startTime;
+        System.out.println("Deployment time: " + deploymentTime + " ms");
 	}
 	
 }
