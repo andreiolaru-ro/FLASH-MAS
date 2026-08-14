@@ -59,14 +59,9 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 		executor = new Thread() {
 			@Override
 			public void run() {
-                long startExecutionTime = System.currentTimeMillis();
-
 				for(long step = 0; step < nSteps; step++)
 					runStep(step);
 				simulation.executionCompleted();
-                ALogging.getInstance().printAllAgr();
-                long endExecutionTime = System.currentTimeMillis();
-                System.out.println("Execution time: " + (endExecutionTime - startExecutionTime) + " ms");
 			}
 		};
 		executor.start();

@@ -2,6 +2,8 @@ package abms.smartMeeting;
 
 import java.util.List;
 
+import aggregate_logging.ALogging;
+import benchmarking.Benchmark;
 import org.json.simple.JSONObject;
 
 import abms.common.BatchRunner;
@@ -17,6 +19,7 @@ public class SmartMeetingBoot {
     public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-7n-light.json";
 
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
         String configPath = args.length > 0 ? args[0] : DEFAULT_CONFIG_PATH;
         final JsonConfig config = JsonConfig.load(configPath);
         final String scenarioName = config.getString("scenarioName", "sm-unnamed");
@@ -27,10 +30,13 @@ public class SmartMeetingBoot {
 
         System.out.println("SmartMeeting scenario: " + scenarioName + " (" + configPath + ")");
         System.out.println("Running " + runs + " run(s), " + steps + " step(s) each, baseSeed=" + baseSeed);
-
         BatchRunner.run(runs, logLevel,
                 runIndex -> buildBootString(config, baseSeed + runIndex, steps),
                 new SmRunStats(scenarioName));
+
+        ALogging.getInstance().printAllAgr();
+        Benchmark.addTime(System.currentTimeMillis() - startTime);
+        Benchmark.printResults();
     }
 
     private static String buildBootString(JsonConfig config, long seed, int steps) {
