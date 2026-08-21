@@ -1,0 +1,20 @@
+"BehaviorSpace results (NetLogo 7.0.2)","Spreadsheet version 2.0"
+"Wolf Sheep Predation.nlogox"
+"Benchmark-scale676-agents20280"
+"08/21/2026 15:48:25:614 +0300"
+"min-pxcor","max-pxcor","min-pycor","max-pycor"
+"0","155","0","155"
+"[run number]","1","1","1","2","2","2","3","3","3","4","4","4"
+"sheep-gain-from-food","4",,,"4",,,"4",,,"4",,
+"initial-number-wolves","3380",,,"3380",,,"3380",,,"3380",,
+"wolf-reproduce","5",,,"5",,,"5",,,"5",,
+"initial-number-sheep","6760",,,"6760",,,"6760",,,"6760",,
+"show-energy?","false",,,"false",,,"false",,,"false",,
+"grass-regrowth-time","5",,,"5",,,"5",,,"5",,
+"wolf-gain-from-food","20",,,"20",,,"20",,,"20",,
+"sheep-reproduce","4",,,"4",,,"4",,,"4",,
+"model-version","sheep-wolves-grass",,,"sheep-wolves-grass",,,"sheep-wolves-grass",,,"sheep-wolves-grass",,
+"[total steps]","100","100","100","100","100","100","100","100","100","100","100","100"
+
+"[final value]","[step]","count turtles","timer","[step]","count turtles","timer","[step]","count turtles","timer","[step]","count turtles","timer"
+,"100","69","0.753","100","129","0.782","100","122","0.752","100","161","0.725"
