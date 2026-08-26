@@ -35,3 +35,25 @@ def import_functionality(name, pippackage=None, critical=False):
         if critical:
             exit(1)
     return None
+
+
+def require_package(name, pippackage=None, critical=False):
+    """
+    Checks that a package is installed without importing it, emitting the same
+    parseable line as import_functionality() when it isn't.
+    """
+    from importlib.util import find_spec
+    pippackage = pippackage if pippackage is not None else name
+    log("checking", name)
+    try:
+        found = find_spec(name) is not None
+    except Exception as e:
+        log(name, "unavailable (use pip install", pippackage, "):", e)
+        if critical:
+            exit(1)
+        return False
+    if not found:
+        log(name, "unavailable (use pip install", pippackage, "): not installed")
+        if critical:
+            exit(1)
+    return found

@@ -1,21 +1,17 @@
 package net.xqhs.flash.pythonBridge;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,105 +22,70 @@ import net.xqhs.flash.ml.AsyncDriver;
 import net.xqhs.util.logging.Unit;
 
 /**
- * Java-Python bridge, built on the client - flask server model:
- * <ul>
- * <li>it creates and manages its own Python virtual environment (never touches the system Python); </li>
- * <li>it detects missing packages reported by the server script and installs them into that venv automatically,
- * retrying until the server starts or a give-up limit is reached.</li>
- * </ul>
+ * Base for all Java-Python bridges in this package: everything that is independent of <i>how</i> Java actually
+ * talks to Python lives here, so that each concrete transport only has to implement its own calling mechanism
+ * and can be used interchangeably through {@link AsyncDriver}.
  */
-
-public class PythonBridgeDriver extends Unit implements AsyncDriver {
+public abstract class PythonBridgeDriver extends Unit implements AsyncDriver {
 
     // ==================== defaults & configuration constants ====================
 
-    /** Default base URL of the Flask server. */
-    protected static final String	DEFAULT_SERVER_URL						= "http://localhost";
-    /** Default port the Flask server listens on. Must match {@code SERVER_PORT} in bridge_server.py. */
-    protected static final int		DEFAULT_SERVER_PORT						= 5099;
-    /** Default server script location, relative to this class's package under the main source root. */
-    protected static final String	DEFAULT_SERVER_SCRIPT_RELATIVE_PATH		= "python_module/bridge_server.py";
-    /** Default venv location: at the project root. */
+    /**
+     * Default venv location: a folder at the project root (sibling to {@code src/}), shared by all transports, so
+     * packages installed for one are already there for the others.
+     */
     protected static final String	DEFAULT_VENV_PATH						= "pythonBridge-venv";
-    /** Endpoint used when a wave carries no destination element at all. */
-    protected static final String	DEFAULT_ENDPOINT						= "call";
-    /** Endpoint used to poll whether the server has finished starting up. */
-    protected static final String	PING_ENDPOINT							= "ping";
-    /** GET endpoint exposed by bridge_server.py, used to exercise {@link #get(String)} in tests. */
-    protected static final String	LIST_ENDPOINT							= "list";
 
     protected static final String	WINDOWS_VENV_BIN_DIR					= "Scripts";
     protected static final String	UNIX_VENV_BIN_DIR						= "bin";
     protected static final String	WINDOWS_PYTHON_EXECUTABLE				= "python.exe";
     protected static final String	UNIX_PYTHON_EXECUTABLE					= "python";
     protected static final String	WINDOWS_PIP_EXECUTABLE					= "pip.exe";
-    protected static final String	UNIX_PIP_EXECUTABLE					    = "pip";
+    protected static final String	UNIX_PIP_EXECUTABLE						= "pip";
     protected static final String	WINDOWS_SYSTEM_PYTHON_COMMAND			= "python";
-    protected static final String	UNIX_SYSTEM_PYTHON_COMMAND_FALLBACK	    = "python3";
+    protected static final String	UNIX_SYSTEM_PYTHON_COMMAND_FALLBACK		= "python3";
 
     /**
-     * Has to match python_module/util.py's import_functionality() on a failed import.
+     Has to match python_module/util.py's import_functionality() on a failed import.
      */
-    protected static final Pattern	MISSING_PACKAGE_PATTERN				= Pattern
+    protected static final Pattern	MISSING_PACKAGE_PATTERN					= Pattern
             .compile("unavailable \\(use pip install ([\\w\\-.]+)");
+
 
     protected static final int		MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE	= 5;
     protected static final int		MAX_TOTAL_ATTEMPTS						= 100;
     /** How long to wait, per start attempt, for either a failure or a successful connection. */
-    protected static final int		START_TIMEOUT_MS						= 10000;
+    protected static final int		START_TIMEOUT_MS						= 15000;
     protected static final int		START_POLL_MS							= 300;
-    /** How long to wait for `python -m venv` / `pip install` to finish. */
+    /** How long to wait for `python -m venv` / `pip install` / a script run to completion to finish. */
     protected static final int		VENV_CREATE_TIMEOUT_S					= 60;
-    protected static final int		PIP_INSTALL_TIMEOUT_S					= 120;
+    protected static final int		PIP_INSTALL_TIMEOUT_S					= 300;
+    protected static final int		SCRIPT_RUN_TIMEOUT_S					= 60;
 
     // ==================== instance state ====================
 
-    protected final String			serverUrl;
-    protected final int				serverPort;
-    protected final Path			serverScriptPath;
     protected final Path			venvPath;
-
     protected final ExecutorService	executor								= Executors.newFixedThreadPool(4);
     protected volatile Process		serverProcess;
     protected volatile boolean		ready									= false;
     protected volatile String		systemPythonCommandCache;
 
-    /**
-     * @param serverUrl
-     *            e.g. {@link #DEFAULT_SERVER_URL}
-     * @param serverPort
-     *            port the Flask server will listen on
-     * @param serverScriptRelativePath
-     *            path to the server script, relative to this class's package (e.g.
-     *            {@link #DEFAULT_SERVER_SCRIPT_RELATIVE_PATH})
-     * @param venvRelativePath
-     *            where to create/reuse the venv, relative to the working directory the JVM was started from (e.g.
-     *            {@link #DEFAULT_VENV_PATH})
-     */
-    public PythonBridgeDriver(String serverUrl, int serverPort, String serverScriptRelativePath,
-                              String venvRelativePath) {
+    protected PythonBridgeDriver(String venvRelativePath) {
         setUnitName(getClass().getSimpleName());
-        this.serverUrl = serverUrl;
-        this.serverPort = serverPort;
-        this.serverScriptPath = Paths.get(
-                DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN],
-                getClass().getPackage().getName().replace('.', '/'), serverScriptRelativePath);
         this.venvPath = Paths.get(venvRelativePath);
     }
 
-    /** Convenience constructor using all the defaults above. */
-    public PythonBridgeDriver() {
-        this(DEFAULT_SERVER_URL, DEFAULT_SERVER_PORT, DEFAULT_SERVER_SCRIPT_RELATIVE_PATH, DEFAULT_VENV_PATH);
+    protected PythonBridgeDriver() {
+        this(DEFAULT_VENV_PATH);
     }
 
+    // ==================== lifecycle ====================
+
     /**
-     * Creates the venv if it doesn't exist yet, then starts the Python server, automatically installing any
-     * package it reports as missing and retrying. The retry budget is per distinct missing package (see
-     * {@link #MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE}): as long as each attempt reports a *different* missing
-     * package than the previous one, it keeps going -- it only gives up if the same package fails to become
-     * available several times in a row.
+     * Creates the venv if needed, then brings the Python side up via {@link #attemptStart()}, installing any
+     * package reported missing and retrying (see {@link #MAX_CONSECUTIVE_ATTEMPTS_PER_PACKAGE}).
      *
-     * @return <code>true</code> if the server ended up running and reachable.
+     * @return <code>true</code> if the Python side ended up usable.
      */
     public boolean start() {
         if(!ensureVenv())
@@ -140,15 +101,14 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
                 return true;
             }
             if(result.missingPackages.isEmpty()) {
-                le("Server failed to start and reported no missing package; giving up.");
+                le("Python side failed to start and reported no missing package; giving up.");
                 return false;
             }
 
             String currentProblem = String.join(",", result.missingPackages);
-            if(currentProblem.equals(lastProblem)) {
+            if(currentProblem.equals(lastProblem))
                 attemptsOnCurrentProblem++;
-            } else {
-                // different package than last time -> we made progress; the budget resets
+            else { // different package than last time -> we made progress; the budget resets
                 lastProblem = currentProblem;
                 attemptsOnCurrentProblem = 1;
             }
@@ -170,7 +130,7 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
         return false;
     }
 
-    /** Stops the server process and shuts down the executor. Safe to call even if start() was never called. */
+    /** Shuts down the executor and hands over to {@link #stopPython()} for transport-specific cleanup. */
     public void stop() {
         ready = false;
         executor.shutdown();
@@ -180,6 +140,7 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
         } catch(InterruptedException e) {
             executor.shutdownNow();
         }
+        stopPython();
         if(serverProcess != null) {
             serverProcess.destroy();
             serverProcess = null;
@@ -188,6 +149,51 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
 
     public boolean isReady() {
         return ready;
+    }
+
+    /** One attempt at bringing the Python side up. Reports missing packages so the caller can install them. */
+    protected abstract AttemptResult attemptStart();
+
+    /** Transport-specific cleanup. The base class already stops {@link #serverProcess} and the executor. */
+    protected abstract void stopPython();
+
+    /** The actual call into Python. Everything else in this class exists to make this method possible. */
+    protected abstract AgentWave doProcess(AgentWave wave) throws Exception;
+
+    // ==================== AsyncDriver ====================
+
+    @Override
+    public AgentWave process(AgentWave wave) {
+        try {
+            return doProcess(wave);
+        } catch(Exception e) {
+            return wave.createReply(describeError(e));
+        }
+    }
+
+    @Override
+    public void processAsync(AgentWave wave, WaveReceiver callback) {
+        executor.submit(() -> {
+            try {
+                callback.receive(doProcess(wave));
+            } catch(Exception e) {
+                callback.receive(wave.createReply(describeError(e)));
+            }
+        });
+    }
+
+
+    protected String describeError(Throwable error) {
+        Throwable cause = (error instanceof java.util.concurrent.ExecutionException && error.getCause() != null)
+                ? error.getCause() : error;
+        String message = cause.getMessage();
+        return "ERROR: " + (message != null && !message.isEmpty() ? message : cause.getClass().getSimpleName());
+    }
+
+
+    protected void checkReady() {
+        if(!ready)
+            throw new IllegalStateException("Python bridge is not ready.");
     }
 
     // ==================== venv management ====================
@@ -208,12 +214,17 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
         return venvBinDir().resolve(isWindows() ? WINDOWS_PIP_EXECUTABLE : UNIX_PIP_EXECUTABLE).toString();
     }
 
+    /** Absolute path of a file in this package's python_module directory. */
+    protected Path pythonModuleFile(String fileName) {
+        return Paths.get(DeploymentConfiguration.SOURCE_FILE_DIRECTORIES[DeploymentConfiguration.SOURCE_INDEX_MAIN],
+                PythonBridgeDriver.class.getPackage().getName().replace('.', '/'), "python_module", fileName);
+    }
+
     /**
      * The system Python command to use for creating the venv (not the venv's own python -- that doesn't exist
      * yet at this point). On Windows this is always "python". On Linux/Mac, some setups don't have a "python3"
-     * binary at all and only have "python" already pointing to Python 3 (e.g. some distros, some conda setups),
-     * while others have both. So: only fall back to "python3" if plain "python" isn't already Python 3 -- don't
-     * assume "python3" exists just because this isn't Windows.
+     * binary at all and only have "python" already pointing to Python 3, while others have both. So: only fall
+     * back to "python3" if plain "python" isn't already Python 3 -- don't assume "python3" exists.
      */
     protected synchronized String systemPythonCommand() {
         if(systemPythonCommandCache != null)
@@ -235,7 +246,7 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
             boolean finished = p.waitFor(5, TimeUnit.SECONDS);
             return finished && p.exitValue() == 0;
         } catch(IOException | InterruptedException e) {
-            return false;
+            return false; // command not found, or some other problem running it -- treat as "not usable"
         }
     }
 
@@ -255,8 +266,7 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
             pb.redirectErrorStream(true);
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             Process p = pb.start();
-            boolean finished = p.waitFor(VENV_CREATE_TIMEOUT_S, TimeUnit.SECONDS);
-            if(!finished) {
+            if(!p.waitFor(VENV_CREATE_TIMEOUT_S, TimeUnit.SECONDS)) {
                 p.destroyForcibly();
                 le("Venv creation timed out.");
                 return false;
@@ -272,15 +282,19 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
         }
     }
 
-    /** Runs `<venv>/pip install <pkg>` directly -- no shell, no activation. */
+    /**
+     * Runs `<venv>/pip install <pkg>` directly -- no shell, no activation. JAVA_HOME is passed through from the
+     * running JVM because some packages (notably jep, used by {@link PythonJepBridgeDriver}) compile against the
+     * JDK and won't build without it.
+     */
     protected boolean pipInstall(String pkg) {
         try {
             ProcessBuilder pb = new ProcessBuilder(venvPipExecutable(), "install", pkg);
+            pb.environment().put("JAVA_HOME", System.getProperty("java.home", ""));
             pb.redirectErrorStream(true);
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             Process p = pb.start();
-            boolean finished = p.waitFor(PIP_INSTALL_TIMEOUT_S, TimeUnit.SECONDS);
-            if(!finished) {
+            if(!p.waitFor(PIP_INSTALL_TIMEOUT_S, TimeUnit.SECONDS)) {
                 p.destroyForcibly();
                 return false;
             }
@@ -291,41 +305,48 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
         }
     }
 
-    // ==================== server startup ====================
+    /** Asks the venv's python for a value, e.g. a sysconfig path. Returns <code>null</code> on any failure. */
+    protected String queryVenvPython(String pythonExpression) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(venvPythonExecutable(), "-c", pythonExpression);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            String out;
+            try(BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while((line = in.readLine()) != null)
+                    sb.append(line);
+                out = sb.toString().trim();
+            }
+            if(!p.waitFor(30, TimeUnit.SECONDS) || p.exitValue() != 0)
+                return null;
+            return out.isEmpty() ? null : out;
+        } catch(IOException | InterruptedException e) {
+            return null;
+        }
+    }
 
+    // ==================== running python scripts with missing-package detection ====================
+
+    /** Outcome of one start attempt: either it worked, or these packages need installing first. */
     protected static class AttemptResult {
-        protected boolean			started			= false;
-        protected List<String>	    missingPackages	= new ArrayList<>();
+        protected boolean		started			= false;
+        protected List<String>	missingPackages	= new ArrayList<>();
     }
 
     /**
-     * Starts the server script with the venv's python and watches its output. If the script exits quickly
-     * reporting a missing package (see {@link #MISSING_PACKAGE_PATTERN}), that's recorded in the result so the
-     * caller can install it and retry. If the process stays alive, polls the HTTP endpoint until it answers.
+     * Starts a long-running Python script (a server) with the venv's python and watches its output. If the
+     * script exits early reporting a missing package, that's recorded so the caller can install it and retry.
+     * While the process stays alive, {@code readinessCheck} is polled until it passes.
      */
-    protected AttemptResult attemptStart() {
+    protected AttemptResult runServerScript(Path script, BooleanSupplier readinessCheck) {
         AttemptResult result = new AttemptResult();
         try {
-            ProcessBuilder pb = new ProcessBuilder(venvPythonExecutable(), serverScriptPath.toString());
+            ProcessBuilder pb = new ProcessBuilder(venvPythonExecutable(), script.toString());
             pb.redirectErrorStream(true);
             serverProcess = pb.start();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(serverProcess.getInputStream()));
-            Thread readerThread = new Thread(() -> {
-                String line;
-                try {
-                    while((line = reader.readLine()) != null) {
-                        lf("[bridge_server] []", line);
-                        Matcher m = MISSING_PACKAGE_PATTERN.matcher(line);
-                        if(m.find())
-                            result.missingPackages.add(m.group(1).trim());
-                    }
-                } catch(IOException ignored) {
-                    // stream closes when the process ends; nothing to do
-                }
-            });
-            readerThread.setDaemon(true);
-            readerThread.start();
+            Thread readerThread = watchOutput(serverProcess, result);
 
             int waited = 0;
             while(waited < START_TIMEOUT_MS) {
@@ -337,12 +358,11 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
                 }
                 waited += START_POLL_MS;
 
-                if(!serverProcess.isAlive()) {
-                    // exited - give the reader thread a moment to flush the last lines it's reading
+                if(!serverProcess.isAlive()) { // exited -- let the reader flush the last lines
                     try {
                         readerThread.join(1000);
                     } catch(InterruptedException ignored) {
-                        // continue
+                        // nothing to do
                     }
                     return result;
                 }
@@ -350,171 +370,67 @@ public class PythonBridgeDriver extends Unit implements AsyncDriver {
                     serverProcess.destroyForcibly();
                     return result;
                 }
-                if(testConnection()) {
+                if(readinessCheck.getAsBoolean()) {
                     result.started = true;
                     return result;
                 }
             }
-            le("Server did not answer within []ms.", Integer.valueOf(START_TIMEOUT_MS));
+            le("Python server did not become ready within []ms.", Integer.valueOf(START_TIMEOUT_MS));
             serverProcess.destroyForcibly();
             return result;
         } catch(IOException e) {
-            le("Failed to start server process: []", e);
+            le("Failed to start python script []: []", script, e);
             return result;
         }
     }
 
-    protected boolean testConnection() {
+    /**
+     * Runs a Python script that is expected to terminate (used as an import probe: it exits 0 when every
+     * required package is importable, and exits 1 after printing the parseable line when one is missing).
+     */
+    protected AttemptResult runScriptToCompletion(Path script) {
+        AttemptResult result = new AttemptResult();
         try {
-            URL url = new URL(serverUrl + ":" + serverPort + "/" + PING_ENDPOINT);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(500);
-            connection.setReadTimeout(500);
-            int code = connection.getResponseCode();
-            connection.disconnect();
-            return code == 200;
-        } catch(Exception e) {
-            return false;
+            ProcessBuilder pb = new ProcessBuilder(venvPythonExecutable(), script.toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            Thread readerThread = watchOutput(p, result);
+            if(!p.waitFor(SCRIPT_RUN_TIMEOUT_S, TimeUnit.SECONDS)) {
+                p.destroyForcibly();
+                le("Python script [] timed out.", script);
+                return result;
+            }
+            try {
+                readerThread.join(1000);
+            } catch(InterruptedException ignored) {
+                // nothing to do
+            }
+            result.started = p.exitValue() == 0 && result.missingPackages.isEmpty();
+            return result;
+        } catch(IOException | InterruptedException e) {
+            le("Failed to run python script []: []", script, e);
+            return result;
         }
     }
 
-    // ==================== AsyncDriver ====================
-
-    @Override
-    public void processAsync(AgentWave wave, WaveReceiver callback) {
-        executor.submit(() -> {
+    /** Pumps a process's merged output into the log, recording any missing package it reports. */
+    protected Thread watchOutput(Process process, AttemptResult result) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        Thread readerThread = new Thread(() -> {
+            String line;
             try {
-                callback.receive(doProcess(wave));
-            } catch(Exception e) {
-                callback.receive(wave.createReply("ERROR: " + e.getMessage()));
+                while((line = reader.readLine()) != null) {
+                    lf("[python] []", line);
+                    Matcher m = MISSING_PACKAGE_PATTERN.matcher(line);
+                    if(m.find())
+                        result.missingPackages.add(m.group(1).trim());
+                }
+            } catch(IOException ignored) {
+                // stream closes when the process ends; nothing to do
             }
         });
-    }
-
-    @Override
-    public AgentWave process(AgentWave wave) {
-        try {
-            return doProcess(wave);
-        } catch(Exception e) {
-            return wave.createReply("ERROR: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Sends every payload key/value pair from the wave as its own form field, to the endpoint named by the wave's first
-     * destination element (defaulting to {@link #DEFAULT_ENDPOINT}), and wraps the response as the reply's
-     * content. A key can carry more than one value, so each
-     * value is sent as a separate "key=value" pair -- the Python side reads repeated keys with
-     * {@code request.form.getlist(key)}.
-     */
-    protected AgentWave doProcess(AgentWave wave) throws Exception {
-        if(!ready)
-            throw new IllegalStateException("Python bridge server is not ready.");
-
-        String[] destinations = wave.getDestinationElements();
-        String endpoint = (destinations != null && destinations.length > 0) ? destinations[0] : DEFAULT_ENDPOINT;
-
-        StringBuilder data = new StringBuilder();
-        for(String key : wave.getContentElements()) {
-            for(String value : wave.getValues(key)) {
-                if(data.length() > 0)
-                    data.append("&");
-                data.append(URLEncoder.encode(key, "UTF-8")).append("=").append(URLEncoder.encode(value, "UTF-8"));
-            }
-        }
-
-        URL url = new URL(serverUrl + ":" + serverPort + "/" + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setDoOutput(true);
-        try(DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
-            out.writeBytes(data.toString());
-        }
-
-        boolean isError = connection.getResponseCode() >= 400;
-        String response;
-        try(BufferedReader in = new BufferedReader(
-                new InputStreamReader(isError ? connection.getErrorStream() : connection.getInputStream()))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while((line = in.readLine()) != null)
-                sb.append(line);
-            response = sb.toString();
-        }
-        if(isError)
-            throw new Exception("HTTP " + connection.getResponseCode() + ": " + response);
-
-        return wave.createReply(response);
-    }
-
-    /**
-     * Plain HTTP GET call to a named endpoint. Modeled
-     * after {@code PythonHTTPInterface.getModels()}, but made generic.
-     *
-     * @param endpoint
-     *            the Python-side route to call, e.g. {@link #LIST_ENDPOINT}
-     * @return the raw response body
-     */
-    public String get(String endpoint) throws Exception {
-        if(!ready)
-            throw new IllegalStateException("Python bridge server is not ready.");
-        URL url = new URL(serverUrl + ":" + serverPort + "/" + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        return readResponse(connection);
-    }
-
-    /**
-     * Plain HTTP POST call to a named endpoint with an explicit, single-valued parameter map, bypassing
-     * {@link AgentWave} entirely. Modeled after {@code PythonHTTPInterface.predict(...)} / its private
-     * {@code sendPostRequest()} helper from the python-bridge branch, generalized here to any endpoint/params
-     * instead of a fixed "model_name"/"input_data" pair. Unlike {@link #process(AgentWave)}, a key can only
-     * carry one value here -- use the wave-based methods if a key needs several.
-     *
-     * @param endpoint
-     *            the Python-side route to call, e.g. {@link #DEFAULT_ENDPOINT}
-     * @param params
-     *            parameters to send as form fields; may be <code>null</code> for none
-     * @return the raw response body
-     */
-    public String post(String endpoint, Map<String, String> params) throws Exception {
-        if(!ready)
-            throw new IllegalStateException("Python bridge server is not ready.");
-        StringBuilder data = new StringBuilder();
-        if(params != null)
-            for(Map.Entry<String, String> entry : params.entrySet()) {
-                if(data.length() > 0)
-                    data.append("&");
-                data.append(URLEncoder.encode(entry.getKey(), "UTF-8")).append("=")
-                        .append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-            }
-        URL url = new URL(serverUrl + ":" + serverPort + "/" + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setDoOutput(true);
-        try(DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
-            out.writeBytes(data.toString());
-        }
-        return readResponse(connection);
-    }
-
-    /** Reads the response body and throws if the HTTP status indicates an error. Shared by all call methods. */
-    protected String readResponse(HttpURLConnection connection) throws Exception {
-        boolean isError = connection.getResponseCode() >= 400;
-        String response;
-        try(BufferedReader in = new BufferedReader(
-                new InputStreamReader(isError ? connection.getErrorStream() : connection.getInputStream()))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while((line = in.readLine()) != null)
-                sb.append(line);
-            response = sb.toString();
-        }
-        if(isError)
-            throw new Exception("HTTP " + connection.getResponseCode() + ": " + response);
-        return response;
+        readerThread.setDaemon(true);
+        readerThread.start();
+        return readerThread;
     }
 }
