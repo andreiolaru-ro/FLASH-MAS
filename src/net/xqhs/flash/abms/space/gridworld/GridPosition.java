@@ -210,12 +210,14 @@ public class GridPosition implements Position
 			return (positionX == ((GridPosition) obj).positionX) && (positionY == ((GridPosition) obj).positionY);
 		return false;
 	}
-	
-	@Override
-	public int hashCode()
-	{
-		return positionX + positionY;
-	}
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + positionX;
+        result = 31 * result + positionY;
+        return result;
+    }
 	
 	/**
 	 * Computes Manhattan distance from specified position.
