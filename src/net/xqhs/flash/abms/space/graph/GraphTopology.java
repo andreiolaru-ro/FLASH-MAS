@@ -89,6 +89,11 @@ public class GraphTopology implements Topology<GraphPosition> {
 		return neighbors != null ? Collections.unmodifiableSet(neighbors) : Collections.emptySet();
 	}
 
+    public Set<GraphPosition> getVicinity(GraphPosition pos, int range) {
+        // TODO
+        return new HashSet<>();
+    }
+
 	@Override
 	public boolean isValidPosition(GraphPosition pos) {
 		return pos != null && adjacency.containsKey(pos);
