@@ -99,7 +99,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 	
 	@Override
 	public boolean stop() {
-		li("Executor stopped.");
 		try {
 			executor.join();
 		} catch(InterruptedException e) {
