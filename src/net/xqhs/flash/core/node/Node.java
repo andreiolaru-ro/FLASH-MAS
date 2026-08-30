@@ -275,7 +275,6 @@ public class Node extends EntityCore<Node> {
 			}
 		}
 		sendStatusUpdate();
-		li("Node [] stopped.", name);
 		super.stop();
 		return true;
 	}
@@ -371,8 +370,6 @@ public class Node extends EntityCore<Node> {
 					if(e.isRunning())
 						// found an active entity still running
 						return;
-		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
-				activeEntities);
 		activeMonitor.cancel();
 		stop();
 	}
