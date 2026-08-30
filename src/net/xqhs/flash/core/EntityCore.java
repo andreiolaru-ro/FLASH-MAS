@@ -104,7 +104,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	@Override
 	public boolean stop() {
 		if(!running)
-			return ler(false, "Entity is already stopped");
+			return false;
 		running = false;
 		return true;
 	}
