@@ -19,7 +19,7 @@ public class SmartMeetingBoot {
     public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-7n-light.json";
 
     public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
+        Benchmark.start("Total");
         String configPath = args.length > 0 ? args[0] : DEFAULT_CONFIG_PATH;
         final JsonConfig config = JsonConfig.load(configPath);
         final String scenarioName = config.getString("scenarioName", "sm-unnamed");
@@ -35,7 +35,7 @@ public class SmartMeetingBoot {
                 new SmRunStats(scenarioName));
 
         ALogging.getInstance().printAllAgr();
-        Benchmark.addTime(System.currentTimeMillis() - startTime);
+        Benchmark.stop("Total");
         Benchmark.printResults();
     }
 

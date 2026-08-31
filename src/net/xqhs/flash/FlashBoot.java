@@ -14,6 +14,8 @@ package net.xqhs.flash;
 import java.util.Arrays;
 import java.util.List;
 
+import benchmarking.Benchmark;
+import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.util.logging.Logger.Level;
@@ -35,24 +37,30 @@ public class FlashBoot
 	 */
 	public static void main(String[] args)
 	{
-        long startTime = System.currentTimeMillis();
+        Benchmark.start("Total");
 		MasterLog.setLogLevel(Level.ALL);
 
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
+        Benchmark.start("Deployment");
 		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
-        long endDeploymentTime = System.currentTimeMillis();
+        Benchmark.stop("Deployment");
 		// try {
 		// Thread.sleep(20000);
 		// } catch(InterruptedException e) {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
+        Benchmark.start("Execution");
 		for(Node node : nodes)
 			node.start();
-
-        long deploymentTime = endDeploymentTime - startTime;
-        System.out.println("Deployment time: " + deploymentTime + " ms");
+        Simulation sim = Simulation.getLastInstance();
+        if (sim == null)
+            throw new IllegalStateException("Missing simulation");
+        sim.awaitCompletion();
+        Benchmark.stop("Execution");
+        Benchmark.stop("Total");
+        Benchmark.printResults();
 	}
 	
 }
