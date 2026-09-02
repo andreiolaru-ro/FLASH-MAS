@@ -68,6 +68,7 @@ public class GridTopology implements Topology<GridPosition> {
 
         for (int dx = -range; dx <= range; dx++) {
             for (int dy = -range; dy <= range; dy++) {
+                if (dx == 0 && dy == 0) continue;
                 GridPosition newPos = new GridPosition(cx + dx, cy + dy);
                 if (isValidPosition(newPos))
                     vicinity.add(newPos);

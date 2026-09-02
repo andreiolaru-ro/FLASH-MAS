@@ -104,9 +104,6 @@ public class SpaceContext<P extends Position> extends BaseContext
 		Map<P, Set<EntityProxy<?>>> result = new HashMap<>();
         Set<P> positions = getVicinity(center, range);
         for (P pos : positions) {
-            if (pos.equals(center))
-                continue;
-
             Set<EntityProxy<?>> entities = getEntitiesAt(pos);
 
             if (entities != null && !entities.isEmpty())

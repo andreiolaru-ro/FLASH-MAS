@@ -90,8 +90,28 @@ public class GraphTopology implements Topology<GraphPosition> {
 	}
 
     public Set<GraphPosition> getVicinity(GraphPosition pos, int range) {
-        // TODO
-        return new HashSet<>();
+        Queue<GraphPosition> queue = new LinkedList<>();
+        Set<GraphPosition> positions = new HashSet<>();
+        queue.add(pos);
+        positions.add(pos);
+        int currRange = 0;
+        while (!queue.isEmpty() && currRange < range) {
+            int levelSize = queue.size();
+            for (int i = 0; i < levelSize; i++) {
+                GraphPosition currPos = queue.poll();
+                Set<GraphPosition> neighbors = adjacency.get(currPos);
+                if (neighbors == null) {
+                    continue;
+                }
+                for (GraphPosition neigh : neighbors) {
+                    if (isValidPosition(neigh) && positions.add(neigh))
+                        queue.add(neigh);
+                }
+            }
+            currRange++;
+        }
+        positions.remove(pos);
+        return positions;
     }
 
 	@Override
