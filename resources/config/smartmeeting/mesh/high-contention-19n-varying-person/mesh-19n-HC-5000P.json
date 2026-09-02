@@ -1,0 +1,56 @@
+{
+  "scenarioName": "sm-19n-HC-5000P",
+  "description": "Multi-floor mesh topology with cycles, heterogeneous rooms, and person agents with varying priorities, durations, and strict equipment constraints.",
+  "runs": 5,
+  "steps": 50000,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "graph": {
+    "nodes": [
+      "lobby",
+      "f1_hall", "f2_hall", "f3_hall",
+      "r11", "r12", "r13", "r14", "r15",
+      "r21", "r22", "r23", "r24", "r25",
+      "r31", "r32", "r33", "r34", "r35"
+    ],
+    "edges": [
+      "lobby-f1_hall", "f1_hall-f2_hall", "f2_hall-f3_hall",
+      "f1_hall-r11", "f1_hall-r12", "f1_hall-r13", "f1_hall-r14", "f1_hall-r15",
+      "f2_hall-r21", "f2_hall-r22", "f2_hall-r23", "f2_hall-r24", "f2_hall-r25",
+      "f3_hall-r31", "f3_hall-r32", "f3_hall-r33", "f3_hall-r34", "f3_hall-r35",
+      "r15-r25", "r25-r35"
+    ]
+  },
+  "agents": [
+    {
+      "kind": "Auction",
+      "count": 1,
+      "params": { "releaseAfterSteps": 20 }
+    },
+    {
+      "kind": "Room",
+      "count": 15,
+      "params": {
+        "capacityList": "2|4|6|8",
+        "equipmentList": "WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER"
+      }
+    },
+    {
+      "kind": "Person",
+      "count": 5000,
+      "params": {
+        "auctionAgent": "auction0",
+        "startMin": 10,
+        "startMax": 100,
+        "startStep": 10,
+        "attendeesMinList": "2|4|6",
+        "attendeesMaxList": "4|8|12",
+        "durationsList": "30|30|30,60|30,60|60|60|60,90|60,90",
+        "priorityMinList": "3|3|2|2|1|1|1|1",
+        "priorityMaxList": "3|3|3|3|2|2|2|2",
+        "equipmentPoolList": "PROJECTOR|PROJECTOR|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE",
+        "equipmentProbList": "0.3|0.3|0.6|0.6|0.8|0.8|0.9|0.9"
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "scenarioName": "sm-star-16n-HC-1000P",
+  "description": "Pure star topology with a lobby connected directly to 15 heterogeneous rooms and 1000 person agents.",
+  "runs": 5,
+  "steps": 50000,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "graph": {
+    "nodes": [
+      "hub",
+      "r1", "r2", "r3", "r4", "r5",
+      "r6", "r7", "r8", "r9", "r10",
+      "r11", "r12", "r13", "r14", "r15"
+    ],
+    "edges": [
+      "hub-r1", "hub-r2", "hub-r3", "hub-r4", "hub-r5",
+      "hub-r6", "hub-r7", "hub-r8", "hub-r9", "hub-r10",
+      "hub-r11", "hub-r12", "hub-r13", "hub-r14", "hub-r15"
+    ]
+  },
+  "agents": [
+    {
+      "kind": "Auction",
+      "count": 1,
+      "params": { "releaseAfterSteps": 20 }
+    },
+    {
+      "kind": "Room",
+      "count": 15,
+      "params": {
+        "capacityList": "2|4|6|8",
+        "equipmentList": "WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE,PRINTER"
+      }
+    },
+    {
+      "kind": "Person",
+      "count": 1000,
+      "params": {
+        "auctionAgent": "auction0",
+        "startMin": 10,
+        "startMax": 100,
+        "startStep": 10,
+        "attendeesMinList": "2|4|6",
+        "attendeesMaxList": "4|8|12",
+        "durationsList": "30|30|30,60|30,60|60|60|60,90|60,90",
+        "priorityMinList": "3|3|2|2|1|1|1|1",
+        "priorityMaxList": "3|3|3|3|2|2|2|2",
+        "equipmentPoolList": "PROJECTOR|PROJECTOR|PROJECTOR,WHITEBOARD|PROJECTOR,WHITEBOARD|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE|PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE",
+        "equipmentProbList": "0.3|0.3|0.6|0.6|0.8|0.8|0.9|0.9"
+      }
+    }
+  ]
+}
