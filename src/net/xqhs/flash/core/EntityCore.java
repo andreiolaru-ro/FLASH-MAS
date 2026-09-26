@@ -93,7 +93,6 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	public boolean start() {
 		if(running)
 			return ler(false, "Entity is already running");
-		lf("[] starting", name);
 		running = true;
 		return true;
 	}
@@ -105,8 +104,7 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 	@Override
 	public boolean stop() {
 		if(!running)
-			return ler(false, "Entity is already stopped");
-		lf("[] stopped", name);
+			return false;
 		running = false;
 		return true;
 	}

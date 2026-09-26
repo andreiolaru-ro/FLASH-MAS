@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -186,8 +188,7 @@ public class Node extends EntityCore<Node> {
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
-		
+        ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
 		// find if entity is a messaging pylon that can be used by the Node
 		if(nodePylonProxy == null)
 			try {
@@ -216,12 +217,10 @@ public class Node extends EntityCore<Node> {
 	
 	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
 		for(Entity<?> entity : entities) {
-			String entityName = entity.getName();
-			lf("starting entity []...", entityName);
 			if(entity.start())
-				lf("entity [] started successfully.", entityName);
+                ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
 			else
-				le("failed to start entity [].", entityName);
+                ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
 		}
 		
 		if(isNodeStart) {
@@ -248,8 +247,7 @@ public class Node extends EntityCore<Node> {
 	public boolean start() {
 		if(!super.start())
 			return false;
-		li("Starting node [] with entities [].", name, entityOrder);
-		
+
 		startAndRegister(entityOrder, true);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
@@ -266,20 +264,17 @@ public class Node extends EntityCore<Node> {
 	
 	@Override
 	public boolean stop() {
-		li("Stopping node [] with entities [].", name, entityOrder);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
-				lf("stopping entity []...", entity.getName());
 				if(entity.stop())
-					lf("entity [] stopped successfully.", entity.getName());
+                    ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
 				else
-					le("failed to stop entity [].", entity.getName());
+                    ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
 		sendStatusUpdate();
-		li("Node [] stopped.", name);
 		super.stop();
 		return true;
 	}
@@ -375,8 +370,6 @@ public class Node extends EntityCore<Node> {
 					if(e.isRunning())
 						// found an active entity still running
 						return;
-		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
-				activeEntities);
 		activeMonitor.cancel();
 		stop();
 	}

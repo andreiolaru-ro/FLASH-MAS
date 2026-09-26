@@ -79,6 +79,10 @@ public class SpaceContext<P extends Position> extends BaseContext
 		return topology.getVicinity(pos);
 	}
 
+    public Set<P> getVicinity(P pos, int range) {
+        return topology.getVicinity(pos, range);
+    }
+
 	public Set<P> getValidNeighborPositions(P pos) {
 		return getVicinity(pos).stream()
 				.filter(p -> topology.isValidPosition(p))
@@ -93,23 +97,18 @@ public class SpaceContext<P extends Position> extends BaseContext
 
 	public Set<EntityProxy<?>> getEntitiesAt(P pos) {
 		Set<EntityProxy<?>> entities = entityInPosition.get(pos);
-		return entities != null ? entities : new java.util.HashSet<>();
+		return entities != null ? entities : java.util.Collections.emptySet();
 	}
 
 	public Map<P, Set<EntityProxy<?>>> getEntitiesWithinRange(P center, int range) {
 		Map<P, Set<EntityProxy<?>>> result = new HashMap<>();
-		for(Map.Entry<P, Set<EntityProxy<?>>> entry : entityInPosition.entrySet()) {
-			P pos = entry.getKey();
-			if(pos.equals(center))
-				continue;
-			if(!topology.isValidPosition(pos))
-				continue;
-			if(topology.getDistance(center, pos) <= range) {
-				Set<EntityProxy<?>> entities = entry.getValue();
-				if(entities != null && !entities.isEmpty())
-					result.put(pos, entities);
-			}
-		}
+        Set<P> positions = getVicinity(center, range);
+        for (P pos : positions) {
+            Set<EntityProxy<?>> entities = getEntitiesAt(pos);
+
+            if (entities != null && !entities.isEmpty())
+                result.put(pos, entities);
+        }
 		return result;
 	}
 
@@ -128,8 +127,9 @@ public class SpaceContext<P extends Position> extends BaseContext
 						|| !topology.isValidPosition(targetPosition))
 					le("New position [] invalid for []", targetPosition, e.getEntityName());
 				else {
-					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "moving entity [] from [] to []", e.getEntityName(),
-							currentPosition, targetPosition);
+//                  TODO: Check if this is still needed or should be deleted
+//					dbg(ContextDebugItem.DEBUG_ALL_ACTIONS, "moving entity [] from [] to []", e.getEntityName(),
+//							currentPosition, targetPosition);
 					entityInPosition.get(currentPosition).remove(e);
 					entityInPosition.computeIfAbsent(targetPosition, p -> new java.util.HashSet<>()).add(e);
 					entityPositions.put(e, targetPosition);

@@ -3,6 +3,7 @@ package net.xqhs.flash.abms;
 import java.util.ArrayList;
 import java.util.List;
 
+import aggregate_logging.ALogging;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
@@ -61,6 +62,7 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 				for(long step = 0; step < nSteps; step++)
 					runStep(step);
 				simulation.executionCompleted();
+                ALogging.getInstance().printAllAgr();
 			}
 		};
 		executor.start();
@@ -98,7 +100,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 	
 	@Override
 	public boolean stop() {
-		li("Executor stopped.");
 		try {
 			executor.join();
 		} catch(InterruptedException e) {

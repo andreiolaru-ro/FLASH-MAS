@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import net.xqhs.flash.abms.AgentManagementContext;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
@@ -53,7 +55,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             case AGENT_WAVE:
                 String content = event.get(AgentWave.CONTENT);
                 if (AgentManagementContext.DESTROY_WAVE_CONTENT.equals(content)) {
-                    li("[] is being eaten, deregistering", getEntityName());
+                    ALogging.getInstance().li_agr(Category.EATING, this, "sheep eaten and deregistered");
                     if (simulation != null)
                         simulation.deregisterEntity((Entity<?>) this);
                     return true;
@@ -87,7 +89,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
 
     @Override
     public void step() {
-        li("sheep step");
+        ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "sheep step");
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null) {
             alertReceived = false;
@@ -96,13 +98,14 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
-                li("sheep eats grass [] at []", entity.getEntityName(), currentPos);
+                ALogging.getInstance().li_agr(Category.EATING, this,
+                        "sheep eats grass [] at coordinates []", entity.getEntityName(), currentPos);
                 e.sendWaveTo(entity, new AgentWave(GrassPatch.EAT_WAVE_CONTENT));
             }
         }
 
         if (alertReceived) {
-            li("[] received danger alert from neighbor", getEntityName());
+            ALogging.getInstance().li_agr(Category.COMMUNICATION, this, "sheep received danger alert from neighbor");
         }
 
         boolean wolfVisible = false;
@@ -113,7 +116,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             }
 
         if (wolfVisible) {
-            li("[] spots a wolf nearby, broadcasting", getEntityName());
+            ALogging.getInstance().li_agr(Category.COMMUNICATION, this, "sheep spots a wolf nearby and broadcasts");
             e.broadcast(new AgentWave("wolf-alert"));
         }
 
@@ -123,8 +126,9 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             return;
         }
 
-        if (wolfVisible || alertReceived)
-            li("[] is running away", getEntityName());
+        if (wolfVisible || alertReceived) {
+            ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "sheep ran away");
+        }
 
         // Look for nearest grown grass within vision range
         @SuppressWarnings("unchecked")

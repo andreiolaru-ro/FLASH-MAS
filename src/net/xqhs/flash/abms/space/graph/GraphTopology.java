@@ -89,6 +89,31 @@ public class GraphTopology implements Topology<GraphPosition> {
 		return neighbors != null ? Collections.unmodifiableSet(neighbors) : Collections.emptySet();
 	}
 
+    public Set<GraphPosition> getVicinity(GraphPosition pos, int range) {
+        Queue<GraphPosition> queue = new LinkedList<>();
+        Set<GraphPosition> positions = new HashSet<>();
+        queue.add(pos);
+        positions.add(pos);
+        int currRange = 0;
+        while (!queue.isEmpty() && currRange < range) {
+            int levelSize = queue.size();
+            for (int i = 0; i < levelSize; i++) {
+                GraphPosition currPos = queue.poll();
+                Set<GraphPosition> neighbors = adjacency.get(currPos);
+                if (neighbors == null) {
+                    continue;
+                }
+                for (GraphPosition neigh : neighbors) {
+                    if (isValidPosition(neigh) && positions.add(neigh))
+                        queue.add(neigh);
+                }
+            }
+            currRange++;
+        }
+        positions.remove(pos);
+        return positions;
+    }
+
 	@Override
 	public boolean isValidPosition(GraphPosition pos) {
 		return pos != null && adjacency.containsKey(pos);
