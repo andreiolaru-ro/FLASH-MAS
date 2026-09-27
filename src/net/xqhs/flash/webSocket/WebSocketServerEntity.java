@@ -1,18 +1,18 @@
 /*******************************************************************************
  * Copyright (C) 2021 Andrei Olaru.
- * 
+ *
  * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
- * 
+ *
  * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash.webSocket;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -52,16 +52,16 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 	/**
 	 * Map all entities to their {@link WebSocket}.
 	 */
-	private HashMap<String, WebSocket>	entityToWebSocket	= new HashMap<>();
-	
+	private ConcurrentHashMap<String, WebSocket>	entityToWebSocket	= new ConcurrentHashMap<>();
+
 	{
 		setUnitName("websocket-server");
 		setLoggerType(PlatformUtils.platformLogType());
 	}
-	
+
 	/**
 	 * Creates a Websocket server instance. It must be started with {@link #start()}.
-	 * 
+	 *
 	 * @param serverPort
 	 *            - the port on which to start the server.
 	 */
@@ -73,16 +73,16 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 			public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
 				log.li("new client connected []", webSocket);
 			}
-			
+
 			@Override
 			public void onClose(WebSocket webSocket, int i, String s, boolean b) {
 				log.li("[] closed with exit code ", webSocket, Integer.valueOf(i));
 			}
-			
+
 			/**
 			 * Receives message from a {@link WebSocketClient} and sends it directly to
 			 * {@link WebSocketServerEntity#processMessage}.
-			 * 
+			 *
 			 * @param webSocket
 			 *            - the sender {@link WebSocket} client
 			 * @param string
@@ -92,12 +92,12 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 			public void onMessage(WebSocket webSocket, String string) {
 				processMessage(webSocket, string);
 			}
-			
+
 			@Override
 			public void onError(WebSocket webSocket, Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			@Override
 			public void onStart() {
 				log.li("Server started successfully.");
@@ -105,7 +105,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 		};
 		webSocketServer.setReuseAddr(true);
 	}
-	
+
 	/**
 	 * Processes a message. Messages can be:
 	 * <ul>
@@ -128,7 +128,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 			le("Exception [] when parsing []", e, waveString);
 			return;
 		}
-		
+
 		if(wave.containsKey(AgentWave.DESTINATION_ELEMENT)) {
 			// message in transit through the server, must be routed
 			String destination = wave.getFirstDestinationElement();
@@ -144,7 +144,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 				return;
 			}
 		}
-		
+
 		String nodeName = wave.getFirstSource();
 		// consider as entity registration message
 		if(nodeName == null)
@@ -173,7 +173,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 			le("Message could not be used []", wave);
 		printState();
 	}
-	
+
 	/**
 	 * Logs (fine level) the state of the server, as the lists of entities known, nodes known, and correspondence
 	 * between nodes and entities.
@@ -181,7 +181,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 	protected void printState() {
 		lf("entities: [] ", entityToWebSocket.keySet());
 	}
-	
+
 	@Override
 	public boolean start() {
 		if(!super.start())
@@ -189,7 +189,7 @@ public class WebSocketServerEntity extends EntityCore<Pylon> {
 		webSocketServer.start();
 		return true;
 	}
-	
+
 	@Override
 	public boolean stop() {
 		try {

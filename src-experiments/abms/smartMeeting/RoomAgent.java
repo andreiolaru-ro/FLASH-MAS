@@ -1,12 +1,5 @@
 package abms.smartMeeting;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -15,10 +8,15 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.*;
 
 public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
@@ -33,6 +31,9 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private boolean occupied = false;
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
     private Simulation simulation;
+    private String nodeId = "unknown";
+    private MessagingShard messaging;
+    private boolean waitingForAuctionMessage;
 
     public RoomAgent() {
         e.addGeneralContext(this);
@@ -47,6 +48,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
         capacity = readInt(configuration, "capacity", capacity);
         if (configuration.containsKey("equipment"))
             equipment = EquipmentType.parseSet(configuration.getAValue("equipment"));
+        if (configuration.containsKey("nodeId"))
+            nodeId = configuration.getAValue("nodeId");
         return true;
     }
 
@@ -55,6 +58,9 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
         if (context instanceof Simulation)
             simulation = (Simulation) context;
         e.addGeneralContext(context);
+        if (context instanceof PylonProxy && messaging == null)
+            messaging = (MessagingShard) AgentShardCore.instantiateRecommendedShard(
+                    AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, this);
         return super.addGeneralContext(context);
     }
 
@@ -69,7 +75,30 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public AgentShard getAgentShard(AgentShardDesignation designation) {
-        return ENVIRONMENT.equals(designation) ? e : null;
+        if (ENVIRONMENT.equals(designation))
+            return e;
+        return AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)
+                .equals(designation) ? messaging : null;
+    }
+
+    private boolean sendRemote(String target, AgentWave wave) {
+        if (messaging == null)
+            return false;
+        boolean sent = messaging.sendMessage(messaging.getAgentAddress(), target,
+                wave.getSerializedContent());
+        if (!sent)
+            ScenarioTrace.record(getEntityName(), "RoomAgent", "message-send-failed",
+                    wave.get("requestId"), target, Boolean.FALSE, "messaging-unavailable", nodeId);
+        return sent;
+    }
+
+    @Override
+    public boolean start() {
+        if (!super.start())
+            return false;
+        if (messaging != null)
+            messaging.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        return true;
     }
 
     @SuppressWarnings("unchecked")
@@ -80,6 +109,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public void step() {
+        if (waitingForAuctionMessage && incomingWaves.isEmpty())
+            return;
         occupied = reservations.stream().anyMatch(r -> r.getStatus() == ReservationStatus.CONFIRMED);
         while (!incomingWaves.isEmpty()) {
             AgentWave wave = incomingWaves.poll();
@@ -111,10 +142,15 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
         MeetingRequest request = SmartMeetingMessageCodec.decodeMeetingRequest(wave);
         RoomBid bid = evaluateRequest(request);
         EntityProxy<?> requester = findEntity(request.getRequesterName());
-        if (requester != null)
+        if (messaging != null)
+            sendRemote(request.getRequesterName(), SmartMeetingMessageCodec.encodeBid(bid));
+        else if (requester != null)
             e.sendWaveTo(requester, SmartMeetingMessageCodec.encodeBid(bid));
         li("room [] bid for [] feasible: [] score: []", getRoomId(), request.getRequestId(),
                 Boolean.valueOf(bid.isFeasible()), Integer.valueOf(bid.getScore()));
+        ScenarioTrace.record(getEntityName(), "RoomAgent", "bid-created",
+                request.getRequestId(), getRoomId(), Boolean.valueOf(bid.isFeasible()), bid.getReason(), nodeId);
+        waitingForAuctionMessage = true;
     }
 
     private void handleAcceptBid(AgentWave wave) {
@@ -123,12 +159,16 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
             return;
         Reservation reservation = lockReservation(bid);
         reservation.confirm();
+        waitingForAuctionMessage = false;
         occupied = true;
         li("room [] confirmed reservation [] for request []", getRoomId(), reservation.getReservationId(),
                 reservation.getRequestId());
+        ScenarioTrace.record(getEntityName(), "RoomAgent", "reservation-confirmed",
+                reservation.getRequestId(), getRoomId(), Boolean.TRUE, null, nodeId);
     }
 
     private void handleRejectBid(AgentWave wave) {
+        waitingForAuctionMessage = false;
         String requestId = wave.get("requestId");
         for (Reservation reservation : reservations)
             if (reservation.getRequestId().equals(requestId) && reservation.getStatus() == ReservationStatus.LOCKED)
@@ -136,6 +176,7 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     }
 
     private void handleReleaseRoom(AgentWave wave) {
+        waitingForAuctionMessage = false;
         releaseReservation(SmartMeetingMessageCodec.decodeReservationId(wave));
     }
 
@@ -218,7 +259,7 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     }
 
     public String getRoomId() {
-        return roomId != null ? roomId : getEntityName();
+        return roomId != null ? roomId : getName();
     }
 
     public int getCapacity() {
@@ -245,6 +286,6 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public String getEntityName() {
-        return getName() != null ? getName() : "Room";
+        return getRoomId() != null ? getRoomId() : "Room";
     }
 }

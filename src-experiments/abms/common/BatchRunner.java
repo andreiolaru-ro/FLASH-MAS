@@ -1,16 +1,17 @@
 package abms.common;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.List;
-
+import abms.smartMeeting.ScenarioTrace;
 import benchmarking.Benchmark;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Runs a scenario boot string {@code runs} times in sequence, blocking on each run
@@ -35,8 +36,13 @@ public final class BatchRunner {
     public static void run(int runs, Level logLevel, BootStringFactory bootFactory, RunObserver observer) {
         MasterLog.setLogLevel(logLevel);
         PrintStream originalOut = System.out;
-        PrintStream nullOut = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        PrintStream nullOut = new PrintStream(new OutputStream() {
+            @Override
+            public void write(int b) {
+            }
+        });
         for (int i = 0; i < runs; i++) {
+            ScenarioTrace.reset(i);
             String bootString = bootFactory.build(i);
 
             String[] args = bootString.split(" ");
@@ -58,6 +64,7 @@ public final class BatchRunner {
                 sim.awaitCompletion();
                 Benchmark.stop("Execution");
                 System.setOut(originalOut);
+                ScenarioTrace.exportRun();
                 observer.onRunCompleted(i, sim);
             } finally {
                 System.setOut(originalOut);

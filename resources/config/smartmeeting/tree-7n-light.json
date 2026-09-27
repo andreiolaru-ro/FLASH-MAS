@@ -1,5 +1,6 @@
 {
   "scenarioName": "sm-tree-7n-light",
+  "scenarioVersion": "1.0",
   "description": "Tree topology with lobby + 6 rooms, 1 auction agent, 3 person requesters. Low contention regime: 3 persons / 6 rooms means most requests can be accommodated.",
   "runs": 100,
   "steps": 60,
@@ -40,5 +41,30 @@
         "equipmentProb": 0.5
       }
     }
-  ]
+  ],
+  "deployment": {
+    "transport": "websocket",
+    "nodes": [
+      {
+        "id": "sm-node-1",
+        "role": "coordinator",
+        "agents": ["auction0", "person0", "person1", "person2"]
+      },
+      {
+        "id": "sm-node-2",
+        "role": "rooms",
+        "agents": ["r1", "r2"]
+      },
+      {
+        "id": "sm-node-3",
+        "role": "rooms",
+        "agents": ["r3", "r4"]
+      },
+      {
+        "id": "sm-node-4",
+        "role": "rooms",
+        "agents": ["r5", "r6"]
+      }
+    ]
+  }
 }

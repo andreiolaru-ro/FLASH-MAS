@@ -1,14 +1,14 @@
-package abms.smartMeeting;
-
-import java.util.List;
-
-import aggregate_logging.ALogging;
-import benchmarking.Benchmark;
-import org.json.simple.JSONObject;
+package abms.smartMeeting.boot;
 
 import abms.common.BatchRunner;
 import abms.common.JsonConfig;
+import abms.smartMeeting.SmRunStats;
+import aggregate_logging.ALogging;
+import benchmarking.Benchmark;
 import net.xqhs.util.logging.Logger.Level;
+import org.json.simple.JSONObject;
+
+import java.util.List;
 
 /**
  * Entry point for the Smart Meeting simulation. Scenario configuration (graph topology,
@@ -23,13 +23,17 @@ public class SmartMeetingBoot {
         String configPath = args.length > 0 ? args[0] : DEFAULT_CONFIG_PATH;
         final JsonConfig config = JsonConfig.load(configPath);
         final String scenarioName = config.getString("scenarioName", "sm-unnamed");
-        final int runs = config.getInt("runs", 1);
+        final String scenarioVersion = config.getString("scenarioVersion", "1.0");
+        final int configuredRuns = config.getInt("runs", 1);
+        final int runs = readRunsOverride(args, configuredRuns);
         final int steps = config.getInt("steps", 60);
         final long baseSeed = config.getLong("baseSeed", 42);
+        System.setProperty("smartmeeting.scenario", scenarioName);
+        System.setProperty("smartmeeting.scenario.version", scenarioVersion);
         Level logLevel = parseLogLevel(config.getString("logLevel", "ERROR"));
-
         System.out.println("SmartMeeting scenario: " + scenarioName + " (" + configPath + ")");
         System.out.println("Running " + runs + " run(s), " + steps + " step(s) each, baseSeed=" + baseSeed);
+
         BatchRunner.run(runs, logLevel,
                 runIndex -> buildBootString(config, baseSeed + runIndex, steps),
                 new SmRunStats(scenarioName));
@@ -39,17 +43,46 @@ public class SmartMeetingBoot {
         Benchmark.printResults();
     }
 
+    private static int readRunsOverride(String[] args, int fallback) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if ("--runs".equals(arg) && i + 1 < args.length) {
+                try {
+                    return validateRuns(Integer.parseInt(args[i + 1]));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("--runs requires a positive integer", e);
+                }
+            }
+            if (arg.startsWith("--runs=")) {
+                try {
+                    return validateRuns(Integer.parseInt(arg.substring("--runs=".length())));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("--runs requires a positive integer", e);
+                }
+            }
+        }
+        return validateRuns(fallback);
+    }
+
+    private static int validateRuns(int runs) {
+        if (runs < 1)
+            throw new IllegalArgumentException("--runs must be at least 1");
+        return runs;
+    }
+
     private static String buildBootString(JsonConfig config, long seed, int steps) {
         JSONObject graph = config.getObject("graph");
         List<String> nodes = JsonConfig.getStringList(graph, "nodes");
         List<String> edges = JsonConfig.getStringList(graph, "edges");
 
         StringBuilder a = new StringBuilder();
-        a.append(" -load_order simulation;executor;context;SmartMeetingGroup");
+        a.append(" -load_order simulation;executor;context;pylon;SmartMeetingGroup");
         a.append(" -package net.xqhs.flash.abms");
         a.append(" -package abms.smartMeeting");
+        a.append(" -package net.xqhs.flash.webSocket");
         a.append(" -loader SmartMeetingGroup classpath:abms.smartMeeting.SmartMeetingGroupLoader");
-        a.append(" -node dummy -simulation sim classpath:Simulation");
+        a.append(" -node dummy");
+        a.append(" -simulation sim classpath:Simulation");
         a.append(" -executor StepWise:StepWise steps:").append(steps);
         a.append(" -context AgentManagement:agentManagement");
         a.append(" -context Random:random seed:").append(seed);
@@ -80,7 +113,10 @@ public class SmartMeetingBoot {
 
     @SuppressWarnings("unused")
     private static Level parseLogLevel(String name) {
-        try { return Level.valueOf(name.toUpperCase()); }
-        catch (IllegalArgumentException e) { return Level.ERROR; }
+        try {
+            return Level.valueOf(name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Level.ERROR;
+        }
     }
 }

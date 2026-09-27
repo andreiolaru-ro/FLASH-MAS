@@ -1,13 +1,5 @@
 package abms.smartMeeting;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -17,10 +9,15 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.*;
 
 public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
@@ -39,6 +36,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private Map<String, RoomBid> receivedBids = new LinkedHashMap<>();
     private int bidWaitSteps = 7;
     private int currentWaitStep = 0;
+    private Set<String> expectedRoomAgents = new LinkedHashSet<>();
+    private Set<String> rfpSentTo = new LinkedHashSet<>();
 
     // Active reservations for release tracking
     private int releaseAfterSteps = 15;
@@ -49,6 +48,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     // Simulation reference for finding PersonAgents
     private Simulation simulation;
+    private String nodeId = "unknown";
+    private MessagingShard messaging;
+    private List<String> roomTargets = new ArrayList<>();
 
     // Per-run stats
     private int currentStep = 0;
@@ -65,6 +67,13 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         if (!super.configure(configuration))
             return false;
         releaseAfterSteps = readInt(configuration, "releaseAfterSteps", releaseAfterSteps);
+        bidWaitSteps = readInt(configuration, "bidWaitSteps", bidWaitSteps);
+        if (configuration.containsKey("nodeId"))
+            nodeId = configuration.getAValue("nodeId");
+        if (configuration.containsKey("roomTargets"))
+            roomTargets = new ArrayList<>(java.util.Arrays.asList(
+                    configuration.getAValue("roomTargets").split(",")));
+        roomTargets.removeIf(String::isEmpty);
         return true;
     }
 
@@ -73,6 +82,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         if (context instanceof Simulation)
             simulation = (Simulation) context;
         e.addGeneralContext(context);
+        if (context instanceof PylonProxy && messaging == null)
+            messaging = (MessagingShard) AgentShardCore.instantiateRecommendedShard(
+                    AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, this);
         return super.addGeneralContext(context);
     }
 
@@ -87,7 +99,30 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     @Override
     public AgentShard getAgentShard(AgentShardDesignation designation) {
-        return ENVIRONMENT.equals(designation) ? e : null;
+        if (ENVIRONMENT.equals(designation))
+            return e;
+        return AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)
+                .equals(designation) ? messaging : null;
+    }
+
+    private boolean sendRemote(String target, AgentWave wave) {
+        if (messaging == null)
+            return false;
+        boolean sent = messaging.sendMessage(messaging.getAgentAddress(), target,
+                wave.getSerializedContent());
+        if (!sent)
+            ScenarioTrace.record(getEntityName(), "AuctionAgent", "message-send-failed",
+                    wave.get("requestId"), target, Boolean.FALSE, "messaging-unavailable", nodeId);
+        return sent;
+    }
+
+    @Override
+    public boolean start() {
+        if (!super.start())
+            return false;
+        if (messaging != null)
+            messaging.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        return true;
     }
 
     @SuppressWarnings("unchecked")
@@ -116,10 +151,14 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                         originalRequest.getPreferredSlot(), originalRequest.getRequiredEquipment(),
                         originalRequest.getPriority());
                 receivedBids.clear();
+                expectedRoomAgents = discoverExpectedRoomAgents();
+                rfpSentTo.clear();
                 currentWaitStep = 0;
                 auctionStartedStep = currentStep;
                 auctionState = AuctionState.COLLECTING_BIDS;
                 broadcastRFP(currentRequest);
+                ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-started",
+                        currentRequest.getRequestId(), null, null, null, nodeId);
                 li("started auction for [] from person [] (waiting [] steps for bids)",
                         currentRequest.getRequestId(), currentRequesterName,
                         Integer.valueOf(bidWaitSteps));
@@ -127,9 +166,10 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
             case COLLECTING_BIDS:
                 currentWaitStep++;
-                if (currentWaitStep < bidWaitSteps)
+                if (receivedBids.keySet().containsAll(expectedRoomAgents))
+                    resolveAuction();
+                else
                     return;
-                resolveAuction();
                 auctionState = AuctionState.IDLE;
                 break;
         }
@@ -159,18 +199,52 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         RoomBid bid = SmartMeetingMessageCodec.decodeRoomBid(wave);
         if (currentRequest == null || !currentRequest.getRequestId().equals(bid.getRequestId()))
             return;
+        if (!expectedRoomAgents.contains(bid.getRoomAgentName())) {
+            ScenarioTrace.record(getEntityName(), "AuctionAgent", "bid-rejected",
+                    bid.getRequestId(), bid.getRoomId(), Boolean.FALSE,
+                    "sender-not-in-auction-participants:" + bid.getRoomAgentName(), nodeId);
+            return;
+        }
         receivedBids.put(bid.getRoomAgentName(), bid);
+        ScenarioTrace.record(getEntityName(), "AuctionAgent", "bid-received",
+                bid.getRequestId(), bid.getRoomId(), Boolean.valueOf(bid.isFeasible()), bid.getReason(), nodeId);
     }
 
     private void broadcastRFP(MeetingRequest request) {
         // Send RFP to each room individually via graph-routed hop-by-hop delivery
-        if (simulation == null)
-            return;
-        for (Entity<?> entity : simulation.getSimulationObjects()) {
-            if (entity instanceof RoomAgent)
-                e.sendWaveTo(entity.asContext(),
-                        SmartMeetingMessageCodec.encodeRequestForProposals(request));
+        if (messaging != null) {
+            for (String room : expectedRoomAgents) {
+                boolean sent = sendRemote(room, SmartMeetingMessageCodec.encodeRequestForProposals(request));
+                if (sent)
+                    rfpSentTo.add(room);
+                ScenarioTrace.record(getEntityName(), "AuctionAgent", "rfp-sent",
+                        request.getRequestId(), room, Boolean.valueOf(sent),
+                        sent ? null : "delivery-failed", nodeId);
+            }
+        } else if (simulation != null) {
+            for (Entity<?> entity : simulation.getSimulationObjects())
+                if (entity instanceof RoomAgent) {
+                    e.sendWaveTo(entity.asContext(),
+                            SmartMeetingMessageCodec.encodeRequestForProposals(request));
+                    rfpSentTo.add(entity.asContext().getEntityName());
+                    ScenarioTrace.record(getEntityName(), "AuctionAgent", "rfp-sent",
+                            request.getRequestId(), entity.asContext().getEntityName(),
+                            Boolean.TRUE, null, nodeId);
+                }
         }
+    }
+
+    private Set<String> discoverExpectedRoomAgents() {
+        Set<String> expected = new LinkedHashSet<>();
+        if (messaging != null) {
+            expected.addAll(roomTargets);
+            return expected;
+        }
+        if (simulation != null)
+            for (Entity<?> entity : simulation.getSimulationObjects())
+                if (entity instanceof RoomAgent)
+                    expected.add(entity.asContext().getEntityName());
+        return expected;
     }
 
     private void resolveAuction() {
@@ -185,7 +259,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         if (winner != null) {
             // Send accept to winning room (hop-by-hop through graph)
             EntityProxy<?> roomRef = findGraphEntity(winner.getRoomAgentName());
-            if (roomRef != null)
+            if (messaging != null)
+                sendRemote(winner.getRoomAgentName(), SmartMeetingMessageCodec.encodeAcceptBid(winner));
+            else if (roomRef != null)
                 e.sendWaveTo(roomRef, SmartMeetingMessageCodec.encodeAcceptBid(winner));
             activeReservations.add(new ActiveReservation(winner.getRoomAgentName(),
                     "RES-" + winner.getRoomId() + "-" + winner.getRequestId(), releaseAfterSteps));
@@ -195,28 +271,41 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                 if (bid.getRoomAgentName().equals(winner.getRoomAgentName()))
                     continue;
                 EntityProxy<?> loserRef = findGraphEntity(bid.getRoomAgentName());
-                if (loserRef != null)
+                if (messaging != null)
+                    sendRemote(bid.getRoomAgentName(),
+                            SmartMeetingMessageCodec.encodeRejectBid(bid.getRequestId()));
+                else if (loserRef != null)
                     e.sendWaveTo(loserRef, SmartMeetingMessageCodec.encodeRejectBid(bid.getRequestId()));
             }
 
             // Respond to person (direct, 1 step)
-            if (personRef != null)
+            if (messaging != null)
+                sendRemote(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
+                        currentRequest.getRequestId(), true, winner.getRoomId(), null));
+            else if (personRef != null)
                 e.sendDirect(personRef, SmartMeetingMessageCodec.encodeBookingResponse(
                         currentRequest.getRequestId(), true, winner.getRoomId(), null));
 
             li("auction [] WON by room [] (score []) from [] bids",
                     currentRequest.getRequestId(), winner.getRoomId(),
                     Integer.valueOf(winner.getScore()), Integer.valueOf(bids.size()));
+            ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-resolved",
+                    currentRequest.getRequestId(), winner.getRoomId(), Boolean.TRUE, null, nodeId);
             winsPerRoom.merge(winner.getRoomId(), 1, Integer::sum);
             outcomes.add(new AuctionOutcome(currentRequest.getRequestId(), currentRequesterName,
                     auctionStartedStep, currentStep, true, winner.getRoomId(), winner.getScore(),
                     bids.size(), feasibleCount, null));
         } else {
-            if (personRef != null)
+            if (messaging != null)
+                sendRemote(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
+                        currentRequest.getRequestId(), false, null, "no feasible room"));
+            else if (personRef != null)
                 e.sendDirect(personRef, SmartMeetingMessageCodec.encodeBookingResponse(
                         currentRequest.getRequestId(), false, null, "no feasible room"));
             li("auction [] FAILED — no feasible bid from [] responses",
                     currentRequest.getRequestId(), Integer.valueOf(bids.size()));
+            ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-resolved",
+                    currentRequest.getRequestId(), null, Boolean.FALSE, "no feasible room", nodeId);
             outcomes.add(new AuctionOutcome(currentRequest.getRequestId(), currentRequesterName,
                     auctionStartedStep, currentStep, false, null, 0, bids.size(), feasibleCount,
                     "no feasible room"));
@@ -338,8 +427,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         public final String failureReason;
 
         public AuctionOutcome(String requestId, String requesterName, int startStep, int resolutionStep,
-                boolean won, String winnerRoomId, int winnerScore, int bidsReceived, int feasibleBids,
-                String failureReason) {
+                              boolean won, String winnerRoomId, int winnerScore, int bidsReceived, int feasibleBids,
+                              String failureReason) {
             this.requestId = requestId;
             this.requesterName = requesterName;
             this.startStep = startStep;

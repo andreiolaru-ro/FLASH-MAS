@@ -1,17 +1,18 @@
 package abms.smartMeeting;
 
+import abms.common.BatchRunner.RunObserver;
+import abms.common.RunStatistics;
+import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.core.Entity;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import abms.common.BatchRunner.RunObserver;
-import abms.common.RunStatistics;
-import abms.smartMeeting.AuctionAgent.AuctionOutcome;
-import net.xqhs.flash.abms.Simulation;
-import net.xqhs.flash.core.Entity;
-
 /**
- * Walks the simulation after each Smart Meeting run, harvests per-auction
- * outcomes from each {@link AuctionAgent}, and prints aggregate numbers across runs.
+ * Reads the common structured trace after each Smart Meeting run and prints
+ * aggregate numbers across runs.
  */
 public class SmRunStats implements RunObserver {
     private final RunStatistics stats = new RunStatistics();
@@ -27,27 +28,49 @@ public class SmRunStats implements RunObserver {
         int totalAuctions = 0, totalWon = 0;
         int personsAccepted = 0, personsRejected = 0, personsNoResponse = 0;
         double sumLatency = 0, sumBids = 0, sumFeasibleBids = 0;
+        Map<String, Long> auctionStartSteps = new LinkedHashMap<>();
+        Map<String, Integer> respondedPersons = new LinkedHashMap<>();
 
-        for (Entity<?> entity : sim.getSimulationObjects()) {
-            if (entity instanceof AuctionAgent) {
-                AuctionAgent auction = (AuctionAgent) entity;
-                for (AuctionOutcome outcome : auction.getOutcomes()) {
-                    totalAuctions++;
-                    sumLatency += outcome.latencySteps();
-                    sumBids += outcome.bidsReceived;
-                    sumFeasibleBids += outcome.feasibleBids;
-                    if (outcome.won) totalWon++;
+        for (Entity<?> entity : sim.getSimulationObjects())
+            if (entity instanceof PersonAgent)
+                respondedPersons.put(entity.getName(), Integer.valueOf(0));
+
+        JSONArray trace = ScenarioTrace.snapshot();
+        for (Object value : trace) {
+            JSONObject event = (JSONObject) value;
+            String type = String.valueOf(event.get("event"));
+            String requestId = event.get("requestId") == null ? null : String.valueOf(event.get("requestId"));
+            if ("auction-started".equals(type) && requestId != null) {
+                totalAuctions++;
+                auctionStartSteps.put(requestId, longValue(event.get("step")));
+            } else if ("bid-received".equals(type)) {
+                sumBids++;
+                if (Boolean.TRUE.equals(event.get("success")))
+                    sumFeasibleBids++;
+            } else if ("auction-resolved".equals(type) && requestId != null) {
+                boolean won = Boolean.TRUE.equals(event.get("success"));
+                if (won) {
+                    totalWon++;
+                    String room = event.get("room") == null ? null : String.valueOf(event.get("room"));
+                    if (room != null)
+                        winsPerRoom.merge(room, Integer.valueOf(1), Integer::sum);
                 }
-                for (Map.Entry<String, Integer> w : auction.getWinsPerRoom().entrySet())
-                    winsPerRoom.merge(w.getKey(), w.getValue(), Integer::sum);
-            }
-            if (entity instanceof PersonAgent) {
-                PersonAgent person = (PersonAgent) entity;
-                if (!person.isResponseReceived()) personsNoResponse++;
-                else if (person.isResponseAccepted()) personsAccepted++;
-                else personsRejected++;
+                Long startStep = auctionStartSteps.get(requestId);
+                if (startStep != null)
+                    sumLatency += longValue(event.get("step")) - startStep.longValue();
+            } else if ("booking-response-received".equals(type)) {
+                if (Boolean.TRUE.equals(event.get("success")))
+                    personsAccepted++;
+                else
+                    personsRejected++;
+                String person = event.get("agent") == null ? null : String.valueOf(event.get("agent"));
+                if (person != null)
+                    respondedPersons.put(person, Integer.valueOf(1));
             }
         }
+        for (Integer responded : respondedPersons.values())
+            if (responded.intValue() == 0)
+                personsNoResponse++;
 
         stats.record("auctions_started", totalAuctions);
         stats.record("auctions_won", totalWon);
@@ -64,6 +87,12 @@ public class SmRunStats implements RunObserver {
 
         System.out.printf("Run %d: %d auctions, %d won, accept=%d reject=%d nopath=%d%n",
                 runIndex, totalAuctions, totalWon, personsAccepted, personsRejected, personsNoResponse);
+    }
+
+    private static long longValue(Object value) {
+        if (value instanceof Number)
+            return ((Number) value).longValue();
+        return Long.parseLong(String.valueOf(value));
     }
 
     @Override

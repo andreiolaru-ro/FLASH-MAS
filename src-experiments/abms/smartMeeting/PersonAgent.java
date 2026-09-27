@@ -1,12 +1,5 @@
 package abms.smartMeeting;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -15,10 +8,15 @@ import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
+
+import java.util.*;
 
 public class PersonAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
@@ -28,12 +26,14 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
 
-    private enum State { IDLE, WAITING_FOR_RESPONSE, DONE }
+    private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
 
     private State state = State.IDLE;
     private String auctionAgentName;
     private EntityProxy<?> auctionAgentRef;
     private Simulation simulation;
+    private String nodeId = "unknown";
+    private MessagingShard messaging;
 
     // Request parameter ranges (configured from the scenario JSON via the boot string).
     private int attendeesMin = 2;
@@ -61,6 +61,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     public boolean configure(MultiTreeMap configuration) {
         if (!super.configure(configuration))
             return false;
+        if (configuration.containsKey("nodeId"))
+            nodeId = configuration.getAValue("nodeId");
         if (configuration.containsKey("auctionAgent"))
             auctionAgentName = configuration.getAValue("auctionAgent");
         attendeesMin = readInt(configuration, "attendeesMin", attendeesMin);
@@ -92,8 +94,11 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     private static int readInt(MultiTreeMap configuration, String key, int fallback) {
         if (configuration == null || !configuration.containsKey(key)) return fallback;
-        try { return Integer.parseInt(configuration.getAValue(key)); }
-        catch (NumberFormatException ex) { return fallback; }
+        try {
+            return Integer.parseInt(configuration.getAValue(key));
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
     }
 
     public boolean isResponseReceived() {
@@ -117,6 +122,9 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
         if (context instanceof Simulation)
             simulation = (Simulation) context;
         e.addGeneralContext(context);
+        if (context instanceof PylonProxy && messaging == null)
+            messaging = (MessagingShard) AgentShardCore.instantiateRecommendedShard(
+                    AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, this);
         return super.addGeneralContext(context);
     }
 
@@ -131,7 +139,30 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     @Override
     public AgentShard getAgentShard(AgentShardDesignation designation) {
-        return ENVIRONMENT.equals(designation) ? e : null;
+        if (ENVIRONMENT.equals(designation))
+            return e;
+        return AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)
+                .equals(designation) ? messaging : null;
+    }
+
+    private boolean sendRemote(String target, AgentWave wave) {
+        if (messaging == null)
+            return false;
+        boolean sent = messaging.sendMessage(messaging.getAgentAddress(), target,
+                wave.getSerializedContent());
+        if (!sent)
+            ScenarioTrace.record(getEntityName(), "PersonAgent", "message-send-failed",
+                    wave.get("requestId"), target, Boolean.FALSE, "messaging-unavailable", nodeId);
+        return sent;
+    }
+
+    @Override
+    public boolean start() {
+        if (!super.start())
+            return false;
+        if (messaging != null)
+            messaging.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        return true;
     }
 
     @SuppressWarnings("unchecked")
@@ -148,11 +179,17 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             case IDLE:
                 if (auctionAgentRef == null)
                     auctionAgentRef = resolveAuctionAgent();
-                if (auctionAgentRef == null)
+                if (auctionAgentRef == null && messaging == null)
                     return;
                 MeetingRequest request = createRequest();
-                e.sendDirect(auctionAgentRef, SmartMeetingMessageCodec.encodeBookingRequest(request));
+                AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
+                if (messaging != null)
+                    sendRemote(auctionAgentName, bookingRequest);
+                else
+                    e.sendDirect(auctionAgentRef, bookingRequest);
                 li("sent booking request [] to auction agent", request.getRequestId());
+                ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",
+                        request.getRequestId(), null, null, null, nodeId);
                 state = State.WAITING_FOR_RESPONSE;
                 break;
             case WAITING_FOR_RESPONSE:
@@ -175,6 +212,9 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
                     responseAccepted = "accepted".equals(result);
                     responseRoomId = roomId;
                     responseReason = wave.get("reason");
+                    ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-response-received",
+                            wave.get("requestId"), responseRoomId, Boolean.valueOf(responseAccepted),
+                            responseReason, nodeId);
                     if (responseAccepted)
                         li("booking CONFIRMED for room []", roomId);
                     else

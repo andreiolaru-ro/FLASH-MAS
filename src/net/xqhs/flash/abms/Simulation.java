@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
+import net.xqhs.flash.core.support.PylonProxy;
 
 public class Simulation extends Node implements EntityProxy<Simulation> {
 	// protected Topology<P> topology;
@@ -40,6 +41,10 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	
 	public Set<Entity<?>> getSimulationObjects() {
 		return simulationObjects;
+	}
+
+	public PylonProxy getSimulationPylonProxy() {
+		return nodePylonProxy;
 	}
 
 	public void deregisterEntity(Entity<?> entity) {
