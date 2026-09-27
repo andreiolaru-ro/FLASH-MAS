@@ -1,0 +1,160 @@
+%
+%  Copyright (C) 2025 Andrei Olaru. http://cs.andreiolaru.ro
+%
+
+\mode<all>
+
+% AOpres
+% forked from AOpres5
+% content slides have horizontal header with horizontal section navigation and right-side vertical subsection navigation
+% slides are organized in sections, subsection, and potentially multiple slides per subsection
+
+% USE:
+%
+% from the RSH article folders. just:
+% \usepackage{../_package/AOpres5h}
+%
+% from other locations:
+% \def\elementsroot{path/to/RSH/}\usepackage{\elementsroot_package/AOpres5h}
+
+% packages
+\ifdefined\flatpack\usepackage{AOpres-common}\else\ifdefined\elementsroot\usepackage{\elementsroot_package/AOpres-common}\else\usepackage{../_package/AOpres-common}\fi\fi
+
+
+
+% text commands
+
+\renewenvironment{fm}[1][2ex]{\begin{frame}\spk{2ex}\vspace*{#1}}{\end{frame}}
+
+\renewcommand{\hiliteA}[2][cyan!60!blue]{{\color{#1} #2}} % blue
+
+\setbeamertemplate{itemize items}{\color{cyan!40!white}\tiny$\blacksquare$}
+\setbeamersize{text margin left=.07\pw,text margin right=.07\pw}
+\let\OLDitemize\itemize \renewcommand\itemize{\OLDitemize\addtolength{\itemsep}{2ex}}
+
+
+% % appear not lose section / subsection name after first slide
+% % equivalents pf doslide and doslideNext
+% \newenvironment{fSec}[2][]{
+% 	\ifx\\#1\\ \section[#2]{#2}	\else \section[#1]{#2} \fi
+% 	\begin{frame}\spk{2ex}	}{	\end{frame}	}
+% \newenvironment{fSub}[2][]{
+% 	\subsection[#2]{#2}
+% 	\ifx\\#1\\\else\nosub\fi
+% 	\begin{frame}\spk{2ex}	}{	\end{frame}	}
+% \newenvironment{fNext}{	\sub\begin{frame}\spk{2ex}	}{	\end{frame}	}
+
+
+\newlength{\hcontentsspace}
+\setlength{\hcontentsspace}{1ex}
+% setting contents space:
+% .8 / n sections (depending on template)
+\newcommand{\setHcontents}[1]{\setlength{\hcontentsspace}{#1}}
+
+\newlength{\hcontentsmargin}
+\setlength{\hcontentsmargin}{.1\pw}
+% setting contents space:
+% .8 / n sections (depending on template)
+\newcommand{\setHcontentsMargin}[1]{\setlength{\hcontentsmargin}{#1}}
+
+
+% use 'skip' to skip navigation
+\renewcommand{\modeheadline}[1][]{
+	\setbeamertemplate{sidebar left}{}
+	\setbeamertemplate{headline}{\centering\scriptsize
+		\ifx\\#1\\\insertsectionnavigationhorizontal{.8\pw}{}{}	\par\else\fi\raggedleft
+		\color{black!20!white} \rule{\pw}{.4pt}	\par
+		\ifx\\#1\\\hspace{\hcontentsmargin}\domini[.3\pw]{\insertsubsectionnavigationhorizontal{\tw}{}{}}\hfill
+		{\LARGE $\mid$ \color{cyan!60!blue} \insertsection \hspace*{1ex}} \par\else\fi
+	}
+}
+
+
+% new beamer templates
+\defbeamertemplate*{section in sidebar}{}{}
+\defbeamertemplate*{section in sidebar shaded}{}{}
+\defbeamertemplate*{subsection in sidebar}{}{}
+\defbeamertemplate*{subsection in sidebar shaded}{}{\vspace*{-2ex}}
+\defbeamertemplate*{section in head/foot}{}{\color{cyan!50!blue}\insertsectionhead}
+\defbeamertemplate*{section in head/foot shaded}{}{\color{black!20!white}\insertsectionhead}
+\defbeamertemplate*{subsection in head/foot}{}{\color{black!70}\textbf{\hspace*{\hcontentsspace}\insertsubsectionhead\dosub}}
+\defbeamertemplate*{subsection in head/foot shaded}{}{\color{black!20}\hspace*{\hcontentsspace}\insertsubsectionhead}
+
+
+
+
+% special slides
+
+
+% title page
+
+\newcommand{\titlespacing}{2.5ex}
+\renewcommand{\dotitlepage}[1][.7\pw]{
+\modesidebar{}{}
+
+\begin{frame}[t]\raggedleft\begin{minipage}[c]{#1}\spk{\titlespacing}
+{\parbox[t][.3\ph][b]{.9\tw}{\Large\raggedright \inserttitle}}
+
+\vspace{\titlespacing}
+
+{\color{cyan!50!blue} \rule{\tw}{.5pt}}
+
+\vspace{\titlespacing}
+
+\insertsubtitle \par
+\insertauthor \par
+\ifdefined\insertcontact {\small\insertcontact}\par \fi
+\insertinstitute \par
+\insertdate \par
+\end{minipage}\\\end{frame}}
+
+
+% contents page
+
+\renewcommand{\docontentspage}[1][.7\pw]{
+\modesidebar[.05\pw]{}{\color{cyan!60!blue} $\blacksquare$ {\large  \insertsectionhead}}
+
+\begin{frame}[t]\raggedleft\begin{minipage}[c]{#1}\spk{3ex}
+{\parbox[t][.3\ph][b]{.9\tw}{\Large\raggedright \inserttitle}}
+
+\vskip2ex
+
+{\color{cyan!50!blue} \rule{\tw}{.5pt}}
+
+\vskip2ex
+
+{\color{black!50!white} \insertwordOverview}
+\end{minipage}\\\end{frame}}
+
+
+% end page
+
+\renewcommand{\doendpage}[1][.7\pw]{\modesidebar[.1\pw]{}{\color{cyan!10} $\blacksquare$}
+
+\begin{frame}[t]\raggedleft\begin{minipage}[c]{#1}\spk{2ex}
+{\parbox[t][.3\ph][b]{.9\tw}{\Large\raggedright \insertwordThankYou}}
+
+\vskip2ex
+
+{\color{cyan!50!blue} \rule{\tw}{.5pt}}
+
+\vskip2ex
+
+\insertwordQuestions\vskip4ex
+
+\ifdefined\insertcontact \insertcontact\fi
+\end{minipage}\end{frame}}
+
+
+
+\setbeamertemplate{footline}{\color{black!50}
+{	\small \hskip2ex  \dologozero \hspace{.5ex} \dologoone \hspace{.5ex}
+	\dologotwo \hspace{.5ex} \dologothreeplus }
+\hfill
+{	\scriptsize \insertauthor\ \dodot \inserttitleshort	}
+\hfill
+{	\footnotesize {\normalsize $\mid$}
+	{\color{cyan!60!blue}\insertframenumber} / \inserttotalframenumber\ }
+}
+
+

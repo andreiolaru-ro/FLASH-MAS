@@ -39,15 +39,11 @@ public class FlashBoot
 
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
+
 		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
-		// try {
-		// Thread.sleep(20000);
-		// } catch(InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		for(Node node : nodes)
-			node.start();
+		if(Deployment.get().doStart())
+            for(Node node : nodes)
+                node.start();
 	}
 	
 }

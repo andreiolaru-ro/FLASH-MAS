@@ -13,7 +13,7 @@
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-client-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-http-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/jetty-util-9.4.3.v20170317.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/gui/snakeyaml-1.25.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/gui/snakeyaml-2.2.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/ros/websocket-api-9.4.3.v20170317.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/webserver/netty-all-4.1.47.Final.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/webserver/vertx-core-3.9.0.jar!/" />
@@ -28,8 +28,9 @@
     <src_description expected_position="0">
       <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
       <src_folder value="file://$MODULE_DIR$/src-examples" expected_position="1" />
-      <src_folder value="file://$MODULE_DIR$/src-tests" expected_position="2" />
-      <src_folder value="file://$MODULE_DIR$/src-experiments" expected_position="3" />
+      <src_folder value="file://$MODULE_DIR$/src-experiments" expected_position="2" />
+      <src_folder value="file://$MODULE_DIR$/src-tests" expected_position="3" />
+      <src_folder value="file://$MODULE_DIR$/src-tests-manual" expected_position="4" />
     </src_description>
   </component>
   <component name="NewModuleRootManager">
@@ -39,7 +40,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-experiments" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src-tests" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src-tests-manual" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/libraries" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
@@ -152,9 +154,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="snakeyaml-1.25.jar">
+      <library name="snakeyaml-2.2.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gui/snakeyaml-1.25.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gui/snakeyaml-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

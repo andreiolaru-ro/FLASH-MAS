@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Documentation</h1>
+</header>
+<!--- ---------------------------------------------
+Copyright (C) 2021 Andrei Olaru.
+
+This file is part of Flash-MAS. The CONTRIBUTORS.html file lists people who have been previously involved with this project.
+
+Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------- -->
+<p>Since the libraries have been organized on directories, there is a
+script that gathers all jars in a single directory. The script should be
+run <strong>from the project root directory</strong> and can be found at
+<code>script/make-lib-all.sh</code> .</p>
+<p>Running FLASH-MAS should be as simple as:</p>
+<ul>
+<li><p>in Linux:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> <span class="st">&quot;bin:lib-all/*&quot;</span> quick.Boot <span class="op">&lt;</span>args<span class="op">&gt;</span></span></code></pre></div></li>
+<li><p>in Windows:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> <span class="st">&quot;bin;lib-all/*&quot;</span> quick.Boot <span class="op">&lt;</span>args<span class="op">&gt;</span></span></code></pre></div></li>
+</ul>
+<p>To run the project from an IDE, you can run the class
+<code>test.compositePingPong.Boot</code> (in source directory
+<code>src-tests</code>), which contains a <code>main</code> method. The
+expected results are in the <code>package-info.java</code> file for that
+package. Good tests for websocket-based communication are the classes
+with names starting with <code>Boot</code> in the package
+<code>test.webSocketDeployment</code>.</p>
+<p>See also <a href="importing.html">importing.html</a>.</p>
+<p>To run an example from the terminal, you can run an equivalent of the
+scenario above with (from the root directory of the project)</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> <span class="st">&quot;bin;lib-all/*&quot;</span> quick.Boot <span class="at">-package</span> testing <span class="at">-loader</span> agent:composite <span class="at">-node</span> node1 <span class="at">-agent</span> composite:AgentA <span class="at">-shard</span> messaging <span class="at">-shard</span> PingTest otherAgent:AgentB <span class="at">-shard</span> EchoTesting <span class="at">-agent</span> composite:AgentB <span class="at">-shard</span> messaging <span class="at">-shard</span> PingBackTest <span class="at">-shard</span> EchoTesting</span></code></pre></div>
+<p>One “simple deployment” WebSocket test can be run with</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> <span class="st">&quot;bin;lib-all/*&quot;</span> quick.Boot <span class="at">-package</span> test.simplePingPong <span class="at">-node</span> node1 <span class="at">-pylon</span> webSocket:pylon1 serverPort:8885 <span class="at">-agent</span> AgentA classpath:AgentPingPong sendTo:AgentB <span class="at">-node</span> node2 <span class="at">-pylon</span> webSocket:pylon2 connectTo:ws://localhost:8885 <span class="at">-agent</span> AgentB classpath:AgentPingPong</span></code></pre></div>
+</body>
+</html>
