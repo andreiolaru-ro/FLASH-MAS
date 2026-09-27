@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
+import benchmarking.Benchmark;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
@@ -43,15 +44,19 @@ public final class BatchRunner {
             // progress so that 1000-run batches don't bury the aggregate stats in noise.
             System.setOut(nullOut);
             try {
+                Benchmark.start("Deployment");
                 List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
                 if (nodes == null)
                     throw new IllegalStateException("Deployment failed at run " + i);
+                Benchmark.stop("Deployment");
+                Benchmark.start("Execution");
                 for (Node node : nodes)
                     node.start();
                 Simulation sim = Simulation.getLastInstance();
                 if (sim == null)
                     throw new IllegalStateException("No Simulation registered at run " + i);
                 sim.awaitCompletion();
+                Benchmark.stop("Execution");
                 System.setOut(originalOut);
                 observer.onRunCompleted(i, sim);
             } finally {

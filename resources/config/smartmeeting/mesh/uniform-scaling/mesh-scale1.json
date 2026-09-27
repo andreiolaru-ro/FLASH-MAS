@@ -1,0 +1,115 @@
+{
+  "scenarioName": "sm-mesh-scale1",
+  "description": "Scale 1 topology: 5 floors with 5 rooms each. 25 rooms total, 60 persons.",
+  "runs": 5,
+  "steps": 50000,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "graph": {
+    "nodes": [
+      "f1_hall",
+      "r1_1",
+      "r1_2",
+      "r1_3",
+      "r1_4",
+      "r1_5",
+      "f2_hall",
+      "r2_1",
+      "r2_2",
+      "r2_3",
+      "r2_4",
+      "r2_5",
+      "f3_hall",
+      "r3_1",
+      "r3_2",
+      "r3_3",
+      "r3_4",
+      "r3_5",
+      "f4_hall",
+      "r4_1",
+      "r4_2",
+      "r4_3",
+      "r4_4",
+      "r4_5",
+      "f5_hall",
+      "r5_1",
+      "r5_2",
+      "r5_3",
+      "r5_4",
+      "r5_5"
+    ],
+    "edges": [
+      "f1_hall-f2_hall",
+      "f2_hall-f3_hall",
+      "f3_hall-f4_hall",
+      "f4_hall-f5_hall",
+      "f1_hall-r1_1",
+      "f1_hall-r1_2",
+      "f1_hall-r1_3",
+      "f1_hall-r1_4",
+      "f1_hall-r1_5",
+      "f2_hall-r2_1",
+      "f2_hall-r2_2",
+      "f2_hall-r2_3",
+      "f2_hall-r2_4",
+      "f2_hall-r2_5",
+      "f3_hall-r3_1",
+      "f3_hall-r3_2",
+      "f3_hall-r3_3",
+      "f3_hall-r3_4",
+      "f3_hall-r3_5",
+      "f4_hall-r4_1",
+      "f4_hall-r4_2",
+      "f4_hall-r4_3",
+      "f4_hall-r4_4",
+      "f4_hall-r4_5",
+      "f5_hall-r5_1",
+      "f5_hall-r5_2",
+      "f5_hall-r5_3",
+      "f5_hall-r5_4",
+      "f5_hall-r5_5",
+      "r1_1-r2_1",
+      "r1_5-r2_5",
+      "r2_1-r3_1",
+      "r2_5-r3_5",
+      "r3_1-r4_1",
+      "r3_5-r4_5",
+      "r4_1-r5_1",
+      "r4_5-r5_5"
+    ]
+  },
+  "agents": [
+    {
+      "kind": "Auction",
+      "count": 1,
+      "params": {
+        "releaseAfterSteps": 20
+      }
+    },
+    {
+      "kind": "Room",
+      "count": 25,
+      "params": {
+        "capacity": 6,
+        "equipment": "PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE"
+      }
+    },
+    {
+      "kind": "Person",
+      "count": 60,
+      "params": {
+        "auctionAgent": "auction0",
+        "attendeesMin": 2,
+        "attendeesMax": 8,
+        "durations": "30,60",
+        "startMin": 10,
+        "startMax": 100,
+        "startStep": 10,
+        "priorityMin": 1,
+        "priorityMax": 3,
+        "equipmentPool": "PROJECTOR",
+        "equipmentProb": 0.5
+      }
+    }
+  ]
+}
