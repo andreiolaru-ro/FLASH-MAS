@@ -23,6 +23,12 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    /** In distributed mode, how long a step waits for incoming waves before moving on. */
+    private static final long DISTRIBUTED_STEP_WAIT_MS = 200;
+    /** In distributed mode, delay before the first auction so all agents register on the pylon. */
+    private static final long DISTRIBUTED_STARTUP_GRACE_MS = 1500;
+    /** In distributed mode, real-time budget to collect bids before resolving with what arrived. */
+    private static final long DEFAULT_BID_TIMEOUT_MS = 2000;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
@@ -52,6 +58,13 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private MessagingShard messaging;
     private List<String> roomTargets = new ArrayList<>();
 
+    // Distributed-mode, agent-level synchronization: the auction knows which rooms it asked,
+    // waits for all of them in real time and resolves at the deadline with whatever arrived.
+    private long bidTimeoutMillis = DEFAULT_BID_TIMEOUT_MS;
+    private long auctionDeadlineMillis = -1;
+    private boolean rfpRetried = false;
+    private long firstStepTimestamp = -1;
+
     // Per-run stats
     private int currentStep = 0;
     private int auctionStartedStep = -1;
@@ -74,6 +87,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             roomTargets = new ArrayList<>(java.util.Arrays.asList(
                     configuration.getAValue("roomTargets").split(",")));
         roomTargets.removeIf(String::isEmpty);
+        if (configuration.containsKey("bidTimeoutMillis"))
+            bidTimeoutMillis = Long.parseLong(configuration.getAValue("bidTimeoutMillis"));
         return true;
     }
 
@@ -91,10 +106,37 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            incomingWaves.add((AgentWave) event);
+            // In distributed mode waves arrive on pylon threads, so guard the queue and wake the step thread.
+            synchronized (incomingWaves) {
+                incomingWaves.add((AgentWave) event);
+                incomingWaves.notifyAll();
+            }
             return true;
         }
         return false;
+    }
+
+    /** Distributed mode is detected by the presence of a messaging shard (a pylon context was added). */
+    private boolean isDistributed() {
+        return messaging != null;
+    }
+
+    private void awaitIncomingWaves() {
+        synchronized (incomingWaves) {
+            if (!incomingWaves.isEmpty())
+                return;
+            try {
+                incomingWaves.wait(DISTRIBUTED_STEP_WAIT_MS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private boolean startupGraceElapsed() {
+        if (firstStepTimestamp < 0)
+            firstStepTimestamp = System.currentTimeMillis();
+        return System.currentTimeMillis() - firstStepTimestamp >= DISTRIBUTED_STARTUP_GRACE_MS;
     }
 
     @Override
@@ -136,10 +178,14 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         currentStep++;
         computeBidWaitIfNeeded();
         releaseExpiredReservations();
+        if (isDistributed())
+            awaitIncomingWaves();
         processIncomingWaves();
 
         switch (auctionState) {
             case IDLE:
+                if (isDistributed() && !startupGraceElapsed())
+                    return;
                 AgentWave bookingWave = pendingBookingRequests.poll();
                 if (bookingWave == null)
                     return;
@@ -155,6 +201,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                 rfpSentTo.clear();
                 currentWaitStep = 0;
                 auctionStartedStep = currentStep;
+                auctionDeadlineMillis = System.currentTimeMillis() + bidTimeoutMillis;
+                rfpRetried = false;
                 auctionState = AuctionState.COLLECTING_BIDS;
                 broadcastRFP(currentRequest);
                 ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-started",
@@ -168,16 +216,45 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                 currentWaitStep++;
                 if (receivedBids.keySet().containsAll(expectedRoomAgents))
                     resolveAuction();
-                else
+                else if (isDistributed() && System.currentTimeMillis() >= auctionDeadlineMillis) {
+                    // Timeout: resolve with the bids that arrived; later bids will be ignored.
+                    li("auction [] timed out with []/[] bids", currentRequest.getRequestId(),
+                            Integer.valueOf(receivedBids.size()), Integer.valueOf(expectedRoomAgents.size()));
+                    ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-timeout",
+                            currentRequest.getRequestId(), null, Boolean.FALSE,
+                            "bids:" + receivedBids.size() + "/" + expectedRoomAgents.size(), nodeId);
+                    resolveAuction();
+                } else {
+                    if (isDistributed() && !rfpRetried
+                            && System.currentTimeMillis() >= auctionDeadlineMillis - bidTimeoutMillis / 2)
+                        retryMissingRfps();
                     return;
+                }
                 auctionState = AuctionState.IDLE;
                 break;
         }
     }
 
+    /** Resends the RFP to expected rooms that have not answered yet (covers lost/early messages). */
+    private void retryMissingRfps() {
+        rfpRetried = true;
+        for (String room : expectedRoomAgents) {
+            if (receivedBids.containsKey(room))
+                continue;
+            boolean sent = sendRemote(room, SmartMeetingMessageCodec.encodeRequestForProposals(currentRequest));
+            ScenarioTrace.record(getEntityName(), "AuctionAgent", "rfp-resent",
+                    currentRequest.getRequestId(), room, Boolean.valueOf(sent),
+                    sent ? null : "delivery-failed", nodeId);
+        }
+    }
+
     private void processIncomingWaves() {
-        while (!incomingWaves.isEmpty()) {
-            AgentWave wave = incomingWaves.poll();
+        List<AgentWave> waves;
+        synchronized (incomingWaves) {
+            waves = new ArrayList<>(incomingWaves);
+            incomingWaves.clear();
+        }
+        for (AgentWave wave : waves) {
             try {
                 SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
                 switch (type) {
@@ -314,6 +391,10 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         currentRequest = null;
         currentRequesterName = null;
         auctionStartedStep = -1;
+        auctionDeadlineMillis = -1;
+        // In distributed mode there is no synchronized end-of-run, so persist the trace now.
+        if (isDistributed())
+            ScenarioTrace.exportRun();
     }
 
     /**
@@ -353,10 +434,16 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             reservation.remainingSteps--;
             if (reservation.remainingSteps > 0)
                 continue;
-            EntityProxy<?> target = findGraphEntity(reservation.roomAgentName);
-            if (target != null) {
-                e.sendWaveTo(target, SmartMeetingMessageCodec.encodeReleaseRoom(reservation.reservationId));
+            if (isDistributed()) {
+                sendRemote(reservation.roomAgentName,
+                        SmartMeetingMessageCodec.encodeReleaseRoom(reservation.reservationId));
                 li("released reservation [] for room []", reservation.reservationId, reservation.roomAgentName);
+            } else {
+                EntityProxy<?> target = findGraphEntity(reservation.roomAgentName);
+                if (target != null) {
+                    e.sendWaveTo(target, SmartMeetingMessageCodec.encodeReleaseRoom(reservation.reservationId));
+                    li("released reservation [] for room []", reservation.reservationId, reservation.roomAgentName);
+                }
             }
             released.add(reservation);
         }

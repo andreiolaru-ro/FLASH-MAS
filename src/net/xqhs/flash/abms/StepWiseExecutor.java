@@ -15,10 +15,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 
     protected static final String STEPS_PARAM = "steps";
     int nSteps;
-    private DistributedStepBarrierEndpoint distributedBarrier;
-    private String stepBarrierNodeId;
-    private String stepBarrierCoordinator;
-    private String stepBarrierNodes;
     Thread executor;
     Simulation simulation;
 
@@ -32,9 +28,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
         if (!super.configure(configuration))
             return false;
         nSteps = configuration.containsKey(STEPS_PARAM) ? Integer.parseInt(configuration.getAValue(STEPS_PARAM)) : 100;
-        stepBarrierNodeId = value(configuration, "stepBarrierNodeId");
-        stepBarrierCoordinator = value(configuration, "stepBarrierCoordinator");
-        stepBarrierNodes = value(configuration, "stepBarrierNodes");
         return true;
     }
 
@@ -42,7 +35,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
     public boolean addContext(EntityProxy<Simulation> context) {
         simulation = (Simulation) context;
         simulation.registerExecutor(this);
-        attachDistributedBarrier();
         // TODO why this does not work
         return true;
     }
@@ -54,25 +46,12 @@ public class StepWiseExecutor extends EntityCore<Simulation>
             return true;
         simulation = (Simulation) context;
         simulation.registerExecutor(this);
-        attachDistributedBarrier();
         return true;
-    }
-
-    private void attachDistributedBarrier() {
-        if (distributedBarrier != null || stepBarrierNodeId == null
-                || stepBarrierCoordinator == null || stepBarrierNodes == null
-                || simulation.getSimulationPylonProxy() == null)
-            return;
-        distributedBarrier = new DistributedStepBarrierEndpoint(
-                stepBarrierNodeId, stepBarrierCoordinator, stepBarrierNodes);
-        distributedBarrier.addGeneralContext(simulation.getSimulationPylonProxy());
     }
 
     @Override
     public boolean start() {
         super.start();
-        if (distributedBarrier != null)
-            distributedBarrier.start();
         li("Starting executor with [] contexts and [] agents.", simulation.getSimulationContexts().size(),
                 simulation.getSimulationObjects().size());
 
@@ -81,30 +60,15 @@ public class StepWiseExecutor extends EntityCore<Simulation>
         executor = new Thread() {
             @Override
             public void run() {
-                for (long step = 0; step < nSteps; step++) {
+                for (long step = 0; step < nSteps; step++)
                     runStep(step);
-                    if (distributedBarrier != null) {
-                        distributedBarrier.announceStep(step);
-                        distributedBarrier.awaitRelease(step);
-                    }
-                }
                 simulation.executionCompleted();
                 ALogging.getInstance().printAllAgr();
-                if (isBarrierCoordinator())
-                    ScenarioTrace.exportRun();
+                ScenarioTrace.exportRun();
             }
         };
         executor.start();
         return true;
-    }
-
-    private boolean isBarrierCoordinator() {
-        return stepBarrierNodeId == null
-                || ("stepbarrier-" + stepBarrierNodeId).equals(stepBarrierCoordinator);
-    }
-
-    private static String value(MultiTreeMap configuration, String key) {
-        return configuration.containsKey(key) ? configuration.getAValue(key) : null;
     }
 
     protected void runStep(long step) {

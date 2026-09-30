@@ -89,12 +89,7 @@ public class SmartMeetingDistributedBoot {
         List<String> edges = JsonConfig.getStringList(graph, "edges");
 
         a.append(" -simulation sim classpath:Simulation");
-        a.append(" -executor StepWise:StepWise steps:").append(steps)
-                .append(" stepBarrierNodeId:")
-                .append(JsonConfig.getString(deploymentNode, "id", "unknown"))
-                .append(" stepBarrierCoordinator:stepbarrier-")
-                .append(JsonConfig.getString(readDeploymentNodes(config).get(0), "id", "sm-node-1"))
-                .append(" stepBarrierNodes:").append(String.join(",", barrierNodeIds(config)));
+        a.append(" -executor StepWise:StepWise steps:").append(steps);
         a.append(" -context AgentManagement:agentManagement");
         a.append(" -context Random:random seed:").append(seed);
         a.append(" -context GraphCommunication:communication");
@@ -158,13 +153,6 @@ public class SmartMeetingDistributedBoot {
             throw new IllegalArgumentException(
                     "Distributed Smart Meeting requires deployment.nodes in the scenario configuration");
         return nodes;
-    }
-
-    private static List<String> barrierNodeIds(JsonConfig config) {
-        List<String> ids = new ArrayList<>();
-        for (JSONObject node : readDeploymentNodes(config))
-            ids.add(JsonConfig.getString(node, "id", "unknown"));
-        return ids;
     }
 
     private static void validateDeployment(JsonConfig config, List<JSONObject> nodes) {

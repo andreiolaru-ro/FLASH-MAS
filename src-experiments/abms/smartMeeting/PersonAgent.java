@@ -22,6 +22,10 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    /** In distributed mode, how long a step waits for incoming waves before moving on. */
+    private static final long DISTRIBUTED_STEP_WAIT_MS = 200;
+    /** In distributed mode, delay before the first request so all agents register on the pylon. */
+    private static final long DISTRIBUTED_STARTUP_GRACE_MS = 1000;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     private Queue<AgentWave> incomingWaves = new LinkedList<>();
@@ -34,6 +38,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private Simulation simulation;
     private String nodeId = "unknown";
     private MessagingShard messaging;
+    private long firstStepTimestamp = -1;
 
     // Request parameter ranges (configured from the scenario JSON via the boot string).
     private int attendeesMin = 2;
@@ -131,10 +136,37 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            incomingWaves.add((AgentWave) event);
+            // In distributed mode waves arrive on pylon threads, so guard the queue and wake the step thread.
+            synchronized (incomingWaves) {
+                incomingWaves.add((AgentWave) event);
+                incomingWaves.notifyAll();
+            }
             return true;
         }
         return false;
+    }
+
+    /** Distributed mode is detected by the presence of a messaging shard (a pylon context was added). */
+    private boolean isDistributed() {
+        return messaging != null;
+    }
+
+    private void awaitIncomingWaves() {
+        synchronized (incomingWaves) {
+            if (!incomingWaves.isEmpty())
+                return;
+            try {
+                incomingWaves.wait(DISTRIBUTED_STEP_WAIT_MS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private boolean startupGraceElapsed() {
+        if (firstStepTimestamp < 0)
+            firstStepTimestamp = System.currentTimeMillis();
+        return System.currentTimeMillis() - firstStepTimestamp >= DISTRIBUTED_STARTUP_GRACE_MS;
     }
 
     @Override
@@ -173,10 +205,14 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     @Override
     public void step() {
+        if (isDistributed() && state != State.DONE)
+            awaitIncomingWaves();
         processIncomingWaves();
 
         switch (state) {
             case IDLE:
+                if (isDistributed() && !startupGraceElapsed())
+                    return;
                 if (auctionAgentRef == null)
                     auctionAgentRef = resolveAuctionAgent();
                 if (auctionAgentRef == null && messaging == null)
@@ -201,8 +237,12 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     }
 
     private void processIncomingWaves() {
-        while (!incomingWaves.isEmpty()) {
-            AgentWave wave = incomingWaves.poll();
+        List<AgentWave> waves;
+        synchronized (incomingWaves) {
+            waves = new ArrayList<>(incomingWaves);
+            incomingWaves.clear();
+        }
+        for (AgentWave wave : waves) {
             try {
                 SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
                 if (type == SmartMeetingMessageType.BOOKING_RESPONSE) {
@@ -220,6 +260,9 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
                     else
                         li("booking FAILED: []", wave.get("reason"));
                     state = State.DONE;
+                    // In distributed mode there is no synchronized end-of-run, so persist the trace now.
+                    if (isDistributed())
+                        ScenarioTrace.exportRun();
                 }
             } catch (IllegalArgumentException ignored) {
             }

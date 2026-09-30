@@ -22,6 +22,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    /** In distributed mode, how long a step waits for incoming waves before moving on. */
+    private static final long DISTRIBUTED_STEP_WAIT_MS = 200;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     private String roomId;
@@ -67,10 +69,31 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            incomingWaves.add((AgentWave) event);
+            // In distributed mode waves arrive on pylon threads, so guard the queue and wake the step thread.
+            synchronized (incomingWaves) {
+                incomingWaves.add((AgentWave) event);
+                incomingWaves.notifyAll();
+            }
             return true;
         }
         return false;
+    }
+
+    /** Distributed mode is detected by the presence of a messaging shard (a pylon context was added). */
+    private boolean isDistributed() {
+        return messaging != null;
+    }
+
+    private void awaitIncomingWaves() {
+        synchronized (incomingWaves) {
+            if (!incomingWaves.isEmpty())
+                return;
+            try {
+                incomingWaves.wait(DISTRIBUTED_STEP_WAIT_MS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
@@ -109,11 +132,17 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public void step() {
-        if (waitingForAuctionMessage && incomingWaves.isEmpty())
-            return;
+        if (isDistributed())
+            awaitIncomingWaves();
+        List<AgentWave> waves;
+        synchronized (incomingWaves) {
+            if (waitingForAuctionMessage && incomingWaves.isEmpty())
+                return;
+            waves = new ArrayList<>(incomingWaves);
+            incomingWaves.clear();
+        }
         occupied = reservations.stream().anyMatch(r -> r.getStatus() == ReservationStatus.CONFIRMED);
-        while (!incomingWaves.isEmpty()) {
-            AgentWave wave = incomingWaves.poll();
+        for (AgentWave wave : waves) {
             try {
                 SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
                 switch (type) {
