@@ -15,7 +15,7 @@ or several nodes on the same machine (one JVM per node).
 
 ## 1. Getting the code on each machine
 
-Option A — build on every machine:
+Option A
 
 ```bash
 git clone <repo-url> && cd FLASH-MAS && git checkout abms
@@ -23,7 +23,7 @@ mvn -q compile dependency:build-classpath -Dmdep.outputFile=cp.txt -DskipTests
 CP="target/classes:$(cat cp.txt)"
 ```
 
-Option B — build once, run everywhere:
+Option B
 
 ```bash
 # on the build machine
@@ -32,10 +32,47 @@ mvn -q package -DskipTests        # produces target/Flash-MAS-0.0.1-SNAPSHOT-jar
 CP="target/Flash-MAS-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
 ```
 
-The fat jar contains the `src-experiments` classes and all dependencies, so the other
+The jar contains the `src-experiments` classes and all dependencies, so the other
 machines only need a JRE.
 
-On Windows, use `;` instead of `:` as the classpath separator.
+The commands above are for macOS/Linux. On Windows, `java` expects `;` as the classpath
+separator, even when launched from Git Bash (MINGW64). `cp.txt` generated on Windows already
+uses `;`, so only the separator after `target/classes` needs changing:
+
+```bash
+# Windows (Git Bash) — Option A
+CP="target/classes;$(cat cp.txt)"
+```
+
+With `:`, Java treats `target/classes:C:\...` as a single nonexistent path and fails with
+`ClassNotFoundException: abms.smartMeeting.boot.SmartMeetingDistributedBoot`. The jar
+(Option B) has a single entry and works unchanged. `CP` is a shell variable, so set it again
+in every new terminal.
+
+### Windows PowerShell
+
+In PowerShell, the variable syntax and line continuation differ, and every `-D...` argument
+must be quoted. Windows PowerShell 5.1 splits an unquoted `-Dname.with.dots=value` at the first
+dot, so Java never receives the property:
+
+```powershell
+# Option A
+mvn -q compile dependency:build-classpath "-Dmdep.outputFile=cp.txt" -DskipTests
+$CP = "target/classes;" + (Get-Content cp.txt -Raw).Trim()
+# Option B
+$CP = "target/Flash-MAS-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+
+# node hosting the websocket server
+java -cp $CP abms.smartMeeting.boot.SmartMeetingDistributedBoot `
+    resources/config/smartmeeting/tree-61n-3nodes-100a.json --node=sm-node-1
+
+# every other node
+java "-Dsmartmeeting.ws.host=<server-IP>" -cp $CP abms.smartMeeting.boot.SmartMeetingDistributedBoot `
+    resources/config/smartmeeting/tree-61n-3nodes-100a.json --node=sm-node-2
+```
+
+The same quoting applies to `"-Dsmartmeeting.ws.port=<port>"` and `"-Dsmartmeeting.results.dir=..."`.
+Use `Test-NetConnection <server-IP> -Port 8899` instead of `nc` to check connectivity.
 
 ## 2. Running
 
@@ -58,6 +95,15 @@ java -Dsmartmeeting.ws.host=<server-IP> -cp "$CP" abms.smartMeeting.boot.SmartMe
 The port is 8899 by default; override it on **all** nodes with `-Dsmartmeeting.ws.port=<port>`.
 The server machine's firewall must allow inbound TCP on that port. To check connectivity
 from another machine while the server node runs: `nc -vz <server-IP> 8899`.
+
+### Expected output
+
+The scenario uses `"logLevel": "ERROR"`, so each node prints only the executor's step counter
+(`[ StepWise ] Step [N]`) until it reaches the final step. The counters on different machines are
+independent and do not need to match. To check that a client node connected, run
+`netstat -an | findstr 8899` (Windows) or `netstat -an | grep 8899` (macOS/Linux) on the server
+machine during the run. It should show an `ESTABLISHED` connection from each client's IP. Set
+`logLevel` to `INFO` to see the agents' logs.
 
 ### Timing tolerances
 
