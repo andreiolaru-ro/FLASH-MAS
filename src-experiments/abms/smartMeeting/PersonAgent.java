@@ -157,7 +157,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             case IDLE:
                 MeetingRequest request = createRequest();
                 AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
-                if (!e.sendDirectTo(auctionAgentName, bookingRequest))
+                if (!e.sendDirect(auctionAgentName, bookingRequest))
                     return; // auction agent not reachable yet, stay IDLE and retry next step
                 li("sent booking request [] to auction agent", request.getRequestId());
                 ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",

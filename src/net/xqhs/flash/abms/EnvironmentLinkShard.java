@@ -123,12 +123,6 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return communication.sendWaveTo(target, wave);
     }
 
-    public boolean sendDirect(EntityProxy<?> target, AgentWave wave) {
-        if (communication instanceof GraphCommunicationContext)
-            return ((GraphCommunicationContext) communication).sendDirect(target, wave);
-        return sendWaveTo(target, wave);
-    }
-
     public MessagingShard getMessagingShard() {
         return messaging;
     }
@@ -140,11 +134,15 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return target != null && sendWaveTo(target, wave);
     }
 
-    public boolean sendDirectTo(String targetName, AgentWave wave) {
+    public boolean sendDirect(String targetName, AgentWave wave) {
         if (messaging != null)
             return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
         EntityProxy<?> target = findByName(targetName);
-        return target != null && sendDirect(target, wave);
+        if (target == null)
+            return false;
+        if (communication instanceof GraphCommunicationContext)
+            return ((GraphCommunicationContext) communication).sendDirect(target, wave);
+        return sendWaveTo(target, wave);
     }
 
     protected EntityProxy<?> findByName(String entityName) {

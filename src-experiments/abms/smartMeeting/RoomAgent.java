@@ -143,6 +143,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
                 reservation.getRequestId());
         ScenarioTrace.record(getEntityName(), "RoomAgent", "reservation-confirmed",
                 reservation.getRequestId(), getRoomId(), Boolean.TRUE, null, nodeId);
+        // The run may end at any time relative to other nodes, so persist the trace now.
+        ScenarioTrace.exportRun();
     }
 
     private void handleRejectBid(AgentWave wave) {

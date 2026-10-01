@@ -274,7 +274,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             }
 
             // Respond to person (direct, 1 step)
-            e.sendDirectTo(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
+            e.sendDirect(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
                     currentRequest.getRequestId(), true, winner.getRoomId(), null));
 
             li("auction [] WON by room [] (score []) from [] bids",
@@ -287,7 +287,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                     auctionStartedStep, currentStep, true, winner.getRoomId(), winner.getScore(),
                     bids.size(), feasibleCount, null));
         } else {
-            e.sendDirectTo(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
+            e.sendDirect(currentRequesterName, SmartMeetingMessageCodec.encodeBookingResponse(
                     currentRequest.getRequestId(), false, null, "no feasible room"));
             li("auction [] FAILED — no feasible bid from [] responses",
                     currentRequest.getRequestId(), Integer.valueOf(bids.size()));
