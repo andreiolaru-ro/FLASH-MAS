@@ -89,7 +89,7 @@ public class SmartMeetingDistributedBoot {
         List<String> edges = JsonConfig.getStringList(graph, "edges");
 
         a.append(" -simulation sim classpath:Simulation");
-        a.append(" -executor StepWise:StepWise steps:").append(steps);
+        a.append(" -executor StepWise:StepWise steps:").append(steps).append(" stepPeriod:100");
         a.append(" -context AgentManagement:agentManagement");
         a.append(" -context Random:random seed:").append(seed);
         a.append(" -context GraphCommunication:communication");

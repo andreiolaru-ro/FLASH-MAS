@@ -1,44 +1,33 @@
 package abms.smartMeeting;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
-import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.agent.BaseAgent;
 import net.xqhs.flash.core.shard.AgentShard;
-import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
-import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.Pylon;
-import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PersonAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
-    /** In distributed mode, how long a step waits for incoming waves before moving on. */
-    private static final long DISTRIBUTED_STEP_WAIT_MS = 200;
-    /** In distributed mode, delay before the first request so all agents register on the pylon. */
-    private static final long DISTRIBUTED_STARTUP_GRACE_MS = 1000;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
-    private Queue<AgentWave> incomingWaves = new LinkedList<>();
+    private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
 
     private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
 
     private State state = State.IDLE;
     private String auctionAgentName;
-    private EntityProxy<?> auctionAgentRef;
-    private Simulation simulation;
     private String nodeId = "unknown";
-    private MessagingShard messaging;
-    private long firstStepTimestamp = -1;
 
     // Request parameter ranges (configured from the scenario JSON via the boot string).
     private int attendeesMin = 2;
@@ -124,49 +113,17 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        if (context instanceof Simulation)
-            simulation = (Simulation) context;
         e.addGeneralContext(context);
-        if (context instanceof PylonProxy && messaging == null)
-            messaging = (MessagingShard) AgentShardCore.instantiateRecommendedShard(
-                    AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, this);
         return super.addGeneralContext(context);
     }
 
     @Override
     public boolean postAgentEvent(AgentEvent event) {
         if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            // In distributed mode waves arrive on pylon threads, so guard the queue and wake the step thread.
-            synchronized (incomingWaves) {
-                incomingWaves.add((AgentWave) event);
-                incomingWaves.notifyAll();
-            }
+            incomingWaves.add((AgentWave) event);
             return true;
         }
         return false;
-    }
-
-    /** Distributed mode is detected by the presence of a messaging shard (a pylon context was added). */
-    private boolean isDistributed() {
-        return messaging != null;
-    }
-
-    private void awaitIncomingWaves() {
-        synchronized (incomingWaves) {
-            if (!incomingWaves.isEmpty())
-                return;
-            try {
-                incomingWaves.wait(DISTRIBUTED_STEP_WAIT_MS);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    private boolean startupGraceElapsed() {
-        if (firstStepTimestamp < 0)
-            firstStepTimestamp = System.currentTimeMillis();
-        return System.currentTimeMillis() - firstStepTimestamp >= DISTRIBUTED_STARTUP_GRACE_MS;
     }
 
     @Override
@@ -174,26 +131,15 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
         if (ENVIRONMENT.equals(designation))
             return e;
         return AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING)
-                .equals(designation) ? messaging : null;
-    }
-
-    private boolean sendRemote(String target, AgentWave wave) {
-        if (messaging == null)
-            return false;
-        boolean sent = messaging.sendMessage(messaging.getAgentAddress(), target,
-                wave.getSerializedContent());
-        if (!sent)
-            ScenarioTrace.record(getEntityName(), "PersonAgent", "message-send-failed",
-                    wave.get("requestId"), target, Boolean.FALSE, "messaging-unavailable", nodeId);
-        return sent;
+                .equals(designation) ? e.getMessagingShard() : null;
     }
 
     @Override
     public boolean start() {
         if (!super.start())
             return false;
-        if (messaging != null)
-            messaging.signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        if (e.getMessagingShard() != null)
+            e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
         return true;
     }
 
@@ -205,24 +151,14 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     @Override
     public void step() {
-        if (isDistributed() && state != State.DONE)
-            awaitIncomingWaves();
         processIncomingWaves();
 
         switch (state) {
             case IDLE:
-                if (isDistributed() && !startupGraceElapsed())
-                    return;
-                if (auctionAgentRef == null)
-                    auctionAgentRef = resolveAuctionAgent();
-                if (auctionAgentRef == null && messaging == null)
-                    return;
                 MeetingRequest request = createRequest();
                 AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
-                if (messaging != null)
-                    sendRemote(auctionAgentName, bookingRequest);
-                else
-                    e.sendDirect(auctionAgentRef, bookingRequest);
+                if (!e.sendDirectTo(auctionAgentName, bookingRequest))
+                    return; // auction agent not reachable yet, stay IDLE and retry next step
                 li("sent booking request [] to auction agent", request.getRequestId());
                 ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",
                         request.getRequestId(), null, null, null, nodeId);
@@ -237,12 +173,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     }
 
     private void processIncomingWaves() {
-        List<AgentWave> waves;
-        synchronized (incomingWaves) {
-            waves = new ArrayList<>(incomingWaves);
-            incomingWaves.clear();
-        }
-        for (AgentWave wave : waves) {
+        AgentWave wave;
+        while ((wave = incomingWaves.poll()) != null) {
             try {
                 SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
                 if (type == SmartMeetingMessageType.BOOKING_RESPONSE) {
@@ -260,9 +192,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
                     else
                         li("booking FAILED: []", wave.get("reason"));
                     state = State.DONE;
-                    // In distributed mode there is no synchronized end-of-run, so persist the trace now.
-                    if (isDistributed())
-                        ScenarioTrace.exportRun();
+                    ScenarioTrace.exportRun();
                 }
             } catch (IllegalArgumentException ignored) {
             }
@@ -283,15 +213,6 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
         int priority = priorityMin + e.nextInt(priorityRange);
         return new MeetingRequest("REQ-" + getEntityName(), getEntityName(), attendees, duration,
                 new TimeSlot(start, start + duration), equipment, priority);
-    }
-
-    private EntityProxy<?> resolveAuctionAgent() {
-        if (auctionAgentName == null || simulation == null)
-            return null;
-        for (Entity<?> entity : simulation.getSimulationObjects())
-            if (entity instanceof AuctionAgent && auctionAgentName.equals(entity.asContext().getEntityName()))
-                return entity.asContext();
-        return null;
     }
 
     @Override

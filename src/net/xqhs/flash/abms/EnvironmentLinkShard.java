@@ -17,6 +17,8 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.support.MessagingShard;
+import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiValueMap;
 
 
@@ -28,6 +30,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
     CommunicationContext communication = null;
     AgentManagementContext agentManagement = null;
     RandomContext randomContext = null;
+    Simulation simulation = null;
+    MessagingShard messaging = null;
 
     public EnvironmentLinkShard() {
         super(AgentShardDesignation.customShard(SHARD_NAME));
@@ -43,6 +47,11 @@ public class EnvironmentLinkShard extends AgentShardCore {
             randomContext = (RandomContext) context;
         else if (context instanceof CommunicationContext)
             communication = (CommunicationContext) context;
+        else if (context instanceof Simulation)
+            simulation = (Simulation) context;
+        else if (context instanceof PylonProxy && messaging == null && getAgent() != null)
+            messaging = (MessagingShard) instantiateRecommendedShard(
+                    AgentShardDesignation.StandardAgentShard.MESSAGING, (PylonProxy) context, null, getAgent());
         if (!super.addGeneralContext(context))
             return false;
 
@@ -118,6 +127,33 @@ public class EnvironmentLinkShard extends AgentShardCore {
         if (communication instanceof GraphCommunicationContext)
             return ((GraphCommunicationContext) communication).sendDirect(target, wave);
         return sendWaveTo(target, wave);
+    }
+
+    public MessagingShard getMessagingShard() {
+        return messaging;
+    }
+
+    public boolean sendTo(String targetName, AgentWave wave) {
+        if (messaging != null)
+            return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
+        EntityProxy<?> target = findByName(targetName);
+        return target != null && sendWaveTo(target, wave);
+    }
+
+    public boolean sendDirectTo(String targetName, AgentWave wave) {
+        if (messaging != null)
+            return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
+        EntityProxy<?> target = findByName(targetName);
+        return target != null && sendDirect(target, wave);
+    }
+
+    protected EntityProxy<?> findByName(String entityName) {
+        if (entityName == null || simulation == null)
+            return null;
+        for (Entity<?> entity : simulation.getSimulationObjects())
+            if (entityName.equals(entity.asContext().getEntityName()))
+                return entity.asContext();
+        return null;
     }
 
     @SuppressWarnings("unchecked")

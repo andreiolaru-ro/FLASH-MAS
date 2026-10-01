@@ -14,7 +14,10 @@ public class StepWiseExecutor extends EntityCore<Simulation>
         implements SimulationExecutor, EntityProxy<StepWiseExecutor> {
 
     protected static final String STEPS_PARAM = "steps";
+    /** Optional real-time pacing: minimum duration of a step, in milliseconds (0 = run as fast as possible). */
+    protected static final String STEP_PERIOD_PARAM = "stepPeriod";
     int nSteps;
+    long stepPeriodMs;
     Thread executor;
     Simulation simulation;
 
@@ -28,6 +31,8 @@ public class StepWiseExecutor extends EntityCore<Simulation>
         if (!super.configure(configuration))
             return false;
         nSteps = configuration.containsKey(STEPS_PARAM) ? Integer.parseInt(configuration.getAValue(STEPS_PARAM)) : 100;
+        stepPeriodMs = configuration.containsKey(STEP_PERIOD_PARAM)
+                ? Long.parseLong(configuration.getAValue(STEP_PERIOD_PARAM)) : 0;
         return true;
     }
 
@@ -60,8 +65,16 @@ public class StepWiseExecutor extends EntityCore<Simulation>
         executor = new Thread() {
             @Override
             public void run() {
-                for (long step = 0; step < nSteps; step++)
+                for (long step = 0; step < nSteps; step++) {
                     runStep(step);
+                    if (stepPeriodMs > 0)
+                        try {
+                            Thread.sleep(stepPeriodMs);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                }
                 simulation.executionCompleted();
                 ALogging.getInstance().printAllAgr();
                 ScenarioTrace.exportRun();
