@@ -23,6 +23,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             AgentShardDesignation.customShard("Environment");
     /** Real-time budget to collect bids before resolving with what arrived. */
     private static final long DEFAULT_BID_TIMEOUT_MS = 2000;
+    /** Interval at which the RFP is resent to rooms that have not answered yet. */
+    private static final long RFP_RETRY_INTERVAL_MS = 1000;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
@@ -41,7 +43,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     private long bidTimeoutMillis = DEFAULT_BID_TIMEOUT_MS;
     private long auctionDeadlineMillis = -1;
-    private boolean rfpRetried = false;
+    private long nextRfpRetryMillis = -1;
 
     // Active reservations for release tracking
     private int releaseAfterSteps = 15;
@@ -147,7 +149,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                 currentWaitStep = 0;
                 auctionStartedStep = currentStep;
                 auctionDeadlineMillis = System.currentTimeMillis() + bidTimeoutMillis;
-                rfpRetried = false;
+                nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
                 auctionState = AuctionState.COLLECTING_BIDS;
                 broadcastRFP(currentRequest);
                 ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-started",
@@ -170,9 +172,12 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                             "bids:" + receivedBids.size() + "/" + expectedRoomAgents.size(), nodeId);
                     resolveAuction();
                 } else {
-                    if (!rfpRetried
-                            && System.currentTimeMillis() >= auctionDeadlineMillis - bidTimeoutMillis / 2)
+                    // Rooms may come online late (e.g. machines started one by one), so keep
+                    // resending the RFP to the silent ones until the deadline.
+                    if (System.currentTimeMillis() >= nextRfpRetryMillis) {
                         retryMissingRfps();
+                        nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
+                    }
                     return;
                 }
                 auctionState = AuctionState.IDLE;
@@ -182,7 +187,6 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
     /** Resends the RFP to expected rooms that have not answered yet (covers lost/early messages). */
     private void retryMissingRfps() {
-        rfpRetried = true;
         for (String room : expectedRoomAgents) {
             if (receivedBids.containsKey(room))
                 continue;
@@ -223,6 +227,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                     "sender-not-in-auction-participants:" + bid.getRoomAgentName(), nodeId);
             return;
         }
+        if (receivedBids.containsKey(bid.getRoomAgentName()))
+            return; // duplicate bid (room answered an RFP retry twice)
         receivedBids.put(bid.getRoomAgentName(), bid);
         ScenarioTrace.record(getEntityName(), "AuctionAgent", "bid-received",
                 bid.getRequestId(), bid.getRoomId(), Boolean.valueOf(bid.isFeasible()), bid.getReason(), nodeId);

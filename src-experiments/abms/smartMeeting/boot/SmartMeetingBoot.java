@@ -16,7 +16,7 @@ import java.util.List;
  * JSON file under {@code resources/config/smartmeeting/}.
  */
 public class SmartMeetingBoot {
-    public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-7n-light.json";
+    public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-61n-3nodes-100a.json";
 
     public static void main(String[] args) {
         Benchmark.start("Total");
