@@ -13,7 +13,6 @@ import net.xqhs.flash.abms.space.graph.GraphPosition;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
-import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class SmartMeetingGroupLoader extends EntityGroupLoader {
@@ -53,39 +52,32 @@ public class SmartMeetingGroupLoader extends EntityGroupLoader {
             }
         }
 
-        List<GraphPosition> nodePositions = GraphAbmsGroupLoaderSupport.createShuffledNodePositions(
-                graphContexts.topology, graphContexts.randomContext);
-        if (graphConfigs.size() > nodePositions.size()) {
-            lp.le("More graph agents ([]) than nodes ([])", Integer.valueOf(graphConfigs.size()),
-                    Integer.valueOf(nodePositions.size()));
-            return null;
+        // Spatial placement only exists inside a simulation; a distributed deployment has no modeled space.
+        List<GraphPosition> nodePositions = null;
+        if (graphContexts.space != null) {
+            nodePositions = new ArrayList<>(graphContexts.topology.getAllNodes());
+            if (graphConfigs.size() > nodePositions.size()) {
+                lp.le("More graph agents ([]) than nodes ([])", Integer.valueOf(graphConfigs.size()),
+                        Integer.valueOf(nodePositions.size()));
+                return null;
+            }
         }
 
-        lp.lf("Loading [] graph agents + [] off-graph agents on graph topology...",
-                Integer.valueOf(graphConfigs.size()), Integer.valueOf(offGraphConfigs.size()));
+        lp.lf("Loading [] graph agents + [] off-graph agents...", Integer.valueOf(graphConfigs.size()),
+                Integer.valueOf(offGraphConfigs.size()));
 
-        // Load and place graph agents on nodes
+        // All agents go through the same context adding / registration code; graph agents are also placed on nodes,
+        // off-graph agents (PersonAgents) are not.
         List<Entity<?>> allEntities = new ArrayList<>();
         if (graphConfigs.size() > 0) {
             LoadedEntities loadedGraph = GraphAbmsGroupLoaderSupport.loadPlaceAndRegister(
                     graphConfigs, lp, context, graphContexts, nodePositions);
             allEntities.addAll(loadedGraph.entities);
         }
-
-        // Load off-graph agents (PersonAgents) — register with simulation but no spatial placement
         if (offGraphConfigs.size() > 0) {
-            List<Entity<?>> offGraphEntities = Deployment.get().loadEntities(offGraphConfigs.entityConfigs, lp,
-                    new ArrayList<>(context));
-            for (int i = 0; i < offGraphEntities.size(); i++) {
-                Entity<?> entity = offGraphEntities.get(i);
-                if (graphContexts.randomContext != null)
-                    entity.addGeneralContext(graphContexts.randomContext.asContext());
-                if (graphContexts.communication != null)
-                    entity.addGeneralContext(graphContexts.communication.asContext());
-                entity.addGeneralContext(graphContexts.simulation.asContext());
-                graphContexts.simulation.registerEntity("agent", entity, entity.getName());
-            }
-            allEntities.addAll(offGraphEntities);
+            LoadedEntities loadedOffGraph = GraphAbmsGroupLoaderSupport.loadPlaceAndRegister(
+                    offGraphConfigs, lp, context, graphContexts, null);
+            allEntities.addAll(loadedOffGraph.entities);
         }
 
         SmartMeetingGroup group = new SmartMeetingGroup(allEntities);

@@ -85,6 +85,21 @@ public class Node extends EntityCore<Node> {
 		public void moveAgent(String destination, String agentName, String agentData) {
 			sendAgent(destination, agentName, agentData);
 		}
+
+		/**
+		 * Registers an entity with the node, so that the node starts and stops it. See
+		 * {@link Node#registerEntity(String, Entity, String)}.
+		 *
+		 * @param entityType
+		 *            - the type of the entity.
+		 * @param entity
+		 *            - a reference to the entity.
+		 * @param entityName
+		 *            - the name of the entity.
+		 */
+		public void registerEntity(String entityType, Entity<?> entity, String entityName) {
+			Node.this.registerEntity(entityType, entity, entityName);
+		}
 	}
 	
 	/**

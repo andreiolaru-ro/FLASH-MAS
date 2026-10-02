@@ -31,7 +31,10 @@ public final class GraphAbmsGroupLoaderSupport {
 
         Simulation simulation = (Simulation) Loader.getClosestContext(context, Simulation.class);
         if (simulation == null)
-            return null;
+            // no simulation (e.g. distributed deployment): no modeled space, agents only use the load context
+            return new ResolvedGraphContexts(null, null, null,
+                    (RandomContext) Loader.getClosestContext(context, RandomContext.class), null,
+                    (CommunicationContext) Loader.getClosestContext(context, CommunicationContext.class));
 
         SpaceContext<GraphPosition> space = null;
         RandomContext randomContext = null;
@@ -62,12 +65,6 @@ public final class GraphAbmsGroupLoaderSupport {
                 agentManagement, communication);
     }
 
-    public static List<GraphPosition> createShuffledNodePositions(GraphTopology topology, RandomContext randomContext) {
-        List<GraphPosition> positions = new ArrayList<>(topology.getAllNodes());
-        randomContext.shuffle(positions);
-        return positions;
-    }
-
     public static GridAbmsGroupLoaderSupport.EntityConfigBundle buildEntityConfigs(MultiTreeMap configuration,
             String[] categoryNames, boolean includeNestedCategories) {
         return GridAbmsGroupLoaderSupport.buildEntityConfigs(configuration, categoryNames, includeNestedCategories);
@@ -77,22 +74,15 @@ public final class GraphAbmsGroupLoaderSupport {
             GridAbmsGroupLoaderSupport.EntityConfigBundle configs, LoadPack loadPack,
             List<EntityProxy<? extends Entity<?>>> context, ResolvedGraphContexts graphContexts,
             List<GraphPosition> positions) {
-        List<Entity<?>> entities = Deployment.get().loadEntities(configs.entityConfigs, loadPack,
-                new ArrayList<>(context));
+        List<Entity<?>> entities = Deployment.get().loadEntities(configs.entityConfigs, loadPack, new ArrayList<>());
 
         int idx = 0;
         for (Entity<?> entity : entities) {
             String category = configs.entityCategories.get(idx);
-            if (graphContexts.agentManagement != null && "agent".equals(category))
-                entity.addGeneralContext(graphContexts.agentManagement.asContext());
-            if (graphContexts.randomContext != null)
-                entity.addGeneralContext(graphContexts.randomContext.asContext());
-            if (graphContexts.communication != null)
-                entity.addGeneralContext(graphContexts.communication.asContext());
-            entity.addGeneralContext(graphContexts.space.asContext());
-            entity.addGeneralContext(graphContexts.simulation.asContext());
-            graphContexts.space.place(entity.asContext(), positions.get(idx));
-            graphContexts.simulation.registerEntity(category, entity, entity.getName());
+            GraphPosition position = positions == null || idx >= positions.size() ? null : positions.get(idx);
+            GridAbmsGroupLoaderSupport.addContextsAndRegister(entity, category, context, graphContexts.simulation,
+                    graphContexts.space == null || position == null ? null
+                            : () -> graphContexts.space.place(entity.asContext(), position));
             idx++;
         }
 

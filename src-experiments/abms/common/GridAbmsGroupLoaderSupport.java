@@ -19,6 +19,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.Loader;
 import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.deployment.LoadPack;
+import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.util.MultiTreeMap;
 //later this class will be used to remove duplicate code from WolfSheepGroupLoader
 //and LBForagingGroupLoader
@@ -92,26 +93,51 @@ public final class GridAbmsGroupLoaderSupport {
     public static LoadedEntities loadPlaceAndRegister(EntityConfigBundle configs, LoadPack loadPack,
             List<EntityProxy<? extends Entity<?>>> context, ResolvedGridContexts gridContexts,
             List<GridPosition> positions) {
-        List<Entity<?>> entities = Deployment.get().loadEntities(configs.entityConfigs, loadPack,
-                new ArrayList<>(context));
+        List<Entity<?>> entities = Deployment.get().loadEntities(configs.entityConfigs, loadPack, new ArrayList<>());
 
         int idx = 0;
         for (Entity<?> entity : entities) {
             String category = configs.entityCategories.get(idx);
-            if (gridContexts.agentManagement != null && "agent".equals(category))
-                entity.addGeneralContext(gridContexts.agentManagement.asContext());
-            if (gridContexts.randomContext != null)
-                entity.addGeneralContext(gridContexts.randomContext.asContext());
-            if (gridContexts.communication != null)
-                entity.addGeneralContext(gridContexts.communication.asContext());
-            entity.addGeneralContext(gridContexts.space.asContext());
-            entity.addGeneralContext(gridContexts.simulation.asContext());
-            gridContexts.space.place(entity.asContext(), positions.get(idx));
-            gridContexts.simulation.registerEntity(category, entity, entity.getName());
+            GridPosition position = positions.get(idx);
+            addContextsAndRegister(entity, category, context, gridContexts.simulation,
+                    () -> gridContexts.space.place(entity.asContext(), position));
             idx++;
         }
 
         return new LoadedEntities(entities, configs.entityCategories);
+    }
+
+    /**
+     * Context adding code shared by all agents, whether they run in a simulation or in a distributed deployment:
+     * <ul>
+     * <li>adds all items in the load context;
+     * <li>if there is a simulation, adds all its simulation contexts;
+     * <li>runs the optional <code>beforeRegister</code> action (e.g. spatial placement);
+     * <li>registers the entity with the simulation, if any, otherwise with the closest {@link Node} context.
+     * </ul>
+     *
+     * @return <code>true</code> if the entity was registered.
+     */
+    public static boolean addContextsAndRegister(Entity<?> entity, String category,
+            List<EntityProxy<? extends Entity<?>>> context, Simulation simulation, Runnable beforeRegister) {
+        if (context != null)
+            for (EntityProxy<? extends Entity<?>> contextItem : context)
+                entity.addGeneralContext(contextItem);
+        if (simulation != null)
+            for (SimulationContext simulationContext : simulation.getSimulationContexts())
+                entity.addGeneralContext(((Entity<?>) simulationContext).asContext());
+        if (beforeRegister != null)
+            beforeRegister.run();
+        if (simulation != null) {
+            simulation.registerEntity(category, entity, entity.getName());
+            return true;
+        }
+        Node.NodeProxy node = context == null ? null
+                : (Node.NodeProxy) Loader.getClosestContext(context, Node.NodeProxy.class);
+        if (node == null)
+            return false;
+        node.registerEntity(category, entity, entity.getName());
+        return true;
     }
 
     private static void addNestedEntityConfigs(MultiTreeMap configuration, String[] categoryNames, String category,
