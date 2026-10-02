@@ -1,14 +1,15 @@
 package abms.smartMeeting.boot;
 
+import java.util.List;
+
+import org.json.simple.JSONObject;
+
 import abms.common.BatchRunner;
 import abms.common.JsonConfig;
 import abms.smartMeeting.SmRunStats;
 import aggregate_logging.ALogging;
 import benchmarking.Benchmark;
 import net.xqhs.util.logging.Logger.Level;
-import org.json.simple.JSONObject;
-
-import java.util.List;
 
 /**
  * Entry point for the Smart Meeting simulation. Scenario configuration (graph topology,
@@ -16,7 +17,7 @@ import java.util.List;
  * JSON file under {@code resources/config/smartmeeting/}.
  */
 public class SmartMeetingBoot {
-    public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-61n-3nodes-100a.json";
+	public static final String DEFAULT_CONFIG_PATH = "resources/config/smartmeeting/tree-3n.json";
 
     public static void main(String[] args) {
         Benchmark.start("Total");

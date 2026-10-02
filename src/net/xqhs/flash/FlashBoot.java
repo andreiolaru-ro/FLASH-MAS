@@ -56,8 +56,9 @@ public class FlashBoot
 			node.start();
         Simulation sim = Simulation.getLastInstance();
         if (sim == null)
-            throw new IllegalStateException("Missing simulation");
-        sim.awaitCompletion();
+			System.out.println("Missing simulation");
+		else
+			sim.awaitCompletion();
         Benchmark.stop("Execution");
         Benchmark.stop("Total");
         Benchmark.printResults();

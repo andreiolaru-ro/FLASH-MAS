@@ -1,16 +1,17 @@
 package abms.smartMeeting.boot;
 
-import abms.common.JsonConfig;
-import abms.smartMeeting.ScenarioTrace;
-import net.xqhs.flash.FlashBoot;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import abms.common.JsonConfig;
+import abms.smartMeeting.ScenarioTrace;
+import net.xqhs.flash.FlashBoot;
 
 public class SmartMeetingDistributedBoot {
     public static final String DEFAULT_CONFIG_PATH = SmartMeetingBoot.DEFAULT_CONFIG_PATH;
@@ -88,15 +89,12 @@ public class SmartMeetingDistributedBoot {
         List<String> nodes = JsonConfig.getStringList(graph, "nodes");
         List<String> edges = JsonConfig.getStringList(graph, "edges");
 
-        a.append(" -simulation sim classpath:Simulation");
-        a.append(" -executor StepWise:StepWise steps:").append(steps)
-                .append(" stepPeriod:").append(config.getInt("stepPeriodMs", 100));
-        a.append(" -context AgentManagement:agentManagement");
-        a.append(" -context Random:random seed:").append(seed);
-        a.append(" -context GraphCommunication:communication");
-        a.append(" -context Space:space topology:graph");
-        a.append(" nodes:").append(String.join(",", nodes));
-        a.append(" edges:").append(String.join(",", edges));
+		a.append(" -context AgentManagement:agentManagement");
+		a.append(" -context GraphCommunication:communication");
+		a.append(" -context Space:space topology:graph");
+		a.append(" nodes:").append(String.join(",", nodes));
+		a.append(" edges:").append(String.join(",", edges));
+		a.append(" -context Random:random seed:").append(seed);
         a.append(" -SmartMeetingGroup g");
         appendAssignedAgents(a, config, deploymentNode);
     }
