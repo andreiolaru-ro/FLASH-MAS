@@ -1,8 +1,10 @@
 package net.xqhs.flash.abms;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
@@ -55,6 +57,15 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		simulationObjects.removeIf(entity -> entity == proxy || entity.asContext() == proxy);
 	}
 	
+	/**
+	 * Override in simulation to ONLY start non-steppable entities as the executor will handle the steppable ones.
+	 */
+	@Override
+	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
+		super.startAndRegister(entities.stream().filter(entity -> !(entity instanceof SteppableEntity))
+				.collect(Collectors.toList()), isNodeStart);
+	}
+
 	@Override
 	public boolean start() {
 		if(!super.start())

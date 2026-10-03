@@ -21,12 +21,15 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    private static final long DEFAULT_STEP_PERIOD_MS = 100;
     /** Real-time budget to collect bids before resolving with what arrived. */
     private static final long DEFAULT_BID_TIMEOUT_MS = 2000;
     /** Interval at which the RFP is resent to rooms that have not answered yet. */
     private static final long RFP_RETRY_INTERVAL_MS = 1000;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
+    /** Time between own steps (ms), when the agent is started outside a simulation executor. */
+    private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
     private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
 
     // Auction state
@@ -71,6 +74,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     public boolean configure(MultiTreeMap configuration) {
         if (!super.configure(configuration))
             return false;
+        if (configuration.containsKey("stepPeriod"))
+            stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
         releaseAfterSteps = readInt(configuration, "releaseAfterSteps", releaseAfterSteps);
         bidWaitSteps = readInt(configuration, "bidWaitSteps", bidWaitSteps);
         if (configuration.containsKey("nodeId"))
@@ -110,12 +115,23 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     }
 
     @Override
-    public boolean start() {
+    public boolean startSuspended() {
         if (!super.start())
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
         return true;
+    }
+
+    @Override
+    public boolean start() {
+        return startSuspended() && e.startStepping(this::step, stepPeriod);
+    }
+
+    @Override
+    public boolean stop() {
+        e.stopStepping();
+        return super.stop();
     }
 
     @SuppressWarnings("unchecked")

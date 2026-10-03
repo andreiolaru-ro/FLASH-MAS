@@ -62,6 +62,10 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 
         // TODO send suspend signal to non-step agents
 
+        for (Entity<?> entity : new ArrayList<>(simulation.getSimulationObjects()))
+            if (entity instanceof SteppableEntity && !entity.isRunning())
+                ((SteppableEntity) entity).startSuspended();
+
         executor = new Thread() {
             @Override
             public void run() {

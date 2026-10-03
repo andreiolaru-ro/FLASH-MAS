@@ -19,8 +19,11 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    private static final long DEFAULT_STEP_PERIOD_MS = 100;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
+    /** Time between own steps (ms), when the agent is started outside a simulation executor. */
+    private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
     private String roomId;
     private int capacity = 6;
     private Set<EquipmentType> equipment = new LinkedHashSet<>();
@@ -38,6 +41,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     public boolean configure(MultiTreeMap configuration) {
         if (!super.configure(configuration))
             return false;
+        if (configuration.containsKey("stepPeriod"))
+            stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
         if (configuration.containsKey("roomId"))
             roomId = configuration.getAValue("roomId");
         capacity = readInt(configuration, "capacity", capacity);
@@ -72,12 +77,23 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     }
 
     @Override
-    public boolean start() {
+    public boolean startSuspended() {
         if (!super.start())
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
         return true;
+    }
+
+    @Override
+    public boolean start() {
+        return startSuspended() && e.startStepping(this::step, stepPeriod);
+    }
+
+    @Override
+    public boolean stop() {
+        e.stopStepping();
+        return super.stop();
     }
 
     @SuppressWarnings("unchecked")

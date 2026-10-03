@@ -3,6 +3,9 @@ package net.xqhs.flash.abms;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import net.xqhs.flash.abms.AgentManagementContext.AgentManagementActionData;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
@@ -20,6 +23,7 @@ import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiValueMap;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 
 public class EnvironmentLinkShard extends AgentShardCore {
@@ -32,6 +36,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
     RandomContext randomContext = null;
     Simulation simulation = null;
     MessagingShard messaging = null;
+    /** Calls the agent's step when the agent steps by itself; <code>null</code> otherwise. */
+    ScheduledExecutorService stepper = null;
 
     public EnvironmentLinkShard() {
         super(AgentShardDesignation.customShard(SHARD_NAME));
@@ -135,6 +141,35 @@ public class EnvironmentLinkShard extends AgentShardCore {
         if (communication instanceof GraphCommunicationContext)
             return ((GraphCommunicationContext) communication).sendWaveFromTo(getContext(), target, wave);
         return communication.sendWaveTo(target, wave);
+    }
+
+    /**
+     * Makes the agent call its step by itself, every <code>periodMs</code> milliseconds, on a thread of its own.     * @param step
+     *            - the step of the agent. Must pair with stopStepping().
+     * @param periodMs
+     *            - the time between the end of a step and the start of the next one.
+     * @return <code>true</code> if stepping was started.
+     */
+    public synchronized boolean startStepping(Runnable step, long periodMs) {
+        if (stepper != null)
+            return false;
+        String agentName = getAgent() != null ? getAgent().getEntityName() : SHARD_NAME;
+        stepper = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, agentName + "-stepper"));
+        stepper.scheduleWithFixedDelay(() -> {
+            try {
+                step.run();
+            } catch (RuntimeException ex) {
+                le("Step failed: []", PlatformUtils.printException(ex));
+            }
+        }, 0, Math.max(1, periodMs), TimeUnit.MILLISECONDS);
+        return true;
+    }
+
+    public synchronized void stopStepping() {
+        if (stepper == null)
+            return;
+        stepper.shutdownNow();
+        stepper = null;
     }
 
     public MessagingShard getMessagingShard() {

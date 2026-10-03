@@ -19,8 +19,11 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private static final long serialVersionUID = 1L;
     private static final AgentShardDesignation ENVIRONMENT =
             AgentShardDesignation.customShard("Environment");
+    private static final long DEFAULT_STEP_PERIOD_MS = 100;
 
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
+    /** Time between own steps (ms), when the agent is started outside a simulation executor. */
+    private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
     private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
 
     private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
@@ -55,6 +58,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     public boolean configure(MultiTreeMap configuration) {
         if (!super.configure(configuration))
             return false;
+        if (configuration.containsKey("stepPeriod"))
+            stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
         if (configuration.containsKey("nodeId"))
             nodeId = configuration.getAValue("nodeId");
         if (configuration.containsKey("auctionAgent"))
@@ -135,12 +140,23 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     }
 
     @Override
-    public boolean start() {
+    public boolean startSuspended() {
         if (!super.start())
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
         return true;
+    }
+
+    @Override
+    public boolean start() {
+        return startSuspended() && e.startStepping(this::step, stepPeriod);
+    }
+
+    @Override
+    public boolean stop() {
+        e.stopStepping();
+        return super.stop();
     }
 
     @SuppressWarnings("unchecked")
