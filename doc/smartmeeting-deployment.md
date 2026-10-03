@@ -107,10 +107,11 @@ machine during the run. It should show an `ESTABLISHED` connection from each cli
 
 ### Timing tolerances
 
-- The auction agent resends the RFP to silent rooms every 1 s and waits up to 15 s per
-  auction (`bidTimeoutMillis` in the scenario's Auction params), so all nodes should be
-  started within ~15 s of each other. Increase `bidTimeoutMillis` (same value on every
-  machine) for more slack.
+- The auction agent resends the RFP to silent rooms every `rfpRetryInterval` steps (default 20)
+  and waits up to `bidTimeout` steps per auction (300 in the scenario's Auction params). Steps are
+  real time through the temporal context's multiplier (`stepPeriodMs` = 50 ms): every 1 s and up
+  to 15 s, so all nodes should be started within ~15 s of each other. Increase `bidTimeout`
+  (same value on every machine) for more slack.
 - Each node runs for `steps × stepPeriodMs` = 2400 × 50 ms = **120 s**, then exports its
   trace and shuts down.
 

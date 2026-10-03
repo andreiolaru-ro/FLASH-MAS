@@ -7,5 +7,8 @@ public enum SmartMeetingMessageType {
     REJECT_BID,
     RELEASE_ROOM,
     BOOKING_REQUEST,
-    BOOKING_RESPONSE
+    BOOKING_RESPONSE,
+    // internal events, scheduled by the auction agent for itself through the temporal context
+    AUCTION_TIMEOUT,
+    RFP_RETRY
 }

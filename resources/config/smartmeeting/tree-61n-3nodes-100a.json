@@ -140,7 +140,7 @@
       "count": 1,
       "params": {
         "releaseAfterSteps": 20,
-        "bidTimeoutMillis": 15000
+        "bidTimeout": 300
       }
     },
     {

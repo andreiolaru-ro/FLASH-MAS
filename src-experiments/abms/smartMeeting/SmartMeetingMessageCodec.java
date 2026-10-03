@@ -80,6 +80,18 @@ public final class SmartMeetingMessageCodec {
         return wave;
     }
 
+    public static AgentWave encodeAuctionTimeout(String requestId) {
+        AgentWave wave = baseWave(SmartMeetingMessageType.AUCTION_TIMEOUT);
+        wave.add(REQUEST_ID, requestId);
+        return wave;
+    }
+
+    public static AgentWave encodeRfpRetry(String requestId) {
+        AgentWave wave = baseWave(SmartMeetingMessageType.RFP_RETRY);
+        wave.add(REQUEST_ID, requestId);
+        return wave;
+    }
+
     public static SmartMeetingMessageType decodeType(AgentWave wave) {
         String type = wave.get(TYPE);
         if (type == null)
@@ -107,6 +119,10 @@ public final class SmartMeetingMessageCodec {
                 readInt(wave, SCORE, 0),
                 TimeSlot.parse(wave.get(SLOT)),
                 wave.get(REASON));
+    }
+
+    public static String decodeRequestId(AgentWave wave) {
+        return wave.get(REQUEST_ID);
     }
 
     public static String decodeReservationId(AgentWave wave) {

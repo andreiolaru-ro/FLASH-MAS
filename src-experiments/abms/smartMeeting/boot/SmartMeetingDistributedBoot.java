@@ -130,7 +130,7 @@ public class SmartMeetingDistributedBoot {
         appendParams(a, params);
         a.append(" nodeId:").append(nodeId);
         if (kind.equals("Auction")) {
-            a.append(" bidWaitSteps:20 roomTargets:").append(allRoomIds(config));
+            a.append(" roomTargets:").append(allRoomIds(config));
         }
     }
 
