@@ -17,6 +17,7 @@ import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
 import net.xqhs.flash.abms.space.Topology;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardCore;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
@@ -34,6 +35,7 @@ public class EnvironmentLinkShard extends AgentShardCore {
     CommunicationContext communication = null;
     AgentManagementContext agentManagement = null;
     RandomContext randomContext = null;
+    TemporalContext temporal = null;
     Simulation simulation = null;
     MessagingShard messaging = null;
     /** Calls the agent's step when the agent steps by itself; <code>null</code> otherwise. */
@@ -51,6 +53,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
             agentManagement = (AgentManagementContext) context;
         else if (context instanceof RandomContext)
             randomContext = (RandomContext) context;
+        else if (context instanceof TemporalContext)
+            temporal = (TemporalContext) context;
         else if (context instanceof CommunicationContext)
             communication = (CommunicationContext) context;
         else if (context instanceof Simulation)
@@ -170,6 +174,16 @@ public class EnvironmentLinkShard extends AgentShardCore {
             return;
         stepper.shutdownNow();
         stepper = null;
+    }
+
+    public boolean schedule(long time, AgentEvent event) {
+        if (temporal == null)
+            return false;
+        return temporal.createTask(time, getAgent(), event);
+    }
+
+    public long getCurrentTime() {
+        return temporal == null ? -1 : temporal.getCurrentTime();
     }
 
     public MessagingShard getMessagingShard() {

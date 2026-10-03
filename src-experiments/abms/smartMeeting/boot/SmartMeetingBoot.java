@@ -87,6 +87,7 @@ public class SmartMeetingBoot {
         a.append(" -executor StepWise:StepWise steps:").append(steps);
         a.append(" -context AgentManagement:agentManagement");
         a.append(" -context Random:random seed:").append(seed);
+        a.append(" -context Temporal:temporal");
         a.append(" -context GraphCommunication:communication");
         a.append(" -context Space:space topology:graph");
         a.append(" nodes:").append(String.join(",", nodes));

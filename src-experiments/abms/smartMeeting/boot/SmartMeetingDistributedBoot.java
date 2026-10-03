@@ -94,8 +94,11 @@ public class SmartMeetingDistributedBoot {
 		a.append(" -context Space:space topology:graph");
 		a.append(" nodes:").append(String.join(",", nodes));
 		a.append(" edges:").append(String.join(",", edges));
+		String temporalName = "Temporal:temporal-" + JsonConfig.getString(deploymentNode, "id", "unknown");
+		a.append(" -context ").append(temporalName).append(" multiplier:")
+				.append(config.getInt("timeMultiplierMs", config.getInt("stepPeriodMs", 100)));
 		a.append(" -context Random:random seed:").append(seed);
-        a.append(" -SmartMeetingGroup g");
+        a.append(" -SmartMeetingGroup g in-context-of:").append(temporalName);
         appendAssignedAgents(a, config, deploymentNode);
     }
 
