@@ -4,7 +4,10 @@ import net.xqhs.flash.core.agent.Agent;
 
 public interface SteppableEntity extends Agent {
 	// void preStep();
-	
+
 	void step();
-	
+
+	default boolean startSuspended() {
+		return start();
+	}
 }
