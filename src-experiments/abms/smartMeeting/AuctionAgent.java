@@ -15,7 +15,6 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
@@ -30,7 +29,6 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     /** Time between own steps (ms), when the agent is started outside a simulation executor. */
     private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
-    private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
 
     // Auction state
     private enum AuctionState {IDLE, COLLECTING_BIDS}
@@ -97,13 +95,31 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         return super.addGeneralContext(context);
     }
 
+    /**
+     * Receives and processes events right away: booking requests are queued, bids are recorded and, when the last
+     * expected bid arrives, the auction is resolved.
+     */
     @Override
-    public boolean postAgentEvent(AgentEvent event) {
-        if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            incomingWaves.add((AgentWave) event);
-            return true;
+    public synchronized boolean postAgentEvent(AgentEvent event) {
+        if (event.getType() != AgentEvent.AgentEventType.AGENT_WAVE || !(event instanceof AgentWave))
+            return false;
+        AgentWave wave = (AgentWave) event;
+        try {
+            SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
+            switch (type) {
+                case BOOKING_REQUEST:
+                    pendingBookingRequests.add(wave);
+                    break;
+                case BID:
+                    handleBid(wave);
+                    break;
+                default:
+                    break;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Message belongs to another scenario.
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -141,45 +157,19 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     }
 
     @Override
-    public void step() {
+    public synchronized void step() {
         currentStep++;
         computeBidWaitIfNeeded();
         releaseExpiredReservations();
-        processIncomingWaves();
 
         switch (auctionState) {
             case IDLE:
-                AgentWave bookingWave = pendingBookingRequests.poll();
-                if (bookingWave == null)
-                    return;
-                MeetingRequest originalRequest = SmartMeetingMessageCodec.decodeMeetingRequest(bookingWave);
-                currentRequesterName = originalRequest.getRequesterName();
-                // Replace requester with auction agent's name so rooms send bids back here
-                currentRequest = new MeetingRequest(originalRequest.getRequestId(), getEntityName(),
-                        originalRequest.getAttendees(), originalRequest.getDurationMinutes(),
-                        originalRequest.getPreferredSlot(), originalRequest.getRequiredEquipment(),
-                        originalRequest.getPriority());
-                receivedBids.clear();
-                expectedRoomAgents = discoverExpectedRoomAgents();
-                rfpSentTo.clear();
-                currentWaitStep = 0;
-                auctionStartedStep = currentStep;
-                auctionDeadlineMillis = System.currentTimeMillis() + bidTimeoutMillis;
-                nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
-                auctionState = AuctionState.COLLECTING_BIDS;
-                broadcastRFP(currentRequest);
-                ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-started",
-                        currentRequest.getRequestId(), null, null, null, nodeId);
-                li("started auction for [] from person [] (waiting [] steps for bids)",
-                        currentRequest.getRequestId(), currentRequesterName,
-                        Integer.valueOf(bidWaitSteps));
+                startNextAuction();
                 break;
 
             case COLLECTING_BIDS:
                 currentWaitStep++;
-                if (receivedBids.keySet().containsAll(expectedRoomAgents))
-                    resolveAuction();
-                else if (System.currentTimeMillis() >= auctionDeadlineMillis) {
+                if (System.currentTimeMillis() >= auctionDeadlineMillis) {
                     // Deadline: resolve with the bids that arrived; later bids will be ignored.
                     li("auction [] timed out with []/[] bids", currentRequest.getRequestId(),
                             Integer.valueOf(receivedBids.size()), Integer.valueOf(expectedRoomAgents.size()));
@@ -187,18 +177,44 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                             currentRequest.getRequestId(), null, Boolean.FALSE,
                             "bids:" + receivedBids.size() + "/" + expectedRoomAgents.size(), nodeId);
                     resolveAuction();
-                } else {
+                } else if (System.currentTimeMillis() >= nextRfpRetryMillis) {
                     // Rooms may come online late (e.g. machines started one by one), so keep
                     // resending the RFP to the silent ones until the deadline.
-                    if (System.currentTimeMillis() >= nextRfpRetryMillis) {
-                        retryMissingRfps();
-                        nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
-                    }
-                    return;
+                    retryMissingRfps();
+                    nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
                 }
-                auctionState = AuctionState.IDLE;
                 break;
         }
+    }
+
+    private void startNextAuction() {
+        AgentWave bookingWave = pendingBookingRequests.poll();
+        if (bookingWave == null)
+            return;
+        MeetingRequest originalRequest = SmartMeetingMessageCodec.decodeMeetingRequest(bookingWave);
+        currentRequesterName = originalRequest.getRequesterName();
+        // Replace requester with auction agent's name so rooms send bids back here
+        currentRequest = new MeetingRequest(originalRequest.getRequestId(), getEntityName(),
+                originalRequest.getAttendees(), originalRequest.getDurationMinutes(),
+                originalRequest.getPreferredSlot(), originalRequest.getRequiredEquipment(),
+                originalRequest.getPriority());
+        receivedBids.clear();
+        expectedRoomAgents = discoverExpectedRoomAgents();
+        rfpSentTo.clear();
+        currentWaitStep = 0;
+        auctionStartedStep = currentStep;
+        auctionDeadlineMillis = System.currentTimeMillis() + bidTimeoutMillis;
+        nextRfpRetryMillis = System.currentTimeMillis() + RFP_RETRY_INTERVAL_MS;
+        auctionState = AuctionState.COLLECTING_BIDS;
+        broadcastRFP(currentRequest);
+        ScenarioTrace.record(getEntityName(), "AuctionAgent", "auction-started",
+                currentRequest.getRequestId(), null, null, null, nodeId);
+        li("started auction for [] from person [] (waiting [] steps for bids)",
+                currentRequest.getRequestId(), currentRequesterName,
+                Integer.valueOf(bidWaitSteps));
+        // No room to ask: nothing to wait for.
+        if (expectedRoomAgents.isEmpty())
+            resolveAuction();
     }
 
     /** Resends the RFP to expected rooms that have not answered yet (covers lost/early messages). */
@@ -213,29 +229,11 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         }
     }
 
-    private void processIncomingWaves() {
-        AgentWave wave;
-        while ((wave = incomingWaves.poll()) != null) {
-            try {
-                SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
-                switch (type) {
-                    case BOOKING_REQUEST:
-                        pendingBookingRequests.add(wave);
-                        break;
-                    case BID:
-                        handleBid(wave);
-                        break;
-                    default:
-                        break;
-                }
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-    }
-
     private void handleBid(AgentWave wave) {
         RoomBid bid = SmartMeetingMessageCodec.decodeRoomBid(wave);
-        if (currentRequest == null || !currentRequest.getRequestId().equals(bid.getRequestId()))
+        // Bids for an auction that is not running anymore (e.g. after its timeout) are ignored.
+        if (auctionState != AuctionState.COLLECTING_BIDS || currentRequest == null
+                || !currentRequest.getRequestId().equals(bid.getRequestId()))
             return;
         if (!expectedRoomAgents.contains(bid.getRoomAgentName())) {
             ScenarioTrace.record(getEntityName(), "AuctionAgent", "bid-rejected",
@@ -248,6 +246,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         receivedBids.put(bid.getRoomAgentName(), bid);
         ScenarioTrace.record(getEntityName(), "AuctionAgent", "bid-received",
                 bid.getRequestId(), bid.getRoomId(), Boolean.valueOf(bid.isFeasible()), bid.getReason(), nodeId);
+        // The last expected bid arrived: resolve now.
+        if (receivedBids.keySet().containsAll(expectedRoomAgents))
+            resolveAuction();
     }
 
     private void broadcastRFP(MeetingRequest request) {
@@ -324,6 +325,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         currentRequesterName = null;
         auctionStartedStep = -1;
         auctionDeadlineMillis = -1;
+        auctionState = AuctionState.IDLE;
         // The run may end at any time relative to other nodes, so persist the trace now.
         ScenarioTrace.exportRun();
     }

@@ -13,7 +13,6 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PersonAgent extends BaseAgent implements SteppableEntity, ShardContainer {
     private static final long serialVersionUID = 1L;
@@ -24,7 +23,6 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     /** Time between own steps (ms), when the agent is started outside a simulation executor. */
     private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
-    private Queue<AgentWave> incomingWaves = new ConcurrentLinkedQueue<>();
 
     private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
 
@@ -122,13 +120,21 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
         return super.addGeneralContext(context);
     }
 
+    /**
+     * Receives and processes events right away: the response to the booking request.
+     */
     @Override
-    public boolean postAgentEvent(AgentEvent event) {
-        if (event.getType() == AgentEvent.AgentEventType.AGENT_WAVE && event instanceof AgentWave) {
-            incomingWaves.add((AgentWave) event);
-            return true;
+    public synchronized boolean postAgentEvent(AgentEvent event) {
+        if (event.getType() != AgentEvent.AgentEventType.AGENT_WAVE || !(event instanceof AgentWave))
+            return false;
+        AgentWave wave = (AgentWave) event;
+        try {
+            if (SmartMeetingMessageCodec.decodeType(wave) == SmartMeetingMessageType.BOOKING_RESPONSE)
+                handleBookingResponse(wave);
+        } catch (IllegalArgumentException ignored) {
+            // Message belongs to another scenario.
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -166,9 +172,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     }
 
     @Override
-    public void step() {
-        processIncomingWaves();
-
+    public synchronized void step() {
         switch (state) {
             case IDLE:
                 MeetingRequest request = createRequest();
@@ -181,38 +185,29 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
                 state = State.WAITING_FOR_RESPONSE;
                 break;
             case WAITING_FOR_RESPONSE:
-                // just waiting — responses handled in processIncomingWaves
+                // just waiting — the response is handled in postAgentEvent
                 break;
             case DONE:
                 break;
         }
     }
 
-    private void processIncomingWaves() {
-        AgentWave wave;
-        while ((wave = incomingWaves.poll()) != null) {
-            try {
-                SmartMeetingMessageType type = SmartMeetingMessageCodec.decodeType(wave);
-                if (type == SmartMeetingMessageType.BOOKING_RESPONSE) {
-                    String result = wave.get("result");
-                    String roomId = wave.get("roomId");
-                    responseReceived = true;
-                    responseAccepted = "accepted".equals(result);
-                    responseRoomId = roomId;
-                    responseReason = wave.get("reason");
-                    ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-response-received",
-                            wave.get("requestId"), responseRoomId, Boolean.valueOf(responseAccepted),
-                            responseReason, nodeId);
-                    if (responseAccepted)
-                        li("booking CONFIRMED for room []", roomId);
-                    else
-                        li("booking FAILED: []", wave.get("reason"));
-                    state = State.DONE;
-                    ScenarioTrace.exportRun();
-                }
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
+    private void handleBookingResponse(AgentWave wave) {
+        String result = wave.get("result");
+        String roomId = wave.get("roomId");
+        responseReceived = true;
+        responseAccepted = "accepted".equals(result);
+        responseRoomId = roomId;
+        responseReason = wave.get("reason");
+        ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-response-received",
+                wave.get("requestId"), responseRoomId, Boolean.valueOf(responseAccepted),
+                responseReason, nodeId);
+        if (responseAccepted)
+            li("booking CONFIRMED for room []", roomId);
+        else
+            li("booking FAILED: []", wave.get("reason"));
+        state = State.DONE;
+        ScenarioTrace.exportRun();
     }
 
     private MeetingRequest createRequest() {
