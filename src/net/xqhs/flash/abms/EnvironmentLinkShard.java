@@ -62,18 +62,26 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public Position getCurrentPosition() {
+        if (space == null)
+            return null;
         return space.getPosition(getContext());
     }
 
     public Set<Position> getVicinity(Position pos) {
+        if (space == null)
+            return Collections.emptySet();
         return space.getVicinity(pos);
     }
 
     public Set<Position> getValidNeighborPositions(Position pos) {
+        if (space == null)
+            return Collections.emptySet();
         return space.getValidNeighborPositions(pos);
     }
 
     public boolean moveToPosition(Position target) {
+        if (space == null)
+            return false;
         return space.addPendingAction(new ActionRecord(getContext(),
                 new MultiValueMap()
                         .add(BaseActionData.ACTION.s(), SpaceActionData.MOVE_ACTION.s())
@@ -81,10 +89,14 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public Set<EntityProxy<?>> getEntitiesAt(Position pos) {
+        if (space == null)
+            return Collections.emptySet();
         return space.getEntitiesAt(pos);
     }
 
     public Map<Position, Set<EntityProxy<?>>> observe(int range) {
+        if (space == null)
+            return Collections.emptyMap();
         return space.getEntitiesWithinRange(getCurrentPosition(), range);
     }
 
@@ -95,6 +107,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
     }
 
     public Topology<? extends Position> getTopology() {
+        if (space == null)
+            return null;
         return space.getTopology();
     }
 
