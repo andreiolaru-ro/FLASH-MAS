@@ -9,7 +9,7 @@ public class WolfSheepBoot {
     public static void main(String[] args_) {
         String a = "";
         int scale = 289;
-        int steps = 100;
+        int steps = 100; //1000
 
         int width = 6 * (int) Math.sqrt(scale);
         int height = 6 * (int) Math.sqrt(scale);
