@@ -193,14 +193,11 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return messaging;
     }
 
+    /**
+     * Sends a message directly to the named agent, the same way in simulation and in a deployment: through the pylon
+     * when there is one, otherwise through the communication context, delivered at the next step.
+     */
     public boolean sendTo(String targetName, AgentWave wave) {
-        if (messaging != null)
-            return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
-        EntityProxy<?> target = findByName(targetName);
-        return target != null && sendWaveTo(target, wave);
-    }
-
-    public boolean sendDirect(String targetName, AgentWave wave) {
         if (messaging != null)
             return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
         EntityProxy<?> target = findByName(targetName);

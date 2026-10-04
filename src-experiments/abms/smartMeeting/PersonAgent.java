@@ -199,7 +199,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             return true;
         MeetingRequest request = createRequest();
         AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
-        if (!e.sendDirect(auctionAgentName, bookingRequest))
+        if (!e.sendTo(auctionAgentName, bookingRequest))
             return false;
         li("sent booking request [] to auction agent", request.getRequestId());
         ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",
