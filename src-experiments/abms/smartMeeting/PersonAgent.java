@@ -27,6 +27,10 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
 
     private State state = State.IDLE;
+    /** The step at which the person asks for a room. */
+    private long requestTime = 0;
+    /** Whether the request is sent through the temporal context (otherwise, at the first step). */
+    private boolean requestScheduled = false;
     private String auctionAgentName;
     private String nodeId = "unknown";
 
@@ -62,6 +66,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             nodeId = configuration.getAValue("nodeId");
         if (configuration.containsKey("auctionAgent"))
             auctionAgentName = configuration.getAValue("auctionAgent");
+        if (configuration.containsKey("requestTime"))
+            requestTime = Long.parseLong(configuration.getAValue("requestTime"));
         attendeesMin = readInt(configuration, "attendeesMin", attendeesMin);
         attendeesMax = readInt(configuration, "attendeesMax", attendeesMax);
         startMin = readInt(configuration, "startMin", startMin);
@@ -121,7 +127,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     }
 
     /**
-     * Receives and processes events right away: the response to the booking request.
+     * Receives and processes events right away: the moment to send the booking request and the response to it.
      */
     @Override
     public synchronized boolean postAgentEvent(AgentEvent event) {
@@ -129,8 +135,18 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             return false;
         AgentWave wave = (AgentWave) event;
         try {
-            if (SmartMeetingMessageCodec.decodeType(wave) == SmartMeetingMessageType.BOOKING_RESPONSE)
-                handleBookingResponse(wave);
+            switch (SmartMeetingMessageCodec.decodeType(wave)) {
+                case SEND_BOOKING_REQUEST:
+                    if (!sendBookingRequest())
+                        // auction agent not reachable yet: try again at the next step
+                        e.schedule(e.getCurrentTime() + 1, SmartMeetingMessageCodec.encodeSendBookingRequest());
+                    break;
+                case BOOKING_RESPONSE:
+                    handleBookingResponse(wave);
+                    break;
+                default:
+                    break;
+            }
         } catch (IllegalArgumentException ignored) {
             // Message belongs to another scenario.
         }
@@ -151,6 +167,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        requestScheduled = e.schedule(requestTime, SmartMeetingMessageCodec.encodeSendBookingRequest());
         return true;
     }
 
@@ -173,23 +190,22 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
 
     @Override
     public synchronized void step() {
-        switch (state) {
-            case IDLE:
-                MeetingRequest request = createRequest();
-                AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
-                if (!e.sendDirect(auctionAgentName, bookingRequest))
-                    return; // auction agent not reachable yet, stay IDLE and retry next step
-                li("sent booking request [] to auction agent", request.getRequestId());
-                ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",
-                        request.getRequestId(), null, null, null, nodeId);
-                state = State.WAITING_FOR_RESPONSE;
-                break;
-            case WAITING_FOR_RESPONSE:
-                // just waiting — the response is handled in postAgentEvent
-                break;
-            case DONE:
-                break;
-        }
+        if (!requestScheduled && state == State.IDLE)
+            sendBookingRequest(); // if the auction agent is not reachable yet, stay IDLE and retry next step
+    }
+
+    private boolean sendBookingRequest() {
+        if (state != State.IDLE)
+            return true;
+        MeetingRequest request = createRequest();
+        AgentWave bookingRequest = SmartMeetingMessageCodec.encodeBookingRequest(request);
+        if (!e.sendDirect(auctionAgentName, bookingRequest))
+            return false;
+        li("sent booking request [] to auction agent", request.getRequestId());
+        ScenarioTrace.record(getEntityName(), "PersonAgent", "booking-request-sent",
+                request.getRequestId(), null, null, null, nodeId);
+        state = State.WAITING_FOR_RESPONSE;
+        return true;
     }
 
     private void handleBookingResponse(AgentWave wave) {

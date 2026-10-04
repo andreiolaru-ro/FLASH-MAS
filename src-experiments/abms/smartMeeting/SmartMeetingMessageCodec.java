@@ -92,6 +92,10 @@ public final class SmartMeetingMessageCodec {
         return wave;
     }
 
+    public static AgentWave encodeSendBookingRequest() {
+        return baseWave(SmartMeetingMessageType.SEND_BOOKING_REQUEST);
+    }
+
     public static SmartMeetingMessageType decodeType(AgentWave wave) {
         String type = wave.get(TYPE);
         if (type == null)
