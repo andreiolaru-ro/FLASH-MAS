@@ -1,7 +1,9 @@
 package abms.smartMeeting.boot;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import abms.common.BatchRunner;
@@ -98,9 +100,29 @@ public class SmartMeetingBoot {
             int count = JsonConfig.getInt(agent, "count", 0);
             JSONObject params = (JSONObject) agent.get("params");
             a.append(" -agent ").append(kind).append(" n:").append(count);
+            // name the rooms as in the distributed deployment, so that both modes give the same results
+            List<String> roomIds = deploymentRoomIds(config);
+            if (kind.equals("Room") && roomIds.size() == count)
+                a.append(" roomIdList:").append(String.join("|", roomIds));
             appendParams(a, params);
         }
         return a.toString();
+    }
+
+    /**
+     * @return the names of the room agents in the scenario's deployment section, in order (empty if there is none).
+     */
+    private static List<String> deploymentRoomIds(JsonConfig config) {
+        List<String> rooms = new ArrayList<>();
+        JSONObject deployment = config.getObject("deployment");
+        Object nodes = deployment == null ? null : deployment.get("nodes");
+        if (nodes instanceof JSONArray)
+            for (Object node : (JSONArray) nodes)
+                if (node instanceof JSONObject)
+                    for (String agent : JsonConfig.getStringList((JSONObject) node, "agents"))
+                        if (agent.startsWith("r"))
+                            rooms.add(agent);
+        return rooms;
     }
 
     @SuppressWarnings("unchecked")

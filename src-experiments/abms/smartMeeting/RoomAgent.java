@@ -40,8 +40,11 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
             return false;
         if (configuration.containsKey("stepPeriod"))
             stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
-        if (configuration.containsKey("roomId"))
+        if (configuration.containsKey("roomId")) {
             roomId = configuration.getAValue("roomId");
+            // the room is known by its id everywhere (messages, contexts), whatever the generated name
+            name = roomId;
+        }
         capacity = readInt(configuration, "capacity", capacity);
         if (configuration.containsKey("equipment"))
             equipment = EquipmentType.parseSet(configuration.getAValue("equipment"));

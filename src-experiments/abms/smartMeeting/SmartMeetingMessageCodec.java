@@ -96,6 +96,13 @@ public final class SmartMeetingMessageCodec {
         return baseWave(SmartMeetingMessageType.SEND_BOOKING_REQUEST);
     }
 
+    public static AgentWave encodeReleaseDue(String roomAgentName, String reservationId) {
+        AgentWave wave = baseWave(SmartMeetingMessageType.RELEASE_DUE);
+        wave.add(ROOM_AGENT, roomAgentName);
+        wave.add(RESERVATION_ID, reservationId);
+        return wave;
+    }
+
     public static SmartMeetingMessageType decodeType(AgentWave wave) {
         String type = wave.get(TYPE);
         if (type == null)
@@ -127,6 +134,10 @@ public final class SmartMeetingMessageCodec {
 
     public static String decodeRequestId(AgentWave wave) {
         return wave.get(REQUEST_ID);
+    }
+
+    public static String decodeRoomAgentName(AgentWave wave) {
+        return wave.get(ROOM_AGENT);
     }
 
     public static String decodeReservationId(AgentWave wave) {

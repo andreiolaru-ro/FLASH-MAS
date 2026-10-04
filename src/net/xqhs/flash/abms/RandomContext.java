@@ -12,13 +12,17 @@ public class RandomContext extends SimulationContext.BaseContext
         implements SimulationContext, EntityProxy<RandomContext> {
 
     protected Random random;
+    /** The seed of this context */
+    protected long seed;
 
     public RandomContext(MultiTreeMap configuration) {
-        random = new Random();
+        seed = new Random().nextLong();
+        random = new Random(seed);
         configure(configuration);
     }
 
     public RandomContext(long seed) {
+        this.seed = seed;
         random = new Random(seed); //for reproducible experiments
     }
 
@@ -26,7 +30,7 @@ public class RandomContext extends SimulationContext.BaseContext
     public boolean configure(MultiTreeMap configuration) {
         super.configure(configuration);
         if (configuration != null && configuration.containsKey("seed")) {
-            long seed = Long.parseLong(configuration.getAValue("seed"));
+            seed = Long.parseLong(configuration.getAValue("seed"));
             random = new Random(seed);
             li("RandomContext configured with seed []", seed);
         }
@@ -34,7 +38,12 @@ public class RandomContext extends SimulationContext.BaseContext
     }
 
     public void setSeed(long seed) {
+        this.seed = seed;
         random.setSeed(seed);
+    }
+
+    public Random forEntity(String entityName) {
+        return new Random(seed * 31 + (entityName == null ? 0 : entityName.hashCode()));
     }
 
     public int nextInt() {

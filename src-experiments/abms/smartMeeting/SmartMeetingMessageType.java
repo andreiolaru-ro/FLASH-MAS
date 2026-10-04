@@ -11,5 +11,6 @@ public enum SmartMeetingMessageType {
     // internal events, scheduled by an agent for itself through the temporal context
     AUCTION_TIMEOUT,
     RFP_RETRY,
-    SEND_BOOKING_REQUEST
+    SEND_BOOKING_REQUEST,
+    RELEASE_DUE
 }

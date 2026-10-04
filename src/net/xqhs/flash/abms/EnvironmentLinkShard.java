@@ -2,6 +2,7 @@ package net.xqhs.flash.abms;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +37,8 @@ public class EnvironmentLinkShard extends AgentShardCore {
     AgentManagementContext agentManagement = null;
     RandomContext randomContext = null;
     TemporalContext temporal = null;
+    /** The random generator of this agent, see {@link #getRandom()}. */
+    Random agentRandom = null;
     Simulation simulation = null;
     MessagingShard messaging = null;
     /** Calls the agent's step when the agent steps by itself; <code>null</code> otherwise. */
@@ -230,19 +233,25 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return result;
     }
 
+    protected Random getRandom() {
+        if (agentRandom == null)
+            agentRandom = randomContext.forEntity(getAgent() != null ? getAgent().getEntityName() : null);
+        return agentRandom;
+    }
+
     public int nextInt(int bound) {
-        return randomContext.nextInt(bound);
+        return getRandom().nextInt(bound);
     }
 
     public double nextDouble() {
-        return randomContext.nextDouble();
+        return getRandom().nextDouble();
     }
 
     public boolean nextBoolean() {
-        return randomContext.nextBoolean();
+        return getRandom().nextBoolean();
     }
 
     public double nextGaussian() {
-        return randomContext.nextGaussian();
+        return getRandom().nextGaussian();
     }
 }

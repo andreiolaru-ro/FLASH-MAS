@@ -42,9 +42,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private long bidTimeout = DEFAULT_BID_TIMEOUT;
     private long rfpRetryInterval = DEFAULT_RFP_RETRY_INTERVAL;
 
-    // Active reservations for release tracking
+    /** Steps after which a won reservation is released. */
     private int releaseAfterSteps = 15;
-    private List<ActiveReservation> activeReservations = new ArrayList<>();
 
     // Queue of pending booking requests from PersonAgents
     private Queue<AgentWave> pendingBookingRequests = new LinkedList<>();
@@ -116,6 +115,10 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                 case RFP_RETRY:
                     handleRfpRetry(SmartMeetingMessageCodec.decodeRequestId(wave));
                     break;
+                case RELEASE_DUE:
+                    releaseReservation(SmartMeetingMessageCodec.decodeRoomAgentName(wave),
+                            SmartMeetingMessageCodec.decodeReservationId(wave));
+                    break;
                 default:
                     break;
             }
@@ -162,7 +165,6 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     @Override
     public synchronized void step() {
         currentStep++;
-        releaseExpiredReservations();
         if (auctionState == AuctionState.IDLE)
             startNextAuction();
     }
@@ -285,8 +287,10 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
 
         if (winner != null) {
             e.sendTo(winner.getRoomAgentName(), SmartMeetingMessageCodec.encodeAcceptBid(winner));
-            activeReservations.add(new ActiveReservation(winner.getRoomAgentName(),
-                    "RES-" + winner.getRoomId() + "-" + winner.getRequestId(), releaseAfterSteps));
+            String reservationId = "RES-" + winner.getRoomId() + "-" + winner.getRequestId();
+            if (!e.schedule(e.getCurrentTime() + releaseAfterSteps,
+                    SmartMeetingMessageCodec.encodeReleaseDue(winner.getRoomAgentName(), reservationId)))
+                lw("no temporal context: reservation [] will not be released", reservationId);
 
             // Reject losing bids
             for (RoomBid bid : bids) {
@@ -330,9 +334,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     }
 
     /**
-     * Selects the highest-scoring feasible bid. When two or more bids tie on score the
-     * winner is drawn uniformly at random from the tied set, so that across many runs the
-     * winner distribution is not anchored to entity-set iteration order.
+     * Selects the highest-scoring feasible bid. When two or more bids tie on score, the winner is the room agent with
+     * the smallest name, so that the result does not depend on the order in which bids arrived.
      */
     private RoomBid selectBestBid(List<RoomBid> bids) {
         int bestScore = Integer.MIN_VALUE;
@@ -348,8 +351,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             }
         }
         if (bestTier.isEmpty()) return null;
-        if (bestTier.size() == 1) return bestTier.get(0);
-        return bestTier.get(e.nextInt(bestTier.size()));
+        return Collections.min(bestTier, Comparator.comparing(RoomBid::getRoomAgentName));
     }
 
     public List<AuctionOutcome> getOutcomes() {
@@ -360,18 +362,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         return Collections.unmodifiableMap(winsPerRoom);
     }
 
-    private void releaseExpiredReservations() {
-        List<ActiveReservation> released = new ArrayList<>();
-        for (ActiveReservation reservation : activeReservations) {
-            reservation.remainingSteps--;
-            if (reservation.remainingSteps > 0)
-                continue;
-            if (e.sendTo(reservation.roomAgentName,
-                    SmartMeetingMessageCodec.encodeReleaseRoom(reservation.reservationId)))
-                li("released reservation [] for room []", reservation.reservationId, reservation.roomAgentName);
-            released.add(reservation);
-        }
-        activeReservations.removeAll(released);
+    private void releaseReservation(String roomAgentName, String reservationId) {
+        if (e.sendTo(roomAgentName, SmartMeetingMessageCodec.encodeReleaseRoom(reservationId)))
+            li("released reservation [] for room []", reservationId, roomAgentName);
     }
 
     private static int readInt(MultiTreeMap configuration, String key, int fallback) {
@@ -387,18 +380,6 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     @Override
     public String getEntityName() {
         return getName() != null ? getName() : "Auction";
-    }
-
-    private static class ActiveReservation {
-        final String roomAgentName;
-        final String reservationId;
-        int remainingSteps;
-
-        ActiveReservation(String roomAgentName, String reservationId, int remainingSteps) {
-            this.roomAgentName = roomAgentName;
-            this.reservationId = reservationId;
-            this.remainingSteps = remainingSteps;
-        }
     }
 
     public static class AuctionOutcome {
