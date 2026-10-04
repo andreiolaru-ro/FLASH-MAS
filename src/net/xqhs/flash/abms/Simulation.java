@@ -16,6 +16,8 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 
 	protected Set<SimulationContext>	simulationContexts	= new HashSet<>();
 	protected Set<Entity<?>>			simulationObjects	= new HashSet<>();
+	/** Simulation objects deregistered since the last {@link #clearDeregistered()}, usually none or a few. */
+	protected Set<Entity<?>>			deregistered		= new HashSet<>();
 	protected SimulationExecutor		executor;
 
 	// Multi-run support: each run constructs a fresh Simulation, which registers itself
@@ -28,8 +30,11 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		super.registerEntity(entityType, entity, entityName);
 		if(entity instanceof SimulationContext)
 			simulationContexts.add((SimulationContext) entity);
-		else
+		else {
 			simulationObjects.add(entity);
+			if(!deregistered.isEmpty())
+				deregistered.remove(entity);
+		}
 	}
 	
 	public void registerExecutor(SimulationExecutor _executor) {
@@ -50,11 +55,31 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	}
 
 	public void deregisterEntity(Entity<?> entity) {
-		simulationObjects.remove(entity);
+		if(simulationObjects.remove(entity))
+			deregistered.add(entity);
 	}
 
 	public void deregisterEntity(EntityProxy<?> proxy) {
-		simulationObjects.removeIf(entity -> entity == proxy || entity.asContext() == proxy);
+		simulationObjects.removeIf(entity -> {
+			boolean match = entity == proxy || entity.asContext() == proxy;
+			if(match)
+				deregistered.add(entity);
+			return match;
+		});
+	}
+
+	/**
+	 * Tells whether an entity was deregistered since the last {@link #clearDeregistered()}.
+	 */
+	public boolean isDeregistered(Entity<?> entity) {
+		return !deregistered.isEmpty() && deregistered.contains(entity);
+	}
+
+	/**
+	 * Forgets the entities deregistered so far, see {@link #isDeregistered(Entity)}.
+	 */
+	public void clearDeregistered() {
+		deregistered.clear();
 	}
 	
 	/**

@@ -91,21 +91,22 @@ public class StepWiseExecutor extends EntityCore<Simulation>
     protected void runStep(long step) {
         li("Step []", Long.valueOf(step));
         ScenarioTrace.setStep(step);
-        // Iterate over a copy to avoid ConcurrentModificationException when entities deregister during the step
+        // Iterate over a copy to avoid ConcurrentModificationException when entities deregister during the step.
         List<Entity<?>> snapshot = new ArrayList<>(simulation.getSimulationObjects());
+        simulation.clearDeregistered();
         for (Entity<?> entity : snapshot) {
             // Check if entity is still registered before sending events
-            if (!simulation.getSimulationObjects().contains(entity))
+            if (simulation.isDeregistered(entity))
                 continue;
             // Push pending events to the entity from all contexts
             for (SimulationContext context : simulation.getSimulationContexts()) {
                 context.sendEvents(entity);
                 // If the entity deregistered during event processing, stop
-                if (!simulation.getSimulationObjects().contains(entity))
+                if (simulation.isDeregistered(entity))
                     break;
             }
             // Check again after all events have been delivered
-            if (!simulation.getSimulationObjects().contains(entity))
+            if (simulation.isDeregistered(entity))
                 continue;
             if (entity instanceof SteppableEntity)
                 ((SteppableEntity) entity).step();
