@@ -76,7 +76,7 @@ public class SmartMeetingBoot {
     private static String buildBootString(JsonConfig config, long seed, int steps) {
         JSONObject graph = config.getObject("graph");
         List<String> nodes = JsonConfig.getStringList(graph, "nodes");
-        List<String> edges = JsonConfig.getStringList(graph, "edges");
+        List<String> edges = adjacencyToEdges(nodes, (JSONObject) graph.get("edges"));
 
         StringBuilder a = new StringBuilder();
         a.append(" -load_order simulation;executor;context;pylon;SmartMeetingGroup");
@@ -104,9 +104,23 @@ public class SmartMeetingBoot {
             List<String> roomIds = deploymentRoomIds(config);
             if (kind.equals("Room") && roomIds.size() == count)
                 a.append(" roomIdList:").append(String.join("|", roomIds));
-            appendParams(a, params);
+            JsonConfig.appendCliParams(a, params);
         }
         return a.toString();
+    }
+
+    /**
+     * @return the edges of an adjacency list (each node mapped to the array of its neighbours), as
+     *         <code>node-neighbour</code> pairs, the format of the graph topology. Nodes are taken in the order of
+     *         the node list, since JSON objects are not ordered.
+     */
+    private static List<String> adjacencyToEdges(List<String> nodes, JSONObject adjacency) {
+        List<String> edges = new ArrayList<>();
+        if (adjacency != null)
+            for (String node : nodes)
+                for (String neighbour : JsonConfig.getStringList(adjacency, node))
+                    edges.add(node + "-" + neighbour);
+        return edges;
     }
 
     /**
@@ -123,16 +137,6 @@ public class SmartMeetingBoot {
                         if (agent.startsWith("r"))
                             rooms.add(agent);
         return rooms;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void appendParams(StringBuilder a, JSONObject params) {
-        if (params == null) return;
-        for (Object keyObj : params.keySet()) {
-            String key = keyObj.toString();
-            Object v = params.get(key);
-            a.append(' ').append(key).append(':').append(v);
-        }
     }
 
     @SuppressWarnings("unused")

@@ -8,20 +8,22 @@
   "logLevel": "ERROR",
   "graph": {
     "nodes": ["lobby", "r1", "r2"],
-    "edges": ["lobby-r1", "lobby-r2"]
+    "edges": {
+      "lobby": ["r1", "r2"]
+    }
   },
   "agents": [
     {
       "kind": "Auction",
       "count": 1,
-      "params": { "releaseAfterSteps": 20 }
+      "params": {"releaseAfterSteps": 20}
     },
     {
       "kind": "Room",
       "count": 2,
       "params": {
         "capacity": 8,
-        "equipment": "PROJECTOR,WHITEBOARD,VIDEO_CONFERENCE"
+        "equipment": ["PROJECTOR", "WHITEBOARD", "VIDEO_CONFERENCE"]
       }
     },
     {
@@ -31,13 +33,13 @@
         "auctionAgent": "auction0",
         "attendeesMin": 1,
         "attendeesMax": 8,
-        "durations": "30,60",
+        "durations": [30, 60],
         "startMin": 540,
         "startMax": 720,
         "startStep": 30,
         "priorityMin": 1,
         "priorityMax": 3,
-        "equipmentPool": "PROJECTOR",
+        "equipmentPool": ["PROJECTOR"],
         "equipmentProb": 0.5
       }
     }
@@ -54,7 +56,7 @@
         "id": "sm-node-2",
         "role": "rooms",
         "agents": ["r1", "r2"]
-      },
+      }
     ]
   }
 }

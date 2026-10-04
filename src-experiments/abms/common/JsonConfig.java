@@ -114,6 +114,23 @@ public final class JsonConfig {
         return Double.parseDouble(v.toString());
     }
 
+    public static void appendCliParams(StringBuilder a, JSONObject params) {
+        if (params == null)
+            return;
+        for (Object key : params.keySet())
+            a.append(' ').append(key).append(':').append(toCliValue(key.toString(), params.get(key)));
+    }
+
+    private static String toCliValue(String key, Object value) {
+        if (!(value instanceof JSONArray))
+            return String.valueOf(value);
+        String separator = key.endsWith("List") ? "|" : ",";
+        List<String> items = new ArrayList<>();
+        for (Object item : (JSONArray) value)
+            items.add(item instanceof JSONArray ? toCliValue("", item) : String.valueOf(item));
+        return String.join(separator, items);
+    }
+
     public static List<String> getStringList(JSONObject json, String key) {
         Object v = json == null ? null : json.get(key);
         List<String> result = new ArrayList<>();

@@ -122,7 +122,7 @@ public class SmartMeetingDistributedBoot {
         if (kind.equals("Room")) {
             a.append(" roomIdList:").append(String.join("|", matching));
         }
-        appendParams(a, params);
+        JsonConfig.appendCliParams(a, params);
         a.append(" nodeId:").append(nodeId);
         // agents step themselves once per time unit and stop at the end of the scenario
         a.append(" stepPeriod:").append(timeUnitMs(config)).append(" endTime:").append(steps);
@@ -181,16 +181,6 @@ public class SmartMeetingDistributedBoot {
             if (kind.equalsIgnoreCase(JsonConfig.getString(agent, "kind", "")))
                 return agent;
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void appendParams(StringBuilder a, JSONObject params) {
-        if (params == null) return;
-        for (Object keyObj : params.keySet()) {
-            String key = keyObj.toString();
-            Object v = params.get(key);
-            a.append(' ').append(key).append(':').append(v);
-        }
     }
 
     private static int parseIntProperty(String key, int fallback) {
