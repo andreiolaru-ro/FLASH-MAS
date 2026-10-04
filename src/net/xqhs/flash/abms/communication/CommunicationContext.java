@@ -2,7 +2,6 @@ package net.xqhs.flash.abms.communication;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -42,28 +41,16 @@ public abstract class CommunicationContext extends SimulationContext.BaseContext
 			recipientKey = ((EntityProxy<?>) entity).getEntityName();
 		if (recipientKey == null)
 			return;
-		List<AgentWave> waves = pendingWaveEvents.get(recipientKey);
-		if (waves == null || waves.isEmpty())
+
+		List<AgentWave> waves = pendingWaveEvents.remove(recipientKey);
+		if (waves == null)
 			return;
-
-		if (entity instanceof ShardContainer) {
-			ShardContainer container = (ShardContainer) entity;
-			Iterator<AgentWave> it = waves.iterator();
-			while (it.hasNext()) {
-				if (container.postAgentEvent(it.next()))
-					it.remove();
-			}
-		} else if (entity instanceof Patch) {
-			Patch patch = (Patch) entity;
-			Iterator<AgentWave> it = waves.iterator();
-			while (it.hasNext()) {
-				if (patch.postAgentEvent(it.next()))
-					it.remove();
-			}
+		for (AgentWave wave : waves) {
+			if (entity instanceof ShardContainer)
+				((ShardContainer) entity).postAgentEvent(wave);
+			else if (entity instanceof Patch)
+				((Patch) entity).postAgentEvent(wave);
 		}
-
-		if (waves.isEmpty())
-			pendingWaveEvents.remove(recipientKey);
 	}
 
 	protected void deliverToEntity(String entityName, AgentWave wave) {
