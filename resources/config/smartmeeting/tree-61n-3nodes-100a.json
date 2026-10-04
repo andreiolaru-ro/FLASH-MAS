@@ -37,7 +37,7 @@
     {
       "kind": "Auction",
       "count": 1,
-      "params": {"releaseAfterSteps": 30, "bidTimeout": 300}
+      "params": {"bidTimeout": 300}
     },
     {
       "kind": "Room",

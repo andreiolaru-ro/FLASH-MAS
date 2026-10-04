@@ -72,7 +72,7 @@
     {
       "kind": "Auction",
       "count": 1,
-      "params": {"releaseAfterSteps": 20}
+      "params": {}
     },
     {
       "kind": "Room",

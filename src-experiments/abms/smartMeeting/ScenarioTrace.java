@@ -71,6 +71,7 @@ public final class ScenarioTrace {
         Map<String, Long> auctionStartSteps = new java.util.LinkedHashMap<>();
         long latencyTotal = 0;
         Map<String, Integer> winnerDistribution = new java.util.LinkedHashMap<>();
+        Map<String, List<Map<String, Object>>> bookingsPerRoom = new java.util.TreeMap<>();
         Map<String, Long> requestStartSteps = new java.util.LinkedHashMap<>();
         List<Long> responseLatencies = new ArrayList<>();
         for (JSONObject event : events) {
@@ -87,8 +88,15 @@ public final class ScenarioTrace {
                 if (Boolean.TRUE.equals(event.get("success"))) {
                     auctionsWon++;
                     String room = event.get("room") == null ? null : String.valueOf(event.get("room"));
-                    if (room != null)
+                    if (room != null) {
                         winnerDistribution.merge(room, Integer.valueOf(1), Integer::sum);
+                        Map<String, Object> booking = new java.util.LinkedHashMap<>();
+                        if (event.get("slot") != null)
+                            booking.put("time", formatSlot(TimeSlot.parse(String.valueOf(event.get("slot")))));
+                        if (event.get("person") != null)
+                            booking.put("person", event.get("person"));
+                        bookingsPerRoom.computeIfAbsent(room, r -> new ArrayList<>()).add(booking);
+                    }
                 }
                 Long start = requestId == null ? null : auctionStartSteps.get(requestId);
                 if (start != null)
@@ -129,10 +137,29 @@ public final class ScenarioTrace {
                 : (double) personsAccepted / responses);
         result.put("meanResponseLatencySteps", mean(responseLatencies));
         result.put("p95ResponseLatencySteps", percentile(responseLatencies, 0.95));
-        result.put("winnerDistribution", winnerDistribution);
+        result.put("winnerDistribution", roomReservations(bookingsPerRoom));
         result.put("winnerEntropy", entropy(winnerDistribution, auctionsWon));
         result.put("winnerGini", gini(winnerDistribution));
         return result;
+    }
+
+    private static Map<String, Object> roomReservations(Map<String, List<Map<String, Object>>> bookingsPerRoom) {
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, List<Map<String, Object>>> entry : bookingsPerRoom.entrySet()) {
+            List<Map<String, Object>> bookings = new ArrayList<>(entry.getValue());
+            bookings.sort(java.util.Comparator.comparing(b -> String.valueOf(b.get("time"))));
+            Map<String, Object> room = new java.util.LinkedHashMap<>();
+            room.put("reservations", Integer.valueOf(bookings.size()));
+            room.put("bookings", bookings);
+            result.put(entry.getKey(), room);
+        }
+        return result;
+    }
+
+    /** Formats a slot as hours of the day, e.g. 09:00-10:00. */
+    private static String formatSlot(TimeSlot slot) {
+        return String.format("%02d:%02d-%02d:%02d", slot.getStartMinute() / 60, slot.getStartMinute() % 60,
+                slot.getEndMinute() / 60, slot.getEndMinute() % 60);
     }
 
     private static double mean(List<Long> values) {
@@ -198,9 +225,15 @@ public final class ScenarioTrace {
                 System.getProperty("smartmeeting.node", "unknown"));
     }
 
-    @SuppressWarnings("unchecked")
     public static synchronized void record(String agent, String agentType, String event,
                                            String requestId, String room, Boolean success, String reason, String nodeId) {
+        record(agent, agentType, event, requestId, room, success, reason, nodeId, null, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static synchronized void record(String agent, String agentType, String event, String requestId,
+                                           String room, Boolean success, String reason, String nodeId, String person,
+                                           String slot) {
         JSONObject value = new JSONObject();
         value.put("scenario", scenario);
         value.put("scenarioVersion", scenarioVersion);
@@ -217,6 +250,8 @@ public final class ScenarioTrace {
         if (room != null) value.put("room", room);
         if (success != null) value.put("success", success);
         if (reason != null) value.put("reason", reason);
+        if (person != null) value.put("person", person);
+        if (slot != null) value.put("slot", slot);
         events.add(value);
     }
 
