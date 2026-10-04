@@ -23,6 +23,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     /** Time between own steps (ms), when the agent is started outside a simulation executor. */
     private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
+    /** The step at which the agent stops itself (0 = never); used in a deployment, where no executor ends the run. */
+    private long endTime = 0;
 
     private enum State {IDLE, WAITING_FOR_RESPONSE, DONE}
 
@@ -62,6 +64,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             return false;
         if (configuration.containsKey("stepPeriod"))
             stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
+        if (configuration.containsKey("endTime"))
+            endTime = Long.parseLong(configuration.getAValue("endTime"));
         if (configuration.containsKey("nodeId"))
             nodeId = configuration.getAValue("nodeId");
         if (configuration.containsKey("auctionAgent"))
@@ -144,6 +148,9 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
                 case BOOKING_RESPONSE:
                     handleBookingResponse(wave);
                     break;
+                case END:
+                    stop();
+                    break;
                 default:
                     break;
             }
@@ -167,6 +174,8 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        if (endTime > 0)
+            e.schedule(endTime, SmartMeetingMessageCodec.encodeEnd());
         requestScheduled = e.schedule(requestTime, SmartMeetingMessageCodec.encodeSendBookingRequest());
         return true;
     }

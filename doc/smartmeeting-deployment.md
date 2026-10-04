@@ -98,22 +98,25 @@ from another machine while the server node runs: `nc -vz <server-IP> 8899`.
 
 ### Expected output
 
-The scenario uses `"logLevel": "ERROR"`, so each node prints only the executor's step counter
-(`[ StepWise ] Step [N]`) until it reaches the final step. The counters on different machines are
-independent and do not need to match. To check that a client node connected, run
+A deployment has no simulation and no executor: each node runs only its pylon and its agents, and
+each agent steps itself once per time unit. The scenario uses `"logLevel": "ERROR"`, so the nodes
+print almost nothing while running. To check that a client node connected, run
 `netstat -an | findstr 8899` (Windows) or `netstat -an | grep 8899` (macOS/Linux) on the server
 machine during the run. It should show an `ESTABLISHED` connection from each client's IP. Set
 `logLevel` to `INFO` to see the agents' logs.
 
 ### Timing tolerances
 
-- The auction agent resends the RFP to silent rooms every `rfpRetryInterval` steps (default 20)
-  and waits up to `bidTimeout` steps per auction (300 in the scenario's Auction params). Steps are
-  real time through the temporal context's multiplier (`stepPeriodMs` = 50 ms): every 1 s and up
-  to 15 s, so all nodes should be started within ~15 s of each other. Increase `bidTimeout`
-  (same value on every machine) for more slack.
-- Each node runs for `steps × stepPeriodMs` = 2400 × 50 ms = **120 s**, then exports its
-  trace and shuts down.
+- A time unit (step) is `stepPeriodMs` = 50 ms in a deployment; all moments are measured from
+  the start of each node, so the moments of persons and of the auction follow `sm-node-1`.
+- The first person asks for a room at step 300 (**15 s**, see `requestTimeList`), so all nodes
+  must be started within ~15 s of `sm-node-1`. A room node that starts later still answers (the
+  auction resends the RFP every `rfpRetryInterval` = 20 steps and waits up to `bidTimeout` = 300
+  steps), but the results then no longer match the simulation.
+- Every agent stops itself at step `steps` = 2400 (**120 s**); each node then shuts down by
+  itself once it has no running agents.
+- With all nodes started in time, the results (which room wins each request) are the same as
+  in the simulation below.
 
 ## 3. Results
 

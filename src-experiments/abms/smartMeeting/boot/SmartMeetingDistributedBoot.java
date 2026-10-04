@@ -47,7 +47,7 @@ public class SmartMeetingDistributedBoot {
         }
 
         StringBuilder boot = new StringBuilder();
-        boot.append(" -load_order pylon;simulation;executor;context;SmartMeetingGroup");
+        boot.append(" -load_order pylon;context;SmartMeetingGroup");
         boot.append(" -package net.xqhs.flash.abms");
         boot.append(" -package net.xqhs.flash.webSocket");
         boot.append(" -package abms.smartMeeting");
@@ -85,33 +85,28 @@ public class SmartMeetingDistributedBoot {
 
     private static void appendSmartMeetingPayload(StringBuilder a, JsonConfig config, long seed, int steps,
                                                   JSONObject deploymentNode) {
-        JSONObject graph = config.getObject("graph");
-        List<String> nodes = JsonConfig.getStringList(graph, "nodes");
-        List<String> edges = JsonConfig.getStringList(graph, "edges");
-
-		a.append(" -context AgentManagement:agentManagement");
-		a.append(" -context GraphCommunication:communication");
-		a.append(" -context Space:space topology:graph");
-		a.append(" nodes:").append(String.join(",", nodes));
-		a.append(" edges:").append(String.join(",", edges));
 		String temporalName = "Temporal:temporal-" + JsonConfig.getString(deploymentNode, "id", "unknown");
-		a.append(" -context ").append(temporalName).append(" multiplier:")
-				.append(config.getInt("timeMultiplierMs", config.getInt("stepPeriodMs", 100)));
+		a.append(" -context ").append(temporalName).append(" multiplier:").append(timeUnitMs(config));
 		a.append(" -context Random:random seed:").append(seed);
         a.append(" -SmartMeetingGroup g in-context-of:").append(temporalName);
-        appendAssignedAgents(a, config, deploymentNode);
+        appendAssignedAgents(a, config, deploymentNode, steps);
     }
 
-    private static void appendAssignedAgents(StringBuilder a, JsonConfig config, JSONObject node) {
+    /** Duration of a time unit (a step) in milliseconds. */
+    private static int timeUnitMs(JsonConfig config) {
+        return config.getInt("timeMultiplierMs", config.getInt("stepPeriodMs", 100));
+    }
+
+    private static void appendAssignedAgents(StringBuilder a, JsonConfig config, JSONObject node, int steps) {
         String nodeId = JsonConfig.getString(node, "id", "unknown");
         List<String> assigned = JsonConfig.getStringList(node, "agents");
-        appendAssignedKind(a, config, "Auction", assigned, nodeId);
-        appendAssignedKind(a, config, "Person", assigned, nodeId);
-        appendAssignedKind(a, config, "Room", assigned, nodeId);
+        appendAssignedKind(a, config, "Auction", assigned, nodeId, steps);
+        appendAssignedKind(a, config, "Person", assigned, nodeId, steps);
+        appendAssignedKind(a, config, "Room", assigned, nodeId, steps);
     }
 
     private static void appendAssignedKind(StringBuilder a, JsonConfig config, String kind,
-                                           List<String> assigned, String nodeId) {
+                                           List<String> assigned, String nodeId, int steps) {
         List<String> matching = new ArrayList<>();
         String prefix = kind.equals("Room") ? "r" : kind.toLowerCase();
         for (String name : assigned)
@@ -129,6 +124,8 @@ public class SmartMeetingDistributedBoot {
         }
         appendParams(a, params);
         a.append(" nodeId:").append(nodeId);
+        // agents step themselves once per time unit and stop at the end of the scenario
+        a.append(" stepPeriod:").append(timeUnitMs(config)).append(" endTime:").append(steps);
         if (kind.equals("Auction")) {
             a.append(" roomTargets:").append(allRoomIds(config));
         }

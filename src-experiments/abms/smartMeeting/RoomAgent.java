@@ -23,6 +23,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     /** Time between own steps (ms), when the agent is started outside a simulation executor. */
     private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
+    /** The step at which the agent stops itself (0 = never); used in a deployment, where no executor ends the run. */
+    private long endTime = 0;
     private String roomId;
     private int capacity = 6;
     private Set<EquipmentType> equipment = new LinkedHashSet<>();
@@ -40,6 +42,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
             return false;
         if (configuration.containsKey("stepPeriod"))
             stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
+        if (configuration.containsKey("endTime"))
+            endTime = Long.parseLong(configuration.getAValue("endTime"));
         if (configuration.containsKey("roomId")) {
             roomId = configuration.getAValue("roomId");
             // the room is known by its id everywhere (messages, contexts), whatever the generated name
@@ -82,6 +86,9 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
                 case RELEASE_ROOM:
                     handleReleaseRoom(wave);
                     break;
+                case END:
+                    stop();
+                    break;
                 default:
                     break;
             }
@@ -105,6 +112,8 @@ public class RoomAgent extends BaseAgent implements SteppableEntity, ShardContai
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        if (endTime > 0)
+            e.schedule(endTime, SmartMeetingMessageCodec.encodeEnd());
         return true;
     }
 

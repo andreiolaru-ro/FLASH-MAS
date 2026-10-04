@@ -28,6 +28,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     private EnvironmentLinkShard e = new EnvironmentLinkShard();
     /** Time between own steps (ms), when the agent is started outside a simulation executor. */
     private long stepPeriod = DEFAULT_STEP_PERIOD_MS;
+    /** The step at which the agent stops itself (0 = never); used in a deployment, where no executor ends the run. */
+    private long endTime = 0;
 
     // Auction state
     private enum AuctionState {IDLE, COLLECTING_BIDS}
@@ -69,6 +71,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             return false;
         if (configuration.containsKey("stepPeriod"))
             stepPeriod = Long.parseLong(configuration.getAValue("stepPeriod"));
+        if (configuration.containsKey("endTime"))
+            endTime = Long.parseLong(configuration.getAValue("endTime"));
         releaseAfterSteps = readInt(configuration, "releaseAfterSteps", releaseAfterSteps);
         if (configuration.containsKey("nodeId"))
             nodeId = configuration.getAValue("nodeId");
@@ -119,6 +123,9 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
                     releaseReservation(SmartMeetingMessageCodec.decodeRoomAgentName(wave),
                             SmartMeetingMessageCodec.decodeReservationId(wave));
                     break;
+                case END:
+                    stop();
+                    break;
                 default:
                     break;
             }
@@ -142,6 +149,8 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
             return false;
         if (e.getMessagingShard() != null)
             e.getMessagingShard().signalAgentEvent(new AgentEvent(AgentEvent.AgentEventType.AGENT_START));
+        if (endTime > 0)
+            e.schedule(endTime, SmartMeetingMessageCodec.encodeEnd());
         return true;
     }
 

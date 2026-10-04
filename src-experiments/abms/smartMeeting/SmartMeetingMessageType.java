@@ -12,5 +12,6 @@ public enum SmartMeetingMessageType {
     AUCTION_TIMEOUT,
     RFP_RETRY,
     SEND_BOOKING_REQUEST,
-    RELEASE_DUE
+    RELEASE_DUE,
+    END
 }
