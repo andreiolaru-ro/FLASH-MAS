@@ -134,7 +134,8 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
         @SuppressWarnings("unchecked")
         Topology<Position> topology = (Topology<Position>) e.getTopology();
         Map<Position, Set<EntityProxy<?>>> visible = e.observe(visionRange);
-        Position nearestTarget = null;
+        // Equally near targets are chosen between at random, so that no direction is preferred.
+        List<Position> nearestTargets = new ArrayList<>();
         int nearestDist = Integer.MAX_VALUE;
         for (Map.Entry<Position, Set<EntityProxy<?>>> entry : visible.entrySet()) {
             for (EntityProxy<?> entity : entry.getValue()) {
@@ -142,23 +143,31 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
                     int dist = topology.getDistance(currentPos, entry.getKey());
                     if (dist < nearestDist) {
                         nearestDist = dist;
-                        nearestTarget = entry.getKey();
+                        nearestTargets.clear();
                     }
+                    if (dist == nearestDist && !nearestTargets.contains(entry.getKey()))
+                        nearestTargets.add(entry.getKey());
                 }
             }
         }
+        Position nearestTarget = nearestTargets.isEmpty() ? null
+                : nearestTargets.get(e.nextInt(nearestTargets.size()));
 
         if (nearestTarget != null) {
-            // Move towards nearest grass
-            Position bestNeighbor = null;
+            // Move towards nearest grass; equally good neighbours are chosen between at random
+            List<Position> bestNeighbors = new ArrayList<>();
             int bestDist = Integer.MAX_VALUE;
             for (Position neighbor : neighbors) {
                 int dist = topology.getDistance(neighbor, nearestTarget);
                 if (dist < bestDist) {
                     bestDist = dist;
-                    bestNeighbor = neighbor;
+                    bestNeighbors.clear();
                 }
+                if (dist == bestDist)
+                    bestNeighbors.add(neighbor);
             }
+            Position bestNeighbor = bestNeighbors.isEmpty() ? null
+                    : bestNeighbors.get(e.nextInt(bestNeighbors.size()));
             if (bestNeighbor != null) {
                 e.moveToPosition(bestNeighbor);
                 alertReceived = false;

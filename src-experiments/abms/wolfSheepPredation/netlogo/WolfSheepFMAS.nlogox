@@ -9,8 +9,11 @@
 ;; - a neighbourhood is the 8 surrounding cells, distances are Chebyshev distances (max of |dx| and |dy|),
 ;;   vision is the square of that radius around the agent, without its own cell;
 ;; - there is no energy and no reproduction: a wolf eats every sheep on its cell, a sheep eats the grass on its cell;
-;; - the update is synchronous: every agent decides from the state at the start of the tick; moves and eaten sheep
-;;   are applied at the end of the tick, and messages (eat requests, wolf alerts) are delivered at the next tick.
+;; - in each tick, the grass patches, sheep and wolves act one by one, in one mixed order that is fixed for the whole
+;;   run (as the FLASH-MAS executor goes through its entities), and each of them receives its messages just before
+;;   acting, so a grass patch is eaten or grows back when its turn comes;
+;; - moves and eaten sheep are applied at the end of the tick, and messages (eat requests, wolf alerts) sent in a
+;;   tick are delivered at the next tick.
 
 globals [
   scale
@@ -24,6 +27,7 @@ globals [
   go-ms
   grass-eaten-count
   sheep-eaten-count
+  entity-order           ; grass patches, sheep and wolves in one mixed order, fixed for the whole run
 ]
 
 breed [sheep a-sheep]
@@ -33,7 +37,8 @@ patches-own [
   has-grass?      ; the cell holds a grass patch
   grown?
   countdown       ; steps until the grass grows back
-  eat-requested?  ; a sheep asked to eat the grass this tick (delivered at the next tick)
+  eat-requested?  ; a sheep asked to eat the grass at the previous tick (delivered at this tick)
+  eat-incoming?   ; a sheep asked to eat the grass at this tick (delivered at the next tick)
 ]
 
 turtles-own [
@@ -43,7 +48,8 @@ turtles-own [
 sheep-own [
   eaten?          ; eaten by a wolf this tick (removed at the end of the tick)
   alert?          ; received a wolf alert (as in FLASH-MAS, it does not change the behaviour)
-  alert-next?     ; alert sent this tick, delivered at the next tick
+  alert-next?     ; alert sent at the previous tick, delivered at this tick
+  alert-incoming? ; alert sent at this tick, delivered at the next tick
 ]
 
 to setup
@@ -67,6 +73,7 @@ to setup
     set grown? false
     set countdown 0
     set eat-requested? false
+    set eat-incoming? false
   ]
   ; distinct random cells, in random order: first the grass, then the sheep, then the wolves
   let cells [self] of n-of (n-grass + n-sheep + n-wolves) patches
@@ -74,19 +81,39 @@ to setup
     ask c [ set has-grass? true set grown? true set pcolor green ]
   ]
   foreach sublist cells n-grass (n-grass + n-sheep) [ c ->
-    ask c [ sprout-sheep 1 [ set color white set eaten? false set alert? false set alert-next? false ] ]
+    ask c [ sprout-sheep 1 [ set color white set eaten? false set alert? false set alert-next? false set alert-incoming? false ] ]
   ]
   foreach sublist cells (n-grass + n-sheep) (n-grass + n-sheep + n-wolves) [ c ->
     ask c [ sprout-wolves 1 [ set color black ] ]
   ]
+  set entity-order shuffle (sentence [self] of patches with [has-grass?] [self] of sheep [self] of wolves)
   reset-ticks
   set setup-ms timer * 1000
   reset-timer
 end
 
 to go
-  ; 1. deliver what was sent at the previous tick
-  ask patches with [eat-requested?] [
+  ; every entity acts in the same mixed order at every tick, and receives its messages just before acting
+  foreach entity-order [ a ->
+    if a != nobody [
+      ifelse is-patch? a [ ask a [ grass-turn ] ] [
+        ifelse is-a-sheep? a [ ask a [ sheep-turn ] ] [ ask a [ wolf-step ] ]
+      ]
+    ]
+  ]
+  ; actions are applied at the end of the tick, messages sent in this tick are delivered at the next one
+  ask sheep with [eaten?] [
+    set sheep-eaten-count sheep-eaten-count + 1
+    die
+  ]
+  ask turtles [ move-to next-patch ]
+  ask patches with [eat-incoming?] [ set eat-requested? true set eat-incoming? false ]
+  ask sheep [ set alert-next? alert-incoming? set alert-incoming? false ]
+  tick
+end
+
+to grass-turn ; patch procedure
+  if eat-requested? [
     if grown? [
       set grown? false
       set countdown regrowth-time
@@ -94,21 +121,13 @@ to go
     ]
     set eat-requested? false
   ]
-  ask sheep [
-    set alert? alert-next?
-    set alert-next? false
-  ]
-  ; 2. every entity steps, deciding from the state at the start of the tick
-  ask patches with [has-grass? and not grown?] [ grass-step ]
-  ask sheep [ sheep-step ]
-  ask wolves [ wolf-step ]
-  ; 3. actions are applied at the end of the tick
-  ask sheep with [eaten?] [
-    set sheep-eaten-count sheep-eaten-count + 1
-    die
-  ]
-  ask turtles [ move-to next-patch ]
-  tick
+  if not grown? [ grass-step ]
+end
+
+to sheep-turn ; sheep procedure
+  set alert? alert-next?
+  set alert-next? false
+  sheep-step
 end
 
 to grass-step ; patch procedure
@@ -117,9 +136,9 @@ to grass-step ; patch procedure
 end
 
 to sheep-step ; sheep procedure
-  if grown? [ set eat-requested? true ]
+  if grown? [ set eat-incoming? true ]
   if any? wolves-on neighbors [
-    ask sheep-on neighbors [ set alert-next? true ]
+    ask sheep-on neighbors [ set alert-incoming? true ]
   ]
   let here patch-here
   let visible-grass (patches at-points sheep-vision-offsets) with [grown?]
