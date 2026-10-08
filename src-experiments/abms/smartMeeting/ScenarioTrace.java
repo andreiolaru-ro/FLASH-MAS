@@ -60,8 +60,14 @@ public final class ScenarioTrace {
         }
     }
 
+    private static boolean isDeployment() {
+        return !"simulation".equals(mode);
+    }
+
     @SuppressWarnings("unchecked")
     public static synchronized JSONObject summary() {
+        String timeKey = isDeployment() ? "timeMs" : "step";
+        String unit = isDeployment() ? "Ms" : "Steps";
         int auctionsStarted = 0;
         int auctionsWon = 0;
         int bidsReceived = 0;
@@ -79,11 +85,11 @@ public final class ScenarioTrace {
             String requestId = event.get("requestId") == null ? null : String.valueOf(event.get("requestId"));
             if ("booking-request-sent".equals(type) || "request-created".equals(type)) {
                 if (requestId != null)
-                    requestStartSteps.put(requestId, longValue(event.get("step")));
+                    requestStartSteps.put(requestId, longValue(event.get(timeKey)));
             } else if ("auction-started".equals(type)) {
                 auctionsStarted++;
                 if (requestId != null)
-                    auctionStartSteps.put(requestId, longValue(event.get("step")));
+                    auctionStartSteps.put(requestId, longValue(event.get(timeKey)));
             } else if ("auction-resolved".equals(type)) {
                 if (Boolean.TRUE.equals(event.get("success"))) {
                     auctionsWon++;
@@ -100,7 +106,7 @@ public final class ScenarioTrace {
                 }
                 Long start = requestId == null ? null : auctionStartSteps.get(requestId);
                 if (start != null)
-                    latencyTotal += longValue(event.get("step")) - start.longValue();
+                    latencyTotal += longValue(event.get(timeKey)) - start.longValue();
             } else if ("bid-received".equals(type)) {
                 bidsReceived++;
                 if (Boolean.TRUE.equals(event.get("success"))) feasibleBids++;
@@ -109,7 +115,7 @@ public final class ScenarioTrace {
                 else personsRejected++;
                 Long start = requestId == null ? null : requestStartSteps.get(requestId);
                 if (start != null)
-                    responseLatencies.add(Long.valueOf(longValue(event.get("step")) - start.longValue()));
+                    responseLatencies.add(Long.valueOf(longValue(event.get(timeKey)) - start.longValue()));
             }
         }
         JSONObject result = new JSONObject();
@@ -122,7 +128,7 @@ public final class ScenarioTrace {
         result.put("auctionsWon", auctionsWon);
         result.put("auctionSuccessRate", auctionsStarted == 0 ? 0.0
                 : (double) auctionsWon / auctionsStarted);
-        result.put("meanLatencySteps", auctionsStarted == 0 ? 0.0
+        result.put("meanLatency" + unit, auctionsStarted == 0 ? 0.0
                 : (double) latencyTotal / auctionsStarted);
         result.put("bidsReceived", bidsReceived);
         result.put("meanBidsPerAuction", auctionsStarted == 0 ? 0.0
@@ -135,8 +141,8 @@ public final class ScenarioTrace {
         int responses = personsAccepted + personsRejected;
         result.put("bookingAcceptanceRate", responses == 0 ? 0.0
                 : (double) personsAccepted / responses);
-        result.put("meanResponseLatencySteps", mean(responseLatencies));
-        result.put("p95ResponseLatencySteps", percentile(responseLatencies, 0.95));
+        result.put("meanResponseLatency" + unit, mean(responseLatencies));
+        result.put("p95ResponseLatency" + unit, percentile(responseLatencies, 0.95));
         result.put("winnerDistribution", roomReservations(bookingsPerRoom));
         result.put("winnerEntropy", entropy(winnerDistribution, auctionsWon));
         result.put("winnerGini", gini(winnerDistribution));
@@ -240,6 +246,8 @@ public final class ScenarioTrace {
         value.put("run", run);
         value.put("step", step);
         value.put("timestamp", LocalDateTime.now().format(TIMESTAMP_FORMAT));
+        if (isDeployment())
+            value.put("timeMs", System.currentTimeMillis());
         value.put("sequence", sequence++);
         value.put("mode", mode);
         value.put("agent", agent);
