@@ -26,6 +26,7 @@ public final class ScenarioTrace {
     private static String mode = "simulation";
     private static String scenario = "sm-unnamed";
     private static String scenarioVersion = "1.0";
+    private static int exportedEvents = -1;
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -37,12 +38,16 @@ public final class ScenarioTrace {
         run = runIndex;
         step = -1;
         sequence = 0;
+        exportedEvents = -1;
         mode = System.getProperty("smartmeeting.mode", "simulation");
         scenario = System.getProperty("smartmeeting.scenario", "sm-unnamed");
         scenarioVersion = System.getProperty("smartmeeting.scenario.version", "1.0");
     }
 
     public static synchronized void exportRun() {
+        if (events.isEmpty() || events.size() == exportedEvents)
+            return;
+        exportedEvents = events.size();
         String modeDirectory = mode.replaceAll("[^A-Za-z0-9._-]", "_");
         Path directory = Paths.get(System.getProperty("smartmeeting.results.dir",
                 "results/smartmeeting"), modeDirectory);
@@ -80,10 +85,13 @@ public final class ScenarioTrace {
         Map<String, List<Map<String, Object>>> bookingsPerRoom = new java.util.TreeMap<>();
         Map<String, Long> requestStartSteps = new java.util.LinkedHashMap<>();
         List<Long> responseLatencies = new ArrayList<>();
+        long firstRequestMs = Long.MAX_VALUE;
+        long lastResponseMs = Long.MIN_VALUE;
         for (JSONObject event : events) {
             String type = String.valueOf(event.get("event"));
             String requestId = event.get("requestId") == null ? null : String.valueOf(event.get("requestId"));
             if ("booking-request-sent".equals(type) || "request-created".equals(type)) {
+                firstRequestMs = Math.min(firstRequestMs, longValue(event.get("timeMs")));
                 if (requestId != null)
                     requestStartSteps.put(requestId, longValue(event.get(timeKey)));
             } else if ("auction-started".equals(type)) {
@@ -111,6 +119,7 @@ public final class ScenarioTrace {
                 bidsReceived++;
                 if (Boolean.TRUE.equals(event.get("success"))) feasibleBids++;
             } else if ("booking-response-received".equals(type)) {
+                lastResponseMs = Math.max(lastResponseMs, longValue(event.get("timeMs")));
                 if (Boolean.TRUE.equals(event.get("success"))) personsAccepted++;
                 else personsRejected++;
                 Long start = requestId == null ? null : requestStartSteps.get(requestId);
@@ -143,6 +152,8 @@ public final class ScenarioTrace {
                 : (double) personsAccepted / responses);
         result.put("meanResponseLatency" + unit, mean(responseLatencies));
         result.put("p95ResponseLatency" + unit, percentile(responseLatencies, 0.95));
+        if (firstRequestMs != Long.MAX_VALUE && lastResponseMs != Long.MIN_VALUE)
+            result.put("scenarioDurationMs", lastResponseMs - firstRequestMs);
         result.put("winnerDistribution", roomReservations(bookingsPerRoom));
         result.put("winnerEntropy", entropy(winnerDistribution, auctionsWon));
         result.put("winnerGini", gini(winnerDistribution));
@@ -246,8 +257,7 @@ public final class ScenarioTrace {
         value.put("run", run);
         value.put("step", step);
         value.put("timestamp", LocalDateTime.now().format(TIMESTAMP_FORMAT));
-        if (isDeployment())
-            value.put("timeMs", System.currentTimeMillis());
+        value.put("timeMs", System.currentTimeMillis());
         value.put("sequence", sequence++);
         value.put("mode", mode);
         value.put("agent", agent);

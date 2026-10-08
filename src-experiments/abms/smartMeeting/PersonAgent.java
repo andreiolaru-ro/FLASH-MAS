@@ -188,6 +188,7 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
     @Override
     public boolean stop() {
         e.stopStepping();
+        ScenarioTrace.exportRun();
         return super.stop();
     }
 
@@ -232,7 +233,6 @@ public class PersonAgent extends BaseAgent implements SteppableEntity, ShardCont
         else
             li("booking FAILED: []", wave.get("reason"));
         state = State.DONE;
-        ScenarioTrace.exportRun();
     }
 
     private MeetingRequest createRequest() {

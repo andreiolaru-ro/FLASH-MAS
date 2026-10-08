@@ -154,6 +154,7 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
     @Override
     public boolean stop() {
         e.stopStepping();
+        ScenarioTrace.exportRun();
         return super.stop();
     }
 
@@ -327,8 +328,6 @@ public class AuctionAgent extends BaseAgent implements SteppableEntity, ShardCon
         currentRequesterName = null;
         auctionStartedStep = -1;
         auctionState = AuctionState.IDLE;
-        // The run may end at any time relative to other nodes, so persist the trace now.
-        ScenarioTrace.exportRun();
     }
 
     /**
