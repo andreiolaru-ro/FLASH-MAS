@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://flash.xqhs.net/deployment-schema"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../src-schema/deployment-schema.xsd">
+
+    <package>Tiberiu.energyMarket</package>
+    <pylon kind="local">
+
+        <agent name="MarketAgent_A" classpath="MarketAgent" />
+        <agent name="Prosumer_A1" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A2" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A3" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A4" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A5" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A6" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A7" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A8" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A9" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A10" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A11" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A12" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A13" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A14" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A15" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A16" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A17" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A18" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A19" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A20" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A21" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A22" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A23" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A24" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A25" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A26" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A27" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A28" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A29" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A30" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A31" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A32" classpath="ProsumerAgent" />
+        <agent name="Prosumer_A33" classpath="ProsumerAgent" />
+
+        <agent name="MarketAgent_B" classpath="MarketAgent" />
+        <agent name="Prosumer_B1" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B2" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B3" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B4" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B5" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B6" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B7" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B8" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B9" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B10" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B11" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B12" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B13" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B14" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B15" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B16" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B17" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B18" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B19" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B20" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B21" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B22" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B23" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B24" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B25" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B26" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B27" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B28" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B29" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B30" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B31" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B32" classpath="ProsumerAgent" />
+        <agent name="Prosumer_B33" classpath="ProsumerAgent" />
+
+        <agent name="MarketAgent_C" classpath="MarketAgent" />
+        <agent name="Prosumer_C1" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C2" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C3" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C4" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C5" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C6" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C7" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C8" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C9" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C10" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C11" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C12" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C13" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C14" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C15" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C16" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C17" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C18" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C19" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C20" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C21" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C22" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C23" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C24" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C25" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C26" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C27" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C28" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C29" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C30" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C31" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C32" classpath="ProsumerAgent" />
+        <agent name="Prosumer_C33" classpath="ProsumerAgent" />
+
+    </pylon>
+</deployment>
