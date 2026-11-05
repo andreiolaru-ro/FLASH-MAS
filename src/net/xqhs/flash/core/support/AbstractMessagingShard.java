@@ -78,7 +78,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 			return isset;
 		}
 	}
-	
+
 	/**
 	 * The serial UID.
 	 */

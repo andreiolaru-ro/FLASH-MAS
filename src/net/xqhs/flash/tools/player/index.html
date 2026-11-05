@@ -6,20 +6,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        .active-row { background-color: #1e293b !important; border-left: 4px solid #3b82f6; }
+        /* Base Dark/Light transitions */
+        body, header, aside, main, footer, tr, td, th {
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
+        /* Dark Mode styles (Default) */
+        .theme-dark .active-row { background-color: #1e293b !important; border-left: 4px solid #3b82f6; }
+        .theme-dark .match-row { background-color: rgba(16, 185, 129, 0.05); }
+        .theme-dark .divergent { background-color: rgba(245, 158, 11, 0.15) !important; border-left: 4px solid #f59e0b !important; }
+
+        /* Light Mode overrides (Professor requested Theme) */
+        .theme-light { background-color: #f8fafc; color: #0f172a; }
+        .theme-light header { background-color: #ffffff; border-color: #e2e8f0; }
+        .theme-light header h1 { color: #0f172a; }
+        .theme-light aside { background-color: #f1f5f9; border-color: #e2e8f0; }
+        .theme-light aside h2 { color: #64748b; }
+        .theme-light aside .bg-black\/50 { background-color: #ffffff; border-color: #e2e8f0; }
+        .theme-light #agentList > div, .theme-light #eventFiltersContainer > div { background-color: #ffffff; border-color: #e2e8f0; }
+        .theme-light #agentList div div { color: #334155; }
+        .theme-light #eventFiltersContainer label { color: #334155; }
+        .theme-light #eventFiltersContainer label:hover { background-color: #f1f5f9; }
+        .theme-light main div { background-color: #ffffff; }
+        .theme-light thead { background-color: #f1f5f9 !important; color: #334155; }
+        .theme-light thead th { border-bottom: 2px solid #e2e8f0; }
+        .theme-light tbody { divide-color: #e2e8f0; }
+        .theme-light tbody tr { border-bottom: 1px solid #e2e8f0; }
+        .theme-light tbody tr:hover { background-color: #f8fafc !important; }
+        .theme-light footer { background-color: #ffffff; border-color: #e2e8f0; }
+
+        /* Row Status in Light Mode */
+        .theme-light .active-row { background-color: #e2e8f0 !important; border-left: 4px solid #2563eb; }
+        .theme-light .match-row { background-color: rgba(16, 185, 129, 0.08); }
+        .theme-light .divergent { background-color: rgba(245, 158, 11, 0.12) !important; border-left: 4px solid #d97706 !important; }
+
+        /* Shared Mode Badges */
         .mode-live { color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.1); }
         .mode-mocked { color: #8b5cf6; border-color: #8b5cf6; background: rgba(139,92,246,0.1); }
-        .divergent { background-color: rgba(245, 158, 11, 0.15) !important; border-left: 4px solid #f59e0b !important; }
-        .match-row { background-color: rgba(16, 185, 129, 0.05); }
 
-        /* Custom Scrollbar for sidebars */
+        /* ULTIMATE OVERFLOW FIX: Breaks the table boundaries to ensure scroll works on any zoom level */
+        .scrollable-cell {
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            display: block !important;
+            width: 100% !important;
+            min-width: 600px !important; /* Forces the block to look way beyond the screen space */
+            padding-bottom: 4px;
+        }
+
+        /* Custom Scrollbar styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .theme-light ::webkit-scrollbar-thumb { background: #cbd5e1; }
+        .theme-light ::webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-200 h-screen flex flex-col font-sans overflow-hidden">
+<body class="theme-dark bg-gray-950 text-gray-200 h-screen flex flex-col font-sans overflow-hidden">
 
 <header class="h-16 border-b border-gray-800 bg-gray-900 flex items-center justify-between px-6 shrink-0">
     <div class="flex items-center gap-3">
@@ -27,6 +72,10 @@
         <h1 class="text-xl font-bold tracking-tight">Flash-MAS <span class="font-light text-gray-400">Hybrid Control</span></h1>
     </div>
     <div class="flex gap-3 items-center">
+        <button id="btnThemeToggle" onclick="toggleTheme()" class="bg-gray-800 border border-gray-700 text-gray-300 hover:text-white p-2.5 rounded-lg text-sm flex items-center justify-center transition-colors" title="Toggle Light/Dark Theme">
+            <i id="themeIcon" class="ph-bold ph-sun text-lg"></i>
+        </button>
+
         <select id="speedSelect" class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 outline-none cursor-pointer" onchange="changeSpeed(this.value)">
             <option value="1">1x Speed (Real Time)</option>
             <option value="2">2x Speed</option>
@@ -43,7 +92,6 @@
 
 <div class="flex flex-1 overflow-hidden">
     <aside class="w-80 border-r border-gray-800 bg-gray-900 flex flex-col p-4 shrink-0">
-        <!-- AGENTS FILTER -->
         <div class="flex justify-between items-end mb-3">
             <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Agents Topology</h2>
             <button onclick="toggleAllVisibility()" class="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1">
@@ -55,7 +103,6 @@
             <p class="text-xs text-gray-600 italic">No agents loaded yet.</p>
         </div>
 
-        <!-- EVENT TYPES FILTER -->
         <h2 class="text-xs font-bold text-gray-500 uppercase mt-6 mb-3 tracking-wider">Event Types</h2>
         <div id="eventFiltersContainer" class="flex-1 overflow-y-auto space-y-3 pr-2">
             <p class="text-xs text-gray-600 italic">Load JSON to view filters.</p>
@@ -73,14 +120,14 @@
         </div>
 
         <div class="flex-1 overflow-auto bg-[#0a0a0a] relative">
-            <table class="w-full text-left text-[11px] whitespace-nowrap table-fixed">
+            <table class="w-full text-left text-[11px] whitespace-nowrap">
                 <thead class="bg-gray-900/95 backdrop-blur text-gray-400 sticky top-0 z-10 shadow-md">
                 <tr>
-                    <th class="px-4 py-3 w-16">Idx</th>
-                    <th class="px-4 py-3 w-32">Entity</th>
-                    <th class="px-4 py-3 w-40">Event Type</th>
-                    <th class="px-4 py-3 w-1/3">Historical Log (Expected)</th>
-                    <th class="px-4 py-3 border-l border-gray-800">Live Execution (Actual)</th>
+                    <th class="px-4 py-3 w-[60px] min-w-[60px]">Idx</th>
+                    <th class="px-4 py-3 w-[120px] min-w-[120px]">Entity</th>
+                    <th class="px-4 py-3 w-[160px] min-w-[160px]">Event Type</th>
+                    <th class="px-4 py-3 w-[320px] min-w-[320px]">Historical Log (Expected)</th>
+                    <th class="px-4 py-3 border-l border-gray-800 min-w-[400px]">Live Execution (Actual)</th>
                 </tr>
                 </thead>
                 <tbody id="logTable" class="divide-y divide-gray-800/50"></tbody>
@@ -115,6 +162,22 @@
     // State Filters
     let agentVisibility = {};
     let eventTypeVisibility = {};
+
+    // Theme Toggle Function
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('themeIcon');
+        const isDark = body.classList.contains('theme-dark');
+
+        if (isDark) {
+            body.classList.replace('theme-dark', 'theme-light');
+            icon.className = 'ph-bold ph-moon text-lg';
+        } else {
+            body.classList.replace('theme-light', 'theme-dark');
+            icon.className = 'ph-bold ph-sun text-lg';
+        }
+        updateTableRows();
+    }
 
     document.getElementById('jsonInput').onchange = (e) => {
         const reader = new FileReader();
@@ -160,7 +223,7 @@
 
             return `
             <div class="p-3 bg-gray-800/40 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
-                <div class="text-[11px] font-bold mb-2 truncate text-gray-300" title="${name}">${name}</div>
+                <div class="text-[11px] font-bold mb-2 truncate" title="${name}">${name}</div>
                 <div class="flex gap-1.5">
                     <button onclick="toggleVisibility('${name}')" id="vis-${name}" class="px-2.5 py-1.5 text-[10px] rounded bg-gray-700 hover:bg-gray-600 ${isVis ? 'text-blue-400' : 'text-gray-500'} transition-colors" title="Toggle Visibility">
                         <i class="ph-fill ${isVis ? 'ph-eye' : 'ph-eye-slash'} text-sm"></i>
@@ -194,7 +257,7 @@
 
             catTypes.sort().forEach(type => {
                 const label = document.createElement('label');
-                label.className = 'flex items-start gap-2 cursor-pointer hover:bg-gray-700/40 p-1.5 rounded text-[10px] text-gray-300';
+                label.className = 'flex items-start gap-2 cursor-pointer p-1.5 rounded text-[10px]';
                 label.innerHTML = `
                     <input type="checkbox" ${eventTypeVisibility[type] ? 'checked' : ''} value="${type}" class="mt-0.5 rounded bg-gray-700 border-gray-600 text-blue-500">
                     <span class="break-all leading-tight" title="${type}">${type}</span>
@@ -316,7 +379,6 @@
         }
     };
 
-    // Render full table schema once to enable continuous scrolling
     function initTable() {
         const tbody = document.getElementById('logTable');
         let html = '';
@@ -328,11 +390,13 @@
 
             html += `
                 <tr id="row-${i}" class="cursor-pointer hover:bg-gray-800/30 transition-colors" onclick="selectRow(${i})">
-                    <td class="px-4 py-2.5 text-gray-600 font-mono text-[10px]">${i}</td>
-                    <td class="px-4 py-2.5 font-bold ${isLive ? 'text-emerald-400' : 'text-purple-400'}">${ev.entityName || 'sys'}</td>
-                    <td class="px-4 py-2.5 text-blue-300 font-mono text-[10px]">${ev.type}</td>
-                    <td class="px-4 py-2.5 text-gray-400 truncate max-w-[300px] font-mono text-[10px]" title="${payloadEscaped}">${JSON.stringify(ev.payload)}</td>
-                    <td id="comp-${i}" class="px-4 py-2.5 border-l border-gray-800/50 truncate max-w-[400px]"></td>
+                    <td class="px-4 py-2.5 text-gray-600 font-mono text-[10px] w-[60px] min-w-[60px]">${i}</td>
+                    <td class="px-4 py-2.5 font-bold w-[120px] min-w-[120px] ${isLive ? 'text-emerald-400' : 'text-purple-400'}">${ev.entityName || 'sys'}</td>
+                    <td class="px-4 py-2.5 text-blue-300 font-mono text-[10px] w-[160px] min-w-[160px]">${ev.type}</td>
+                    <td class="px-4 py-2.5 text-gray-400 truncate w-[320px] min-w-[320px] max-w-[320px] font-mono text-[10px]" title="${payloadEscaped}">${JSON.stringify(ev.payload)}</td>
+                    <td class="px-4 py-2.5 border-l border-gray-800/50">
+                        <div id="comp-${i}" class="scrollable-cell font-mono text-[10px]"></div>
+                    </td>
                 </tr>
             `;
         }
@@ -340,8 +404,9 @@
         updateTableRows();
     }
 
-    // Apply fast CSS updates for styling states without rebuilding the DOM
     function updateTableRows() {
+        const isLightTheme = document.body.classList.contains('theme-light');
+
         for (let i = 0; i < events.length; i++) {
             const ev = events[i];
             const liveEv = liveEventMapping[i];
@@ -360,31 +425,31 @@
                     let isMatch = (ev.type === liveEv.type) && (histPayloadStr === livePayloadStr);
 
                     if (isMatch) {
-                        comparisonHtml = `<span class="text-emerald-400 font-bold tracking-wider"><i class="ph-fill ph-check-circle mr-1"></i>MATCH</span> <span class="text-gray-500 ml-2">${livePayloadStr}</span>`;
+                        comparisonHtml = `<span class="text-emerald-500 font-bold tracking-wider"><i class="ph-fill ph-check-circle mr-1"></i>MATCH</span> <span class="${isLightTheme ? 'text-gray-600' : 'text-gray-500'} ml-2">${livePayloadStr}</span>`;
                         rowClass += 'match-row ';
                     } else {
-                        comparisonHtml = `<span class="text-amber-500 font-bold tracking-wider"><i class="ph-fill ph-warning mr-1"></i>DIVERG:</span> <span class="text-amber-200/80 ml-1 font-mono">${liveEv.type} &rarr; ${livePayloadStr}</span>`;
+                        comparisonHtml = `<span class="text-amber-500 font-bold tracking-wider"><i class="ph-fill ph-warning mr-1"></i>DIVERG:</span> <span class="${isLightTheme ? 'text-amber-800' : 'text-amber-200/80'} ml-1 font-mono">${liveEv.type} &rarr; ${livePayloadStr}</span>`;
                         rowClass += 'divergent ';
                     }
                 } else {
                     if (i < baseStartIndex) {
-                        comparisonHtml = `<span class="text-gray-600 text-xs italic"><i class="ph ph-fast-forward mr-1"></i>Skipped via Fast-Forward</span>`;
+                        comparisonHtml = `<span class="text-gray-500 text-xs italic"><i class="ph ph-fast-forward mr-1"></i>Skipped via Fast-Forward</span>`;
                     } else if (i < currentIndex) {
-                        comparisonHtml = `<span class="text-red-400 text-xs font-bold"><i class="ph-fill ph-x-circle mr-1"></i>Missed Event</span>`;
+                        comparisonHtml = `<span class="text-red-500 text-xs font-bold"><i class="ph-fill ph-x-circle mr-1"></i>Missed Event</span>`;
                         rowClass += 'divergent ';
                     } else {
-                        comparisonHtml = `<span class="text-blue-400/50 text-xs"><i class="ph-bold ph-spinner animate-spin mr-1 inline-block"></i>Awaiting Live...</span>`;
+                        comparisonHtml = `<span class="text-blue-500/70 text-xs"><i class="ph-bold ph-spinner animate-spin mr-1 inline-block"></i>Awaiting Live...</span>`;
                     }
                 }
             } else {
-                comparisonHtml = `<span class="text-purple-400/30 text-xs"><i class="ph-fill ph-robot mr-1"></i>Ignored (Mocked Playback)</span>`;
+                comparisonHtml = `<span class="${isLightTheme ? 'text-purple-600/50' : 'text-purple-400/30'} text-xs"><i class="ph-fill ph-robot mr-1"></i>Ignored (Mocked Playback)</span>`;
             }
 
             const rowElement = document.getElementById(`row-${i}`);
             const compElement = document.getElementById(`comp-${i}`);
 
             if (rowElement) {
-                let finalClass = rowClass + "cursor-pointer hover:bg-gray-800/30 transition-colors";
+                let finalClass = rowClass + "cursor-pointer transition-colors";
                 if (rowElement.className !== finalClass) rowElement.className = finalClass;
             }
 

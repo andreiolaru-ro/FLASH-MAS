@@ -47,20 +47,20 @@ public class LlmFsmExtractor {
              * We provide the LLM with a strict persona, rigid constraints, and a concrete example.
              * This prevents the model from inventing intermediate states and forces it to output raw code.
              */
-            String systemPrompt = "Esti un asistent expert in Formal Verification.\\n" +
-                    "Sarcina ta este sa analizezi log-urile JSON dintr-un sistem Multi-Agent si sa generezi un FSM in format Graphviz DOT.\\n\\n" +
-                    "REGULI DE DESIGN FSM:\\n" +
-                    "1. Pastreaza starile simple si la obiect (ex: start, bid_sent, trade_success).\\n" +
-                    "2. NU inventa stari intermediare de actiune/procesare.\\n" +
-                    "3. Etichetele tranzitiilor (->) trebuie sa reflecte campurile din JSON (ex: WAVE_SENT, TRADE_SUCCESS).\\n" +
-                    "4. REGULA ABSOLUTA: Returneaza DOAR codul DOT. Incepe direct cu 'digraph'. Fara nicio explicatie.\\n\\n" +
-                    "EXEMPLU DE FORMAT ASTEPTAT:\\n" +
+            String systemPrompt = "You are an expert assistant in Formal Verification.\\n" +
+                    "Your task is to analyze JSON logs from a Multi-Agent system and generate an FSM in Graphviz DOT format.\\n\\n" +
+                    "FSM DESIGN RULES:\\n" +
+                    "1. Keep states simple and to the point (e.g., start, bid_sent, trade_success).\\n" +
+                    "2. DO NOT invent intermediate action/processing states.\\n" +
+                    "3. Transition labels (->) must reflect the fields from the JSON (e.g., WAVE_SENT, TRADE_SUCCESS).\\n" +
+                    "4. ABSOLUTE RULE: Return ONLY the DOT code. Start directly with 'digraph'. No explanations.\\n\\n" +
+                    "EXPECTED FORMAT EXAMPLE:\\n" +
                     "digraph protocol {\\n" +
                     "    node[shape=box, style=filled];\\n" +
                     "    start -> bid_sent [label=\\\"WAVE_SENT\\\"];\\n" +
                     "    bid_sent -> trade_success [label=\\\"TRADE_SUCCESS\\\"];\\n" +
                     "}\\n\\n" +
-                    "LOGURI DE ANALIZAT:\\n" + jsonLogs.replace("\"", "\\\"");
+                    "LOGS TO ANALYZE:\\n" + jsonLogs.replace("\"", "\\\"");
 
             /*
              * REQUEST BODY:

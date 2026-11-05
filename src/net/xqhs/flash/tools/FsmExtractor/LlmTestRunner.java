@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 /**
  * Standalone demo environment for the LLM Formal Verification Pipeline.
- * Integrat nativ cu cerintele tehnice din documentatia "easyLog".
+ * Natively integrated with the technical requirements from the "easyLog" documentation.
  */
 public class LlmTestRunner {
 
@@ -52,14 +52,14 @@ public class LlmTestRunner {
             System.out.println("[Data Prep] Distilling logs using Actor-Isolation filtering...");
             String agentTraceJson = isolateSingleAgentTrace(flatRawJsonData);
 
-            // PROMPT INJECTION: Fortam LLM-ul sa respecte structura EasyLog (Regex si Noduri finale)
-            String easyLogEnforcedPayload = "INSTRUCTIUNI CRITICE PENTRU EASYLOG:\\n" +
-                    "1. Creeaza un FSM strict liniar pentru agentul izolat mai jos (fara bucle / self-loops).\\n" +
-                    "2. DECLARA OBLIGATORIU: FINAL [shape=doublecircle, color=green, fontcolor=green];\\n" +
-                    "3. DECLARA OBLIGATORIU: ERROR [shape=doublecircle, color=red, fontcolor=red];\\n" +
-                    "4. Etichetele (label) trebuie sa contina cuvintele cheie din JSON (ex: label=\"WAVE_SENT\" sau label=\"TRADE_SUCCESS\").\\n" +
-                    "5. Condu fluxul catre nodul FINAL in caz de TRADE_SUCCESS.\\n" +
-                    "LOG IZOLAT DE ANALIZAT:\\n" + agentTraceJson;
+            // PROMPT INJECTION: Force the LLM to respect the  EasyLog structure (Regex and final nodes)
+            String easyLogEnforcedPayload = "CRITICAL INSTRUCTIONS FOR EASYLOG:\\n" +
+                    "1. Create a strictly linear FSM for the isolated agent below (no loops / self-loops).\\n" +
+                    "2. MANDATORY DECLARATION: FINAL [shape=doublecircle, color=green, fontcolor=green];\\n" +
+                    "3. MANDATORY DECLARATION: ERROR [shape=doublecircle, color=red, fontcolor=red];\\n" +
+                    "4. Labels must contain the keywords from the JSON (e.g., label=\"WAVE_SENT\" or label=\"TRADE_SUCCESS\").\\n" +
+                    "5. Direct the flow to the FINAL node in case of TRADE_SUCCESS.\\n" +
+                    "ISOLATED LOG TO ANALYZE:\\n" + agentTraceJson;
 
             System.out.println("\n[LLM Inference] Triggering LLM extraction on isolated dataset...");
             String fsmCode = LlmFsmExtractor.extractFsmFromJson(easyLogEnforcedPayload);
@@ -69,7 +69,7 @@ public class LlmTestRunner {
                 System.out.println(fsmCode);
                 System.out.println("\n-----------------------------------------\n");
 
-                LlmFsmExtractor.saveToFile(fsmCode, "protocol_generat.dot");
+                LlmFsmExtractor.saveToFile(fsmCode, "generated_protocol.dot");
 
             } else {
                 System.err.println("[Pipeline Failure] Extraction returned null. Please verify Ollama is running.");
@@ -86,8 +86,8 @@ public class LlmTestRunner {
 
     /**
      * Data Normalization Engine (Actor-Isolation Version).
-     * Gaseste primul agent care face o actiune si ii extrage exclusiv cronologia personala.
-     * Acest lucru previne ca LLM-ul sa confunde actiunile a 5 agenti simultani drept "bucle" in protocol.
+     * Finds the first agent that performs an action and extracts their personal chronology exclusively.
+     * This prevents the LLM from confusing the actions of 5 simultaneous agents as "loops" in the protocol.
      */
     private static String isolateSingleAgentTrace(String flatJson) {
         String content = flatJson.trim();
@@ -97,7 +97,7 @@ public class LlmTestRunner {
         String[] objects = content.split("\\},\\s*\\{");
         String targetAgent = null;
 
-        // 1. Gasim primul agent prosumator care a trimis o oferta
+        // 1. Find the first prosumer agent that sent an offer
         for (String obj : objects) {
             if (obj.contains("\"type\": \"WAVE_SENT\"") && !obj.contains("MarketAgent")) {
                 targetAgent = extractJsonValue(obj, "entityName");
@@ -109,7 +109,7 @@ public class LlmTestRunner {
 
         System.out.println("[Actor-Isolation] Modeling lifecycle strictly for agent: " + targetAgent);
 
-        // 2. Extragem DOAR evenimentele acestui agent
+        // 2. 2. Extract ONLY this agent's events
         StringBuilder trace = new StringBuilder("[");
         boolean first = true;
 

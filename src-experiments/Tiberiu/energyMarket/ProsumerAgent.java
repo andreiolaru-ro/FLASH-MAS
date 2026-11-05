@@ -15,19 +15,18 @@ import net.xqhs.flash.core.support.PylonProxy;
 
 /**
  * Represents a smart home (Prosumer) in the Peer-to-Peer energy market.
- * This agent periodically generates BIDs (buy requests) or ASKs (sell requests)
- * based on its internal energy balance and sends them to the MarketAgent.
+ * Coordinates localized microgrid auction scenarios deterministically.
  */
 public class ProsumerAgent extends BaseAgent {
 
-    /** The shard responsible for sending and receiving messages. */
-    private MessagingShard msgShard;
-
-    /** Random generator for simulating energy production and consumption. */
-    private Random random = new Random();
-
-    /** Timer for periodic market interactions. */
+    protected MessagingShard msgShard;
     private Timer timer;
+
+    /** Generator determinist controlat prin seed. */
+    private Random random;
+
+    /** Numele MarketAgent-ului zonal dedus la pornire. */
+    private String targetMarketAgent;
 
     @Override
     public boolean start() {
@@ -48,9 +47,26 @@ public class ProsumerAgent extends BaseAgent {
                 });
 
         msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-        li("Prosumer " + this.getName() + " has joined the microgrid.");
 
-        // Start the periodic behavior: evaluate energy needs every 3 seconds
+        // =====================================================================
+        // ETAPA DE CONFIGURARE TOPOLOGICĂ ȘI DETERMINISTĂ
+        // =====================================================================
+        String agentName = this.getName();
+
+        // 1. Initializam generatorul folosind hash-ul numelui ca seed unic si fix
+        this.random = new Random(agentName.hashCode());
+
+        // 2. Deducem zona din nume (ex: din "Prosumer_A12" extragem "A")
+        String zone = "A"; // fallback nominal
+        if (agentName.contains("_")) {
+            zone = agentName.split("_")[1].substring(0, 1);
+        }
+        this.targetMarketAgent = "MarketAgent_" + zone;
+
+        li("Prosumer " + agentName + " joined microgrid zone: " + zone +
+                ". Linked market broker target: " + targetMarketAgent);
+
+        // Start periodic interaction sequence every 3 seconds
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -59,40 +75,53 @@ public class ProsumerAgent extends BaseAgent {
             }
         }, 1000, 3000);
 
+        evaluateEnergyNeedsAndBid();
+
         return true;
     }
 
     /**
-     * Simulates the internal BDI (Belief-Desire-Intention) logic.
-     * Decides whether to act as a buyer or seller for this time step.
+     * Orchestreaza executia strategiei si trimite oferta catre piata zonala.
      */
     protected void evaluateEnergyNeedsAndBid() {
-        // Simulate energy amount between 1.0 and 5.0 kWh (rounded to 1 decimal)
-        double amount = Math.round((1.0 + (4.0 * random.nextDouble())) * 10.0) / 10.0;
+        // Apelam componenta decizionala decuplata
+        String payload = computeEnergyStrategy();
 
-        // Simulate acceptable price between 0.50 and 1.50 RON/kWh (rounded to 2 decimals)
-        double price = Math.round((0.5 + random.nextDouble()) * 100.0) / 100.0;
-
-        // 50% probability to be a seller (ASK), 50% to be a buyer (BID)
-        String type = random.nextBoolean() ? "BID" : "ASK";
-
-        // Format payload as "TYPE|AMOUNT|PRICE" for easy parsing by the market
-        String payload = type + "|" + amount + "|" + price;
-
-        AgentWave wave = new AgentWave(payload, "MarketAgent");
-        li("Emitting offer to market: [" + type + "] " + amount + " kWh @ " + price + " RON");
+        AgentWave wave = new AgentWave(payload, targetMarketAgent);
+        li("Emitting localized offer to [" + targetMarketAgent + "]: " + payload);
         msgShard.sendMessage(wave);
     }
 
     /**
-     * Processes incoming events, specifically market transaction confirmations.
-     * * @param e The received event
-     * @return true if successfully processed
+     * Componenta decizionala (BDI). In prezent genereaza decizii
+     * pseudorandomizate perfect deterministe pe baza seed-ului stabil.
+     * * PLACEHOLDER PENTRU CERCETARE: Aici poti inlocui intregul corp al metodei
+     * cu un apel catre un model LLM (Ollama/Qwen) sau retea DRL,
+     * schimband complet comportamentul fara a altera infrastructura platformei.
+     */
+    private String computeEnergyStrategy() {
+        // Cantitate determinista intre 1.0 si 5.0 kWh (un zecimal)
+        double amount = Math.round((1.0 + (4.0 * random.nextDouble())) * 10.0) / 10.0;
+
+        // Pret determinist intre 0.50 si 1.50 RON/kWh (doua zecimale)
+        double price = Math.round((0.5 + random.nextDouble()) * 100.0) / 100.0;
+
+        // Decizie asimetrica stabila de tip BID/ASK
+        String type = random.nextBoolean() ? "BID" : "ASK";
+
+        return type + "|" + amount + "|" + price;
+    }
+
+    /**
+     * Processes incoming events, including market transaction confirmations.
      */
     protected boolean processEvent(AgentEvent e) {
-        if(AgentEventType.AGENT_WAVE.equals(e.getType())) {
-            String notification = (String) ((AgentWave) e).getContent();
-            li(">>> Notification received: " + notification);
+        // Adaugă asta în processEvent-ul din ProsumerAgent.java pentru a unifica comportamentul:
+        if (AgentEventType.AGENT_WAVE.equals(e.getType())) {
+            AgentWave wave = (AgentWave) e;
+            if ("NEXT_STEP_TICK".equals(wave.getContent())) {
+                evaluateEnergyNeedsAndBid(); // Execută logica grea deterministă
+            }
         }
         return true;
     }
