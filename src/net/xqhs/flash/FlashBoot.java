@@ -26,8 +26,7 @@ import net.xqhs.util.logging.MasterLog;
  * 
  * @author andreiolaru
  */
-public class FlashBoot
-{
+public class FlashBoot {
 	// public static ByteArrayOutputStream stream = null;
 	/**
 	 * Main method. It calls {@link Deployment#loadDeployment} with the arguments received by the program.
@@ -35,33 +34,36 @@ public class FlashBoot
 	 * @param args
 	 *            - the arguments received by the program.
 	 */
-	public static void main(String[] args)
-	{
-        Benchmark.start("Total");
+	public static void main(String[] args) {
+		Benchmark.start("Total");
 		MasterLog.setLogLevel(Level.ALL);
-
+		
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
-        Benchmark.start("Deployment");
+		Benchmark.start("Deployment");
 		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
-        Benchmark.stop("Deployment");
+		Benchmark.stop("Deployment");
 		// try {
 		// Thread.sleep(20000);
 		// } catch(InterruptedException e) {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-        Benchmark.start("Execution");
-		for(Node node : nodes)
-			node.start();
-        Simulation sim = Simulation.getLastInstance();
-        if (sim == null)
-			System.out.println("Missing simulation");
-		else
+		Benchmark.start("Execution");
+		Simulation sim = Simulation.getLastInstance();
+		if(sim == null) {
+			System.out.println("Real-mode");
+			for(Node node : nodes)
+				node.start();
+		}
+		else {
+			System.out.println("Simulation mode");
+			sim.start();
 			sim.awaitCompletion();
-        Benchmark.stop("Execution");
-        Benchmark.stop("Total");
-        Benchmark.printResults();
+		}
+		Benchmark.stop("Execution");
+		Benchmark.stop("Total");
+		Benchmark.printResults();
 	}
 	
 }

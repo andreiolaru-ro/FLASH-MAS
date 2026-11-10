@@ -10,6 +10,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.support.PylonProxy;
+import net.xqhs.flash.core.util.MultiTreeMap;
 
 public class Simulation extends Node implements EntityProxy<Simulation> {
 	// protected Topology<P> topology;
@@ -67,6 +68,14 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 			return match;
 		});
 	}
+	
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		lastInstance = this;
+		return true;
+	}
 
 	/**
 	 * Tells whether an entity was deregistered since the last {@link #clearDeregistered()}.
@@ -95,7 +104,6 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	public boolean start() {
 		if(!super.start())
 			return false;
-		lastInstance = this;
 		// return executor.start();
 		return true;
 	}
