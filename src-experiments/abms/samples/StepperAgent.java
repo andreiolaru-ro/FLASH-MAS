@@ -35,7 +35,8 @@ public class StepperAgent extends AgentPingPongPlain implements SteppableEntity,
 	
 	@Override
 	public void step() {
-		sendPing();
+		if(otherAgents != null)
+			sendPing();
 	}
 	
 	@Override
