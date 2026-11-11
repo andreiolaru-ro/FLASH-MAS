@@ -1,15 +1,19 @@
 package aggregate_logging;
 
-import abms.wolfSheepPredation.WolfSheepGroup;
-import net.xqhs.flash.core.Entity;
-
 import java.util.HashMap;
 import java.util.Map;
 
-public class ALogging {
-    private static final ALogging instance = new ALogging();
-    private final Map<LogAggregate, Map<String, MessageSummary>> logs = new HashMap<>();
-    private ALogging() {}
+import net.xqhs.flash.core.Entity;
+import net.xqhs.util.logging.Unit;
+
+public class ALogging extends Unit {
+	protected boolean												NORMAL_OUTPUT	= true;
+	protected static final ALogging									instance		= new ALogging();
+	protected final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
+	
+	protected ALogging() {
+		setUnitName("agr-log");
+	}
 
     public static ALogging getInstance() {
         return instance;
@@ -20,6 +24,8 @@ public class ALogging {
         Map<String, MessageSummary> logMap = logs.computeIfAbsent(log, k -> new HashMap<>());
         MessageSummary summary = logMap.computeIfAbsent(msg, k -> new MessageSummary(msg, args.length));
         summary.register(entity, args);
+		if(NORMAL_OUTPUT)
+			li("[] " + msg, entity.getName() != null ? entity.getName() : entity.toString(), args);
     }
 
     public void print_agr(LogAggregate log) {
