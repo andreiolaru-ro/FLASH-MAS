@@ -121,10 +121,12 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 
     @Override
     public boolean stop() {
-        try {
-            executor.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (executor != Thread.currentThread()) {
+            try {
+                executor.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return super.stop();
     }
