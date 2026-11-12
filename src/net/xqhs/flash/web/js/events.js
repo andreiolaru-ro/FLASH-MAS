@@ -32,6 +32,14 @@ const DEPLOYMENT_SCOPE = 'deployment';
  * The EventBus instance.
  */
 let eventBus = null;
+let visualizationsModulePromise = null;
+
+function loadVisualizations() {
+    if (!visualizationsModulePromise) {
+        visualizationsModulePromise = import("./visualizations.js");
+    }
+    return visualizationsModulePromise;
+}
 
 /**
  * Establishes the connection to the backend via Vert.x EventBus.
@@ -95,16 +103,15 @@ export function sendDeployCommand(ip, rawArguments) {
  * @param {Object} message - The parsed JSON message received from the server.
  */
 function recvMessage(message) {
-    console.log('Received message', message);
-
     if (message.scope === 'updates' && message.subject === 'batch') {
-        import("./visualizations.js").then(viz => {
+        loadVisualizations().then(viz => {
             const batch = message.content;
             Object.entries(batch).forEach(([agentName, ports]) => {
                 const metricData = {};
                 Object.entries(ports).forEach(([port, roles]) => {
-                    if (Object.keys(roles).length === 1 && roles['value'] !== undefined) {
-                        metricData[port] = roles['value'];
+                    const roleKeys = Object.keys(roles);
+                    if (roleKeys.length === 1) {
+                        metricData[port] = roles[roleKeys[0]];
                     } else {
                         Object.entries(roles).forEach(([role, value]) => {
                             metricData[role] = value;
@@ -125,17 +132,15 @@ function recvMessage(message) {
             const newEntities = Object.keys(appContext.entities || {});
 
             const removedEntities = oldEntities.filter(e => !newEntities.includes(e));
-            import("./visualizations.js").then(viz => {
+            loadVisualizations().then(viz => {
                 removedEntities.forEach(agent => viz.removeAgentFromVisualizations(agent));
             });
 
-            console.log('Received new entities data', appContext.entities);
             import("./ui.js").then(ui => ui.updateEntitiesList());
             return;
         }
 
         if (message.subject == 'node-configs') {
-            console.log('Received node configs', message.content);
             import("./ui.js").then(ui => ui.updateNodeConfigs(message.content));
             return;
         }
@@ -158,7 +163,7 @@ function recvMessage(message) {
             if (entity && entity.data) {
                 for (let key in entity.data) {
                     if (entity.data[key].port === 'standard-status' && entity.data[key].value === 'INACTIVE') {
-                        import("./visualizations.js").then(viz => {
+                        loadVisualizations().then(viz => {
                             viz.removeAgentFromVisualizations(entityName);
                         });
                         break;

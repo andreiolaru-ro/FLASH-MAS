@@ -65,9 +65,7 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 	public static final String PROP_ENERGY = "energy";
 	public static final String PROP_STATE  = "state";
 	public static final String PROP_COLOR  = "color";
-
-	/** Sent via sendOutput → ENTITY_GUI_OUTPUT (immediate / event-driven). */
-	public static final String PORT_NEIGHBOURS = "neighbours";
+	public static final String PROP_NEIGHBOURS = "neighbours";
 
 	public ComprehensiveTestShard() {
 		super(AgentShardDesignation.autoDesignation("ComprehensiveTest"));
@@ -89,9 +87,8 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 
 				remoteOp.registerOutputProperties(
 						this,
-						Set.of(PROP_X, PROP_Y, PROP_ENERGY, PROP_STATE, PROP_COLOR));
+						Set.of(PROP_X, PROP_Y, PROP_ENERGY, PROP_STATE, PROP_COLOR, PROP_NEIGHBOURS));
 
-				sendNeighbours();
 				break;
 
 			case AGENT_STOP:
@@ -153,23 +150,10 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 		result.put(PROP_ENERGY, String.valueOf(energy));
 		result.put(PROP_STATE,  state);
 		result.put(PROP_COLOR,  color);
+		if (neighbours != null) {
+			result.put(PROP_NEIGHBOURS, neighbours.toString());
+		}
 		return result;
-	}
-
-	// ── sendOutput helpers (PATH 2) ───────────────────────────────────────────
-
-	/**
-	 * Sends the neighbours list once via {@link RemoteOperationShard#sendOutput}.
-	 * Neighbours are fixed at agent start so this is only called once.
-	 */
-	private void sendNeighbours() {
-		if(remoteOp == null) return;
-		AgentWave wave = new AgentWave();
-		wave.resetDestination(PORT_NEIGHBOURS);
-		for(int i = 0; i < neighbours.size(); i++)
-			wave.add("neighbour", neighbours.get(i).getAsString());
-		remoteOp.sendOutput(wave);
-		li("Sent neighbours via sendOutput: []", neighbours);
 	}
 
 	// ── helpers ───────────────────────────────────────────────────────────────
@@ -179,7 +163,7 @@ public class ComprehensiveTestShard extends AgentShardGeneral implements Propert
 		String myName = getAgent().getEntityName();
 		try {
 			int myId     = Integer.parseInt(myName.replace("Agent", ""));
-			int maxNodes = 20;
+			int maxNodes = 50;
 			int nextId   = (myId % maxNodes) + 1;
 			neighbours.add("Agent" + nextId);
 			if(random.nextDouble() > 0.6) {

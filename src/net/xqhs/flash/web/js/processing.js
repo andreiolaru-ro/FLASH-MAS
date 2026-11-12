@@ -60,19 +60,16 @@ const getStyleTriggers = (entityName, entityData) =>
     }, {});
 
 export function applyUpdatesOnPort(entityName, port, roles) {
-    console.log("Port output to: ", entityName + " " + port);
     const entity = appContext.entities[entityName];
-
     for (let role in roles) {
         const content = roles[role];
         const id = idOf(entityName, port, role);
         const data = entity.data[id];
-        console.log("Setting content to: ", id, content);
         data.value = content;
-        ['form', 'spinner'].indexOf(data.type) != -1 ? 
+        ['form', 'spinner'].indexOf(data.type) != -1 ?
             $('#' + id).val(content) : $('#' + id).text(content);
 
-        if (id in entity.styleTriggers) 
+        if (id in entity.styleTriggers)
             entity.styleTriggers[id].forEach(id => applyStyles(entity, id, $('#' + id)));
     }
 }
