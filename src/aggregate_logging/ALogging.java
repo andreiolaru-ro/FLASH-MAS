@@ -25,7 +25,8 @@ public class ALogging extends Unit {
         MessageSummary summary = logMap.computeIfAbsent(msg, k -> new MessageSummary(msg, args.length));
         summary.register(entity, args);
 		if(NORMAL_OUTPUT)
-			li("[] " + msg, entity.getName() != null ? entity.getName() : entity.toString(), args);
+			li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
+					args);
     }
 
     public void print_agr(LogAggregate log) {

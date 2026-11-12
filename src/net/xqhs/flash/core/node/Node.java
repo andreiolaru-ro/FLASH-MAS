@@ -23,14 +23,14 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import aggregate_logging.ALogging;
-import aggregate_logging.Category;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.EntityCore;
@@ -85,7 +85,7 @@ public class Node extends EntityCore<Node> {
 		public void moveAgent(String destination, String agentName, String agentData) {
 			sendAgent(destination, agentName, agentData);
 		}
-
+		
 		/**
 		 * Registers an entity with the node, so that the node starts and stops it. See
 		 * {@link Node#registerEntity(String, Entity, String)}.
@@ -203,7 +203,7 @@ public class Node extends EntityCore<Node> {
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-        ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
+		ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
 		// find if entity is a messaging pylon that can be used by the Node
 		if(nodePylonProxy == null)
 			try {
@@ -233,9 +233,9 @@ public class Node extends EntityCore<Node> {
 	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
 		for(Entity<?> entity : entities) {
 			if(entity.start())
-                ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
+				ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
 			else
-                ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
+				ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
 		}
 		
 		if(isNodeStart) {
@@ -262,7 +262,7 @@ public class Node extends EntityCore<Node> {
 	public boolean start() {
 		if(!super.start())
 			return false;
-
+		
 		startAndRegister(entityOrder, true);
 		
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
@@ -284,9 +284,9 @@ public class Node extends EntityCore<Node> {
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
 				if(entity.stop())
-                    ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
+					ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
 				else
-                    ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
+					ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
 		sendStatusUpdate();
@@ -319,6 +319,8 @@ public class Node extends EntityCore<Node> {
 		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
 				AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+		if(recommendedShard == null)
+			return false;
 		try {
 			messagingShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null,
 					true);
@@ -370,7 +372,7 @@ public class Node extends EntityCore<Node> {
 		return true;
 	}
 	
-	@SuppressWarnings({"unchecked", "unchecked"})
+	@SuppressWarnings({ "unchecked", "unchecked" })
 	@Override
 	public <C extends Entity<Node>> EntityProxy<C> asContext() {
 		return (EntityProxy<C>) new NodeProxy();
@@ -399,7 +401,7 @@ public class Node extends EntityCore<Node> {
 	 * @return - an indication of success
 	 */
 	public boolean sendMessage(String destination, String content) {
-		return messagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+		return messagingShard != null && messagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
 				AgentWave.makePath(destination, SHARD_ENDPOINT), content);
 	}
 	
