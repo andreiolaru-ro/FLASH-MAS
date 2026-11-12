@@ -21,12 +21,13 @@ public class BootSamples {
 		
 		String a = "";
 		if(SIMULATE) {
-			int steps = 100;
-			a += " -load_order executor;pylon;agent";
+			int steps = 10;
+			a += " -load_order executor;context;agent";
 			a += " -package net.xqhs.flash.abms abms.samples";
 			a += " -node sim classpath:Simulation";
 			a += "    -executor StepWise:StepWise steps:" + steps;
-			a += "      -pylon local:pyl";
+			a += "     -context AgentManagement:agentManagement";
+			a += "     -context GeneralCommunication:communication";
 			a += "      -agent " + agent + ":A sendTo:B";
 			a += "      -agent " + agent + ":B";
 		}
