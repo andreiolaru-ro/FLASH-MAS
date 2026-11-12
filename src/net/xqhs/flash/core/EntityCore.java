@@ -122,6 +122,11 @@ public class EntityCore<P extends Entity<?>> extends Unit implements Configurabl
 		return name;
 	}
 	
+	@Override
+	public String toString() {
+		return getName();
+	}
+	
 	/**
 	 * Returns <code>true</code> if the main context has changed.
 	 */
