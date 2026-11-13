@@ -26,7 +26,7 @@ public class Boot {
         //test_args += "-node -pylon -agent -shard EchoTesting exit:2";
 
 
-        test_args += "-node -agent - classpath:AgentPingPong param:val";
+		test_args += "-node n -agent Test:A";
         FlashBoot.main(test_args.split(" "));
     }
 }
