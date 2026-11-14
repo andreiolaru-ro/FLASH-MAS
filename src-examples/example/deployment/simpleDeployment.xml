@@ -23,8 +23,8 @@
 
 	<package>test.simplePingPong</package>
 	<parameter name="serverPort" value="8886" />
-	<agent classpath="AgentPingPong" name="AgentA">
+	<agent classpath="PingPongAgent" name="AgentA">
 		<parameter name="sendTo" value="AgentB" />
 	</agent>
-	<agent classpath="AgentPingPong" name="AgentB" />
+	<agent classpath="PingPongAgent" name="AgentB" />
 </deployment>

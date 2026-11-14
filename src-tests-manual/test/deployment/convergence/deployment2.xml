@@ -5,10 +5,10 @@
 
 	<pylon kind="local">
 		<parameter name="in-context-of" value="main"/>
-		<agent name="PingPong:AgentA" classpath="AgentPingPong">
+		<agent name="PingPong:AgentA" classpath="PingPongAgent">
 			<parameter name="sendTo" value="AgentB"/>
 		</agent>
-		<agent name="PingPong:AgentB" classpath="AgentPingPong"/>
+		<agent name="PingPong:AgentB" classpath="PingPongAgent"/>
 	</pylon>
 
 </deployment>

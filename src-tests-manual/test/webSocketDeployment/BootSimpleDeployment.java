@@ -32,11 +32,11 @@ public class BootSimpleDeployment
 		
 		args += " -node node1";
 		args += " -pylon webSocket:pylon1 serverPort:8885";
-		args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+		args += " -agent AgentA classpath:PingPongAgent sendTo:AgentB";
 		
 		args += " -node node2";
 		args += " -pylon webSocket:pylon2 connectTo:ws://localhost:8885";
-		args += " -agent AgentB classpath:AgentPingPong";
+		args += " -agent AgentB classpath:PingPongAgent";
 		
 		FlashBoot.main(args.split(" "));
 	}

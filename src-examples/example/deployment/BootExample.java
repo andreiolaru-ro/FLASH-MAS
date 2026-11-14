@@ -81,9 +81,9 @@ public class BootExample {
 		if((mask & DEFINE_WEBSOCKET_PYLON) > 0)
 			args += " -pylon webSocket:ws serverPort:8886";
 		if((mask & DEFINE_AGENT_A) > 0)
-			args += " -agent AgentA classpath:AgentPingPong sendTo:AgentB";
+			args += " -agent AgentA classpath:PingPongAgent sendTo:AgentB";
 		if((mask & DEFINE_AGENT_B) > 0)
-			args += " -agent AgentB classpath:AgentPingPong";
+			args += " -agent AgentB classpath:PingPongAgent";
 		return args;
 	}
 	
@@ -97,14 +97,14 @@ public class BootExample {
 		args += " -pylon webSocket:ws connectTo:ws://localhost:8886";
 		args += " -node A";
 		args += " -pylon webSocket:wsMain serverPort:8886";
-		args += " -agent agentA1 classpath:AgentPingPong sendTo:agentA2 sendTo:agentB2 sendTo:agentC2";
-		args += " -agent agentA2 classpath:AgentPingPong";
+		args += " -agent agentA1 classpath:PingPongAgent sendTo:agentA2 sendTo:agentB2 sendTo:agentC2";
+		args += " -agent agentA2 classpath:PingPongAgent";
 		args += " -node B";
-		args += " -agent agentB1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1 sendTo:agentC2";
-		args += " -agent agentB2 classpath:AgentPingPong";
+		args += " -agent agentB1 classpath:PingPongAgent sendTo:agentB2 sendTo:agentA1 sendTo:agentC2";
+		args += " -agent agentB2 classpath:PingPongAgent";
 		args += " -node C";
-		args += " -agent agentC1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1 sendTo:agentB2";
-		args += " -agent agentC2 classpath:AgentPingPong";
+		args += " -agent agentC1 classpath:PingPongAgent sendTo:agentB2 sendTo:agentA1 sendTo:agentB2";
+		args += " -agent agentC2 classpath:PingPongAgent";
 		
 		return args;
 	}
