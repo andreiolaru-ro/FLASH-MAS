@@ -14,8 +14,10 @@ package net.xqhs.flash;
 import java.util.Arrays;
 import java.util.List;
 
+import benchmarking.Benchmark;
+import net.xqhs.flash.abms.Simulation;
+import net.xqhs.flash.core.deployment.Deployment;
 import net.xqhs.flash.core.node.Node;
-import net.xqhs.flash.core.node.NodeLoader;
 import net.xqhs.util.logging.Logger.Level;
 import net.xqhs.util.logging.MasterLog;
 
@@ -24,30 +26,44 @@ import net.xqhs.util.logging.MasterLog;
  * 
  * @author andreiolaru
  */
-public class FlashBoot
-{
+public class FlashBoot {
 	// public static ByteArrayOutputStream stream = null;
 	/**
-	 * Main method. It calls {@link NodeLoader#loadDeployment} with the arguments received by the program.
+	 * Main method. It calls {@link Deployment#loadDeployment} with the arguments received by the program.
 	 * 
 	 * @param args
 	 *            - the arguments received by the program.
 	 */
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
+		Benchmark.start("Total");
 		MasterLog.setLogLevel(Level.ALL);
-
+		
 		// stream = new ByteArrayOutputStream();
 		// GlobalLogWrapper.setLogStream(stream);
-		List<Node> nodes = new NodeLoader().loadDeployment(Arrays.asList(args));
+		Benchmark.start("Deployment");
+		List<Node> nodes = Deployment.get().loadDeployment(Arrays.asList(args));
+		Benchmark.stop("Deployment");
 		// try {
 		// Thread.sleep(20000);
 		// } catch(InterruptedException e) {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-		for(Node node : nodes)
-			node.start();
+		Benchmark.start("Execution");
+		Simulation sim = Simulation.getLastInstance();
+		if(sim == null) {
+			System.out.println("Real-mode");
+			for(Node node : nodes)
+				node.start();
+		}
+		else {
+			System.out.println("Simulation mode");
+			sim.start();
+			sim.awaitCompletion();
+		}
+		Benchmark.stop("Execution");
+		Benchmark.stop("Total");
+		Benchmark.printResults();
 	}
 	
 }

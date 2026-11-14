@@ -1,0 +1,29 @@
+{
+  "scenarioName": "lbf-sparse-12x12",
+  "description": "Sparse LBF: 12x12 grid, 5 foragers (level 1), 3 food items (level 2). Larger grid stresses exploration; cooperation is still required for any successful collection.",
+  "runs": 100,
+  "steps": 150,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "grid": { "width": 12, "height": 12 },
+  "agents": [
+    {
+      "kind": "Forager",
+      "count": 5,
+      "params": {
+        "level": 1,
+        "visionRange": 2,
+        "alpha": 0.1,
+        "gamma": 0.95,
+        "epsilon": 0.15
+      }
+    }
+  ],
+  "patches": [
+    {
+      "kind": "Food",
+      "count": 3,
+      "params": { "level": 2 }
+    }
+  ]
+}

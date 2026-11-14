@@ -36,7 +36,7 @@ public abstract class EntityCore<P extends Entity<?>> extends Unit implements Co
 	/**
 	 * The parameter name for focusing (use the "highlighted" state of the log) logging on this entity.
 	 */
-	public static final String HIGHLIGHT_FOCUS = "focus";
+	public static final String	HIGHLIGHT_FOCUS		= "focus";
 	
 	/**
 	 * The {@link MultiTreeMap} with which this entity was {@link #configure}d.
@@ -94,7 +94,6 @@ public abstract class EntityCore<P extends Entity<?>> extends Unit implements Co
 	public boolean start() {
 		if(running)
 			return ler(false, "Entity is already running");
-		lf("[] starting", name);
 		running = true;
 		return true;
 	}
@@ -106,8 +105,7 @@ public abstract class EntityCore<P extends Entity<?>> extends Unit implements Co
 	@Override
 	public boolean stop() {
 		if(!running)
-			return ler(false, "Entity is already stopped");
-		lf("[] stopped", name);
+			return false;
 		running = false;
 		return true;
 	}
@@ -125,6 +123,11 @@ public abstract class EntityCore<P extends Entity<?>> extends Unit implements Co
 		return name;
 	}
 	
+	@Override
+	public String toString() {
+		return getName();
+	}
+	
 	/**
 	 * Returns <code>true</code> if the main context has changed.
 	 */
@@ -135,7 +138,8 @@ public abstract class EntityCore<P extends Entity<?>> extends Unit implements Co
 		if(mainContext != null)
 			fullContext.remove(mainContext);
 		mainContext = context;
-		fullContext.add(context);
+		if(context != null)
+			fullContext.add(context);
 		return true;
 	}
 	

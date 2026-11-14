@@ -1,13 +1,14 @@
 /*******************************************************************************
  * Copyright (C) 2021 Andrei Olaru.
- * 
+ *
  * This file is part of Flash-MAS. The CONTRIBUTORS.md file lists people who have been previously involved with this project.
- * 
+ *
  * Flash-MAS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * Flash-MAS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * You should have received a copy of the GNU General Public License along with Flash-MAS.  If not, see
+ * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 package net.xqhs.flash.core.node;
 
@@ -26,9 +27,11 @@ import java.util.TimerTask;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import aggregate_logging.ALogging;
+import aggregate_logging.Category;
 import net.xqhs.flash.core.CategoryName;
-import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
+import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -36,6 +39,7 @@ import net.xqhs.flash.core.mobileComposite.MobileCompositeAgent;
 import net.xqhs.flash.core.shard.AgentShard;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.MessagingPylonProxy;
 import net.xqhs.flash.core.support.MessagingShard;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -43,7 +47,11 @@ import net.xqhs.flash.core.util.OperationUtils;
 import net.xqhs.flash.core.util.OperationUtils.ControlOperation;
 import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.remoteOperation.CentralMonitoringAndControlEntity;
-import net.xqhs.util.logging.Unit;
+import net.xqhs.flash.core.DeploymentConfiguration;
+
+// Importuri JSON (depinzând de bibliotecile folosite în proiect)
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  * A {@link Node} instance embodies the presence of the framework on a machine, although multiple {@link Node} instances
@@ -55,10 +63,10 @@ import net.xqhs.util.logging.Unit;
  * are the ones in {@link #DEFAULT_ACTIVE_ENTITIES}. All entities can be specified as active by passing the
  * <code>active:*</code> parameter in the configuration deployment of the node, leading to the node (most likely) never
  * stopping by default.
- * 
+ *
  * @author Andrei Olaru
  */
-public class Node extends Unit implements Entity<Node> {
+public class Node extends EntityCore<Node> {
 	/**
 	 * Proxy for a {@link Node}.
 	 */
@@ -67,139 +75,151 @@ public class Node extends Unit implements Entity<Node> {
 		public String getEntityName() {
 			return name;
 		}
-		
+
 		/**
 		 * Instructs the node to move the given serialized agent to a different node.
-		 * 
+		 *
 		 * @param destination
-		 *            - name of the destination node
+		 *                    - name of the destination node
 		 * @param agentName
-		 *            - name of the agent that wants to move
+		 *                    - name of the agent that wants to move
 		 * @param agentData
-		 *            - serialization of the agent
+		 *                    - serialization of the agent
 		 */
 		public void moveAgent(String destination, String agentName, String agentData) {
 			sendAgent(destination, agentName, agentData);
 		}
+
+		/**
+		 * Registers an entity with the node, so that the node starts and stops it. See
+		 * {@link Node#registerEntity(String, Entity, String)}.
+		 *
+		 * @param entityType
+		 *                    - the type of the entity.
+		 * @param entity
+		 *                    - a reference to the entity.
+		 * @param entityName
+		 *                    - the name of the entity.
+		 */
+		public void registerEntity(String entityType, Entity<?> entity, String entityName) {
+			Node.this.registerEntity(entityType, entity, entityName);
+		}
 	}
-	
+
 	/**
 	 * The endpoint for messages sent between nodes.
 	 */
 	@SuppressWarnings("unused")
-	private static final String		SHARD_ENDPOINT				= "node";
+	private static final String       SHARD_ENDPOINT          = "node";
 	/**
 	 * The name of the operation in which a node receives a mobile agent.
 	 */
-	public static final String		RECEIVE_AGENT_OPERATION		= "receive_agent";
+	public static final String    RECEIVE_AGENT_OPERATION       = "receive_agent";
 	/**
 	 * The name of the parameter that indicates which entities keep the node alive.
 	 */
-	public static final String		ACTIVE_PARAMETER_NAME		= "active";
+	public static final String    ACTIVE_PARAMETER_NAME     = "active";
 	/**
 	 * Value for the active parameter indicating that all entities are active entities.
 	 */
-	public static final String		ACTIVE_ALWAYS_VALUE			= "*";
+	public static final String    ACTIVE_ALWAYS_VALUE          = "*";
 	/**
 	 * The default "active" entities, which keep the node running while they are running.
 	 */
-	public static final String[]	DEFAULT_ACTIVE_ENTITIES		= new String[] { "agent" };
+	public static final String[]   DEFAULT_ACTIVE_ENTITIES       = new String[] { "agent" };
 	/**
 	 * The name of the parameter indicating when to make the first check for active entities.
 	 */
-	public static final String		ACTIVE_CHECK_PARAMETER		= "keep";
+	public static final String    ACTIVE_CHECK_PARAMETER    = "keep";
 	/**
 	 * Global (implementation-wide) switch to kill the node when there are no more running active entities.
 	 */
-	public static final boolean		EXIT_ON_NO_ACTIVE_ENTITIES	= true;
+	public static final boolean       EXIT_ON_NO_ACTIVE_ENTITIES = true;
 	/**
 	 * The time (in seconds) after which to perform the first check of active entities, if not modified in the
 	 * configuration.
 	 */
-	public static final int			INITIAL_ACTIVE_CHECK		= 5;
-	
-	/**
-	 * The name of the node.
-	 */
-	protected String						name				= null;
+	public static final int          INITIAL_ACTIVE_CHECK      = 5;
+
 	/**
 	 * A collection of all entities added in the context of this node, indexed by their types.
 	 */
-	protected Map<String, List<Entity<?>>>	registeredEntities	= new HashMap<>();
+	protected Map<String, List<Entity<?>>> registeredEntities = new HashMap<>();
 	/**
 	 * A {@link List} containing the entities added in the context of this node, in the order in which they were added.
 	 */
-	protected List<Entity<?>>				entityOrder			= new LinkedList<>();
+	protected List<Entity<?>>           entityOrder          = new LinkedList<>();
 	/**
 	 * A {@link MessagingShard} of this node for message communication.
 	 */
-	protected MessagingShard				messagingShard;
-	/**
-	 * An indication if this entity is running.
-	 */
-	private boolean							isRunning;
+	protected MessagingShard            messagingShard;
 	/**
 	 * The set of entity types considered as "active" and keeping the node from exiting.
 	 */
-	protected Set<String>					activeEntities		= new HashSet<>(Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
+	protected Set<String>              activeEntities    = new HashSet<>(Arrays.asList(DEFAULT_ACTIVE_ENTITIES));
 	/**
 	 * The time (in seconds) to check for active entities. if negative, the node will never close.
 	 */
-	protected long							activeFor			= INITIAL_ACTIVE_CHECK;
+	protected long                   activeFor        = INITIAL_ACTIVE_CHECK;
 	/**
 	 * Monitors if all active entities still running.
 	 */
-	protected Timer							activeMonitor		= null;
+	protected Timer                      activeMonitor     = null;
 	/**
 	 * The pylon proxy of the node. This is used as a context for the node (and its {@link MessagingShard}) and for any
 	 * mobile agents which arrive here.
 	 */
-	private PylonProxy						nodePylonProxy;
-	
+	protected PylonProxy               nodePylonProxy;
+
 	/**
 	 * Creates a new {@link Node} instance.
-	 * 
-	 * @param nodeConfiguration
-	 *            the configuration of the node. Can be {@code null}.
+	 *
+	 * @param configuration
+	 *                 the configuration of the node. Can be <code>null</code>.
 	 */
-	public Node(MultiTreeMap nodeConfiguration) {
-		if(nodeConfiguration != null) {
-			name = nodeConfiguration.get(DeploymentConfiguration.NAME_ATTRIBUTE_NAME);
-			if(nodeConfiguration.isSimple(ACTIVE_PARAMETER_NAME))
-				activeEntities = new HashSet<>(nodeConfiguration.getValues(ACTIVE_PARAMETER_NAME));
-			if(nodeConfiguration.isSimple(ACTIVE_CHECK_PARAMETER))
-				activeFor = nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER) != null
-						? Long.parseLong(nodeConfiguration.getAValue(ACTIVE_CHECK_PARAMETER))
-						: -1; // keep node active if no value mentioned
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if(!super.configure(configuration))
+			return false;
+		if(configuration != null) {
+			if(configuration.containsKey(ACTIVE_PARAMETER_NAME))
+				activeEntities = new HashSet<>(configuration.getValues(ACTIVE_PARAMETER_NAME));
+			if(configuration.containsKey(ACTIVE_CHECK_PARAMETER))
+				activeFor = Long.parseLong(configuration.getAValue(ACTIVE_CHECK_PARAMETER));
 		}
-		setLoggerType(PlatformUtils.platformLogType());
-		setUnitName(EntityIndex.register(CategoryName.NODE.s(), this)).lock();
 		li("Active entitites:", activeEntities);
+		return true;
 	}
-	
+
 	/**
 	 * Method used to register entities added in the context of this node.
-	 * 
+	 *
 	 * @param entityType
-	 *            - the type of the entity.
+	 * the type of the entity.
 	 * @param entity
-	 *            - a reference to the entity.
+	 * a reference to the entity.
 	 * @param entityName
-	 *            - the name of the entity.
+	 * the name of the entity.
 	 */
-	protected void registerEntity(String entityType, Entity<?> entity, String entityName) {
+	public void registerEntity(String entityType, Entity<?> entity, String entityName) {
 		entityOrder.add(entity);
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-		lf("registered an entity of type []. Provided name was [].", entityType, entityName);
+		ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
+		if(nodePylonProxy == null)
+			try {
+				EntityProxy<?> ctx = entity.asContext();
+				if(ctx != null && ctx instanceof MessagingPylonProxy)
+					addGeneralContext(ctx);
+			} catch(UnsupportedOperationException e) {
+				// nothing to do
+			}
 	}
-	
+
 	/**
-	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity} This lets it know what
-	 * entities are in the content of current node and what operations can be performed on them.
-	 *
-	 * @return - an indication of success.
+	 * Method used to send registration messages to {@link CentralMonitoringAndControlEntity}
+	 * and configure control operations.
 	 */
 	protected boolean registerEntitiesToCentralEntity() {
 		AgentWave wave = CentralMonitoringAndControlEntity.REGISTER_ENTITIES.instantiate(DeploymentConfiguration.CENTRAL_MONITORING_ENTITY_NAME);
@@ -210,27 +230,44 @@ public class Node extends Unit implements Entity<Node> {
 		});
 		return sendMessage(wave);
 	}
-	
+
+	protected JSONArray configureOperations() {
+		JSONArray operations = new JSONArray();
+		for(OperationUtils.ControlOperation op : OperationUtils.ControlOperation.values()) {
+			JsonObject o = OperationUtils.operationToJSON(op.getOperation(), getName(), "", "");
+			operations.add(o);
+		}
+		return operations;
+	}
+
+	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
+		for(Entity<?> entity : entities) {
+			if(entity.start())
+				ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
+			else
+				ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
+		}
+
+		if(isNodeStart) {
+			if(messagingShard != null)
+				messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
+			sendStatusUpdate();
+			li("Node [] started.", name);
+		}
+	}
+
 	@Override
 	public boolean start() {
+		if(!super.start())
+			return false;
+
 		li("Starting node [] with entities [].", name, entityOrder);
-		// must start entities before sending messages to M&C because M&C must be started too
-		for(Entity<?> entity : entityOrder) {
-			String entityName = entity.getName();
-			lf("starting entity []...", entityName);
-			if(entity.start())
-				lf("entity [] started successfully.", entityName);
-			else
-				le("failed to start entity [].", entityName);
+		startAndRegister(entityOrder, true);
+
+		if(getName() != null) {
+			registerEntitiesToCentralEntity();
 		}
-		isRunning = true;
-		if(messagingShard != null)
-			messagingShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
-		li("Node [] started.", name);
-		
-		if(getName() != null && registerEntitiesToCentralEntity())
-			lf("Entities successfully registered to control entity: ", entityOrder);
-		
+
 		if(EXIT_ON_NO_ACTIVE_ENTITIES && activeFor >= 0) {
 			activeMonitor = new Timer();
 			activeMonitor.schedule(new TimerTask() {
@@ -240,53 +277,51 @@ public class Node extends Unit implements Entity<Node> {
 				}
 			}, activeFor * 1000, 1000);
 		}
-		
 		return true;
 	}
-	
+
 	@Override
 	public boolean stop() {
-		li("Stopping node [] with entities [].", name, entityOrder);
 		LinkedList<Entity<?>> reversed = new LinkedList<>(entityOrder);
 		Collections.reverse(reversed);
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
-				lf("stopping entity []...", entity.getName());
 				if(entity.stop())
-					lf("entity [] stopped successfully.", entity.getName());
+					ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
 				else
-					le("failed to stop entity [].", entity.getName());
+					ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
-		isRunning = false;
+		sendStatusUpdate();
+		super.stop();
 		li("Node [] stopped.", name);
 		return true;
 	}
-	
-	@Override
-	public boolean isRunning() {
-		return isRunning;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
+
 	@Override
 	public boolean addContext(EntityProxy<Node> context) {
-		return addGeneralContext(context);
+		return false;
 	}
-	
+
+	@Override
+	public boolean removeContext(EntityProxy<Node> context) {
+		return false;
+	}
+
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(nodePylonProxy != null)
-			// only one pylon can be added as context for the node
 			return false;
+		if(!super.addGeneralContext(context))
+			return false;
+		if(!(context instanceof PylonProxy))
+			return true;
 		PylonProxy pylonProxy = (PylonProxy) context;
 		nodePylonProxy = pylonProxy;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
 				AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
+		if(recommendedShard == null)
+			return false;
 		try {
 			messagingShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null,
 					true);
@@ -298,48 +333,45 @@ public class Node extends Unit implements Entity<Node> {
 			@Override
 			public boolean postAgentEvent(AgentEvent event) {
 				switch(event.getType()) {
-				case AGENT_WAVE:
-					AgentWave wave = (AgentWave) event;
-					li("Agent wave received at node: ", wave);
-					
-					JsonObject msg = new Gson().fromJson(wave.getContent(), JsonObject.class);
-					if(msg != null)
-						parseReceivedMsg(msg);
-					else {
-						String targetName = wave.popDestinationElement();
-						// TODO check nulls
-						Entity<?> targetEntity = entityOrder.stream().filter(e -> e.getName().equals(targetName))
-								.findFirst().orElse(null);
-						if(targetEntity == null)
-							return ler(false, "Entity [] is not in the context of this node.", targetEntity);
-						String operation = wave.popDestinationElement();
-						if(operation == null)
-							return ler(false, "Operation is null.", targetEntity);
-						switch(operation) {
-						case "standard-start":
-							targetEntity.start();
-							break;
-						case "standard-stop":
-							targetEntity.stop();
-							break;
-						default:
-							return ler(false, "Operation [] is unknown.", operation);
+					case AGENT_WAVE:
+						AgentWave wave = (AgentWave) event;
+						li("Agent wave received at node: ", wave);
+
+						JsonObject msg = new Gson().fromJson(wave.getContent(), JsonObject.class);
+						if(msg != null)
+							parseReceivedMsg(msg);
+						else {
+							String targetName = wave.popDestinationElement();
+							Entity<?> targetEntity = entityOrder.stream().filter(e -> e.getName().equals(targetName))
+									.findFirst().orElse(null);
+							if(targetEntity == null)
+								return ler(false, "Entity [] is not in the context of this node.", targetEntity);
+							String operation = wave.popDestinationElement();
+							if(operation == null)
+								return ler(false, "Operation is null.", targetEntity);
+							switch(operation) {
+								case "standard-start":
+									targetEntity.start();
+									break;
+								case "standard-stop":
+									targetEntity.stop();
+									break;
+								default:
+									return ler(false, "Operation [] is unknown.", operation);
+							}
 						}
-						
-					}
-					break;
-				default:
-					break;
+						break;
+					default:
+						break;
 				}
-				return true; // FIXME it always returns true
+				return true;
 			}
-			
+
 			@Override
 			public AgentShard getAgentShard(AgentShardDesignation designation) {
-				// no other shards in this container (in the node)
 				return null;
 			}
-			
+
 			@Override
 			public String getEntityName() {
 				return getName();
@@ -348,30 +380,25 @@ public class Node extends Unit implements Entity<Node> {
 		lf("Messaging shard added, affiliated with pylon []", pylonProxy.getEntityName());
 		return messagingShard.addGeneralContext(context);
 	}
-	
+
 	@Override
 	public boolean removeGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if(nodePylonProxy != context)
 			return false;
+		super.removeGeneralContext(context);
 		nodePylonProxy = null;
 		messagingShard = null;
 		return true;
 	}
-	
+
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public boolean removeContext(EntityProxy<Node> context) {
-		// unsupported
-		return false;
+	public <C extends Entity<Node>> EntityProxy<C> asContext() {
+		return (EntityProxy<C>) new NodeProxy();
 	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public EntityProxy<Node> asContext() {
-		return new NodeProxy();
-	}
-	
+
 	/**
-	 * Checks if the entities registered to this node are still running. If none still is, the node is {@link #stop}ed.
+	 * Checks if the entities registered to this node are still running. If none still is, the node is stopped.
 	 */
 	protected void checkRunning() {
 		boolean allActive = (activeEntities.size() == 1)
@@ -380,30 +407,34 @@ public class Node extends Unit implements Entity<Node> {
 			if(activeEntities.contains(type) || allActive)
 				for(Entity<?> e : registeredEntities.get(type))
 					if(e.isRunning())
-						// found an active entity still running
 						return;
-		li("Node [] will stop due to no more active entitites running. Active entity type list was [].", name,
-				activeEntities);
 		activeMonitor.cancel();
 		stop();
 	}
-	
+
 	/**
 	 * Send a message via {@link MessagingShard}.
-	 * 
-	 * @param wave
-	 *            - the wave to send.
-	 * @return - an indication of success
 	 */
 	public boolean sendMessage(AgentWave wave) {
-		return messagingShard.sendMessage(wave);
+		return messagingShard != null && messagingShard.sendMessage(wave);
 	}
-	
+
+	public boolean sendMessage(String destination, String content) {
+		return messagingShard != null && messagingShard.sendMessage(AgentWave.makePath(getName(), SHARD_ENDPOINT),
+				AgentWave.makePath(destination, SHARD_ENDPOINT), content);
+	}
+
+	/**
+	 * Build a status update message.
+	 */
+	private boolean sendStatusUpdate() {
+		if(getName() == null)
+			return false;
+		return false;
+	}
+
 	/**
 	 * This method parses the content received and takes further control/monitoring decisions.
-	 * 
-	 * @param jo
-	 *            - an object representing the content received with an {@link AgentEvent}
 	 */
 	protected void parseReceivedMsg(JsonObject jo) {
 		if(!jo.has(OperationUtils.OPERATION_NAME))
@@ -419,29 +450,14 @@ public class Node extends Unit implements Entity<Node> {
 				return;
 			}
 			switch(ControlOperation.fromOperation(op)) {
-			// case START:
-			// if(startEntity(entity)) {
-			// lf("[] was started by parent [].", param, name);
-			// return;
-			// }
-			// break;
-			// case KILL:
-			// if(entity.stop()) {
-			// lf("[] was stopped by parent [].", param, name);
-			// return;
-			// }
-			// break;
-			default:
-				le("Unknown operation: ", op);
-				break;
-			
-			}/*
-				 * if(entity.start()) { lf("[] was started by parent [].", param, name); return; }
-				 */
+				default:
+					le("Unknown operation: ", op);
+					break;
+			}
 		}
 		else if(RECEIVE_AGENT_OPERATION.equals(op)) {
 			String agentData = jo.get(OperationUtils.PARAMETERS).getAsString();
-			
+
 			MobileCompositeAgent agent = MobileCompositeAgent.deserializeAgent(agentData);
 			registerEntity(CategoryName.AGENT.toString(), agent, agent.getName());
 			lf("Starting agent [] after moving...", agent.getName());
@@ -450,16 +466,9 @@ public class Node extends Unit implements Entity<Node> {
 			agent.start();
 		}
 	}
-	
+
 	/**
 	 * Removes the agent from the list of entities and sends it to a different node.
-	 * 
-	 * @param destination
-	 *            - name of the destination node
-	 * @param agentName
-	 *            - name of the agent that wants to move
-	 * @param agentData
-	 *            - serialization of the agent
 	 */
 	protected void sendAgent(String destination, String agentName, String agentData) {
 		entityOrder.stream()
@@ -468,7 +477,7 @@ public class Node extends Unit implements Entity<Node> {
 		JsonObject root = new JsonObject();
 		root.addProperty(OperationUtils.OPERATION_NAME, Node.RECEIVE_AGENT_OPERATION);
 		root.addProperty(OperationUtils.PARAMETERS, agentData);
-		
+
 		lf("Send message with agent [] to []", agentName, destination);
 		sendMessage(new AgentWave(root.toString(), destination));
 	}

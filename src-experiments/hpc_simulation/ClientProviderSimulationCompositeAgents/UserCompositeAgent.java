@@ -19,7 +19,7 @@ public class UserCompositeAgent extends CompositeAgent {
      * Although the name may be null, it is strongly recommended that the agent is given a (unique) name, even one that
      * is automatically generated.
      *
-     * @param configuration - the configuration, from which the name of the agent will be taken.
+     * @param nodeConfiguration - the configuration, from which the name of the agent will be taken.
      */
 
     private HashMap<ProviderServices, Boolean> unplacedRequests = new HashMap<ProviderServices, Boolean>();

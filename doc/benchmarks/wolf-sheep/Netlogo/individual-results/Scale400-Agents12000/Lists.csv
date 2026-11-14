@@ -1,0 +1,7 @@
+"BehaviorSpace results (NetLogo 7.0.2)","Lists version 2.0"
+"Wolf Sheep Predation.nlogox"
+"Benchmark-scale400-agents12000"
+"08/21/2026 15:47:47:992 +0300"
+"min-pxcor","max-pxcor","min-pycor","max-pycor"
+"0","119","0","119"
+"[reporter]","[run number]","sheep-gain-from-food","initial-number-wolves","wolf-reproduce","initial-number-sheep","show-energy?","grass-regrowth-time","wolf-gain-from-food","sheep-reproduce","model-version","[step]"

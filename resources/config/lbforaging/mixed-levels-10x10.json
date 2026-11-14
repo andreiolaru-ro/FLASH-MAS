@@ -1,0 +1,29 @@
+{
+  "scenarioName": "lbf-mixed-levels-10x10",
+  "description": "Mixed-difficulty LBF: 10x10 grid, 6 foragers (level 1), 4 food items (level 2)",
+  "runs": 100,
+  "steps": 120,
+  "baseSeed": 42,
+  "logLevel": "ERROR",
+  "grid": { "width": 10, "height": 10 },
+  "agents": [
+    {
+      "kind": "Forager",
+      "count": 6,
+      "params": {
+        "level": 1,
+        "visionRange": 2,
+        "alpha": 0.1,
+        "gamma": 0.95,
+        "epsilon": 0.15
+      }
+    }
+  ],
+  "patches": [
+    {
+      "kind": "Food",
+      "count": 4,
+      "params": { "level": 2 }
+    }
+  ]
+}

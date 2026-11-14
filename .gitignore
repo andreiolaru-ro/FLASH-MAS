@@ -9,4 +9,6 @@
 *__pycache__
 /.pydevproject
 /ml-directory/
+results/
+
 /target/

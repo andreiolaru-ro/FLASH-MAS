@@ -1,0 +1,134 @@
+package net.xqhs.flash.abms.space.gridworld;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import net.xqhs.flash.abms.space.Topology;
+import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.util.MultiTreeMap;
+
+public class GridTopology implements Topology<GridPosition> {
+
+	/**
+	 * Optional strategy for choosing which character to display when a cell contains entities.
+	 * Returns the display character, or {@code null} to show the cell as empty ('.').
+	 */
+	public interface CellDisplayProvider {
+		Character getDisplayChar(Set<EntityProxy<?>> entities);
+	}
+
+	public static final String WIDTH = "width";
+	public static final String HEIGHT = "height";
+
+	private final int width;
+	private final int height;
+	private CellDisplayProvider displayProvider;
+
+	public GridTopology() {
+		this(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	}
+
+	public GridTopology(MultiTreeMap multiTreeMap) {
+		this(readWidthAndHeight(multiTreeMap, WIDTH),
+				readWidthAndHeight(multiTreeMap, HEIGHT));
+	}
+
+	public GridTopology(int width, int height) {
+		this.width = width;
+		this.height = height;
+	}
+
+	private static int readWidthAndHeight(MultiTreeMap multiTreeMap, String dimension) {
+		if (multiTreeMap == null || !multiTreeMap.containsKey(dimension)) {
+			return Integer.MAX_VALUE;
+		}
+		try {
+			return Integer.parseInt(multiTreeMap.getAValue(dimension));
+		} catch (NumberFormatException e) {
+			return Integer.MAX_VALUE;
+		}
+	}
+	
+	@Override
+	public Set<GridPosition> getVicinity(GridPosition pos) {
+		return Arrays.stream(GridRelativeOrientation.values())
+				.map(o -> pos.getNeighborPosition(GridOrientation.NORTH, o)).collect(Collectors.toSet());
+	}
+
+    public Set<GridPosition> getVicinity(GridPosition center, int range) {
+        int capacity = (2 * range + 1) * (2 * range + 1);
+        Set<GridPosition> vicinity = new HashSet<>(capacity);
+
+        int cx = center.getX();
+        int cy = center.getY();
+
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                GridPosition newPos = new GridPosition(cx + dx, cy + dy);
+                if (isValidPosition(newPos))
+                    vicinity.add(newPos);
+            }
+        }
+
+        return vicinity;
+    }
+
+	@Override
+	public int getDistance(GridPosition a, GridPosition b) {
+		return Math.max(Math.abs(a.getX() - b.getX()), Math.abs(a.getY() - b.getY()));
+	}
+
+	@Override
+	public boolean isValidPosition(GridPosition pos) {
+		return pos != null && pos.getX() >= 0 && pos.getX() < width && pos.getY() >= 0 && pos.getY() < height;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setDisplayProvider(CellDisplayProvider provider) {
+		this.displayProvider = provider;
+	}
+
+	@Override
+	public String visualize(Map<GridPosition, Set<EntityProxy<?>>> entityInPosition) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n");
+
+		for (int y = height - 1; y >= 0; y--) {
+			for (int x = 0; x < width; x++) {
+				GridPosition pos = new GridPosition(x, y);
+				Set<EntityProxy<?>> entities = entityInPosition.get(pos);
+
+				if (entities == null || entities.isEmpty()) {
+					sb.append(". ");
+				} else if (displayProvider != null) {
+					Character ch = displayProvider.getDisplayChar(entities);
+					sb.append(ch != null ? ch : '.').append(" ");
+				} else {
+					EntityProxy<?> entity = entities.iterator().next();
+					String entityName = entity.getEntityName();
+					if (entityName != null && !entityName.isEmpty()) {
+						char symbol = Character.toUpperCase(entityName.charAt(0));
+						sb.append(symbol).append(" ");
+					} else {
+						sb.append("? ");
+					}
+				}
+			}
+			sb.append("\n");
+		}
+
+		return sb.toString();
+	}
+}

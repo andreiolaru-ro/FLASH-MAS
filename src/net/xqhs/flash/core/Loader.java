@@ -20,10 +20,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.deployment.LoadPack;
 import net.xqhs.flash.core.util.ClassFactory;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
-import net.xqhs.util.logging.Logger;
 
 /**
  * A loader instance has the capability of creating new {@link Entity} instances.
@@ -44,24 +44,22 @@ public interface Loader<T extends Entity<?>> {
 	 * Configures an instance of the loader based on deployment data.
 	 * 
 	 * @param configuration
-	 *                          - the deployment data.
-	 * @param log
-	 *                          - a {@link Logger} instance to use for logging messages, during the loader's activity.
-	 * @param classLoader
-	 *                          - a {@link ClassFactory} instance to use to load classes.
+	 *            - configuration for this loader, if any.
+	 * @param loadPack
+	 *            - the information to use for loading entities.
 	 * @return <code>true</code> if the configuration process was successful and the {@link Loader} instance is ready to
 	 *         load entities; <code>false</code> if this instance cannot be expected to work normally.
 	 */
-	public boolean configure(MultiTreeMap configuration, Logger log, ClassFactory classLoader);
+	public boolean configure(MultiTreeMap configuration, LoadPack loadPack);
 	
 	/**
 	 * Same as {@link #preload(MultiTreeMap)}, but performs the checks in the given context.
 	 * 
 	 * @param configuration
-	 *                          - the configuration data for the entity.
+	 *            - the configuration data for the entity to load.
 	 * @param context
-	 *                          - the entities that form the context of the entity to be loaded. The argument may be
-	 *                          <code>null</code> or empty.
+	 *            - the entities that form the context of the entity to be loaded. The argument may be <code>null</code>
+	 *            or empty.
 	 * @return <code>true</code> if {@link #load}ing the entity is expected to complete successfully; <code>false</code>
 	 *         if the entity cannot load with the given configuration.
 	 * @see #preload(MultiTreeMap)
@@ -106,13 +104,13 @@ public interface Loader<T extends Entity<?>> {
 	 * loaded and does not need to be loaded anymore.
 	 * 
 	 * @param configuration
-	 *                                - the configuration data for the entity.
+	 *            - the configuration data for the entity to load.
 	 * @param context
-	 *                                - the entities that form the context of the loaded entity. The argument may be
-	 *                                <code>null</code> or empty.
+	 *            - the entities that form the context of the loaded entity. The argument may be <code>null</code> or
+	 *            empty.
 	 * @param subordinateEntities
-	 *                                - a flat list of entities that should be loaded inside the loaded entity. This may
-	 *                                be <code>null</code>.
+	 *            - a flat list of entities that should be loaded inside the loaded entity. This may be
+	 *            <code>null</code>.
 	 * @return the entity, if loading has been successful.
 	 */
 	public T load(MultiTreeMap configuration, List<EntityProxy<? extends Entity<?>>> context,
@@ -315,6 +313,7 @@ public interface Loader<T extends Entity<?>> {
 			String entity, List<String> checkedPaths, SearchItemType searchType, Object... others) {
 		// delimiter between elements in the package hierarchy
 		String D = searchType == SearchItemType.CLASS ? "." : "/";
+		String IN_CLASS = "$";
 		List<String> paths = checkedPaths != null ? checkedPaths : new LinkedList<>();
 		paths.clear();
 		paths.add(given_cp);
@@ -361,10 +360,17 @@ public interface Loader<T extends Entity<?>> {
 				String upper_package = toPackageName(upper_name);
 				String lower_package = lower_name != null ? toPackageName(lower_name) : null;
 				paths.add(r + D + upper_package + D + cls);
+				if(searchType == SearchItemType.CLASS)
+					paths.add(r + D + upper_package + IN_CLASS + cls);
 				if(lower_name != null) {
 					paths.add(r + D + upper_package + D + lower_package + D + cls);
 					paths.add(r + D + lower_package + D + upper_package + D + cls);
 					paths.add(r + D + lower_package + D + cls);
+					if(searchType == SearchItemType.CLASS) {
+						paths.add(r + D + upper_package + D + lower_package + IN_CLASS + cls);
+						paths.add(r + D + lower_package + D + upper_package + IN_CLASS + cls);
+						paths.add(r + D + lower_package + D + cls);
+					}
 				}
 				paths.add(r + D + cls);
 			}
@@ -381,8 +387,7 @@ public interface Loader<T extends Entity<?>> {
 	 *            - the string.
 	 * @return the string with the first letter converted to upper-case.
 	 */
-	static String capitalize(String s)
-	{
+	static String capitalize(String s) {
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
 	}
 	
