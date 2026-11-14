@@ -4,7 +4,7 @@
             xsi:schemaLocation="http://flash.xqhs.net/deployment-schema ../../../../src-schema/deployment-schema.xsd">
     <load_order>pylon;agent</load_order>
     <node>
-            <agent classpath="testing.AgentPingPong">
+            <agent classpath="testing.PingPongAgent">
                 <parameter name="param" value="val"/>
             </agent>
     </node>

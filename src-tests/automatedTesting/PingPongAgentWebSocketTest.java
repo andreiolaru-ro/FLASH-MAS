@@ -19,7 +19,7 @@ import net.xqhs.flash.FlashBoot;
  * This test verifies the correct instantiation of the WebSocket server, client connections,
  * agent registration over the network, and the integrity of the message exchange sequence.
  */
-public class AgentPingPongWebSocketTest {
+public class PingPongAgentWebSocketTest {
 
     private static final String DEPLOYMENT_ARGS = "-package testing -loader agent:composite " +
             "-node node1 -pylon webSocket:pylon1 serverPort:8886 " +

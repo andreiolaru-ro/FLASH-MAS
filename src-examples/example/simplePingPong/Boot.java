@@ -29,7 +29,7 @@ public class Boot
         String test_args = "";
 		
 		boolean usePlainAgent = true;
-		String agentType = usePlainAgent ? "AgentPingPongPlain" : "AgentPingPong";
+		String agentType = usePlainAgent ? "PingPongAgentPlain" : "PingPongAgent";
 
         test_args += " -package testing";
         test_args += " -node main";

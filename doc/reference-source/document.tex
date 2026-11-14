@@ -233,7 +233,7 @@ Interaction with a communication infrastructure is done directly (via proxy to t
 
 \subsubsection{Using communication pylons directly}\label{sec:using-pylons-directly}
 % example
-We take an example in which two instances of the same agent class, \code{AgentPingPongPlain}, communicate back and forth by sending and receiving waves through a pylon, which is accessed by entities via a proxy (the \code{WaveMessagingPylonProxy} class). One instance is configured to act as the "ping" initiator (it has a \code{sendTo} parameter pointing to the other agent’s name), while the other implicitly becomes the "pong" responder (it has no \code{sendTo} parameter).
+We take an example in which two instances of the same agent class, \code{PingPongAgentPlain}, communicate back and forth by sending and receiving waves through a pylon, which is accessed by entities via a proxy (the \code{WaveMessagingPylonProxy} class). One instance is configured to act as the "ping" initiator (it has a \code{sendTo} parameter pointing to the other agent’s name), while the other implicitly becomes the "pong" responder (it has no \code{sendTo} parameter).
 
 
 \paragraph{Initialization}
@@ -241,7 +241,7 @@ We take an example in which two instances of the same agent class, \code{AgentPi
 The agent is placed (using information from the deployment configuration) in the context of the pylon. The pylon is visible by the agent via a proxy.
 When added in the context of the pylon, the agent \emph{registers} to the pylon -- <what it means to be registered -- the communication infrastructure knows the node where the agent is located and the name of the agent, so it can receive messages>; agent must provide a proxy to the pylon, as a \code{WaveReceiver} instance.
 
-Figure~\ref{fig:func:initialization:code} presents the essential code for the initialization stage. The complete implementation can be seen in the \code{AgentPingPongPlain} class.
+Figure~\ref{fig:func:initialization:code} presents the essential code for the initialization stage. The complete implementation can be seen in the \code{PingPongAgentPlain} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -261,9 +261,9 @@ public boolean addContext(EntityProxy<Pylon> context) {
 
 \paragraph{Sending messages}
 
-The \code{AgentPingPongPlain} agent sends waves periodically using a timer. When the agent starts and it has a list of destinations, it schedules a task that sends a message to each destination every second. Each message contains a ping count and optionally the keyword \code{last} when the limit has been reached. The messages are constructed using the \code{AgentWave} class and sent via the \code{WaveMessagingPylonProxy}. 
+The \code{PingPongAgentPlain} agent sends waves periodically using a timer. When the agent starts and it has a list of destinations, it schedules a task that sends a message to each destination every second. Each message contains a ping count and optionally the keyword \code{last} when the limit has been reached. The messages are constructed using the \code{AgentWave} class and sent via the \code{WaveMessagingPylonProxy}.
 
-Figure~\ref{fig:func:sendPing:code} presents the essential code for the sending messages stage. The complete implementation can be seen in the \code{AgentPingPongPlain} class.
+Figure~\ref{fig:func:sendPing:code} presents the essential code for the sending messages stage. The complete implementation can be seen in the \code{PingPongAgentPlain} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -278,9 +278,9 @@ protected void sendPing() {
 
 \paragraph{Receiving messages} 
 
-When an \code{AgentPingPongPlain} agent is registered to the pylon, it provides a receiver implementation that is triggered on incoming waves. Upon receiving a wave, the agent inspects its content and, if it is a pong agent -- it was not initialized with a list of agents to ping -- it constructs and sends a reply. Replies use the \code{createReply()} method, which sets the destination to the original source of the message. If the received message contains the keyword \code{last}, the agent stops after replying.
+When an \code{PingPongAgentPlain} agent is registered to the pylon, it provides a receiver implementation that is triggered on incoming waves. Upon receiving a wave, the agent inspects its content and, if it is a pong agent -- it was not initialized with a list of agents to ping -- it constructs and sends a reply. Replies use the \code{createReply()} method, which sets the destination to the original source of the message. If the received message contains the keyword \code{last}, the agent stops after replying.
 
-Figure~\ref{fig:func:processEvent:code} presents the essential code for the receiving messages stage. The complete implementation can be seen in the \code{AgentPingPongPlain} class.
+Figure~\ref{fig:func:processEvent:code} presents the essential code for the receiving messages stage. The complete implementation can be seen in the \code{PingPongAgentPlain} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -304,7 +304,7 @@ We take the same ping–pong example, but here the agent delegates all messaging
 
 The shard is instantiated in the \code{register()} method using the \code{instantiateRecommendedShard()} method from the \code{AgentShardCore} class. After instantion, the shard is bound to the context, which gives it access to the messaging system through the proxy.
 
-Figure~\ref{fig:func:registerAgentPingPong:code} presents the essential code for the instantiating shard stage. The complete implementation can be seen in the \code{AgentPingPong} class.
+Figure~\ref{fig:func:registerPingPongAgent:code} presents the essential code for the instantiating shard stage. The complete implementation can be seen in the \code{PingPongAgent} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -316,7 +316,7 @@ msgShard = AgentShardCore.instantiateRecommendedShard(MESSAGING,
 		   }});
 msgShard.addGeneralContext(context);
 \end{lstlisting}
-\caption{The essential code for the instantiating shard stage}\label{fig:func:registerAgentPingPong:code}
+\caption{The essential code for the instantiating shard stage}\label{fig:func:registerPingPongAgent:code}
 \end{figure}
 
 % signaling start event
@@ -324,7 +324,7 @@ msgShard.addGeneralContext(context);
 
 When the agent starts, it tells the shard by sending it an \code{AGENT\_START} event. 
 
-Figure~\ref{fig:func:startAgentPingPong:code} presents the essential code for the signaling start event stage. The complete implementation can be seen in the \code{AgentPingPong} class.
+Figure~\ref{fig:func:startPingPongAgent:code} presents the essential code for the signaling start event stage. The complete implementation can be seen in the \code{PingPongAgent} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -333,7 +333,7 @@ public boolean start() {
     msgShard.signalAgentEvent(new AgentEvent(AgentEventType.AGENT_START));
 }
 \end{lstlisting}
-\caption{The essential code for the signaling start event stage}\label{fig:func:startAgentPingPong:code}
+\caption{The essential code for the signaling start event stage}\label{fig:func:startPingPongAgent:code}
 \end{figure}
 
 % sending messages
@@ -341,13 +341,13 @@ public boolean start() {
 
 The \code{send()} method of the agent now simply delegates to the messaging shard. Internally, the shard adds the agent’s address to the wave if it is missing, and then forwards the message through either a \code{wavePylon} or a \code{classicPylon}, depending on what it has.
 
-Figure~\ref{fig:func:sendAgentPingPong:code} presents the essential code for the sending messages stage. The complete implementation can be seen in the \code{AgentPingPong} class.
+Figure~\ref{fig:func:sendPingPongAgent:code} presents the essential code for the sending messages stage. The complete implementation can be seen in the \code{PingPongAgent} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
 msgShard.sendMessage(wave);
 \end{lstlisting}
-\caption{The essential code for the sending messages stage}\label{fig:func:sendAgentPingPong:code}
+\caption{The essential code for the sending messages stage}\label{fig:func:sendPingPongAgent:code}
 \end{figure}
 
 % receiving messages
@@ -355,7 +355,7 @@ msgShard.sendMessage(wave);
 
 When a message arrives for the agent, the shard uses the proxy provided during configuration. The proxy forwards the wave to the agent’s \code{processEvent()} method, which it was discussed in the previous example.
 
-Figure~\ref{fig:func:postAgentEvent:code} presents the essential code for the receiving messages stage. The complete implementation can be seen in the \code{AgentPingPong} class.
+Figure~\ref{fig:func:postAgentEvent:code} presents the essential code for the receiving messages stage. The complete implementation can be seen in the \code{PingPongAgent} class.
 
 \begin{figure}[ht]\centering
 \begin{lstlisting}
@@ -366,13 +366,13 @@ public boolean postAgentEvent(AgentEvent event) {
 \caption{The essential code for the receiving messages stage}\label{fig:func:postAgentEvent:code}
 \end{figure}
 
-Figure~\ref{fig:AgentPingPongSequenceDiagramFinal} presents a sequence diagram containing the agents, the pylon, and the shards.
+Figure~\ref{fig:PingPongAgentSequenceDiagramFinal} presents a sequence diagram containing the agents, the pylon, and the shards.
 
 \begin{figure}[t]
 \centering
-\includegraphics[scale=0.37]{../img/AgentPingPongSequenceDiagramFinal.png}
+\includegraphics[scale=0.37]{../img/PingPongAgentSequenceDiagramFinal.png}
   \caption{Sequence diagram containing the agents, the pylon, and the shards.}
-  \label{fig:AgentPingPongSequenceDiagramFinal}
+  \label{fig:PingPongAgentSequenceDiagramFinal}
 \end{figure}
 
 Figure~\ref{fig:ContextStructureDiagram} presents an UML class diagram for the agent - shard - pylon - pylon proxy - shard container structuring, especially from a context perspective.
@@ -386,7 +386,7 @@ Figure~\ref{fig:ContextStructureDiagram} presents an UML class diagram for the a
 
 \subsubsection{Starting the deployment}
 
-To start the deployment, one can run the \code{Boot} class from the \code{simplePingPong} subpackage under \code{src-examples/example}. In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{AgentPingPongPlain}, or via a \code{messagingShard} by means of \code{AgentPingPong}. 
+To start the deployment, one can run the \code{Boot} class from the \code{simplePingPong} subpackage under \code{src-examples/example}. In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{PingPongAgentPlain}, or via a \code{messagingShard} by means of \code{PingPongAgent}.
 
 Regardless of the option, the node, the names of the agents involved, the configuration of the \code{sendTo} parameter with the names of the agents that will receive messages, as well as the number of pings sent must be provided.
 
