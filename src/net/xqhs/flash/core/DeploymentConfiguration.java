@@ -143,7 +143,37 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/**
 	 * Directories containing source files (especially for looking up various files).
 	 */
-	public static final String[]	SOURCE_FILE_DIRECTORIES		= { "src", "src-testing", "src-tests", "src-examples" };
+	public enum SourceFileDirectory {
+		/**
+		 * Source files.
+		 */
+		SRC,
+		/**
+		 * Examples.
+		 */
+		SRC_EXAMPLES,
+		/**
+		 * Automated tests.
+		 */
+		SRC_TESTS,
+		/**
+		 * Manual testing.
+		 */
+		SRC_TESTS_MANUAL,
+		/**
+		 * Developer experiments.
+		 */
+		SRC_EXPERIMENTS,
+		
+		;
+		
+		/**
+		 * @return the directory name that corresponds to the entry.
+		 */
+		public String s() {
+			return this.name().toLowerCase().replace("_", "-");
+		}
+	}
 	
 	/**
 	 * Local IDs of default created entities.

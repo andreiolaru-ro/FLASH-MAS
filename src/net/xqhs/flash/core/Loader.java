@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.deployment.LoadPack;
 import net.xqhs.flash.core.util.ClassFactory;
@@ -334,7 +335,8 @@ public interface Loader<T extends Entity<?>> {
 				if(loadCheck(p + D + given_cp, searchType, others))
 					return p + D + given_cp;
 				if(searchType == SearchItemType.FILE)
-					for(String dir : DeploymentConfiguration.SOURCE_FILE_DIRECTORIES) {
+					for(SourceFileDirectory dirEntry : DeploymentConfiguration.SourceFileDirectory.values()) {
+						String dir = dirEntry.s();
 						paths.add(dir + D + p + D + given_cp);
 						if(loadCheck(dir + D + p + D + given_cp, searchType, others))
 							return dir + D + p + D + given_cp;
