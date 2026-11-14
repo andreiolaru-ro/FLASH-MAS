@@ -235,8 +235,8 @@ public class AgentWave extends AgentEvent {
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
 		String dest = get(COMPLETE_DESTINATION);
 		if(isSet(COMPLETE_DESTINATION))
-			removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, makePath(dest, destinationElements));
+			removeFirst(COMPLETE_DESTINATION);
+		addFirst(COMPLETE_DESTINATION, makePath(dest, destinationElements));
 		return this;
 	}
 	
@@ -251,8 +251,8 @@ public class AgentWave extends AgentEvent {
 		addFirst(DESTINATION_ELEMENT, destinationElement);
 		String dest = get(COMPLETE_DESTINATION);
 		if(isSet(COMPLETE_DESTINATION))
-			removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, destinationElement + (dest != null ? ADDRESS_SEPARATOR + dest : ""));
+			removeFirst(COMPLETE_DESTINATION);
+		addFirst(COMPLETE_DESTINATION, destinationElement + (dest != null ? ADDRESS_SEPARATOR + dest : ""));
 		return this;
 	}
 	
@@ -269,6 +269,8 @@ public class AgentWave extends AgentEvent {
 	public AgentWave resetDestination(String destinationRoot, String... destinationElements) {
 		if(isSet(DESTINATION_ELEMENT))
 			removeKey(DESTINATION_ELEMENT);
+		if(isSet(COMPLETE_DESTINATION))
+			removeKey(COMPLETE_DESTINATION);
 		if(destinationRoot != null)
 			add(DESTINATION_ELEMENT, destinationRoot);
 		addAll(DESTINATION_ELEMENT, Arrays.asList(destinationElements));
@@ -283,8 +285,8 @@ public class AgentWave extends AgentEvent {
 	 */
 	public AgentWave recomputeCompleteDestination() {
 		if(isSet(COMPLETE_DESTINATION))
-			removeKey(COMPLETE_DESTINATION);
-		add(COMPLETE_DESTINATION, String.join(ADDRESS_SEPARATOR, getValues(DESTINATION_ELEMENT)));
+			removeFirst(COMPLETE_DESTINATION);
+		addFirst(COMPLETE_DESTINATION, String.join(ADDRESS_SEPARATOR, getValues(DESTINATION_ELEMENT)));
 		return this;
 	}
 	
@@ -485,4 +487,46 @@ public class AgentWave extends AgentEvent {
 			ret[i + 1] = elements[i];
 		return ret;
 	}
+	/** add destinations to the waves , if it has no destinations , it acts like resetDestination*/
+	public AgentWave addDestination(String destination, String... destinationElements) {
+		if(!isSet(COMPLETE_DESTINATION))
+			return resetDestination(destination, destinationElements);
+		add(COMPLETE_DESTINATION, makePath(destination, destinationElements));
+		return this;
+	}
+	/** returns all complete destinations of the wave*/
+	public List<String> getCompleteDestinations() {
+		return getValues(COMPLETE_DESTINATION);
+	}
+	/** return true if the wave has multiple destintions*/
+	public boolean isMulticast() {
+		return getValues(COMPLETE_DESTINATION).size() > 1;
+	}
+
+	/**
+	 * Create one single destination copy of the wave for each estination
+	 *	all contents are copied, each copy with own destination element
+	 */
+	public List<AgentWave> splitByDestination() {
+		List<AgentWave> result = new LinkedList<>();
+		if(!isMulticast()) {
+			result.add(this);
+			return result;
+		}
+		for(String destination : getCompleteDestinations()) {
+			AgentWave copy = new AgentWave();
+			for(String key : getKeys())
+				if(!key.equals(EVENT_TYPE_PARAMETER_NAME) && !key.equals(COMPLETE_DESTINATION) && !key.equals(DESTINATION_ELEMENT)) {
+					for (Object value : getObjects(key)) {
+						copy.addObject(key, value); // content , source and other keys
+					}
+				}
+			String[] elements = pathToElements(destination);
+			copy.resetDestination(elements[0],
+					Arrays.copyOfRange(elements, 1, elements.length));
+			result.add(copy);
+		}
+		return result;
+	}
+
 }
