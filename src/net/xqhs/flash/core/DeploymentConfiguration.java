@@ -957,6 +957,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				}
 				else { // it is an entity; get entity name
 					String name = null;
+					String kindOnly = null; //kind given, but no (id) name, as in "-agent composite:"
 					if(args.hasNext()) {
 						name = args.next();
 						
@@ -964,6 +965,12 @@ public class DeploymentConfiguration extends MultiTreeMap {
 							name = null;
 						else if(isCategoryDefinition(name)) {
 							lookahead = name;
+							name = null;
+						} else if(NAME_SEPARATOR.equals(name)){
+							name = null; // ":" -> entity explicitly has no name
+						} else if(name.endsWith(NAME_SEPARATOR)) {
+							// "kind:" -> the kind is given, the name is missing
+							kindOnly = name.substring(0, name.length() - NAME_SEPARATOR.length());
 							name = null;
 						}
 					}
@@ -977,6 +984,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						node = new MultiTreeMap();
 						if(name != null)
 							node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						if (kindOnly != null && kindOnly.length() > 0)
+							node.addOneValue(KIND_ATTRIBUTE_NAME, kindOnly);
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
 					context.push(new CtxtTriple(catName, subCatTree, node));
