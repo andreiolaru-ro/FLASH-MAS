@@ -12,8 +12,8 @@ import org.junit.runners.Suite;
     CompositeAgentTest.class,
     HelloWorldAgentTest.class,
     ConfigurableHelloWorldAgentTest.class,
-    AgentPingPongTest.class,
-    AgentPingPongWebSocketTest.class,
+    PingPongAgentTest.class,
+    PingPongAgentWebSocketTest.class,
     AgentMobilityWebSocketTest.class
 })
 public class AllTestsSuite {

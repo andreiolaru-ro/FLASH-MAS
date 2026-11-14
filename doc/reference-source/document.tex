@@ -261,7 +261,7 @@ public boolean addContext(EntityProxy<Pylon> context) {
 
 \paragraph{Sending messages}
 
-The \code{AgentPingPongPlain} agent sends waves periodically using a timer. When the agent starts and it has a list of destinations, it schedules a task that sends a message to each destination every second. Each message contains a ping count and optionally the keyword \code{last} when the limit has been reached. The messages are constructed using the \code{AgentWave} class and sent via the \code{WaveMessagingPylonProxy}. 
+The \code{AgentPingPongPlain} agent sends waves periodically using a timer. When the agent starts and it has a list of destinations, it schedules a task that sends a message to each destination every second. Each message contains a ping count and optionally the keyword \code{last} when the limit has been reached. The messages are constructed using the \code{AgentWave} class and sent via the \code{WaveMessagingPylonProxy}.
 
 Figure~\ref{fig:func:sendPing:code} presents the essential code for the sending messages stage. The complete implementation can be seen in the \code{AgentPingPongPlain} class.
 
@@ -386,7 +386,7 @@ Figure~\ref{fig:ContextStructureDiagram} presents an UML class diagram for the a
 
 \subsubsection{Starting the deployment}
 
-To start the deployment, one can run the \code{Boot} class from the \code{simplePingPong} subpackage under \code{src-examples/example}. In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{AgentPingPongPlain}, or via a \code{messagingShard} by means of \code{AgentPingPong}. 
+To start the deployment, one can run the \code{Boot} class from the \code{simplePingPong} subpackage under \code{src-examples/example}. In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{AgentPingPongPlain}, or via a \code{messagingShard} by means of \code{AgentPingPong}.
 
 Regardless of the option, the node, the names of the agents involved, the configuration of the \code{sendTo} parameter with the names of the agents that will receive messages, as well as the number of pings sent must be provided.
 
