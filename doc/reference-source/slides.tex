@@ -269,7 +269,7 @@ public boolean addContext(EntityProxy<Pylon> context) {
 }
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPongPlain} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgentPlain} in the \code{src} source folder.}
 
 
 % cumva de marcat în același fel bulletul cu addConext / register / WaveReceiver și linia  / partea corespunzătoare din cod
@@ -297,7 +297,7 @@ protected void sendPing() {
 }
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPongPlain} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgentPlain} in the \code{src} source folder.}
 
 
 \end{frame}
@@ -317,7 +317,7 @@ protected boolean processEvent(AgentWave wave) {
 }
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPongPlain} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgentPlain} in the \code{src} source folder.}
 
 
 \end{frame}
@@ -349,7 +349,7 @@ msgShard = AgentShardCore.instantiateRecommendedShard(MESSAGING,
 msgShard.addGeneralContext(context);
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPong} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgent} in the \code{src} source folder.}
 
 
 \end{frame}
@@ -369,7 +369,7 @@ public boolean start() {
 }
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPong} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgent} in the \code{src} source folder.}
 
 \end{frame}
 
@@ -387,7 +387,7 @@ public boolean start() {
 msgShard.sendMessage(wave);
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPong} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgent} in the \code{src} source folder.}
 
 \end{frame}
 
@@ -406,7 +406,7 @@ public boolean postAgentEvent(AgentEvent event) {
 }
 \end{lstlisting}
 
-{\small This code snippet is based on \code{testing.AgentPingPong} in the \code{src} source folder.}
+{\small This code snippet is based on \code{testing.PingPongAgent} in the \code{src} source folder.}
 
 
 \end{frame}
@@ -443,7 +443,7 @@ public boolean postAgentEvent(AgentEvent event) {
 
 \begin{itemize}
     \item To start the deployment, one can run the \code{Boot} class from the \code{simplePingPong} subpackage under \code{src-examples/example}.
-    \item In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{AgentPingPongPlain}, or via a \code{messagingShard} by means of \code{AgentPingPong}. 
+    \item In this file, one can select the desired interaction with the communication infrastructure, either directly using \code{AgentPingPongPlain}, or via a \code{messagingShard} by means of \code{AgentPingPong}.
     \item Regardless of the option, the node, the names of the agents involved, the configuration of the \code{sendTo} parameter with the names of the agents that will receive messages, as well as the number of pings sent must be provided.
 \end{itemize}
 

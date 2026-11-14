@@ -16,8 +16,8 @@ public class Boot1a
         String test_args = "src-tests/test/deployment/convergence/deployment1.xml";
         
         test_args += " -package testing";
-        test_args += " -agent PingPong:AgentA classpath:AgentPingPong sendTo:AgentB";
-		test_args += " -agent PingPong:AgentB classpath:AgentPingPong";
+        test_args += " -agent PingPong:AgentA classpath:PingPongAgent sendTo:AgentB";
+		test_args += " -agent PingPong:AgentB classpath:PingPongAgent";
         
         FlashBoot.main(test_args.split(" "));
     }

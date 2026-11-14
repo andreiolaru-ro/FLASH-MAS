@@ -19,8 +19,8 @@ public class BootPortingShard {
 		String args = "-nostart t "
             + " -package testing"
             + " -shard messaging"
-            + " -agent AgentA classpath:AgentPingPong"
-            + " -agent AgentB classpath:AgentPingPong";
+            + " -agent AgentA classpath:PingPongAgent"
+            + " -agent AgentB classpath:PingPongAgent";
         FlashBoot.main(args.split(" "));
     }
 }

@@ -22,11 +22,11 @@ public class NonStdEntitiesTest {
 		test_args += " -node B";
 		test_args += " -pylon websocket";
 		test_args += " -agentgroup group1";
-		test_args += " -agent agentA1 classpath:AgentPingPong sendTo:agentA2 sendTo:agentB2";
-		test_args += " -agent agentA2 classpath:AgentPingPong";
+		test_args += " -agent agentA1 classpath:PingPongAgent sendTo:agentA2 sendTo:agentB2";
+		test_args += " -agent agentA2 classpath:PingPongAgent";
 		test_args += " -agentgroup group2";
-		test_args += " -agent agentB1 classpath:AgentPingPong sendTo:agentB2 sendTo:agentA1";
-		test_args += " -agent agentB2 classpath:AgentPingPong";
+		test_args += " -agent agentB1 classpath:PingPongAgent sendTo:agentB2 sendTo:agentA1";
+		test_args += " -agent agentB2 classpath:PingPongAgent";
 		
 		FlashBoot.main(test_args.split(" "));
 	}

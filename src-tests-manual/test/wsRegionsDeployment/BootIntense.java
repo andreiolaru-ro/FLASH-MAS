@@ -59,7 +59,7 @@ public class BootIntense {
 				if(j % 2 == 0)
 					args += " -shard messaging -shard ScriptTesting from:" + script; // -shard EchoTesting
 				else
-					args += " classpath:AgentPingPong";
+					args += " classpath:PingPongAgent";
 			}
 		}
 		
