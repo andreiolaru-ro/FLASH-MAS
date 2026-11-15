@@ -295,5 +295,7 @@ public class PlatformUtils {
 		}
 		return false;
 	}
-	
+	public static String packageToPath(String packageName) {
+		return packageName.replace('.', '/');
+	}
 }
