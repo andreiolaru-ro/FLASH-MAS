@@ -1,6 +1,7 @@
 package net.xqhs.flash.abms;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
+import net.xqhs.flash.core.agent.Agent;
 import net.xqhs.flash.core.node.Node;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -16,7 +18,7 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 	// protected Topology<P> topology;
 
 	protected Set<SimulationContext>	simulationContexts	= new HashSet<>();
-	protected Set<Entity<?>>			simulationObjects	= new HashSet<>();
+	protected Set<Entity<?>>			simulationObjects	= new LinkedHashSet<>();
 	/** Simulation objects deregistered since the last {@link #clearDeregistered()}, usually none or a few. */
 	protected Set<Entity<?>>			deregistered		= new HashSet<>();
 	protected SimulationExecutor		executor;
@@ -31,7 +33,7 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		super.registerEntity(entityType, entity, entityName);
 		if(entity instanceof SimulationContext)
 			simulationContexts.add((SimulationContext) entity);
-		else {
+		else if(entity instanceof Agent || entity instanceof Patch) {
 			simulationObjects.add(entity);
 			if(!deregistered.isEmpty())
 				deregistered.remove(entity);

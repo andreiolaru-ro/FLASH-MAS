@@ -17,11 +17,11 @@ public class WolfSheepBoot {
         int grass = 15 * scale;
         int sheep = 10 * scale;
         int wolf = 5 * scale;
-        a += " -load_order simulation;executor;context;WolfSheepGroup";
+        a += " -load_order executor;context;WolfSheepGroup";
         a += " -package net.xqhs.flash.abms";
         a += " -package abms.wolfSheepPredation";
         a += " -loader WolfSheepGroup classpath:abms.wolfSheepPredation.WolfSheepGroupLoader";
-        a += " -node dummy -simulation sim classpath:Simulation";
+        a += " -node sim classpath:Simulation";
         a += " -executor StepWise:StepWise steps:" + steps;
         a += " -context AgentManagement:agentManagement";
         a += " -context Random:random seed:42";
