@@ -1,14 +1,12 @@
 package abms.wolfSheepPredation;
 
-import aggregate_logging.ALogging;
-import benchmarking.Benchmark;
 import net.xqhs.flash.FlashBoot;
-import net.xqhs.flash.abms.Simulation;
 
 public class WolfSheepBoot {
     public static void main(String[] args_) {
         String a = "";
-        int scale = 289;
+		// int scale = 289;
+		int scale = 10;
         int steps = 100; //1000
 
         int width = 6 * (int) Math.sqrt(scale);
