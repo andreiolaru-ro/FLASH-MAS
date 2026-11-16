@@ -17,7 +17,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class Simulation extends Node implements EntityProxy<Simulation> {
 	// protected Topology<P> topology;
 
-	protected Set<SimulationContext>	simulationContexts	= new HashSet<>();
+	protected Set<SimulationContext>	simulationContexts	= new LinkedHashSet<>();
 	protected Set<Entity<?>>			simulationObjects	= new LinkedHashSet<>();
 	/** Simulation objects deregistered since the last {@link #clearDeregistered()}, usually none or a few. */
 	protected Set<Entity<?>>			deregistered		= new HashSet<>();
