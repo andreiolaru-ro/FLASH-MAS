@@ -11,11 +11,13 @@ public class Boot {
       public static void main(String[] args) {
 
         String test_args = "";
-        test_args += " -package testing";
-        test_args += " -node main";
-        test_args += " -agent composite:"; // this will be the kind, no name
-        test_args += " -agent : classpath:AgentPingPongPlain"; // bare ':', no kind, no name
-        test_args += " -agent - classpath:AgentPingPongPlain";
+		test_args += " -package testing -loader agent:composite";
+		test_args += " -node -pylon local:";
+		test_args += " -agent composite: -shard PingTest otherAgent:A -shard messaging";
+		test_args += " -agent Test:";
+		test_args += " -agent :";
+		test_args += " -agent -";
+		test_args += " -agent composite:A -shard PingBackTest -shard messaging";
 
         FlashBoot.main(test_args.split(" "));
     }
