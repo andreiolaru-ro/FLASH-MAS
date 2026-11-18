@@ -961,13 +961,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					if(args.hasNext()) {
 						name = args.next();
 						
-						if(CLI_CATEGORY_PREFIX.equals(name))
-							name = null;
+						if(CLI_CATEGORY_PREFIX.equals(name) || NAME_SEPARATOR.equals(name))
+							name = null; // "-" or ":" -> entity has no name
 						else if(isCategoryDefinition(name)) {
 							lookahead = name;
 							name = null;
-						} else if(NAME_SEPARATOR.equals(name)){
-							name = null; // ":" -> entity explicitly has no name
 						} else if(name.endsWith(NAME_SEPARATOR)) {
 							// "kind:" -> the kind is given, the name is missing
 							kindOnly = name.substring(0, name.length() - NAME_SEPARATOR.length());
