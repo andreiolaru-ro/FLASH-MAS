@@ -84,14 +84,6 @@ public interface SimulationContext {
 		public String visualizeAsString() {
 			return null;
 		}
-
-		@Override
-		public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-			super.addGeneralContext(context);
-			if(context instanceof Simulation)
-				((Simulation) context).registerEntity("context", this, name);
-			return true;
-		}
 	}
 	
 	public interface ActionData {

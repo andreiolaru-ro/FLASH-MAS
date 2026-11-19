@@ -1,9 +1,7 @@
 package abms.samples;
 
 import net.xqhs.flash.abms.EnvironmentLinkShard;
-import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SteppableEntity;
-import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -28,8 +26,6 @@ public class StepperAgent extends AgentPingPongPlain implements SteppableEntity,
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		System.out.println("Add context " + context.getEntityName());
 		e.addGeneralContext(context);
-		if(context instanceof Simulation)
-			((Simulation) context).registerEntity(CategoryName.AGENT.s(), this, this.getName());
 		return super.addGeneralContext(context);
 	}
 	
