@@ -23,9 +23,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
 import net.xqhs.flash.core.Entity;
@@ -834,10 +834,10 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 	public boolean start() {
 		if(!super.start())
 			return false;
-		if(centralMessagingShard == null) {
-			le("[] unable to start. No messaging shard found.", getName());
-			return false;
-		}
+		if(centralMessagingShard == null)
+			lw("No messaging shard found.", getName());
+		else
+			centralMessagingShard.register(name);
 		// TODO hack
 		// Timer timer = new Timer();
 		// timer.schedule(new TimerTask() {
@@ -846,30 +846,36 @@ public class CentralMonitoringAndControlEntity extends EntityCore<Pylon> {
 		// centralMessagingShard.register(name);
 		// }
 		// }, 1000);
-		centralMessagingShard.register(name);
 		startDaemonPingTask();
 		startAgentKeepAliveCheckTask();
 		li("[] started successfully.", getName());
 		return true;
 	}
-
+	
 	@Override
 	public boolean addContext(EntityProxy<Pylon> context) {
 		PylonProxy pylonProxy = (PylonProxy) context;
 		String recommendedShard = pylonProxy.getRecommendedShardImplementation(
 				AgentShardDesignation.standardShard(AgentShardDesignation.StandardAgentShard.MESSAGING));
-		try {
-			centralMessagingShard = (MessagingShard) PlatformUtils.getClassFactory().loadClassInstance(recommendedShard, null, true);
-		} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			e.printStackTrace();
+		if(recommendedShard != null) {
+			try {
+				centralMessagingShard = (MessagingShard) PlatformUtils.getClassFactory()
+						.loadClassInstance(recommendedShard, null, true);
+			} catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException
+					| InvocationTargetException e) {
+				e.printStackTrace();
+			}
+			centralMessagingShard.addContext(centralProxy);
+			return centralMessagingShard.addGeneralContext(context);
 		}
-		centralMessagingShard.addContext(centralProxy);
-		return centralMessagingShard.addGeneralContext(context);
+		lw("Messaging shard will be unavailable.");
+		return false;
+		
 	}
-
+	
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if (context instanceof MessagingPylonProxy) {
+		if(context instanceof MessagingPylonProxy) {
 			return addContext((MessagingPylonProxy) context);
 		}
 		return false;
