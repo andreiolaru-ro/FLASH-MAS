@@ -215,7 +215,17 @@ public interface Entity<P extends Entity<?>>
 		 * The register holding the largest index for a type - name combination existing in {@link #register}.
 		 */
 		static Map<String, Integer>		largestIndex			= new HashMap<>();
-		
+
+		/** Last index used for generated names. */
+		static Map<String, Integer>		generatedIndex			= new HashMap<>();
+
+		/** Returns a new unique name of the form base-index. */		public static String generateName(String base)
+		{
+			int index = generatedIndex.containsKey(base) ? generatedIndex.get(base).intValue() + 1 : 1;
+			generatedIndex.put(base, Integer.valueOf(index));
+			return base + "-" + index;
+		}
+
 		/**
 		 * Registers an entry for an entity.
 		 * 

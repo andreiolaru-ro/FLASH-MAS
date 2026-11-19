@@ -84,7 +84,10 @@ public enum CategoryName {
 	 * {@link DeploymentConfiguration#LOAD_ORDER_SEPARATOR}).
 	 */
 	LOAD_ORDER(new CatPar().isValue().isUnique().hasParent(NODE).isPortableFrom(DEPLOYMENT)),
-	
+	/**
+	 * Controls automatic name generation for entities without a name: "all", a number, or "all;number".
+	 */
+	AUTO_NAMES(new CatPar().isValue().isUnique().hasParent(NODE).isPortableFrom(DEPLOYMENT)),
 	/**
 	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
 	 * <p>

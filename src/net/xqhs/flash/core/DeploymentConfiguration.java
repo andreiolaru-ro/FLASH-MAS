@@ -18,10 +18,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
 import net.xqhs.util.XML.XMLTree.XMLNode;
@@ -78,6 +80,10 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * Separator for elements in the load order setting.
 	 */
 	public static final String	LOAD_ORDER_SEPARATOR			= ";";
+	/** Value of auto_names: generate names for all entities without a name. */
+	public static final String	AUTO_NAMES_ALL					= "all";
+	/** Separator for the parts of the auto_names value. */
+	public static final String	AUTO_NAMES_SEPARATOR			= ";";
 	/**
 	 * The name of nodes containing parameters.
 	 */
@@ -1136,6 +1142,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			MultiTreeMap rootTree, List<String> autoCreated, Map<String, String> name_ids, Logger log) {
 		String name = node.getFirstValue(NAME_ATTRIBUTE_NAME);
 		boolean nameGenerated = name == null;
+		String kind = null;
 		CategoryName category = CategoryName.byName(categoryName);
 		if(name == null && category != null && category.hasNameWithParts()) {
 			// node has a registered category and its elements have two-parts names
@@ -1145,11 +1152,16 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(part2 == null && !category.isNameSecondPartOptional())
 				return (String) log.lr(null, "Node of [] entity does not contain necessary name part attribute [].",
 						category.s(), partNames[0]);
+			kind = part1;
 			if(part2 != null) // a kind alone is not a name
 				name = (part1 != null ? part1 : "") + NAME_SEPARATOR + part2;
 		}
 		if(name != null && name.trim().length() == 0)
 			name = null; // no 0-length names
+
+		if(name == null && !CategoryName.DEPLOYMENT.s().equals(categoryName) && autoNamesAll(rootTree))
+			name = generateName(kind != null ? kind : categoryName, name_ids); // auto_names: generate a name
+
 		if(nameGenerated && name != null && !node.containsKey(NAME_ATTRIBUTE_NAME))
 			// add name parameter containing the generated name
 			node.addOneValue(NAME_ATTRIBUTE_NAME, name);
@@ -1184,7 +1196,22 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		return name;
 	}
-	
+
+	/** @return true if the auto_names setting of the deployment contains "all". */
+	protected static boolean autoNamesAll(MultiTreeMap rootTree) {
+		String setting = rootTree.getDeepValue(CategoryName.DEPLOYMENT.s(), null, CategoryName.AUTO_NAMES.s());
+		return setting != null && Arrays.asList(setting.split(AUTO_NAMES_SEPARATOR)).contains(AUTO_NAMES_ALL);
+	}
+
+	/** @return a generated name that is not in name_ids. */
+	protected static String generateName(String base, Map<String, String> name_ids) {
+		String candidate;
+		do
+			candidate = EntityIndex.generateName(base.replace(NAME_SEPARATOR, "-"));
+		while(name_ids.containsKey(candidate));
+		return candidate;
+	}
+
 	/**
 	 * For a node in the deployment XML, retrieve the name of the category of the entity that the node describes. Can be
 	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attribute.
