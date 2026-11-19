@@ -11,7 +11,7 @@ public class Boot {
       public static void main(String[] args) {
 
         String test_args = "";
-		test_args += " -package testing -loader agent:composite";
+		test_args += " -auto_names all -package testing -loader agent:composite";
 		test_args += " -node -pylon local:";
 		test_args += " -agent composite: -shard PingTest otherAgent:A -shard messaging";
 		test_args += " -agent Test:";
