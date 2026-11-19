@@ -1145,7 +1145,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(part2 == null && !category.isNameSecondPartOptional())
 				return (String) log.lr(null, "Node of [] entity does not contain necessary name part attribute [].",
 						category.s(), partNames[0]);
-			name = (part1 != null ? part1 : "") + (part2 != null ? NAME_SEPARATOR + part2 : "");
+			if(part2 != null) // a kind alone is not a name
+				name = (part1 != null ? part1 : "") + NAME_SEPARATOR + part2;
 		}
 		if(name != null && name.trim().length() == 0)
 			name = null; // no 0-length names
