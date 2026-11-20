@@ -5,9 +5,11 @@ import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
 import net.xqhs.util.logging.Unit;
+import net.xqhs.util.logging.UnitComponent;
 
 public class ALog extends Unit {
 	protected boolean												NORMAL_OUTPUT	= true;
+    protected static final UnitComponent DEFAULT_LOGGER = new UnitComponent("agr-log");
 	protected static final ALog									instance		= new ALog();
 	protected final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
 	
