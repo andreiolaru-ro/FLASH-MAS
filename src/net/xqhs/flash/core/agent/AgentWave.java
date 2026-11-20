@@ -494,6 +494,36 @@ public class AgentWave extends AgentEvent {
 		add(COMPLETE_DESTINATION, makePath(destination, destinationElements));
 		return this;
 	}
+
+	/**
+	 * Adds another destination to this wave, given as a complete endpoint (e.g. <code>"AgentB/pong"</code>). The
+	 * endpoint is split into elements and {@link #addDestination(String, String...)} is used, so if the wave has no
+	 * destination yet, the elements of the new destination become the destination elements of the wave.
+	 *
+	 * @param completeDestination
+	 *            - the complete destination endpoint.
+	 * @return the wave itself.
+	 */
+	public AgentWave addDestination(String completeDestination) {
+		String[] elements = pathToElements(completeDestination);
+		return addDestination(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+	}
+
+	/**
+	 * Removes all complete destinations except the first (current) one, turning a multicast wave into a unicast
+	 * wave. The destination elements are not changed, as they belong to the first destination.
+	 *
+	 * @return the wave itself.
+	 */
+	public AgentWave removeOtherDestinations() {
+		if(isMulticast()) {
+			String first = getCompleteDestination();
+			removeKey(COMPLETE_DESTINATION);
+			add(COMPLETE_DESTINATION, first);
+		}
+		return this;
+	}
+
 	/** returns all complete destinations of the wave*/
 	public List<String> getCompleteDestinations() {
 		return getValues(COMPLETE_DESTINATION);
