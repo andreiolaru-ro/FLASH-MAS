@@ -6,16 +6,16 @@ import java.util.Map;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.util.logging.Unit;
 
-public class ALogging extends Unit {
+public class ALog extends Unit {
 	protected boolean												NORMAL_OUTPUT	= true;
-	protected static final ALogging									instance		= new ALogging();
+	protected static final ALog									instance		= new ALog();
 	protected final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
 	
-	protected ALogging() {
+	protected ALog() {
 		setUnitName("agr-log");
 	}
 
-    public static ALogging getInstance() {
+    public static ALog getInstance() {
         return instance;
     }
 

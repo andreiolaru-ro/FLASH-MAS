@@ -9,7 +9,7 @@ import org.json.simple.JSONObject;
 import abms.common.BatchRunner;
 import abms.common.JsonConfig;
 import abms.smartMeeting.SmRunStats;
-import aggregate_logging.ALogging;
+import aggregate_logging.ALog;
 import benchmarking.Benchmark;
 import net.xqhs.util.logging.Logger.Level;
 
@@ -41,7 +41,7 @@ public class SmartMeetingBoot {
                 runIndex -> buildBootString(config, baseSeed + runIndex, steps),
                 new SmRunStats(scenarioName));
 
-        ALogging.getInstance().printAllAgr();
+        ALog.getInstance().printAllAgr();
         Benchmark.stop("Total");
         Benchmark.printResults();
     }

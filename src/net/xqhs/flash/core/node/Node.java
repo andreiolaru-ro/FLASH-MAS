@@ -29,7 +29,7 @@ import org.json.simple.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import aggregate_logging.ALogging;
+import aggregate_logging.ALog;
 import aggregate_logging.Category;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.Entity;
@@ -203,7 +203,7 @@ public class Node extends EntityCore<Node> {
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-		ALogging.getInstance().li_agr(Category.SETUP, entity, "registered entity");
+		ALog.getInstance().li_agr(Category.SETUP, entity, "registered entity");
 		// find if entity is a messaging pylon that can be used by the Node
 		if(nodePylonProxy == null)
 			try {
@@ -233,9 +233,9 @@ public class Node extends EntityCore<Node> {
 	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
 		for(Entity<?> entity : entities) {
 			if(entity.start())
-				ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
+				ALog.getInstance().li_agr(Category.LIFECYCLE, entity, "entity started");
 			else
-				ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
+				ALog.getInstance().li_agr(Category.ERRORS, entity, "entity failed to start");
 		}
 		
 		if(isNodeStart) {
@@ -284,9 +284,9 @@ public class Node extends EntityCore<Node> {
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
 				if(entity.stop())
-					ALogging.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
+					ALog.getInstance().li_agr(Category.LIFECYCLE, entity, "entity stopped");
 				else
-					ALogging.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
+					ALog.getInstance().li_agr(Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
 		sendStatusUpdate();

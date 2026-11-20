@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import aggregate_logging.ALogging;
+import aggregate_logging.ALog;
 import aggregate_logging.Category;
 import net.xqhs.flash.core.CategoryName;
 import net.xqhs.flash.core.DeploymentConfiguration;
@@ -340,7 +340,7 @@ public class Deployment extends Unit {
 			cp = Loader.autoFind(loadPack.getClassFactory(), loadPack.getPackages(), cp, kind, id, catName,
 					checkedPaths);
 			if(cp == null)
-                ALogging.getInstance().li_agr(Category.ERRORS, null, "class for [] not found", catName);
+                ALog.getInstance().li_agr(Category.ERRORS, null, "class for [] not found", catName);
 			else {
 				// add the CP -- will be first
 				entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
@@ -349,12 +349,12 @@ public class Deployment extends Unit {
 				entity = loadPack.getDefaultLoader().load(entityConfig, context, subEntities);
 		}
 		if(entity != null) {
-            ALogging.getInstance().li_agr(Category.SETUP, entity, "entity loaded");
+            ALog.getInstance().li_agr(Category.SETUP, entity, "entity loaded");
 			entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 					DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 		}
 		else
-            ALogging.getInstance().li_agr(Category.ERRORS, null, "entity failed loading");
+            ALog.getInstance().li_agr(Category.ERRORS, null, "entity failed loading");
 		return new SimpleEntry<>(id, entity);
 	}
 }
