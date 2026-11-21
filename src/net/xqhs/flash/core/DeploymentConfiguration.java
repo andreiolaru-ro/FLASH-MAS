@@ -66,6 +66,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 */
 	public static final String	CLI_CATEGORY_PREFIX				= "-";
 	/**
+	 * CLI command to declare a reusable template.
+	 */
+	public static final String	TEMPLATE						= "-template";
+	/**
+	 * CLI command to expand a previously declared template.
+	 */
+	public static final String	SET								= "-set";
+	/**
 	 * Separator of parts of a name and of parameter and value.
 	 */
 	public static final String	NAME_SEPARATOR					= ":";
@@ -110,6 +118,8 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * The name of the XML attribute specifying the type of the entity.
 	 */
 	public static final String	GENERAL_ENTITY_TYPE_ATTRIBUTE	= "type";
+
+
 	
 	/**
 	 * The name of the (singleton) entry in the configuration tree, under which all entities are listed by their name or
@@ -832,9 +842,13 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			context.push(baseContext);
 		// the lookahead may store the next token, parsed elsewhere
 		String lookahead = null;
-		while(lookahead != null || args.hasNext()) {
+		Deque<String> pending = new LinkedList<>();
+		Map<String, List<String>> templates = new HashMap<>();
+		while(!pending.isEmpty() || lookahead != null || args.hasNext()) {
 			// log.lf(context.toString());
 			String a;
+			if(!pending.isEmpty()) {
+				a = pending.poll();}
 			if(lookahead != null) {
 				a = lookahead;
 				lookahead = null;
@@ -884,6 +898,33 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				continue;
 			}
 			// End of issue #69
+
+			if(a.equals(TEMPLATE))
+			{
+				String name = args.next();
+				args.next();
+				List<String> content = new ArrayList<>();
+				String arg = args.next();
+				while(!arg.equals("]"))
+				{
+					content.add(arg);
+					arg = args.next();
+				}
+				templates.put(name, content);
+				continue;
+			}
+
+			if(a.equals(SET))
+			{
+				String name = args.next();
+				List<String> content = templates.get(name);
+				List<String> remaining = new ArrayList<>(content);
+				while(args.hasNext())
+					remaining.add(args.next());
+				args = remaining.iterator();
+				continue;
+			}
+
 			
 			if(isCategoryDefinition(a)) {
 				// get category
