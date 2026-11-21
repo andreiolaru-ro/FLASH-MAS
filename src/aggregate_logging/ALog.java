@@ -24,8 +24,8 @@ public class ALog {
             Logger out = logger != null ? logger : DefaultLogger;
 			out.li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
 					args);
+        }
     }
-}
 
     public static void printLog(LogAggregate log) {
         if (log == null)
