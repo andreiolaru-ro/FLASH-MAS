@@ -340,7 +340,7 @@ public class Deployment extends Unit {
 			cp = Loader.autoFind(loadPack.getClassFactory(), loadPack.getPackages(), cp, kind, id, catName,
 					checkedPaths);
 			if(cp == null)
-                ALog.li(Category.ERRORS, null, "class for [] not found", catName);
+                ALog.li(getLogger(), Category.ERRORS, null, "class for [] not found", catName);
 			else {
 				// add the CP -- will be first
 				entityConfig.addFirstValue(SimpleLoader.CLASSPATH_KEY, cp);
@@ -349,12 +349,12 @@ public class Deployment extends Unit {
 				entity = loadPack.getDefaultLoader().load(entityConfig, context, subEntities);
 		}
 		if(entity != null) {
-            ALog.li(Category.SETUP, entity, "entity loaded");
+            ALog.li(getLogger(), Category.SETUP, entity, "entity loaded");
 			entityConfig.addSingleValue(DeploymentConfiguration.LOADED_ATTRIBUTE_NAME,
 					DeploymentConfiguration.LOADED_ATTRIBUTE_NAME);
 		}
 		else
-            ALog.li(Category.ERRORS, null, "entity failed loading");
+            ALog.li(getLogger(), Category.ERRORS, null, "entity failed loading");
 		return new SimpleEntry<>(id, entity);
 	}
 }

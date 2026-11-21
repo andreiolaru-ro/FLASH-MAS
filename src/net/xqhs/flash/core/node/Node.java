@@ -203,7 +203,7 @@ public class Node extends EntityCore<Node> {
 		if(!registeredEntities.containsKey(entityType))
 			registeredEntities.put(entityType, new LinkedList<>());
 		registeredEntities.get(entityType).add(entity);
-		ALog.li(Category.SETUP, entity, "registered entity");
+		ALog.li(getLogger(), Category.SETUP, entity, "registered entity");
 		// find if entity is a messaging pylon that can be used by the Node
 		if(nodePylonProxy == null)
 			try {
@@ -233,9 +233,9 @@ public class Node extends EntityCore<Node> {
 	protected void startAndRegister(List<Entity<?>> entities, boolean isNodeStart) {
 		for(Entity<?> entity : entities) {
 			if(entity.start())
-				ALog.li(Category.LIFECYCLE, entity, "entity started");
+				ALog.li(getLogger(), Category.LIFECYCLE, entity, "entity started");
 			else
-				ALog.li(Category.ERRORS, entity, "entity failed to start");
+				ALog.li(getLogger(), Category.ERRORS, entity, "entity failed to start");
 		}
 		
 		if(isNodeStart) {
@@ -284,9 +284,9 @@ public class Node extends EntityCore<Node> {
 		for(Entity<?> entity : reversed) {
 			if(entity.isRunning()) {
 				if(entity.stop())
-					ALog.li(Category.LIFECYCLE, entity, "entity stopped");
+					ALog.li(getLogger(), Category.LIFECYCLE, entity, "entity stopped");
 				else
-					ALog.li(Category.ERRORS, entity, "entity failed to stop");
+					ALog.li(getLogger(), Category.ERRORS, entity, "entity failed to stop");
 			}
 		}
 		sendStatusUpdate();

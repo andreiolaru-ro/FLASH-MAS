@@ -74,7 +74,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public void step() {
-        ALog.li(Category.LIFECYCLE, this, "wolf step");
+        ALog.li(getLogger(), Category.LIFECYCLE, this, "wolf step");
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null) {
             return;
@@ -83,7 +83,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof SheepAgent) {
-                ALog.li(Category.EATING, this, "wolf eats sheep [] at []",
+                ALog.li(getLogger(), Category.EATING, this, "wolf eats sheep [] at []",
                         entity.getEntityName(), currentPos);
                 e.requestDestroyAgent(entity);
             }

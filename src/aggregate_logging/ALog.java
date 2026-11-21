@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
-
+import net.xqhs.util.logging.Logger;
 import net.xqhs.util.logging.UnitComponent;
 
 public class ALog {
@@ -15,15 +15,17 @@ public class ALog {
 	
 	
 
-    public static void li(LogAggregate log,  Entity<?> entity, String msg, Object... args) {
+    public static void li(Logger logger, LogAggregate log,  Entity<?> entity, String msg, Object... args) {
         if (log == null) return;
         Map<String, MessageSummary> logMap = logs.computeIfAbsent(log, k -> new HashMap<>());
         MessageSummary summary = logMap.computeIfAbsent(msg, k -> new MessageSummary(msg, args.length));
         summary.register(entity, args);
-		if(NORMAL_OUTPUT)
-			DefaultLogger.li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
+		if(NORMAL_OUTPUT) {
+            Logger out = logger != null ? logger : DefaultLogger;
+			out.li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
 					args);
     }
+}
 
     public static void printLog(LogAggregate log) {
         if (log == null)
