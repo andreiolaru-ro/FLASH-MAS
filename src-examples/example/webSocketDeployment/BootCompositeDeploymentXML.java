@@ -1,6 +1,8 @@
 package example.webSocketDeployment;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Deployment testing.
@@ -13,6 +15,7 @@ public class BootCompositeDeploymentXML {
      *            - not used.
      */
     public static void main(String[] args_) {
-        FlashBoot.main(new String[] { "src-examples/example/webSocketDeployment/deployment.xml" });
+        FlashBoot.main(new String[] { PlatformUtils.buildFilePath(SourceFileDirectory.SRC_EXAMPLES,
+                       BootCompositeDeploymentXML.class, "deployment.xml") });
     }
 }
