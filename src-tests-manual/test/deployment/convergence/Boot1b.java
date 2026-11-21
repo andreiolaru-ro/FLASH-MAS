@@ -1,6 +1,8 @@
 package test.deployment.convergence;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Test 1b: node and pylon in XML, agents added via CLI with explicit in-context-of.
@@ -14,7 +16,8 @@ public class Boot1b
 {
     public static void main(String[] args)
 	{
-		String test_args = "src-tests/test/deployment/convergence/deployment1.xml";
+		String test_args = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+				                                       Boot1b.class, "deployment1.xml");
 		
         test_args += " -package testing";
 		test_args += " -agent PingPong:AgentA classpath:AgentPingPong sendTo:AgentB in-context-of:def";
