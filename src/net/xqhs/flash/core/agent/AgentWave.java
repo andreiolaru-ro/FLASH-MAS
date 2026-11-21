@@ -507,6 +507,7 @@ public class AgentWave extends AgentEvent {
 	public AgentWave addDestination(String completeDestination) {
 		String[] elements = pathToElements(completeDestination);
 		return addDestination(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+
 	}
 
 	/**
@@ -523,6 +524,23 @@ public class AgentWave extends AgentEvent {
 		}
 		return this;
 	}
+
+
+	public AgentWave rotateDestinations() {
+		if(!isMulticast()) //nothing to rotate
+			return this;
+		List<String> s = getCompleteDestinations();
+		String first = s.remove(0); // remove first destination
+		s.add(first); //adding the first destination in the back
+		removeKey(COMPLETE_DESTINATION); //rewrite complete destination
+		addAll(COMPLETE_DESTINATION, s);
+		if(isSet(DESTINATION_ELEMENT))  // change destination-element
+			removeKey(DESTINATION_ELEMENT);
+		addAll(DESTINATION_ELEMENT, Arrays.asList(pathToElements(s.get(0))));
+
+		return this;
+	}
+
 
 	/** returns all complete destinations of the wave*/
 	public List<String> getCompleteDestinations() {
