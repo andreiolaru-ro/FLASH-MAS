@@ -87,7 +87,7 @@ public enum CategoryName {
 	/**
 	 * Controls automatic name generation for entities without a name: "all", a number, or "all;number".
 	 */
-	AUTO_NAMES(new CatPar().isValue().isUnique().hasParent(NODE).isPortableFrom(DEPLOYMENT)),
+	AUTO_NAMES(new CatPar().isValue().isUnique().hasParent(DEPLOYMENT)),
 	/**
 	 * Classes that are able to load various categories of elements in the configuration (hierarchical key).
 	 * <p>
