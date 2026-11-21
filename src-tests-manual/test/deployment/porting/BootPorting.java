@@ -12,9 +12,12 @@
 package test.deployment.porting;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 public class BootPorting {
-    static String THIS_DIRECTORY = "src-tests/test/deployment/porting/";
+    static String THIS_DIRECTORY = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+            BootPorting.class) + "/";
     
     public static void main(String[] args_) {
 		// String args = "-nostart t " + THIS_DIRECTORY + "scenario1.xml";
