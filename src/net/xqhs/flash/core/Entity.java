@@ -13,6 +13,7 @@ package net.xqhs.flash.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -215,7 +216,36 @@ public interface Entity<P extends Entity<?>>
 		 * The register holding the largest index for a type - name combination existing in {@link #register}.
 		 */
 		static Map<String, Integer>		largestIndex			= new HashMap<>();
-		
+		/**
+		 * Reserves the next index for an entity type and returns the name built from it.
+		 *
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "agent").
+		 * @return the name, of the form ("agent.1").
+		 */
+		public static String registerName(String entityType)
+		{
+			int index = largestIndex.containsKey(entityType) ? largestIndex.get(entityType).intValue() + 1 : 1;
+			largestIndex.put(entityType, Integer.valueOf(index));
+			return entityType + NAME_INDEX_SEPARATOR + index;
+		}
+
+		/**
+		 * Generates a new name for an entity type agent.1.ghre, where the hash is made of 4 random lowercase letters.
+		 *
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "agent").
+		 * @return the generated name.
+		 */
+		public static String generateName(String entityType)
+		{
+			Random random = new Random();
+			StringBuilder hash = new StringBuilder();
+			for(int i = 0; i < 4; i++)
+				hash.append((char) ('a' + random.nextInt(26)));
+			return registerName(entityType) + NAME_INDEX_SEPARATOR + hash;
+		}
+
 		/**
 		 * Registers an entry for an entity.
 		 * 
@@ -238,7 +268,34 @@ public interface Entity<P extends Entity<?>>
 			}
 			return print(entity);
 		}
-		
+
+		/**
+		 * Same as register, but the name is already built and is given as argument, instead of
+		 * being read from the entity.
+		 *
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "node").
+		 * @param entityName
+		 *                       - the name of the entity.
+		 * @param entity
+		 *                       - the entity to register.
+		 * @return the printable string for this entity.
+		 */
+		public static String registerExistingName(String entityType, String entityName,
+												  Entity<? extends Entity<?>> entity)
+		{
+			if(entity == null)
+				return null;
+			if(!register.containsKey(entity))
+			{
+				String id = entityType + TYPE_NAME_SEPARATOR + entityName;
+				int index = largestIndex.containsKey(id) ? largestIndex.get(id).intValue() + 1 : 0;
+				largestIndex.put(id, Integer.valueOf(index));
+				register.put(entity, id + NAME_INDEX_SEPARATOR + index);
+			}
+			return print(entity);
+		}
+
 		/**
 		 * Returns a printable string, as if an entity is registered, but without the entity being registered (or,
 		 * indeed, instantiated). The presumed name of the entity needs to be provided.
