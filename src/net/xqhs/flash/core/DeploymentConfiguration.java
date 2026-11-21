@@ -981,6 +981,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 					
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 					MultiTreeMap node;
+
 					if(name != null && subCatTree.isHierarchical(name))
 						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
 								: subCatTree.getFirstTree(name);
@@ -992,6 +993,7 @@ public class DeploymentConfiguration extends MultiTreeMap {
 							node.addOneValue(KIND_ATTRIBUTE_NAME, kindOnly);
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
+
 					context.push(new CtxtTriple(catName, subCatTree, node));
 				}
 			}
