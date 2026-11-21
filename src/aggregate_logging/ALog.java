@@ -4,32 +4,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.xqhs.flash.core.Entity;
-import net.xqhs.util.logging.Unit;
+import net.xqhs.util.logging.Logger;
+import net.xqhs.util.logging.UnitComponent;
 
-public class ALogging extends Unit {
-	protected boolean												NORMAL_OUTPUT	= true;
-	protected static final ALogging									instance		= new ALogging();
-	protected final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
-	
-	protected ALogging() {
-		setUnitName("agr-log");
-	}
+public class ALog {
+	protected static boolean												NORMAL_OUTPUT	= true;
+    protected static final UnitComponent DefaultLogger = new UnitComponent("agr-log");
+	protected static final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
 
-    public static ALogging getInstance() {
-        return instance;
-    }
-
-    public void li_agr(LogAggregate log,  Entity<?> entity, String msg, Object... args) {
+    public static void li(Logger logger, LogAggregate log,  Entity<?> entity, String msg, Object... args) {
         if (log == null) return;
         Map<String, MessageSummary> logMap = logs.computeIfAbsent(log, k -> new HashMap<>());
         MessageSummary summary = logMap.computeIfAbsent(msg, k -> new MessageSummary(msg, args.length));
         summary.register(entity, args);
-		if(NORMAL_OUTPUT)
-			li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
+		if(NORMAL_OUTPUT) {
+            Logger out = logger != null ? logger : DefaultLogger;
+			out.li("[] " + msg, entity != null ? entity.getName() != null ? entity.getName() : entity.toString() : "<null>",
 					args);
+        }
     }
 
-    public void print_agr(LogAggregate log) {
+    public static void printLog(Logger logger, LogAggregate log) {
         if (log == null)
             return;
 
@@ -37,25 +32,26 @@ public class ALogging extends Unit {
         if (logMap == null)
             return;
 
+        Logger out = logger != null ? logger : DefaultLogger;
         for (MessageSummary summary : logMap.values()) {
-            summary.printSummary();
+            summary.printSummary(out);
         }
     }
 
-    public void printAllAgr() {
+    public static void printAllLogs(Logger logger) {
+        Logger out = logger != null ? logger : DefaultLogger;
         for (Map.Entry<LogAggregate, Map<String, MessageSummary>> entry : logs.entrySet()) {
             LogAggregate log = entry.getKey();
             Map<String, MessageSummary> logMap = entry.getValue();
-            System.out.println("-----" + log.name() + "-----");
+            out.li("-----" + log.name() + "-----");
 
             for (MessageSummary summary : logMap.values()) {
-                summary.printSummary();
+                summary.printSummary(out);
             }
-            System.out.println();
         }
     }
 
-    public void clear_agr(LogAggregate log) {
+    public static void clearLog(LogAggregate log) {
         if (log == null) return;
 
         Map<String, MessageSummary> logMap = logs.get(log);
@@ -66,7 +62,7 @@ public class ALogging extends Unit {
         }
     }
 
-    public void clearAll() {
+    public static void clearAllLogs() {
         for (Map<String, MessageSummary> logMap : logs.values()) {
             for (MessageSummary summary : logMap.values()) {
                 summary.clear();

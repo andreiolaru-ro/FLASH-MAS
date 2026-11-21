@@ -1,6 +1,6 @@
 package abms.wolfSheepPredation;
 
-import aggregate_logging.ALogging;
+import aggregate_logging.ALog;
 import aggregate_logging.Category;
 import net.xqhs.flash.abms.EnvironmentLinkShard;
 import net.xqhs.flash.abms.SteppableEntity;
@@ -74,7 +74,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
 
     @Override
     public void step() {
-        ALogging.getInstance().li_agr(Category.LIFECYCLE, this, "wolf step");
+        ALog.li(getLogger(), Category.LIFECYCLE, this, "wolf step");
         Position currentPos = e.getCurrentPosition();
         if (currentPos == null) {
             return;
@@ -83,7 +83,7 @@ public class WolfAgent extends BaseAgent implements SteppableEntity, ShardContai
         Set<EntityProxy<?>> entitiesHere = e.getEntitiesAt(currentPos);
         for (EntityProxy<?> entity : entitiesHere) {
             if (entity instanceof SheepAgent) {
-                ALogging.getInstance().li_agr(Category.EATING, this, "wolf eats sheep [] at []",
+                ALog.li(getLogger(), Category.EATING, this, "wolf eats sheep [] at []",
                         entity.getEntityName(), currentPos);
                 e.requestDestroyAgent(entity);
             }

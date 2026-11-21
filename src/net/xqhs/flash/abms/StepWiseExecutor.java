@@ -1,7 +1,7 @@
 package net.xqhs.flash.abms;
 
 import abms.smartMeeting.ScenarioTrace;
-import aggregate_logging.ALogging;
+import aggregate_logging.ALog;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
@@ -80,7 +80,7 @@ public class StepWiseExecutor extends EntityCore<Simulation>
                         }
                 }
                 simulation.executionCompleted();
-                ALogging.getInstance().printAllAgr();
+                ALog.printAllLogs(getLogger());
                 ScenarioTrace.exportRun();
             }
         };
