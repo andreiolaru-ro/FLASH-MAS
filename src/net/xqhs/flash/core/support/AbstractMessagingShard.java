@@ -220,7 +220,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		
 		// already routed to this agent
 		wave.removeFirstDestinationElement();
-		
+
 		if(!wave.getCompleteSource().startsWith(extractAgentAddress(wave.getCompleteSource())))
 			// FIXME use log
 			throw new IllegalStateException(
@@ -235,6 +235,15 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		 */
 		getAgent().postAgentEvent(wave);
 	}
+
+    private boolean sendWave(AgentWave wave) {
+        if(wavePylon instanceof WaveMulticastMessagingPylonProxy)
+            return wavePylon.send(wave);
+        boolean ok = true;
+        for(AgentWave w : wave.splitByDestination())
+            ok = wavePylon.send(w) && ok;
+        return ok;
+    }
 	
 	@Override
 	public boolean sendMessage(String source, String destination, String content) {
@@ -248,7 +257,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 					.addSourceElements(AgentWave.pathToElementsPlus(source, getAgentAddress()));
 			for(OutgoingMessageHook hook : outgoingHooks)
 				hook.sendingMessage(wave);
-			return wavePylon.send(wave);
+			return sendWave(wave);
 		}
 		else
 			return false;
@@ -261,7 +270,7 @@ public abstract class AbstractMessagingShard extends AgentShardCore implements M
 		if(wavePylon != null) {
 			for(OutgoingMessageHook hook : outgoingHooks)
 				hook.sendingMessage(wave);
-			return wavePylon.send(wave);
+			return sendWave(wave);
 		}
 		else if(classicPylon != null) {
 			for(OutgoingMessageHook hook : outgoingHooks)
