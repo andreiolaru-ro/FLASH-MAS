@@ -1,6 +1,8 @@
 package test.deployment.treeControl;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Runs test XML deployments.
@@ -12,7 +14,8 @@ public class Boot {
 	/**
 	 * This directory.
 	 */
-	static String THIS_DIRECTORY = "src-tests/test/empties/";
+	static String THIS_DIRECTORY = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+			test.empties.Boot.class) + "/";
 	
 	/**
 	 * Main method.
