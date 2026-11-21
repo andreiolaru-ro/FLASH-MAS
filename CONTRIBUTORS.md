@@ -16,13 +16,14 @@ FLASH-MAS contributors:
    * Andrei Olaru <cs@andreiolaru.ro>
 * Websockets support
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+   * Victor Caproiu
    * past modeling and implementations:
       * Vlad Tălmaciu <vlad.talmaciu@gmail.com>
       * Cosmin Mihai <yonutix.mc@gmail.com>
 * Monitoring and control
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
 * ML model support
-   * Daniel Liurcă 
+   * Daniel Liurcă
 * Agent mobility
    * Maria-Claudia Buiac
 * Distributed support infrastructure, wsRegions support infrastructure
@@ -41,8 +42,22 @@ FLASH-MAS contributors:
    * Laura Cucu <laurat.cucu@gmail.com>
 * S-CLAIM parser and interpreter
    * Marius-Tudor Benea <tudorbenea@gmail.com>
+* Agent-based modeling and simulation (ABMS)
+   * Ionuț Hodoroagă
+* Node client application
+   * Viorel Baciu
+* Deployment configuration and testing
+   * Alexandra Minca
+   * Cătălina Drăghici
+   * Crina Bunescu
+   * Alexandru Lazăr
+   * Patrick Burdun
+   * Raluca Ichim
+* Automated testing, examples and documentation publishing
+   * Mario Versehora
+   * Marius Drăgan
 
-This project is based on [tATAmI](https://github.com/tATAmI-Project tATAmI repository collection), which was developed over the years by a team consisting of:
+This project is based on [tATAmI](https://github.com/tATAmI-Project "tATAmI repository collection"), which was developed over the years by a team consisting of:
 
 * Coordination:
    * Andrei Olaru
