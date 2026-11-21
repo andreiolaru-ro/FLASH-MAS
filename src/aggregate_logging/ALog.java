@@ -10,10 +10,7 @@ import net.xqhs.util.logging.UnitComponent;
 public class ALog {
 	protected static boolean												NORMAL_OUTPUT	= true;
     protected static final UnitComponent DefaultLogger = new UnitComponent("agr-log");
-	
 	protected static final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
-	
-	
 
     public static void li(Logger logger, LogAggregate log,  Entity<?> entity, String msg, Object... args) {
         if (log == null) return;
@@ -27,29 +24,30 @@ public class ALog {
         }
     }
 
-    public static void printLog(LogAggregate log) {
+    public static void printLog(Logger logger, LogAggregate log) {
         if (log == null)
             return;
 
         Map<String, MessageSummary> logMap = logs.get(log);
         if (logMap == null)
             return;
-
+        
+        Logger out = logger != null ? logger : DefaultLogger;
         for (MessageSummary summary : logMap.values()) {
-            summary.printSummary();
+            summary.printSummary(out);
         }
     }
 
-    public static void printAllLogs() {
+    public static void printAllLogs(Logger logger) {
+        Logger out = logger != null ? logger : DefaultLogger;
         for (Map.Entry<LogAggregate, Map<String, MessageSummary>> entry : logs.entrySet()) {
             LogAggregate log = entry.getKey();
             Map<String, MessageSummary> logMap = entry.getValue();
-            System.out.println("-----" + log.name() + "-----");
+            out.li("-----" + log.name() + "-----");
 
             for (MessageSummary summary : logMap.values()) {
-                summary.printSummary();
+                summary.printSummary(out);
             }
-            System.out.println();
         }
     }
 

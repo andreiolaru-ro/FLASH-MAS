@@ -1,6 +1,7 @@
 package aggregate_logging;
 
 import net.xqhs.flash.core.Entity;
+import net.xqhs.util.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,8 +29,8 @@ public class MessageSummary {
         callCount++;
     }
 
-    public void printSummary() {
-        System.out.println("[" + callCount + " actions | " + uniqueEntities.size() + " entities] "
+    public void printSummary(Logger logger) {
+        logger.li("[" + callCount + " actions | " + uniqueEntities.size() + " entities] "
                 + filledPlaceholders());
     }
 
