@@ -25,6 +25,7 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
 import net.xqhs.flash.pc.PCClassFactory;
 import net.xqhs.util.logging.LogWrapper.LoggerType;
 import net.xqhs.util.logging.Logger;
@@ -295,7 +296,55 @@ public class PlatformUtils {
 		}
 		return false;
 	}
+
+	/**
+	 * Converts a Java package name into a relative path, by replacing each <code>.</code> with <code>/</code>.
+	 * <p>
+	 * E.g. <code>test.deployment.convergence</code> becomes <code>test/deployment/convergence</code>.
+	 * 
+	 * @param packageName
+	 *            -- the fully qualified name of the package.
+	 * @return the corresponding relative path.
+	 */
 	public static String packageToPath(String packageName) {
 		return packageName.replace('.', '/');
+	}
+
+	/**
+	 * Builds a file path as: directory / package path / elements.
+	 * <p>
+	 * E.g. <code>src-tests-manual/test/deployment/convergence/deployment1.xml</code>.
+	 * 
+	 * @param directory
+	 *            -- the source directory.
+	 * @param pkg
+	 *            -- the package; if <code>null</code>, it is not added.
+	 * @param elements
+	 *            -- the rest of the path (e.g. the file name).
+	 * @return the path.
+	 */
+	public static String buildFilePath(SourceFileDirectory directory, Package pkg, String... elements) {
+		StringBuilder path = new StringBuilder(directory.s());
+		if(pkg != null)
+			path.append("/").append(packageToPath(pkg.getName()));
+		for(String element : elements)
+			path.append("/").append(element);
+		return path.toString();
+	}
+
+	/**
+	 * Builds the path of a file by calling {@link #buildFilePath(SourceFileDirectory, Package, String...)} with the
+	 * package of the given class.
+	 * 
+	 * @param directory
+	 *            -- the source directory in which the file is located.
+	 * @param clazz
+	 *            -- the class whose package path is added after the directory. If <code>null</code>, nothing is added.
+	 * @param elements
+	 *            -- the other elements of the path (sub-directories, file name), added in order.
+	 * @return the assembled path.
+	 */
+	public static String buildFilePath(SourceFileDirectory directory, Class<?> clazz, String... elements) {
+		return buildFilePath(directory, clazz != null ? clazz.getPackage() : null, elements);
 	}
 }

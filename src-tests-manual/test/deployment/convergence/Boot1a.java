@@ -15,9 +15,8 @@ public class Boot1a
 {    
     public static void main(String[] args)
     {
-        String rootDir = SourceFileDirectory.SRC_TESTS_MANUAL.s();
-        String pkgPath = PlatformUtils.packageToPath(Boot1a.class.getPackage().getName());
-        String test_args = rootDir + "/" + pkgPath + "/deployment1.xml ";
+        String test_args = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+                                                       Boot1a.class, "deployment1.xml");
         
         test_args += " -package testing";
         test_args += " -agent PingPong:AgentA classpath:AgentPingPong sendTo:AgentB";
