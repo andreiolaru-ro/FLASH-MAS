@@ -9,7 +9,7 @@ import net.xqhs.util.logging.UnitComponent;
 
 public class ALog extends Unit {
 	protected boolean												NORMAL_OUTPUT	= true;
-    protected static final UnitComponent DEFAULT_LOGGER = new UnitComponent("agr-log");
+    protected static final UnitComponent DefaultLogger = new UnitComponent("agr-log");
 	protected static final ALog									instance		= new ALog();
 	protected final Map<LogAggregate, Map<String, MessageSummary>>	logs			= new HashMap<>();
 	
@@ -21,7 +21,7 @@ public class ALog extends Unit {
         return instance;
     }
 
-    public void li_agr(LogAggregate log,  Entity<?> entity, String msg, Object... args) {
+    public void li(LogAggregate log,  Entity<?> entity, String msg, Object... args) {
         if (log == null) return;
         Map<String, MessageSummary> logMap = logs.computeIfAbsent(log, k -> new HashMap<>());
         MessageSummary summary = logMap.computeIfAbsent(msg, k -> new MessageSummary(msg, args.length));
@@ -31,7 +31,7 @@ public class ALog extends Unit {
 					args);
     }
 
-    public void print_agr(LogAggregate log) {
+    public void printLog(LogAggregate log) {
         if (log == null)
             return;
 
@@ -44,7 +44,7 @@ public class ALog extends Unit {
         }
     }
 
-    public void printAllAgr() {
+    public void printAllLogs() {
         for (Map.Entry<LogAggregate, Map<String, MessageSummary>> entry : logs.entrySet()) {
             LogAggregate log = entry.getKey();
             Map<String, MessageSummary> logMap = entry.getValue();
@@ -57,7 +57,7 @@ public class ALog extends Unit {
         }
     }
 
-    public void clear_agr(LogAggregate log) {
+    public void clearLog(LogAggregate log) {
         if (log == null) return;
 
         Map<String, MessageSummary> logMap = logs.get(log);
@@ -68,7 +68,7 @@ public class ALog extends Unit {
         }
     }
 
-    public void clearAll() {
+    public void clearAllLogs() {
         for (Map<String, MessageSummary> logMap : logs.values()) {
             for (MessageSummary summary : logMap.values()) {
                 summary.clear();
