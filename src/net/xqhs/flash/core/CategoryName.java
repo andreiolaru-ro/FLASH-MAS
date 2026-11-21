@@ -76,6 +76,10 @@ public enum CategoryName {
 	 */
 	DEPLOYMENT_FILE(new CatPar().isValue().isUnique().hasParent(NODE).isPortableFrom(DEPLOYMENT)),
 	/**
+	 * Reusable template macros for parts of the deployment, expanded with -set / -insert.
+	 */
+	TEMPLATE(new CatPar().isValue().isPortableFrom(DEPLOYMENT, CatPar.VISIBLE_ON_PATH)),
+	/**
 	 * Java packages that contain classes needed in the deployment (simple key, all values are relevant).
 	 */
 	PACKAGE(new CatPar().isValue().isPortableFrom(DEPLOYMENT, CatPar.VISIBLE_ON_PATH)),
