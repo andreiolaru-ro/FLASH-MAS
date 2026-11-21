@@ -31,7 +31,7 @@ public class ALog {
         Map<String, MessageSummary> logMap = logs.get(log);
         if (logMap == null)
             return;
-        
+
         Logger out = logger != null ? logger : DefaultLogger;
         for (MessageSummary summary : logMap.values()) {
             summary.printSummary(out);
