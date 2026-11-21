@@ -41,7 +41,7 @@ public class SmartMeetingBoot {
                 runIndex -> buildBootString(config, baseSeed + runIndex, steps),
                 new SmRunStats(scenarioName));
 
-        ALog.getInstance().printAllLogs();
+        ALog.printAllLogs();
         Benchmark.stop("Total");
         Benchmark.printResults();
     }

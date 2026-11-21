@@ -80,7 +80,7 @@ public class StepWiseExecutor extends EntityCore<Simulation>
                         }
                 }
                 simulation.executionCompleted();
-                ALog.getInstance().printAllLogs();
+                ALog.printAllLogs();
                 ScenarioTrace.exportRun();
             }
         };

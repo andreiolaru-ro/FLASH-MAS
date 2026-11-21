@@ -47,7 +47,7 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
             regrowthCountdown--;
             if (regrowthCountdown <= 0) {
                 grown = true;
-                ALog.getInstance().li(Category.LIFECYCLE, this, "grass regrow");
+                ALog.li(Category.LIFECYCLE, this, "grass regrow");
             }
         }
     }
@@ -63,7 +63,7 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
             if (EAT_WAVE_CONTENT.equals(content) && grown) {
                 grown = false;
                 regrowthCountdown = regrowthTime;
-                ALog.getInstance().li(Category.EATING, this, "grass eaten");
+                ALog.li(Category.EATING, this, "grass eaten");
                 return true;
             }
         }
