@@ -487,7 +487,25 @@ public class AgentWave extends AgentEvent {
 			ret[i + 1] = elements[i];
 		return ret;
 	}
-	/** add destinations to the waves , if it has no destinations , it acts like resetDestination*/
+	/**
+	 * Adds another destination to this wave, given as separate elements, making the wave a multicast wave if it
+	 * already had a destination.
+	 * <p>
+	 * If the wave has no destination yet, this behaves like {@link #resetDestination(String, String...)}: the new
+	 * destination becomes both the first complete destination and the destination elements of the wave.
+	 * <p>
+	 * Otherwise, the new complete destination (assembled with {@link #makePath(String, String...)}) is added at the end
+	 * of the {@link #COMPLETE_DESTINATION} values, and the {@link #DESTINATION_ELEMENT} values are not changed, as
+	 * they belong to the first (current) destination.
+	 * <p>
+	 * See also {@link #addDestination(String)}, for giving the destination as a complete endpoint.
+	 *
+	 * @param destination
+	 *            - the first element of the new destination endpoint.
+	 * @param destinationElements
+	 *            - other elements of the new destination endpoint.
+	 * @return the wave itself.
+	 */
 	public AgentWave addDestination(String destination, String... destinationElements) {
 		if(!isSet(COMPLETE_DESTINATION))
 			return resetDestination(destination, destinationElements);
@@ -495,24 +513,45 @@ public class AgentWave extends AgentEvent {
 		return this;
 	}
 
+	/*public AgentWave addDestination(String completeDestination) {
+		String[] elements = pathToElements(completeDestination);
+		return addDestination(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+
+	} */
+
 	/**
-	 * Adds another destination to this wave, given as a complete endpoint (e.g. <code>"AgentB/pong"</code>). The
-	 * endpoint is split into elements and {@link #addDestination(String, String...)} is used, so if the wave has no
-	 * destination yet, the elements of the new destination become the destination elements of the wave.
+	 * Adds another destination to this wave, given as a complete endpoint (e.g. <code>"AgentB/pong"</code>), making
+	 * the wave a multicast wave if it already had a destination.
+	 * <p>
+	 * The endpoint is split into elements by {@link #pathToElements(String)}; the first element is the root of the
+	 * destination. The behaviour is then the same as for {@link #addDestination(String, String...)}: if the wave has
+	 * no destination yet, the new destination becomes both the first complete destination and the destination
+	 * elements of the wave; otherwise, it is only added at the end of the {@link #COMPLETE_DESTINATION} values.
+	 * <p>
+	 * As the endpoint is reassembled from its elements, a leading {@link #ADDRESS_SEPARATOR} is not kept (e.g.
+	 * <code>"/AgentB/pong"</code> is added as <code>"AgentB/pong"</code>).
 	 *
 	 * @param completeDestination
 	 *            - the complete destination endpoint.
 	 * @return the wave itself.
 	 */
 	public AgentWave addDestination(String completeDestination) {
-		String[] elements = pathToElements(completeDestination);
-		return addDestination(elements[0], Arrays.copyOfRange(elements, 1, elements.length));
+		String[] s = pathToElements(completeDestination);
+		String destination = s[0];
+		String[] destinationElements = Arrays.copyOfRange(s, 1, s.length);
 
+		if(!isSet(COMPLETE_DESTINATION))
+			return resetDestination(destination, destinationElements);
+		add(COMPLETE_DESTINATION, makePath(destination, destinationElements));
+		return this;
 	}
 
 	/**
 	 * Removes all complete destinations except the first (current) one, turning a multicast wave into a unicast
-	 * wave. The destination elements are not changed, as they belong to the first destination.
+	 * wave.
+	 * <p>
+	 * The {@link #DESTINATION_ELEMENT} values are not changed, as they belong to the first destination. A wave that is
+	 * not multicast (see {@link #isMulticast()}) is not changed.
 	 *
 	 * @return the wave itself.
 	 */
@@ -525,35 +564,78 @@ public class AgentWave extends AgentEvent {
 		return this;
 	}
 
-
-	public AgentWave rotateDestinations() {
-		if(!isMulticast()) //nothing to rotate
+	/**
+	 * Rotates the complete destinations of a multicast wave: the first (current) destination is moved to the end of
+	 * the list the given number of times, so that a following destination becomes the current destination.
+	 * <p>
+	 * For a wave with the destinations <code>[A, B, C]</code>, a rotation by 1 gives <code>[B, C, A]</code> and a
+	 * rotation by 2 gives <code>[C, A, B]</code>. The number of rotations is taken modulo the number of destinations,
+	 * so rotating by a multiple of it leaves the wave unchanged. A negative number of rotations has no effect. A wave
+	 * that is not multicast (see {@link #isMulticast()}) is not changed.
+	 * <p>
+	 * After a rotation, the {@link #DESTINATION_ELEMENT} values are rebuilt from the new current destination, using
+	 * {@link #pathToElements(String)}. Therefore, destination elements of the previous current destination that were
+	 * already consumed (e.g. by {@link #popDestinationElement()}) are not kept.
+	 *
+	 * @param numberOfRotations
+	 *            - how many times the current destination is moved to the end of the list.
+	 * @return the wave itself.
+	 */
+	public AgentWave rotateDestinations(int numberOfRotations) {
+		if(!isMulticast())
 			return this;
-		List<String> s = getCompleteDestinations();
-		String first = s.remove(0); // remove first destination
-		s.add(first); //adding the first destination in the back
-		removeKey(COMPLETE_DESTINATION); //rewrite complete destination
-		addAll(COMPLETE_DESTINATION, s);
-		if(isSet(DESTINATION_ELEMENT))  // change destination-element
+		List<String> destinations = getCompleteDestinations();
+		int rotations = numberOfRotations % destinations.size();
+		if(rotations <= 0)
+			return this;
+		List<String> rotated = new LinkedList<>(destinations.subList(rotations, destinations.size()));
+		rotated.addAll(destinations.subList(0, rotations));
+		removeKey(COMPLETE_DESTINATION);
+		addAll(COMPLETE_DESTINATION, rotated);
+		if(isSet(DESTINATION_ELEMENT))
 			removeKey(DESTINATION_ELEMENT);
-		addAll(DESTINATION_ELEMENT, Arrays.asList(pathToElements(s.get(0))));
-
+		addAll(DESTINATION_ELEMENT, Arrays.asList(pathToElements(rotated.get(0))));
 		return this;
 	}
 
-
-	/** returns all complete destinations of the wave*/
+	/**
+	 * Retrieves all the complete destinations of this wave (the values of {@link #COMPLETE_DESTINATION}), in order.
+	 * The first one is the current destination, to which the {@link #DESTINATION_ELEMENT} values correspond.
+	 * <p>
+	 * For a unicast wave, the list contains a single destination; for a wave with no destination, it is empty. To
+	 * get only the first destination, use {@link #getCompleteDestination()}.
+	 * <p>
+	 * The returned list is a copy: changing it does not change the wave.
+	 *
+	 * @return the list of complete destinations.
+	 */
 	public List<String> getCompleteDestinations() {
 		return getValues(COMPLETE_DESTINATION);
 	}
-	/** return true if the wave has multiple destintions*/
+
+	/**
+	 * Checks whether this wave has more than one complete destination (see {@link #getCompleteDestinations()}).
+	 *
+	 * @return <code>true</code> if the wave has multiple destinations, <code>false</code> otherwise.
+	 */
 	public boolean isMulticast() {
 		return getValues(COMPLETE_DESTINATION).size() > 1;
 	}
 
 	/**
-	 * Create one single destination copy of the wave for each estination
-	 *	all contents are copied, each copy with own destination element
+	 * Creates a separate single-destination wave for each of the destinations of this wave, so that each destination
+	 * can be delivered independently (e.g. by a pylon delivering a multicast wave).
+	 * <p>
+	 * Each copy contains all the keys of this wave (content, source and any other keys), except the destination keys.
+	 * Its destination is set, using {@link #resetDestination(String, String...)}, to one of the complete destinations
+	 * of this wave, in the order given by {@link #getCompleteDestinations()}. The copies are independent of each other
+	 * and of this wave, so consuming the destination elements of a copy (e.g. with
+	 * {@link #removeFirstDestinationElement()}) does not affect the others.
+	 * <p>
+	 * If the wave is not multicast (see {@link #isMulticast()}), no copy is made and the returned list contains only
+	 * this wave.
+	 *
+	 * @return the list of single-destination waves.
 	 */
 	public List<AgentWave> splitByDestination() {
 		List<AgentWave> result = new LinkedList<>();
