@@ -18,7 +18,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
     protected static final String STEP_PERIOD_PARAM = "stepPeriod";
     int nSteps;
     long stepPeriodMs;
-    Thread executor;
     Simulation simulation;
 
     @Override
@@ -66,25 +65,19 @@ public class StepWiseExecutor extends EntityCore<Simulation>
             if (entity instanceof SteppableEntity && !entity.isRunning())
                 ((SteppableEntity) entity).startSuspended();
 
-        executor = new Thread() {
-            @Override
-            public void run() {
-                for (long step = 0; step < nSteps; step++) {
-                    runStep(step);
-                    if (stepPeriodMs > 0)
-                        try {
-                            Thread.sleep(stepPeriodMs);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
+        for (long step = 0; step < nSteps; step++) {
+            runStep(step);
+            if (stepPeriodMs > 0)
+                try {
+                    Thread.sleep(stepPeriodMs);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
-                simulation.executionCompleted();
-                ALogging.getInstance().printAllAgr();
-                ScenarioTrace.exportRun();
-            }
-        };
-        executor.start();
+        }
+        simulation.executionCompleted();
+        ALogging.getInstance().printAllAgr();
+        ScenarioTrace.exportRun();
         return true;
     }
 
@@ -121,13 +114,6 @@ public class StepWiseExecutor extends EntityCore<Simulation>
 
     @Override
     public boolean stop() {
-        if (executor != Thread.currentThread()) {
-            try {
-                executor.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         return super.stop();
     }
 
