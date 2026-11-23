@@ -14,7 +14,7 @@ FLASH-MAS contributors:
 
 * Project coordination, architecture and coding if not otherwise specified:
    * Andrei Olaru <cs@andreiolaru.ro>
-* Websockets support
+* WebSocket support
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
    * Victor Caproiu
    * past modeling and implementations:
@@ -22,39 +22,53 @@ FLASH-MAS contributors:
       * Cosmin Mihai <yonutix.mc@gmail.com>
 * Monitoring and control
    * Florina Năstasoiu <florina.nastasoiu@gmail.com>
+   * Andrei Mihu <andreimihu280997@gmail.com>
+   * Florin Mihalache <florin.razvan.mihalache@gmail.com>
+   * Ștefan-Octavian Sterea
+   * Robert Osnaga
+* Logging and EasyLog
+   * Tudor Ciot
 * ML model support
    * Daniel Liurcă
+   * Valentin Mignot
+   * Alexandru Sorici
+   * Mihai Nan
+   * David-Traian Iancu
+   * Federated Learning experiments
+      * Marius Preda
+      * Dragoș Anghel
+      * Andrei Șerban
 * Agent mobility
    * Maria-Claudia Buiac
-* Distributed support infrastructure, wsRegions support infrastructure
-   * Monica Pricope
+* Distributed support infrastructure
+   * Monica Pricope -- WS-Regions support infrastructure
+   * Gabriel Voicu -- HTTP-based support infrastructure
+   * Mihai Stoica -- hybrid interaction interoperability
 * Android development (currently a separate project)
    * Daniel Berbece <daniel.berbece97@gmail.com>
-* Web application
-   * Andrei Mihu <andreimihu280997@gmail.com>
-* Automatic interface generation
-   * Florin Mihalache <florin.razvan.mihalache@gmail.com>
 * MPI and synchronous communication
    * Ștefania Popescu <stefania.s.popescu@gmail.com>
 * HPC work
    * Andrada Hristu <andrada.hristu@gmail.com>
 * ROS-based communication
    * Laura Cucu <laurat.cucu@gmail.com>
+* Entity-Operation model
+   * Gabriel Nicolae
 * S-CLAIM parser and interpreter
    * Marius-Tudor Benea <tudorbenea@gmail.com>
 * Agent-based modeling and simulation (ABMS)
    * Ionuț Hodoroagă
-* Node client application
+* Open system
    * Viorel Baciu
 * Deployment configuration and testing
-   * Alexandra Minca
-   * Cătălina Drăghici
-   * Crina Bunescu
-   * Alexandru Lazăr
-   * Patrick Burdun
-   * Raluca Ichim
+   * Alexandra Mincă -- CLI configuration issues and convergence with XML configuration
+   * Cătălina Drăghici -- CLI configuration tree navigation controls
+   * Crina Bunescu -- testing
+   * Alexandru Lazăr -- empty entity names
+   * Patrick Burdun -- CLI configuration
+   * Raluca Ichim -- testing
 * Automated testing, examples and documentation publishing
-   * Mario Versehora
+   * Mario Verșehora
    * Marius Drăgan
 
 This project is based on [tATAmI](https://github.com/tATAmI-Project "tATAmI repository collection"), which was developed over the years by a team consisting of:
