@@ -43,7 +43,8 @@ You should have received a copy of the GNU General Public License along with Fla
 <h3 id="entities">Entities</h3>
 <ul>
 <li>any part of the system which is persistent and has a life-cycle
-should be an <em>Entity</em>.
+should be an <a
+href="../javadoc/net/xqhs/flash/core/Entity.html"><em>Entity</em></a>.
 <ul>
 <li>for instance, an agent is an entity, an artifact is an entity, an
 organization is an entity, or an agent group is an entity</li>
@@ -63,8 +64,13 @@ implemented differently in the two phases: for an entity C which is
 <li>entity C may have a reference to a proxy to entity P
 <ul>
 <li>this is because a reference to an entity offers <em>control</em>
-over that entity via methods such as <code>start</code>,
-<code>stop</code>, <code>addContext</code>, etc</li>
+over that entity via methods such as <a
+href="../javadoc/net/xqhs/flash/core/Entity.html#start()"><code>start</code></a>,
+<a
+href="../javadoc/net/xqhs/flash/core/Entity.html#stop()"><code>stop</code></a>,
+<a
+href="../javadoc/net/xqhs/flash/core/Entity.html#addContext(net.xqhs.flash.core.Entity.EntityProxy)"><code>addContext</code></a>,
+etc</li>
 </ul></li>
 <li>the method <code>C.addContext</code> is called to explicitly add P
 as a context of C</li>
@@ -81,10 +87,14 @@ framework</li>
 <h4 id="nested-entity-model">Nested-entity model</h4>
 <p><strong>Implementation details</strong></p>
 <ul>
-<li>Entities implement <code>Entity</code></li>
-<li><code>ConfigurableEntity</code> is offered which offers a specific
-<code>configure</code> method; <code>ConfigurableEntity</code>
-implementations are expected to have zero-argument constructors.</li>
+<li>Entities implement <a
+href="../javadoc/net/xqhs/flash/core/Entity.html"><code>Entity</code></a></li>
+<li><a
+href="../javadoc/net/xqhs/flash/core/ConfigurableEntity.html"><code>ConfigurableEntity</code></a>
+is offered which offers a specific <a
+href="../javadoc/net/xqhs/flash/core/ConfigurableEntity.html#configure(net.xqhs.flash.core.util.MultiTreeMap)"><code>configure</code></a>
+method; <code>ConfigurableEntity</code> implementations are expected to
+have zero-argument constructors.</li>
 <li>Entities should be loadable through <code>SimpleLoader</code> (which
 supports both methods above), and only for special cases (where a
 factory is needed) should specialized loaders be used</li>
@@ -94,9 +104,11 @@ factory is needed) should specialized loaders be used</li>
 <li>a special case are the entities of the type specified in the class
 hierarchy (the generic parameter for the Entity interface), which are
 its <em>proper context</em></li>
-<li>while the <code>Entity</code> interface specifies both
-<code>addContext</code> and <code>addGeneralContext</code>, it is
-<strong>strongly recommended</strong> that
+<li>while the <code>Entity</code> interface specifies both <a
+href="../javadoc/net/xqhs/flash/core/Entity.html#addContext(net.xqhs.flash.core.Entity.EntityProxy)"><code>addContext</code></a>
+and <a
+href="../javadoc/net/xqhs/flash/core/Entity.html#addGeneralContext(net.xqhs.flash.core.Entity.EntityProxy)"><code>addGeneralContext</code></a>,
+it is <strong>strongly recommended</strong> that
 <code>addGeneralContext</code> <em>always works</em> for instances of
 the proper context (as some loaders, such as <code>SimpleLoader</code>,
 only use <code>addGeneralContext</code> to add context to entities.</li>
@@ -135,21 +147,29 @@ communication for all agents in a deployment.</li>
 </ul>
 <p>Pre-defined <em>actual</em> (<em>local</em>) entities are</p>
 <ul>
-<li><p><em>nodes</em> – they represent the presence of FLASH-MAS on a
-physical machine; normally a node for each machine is sufficient, but
-more complex setups may have more than one node on a machine;</p></li>
-<li><p><em>pylons</em> – they represent the presence of a support
-infrastructure on a node, and agents (or other entities) are able to use
-their services;</p></li>
-<li><p><em>agents</em> – the autonomous, pro-active entities that are
-able to interact among each other using support infrastructure (and,
-more concretely, pylons);</p></li>
-<li><p><em>shards</em> – entities encapsulating various functionality
-that may be useful o agents; the purpose of shards may be to:</p>
+<li><p><a
+href="../javadoc/net/xqhs/flash/core/node/Node.html"><em>nodes</em></a>
+– they represent the presence of FLASH-MAS on a physical machine;
+normally a node for each machine is sufficient, but more complex setups
+may have more than one node on a machine;</p></li>
+<li><p><a
+href="../javadoc/net/xqhs/flash/core/support/Pylon.html"><em>pylons</em></a>
+– they represent the presence of a support infrastructure on a node, and
+agents (or other entities) are able to use their services;</p></li>
+<li><p><a
+href="../javadoc/net/xqhs/flash/core/agent/Agent.html"><em>agents</em></a>
+– the autonomous, pro-active entities that are able to interact among
+each other using support infrastructure (and, more concretely,
+pylons);</p></li>
+<li><p><a
+href="../javadoc/net/xqhs/flash/core/shard/AgentShard.html"><em>shards</em></a>
+– entities encapsulating various functionality that may be useful o
+agents; the purpose of shards may be to:</p>
 <ul>
-<li>if the agent is a <strong>Composite Agent</strong>, the agent is
-composed exclusively by a set of shards which interact by means of an
-event queue;</li>
+<li>if the agent is a <a
+href="../javadoc/net/xqhs/flash/core/composite/CompositeAgent.html"><strong>Composite
+Agent</strong></a>, the agent is composed exclusively by a set of shards
+which interact by means of an event queue;</li>
 <li>offer a more comfortable means for an agent to access the services
 offered by a pylon, when the pylon offers a <strong>specific</strong>
 implementation for a more general type of service (e.g. messaging);</li>
