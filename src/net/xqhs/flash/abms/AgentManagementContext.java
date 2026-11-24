@@ -1,12 +1,9 @@
 package net.xqhs.flash.abms;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import net.xqhs.flash.abms.SimulationContext.BaseContext;
-import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
@@ -26,19 +23,11 @@ public class AgentManagementContext extends BaseContext
         }
     }
 
-    protected Map<EntityProxy<?>, EnvironmentLinkShard> agentShards = new HashMap<>();
     protected Set<EntityProxy<?>> pendingDestroyEvents = new HashSet<>();
-    protected SpaceContext<?> space;
     protected Simulation simulation;
-
-    public void registerAgent(EntityProxy<?> proxy, EnvironmentLinkShard shard) {
-        agentShards.put(proxy, shard);
-    }
 
     @Override
     public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-        if (context instanceof SpaceContext)
-            space = (SpaceContext<?>) context;
         if (context instanceof Simulation)
             simulation = (Simulation) context;
         return super.addGeneralContext(context);
@@ -46,11 +35,6 @@ public class AgentManagementContext extends BaseContext
 
     @Override
     public void validateAndExecutePendingActions() {
-        if (space == null && simulation != null)
-            for (SimulationContext ctx : simulation.getSimulationContexts())
-                if (ctx instanceof SpaceContext)
-                    space = (SpaceContext<?>) ctx;
-
         for (ActionRecord action : pendingActions) {
             if (AgentManagementActionData.DESTROY_ACTION.s()
                     .equals(action.getActionData().get(BaseActionData.ACTION.s()))) {
@@ -60,19 +44,12 @@ public class AgentManagementContext extends BaseContext
                     le("destroy action with null target");
                     continue;
                 }
-
-                if (!agentShards.containsKey(target)) {
-//                    li("target [] already destroyed, skipping", target.getEntityName());
+                if (simulation == null || !simulation.getSimulationObjects().contains(target)
+                        || pendingDestroyEvents.contains(target))
                     continue;
-                }
-
-                // Remove from space immediately
-                if (space != null)
-                    space.removeEntity(target);
-
+                simulation.notifyEntityRemoved(target);
                 // Queue destroy event for delivery via sendEvents
                 pendingDestroyEvents.add(target);
-                agentShards.remove(target);
             } else {
                 le("Invalid action", action.getActionData().get(BaseActionData.ACTION.s()));
             }

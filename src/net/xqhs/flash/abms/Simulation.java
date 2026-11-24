@@ -57,6 +57,11 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		return nodePylonProxy;
 	}
 
+	public void notifyEntityRemoved(EntityProxy<?> entity) {
+		for(SimulationContext context : simulationContexts)
+			context.entityRemoved(entity);
+	}
+
 	public void deregisterEntity(Entity<?> entity) {
 		if(simulationObjects.remove(entity))
 			deregistered.add(entity);

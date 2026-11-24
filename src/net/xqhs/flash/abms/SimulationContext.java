@@ -108,6 +108,9 @@ public interface SimulationContext {
 	 */
 	void sendEvents(Entity<?> entity);
 
+	default void entityRemoved(EntityProxy<?> entity) {
+	}
+
 	String visualizeAsString();
 }
 

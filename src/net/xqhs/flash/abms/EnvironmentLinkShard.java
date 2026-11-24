@@ -68,8 +68,6 @@ public class EnvironmentLinkShard extends AgentShardCore {
         if (!super.addGeneralContext(context))
             return false;
 
-        if (agentManagement != null && getContext() != null)
-            agentManagement.registerAgent(getContext(), this);
         // FIXME should actually be *closest* context
         return true;
     }

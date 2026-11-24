@@ -116,6 +116,11 @@ public class SpaceContext<P extends Position> extends BaseContext
 				.collect(Collectors.toSet());
 	}
 
+	@Override
+	public void entityRemoved(EntityProxy<?> entity) {
+		removeEntity(entity);
+	}
+
 	public void removeEntity(EntityProxy<?> entity) {
 		P pos = entityPositions.remove(entity);
 		Set<EntityProxy<?>> entities = pos == null ? null : cell(pos, false);
