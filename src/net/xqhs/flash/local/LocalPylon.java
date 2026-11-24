@@ -26,6 +26,8 @@ import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
 import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.support.MulticastSupport;
+import net.xqhs.flash.core.support.WaveMulticastMessagingPylonProxy;
 
 /**
  * Simple support implementation that allows agents to send messages locally (inside the same JVM) based simply on agent
@@ -53,7 +55,7 @@ import net.xqhs.flash.core.util.PlatformUtils;
  *
  * @author Andrei Olaru
  */
-public class LocalPylon extends DefaultPylonImplementation implements RunnableEntity<Node> {
+public class LocalPylon extends DefaultPylonImplementation implements RunnableEntity<Node>, MulticastSupport {
 	/**
 	 * An alias for {@link NameBasedMessagingShard}, kept for modeling purposes.
 	 */
@@ -80,7 +82,7 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	/**
 	 * The proxy to this entity.
 	 */
-	public WaveMessagingPylonProxy messagingProxy = new WaveMessagingPylonProxy() {
+	public WaveMulticastMessagingPylonProxy messagingProxy = new WaveMulticastMessagingPylonProxy() {
 		@Override
 		public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
 			return LocalPylon.this.getRecommendedShardImplementation(shardType);
@@ -248,21 +250,29 @@ public class LocalPylon extends DefaultPylonImplementation implements RunnableEn
 	}
 	
 	/**
-	 * Attempts the actual delivery of a message.
+	 * Attempts delivery of a wave to all its destinations.
 	 *
 	 * @param wave
 	 *            - the wave
-	 * @return <code>true</code> if the destination is registered, <code>false</code> otherwise.
+	 * @return <code>true</code> if all destinations are registered and received
+	 *         their wave; <code>false</code> otherwise.
 	 */
 	protected boolean deliver(AgentWave wave) {
-		String agentName = wave.getFirstDestinationElement();
-		if(!messageReceivers.containsKey(agentName)) {
-			le("Unable to find destination [] for wave [].", agentName, wave);
-			// TODO manage undeliverables
-			return false;
+		boolean deliveredAll = true;
+
+		for(AgentWave waveForDestination : wave.splitByDestination()) {
+			String agentName = waveForDestination.getFirstDestinationElement();
+			WaveReceiver receiver = messageReceivers.get(agentName);
+			if(receiver == null) {
+				le("Unable to find destination [] for wave [].", agentName, wave);
+				// TODO manage undeliverables
+				deliveredAll = false;
+				continue;
+			}
+			
+			receiver.receive(waveForDestination);
 		}
-		messageReceivers.get(agentName).receive(wave);
-		return true;
+		return deliveredAll;
 	}
 	
 	/**
