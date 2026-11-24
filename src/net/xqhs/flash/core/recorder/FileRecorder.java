@@ -21,6 +21,7 @@ public class FileRecorder implements RecorderInterface {
     protected Gson gson;
     protected JsonWriter jsonWriter;
     protected FileWriter fileWriter;
+    protected Thread writerThread;
 
     public FileRecorder() {
         this.eventBuffer = new ConcurrentLinkedQueue<>();
@@ -43,9 +44,9 @@ public class FileRecorder implements RecorderInterface {
             e.printStackTrace();
         }
 
-        Thread writerThread = new Thread(this::processQueue, "Recorder-IO");
-        writerThread.setDaemon(true);
-        writerThread.start();
+        this.writerThread = new Thread(this::processQueue, "Recorder-IO");
+        this.writerThread.setDaemon(true);
+        this.writerThread.start();
     }
 
     @Override
@@ -112,7 +113,11 @@ public class FileRecorder implements RecorderInterface {
                     System.err.println("[RECORDER] Write error: " + e.getMessage());
                 }
             } else {
-                try { Thread.sleep(10); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
@@ -121,16 +126,24 @@ public class FileRecorder implements RecorderInterface {
     public void shutdown() {
         System.out.println("[RECORDER] Finalizing log file...");
         isRunning.set(false);
+        if (writerThread != null && writerThread != Thread.currentThread()) {
+            try {
+                writerThread.join(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
         synchronized (this) {
             try {
                 if (jsonWriter != null) {
-                    while(!eventBuffer.isEmpty()) {
+                    while (!eventBuffer.isEmpty()) {
                         SimulationEvent evt = eventBuffer.poll();
-                        if(evt != null) gson.toJson(evt, SimulationEvent.class, jsonWriter);
+                        if (evt != null) gson.toJson(evt, SimulationEvent.class, jsonWriter);
                     }
                     jsonWriter.endArray();
                     jsonWriter.close();
                     fileWriter.close();
+                    jsonWriter = null;
                     System.out.println("[RECORDER] Log file closed successfully.");
                 }
             } catch (IOException e) {

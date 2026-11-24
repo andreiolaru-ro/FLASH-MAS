@@ -5,18 +5,21 @@ import net.xqhs.flash.core.agent.AgentWave;
 
 /**
  * RecorderService - Singleton Facade for the logging and monitoring subsystem.
- * <p>
- * Decouples agent logic from the storage mechanism. Reads System Properties
- * initialized by the WebBridge to dynamically determine if events should be
- * saved to a local JSON file or streamed live to the Web UI.
- * </p>
  */
 public class RecorderService {
 
-    protected static final RecorderInterface backend;
+    protected static volatile RecorderInterface	backend;
+    private static volatile long				currentTick	= -1L;
 
     static {
-        // Read configuration flags injected by the hybrid controller
+        initBackend();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (backend != null)
+                backend.shutdown();
+        }));
+    }
+
+    private static void initBackend() {
         boolean enabled = Boolean.parseBoolean(System.getProperty("flash.recorder.enabled", "true"));
         boolean fileMode = Boolean.parseBoolean(System.getProperty("flash.recorder.file_mode", "true"));
 
@@ -27,16 +30,38 @@ public class RecorderService {
             backend = new FileRecorder();
             System.out.println("[RECORDER] Active Backend: FileRecorder (Writing to local JSON disk)");
         } else {
-            // Stream directly to the Single Page Application UI
             backend = new WebRecorder();
         }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (backend != null) backend.shutdown();
-        }));
     }
 
-    private RecorderService() {}
+    private RecorderService() {
+    }
+
+    public static void setCurrentTick(long tick) {
+        currentTick = tick;
+    }
+
+    public static long getCurrentTick() {
+        return currentTick;
+    }
+
+    /**
+     * Flushes and closes the active recorder backend cleanly between sequential benchmark runs.
+     */
+    public static synchronized void shutdown() {
+        if (backend != null) {
+            backend.shutdown();
+            backend = new NullRecorder();
+        }
+    }
+
+    /**
+     * Re-initializes the recorder backend according to current System properties.
+     */
+    public static synchronized void reinitialize() {
+        shutdown();
+        initBackend();
+    }
 
     public static void record(String entityName, AgentEvent event) {
         backend.record(entityName, event);

@@ -14,6 +14,7 @@ import java.util.Arrays;
  * </p>
  */
 public class SimulationEvent implements Serializable {
+    protected final long tick;
     protected final long timestamp;
     protected final String entityName;
     protected final String type;
@@ -23,6 +24,7 @@ public class SimulationEvent implements Serializable {
             .withZone(ZoneId.systemDefault());
 
     public SimulationEvent(String entityName, String type, Object payload) {
+        this.tick = RecorderService.getCurrentTick();
         this.timestamp = System.currentTimeMillis();
         this.entityName = entityName;
         this.type = type;
@@ -63,4 +65,6 @@ public class SimulationEvent implements Serializable {
     public Object getPayload() {
         return payload;
     }
+
+    public long getTick() {return tick;}
 }
