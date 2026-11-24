@@ -1,7 +1,10 @@
 package net.xqhs.flash.abms;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -10,6 +13,7 @@ import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
+import net.xqhs.flash.core.util.MultiValueMap;
 
 public class TemporalContext extends SimulationContext.BaseContext
         implements SimulationContext, EntityProxy<TemporalContext> {
@@ -21,14 +25,25 @@ public class TemporalContext extends SimulationContext.BaseContext
     protected long multiplierMs = DEFAULT_MULTIPLIER_MS;
     protected Simulation simulation = null;
 
+    protected static final String SCHEDULE_ACTION = "SCHEDULE_ACTION";
+
+    protected static class ScheduledTask extends ActionRecord {
+        final long time;
+        final ShardContainer target;
+        final AgentEvent event;
+
+        ScheduledTask(long time, ShardContainer target, AgentEvent event) {
+            super(target, new MultiValueMap().add(BaseActionData.ACTION.s(), SCHEDULE_ACTION));
+            this.time = time;
+            this.target = target;
+            this.event = event;
+        }
+    }
+
     /** Simulation mode: the current step. */
     protected long currentStep = 0;
-    /** Simulation mode: for each task not yet delivered, the step at which to deliver it. */
-    protected final List<Long> taskSteps = new ArrayList<>();
-    /** Simulation mode: for each task not yet delivered, the entity to deliver it to. */
-    protected final List<ShardContainer> taskTargets = new ArrayList<>();
-    /** Simulation mode: for each task not yet delivered, the event to deliver. */
-    protected final List<AgentEvent> taskEvents = new ArrayList<>();
+
+    protected final Map<ShardContainer, List<ScheduledTask>> tasks = new LinkedHashMap<>();
 
     /** Deployment mode: the moment (ms) when the context started. */
     protected long startMillis = System.currentTimeMillis();
@@ -78,12 +93,8 @@ public class TemporalContext extends SimulationContext.BaseContext
     public synchronized boolean createTask(long time, ShardContainer target, AgentEvent event) {
         if (target == null || event == null)
             return false;
-        if (simulation != null) {
-            taskSteps.add(Long.valueOf(time));
-            taskTargets.add(target);
-            taskEvents.add(event);
-            return true;
-        }
+        if (simulation != null)
+            return addPendingAction(new ScheduledTask(time, target, event));
         if (timer == null)
             timer = new Timer(getEntityName() + "-timer");
         long deliveryMillis = multiplierMs * time;
@@ -100,29 +111,33 @@ public class TemporalContext extends SimulationContext.BaseContext
 
     @Override
     public void sendEvents(Entity<?> entity) {
-        Object entityContext = entity.asContext();
-        ShardContainer target = null;
-        List<AgentEvent> dueEvents = new ArrayList<>();
+        List<ScheduledTask> dueTasks = new ArrayList<>();
         synchronized (this) {
-            int i = 0;
-            while (i < taskSteps.size()) {
-                if (taskSteps.get(i).longValue() <= currentStep && taskTargets.get(i) == entityContext) {
-                    target = taskTargets.remove(i);
-                    dueEvents.add(taskEvents.remove(i));
-                    taskSteps.remove(i);
+            List<ScheduledTask> entityTasks = tasks.get(entity.asContext());
+            if (entityTasks == null)
+                return;
+            for (Iterator<ScheduledTask> it = entityTasks.iterator(); it.hasNext();) {
+                ScheduledTask task = it.next();
+                if (task.time <= currentStep) {
+                    dueTasks.add(task);
+                    it.remove();
                 }
-                else
-                    i++;
             }
+            if (entityTasks.isEmpty())
+                tasks.remove(entity.asContext());
         }
         // delivered outside the lock, since the entity may create new tasks while processing the event
-        for (AgentEvent event : dueEvents)
-            target.postAgentEvent(event);
+        for (ScheduledTask task : dueTasks)
+            task.target.postAgentEvent(task.event);
     }
 
 
     @Override
     public synchronized void validateAndExecutePendingActions() {
+        for (ActionRecord action : pendingActions) {
+            ScheduledTask task = (ScheduledTask) action;
+            tasks.computeIfAbsent(task.target, t -> new ArrayList<>()).add(task);
+        }
         pendingActions.clear();
         currentStep++;
     }
