@@ -100,7 +100,7 @@ public class SheepAgent extends BaseAgent implements SteppableEntity, ShardConta
             if (entity instanceof GrassPatch && ((GrassPatch) entity).isGrown()) {
                 ALogging.getInstance().li_agr(Category.EATING, this,
                         "sheep eats grass [] at coordinates []", entity.getEntityName(), currentPos);
-                e.sendWaveTo(entity, new AgentWave(GrassPatch.EAT_WAVE_CONTENT));
+                e.send(new AgentWave(GrassPatch.EAT_WAVE_CONTENT, entity.getEntityName()));
             }
         }
 

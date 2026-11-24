@@ -12,7 +12,6 @@ import net.xqhs.flash.abms.AgentManagementContext.AgentManagementActionData;
 import net.xqhs.flash.abms.SimulationContext.ActionRecord;
 import net.xqhs.flash.abms.SimulationContext.BaseContext.BaseActionData;
 import net.xqhs.flash.abms.communication.CommunicationContext;
-import net.xqhs.flash.abms.communication.GraphCommunicationContext;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.abms.space.SpaceContext.SpaceActionData;
@@ -140,12 +139,12 @@ public class EnvironmentLinkShard extends AgentShardCore {
         return communication.broadcast(getContext(), wave);
     }
 
-    public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
+    public boolean send(AgentWave wave) {
         if (communication == null)
             return false;
-        if (communication instanceof GraphCommunicationContext)
-            return ((GraphCommunicationContext) communication).sendWaveFromTo(getContext(), target, wave);
-        return communication.sendWaveTo(target, wave);
+        if (wave.getFirstSource() == null && getAgent() != null)
+            wave.addSourceElementFirst(getAgent().getEntityName());
+        return communication.send(wave);
     }
 
     /**
@@ -198,12 +197,9 @@ public class EnvironmentLinkShard extends AgentShardCore {
     public boolean sendTo(String targetName, AgentWave wave) {
         if (messaging != null)
             return messaging.sendMessage(messaging.getAgentAddress(), targetName, wave.getSerializedContent());
-        EntityProxy<?> target = findByName(targetName);
-        if (target == null)
+        if (findByName(targetName) == null)
             return false;
-        if (communication instanceof GraphCommunicationContext)
-            return ((GraphCommunicationContext) communication).sendDirect(target, wave);
-        return sendWaveTo(target, wave);
+        return send(wave.resetDestination(targetName));
     }
 
     protected EntityProxy<?> findByName(String entityName) {

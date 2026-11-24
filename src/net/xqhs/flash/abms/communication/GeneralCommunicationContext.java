@@ -2,33 +2,19 @@ package net.xqhs.flash.abms.communication;
 
 import java.util.Optional;
 
-import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
-import net.xqhs.flash.core.shard.AgentShardDesignation;
-import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
-import net.xqhs.flash.core.support.WaveReceiver;
 import net.xqhs.flash.core.util.MultiValueMap;
 
-public class GeneralCommunicationContext extends CommunicationContext
-		implements WaveMessagingPylonProxy {
+public class GeneralCommunicationContext extends CommunicationContext {
 
-	protected Simulation		simulation;
-
-	@Override
-	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
-		if(context instanceof Simulation)
-			simulation = (Simulation) context;
-		return super.addGeneralContext(context);
-	}
-	
 	@Override
 	public boolean broadcast(EntityProxy<?> sender, AgentWave wave) {
 		return false;
 	}
 
 	@Override
-	public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
+	public boolean send(AgentWave wave) {
 		String to = wave.getFirstDestinationElement();
 		if(to == null || !simulation.getSimulationObjects().stream().filter(e -> to.equals(e.getName())).findFirst()
 				.isPresent())
@@ -58,30 +44,7 @@ public class GeneralCommunicationContext extends CommunicationContext
 	}
 
 	@Override
-	public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
-		return null;
-	}
-	
-	@Override
 	public String getEntityName() {
 		return name != null ? name : "ProximityCommunication";
 	}
-	
-	@Override
-	public boolean register(String entityName, WaveReceiver receiver) {
-		// all simulation objects are registered anyway
-		return true;
-	}
-	
-	@Override
-	public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
-		// unregistration is not possible
-		return false;
-	}
-	
-	@Override
-	public boolean send(AgentWave wave) {
-		return sendWaveTo(null, wave);
-	}
-	
 }

@@ -13,12 +13,15 @@ import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.SpaceContext;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
+import net.xqhs.flash.core.support.WaveReceiver;
 
-public abstract class CommunicationContext extends SimulationContext.BaseContext {
+public abstract class CommunicationContext extends SimulationContext.BaseContext implements WaveMessagingPylonProxy {
 
 	public enum CommunicationActionData implements ActionData {
-		BROADCAST_ACTION, SEND_ACTION, WAVE, TARGET, SENDER_POSITION;
+		BROADCAST_ACTION, SEND_ACTION, WAVE, SENDER_POSITION;
 
 		@Override
 		public String s() {
@@ -28,17 +31,45 @@ public abstract class CommunicationContext extends SimulationContext.BaseContext
 
 	protected Map<String, List<AgentWave>> pendingWaveEvents = new HashMap<>();
 	protected SpaceContext<?> space = null;
+	protected Simulation simulation = null;
 
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
 		if (context instanceof SpaceContext)
 			space = (SpaceContext<?>) context;
+		if (context instanceof Simulation)
+			simulation = (Simulation) context;
 		return super.addGeneralContext(context);
 	}
 
 	public abstract boolean broadcast(EntityProxy<?> sender, AgentWave wave);
 
-	public abstract boolean sendWaveTo(EntityProxy<?> target, AgentWave wave);
+	@Override
+	public abstract boolean send(AgentWave wave);
+
+	@Override
+	public boolean register(String entityName, WaveReceiver receiver) {
+		return true;
+	}
+
+	@Override
+	public boolean unregister(String entityName, WaveReceiver registeredReceiver) {
+		return false;
+	}
+
+	@Override
+	public String getRecommendedShardImplementation(AgentShardDesignation shardType) {
+		return null;
+	}
+
+	protected EntityProxy<?> findByName(String entityName) {
+		if (entityName == null || simulation == null)
+			return null;
+		for (Entity<?> entity : simulation.getSimulationObjects())
+			if (entityName.equals(entity.getName()))
+				return entity.asContext();
+		return null;
+	}
 
 	@Override
 	public void sendEvents(Entity<?> entity) {
@@ -83,6 +114,6 @@ public abstract class CommunicationContext extends SimulationContext.BaseContext
 	@SuppressWarnings("unchecked")
 	@Override
 	public <C extends Entity<Simulation>> EntityProxy<C> asContext() {
-		return (EntityProxy<C>) this;
+		return (EntityProxy<C>) (Object) this;
 	}
 }

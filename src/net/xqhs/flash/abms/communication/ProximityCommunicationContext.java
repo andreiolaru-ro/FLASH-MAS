@@ -4,13 +4,11 @@ import java.util.Set;
 
 import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.abms.space.Position;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiValueMap;
 
-public class ProximityCommunicationContext extends CommunicationContext
-		implements EntityProxy<ProximityCommunicationContext> {
+public class ProximityCommunicationContext extends CommunicationContext {
 
 	@Override
 	public boolean broadcast(EntityProxy<?> sender, AgentWave wave) {
@@ -28,13 +26,12 @@ public class ProximityCommunicationContext extends CommunicationContext
 	}
 
 	@Override
-	public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
-		if (target == null || target.getEntityName() == null)
+	public boolean send(AgentWave wave) {
+		if (wave.getFirstDestinationElement() == null)
 			return false;
 		return addPendingAction(new ActionRecord(null,
 				new MultiValueMap().add(BaseActionData.ACTION.s(), CommunicationActionData.SEND_ACTION.s())
-						.addObject(CommunicationActionData.WAVE.s(), wave)
-						.addObject(CommunicationActionData.TARGET.s(), target)));
+						.addObject(CommunicationActionData.WAVE.s(), wave)));
 	}
 
 	@Override
@@ -57,10 +54,8 @@ public class ProximityCommunicationContext extends CommunicationContext
 		for (ActionRecord action : pendingActions) {
 			if (!CommunicationActionData.SEND_ACTION.s().equals(action.getActionData().get(BaseActionData.ACTION.s())))
 				continue;
-			String targetName = ((EntityProxy<?>) action.getActionData().getObject(CommunicationActionData.TARGET.s()))
-					.getEntityName();
-			if (targetName != null)
-				deliverToEntity(targetName, (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s()));
+			AgentWave wave = (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s());
+			deliverToEntity(wave.getFirstDestinationElement(), wave);
 		}
 		pendingActions.clear();
 	}

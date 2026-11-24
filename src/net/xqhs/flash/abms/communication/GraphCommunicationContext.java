@@ -15,10 +15,29 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.MultiValueMap;
 
-public class GraphCommunicationContext extends CommunicationContext
-		implements EntityProxy<GraphCommunicationContext> {
+public class GraphCommunicationContext extends CommunicationContext {
+
+	/**
+	 * When present (and not <code>false</code>), makes waves between entities placed in the graph
+	 * travel along the graph; otherwise, waves are delivered directly, at the next step.
+	 */
+	public static final String ROUTING_PARAM = "routing";
+
+	protected boolean routing = false;
+
+	@Override
+	public boolean configure(MultiTreeMap configuration) {
+		if (!super.configure(configuration))
+			return false;
+		if (configuration != null && configuration.containsKey(ROUTING_PARAM)) {
+			String value = configuration.getAValue(ROUTING_PARAM);
+			routing = value == null || !Boolean.FALSE.toString().equals(value);
+		}
+		return true;
+	}
 
 	protected static class InFlightMessage {
 		final AgentWave wave;
@@ -72,28 +91,27 @@ public class GraphCommunicationContext extends CommunicationContext
 	}
 
 	@Override
-	public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
-		// Default: try to find sender by looking up all entities (slow fallback)
-		return sendWaveFromTo(null, target, wave);
-	}
-
-	public boolean sendWaveFromTo(EntityProxy<?> sender, EntityProxy<?> target, AgentWave wave) {
-		if (space == null || target == null || target.getEntityName() == null)
+	public boolean send(AgentWave wave) {
+		String targetName = wave.getFirstDestinationElement();
+		if (targetName == null)
+			return false;
+		if (!routing) {
+			deliverToEntity(targetName, wave);
+			return true;
+		}
+		if (space == null)
 			return false;
 		if (!(space.getTopology() instanceof GraphTopology))
 			return false;
 
 		GraphTopology topology = (GraphTopology) space.getTopology();
-		GraphPosition targetPos = (GraphPosition) getPositionRaw(target);
+		EntityProxy<?> target = findByName(targetName);
+		EntityProxy<?> sender = findByName(wave.getFirstSource());
+		GraphPosition targetPos = target != null ? (GraphPosition) getPositionRaw(target) : null;
 		GraphPosition senderPos = sender != null ? (GraphPosition) getPositionRaw(sender) : null;
 
-		if (targetPos == null || senderPos == null) {
-			deliverToEntity(target.getEntityName(), wave);
-			return true;
-		}
-
-		if (senderPos.equals(targetPos)) {
-			deliverToEntity(target.getEntityName(), wave);
+		if (targetPos == null || senderPos == null || senderPos.equals(targetPos)) {
+			deliverToEntity(targetName, wave);
 			return true;
 		}
 
@@ -104,17 +122,6 @@ public class GraphCommunicationContext extends CommunicationContext
 		}
 
 		inFlightMessages.add(new InFlightMessage(wave, path));
-		return true;
-	}
-
-	/**
-	 * Sends a message directly to a target, bypassing graph routing.
-	 * Used for PersonAgent-to-AuctionAgent communication (off-graph entities).
-	 */
-	public boolean sendDirect(EntityProxy<?> target, AgentWave wave) {
-		if (target == null || target.getEntityName() == null)
-			return false;
-		deliverToEntity(target.getEntityName(), wave);
 		return true;
 	}
 
