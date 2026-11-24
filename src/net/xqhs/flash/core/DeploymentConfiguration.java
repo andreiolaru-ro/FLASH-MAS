@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -1144,7 +1143,6 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			MultiTreeMap rootTree, List<String> autoCreated, Map<String, String> name_ids, Logger log) {
 		String name = node.getFirstValue(NAME_ATTRIBUTE_NAME);
 		boolean nameGenerated = name == null;
-		String kind = null;
 		CategoryName category = CategoryName.byName(categoryName);
 		if(name == null && category != null && category.hasNameWithParts()) {
 			// node has a registered category and its elements have two-parts names
@@ -1154,15 +1152,17 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(part2 == null && !category.isNameSecondPartOptional())
 				return (String) log.lr(null, "Node of [] entity does not contain necessary name part attribute [].",
 						category.s(), partNames[0]);
-			kind = part1;
 			if(part2 != null) // a kind alone is not a name
 				name = (part1 != null ? part1 : "") + NAME_SEPARATOR + part2;
 		}
 		if(name != null && name.trim().length() == 0)
 			name = null; // no 0-length names
 
-		if(name == null && !CategoryName.DEPLOYMENT.s().equals(categoryName) && autoNamesAll(rootTree))
-			name = generateName(kind != null ? kind : categoryName, name_ids); // auto_names: generate a name
+		if(name == null && !CategoryName.DEPLOYMENT.s().equals(categoryName)) {
+			int hashLength = autoNamesAll(rootTree);
+			if(hashLength >= 0) // auto_names: generate a name
+				name = generateName(categoryName, hashLength, name_ids);
+		}
 
 		if(nameGenerated && name != null && !node.containsKey(NAME_ATTRIBUTE_NAME))
 			// add name parameter containing the generated name
@@ -1199,17 +1199,26 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		return name;
 	}
 
-	/** @return true if the auto_names setting of the deployment contains "all". */
-	protected static boolean autoNamesAll(MultiTreeMap rootTree) {
+	/** @return the hash length if the auto_names setting of the deployment contains "all"; -1 otherwise. */
+	protected static int autoNamesAll(MultiTreeMap rootTree) {
 		String setting = rootTree.getDeepValue(CategoryName.DEPLOYMENT.s(), null, CategoryName.AUTO_NAMES.s());
-		return setting != null && Arrays.asList(setting.split(AUTO_NAMES_SEPARATOR)).contains(AUTO_NAMES_ALL);
+		if(setting == null)
+			return -1;
+		boolean all = false;
+		int hashLength = 4;
+		for(String part : setting.split(AUTO_NAMES_SEPARATOR))
+			if(AUTO_NAMES_ALL.equals(part))
+				all = true;
+			else
+				hashLength = Integer.parseInt(part);
+		return all ? hashLength : -1;
 	}
 
 	/** @return a generated name that is not in name_ids. */
-	protected static String generateName(String base, Map<String, String> name_ids) {
+	protected static String generateName(String base, int hashLength, Map<String, String> name_ids) {
 		String candidate;
 		do
-			candidate = EntityIndex.generateName(base.replace(NAME_SEPARATOR, "-"));
+			candidate = EntityIndex.registerGeneratedName(base.replace(NAME_SEPARATOR, "-"), hashLength);
 		while(name_ids.containsKey(candidate));
 		return candidate;
 	}
