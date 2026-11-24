@@ -1,7 +1,5 @@
 package net.xqhs.flash.abms.communication;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 import net.xqhs.flash.abms.Patch;
@@ -9,34 +7,10 @@ import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiValueMap;
 
 public class ProximityCommunicationContext extends CommunicationContext
 		implements EntityProxy<ProximityCommunicationContext> {
-
-	protected static class BroadcastRecord {
-		final EntityProxy<?> sender;
-		final Position senderPosition;
-		final AgentWave wave;
-
-		BroadcastRecord(EntityProxy<?> sender, Position senderPosition, AgentWave wave) {
-			this.sender = sender;
-			this.senderPosition = senderPosition;
-			this.wave = wave;
-		}
-	}
-
-	protected static class TargetedWaveRecord {
-		final EntityProxy<?> target;
-		final AgentWave wave;
-
-		TargetedWaveRecord(EntityProxy<?> target, AgentWave wave) {
-			this.target = target;
-			this.wave = wave;
-		}
-	}
-
-	protected Queue<BroadcastRecord> pendingBroadcasts = new LinkedList<>();
-	protected Queue<TargetedWaveRecord> pendingTargetedWaves = new LinkedList<>();
 
 	@Override
 	public boolean broadcast(EntityProxy<?> sender, AgentWave wave) {
@@ -47,38 +21,48 @@ public class ProximityCommunicationContext extends CommunicationContext
 		Position senderPosition = getPositionRaw(sender);
 		if (senderPosition == null)
 			return false;
-		pendingBroadcasts.add(new BroadcastRecord(sender, senderPosition, wave));
-		return true;
+		return addPendingAction(new ActionRecord(sender,
+				new MultiValueMap().add(BaseActionData.ACTION.s(), CommunicationActionData.BROADCAST_ACTION.s())
+						.addObject(CommunicationActionData.WAVE.s(), wave)
+						.addObject(CommunicationActionData.SENDER_POSITION.s(), senderPosition)));
 	}
 
 	@Override
 	public boolean sendWaveTo(EntityProxy<?> target, AgentWave wave) {
 		if (target == null || target.getEntityName() == null)
 			return false;
-		pendingTargetedWaves.add(new TargetedWaveRecord(target, wave));
-		return true;
+		return addPendingAction(new ActionRecord(null,
+				new MultiValueMap().add(BaseActionData.ACTION.s(), CommunicationActionData.SEND_ACTION.s())
+						.addObject(CommunicationActionData.WAVE.s(), wave)
+						.addObject(CommunicationActionData.TARGET.s(), target)));
 	}
 
 	@Override
 	public void validateAndExecutePendingActions() {
-		for (BroadcastRecord broadcastRecord : pendingBroadcasts) {
-			Set<Position> vicinity = getVicinityRaw(broadcastRecord.senderPosition);
+		for (ActionRecord action : pendingActions) {
+			if (!CommunicationActionData.BROADCAST_ACTION.s().equals(action.getActionData().get(BaseActionData.ACTION.s())))
+				continue;
+			AgentWave wave = (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s());
+			Position senderPosition = (Position) action.getActionData()
+					.getObject(CommunicationActionData.SENDER_POSITION.s());
+			Set<Position> vicinity = getVicinityRaw(senderPosition);
 			for (Position vpos : vicinity) {
 				for (EntityProxy<?> entity : getEntitiesAtRaw(vpos)) {
 					if ((entity instanceof ShardContainer || entity instanceof Patch)
 							&& entity.getEntityName() != null)
-						deliverToEntity(entity.getEntityName(), broadcastRecord.wave);
+						deliverToEntity(entity.getEntityName(), wave);
 				}
 			}
 		}
-		pendingBroadcasts.clear();
-
-		for (TargetedWaveRecord record : pendingTargetedWaves) {
-			String targetName = record.target.getEntityName();
+		for (ActionRecord action : pendingActions) {
+			if (!CommunicationActionData.SEND_ACTION.s().equals(action.getActionData().get(BaseActionData.ACTION.s())))
+				continue;
+			String targetName = ((EntityProxy<?>) action.getActionData().getObject(CommunicationActionData.TARGET.s()))
+					.getEntityName();
 			if (targetName != null)
-				deliverToEntity(targetName, record.wave);
+				deliverToEntity(targetName, (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s()));
 		}
-		pendingTargetedWaves.clear();
+		pendingActions.clear();
 	}
 
 	@Override

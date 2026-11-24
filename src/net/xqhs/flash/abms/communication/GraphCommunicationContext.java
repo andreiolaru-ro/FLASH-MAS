@@ -15,6 +15,7 @@ import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
+import net.xqhs.flash.core.util.MultiValueMap;
 
 public class GraphCommunicationContext extends CommunicationContext
 		implements EntityProxy<GraphCommunicationContext> {
@@ -49,8 +50,6 @@ public class GraphCommunicationContext extends CommunicationContext
 	}
 
 	private final Queue<InFlightMessage> inFlightMessages = new LinkedList<>();
-	private final Queue<AgentWave> pendingBroadcasts = new LinkedList<>();
-	private final Queue<GraphPosition> broadcastOrigins = new LinkedList<>();
 
 	@Override
 	public boolean addGeneralContext(EntityProxy<? extends Entity<?>> context) {
@@ -66,9 +65,10 @@ public class GraphCommunicationContext extends CommunicationContext
 		Position senderPosition = getPositionRaw(sender);
 		if (!(senderPosition instanceof GraphPosition))
 			return false;
-		pendingBroadcasts.add(wave);
-		broadcastOrigins.add((GraphPosition) senderPosition);
-		return true;
+		return addPendingAction(new ActionRecord(sender,
+				new MultiValueMap().add(BaseActionData.ACTION.s(), CommunicationActionData.BROADCAST_ACTION.s())
+						.addObject(CommunicationActionData.WAVE.s(), wave)
+						.addObject(CommunicationActionData.SENDER_POSITION.s(), senderPosition)));
 	}
 
 	@Override
@@ -122,9 +122,10 @@ public class GraphCommunicationContext extends CommunicationContext
 	@Override
 	public void validateAndExecutePendingActions() {
 		// Process broadcasts — deliver to immediate graph neighbors
-		while (!pendingBroadcasts.isEmpty()) {
-			AgentWave wave = pendingBroadcasts.poll();
-			GraphPosition origin = broadcastOrigins.poll();
+		for (ActionRecord action : pendingActions) {
+			AgentWave wave = (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s());
+			GraphPosition origin = (GraphPosition) action.getActionData()
+					.getObject(CommunicationActionData.SENDER_POSITION.s());
 			Set<Position> vicinity = getVicinityRaw(origin);
 			for (Position vpos : vicinity) {
 				for (EntityProxy<?> entity : getEntitiesAtRaw(vpos)) {
@@ -134,6 +135,8 @@ public class GraphCommunicationContext extends CommunicationContext
 				}
 			}
 		}
+
+		pendingActions.clear();
 
 		// Advance in-flight messages by one hop
 		List<InFlightMessage> arrived = new ArrayList<>();

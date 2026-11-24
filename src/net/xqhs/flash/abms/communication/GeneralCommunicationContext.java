@@ -1,8 +1,6 @@
 package net.xqhs.flash.abms.communication;
 
-import java.util.LinkedList;
 import java.util.Optional;
-import java.util.Queue;
 
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.core.Entity;
@@ -10,11 +8,11 @@ import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.AgentShardDesignation;
 import net.xqhs.flash.core.support.WaveMessagingPylonProxy;
 import net.xqhs.flash.core.support.WaveReceiver;
+import net.xqhs.flash.core.util.MultiValueMap;
 
 public class GeneralCommunicationContext extends CommunicationContext
 		implements WaveMessagingPylonProxy {
 
-	protected Queue<AgentWave>	pendingWaves	= new LinkedList<>();
 	protected Simulation		simulation;
 
 	@Override
@@ -35,13 +33,15 @@ public class GeneralCommunicationContext extends CommunicationContext
 		if(to == null || !simulation.getSimulationObjects().stream().filter(e -> to.equals(e.getName())).findFirst()
 				.isPresent())
 			return ler(false, "Target empty or not found in wave", wave);
-		pendingWaves.add(wave);
-		return true;
+		return addPendingAction(new ActionRecord(null,
+				new MultiValueMap().add(BaseActionData.ACTION.s(), CommunicationActionData.SEND_ACTION.s())
+						.addObject(CommunicationActionData.WAVE.s(), wave)));
 	}
 
 	@Override
 	public void validateAndExecutePendingActions() {
-		for(AgentWave wave : pendingWaves) {
+		for(ActionRecord action : pendingActions) {
+			AgentWave wave = (AgentWave) action.getActionData().getObject(CommunicationActionData.WAVE.s());
 			String to = wave.getFirstDestinationElement();
 			if(to == null) {
 				lw("Empty target in wave", wave);
@@ -54,7 +54,7 @@ public class GeneralCommunicationContext extends CommunicationContext
 			else
 				lw("Message target disappeared", to);
 		}
-		pendingWaves.clear();
+		pendingActions.clear();
 	}
 
 	@Override

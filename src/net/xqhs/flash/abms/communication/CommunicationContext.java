@@ -17,6 +17,15 @@ import net.xqhs.flash.core.shard.ShardContainer;
 
 public abstract class CommunicationContext extends SimulationContext.BaseContext {
 
+	public enum CommunicationActionData implements ActionData {
+		BROADCAST_ACTION, SEND_ACTION, WAVE, TARGET, SENDER_POSITION;
+
+		@Override
+		public String s() {
+			return this.toString();
+		}
+	}
+
 	protected Map<String, List<AgentWave>> pendingWaveEvents = new HashMap<>();
 	protected SpaceContext<?> space = null;
 
