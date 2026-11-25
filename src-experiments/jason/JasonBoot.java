@@ -16,20 +16,38 @@ import net.xqhs.flash.FlashBoot;
 /**
  * Deployment testing.
  */
-public class JasonBoot
-{
+public class JasonBoot {
+	enum Test {
+		ONE, TWO, COMMS
+	}
+	
+	// static Test test = Test.ONE;
+	static Test test = Test.COMMS;
+	
 	/**
 	 * Performs test.
 	 * 
 	 * @param args
-	 *                 - not used.
+	 *            - not used.
 	 */
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		String test_args = "";
 		
-		test_args += "";
-		test_args += " -agent jason:printer load:printer.asl";
+		switch(test) {
+		case ONE:
+			test_args += " -agent jason:printer load:simpleSlow.asl";
+			break;
+		case TWO:
+			test_args += " -agent jason:slow load:simpleSlow.asl";
+			test_args += " -agent jason:quick load:simpleQuick.asl";
+			break;
+		case COMMS:
+			test_args += " -agent jason:alice load:ping.asl";
+			test_args += " -agent jason:bob load:pong.asl";
+			break;
+		default:
+			break;
+		}
 		
 		FlashBoot.main(test_args.split(" "));
 	}
