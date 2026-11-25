@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.xqhs.util.config.Config;
 
@@ -53,7 +54,7 @@ import net.xqhs.util.config.Config;
  * 
  * @author Andrei Olaru
  */
-public class MultiValueMap extends Config implements Serializable {
+public class MultiValueMap extends Config implements Serializable, Cloneable {
 	/**
 	 * The class UID.
 	 */
@@ -363,6 +364,21 @@ public class MultiValueMap extends Config implements Serializable {
 		} catch(ConfigLockedException e) {
 			throw new IllegalStateException(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Clones the {@link MultiValueMap}, copying the backing map and the lists of values. The {@link Object}
+	 * (non-{@link String}) values are not copied. The depth of the clone is only to the level of the values, and no
+	 * copies of the values themselves are created.
+	 * 
+	 * The clone is not {@link #locked()}.
+	 */
+	@Override
+	protected Object clone() {
+		return backingMap.entrySet().stream().collect(
+				Collectors.toMap(Map.Entry::getKey, e -> new ArrayList<>(e.getValue()), (a, b) -> a,
+						LinkedHashMap::new
+				));
 	}
 	
 	/**
