@@ -21,10 +21,10 @@ import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 
 /**
- * An extension of PingPongAgentPlain integrating a {@link MessagingShard} instead of directly using
+ * An extension of PingPongPlainAgent integrating a {@link MessagingShard} instead of directly using
  * WaveMessagingPylonProxy.
  */
-public class PingPongAgent extends PingPongAgentPlain {
+public class PingPongAgent extends PingPongPlainAgent {
 	/**
 	 * The serial UID.
 	 */

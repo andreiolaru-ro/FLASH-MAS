@@ -18,7 +18,7 @@ import net.xqhs.flash.core.util.PlatformUtils;
  * <p>
  * For flexibility, all comms-related methods are placed in separate methods.
  */
-public class PingPongAgentPlain extends BaseAgent {
+public class PingPongPlainAgent extends BaseAgent {
 	/**
 	 * The serial UID.
 	 */

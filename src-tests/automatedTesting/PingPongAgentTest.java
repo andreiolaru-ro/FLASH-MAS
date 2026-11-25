@@ -4,7 +4,7 @@ import net.xqhs.flash.FlashBoot;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import testing.PingPongAgentPlain;
+import testing.PingPongPlainAgent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -26,7 +26,7 @@ public class PingPongAgentTest {
 
     protected static final String       AGENT_C = " -agent AgentC classpath:";
 
-    protected static final String       AGENT_PING_PONG_PLAIN = "PingPongAgentPlain";
+    protected static final String       AGENT_PING_PONG_PLAIN = "PingPongPlainAgent";
 
     protected static final String       AGENT_PING_PONG = "PingPongAgent";
 
@@ -72,13 +72,13 @@ public class PingPongAgentTest {
 	}
 
     private Long getPingInitialDelay() throws NoSuchFieldException, IllegalAccessException {
-        Field f = PingPongAgentPlain.class.getDeclaredField("PING_INITIAL_DELAY");
+        Field f = PingPongPlainAgent.class.getDeclaredField("PING_INITIAL_DELAY");
         f.setAccessible(true);
         return f.getLong(null);
     }
 
     private Long getPingPeriod() throws NoSuchFieldException, IllegalAccessException {
-        Field f = PingPongAgentPlain.class.getDeclaredField("PING_PERIOD");
+        Field f = PingPongPlainAgent.class.getDeclaredField("PING_PERIOD");
         f.setAccessible(true);
         return f.getLong(null);
     }
@@ -133,19 +133,19 @@ public class PingPongAgentTest {
     }
 
     @Test
-    public void testExecution_whenOneMessageAndUsingPingPongAgentPlain() throws Exception {
+    public void testExecution_whenOneMessageAndUsingPingPongPlainAgent() throws Exception {
         String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + ONE_MESSAGE + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
         checkCases(configuration, true);
     }
 
     @Test
-    public void testExecution_whenFiveMessagesAndUsingPingPongAgentPlain() throws Exception {
+    public void testExecution_whenFiveMessagesAndUsingPingPongPlainAgent() throws Exception {
         String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + FIVE_MESSAGES + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
         checkCases(configuration, true);
     }
 
     @Test
-    public void testExecution_whenTwentyMessagesAndUsingPingPongAgentPlain() throws Exception {
+    public void testExecution_whenTwentyMessagesAndUsingPingPongPlainAgent() throws Exception {
         String configuration = CONFIG_PACKAGE_NODE + AGENT_A + AGENT_PING_PONG_PLAIN + SEND_TO + TWENTY_MESSAGES + AGENT_B + AGENT_PING_PONG_PLAIN + AGENT_C + AGENT_PING_PONG_PLAIN;
         checkCases(configuration, true);
     }
