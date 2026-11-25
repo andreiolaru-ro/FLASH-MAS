@@ -1,5 +1,7 @@
 package test.deployment.convergence;
 
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 import net.xqhs.flash.FlashBoot;
 
 /**
@@ -13,7 +15,8 @@ public class Boot1a
 {    
     public static void main(String[] args)
     {
-        String test_args = "src-tests/test/deployment/convergence/deployment1.xml";
+        String test_args = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+                                                       Boot1a.class, "deployment1.xml");
         
         test_args += " -package testing";
         test_args += " -agent PingPong:AgentA classpath:PingPongAgent sendTo:AgentB";

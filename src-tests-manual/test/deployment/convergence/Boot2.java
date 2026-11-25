@@ -1,6 +1,8 @@
 package test.deployment.convergence;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Test 2: node in CLI, pylon and agents in XML with in-context-of.
@@ -15,7 +17,8 @@ public class Boot2
 {
     public static void main(String[] args)
 	{
-		String test_args = "src-tests/test/deployment/convergence/deployment2.xml";
+		String test_args = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_TESTS_MANUAL,
+				                                       Boot2.class, "deployment2.xml");
 		
         test_args += " -package testing";
 		test_args += " -node main";

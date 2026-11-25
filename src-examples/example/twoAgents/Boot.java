@@ -12,6 +12,8 @@
 package example.twoAgents;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Deployment testing.
@@ -24,7 +26,8 @@ public class Boot {
 	 *            - not used.
 	 */
 	public static void main(String[] args_) {
-		FlashBoot.main(new String[] { "src-examples/example/twoAgents/deployment.xml" });
+		FlashBoot.main(new String[] { PlatformUtils.buildFilePath(SourceFileDirectory.SRC_EXAMPLES,
+				       Boot.class, "deployment.xml") });
 	}
 	
 }

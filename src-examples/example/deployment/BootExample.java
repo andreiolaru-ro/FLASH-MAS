@@ -1,6 +1,8 @@
 package example.deployment;
 
 import net.xqhs.flash.FlashBoot;
+import net.xqhs.flash.core.DeploymentConfiguration.SourceFileDirectory;
+import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
  * Use this class to start some example configurations.
@@ -14,7 +16,8 @@ public class BootExample {
 	/**
 	 * This directory.
 	 */
-	static String THIS_DIRECTORY = "src-examples/example/deployment/";
+	static String THIS_DIRECTORY = PlatformUtils.buildFilePath(SourceFileDirectory.SRC_EXAMPLES,
+			BootExample.class) + "/";
 	
 	@SuppressWarnings("javadoc")
 	static int	bitcounter				= 0;
