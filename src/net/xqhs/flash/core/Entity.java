@@ -194,6 +194,10 @@ public interface Entity<P extends Entity<?>>
 	 * as to retain its type and compute its index. Normally, registration should be done by a loader (most likely the
 	 * loader that loads that entity).
 	 * <p>
+	 * Names for entities that have none can be generated with {@link #registerName(String)} or
+	 * {@link #registerGeneratedName(String, int)}. A generated name is registered right away, with no entity
+	 * (<code>null</code>), until the entity is associated using {@link #registerExistingName(String, String, Entity)}.
+	 * <p>
 	 * The name of the entity is kept as provided by {@link Entity#getName()}.
 	 * 
 	 * @author Andrei Olaru
@@ -229,16 +233,12 @@ public interface Entity<P extends Entity<?>>
 		 */
 		public static String registerName(String entityType)
 		{
-			int index = largestIndex.containsKey(entityType) ? largestIndex.get(entityType).intValue() + 1 : INDEX_BASE;
-			largestIndex.put(entityType, Integer.valueOf(index));
-			String name = entityType + NAME_INDEX_SEPARATOR + index;
-			register.put(name, null);
-			return name;
+			return registerGeneratedName(entityType, 0);
 		}
 
 		/**
 		 * Generates and registers a new name for an entity type, e.g. agent.0.ghre, where the hash is made of
-		 * hashLength random lowercase letters.
+		 * hashLength random lowercase letters (agent.0 if hashLength is 0).
 		 * @param hashLength
 		 *                       - the number of characters in the hash
 		 * @param entityType
@@ -253,7 +253,7 @@ public interface Entity<P extends Entity<?>>
 				hash.append((char) ('a' + random.nextInt(26)));
 			int index = largestIndex.containsKey(entityType) ? largestIndex.get(entityType).intValue() + 1 : INDEX_BASE;
 			largestIndex.put(entityType, Integer.valueOf(index));
-			String name = entityType + NAME_INDEX_SEPARATOR + index + NAME_INDEX_SEPARATOR + hash;
+			String name = entityType + NAME_INDEX_SEPARATOR + index + (hashLength > 0 ? NAME_INDEX_SEPARATOR + hash : "");
 			register.put(name, null);
 			return name;
 		}

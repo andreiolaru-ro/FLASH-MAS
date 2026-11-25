@@ -1217,9 +1217,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/** @return a generated name that is not in name_ids. */
 	protected static String generateName(String base, int hashLength, Map<String, String> name_ids) {
 		String candidate;
-		do
+		do {
 			candidate = EntityIndex.registerGeneratedName(base.replace(NAME_SEPARATOR, "-"), hashLength);
-		while(name_ids.containsKey(candidate));
+			if(name_ids.containsKey(candidate))
+				EntityIndex.register.remove(candidate); // the name is already used, do not leave it registered
+		} while(name_ids.containsKey(candidate));
 		return candidate;
 	}
 
