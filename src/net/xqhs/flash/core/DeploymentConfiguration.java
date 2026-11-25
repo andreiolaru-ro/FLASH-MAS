@@ -82,7 +82,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	/** Value of auto_names: generate names for all entities without a name. */
 	public static final String	AUTO_NAMES_ALL					= "all";
 	/** Separator for the parts of the auto_names value. */
-	public static final String	AUTO_NAMES_SEPARATOR			= ";";
+	public static final String	AUTO_NAMES_SEPARATOR			= ":";
+	/**
+	 * Value given instead of the name of an entity, to indicate that a name must be generated for that entity
+	 */
+	public static final String AUTO_NAME_TRIGGER               = ":auto:";
 	/**
 	 * The name of nodes containing parameters.
 	 */
@@ -971,6 +975,12 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						else if(isCategoryDefinition(name)) {
 							lookahead = name;
 							name = null;
+						}else if(name.contains(AUTO_NAME_TRIGGER)) {
+							// "kind::auto" or ":auto:" -> the kind (if any) is before the trigger, followed by ":"
+							kindOnly = name.substring(0, name.indexOf(AUTO_NAME_TRIGGER));
+							if(kindOnly.endsWith(NAME_SEPARATOR))
+								kindOnly = kindOnly.substring(0, kindOnly.length() - NAME_SEPARATOR.length());
+							name = name.substring(name.indexOf(AUTO_NAME_TRIGGER));
 						} else if(name.endsWith(NAME_SEPARATOR)) {
 							// "kind:" -> the kind is given, the name is missing
 							kindOnly = name.substring(0, name.length() - NAME_SEPARATOR.length());
@@ -1158,10 +1168,12 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		if(name != null && name.trim().length() == 0)
 			name = null; // no 0-length names
 
-		if(name == null && !CategoryName.DEPLOYMENT.s().equals(categoryName)) {
-			int hashLength = autoNamesAll(rootTree);
-			if(hashLength >= 0) // auto_names: generate a name
-				name = generateName(categoryName, hashLength, name_ids);
+		if((name == null || name.startsWith(AUTO_NAME_TRIGGER)) && !CategoryName.DEPLOYMENT.s().equals(categoryName)) {
+			if(name != null) { // the trigger is not a name; it will be replaced by the generated name
+				node.removeKey(NAME_ATTRIBUTE_NAME);
+				nameGenerated = true;
+			}
+			name = generateName(name, categoryName, rootTree, name_ids);
 		}
 
 		if(nameGenerated && name != null && !node.containsKey(NAME_ATTRIBUTE_NAME))
@@ -1199,23 +1211,58 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		return name;
 	}
 
-	/** @return the hash length if the auto_names setting of the deployment contains "all"; -1 otherwise. */
-	protected static int autoNamesAll(MultiTreeMap rootTree) {
+	/**
+	 * Generates a name for an entity, if the entity has the name {@value #AUTO_NAME_TRIGGER} (optionally followed by
+	 * the base for the name), or if the entity has no name and the auto_names setting of the deployment contains its
+	 * category or "all".
+	 * <p>
+	 * The auto_names setting is a list of entity types and numbers; the first number after a type is the length of
+	 * the hash for that type (e.g. "all:0:agent:5:pylon:node:1").
+	 *
+	 * @param name
+	 *            - <code>null</code>, or the {@value #AUTO_NAME_TRIGGER} value given as name.
+	 * @param categoryName
+	 *            - the name of the category of the entity.
+	 * @param rootTree
+	 *            - the tree describing the entire deployment.
+	 * @param name_ids
+	 *            - correspondence between names and local IDs.
+	 * @return a generated name that is not in name_ids, or <code>null</code> if no name should be generated.
+	 */
+	protected static String generateName(String name, String categoryName, MultiTreeMap rootTree,
+										 Map<String, String> name_ids) {
+		// hash length for this category, from the auto_names setting; -1 if the setting does not contain it
+		int hashLength = -1;
 		String setting = rootTree.getDeepValue(CategoryName.DEPLOYMENT.s(), null, CategoryName.AUTO_NAMES.s());
-		if(setting == null)
-			return -1;
-		boolean all = false;
-		int hashLength = 4;
-		for(String part : setting.split(AUTO_NAMES_SEPARATOR))
-			if(AUTO_NAMES_ALL.equals(part))
-				all = true;
-			else
-				hashLength = Integer.parseInt(part);
-		return all ? hashLength : -1;
-	}
+		if(setting != null) {
+			Map<String, Integer> hashLengths = new HashMap<>();
+			List<String> types = new LinkedList<>();
+			for(String part : setting.split(AUTO_NAMES_SEPARATOR))
+				if(part.matches("[0-9]+")) {
+					for(String type : types)
+						hashLengths.put(type, Integer.valueOf(part));
+					types.clear();
+				}
+				else
+					types.add(part);
+			for(String type : types) // types with no number after them
+				hashLengths.put(type, Integer.valueOf(4));
+			if(hashLengths.containsKey(categoryName))
+				hashLength = hashLengths.get(categoryName).intValue();
+			else if(hashLengths.containsKey(AUTO_NAMES_ALL))
+				hashLength = hashLengths.get(AUTO_NAMES_ALL).intValue();
+		}
 
-	/** @return a generated name that is not in name_ids. */
-	protected static String generateName(String base, int hashLength, Map<String, String> name_ids) {
+		String base = categoryName;
+		if(name != null) { // the name is the trigger: a name is always generated
+			if(name.length() > AUTO_NAME_TRIGGER.length())
+				base = name.substring(AUTO_NAME_TRIGGER.length()); // e.g. ":auto:bond" -> "bond"
+			if(hashLength < 0)
+				hashLength = 0;
+		}
+		if(hashLength < 0)
+			return null;
+
 		String candidate;
 		do {
 			candidate = EntityIndex.registerGeneratedName(base.replace(NAME_SEPARATOR, "-"), hashLength);

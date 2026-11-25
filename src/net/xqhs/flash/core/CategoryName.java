@@ -85,7 +85,8 @@ public enum CategoryName {
 	 */
 	LOAD_ORDER(new CatPar().isValue().isUnique().hasParent(NODE).isPortableFrom(DEPLOYMENT)),
 	/**
-	 * Controls automatic name generation for entities without a name: "all", a number, or "all;number".
+	 * Controls automatic name generation for entities without a name: a list of entity types (or "all") and numbers,
+	 * where the first number after a type is the length of the hash for that type (e.g. "all:0:agent:5:pylon:node:1").
 	 */
 	AUTO_NAMES(new CatPar().isValue().isUnique().hasParent(DEPLOYMENT)),
 	/**
