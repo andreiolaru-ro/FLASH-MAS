@@ -37,5 +37,5 @@ java -cp "bin;lib-all/*" quick.Boot -package testing -loader agent:composite -no
 
 One "simple deployment" WebSocket test can be run with
 ```bash
-java -cp "bin;lib-all/*" quick.Boot -package test.simplePingPong -node node1 -pylon webSocket:pylon1 serverPort:8885 -agent AgentA classpath:AgentPingPong sendTo:AgentB -node node2 -pylon webSocket:pylon2 connectTo:ws://localhost:8885 -agent AgentB classpath:AgentPingPong
+java -cp "bin;lib-all/*" quick.Boot -package test.simplePingPong -node node1 -pylon webSocket:pylon1 serverPort:8885 -agent AgentA classpath:PingPongAgent sendTo:AgentB -node node2 -pylon webSocket:pylon2 connectTo:ws://localhost:8885 -agent AgentB classpath:PingPongAgent
 ```

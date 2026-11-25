@@ -18,9 +18,9 @@ public class Boot1b {
                 Boot1b.class, "deployment1.xml");
 
         test_args += " -package testing";
-        test_args += " -agent PingPong:AgentA classpath:AgentPingPong sendTo:AgentB in-context-of:def";
-        test_args += " -agent PingPong:AgentB classpath:AgentPingPong in-context-of:def";
-
-        FlashBoot.main(test_args.split(" "));
-    }
+		test_args += " -agent PingPong:AgentA classpath:PingPongAgent sendTo:AgentB in-context-of:def";
+		test_args += " -agent PingPong:AgentB classpath:PingPongAgent in-context-of:def";
+		
+		FlashBoot.main(test_args.split(" "));
+	}
 }

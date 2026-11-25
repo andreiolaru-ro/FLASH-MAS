@@ -13,12 +13,12 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
 
 /**
- * A generic AgentPingPong communicating by calling directly the WaveMessagingPylonProxy in the context of which it is
+ * A generic PingPongAgent communicating by calling directly the WaveMessagingPylonProxy in the context of which it is
  * placed.
  * <p>
  * For flexibility, all comms-related methods are placed in separate methods.
  */
-public class AgentPingPongPlain extends BaseAgent {
+public class PingPongAgentPlain extends BaseAgent {
 	/**
 	 * The serial UID.
 	 */
