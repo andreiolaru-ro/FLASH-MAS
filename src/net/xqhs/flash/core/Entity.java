@@ -13,6 +13,7 @@ package net.xqhs.flash.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import net.xqhs.flash.core.util.MultiTreeMap;
 
@@ -193,6 +194,10 @@ public interface Entity<P extends Entity<?>>
 	 * as to retain its type and compute its index. Normally, registration should be done by a loader (most likely the
 	 * loader that loads that entity).
 	 * <p>
+	 * Names for entities that have none can be generated with {@link #registerName(String)} or
+	 * {@link #registerGeneratedName(String, int)}. A generated name is registered right away, with no entity
+	 * (<code>null</code>), until the entity is associated using {@link #registerExistingName(String, String, Entity)}.
+	 * <p>
 	 * The name of the entity is kept as provided by {@link Entity#getName()}.
 	 * 
 	 * @author Andrei Olaru
@@ -208,14 +213,51 @@ public interface Entity<P extends Entity<?>>
 		 */
 		public final static String		NAME_INDEX_SEPARATOR	= ".";
 		/**
-		 * The register of all entities.
+		 * The index of the first entity registered for a given key.
 		 */
-		static Map<Entity<?>, String>	register				= new HashMap<>();
+		public final static int			INDEX_BASE				= 0;
+		/**
+		 * The register of all names built by EntityIndex, each with its entity (null until the entity is associated).
+		 */
+		static Map<String, Entity<?>>	register				= new HashMap<>();
 		/**
 		 * The register holding the largest index for a type - name combination existing in {@link #register}.
 		 */
 		static Map<String, Integer>		largestIndex			= new HashMap<>();
-		
+		/**
+		 * Reserves the next index for an entity type and returns the name built from it.
+		 *
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "agent").
+		 * @return the name, of the form ("agent.0").
+		 */
+		public static String registerName(String entityType)
+		{
+			return registerGeneratedName(entityType, 0);
+		}
+
+		/**
+		 * Generates and registers a new name for an entity type, e.g. agent.0.ghre, where the hash is made of
+		 * hashLength random lowercase letters (agent.0 if hashLength is 0).
+		 * @param hashLength
+		 *                       - the number of characters in the hash
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "agent").
+		 * @return the generated name.
+		 */
+		public static String registerGeneratedName(String entityType, int hashLength)
+		{
+			Random random = new Random();
+			StringBuilder hash = new StringBuilder();
+			for(int i = 0; i < hashLength; i++)
+				hash.append((char) ('a' + random.nextInt(26)));
+			int index = largestIndex.containsKey(entityType) ? largestIndex.get(entityType).intValue() + 1 : INDEX_BASE;
+			largestIndex.put(entityType, Integer.valueOf(index));
+			String name = entityType + NAME_INDEX_SEPARATOR + index + (hashLength > 0 ? NAME_INDEX_SEPARATOR + hash : "");
+			register.put(name, null);
+			return name;
+		}
+
 		/**
 		 * Registers an entry for an entity.
 		 * 
@@ -229,16 +271,38 @@ public interface Entity<P extends Entity<?>>
 		{
 			if(entity == null)
 				return null;
-			if(!register.containsKey(entity))
+			if(!register.containsValue(entity))
 			{
 				String id = entityType + TYPE_NAME_SEPARATOR + entity.getName();
-				int index = largestIndex.containsKey(id) ? largestIndex.get(id).intValue() + 1 : 0;
+				int index = largestIndex.containsKey(id) ? largestIndex.get(id).intValue() + 1 : INDEX_BASE;
 				largestIndex.put(id, Integer.valueOf(index));
-				register.put(entity, id + NAME_INDEX_SEPARATOR + index);
+				register.put(id + NAME_INDEX_SEPARATOR + index, entity);
 			}
 			return print(entity);
 		}
-		
+
+		/**
+		 * Associates an entity with a name that was already registered and has no entity yet.
+		 *
+		 * @param entityType
+		 *                       - the type of the entity (e.g. "node").
+		 * @param entityName
+		 *                       - the name of the entity.
+		 * @param entity
+		 *                       - the entity to register.
+		 * @return the printable string for this entity.
+		 */
+		public static String registerExistingName(String entityType, String entityName,
+												  Entity<? extends Entity<?>> entity)
+		{
+			if(entity == null)
+				return null;
+			if(!register.containsKey(entityName) || register.get(entityName) != null)
+				return null; // the name was not registered, or it already has an entity
+			register.put(entityName, entity);
+			return print(entity);
+		}
+
 		/**
 		 * Returns a printable string, as if an entity is registered, but without the entity being registered (or,
 		 * indeed, instantiated). The presumed name of the entity needs to be provided.
@@ -252,7 +316,7 @@ public interface Entity<P extends Entity<?>>
 		public static String mockPrint(String entityType, String entityName)
 		{
 			String id = entityType + TYPE_NAME_SEPARATOR + entityName;
-			int index = largestIndex.containsKey(id) ? largestIndex.get(id).intValue() + 1 : 0;
+			int index = largestIndex.containsKey(id) ? largestIndex.get(id).intValue() + 1 : INDEX_BASE;
 			return id + NAME_INDEX_SEPARATOR + index;
 		}
 		
@@ -265,7 +329,10 @@ public interface Entity<P extends Entity<?>>
 		 */
 		public static String print(Entity<? extends Entity<?>> entity)
 		{
-			return register.get(entity);
+			for(Map.Entry<String, Entity<?>> entry : register.entrySet())
+				if(entity.equals(entry.getValue()))
+					return entry.getKey();
+			return null;
 		}
 		
 		/**

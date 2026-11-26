@@ -22,6 +22,7 @@ import java.util.Map;
 import net.xqhs.flash.core.util.ContentHolder;
 import net.xqhs.flash.core.util.MultiTreeMap;
 import net.xqhs.flash.core.util.PlatformUtils;
+import net.xqhs.flash.core.Entity.EntityIndex;
 import net.xqhs.util.XML.XMLParser;
 import net.xqhs.util.XML.XMLTree;
 import net.xqhs.util.XML.XMLTree.XMLNode;
@@ -78,6 +79,14 @@ public class DeploymentConfiguration extends MultiTreeMap {
 	 * Separator for elements in the load order setting.
 	 */
 	public static final String	LOAD_ORDER_SEPARATOR			= ";";
+	/** Value of auto_names: generate names for all entities without a name. */
+	public static final String	AUTO_NAMES_ALL					= "all";
+	/** Separator for the parts of the auto_names value. */
+	public static final String	AUTO_NAMES_SEPARATOR			= ":";
+	/**
+	 * Value given instead of the name of an entity, to indicate that a name must be generated for that entity
+	 */
+	public static final String AUTO_NAME_TRIGGER               = ":auto:";
 	/**
 	 * The name of nodes containing parameters.
 	 */
@@ -957,19 +966,31 @@ public class DeploymentConfiguration extends MultiTreeMap {
 				}
 				else { // it is an entity; get entity name
 					String name = null;
+					String kindOnly = null; //kind given, but no (id) name, as in "-agent composite:"
 					if(args.hasNext()) {
 						name = args.next();
 						
-						if(CLI_CATEGORY_PREFIX.equals(name))
-							name = null;
+						if(CLI_CATEGORY_PREFIX.equals(name) || NAME_SEPARATOR.equals(name))
+							name = null; // "-" or ":" -> entity has no name
 						else if(isCategoryDefinition(name)) {
 							lookahead = name;
+							name = null;
+						}else if(name.contains(AUTO_NAME_TRIGGER)) {
+							// "kind::auto" or ":auto:" -> the kind (if any) is before the trigger, followed by ":"
+							kindOnly = name.substring(0, name.indexOf(AUTO_NAME_TRIGGER));
+							if(kindOnly.endsWith(NAME_SEPARATOR))
+								kindOnly = kindOnly.substring(0, kindOnly.length() - NAME_SEPARATOR.length());
+							name = name.substring(name.indexOf(AUTO_NAME_TRIGGER));
+						} else if(name.endsWith(NAME_SEPARATOR)) {
+							// "kind:" -> the kind is given, the name is missing
+							kindOnly = name.substring(0, name.length() - NAME_SEPARATOR.length());
 							name = null;
 						}
 					}
 					
 					MultiTreeMap subCatTree = integrateChildCat(cCtxt.elemTree, catName, log);
 					MultiTreeMap node;
+
 					if(name != null && subCatTree.isHierarchical(name))
 						node = subCatTree.isSingleton(name) ? subCatTree.getSingleTree(name)
 								: subCatTree.getFirstTree(name);
@@ -977,8 +998,11 @@ public class DeploymentConfiguration extends MultiTreeMap {
 						node = new MultiTreeMap();
 						if(name != null)
 							node.addOneValue(NAME_ATTRIBUTE_NAME, name);
+						if (kindOnly != null && kindOnly.length() > 0)
+							node.addOneValue(KIND_ATTRIBUTE_NAME, kindOnly);
 						integrateName(node, catName, subCatTree, rootTree, autoCreated, name_ids, log);
 					}
+
 					context.push(new CtxtTriple(catName, subCatTree, node));
 				}
 			}
@@ -1138,10 +1162,20 @@ public class DeploymentConfiguration extends MultiTreeMap {
 			if(part2 == null && !category.isNameSecondPartOptional())
 				return (String) log.lr(null, "Node of [] entity does not contain necessary name part attribute [].",
 						category.s(), partNames[0]);
-			name = (part1 != null ? part1 : "") + (part2 != null ? NAME_SEPARATOR + part2 : "");
+			if(part2 != null) // a kind alone is not a name
+				name = (part1 != null ? part1 : "") + NAME_SEPARATOR + part2;
 		}
 		if(name != null && name.trim().length() == 0)
 			name = null; // no 0-length names
+
+		if((name == null || name.startsWith(AUTO_NAME_TRIGGER)) && !CategoryName.DEPLOYMENT.s().equals(categoryName)) {
+			if(name != null) { // the trigger is not a name; it will be replaced by the generated name
+				node.removeKey(NAME_ATTRIBUTE_NAME);
+				nameGenerated = true;
+			}
+			name = generateName(name, categoryName, rootTree, name_ids);
+		}
+
 		if(nameGenerated && name != null && !node.containsKey(NAME_ATTRIBUTE_NAME))
 			// add name parameter containing the generated name
 			node.addOneValue(NAME_ATTRIBUTE_NAME, name);
@@ -1176,7 +1210,68 @@ public class DeploymentConfiguration extends MultiTreeMap {
 		
 		return name;
 	}
-	
+
+	/**
+	 * Generates a name for an entity, if the entity has the name {@value #AUTO_NAME_TRIGGER} (optionally followed by
+	 * the base for the name), or if the entity has no name and the auto_names setting of the deployment contains its
+	 * category or "all".
+	 * <p>
+	 * The auto_names setting is a list of entity types and numbers; the first number after a type is the length of
+	 * the hash for that type (e.g. "all:0:agent:5:pylon:node:1").
+	 *
+	 * @param name
+	 *            - <code>null</code>, or the {@value #AUTO_NAME_TRIGGER} value given as name.
+	 * @param categoryName
+	 *            - the name of the category of the entity.
+	 * @param rootTree
+	 *            - the tree describing the entire deployment.
+	 * @param name_ids
+	 *            - correspondence between names and local IDs.
+	 * @return a generated name that is not in name_ids, or <code>null</code> if no name should be generated.
+	 */
+	protected static String generateName(String name, String categoryName, MultiTreeMap rootTree,
+										 Map<String, String> name_ids) {
+		// hash length for this category, from the auto_names setting; -1 if the setting does not contain it
+		int hashLength = -1;
+		String setting = rootTree.getDeepValue(CategoryName.DEPLOYMENT.s(), null, CategoryName.AUTO_NAMES.s());
+		if(setting != null) {
+			Map<String, Integer> hashLengths = new HashMap<>();
+			List<String> types = new LinkedList<>();
+			for(String part : setting.split(AUTO_NAMES_SEPARATOR))
+				if(part.matches("[0-9]+")) {
+					for(String type : types)
+						hashLengths.put(type, Integer.valueOf(part));
+					types.clear();
+				}
+				else
+					types.add(part);
+			for(String type : types) // types with no number after them
+				hashLengths.put(type, Integer.valueOf(4));
+			if(hashLengths.containsKey(categoryName))
+				hashLength = hashLengths.get(categoryName).intValue();
+			else if(hashLengths.containsKey(AUTO_NAMES_ALL))
+				hashLength = hashLengths.get(AUTO_NAMES_ALL).intValue();
+		}
+
+		String base = categoryName;
+		if(name != null) { // the name is the trigger: a name is always generated
+			if(name.length() > AUTO_NAME_TRIGGER.length())
+				base = name.substring(AUTO_NAME_TRIGGER.length()); // e.g. ":auto:bond" -> "bond"
+			if(hashLength < 0)
+				hashLength = 0;
+		}
+		if(hashLength < 0)
+			return null;
+
+		String candidate;
+		do {
+			candidate = EntityIndex.registerGeneratedName(base.replace(NAME_SEPARATOR, "-"), hashLength);
+			if(name_ids.containsKey(candidate))
+				EntityIndex.register.remove(candidate); // the name is already used, do not leave it registered
+		} while(name_ids.containsKey(candidate));
+		return candidate;
+	}
+
 	/**
 	 * For a node in the deployment XML, retrieve the name of the category of the entity that the node describes. Can be
 	 * either the actual tag, or the value of the {@value #GENERAL_ENTITY_TYPE_ATTRIBUTE} attribute.
