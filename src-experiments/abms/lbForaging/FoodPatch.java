@@ -1,12 +1,15 @@
 package abms.lbForaging;
 
-import net.xqhs.flash.abms.Patch;
+import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -16,7 +19,7 @@ import net.xqhs.flash.core.util.MultiTreeMap;
  * Each food has a level; it can only be collected when the sum of adjacent
  * loading agents' levels meets or exceeds the food's level.
  */
-public class FoodPatch extends EntityCore<Pylon> implements Patch, EntityProxy<Patch> {
+public class FoodPatch extends EntityCore<Pylon> implements SteppableEntity, ShardContainer {
 
     public static final String COLLECTED_WAVE_CONTENT = "COLLECTED";
 
@@ -84,5 +87,10 @@ public class FoodPatch extends EntityCore<Pylon> implements Patch, EntityProxy<P
     @Override
     public String getEntityName() {
         return getName() != null ? getName() : "Food";
+    }
+
+    @Override
+    public AgentShard getAgentShard(AgentShardDesignation designation) {
+        return null;
     }
 }

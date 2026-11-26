@@ -1,18 +1,15 @@
 package net.xqhs.flash.abms.communication;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.abms.space.graph.GraphPosition;
 import net.xqhs.flash.abms.space.graph.GraphTopology;
 import net.xqhs.flash.core.Entity;
-import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.util.MultiTreeMap;
@@ -136,7 +133,7 @@ public class GraphCommunicationContext extends CommunicationContext {
 			Set<Position> vicinity = getVicinityRaw(origin);
 			for (Position vpos : vicinity) {
 				for (EntityProxy<?> entity : getEntitiesAtRaw(vpos)) {
-					if ((entity instanceof ShardContainer || entity instanceof Patch)
+					if (entity instanceof ShardContainer
 							&& entity.getEntityName() != null)
 						deliverToEntity(entity.getEntityName(), wave);
 				}
@@ -152,7 +149,7 @@ public class GraphCommunicationContext extends CommunicationContext {
 			if (reachedDestination) {
 				Set<EntityProxy<?>> entitiesAtDest = getEntitiesAtRaw(msg.destination());
 				for (EntityProxy<?> entity : entitiesAtDest) {
-					if ((entity instanceof ShardContainer || entity instanceof Patch)
+					if (entity instanceof ShardContainer
 							&& entity.getEntityName() != null)
 						deliverToEntity(entity.getEntityName(), msg.wave);
 				}

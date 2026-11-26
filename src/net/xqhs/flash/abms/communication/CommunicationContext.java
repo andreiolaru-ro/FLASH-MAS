@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.abms.Simulation;
 import net.xqhs.flash.abms.SimulationContext;
 import net.xqhs.flash.abms.space.Position;
@@ -87,8 +86,6 @@ public abstract class CommunicationContext extends SimulationContext.BaseContext
 		for (AgentWave wave : waves) {
 			if (entity instanceof ShardContainer)
 				((ShardContainer) entity).postAgentEvent(wave);
-			else if (entity instanceof Patch)
-				((Patch) entity).postAgentEvent(wave);
 		}
 	}
 

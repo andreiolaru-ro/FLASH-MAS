@@ -2,7 +2,6 @@ package net.xqhs.flash.abms.communication;
 
 import java.util.Set;
 
-import net.xqhs.flash.abms.Patch;
 import net.xqhs.flash.abms.space.Position;
 import net.xqhs.flash.core.agent.AgentWave;
 import net.xqhs.flash.core.shard.ShardContainer;
@@ -45,7 +44,7 @@ public class ProximityCommunicationContext extends CommunicationContext {
 			Set<Position> vicinity = getVicinityRaw(senderPosition);
 			for (Position vpos : vicinity) {
 				for (EntityProxy<?> entity : getEntitiesAtRaw(vpos)) {
-					if ((entity instanceof ShardContainer || entity instanceof Patch)
+					if (entity instanceof ShardContainer
 							&& entity.getEntityName() != null)
 						deliverToEntity(entity.getEntityName(), wave);
 				}

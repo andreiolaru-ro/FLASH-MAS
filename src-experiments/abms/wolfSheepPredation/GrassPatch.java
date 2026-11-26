@@ -2,18 +2,21 @@ package abms.wolfSheepPredation;
 
 import aggregate_logging.ALogging;
 import aggregate_logging.Category;
-import net.xqhs.flash.abms.Patch;
+import net.xqhs.flash.abms.SteppableEntity;
 import net.xqhs.flash.core.Entity;
 import net.xqhs.flash.core.Entity.EntityProxy;
 import net.xqhs.flash.core.EntityCore;
 import net.xqhs.flash.core.agent.AgentEvent;
 import net.xqhs.flash.core.agent.AgentEvent.AgentEventType;
 import net.xqhs.flash.core.agent.AgentWave;
+import net.xqhs.flash.core.shard.AgentShard;
+import net.xqhs.flash.core.shard.AgentShardDesignation;
+import net.xqhs.flash.core.shard.ShardContainer;
 import net.xqhs.flash.core.support.Pylon;
 import net.xqhs.flash.core.support.PylonProxy;
 import net.xqhs.flash.core.util.MultiTreeMap;
 
-public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<Patch> {
+public class GrassPatch extends EntityCore<Pylon> implements SteppableEntity, ShardContainer {
 
     public static final String EAT_WAVE_CONTENT = "EAT";
 
@@ -84,5 +87,10 @@ public class GrassPatch extends EntityCore<Pylon> implements Patch, EntityProxy<
     @Override
     public String getEntityName() {
         return getName() != null ? getName() : "Grass";
+    }
+
+    @Override
+    public AgentShard getAgentShard(AgentShardDesignation designation) {
+        return null;
     }
 }

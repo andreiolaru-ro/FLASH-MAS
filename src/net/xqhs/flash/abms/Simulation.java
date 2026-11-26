@@ -33,7 +33,7 @@ public class Simulation extends Node implements EntityProxy<Simulation> {
 		super.registerEntity(entityType, entity, entityName);
 		if(entity instanceof SimulationContext)
 			simulationContexts.add((SimulationContext) entity);
-		else if(entity instanceof Agent || entity instanceof Patch) {
+		else if(entity instanceof Agent) {
 			simulationObjects.add(entity);
 			if(!deregistered.isEmpty())
 				deregistered.remove(entity);
