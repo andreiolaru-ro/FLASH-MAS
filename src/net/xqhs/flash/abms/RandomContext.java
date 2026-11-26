@@ -11,6 +11,8 @@ import net.xqhs.flash.core.util.MultiTreeMap;
 public class RandomContext extends SimulationContext.BaseContext
         implements SimulationContext, EntityProxy<RandomContext> {
 
+    public static final String SEED_KEY = "seed";
+
     protected Random random;
     /** The seed of this context */
     protected long seed;
@@ -29,8 +31,8 @@ public class RandomContext extends SimulationContext.BaseContext
     @Override
     public boolean configure(MultiTreeMap configuration) {
         super.configure(configuration);
-        if (configuration != null && configuration.containsKey("seed")) {
-            seed = Long.parseLong(configuration.getAValue("seed"));
+        if (configuration != null && configuration.containsKey(SEED_KEY)) {
+            seed = Long.parseLong(configuration.getAValue(SEED_KEY));
             random = new Random(seed);
             li("RandomContext configured with seed []", seed);
         }
